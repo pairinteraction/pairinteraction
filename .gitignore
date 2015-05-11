@@ -1,0 +1,4 @@
+bin/
+__pycache__/
+obj/
+/old/examples/*
