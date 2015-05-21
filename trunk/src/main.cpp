@@ -237,8 +237,50 @@ int main(int argc,char **argv) {
     MPI_Comm_split(MPI_COMM_WORLD, mySlave, rank, &myComm);
     MPI_Comm_rank(myComm, &myRank);
 
+
     // === Wait for all slave communicators to be build ===
     MPI_Barrier(MPI_COMM_WORLD);
+
+
+
+ /*
+    // TODOs
+    // mpi namespace
+    // #define MPI_FLAG    #ifdef MPI_FLAG ... #endif
+
+
+    // Get start state from json file
+    State startstate(json);
+
+    // Decompose start state into non-interacting states (using asym/sym, Wigner d-matrices)
+    superposition = startstate.decompose();
+
+    // Figure out whether the states of the superposition are already fully cached
+    superposition.getCached(vecR, vecB, vecE);
+
+    // Create basis
+    Basises basises(superposition); // use loadbalancing without (*) slave groups, do nothing for fully cached states
+
+    // Create Hamiltonian
+    Hamiltonians hamiltonians(basises, superposition); // use loadbalancing without (*) slave groups, extract relevant submatrices, do nothing for fully cached states
+
+    // Diagonalize
+    eigensystems = hamiltonians.diag(vecR, vecB, vecE); // use loadbalancing WITH slave groups, read and write to cache if necessary
+    eigensystems.save(json);
+
+    // Analyze
+    potentials = eigensystems.calculatePotentials();
+    potentials.save(json);
+
+    overlap = eigensystems.calculateOverlap(superposition);
+    overlap.save(json);
+
+
+    (*) maybe WITH slave groups, too
+*/
+
+
+
 
     // === Start load balancing ===
     if (rank == 0) {
