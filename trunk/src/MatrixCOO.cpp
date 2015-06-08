@@ -5,7 +5,7 @@ MatrixCOO::MatrixCOO(size_t nRows, size_t nCols, size_t size) :  nRows(nRows), n
     data.reserve(size);
 }
 
-MatrixCOO::MatrixCOO(size_t nRows, size_t nCols, std::vector<triple> &data) :  nRows(nRows), nCols(nCols) { // from vector
+MatrixCOO::MatrixCOO(size_t nRows, size_t nCols, std::vector<Triple> &data) :  nRows(nRows), nCols(nCols) { // from vector
     devectorize(data);
 }
 
@@ -13,7 +13,7 @@ MatrixCOO::MatrixCOO() {
 }
 
 void MatrixCOO::add(didx row, didx col, dreal val) {
-    data.push_back(triple(row,col,val));
+    data.push_back(Triple(row,col,val));
     ordered = false;
     sumuped = false;
 }
@@ -28,8 +28,8 @@ void MatrixCOO::multiplyScalar(dreal &&scalar) {
 void MatrixCOO::order() {
     if (!ordered) {
         // Sort everything
-        std::sort(data.begin(), data.end(),[](triple t1, triple t2) {return t1.col < t2.col;});
-        std::stable_sort(data.begin(), data.end(),[](triple t1, triple t2) {return t1.row < t2.row;});
+        std::sort(data.begin(), data.end(),[](Triple t1, Triple t2) {return t1.col < t2.col;});
+        std::stable_sort(data.begin(), data.end(),[](Triple t1, Triple t2) {return t1.row < t2.row;});
 
         ordered = true;
     }
@@ -58,7 +58,7 @@ void MatrixCOO::sumup() {
                 sumVal += val;
             } else {
                 if (std::abs(sumVal) > 1e-12) {
-                    data.push_back(triple(oldRow,oldCol,sumVal));
+                    data.push_back(Triple(oldRow,oldCol,sumVal));
                 }
                 sumVal = val;
                 oldRow = row;
@@ -66,7 +66,7 @@ void MatrixCOO::sumup() {
             }
         }
         if (std::abs(sumVal) > 1e-12) {
-            data.push_back(triple(oldRow,oldCol,sumVal));
+            data.push_back(Triple(oldRow,oldCol,sumVal));
         }
 
         sumuped = true;
@@ -100,7 +100,7 @@ void MatrixCOO::print() {
 }
 
 std::shared_ptr<MatrixCRS> MatrixCOO::toCRS() {
-    std::stable_sort(data.begin(), data.end(),[](triple t1, triple t2) {return t1.row < t2.row;});
+    std::stable_sort(data.begin(), data.end(),[](Triple t1, Triple t2) {return t1.row < t2.row;});
 
     auto crs = std::make_shared<MatrixCRS>(nRows, nCols, data.size());
     didx lastRow = 0;
@@ -114,11 +114,11 @@ std::shared_ptr<MatrixCRS> MatrixCOO::toCRS() {
     return crs;
 }
 
-std::vector<triple> MatrixCOO::vectorize() {
+std::vector<Triple> MatrixCOO::vectorize() {
     return data;
 }
 
-void MatrixCOO::devectorize(std::vector<triple> &vector) {
+void MatrixCOO::devectorize(std::vector<Triple> &vector) {
     data = vector;
     sumuped = false;
     ordered = false;

@@ -7,9 +7,9 @@
 typedef float dreal;
 typedef unsigned int didx;
 
-struct triple {
-    triple() : row(0), col(0), val(0) { }
-    triple(didx row, didx col, dreal val) : row(row), col(col), val(val) { }
+struct Triple {
+    Triple() : row(0), col(0), val(0) { }
+    Triple(didx row, didx col, dreal val) : row(row), col(col), val(val) { }
     didx row;
     didx col;
     dreal val;

@@ -33,7 +33,7 @@ MpiLoadbalancing::MpiLoadbalancing(std::shared_ptr<MpiEnvironment> mpi, int num)
     mympi = std::make_shared<MpiVariables>(mpi->world().Split(myColor, mpi->rank()));
 
     // === Construct new data type ===
-    triple trp;
+    Triple trp;
     int cntBlock = 4;
     int lenBlock[cntBlock] = {1, 1, 1, 1};
     MPI_Aint displ[cntBlock] = {0, reinterpret_cast<MPI_Aint>(&trp.col) - reinterpret_cast<MPI_Aint>(&trp), reinterpret_cast<MPI_Aint>(&trp.val) - reinterpret_cast<MPI_Aint>(&trp), sizeof(trp)};
@@ -56,55 +56,31 @@ void MpiLoadbalancing::runMaster(std::vector<std::shared_ptr<Serializable> > &da
 
         if (numWorkingSlaves0 < vecSlave0.size()) {
             // --- Send new work ---
-            int numSlave = vecSlave0[numWorkingSlaves0];
-            numSlave2numWork[numSlave]=numWork;
-
-            mpi->world().Send(&work[0], work.size(), MPI::UNSIGNED_CHAR, numSlave, WORKTAG);
+            numSlave2numWork[vecSlave0[numWorkingSlaves0]]=numWork;
+            Send(Message(work, vecSlave0[numWorkingSlaves0]));
 
             // --- Increase number of working slaves0 ---
             numWorkingSlaves0 += 1;
         } else {
             // --- Receive message from slaves ---
-
-            // Probe for an incoming message from master
-            MPI::Status status;
-            mpi->world().Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, status);
-
-            // Allocate buffer
-            int msgSize = status.Get_count(MPI::UNSIGNED_CHAR);
-            std::vector<unsigned char> messagebuffer(msgSize);
-
-            // Receive message
-            mpi->world().Recv(&messagebuffer[0], msgSize, MPI::UNSIGNED_CHAR, status.Get_source(), MPI::ANY_TAG);
+            auto message = Receive();
 
             // Save message
-            dataOut[numSlave2numWork[status.Get_source()]]->deserialize(messagebuffer);
+            dataOut[numSlave2numWork[message.num_slave]]->deserialize(message.data);
 
             // --- Send new work ---
-            int numSlave = status.Get_source();
-            numSlave2numWork[numSlave]=numWork;
-
-            mpi->world().Send(&work[0], work.size(), MPI::UNSIGNED_CHAR, numSlave, WORKTAG);
+            numSlave2numWork[message.num_slave]=numWork;
+            Send(Message(work, message.num_slave));
         }
     }
 
     // === Collect - until now unreceived - results ===
     for (unsigned int i = 0; i < numWorkingSlaves0; i++) {
         // --- Receive message from slaves ---
-
-        // Probe for an incoming message from master
-        MPI::Status status;
-        mpi->world().Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, status);
-
-        // Allocate buffer
-        int msgSize = status.Get_count(MPI::UNSIGNED_CHAR);
-        std::vector<unsigned char> messagebuffer(msgSize);
-
-        // Receive message
-        mpi->world().Recv(&messagebuffer[0], msgSize, MPI::UNSIGNED_CHAR, status.Get_source(), MPI::ANY_TAG);
+        auto message = Receive();
 
         // Save message
-        dataOut[numSlave2numWork[status.Get_source()]]->deserialize(messagebuffer);
+        dataOut[numSlave2numWork[message.num_slave]]->deserialize(message.data);
     }
 
     // === Kill all slaves0 ===
@@ -164,10 +140,8 @@ void MpiLoadbalancing::runSlave(std::shared_ptr<Serializable> bufferSerializable
             }
         }
 
-
         // --- Stop working in case of DIETAG ---
         if (msgSize == -1) {
-
             break;
         }
 
@@ -177,35 +151,17 @@ void MpiLoadbalancing::runSlave(std::shared_ptr<Serializable> bufferSerializable
         auto resultunvectorized = doMainprocessing(bufferSerializable);
 
         // --- Send results to slave0 ---
-        std::vector<triple> collection;
+        std::vector<Triple> collection;
 
         if (resultunvectorized != NULL) {
             auto result = resultunvectorized->vectorize();
 
             if (mympi->size() > 1) {
-                // Tell slave0 how many elements one has
-                std::vector<int> numElements(mympi->size());
-                int sz = result.size();
-                mympi->world().Gather(&sz, 1, MPI::INT, &numElements[0], 1, MPI::INT, 0);
-
-                std::vector<int> displacement(mympi->size());
-                if ( mympi->rank() == 0 ) {
-                    // Calculate displacements
-                    int nTotal = 0;
-                    for (int i = 0; i < mympi->size(); i++) {
-                        displacement[i] = nTotal;
-                        nTotal += numElements[i];
-                    }
-
-                    // Allocate buffer
-                    collection.resize(nTotal);
-                }
-
-                // Collect everything into slave0
-                mympi->world().Gatherv(&result[0], result.size(), MPI_COSTUME, &collection[0], &numElements[0], &displacement[0], MPI_COSTUME, 0);
+                collection = Gathervector(result);
             } else {
                 collection = result;
             }
+
         } else {
             bufferVectorizable = NULL;
         }
@@ -224,11 +180,58 @@ void MpiLoadbalancing::runSlave(std::shared_ptr<Serializable> bufferSerializable
     }
 }
 
-
 void MpiLoadbalancing::run(std::vector<std::shared_ptr<Serializable>> &dataIn, std::vector<std::shared_ptr<Serializable>> &dataOut, std::shared_ptr<Serializable> bufferSerializable, std::shared_ptr<Vectorizable> bufferVectorizable) {
     if (mpi->rank() == 0) {
         this->runMaster(dataIn, dataOut);
     } else {
         this->runSlave(bufferSerializable, bufferVectorizable);
     }
+}
+
+void MpiLoadbalancing::Send(Message &&message) {
+    mpi->world().Send(&message.data[0], message.data.size(), MPI::UNSIGNED_CHAR, message.num_slave, WORKTAG);
+}
+
+Message MpiLoadbalancing::Receive() {
+    // Probe for an incoming message from master
+    MPI::Status status;
+    mpi->world().Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, status);
+
+    // Allocate buffer
+    int msgSize = status.Get_count(MPI::UNSIGNED_CHAR);
+    std::vector<unsigned char> messagebuffer(msgSize);
+
+    // Receive message
+    mpi->world().Recv(&messagebuffer[0], msgSize, MPI::UNSIGNED_CHAR, status.Get_source(), MPI::ANY_TAG);
+
+    Message message(messagebuffer, status.Get_source());
+    return message;
+}
+
+std::vector<Triple> MpiLoadbalancing::Gathervector(std::vector<Triple> &vectorIn) {
+    std::vector<Triple> vectorOut;
+
+    // Tell slave0 how many elements one has
+    std::vector<int> numElements(mympi->size());
+    int sz = vectorIn.size();
+    mympi->world().Gather(&sz, 1, MPI::INT, &numElements[0], 1, MPI::INT, 0);
+
+    // Calculate displacements
+    std::vector<int> displacement(mympi->size());
+    if ( mympi->rank() == 0 ) {
+
+        int nTotal = 0;
+        for (int i = 0; i < mympi->size(); i++) {
+            displacement[i] = nTotal;
+            nTotal += numElements[i];
+        }
+
+        // Allocate buffer
+        vectorOut.resize(nTotal);
+    }
+
+    // Collect everything into slave0
+    mympi->world().Gatherv(&vectorIn[0], vectorIn.size(), MPI_COSTUME, &vectorOut[0], &numElements[0], &displacement[0], MPI_COSTUME, 0);
+
+    return vectorOut;
 }

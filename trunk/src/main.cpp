@@ -119,7 +119,7 @@ private:
             MatrixCRS evecs;
             diagonalize(matrix, diag, evecs);
 
-            auto diaghamiltonian = std::make_shared<Hamiltonian>(diag, evecs*basis, filepath); // TODO check, whether calculating evecs*basis is correct
+            auto diaghamiltonian = std::make_shared<Hamiltonian>(diag, basis*evecs, filepath);
             diaghamiltonian->save();
             return diaghamiltonian;
         }

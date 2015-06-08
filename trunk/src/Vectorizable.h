@@ -7,8 +7,8 @@
 
 class Vectorizable {
 public:
-    virtual std::vector<triple> vectorize() = 0;
-    virtual void devectorize(std::vector<triple> &vector) = 0;
+    virtual std::vector<Triple> vectorize() = 0;
+    virtual void devectorize(std::vector<Triple> &vector) = 0;
 };
 
 #endif
