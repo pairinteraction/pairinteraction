@@ -17,14 +17,14 @@ endif
 SDIR = src
 ODIR = obj
 PROG = bin/diagonalize
-_OBJS = main.o \
+_OBJS = main.o MatrixCOO.o MatrixCRS.o MpiEnvironment.o MpiLoadbalancing.o MpiVariables.o MpiLoadbalancingSimple.o \
 
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
 all:	$(PROG)
 
 $(PROG): $(OBJS)
-	$(CC) $< -o $@ $(LDFLAGS) $(LIB)
+	$(CC) -o $@ $(LDFLAGS) $(LIB) $(OBJS)
 	@echo "Linking complete!"
 
 $(ODIR)/%.o: $(SDIR)/%.cpp
@@ -37,6 +37,6 @@ clean:
 	\rm -rf $(OBJS) $(PROG)
 
 test:
-	mpiexec -n 5 bin/diagonalize; # --hostfile /nodes/active_ompi
+	mpiexec -n 4 bin/diagonalize; # --hostfile /nodes/active_ompi
 
 check: all test
