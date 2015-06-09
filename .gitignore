@@ -1,3 +1,9 @@
+# Ignore all the backup file
+*~
+
+# Ignore python byte-compiled libraries
+*.pyc
+
 bin/
 __pycache__/
 obj/
