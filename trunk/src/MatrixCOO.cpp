@@ -12,14 +12,14 @@ MatrixCOO::MatrixCOO(size_t nRows, size_t nCols, std::vector<Triple> &data) :  n
 MatrixCOO::MatrixCOO() {
 }
 
-void MatrixCOO::add(didx row, didx col, dreal val) {
+void MatrixCOO::add(idx_t row, idx_t col, real_t val) {
     data.push_back(Triple(row,col,val));
     ordered = false;
     sumuped = false;
 }
 
 
-void MatrixCOO::multiplyScalar(dreal &&scalar) {
+void MatrixCOO::multiplyScalar(real_t &&scalar) {
     for (auto &d: data) {
         d.val *= scalar;
     }
@@ -46,13 +46,13 @@ void MatrixCOO::sumup() {
         data.reserve(tripleTmp.size());
 
         // Sum doubled entries
-        didx oldRow = 0;
-        didx oldCol = 0;
-        dreal sumVal = 0;
+        idx_t oldRow = 0;
+        idx_t oldCol = 0;
+        real_t sumVal = 0;
         for (auto &trp: tripleTmp) {
-            didx row = trp.row;
-            didx col = trp.col;
-            dreal val = trp.val;
+            idx_t row = trp.row;
+            idx_t col = trp.col;
+            real_t val = trp.val;
 
             if (row == oldRow && col == oldCol) {
                 sumVal += val;
@@ -77,16 +77,16 @@ void MatrixCOO::print() {
     order();
     sumup();
 
-    didx n = 0;
+    idx_t n = 0;
 
-    didx row = data[n].row;
-    didx col = data[n].col;
-    dreal val = data[n].val;
+    idx_t row = data[n].row;
+    idx_t col = data[n].col;
+    real_t val = data[n].val;
 
     std::cout << std::setiosflags(std::ios::right) << std::setiosflags(std::ios::fixed);
-    for (didx r = 0; r < nRows; ++r) {
-        for (didx c = 0; c < nCols; ++c) {
-            dreal v = 0;
+    for (idx_t r = 0; r < nRows; ++r) {
+        for (idx_t c = 0; c < nCols; ++c) {
+            real_t v = 0;
             if (row == r && col == c) {
                 v = val;
                 row = data[++n].row;
@@ -103,11 +103,11 @@ std::shared_ptr<MatrixCRS> MatrixCOO::toCRS() {
     std::stable_sort(data.begin(), data.end(),[](Triple t1, Triple t2) {return t1.row < t2.row;});
 
     auto crs = std::make_shared<MatrixCRS>(nRows, nCols, data.size());
-    didx lastRow = 0;
+    idx_t lastRow = 0;
     for (auto &trp: data) {
-        didx row = trp.row;
-        didx col = trp.col;
-        dreal val = trp.val;
+        idx_t row = trp.row;
+        idx_t col = trp.col;
+        real_t val = trp.val;
         crs->add(row-lastRow, col, val);
         lastRow = row;
     }

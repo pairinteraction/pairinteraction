@@ -8,15 +8,15 @@ MatrixCRS::MatrixCRS(size_t nRows, size_t nCols, size_t size) : nRows(nRows), nC
     ptr.push_back(0);
 }
 
-MatrixCRS::MatrixCRS(std::vector<unsigned char> &bytes) { // from bytes
+MatrixCRS::MatrixCRS(bytes_t &bytes) { // from bytes
     deserialize(bytes);
 }
 
 MatrixCRS::MatrixCRS() {
 }
 
-void MatrixCRS::add(didx rIncrement, didx c, dreal v) {
-    for (didx i = 0; i < rIncrement; ++i) {
+void MatrixCRS::add(idx_t rIncrement, idx_t c, real_t v) {
+    for (idx_t i = 0; i < rIncrement; ++i) {
         ptr.push_back(col.size());
     }
     col.push_back(c);
@@ -25,7 +25,7 @@ void MatrixCRS::add(didx rIncrement, didx c, dreal v) {
     sumuped = false;
 }
 
-void MatrixCRS::multiplyScalar(dreal &&scalar) {
+void MatrixCRS::multiplyScalar(real_t &&scalar) {
     for (auto &v: val) {
         v *= scalar;
     }
@@ -44,9 +44,9 @@ void MatrixCRS::order() {
             indices.push_back(i);
         }
 
-        for (didx r = 0; r < nRows; ++r) {
-            didx ptrStart = (r < ptr.size()) ? ptr[r] : col.size();
-            didx ptrEnd = (r+1 < ptr.size()) ? ptr[r+1] : col.size();
+        for (idx_t r = 0; r < nRows; ++r) {
+            idx_t ptrStart = (r < ptr.size()) ? ptr[r] : col.size();
+            idx_t ptrEnd = (r+1 < ptr.size()) ? ptr[r+1] : col.size();
             std::sort(indices.begin()+ptrStart, indices.begin()+ptrEnd, [this](size_t i1, size_t i2) {return col[i1] < col[i2];});
         }
 
@@ -80,13 +80,13 @@ void MatrixCRS::sumup() {
         ptr.push_back(0);
 
         // Sum doubled entries
-        for (didx r = 0; r < nRows; ++r) {
-            didx oldCol = 0;
-            dreal sumVal = 0;
+        for (idx_t r = 0; r < nRows; ++r) {
+            idx_t oldCol = 0;
+            real_t sumVal = 0;
 
-            for (didx p = ((r < ptrTmp.size()) ? ptrTmp[r] : colTmp.size()); p < ((r+1 < ptrTmp.size()) ? ptrTmp[r+1] : colTmp.size()); ++p) {
-                didx c = colTmp[p];
-                dreal v = valTmp[p];
+            for (idx_t p = ((r < ptrTmp.size()) ? ptrTmp[r] : colTmp.size()); p < ((r+1 < ptrTmp.size()) ? ptrTmp[r+1] : colTmp.size()); ++p) {
+                idx_t c = colTmp[p];
+                real_t v = valTmp[p];
                 if (oldCol == c) {
                     sumVal += v;
                 } else {
@@ -116,12 +116,12 @@ void MatrixCRS::print() {
     sumup();
 
     std::cout << std::setiosflags(std::ios::right) << std::setiosflags(std::ios::fixed);
-    for (didx r = 0; r < nRows; ++r) {
-        didx p = (r < ptr.size()) ? ptr[r] : col.size();
-        didx cc = col[p];
+    for (idx_t r = 0; r < nRows; ++r) {
+        idx_t p = (r < ptr.size()) ? ptr[r] : col.size();
+        idx_t cc = col[p];
 
-        for (didx c = 0; c < nCols; ++c) {
-            dreal v = 0;
+        for (idx_t c = 0; c < nCols; ++c) {
+            real_t v = 0;
             if (p < ((r+1 < ptr.size()) ? ptr[r+1] : col.size()) && cc == c) {
                 v = val[p];
                 cc = col[++p];
@@ -134,24 +134,24 @@ void MatrixCRS::print() {
 
 std::shared_ptr<MatrixCOO>  MatrixCRS::toCOO() {
     auto coo = std::make_shared<MatrixCOO>(nRows, nCols, col.size());
-    for (didx r = 0; r < nRows; ++r) {
-        for (didx p = ((r < ptr.size()) ? ptr[r] : col.size()); p < ((r+1 < ptr.size()) ? ptr[r+1] : col.size()); ++p) {
-            didx c = col[p];
-            dreal v = val[p];
+    for (idx_t r = 0; r < nRows; ++r) {
+        for (idx_t p = ((r < ptr.size()) ? ptr[r] : col.size()); p < ((r+1 < ptr.size()) ? ptr[r+1] : col.size()); ++p) {
+            idx_t c = col[p];
+            real_t v = val[p];
             coo->add(r,c,v);
         }
     }
     return coo;
 }
 
-std::vector<unsigned char> MatrixCRS::serialize() {
+bytes_t MatrixCRS::serialize() {
     order();
 
     size_t sizeHeader = sizeof(nRows)+sizeof(nCols)+sizeof(ordered)+sizeof(sumuped);
     size_t sizePtr = 3*sizeof(size_t)+sizeof(ptr[0])*ptr.size();
     size_t sizeCol = 3*sizeof(size_t)+sizeof(col[0])*col.size();
     size_t sizeVal = 3*sizeof(size_t)+sizeof(val[0])*val.size();
-    std::vector<unsigned char> bytes(sizeHeader+sizePtr+sizeCol+sizeVal);
+    bytes_t bytes(sizeHeader+sizePtr+sizeCol+sizeVal);
 
     auto pbytes = bytes.begin();
     serializeItem(pbytes,nRows);
@@ -165,7 +165,7 @@ std::vector<unsigned char> MatrixCRS::serialize() {
     return bytes;
 }
 
-void MatrixCRS::deserialize(std::vector<unsigned char> &bytes) {
+void MatrixCRS::deserialize(bytes_t &bytes) {
     auto pbytes = bytes.begin();
     deserializeItem(pbytes,nRows);
     deserializeItem(pbytes,nCols);

@@ -18,8 +18,8 @@ public:
     MatrixCOO(size_t nRows, size_t nCols, size_t size);
     MatrixCOO(size_t nRows, size_t nCols, std::vector<Triple> &data);
     MatrixCOO();
-    void add(didx row, didx col, dreal val);
-    void multiplyScalar(dreal &&scalar);
+    void add(idx_t row, idx_t col, real_t val);
+    void multiplyScalar(real_t &&scalar);
     void order();
     void sumup();
     void print();

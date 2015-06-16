@@ -1,6 +1,6 @@
 #include "dtypes.h"
 #include "MpiEnvironment.h"
-#include "MpiLoadbalancing.h"
+#include "MpiLoadbalancingComplex.h"
 #include "MpiLoadbalancingSimple.h"
 #include "MatrixCOO.h"
 #include "MatrixCRS.h"
@@ -26,9 +26,10 @@
 
 ///////////////////// TODOs /////////////////////
 
+* use Google C++ Style Guide (http://google.github.io/styleguide/cppguide.html)
 * mpi namespace
 * #define MPI_FLAG    #ifdef MPI_FLAG ... #endif
-* use std::vector< std::vector<unsigned char>> instead of std::vector<triple>
+* use std::vector< bytes_t> instead of std::vector<triple>
 * do not use the mpi c++ binding (it is depreciated)
 
 
@@ -91,8 +92,8 @@ public:
         run(vecIn, vecOut, bufferSerializable);
     }
 
-    std::vector<std::vector<dreal>> potentials() {
-        std::vector<std::vector<didx>> potentials;
+    std::vector<std::vector<real_t>> potentials() {
+        std::vector<std::vector<idx_t>> potentials;
         for (size_t n = 0; n<hamiltonians.num_blocks(); ++n) {
             for (auto &p: diaghamiltonians_.GetBlockbasis(n)) {
                 // TODO connect basis elements with largest overlapp
@@ -134,18 +135,12 @@ private:
 
 // ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-class DemoSimple : private MpiLoadbalancingSimple {
+class DemoSimple : private MpiLoadbalancingSimple<MatrixCRS, MatrixCRS> { // <TIn, TOut>
     std::vector<std::shared_ptr<MatrixCRS>> diaghamiltonians_;
 
 public:
-    DemoSimple(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancingSimple(mpi, 1000), diaghamiltonians_(hamiltonians) {
-        for (auto &p: diaghamiltonians_) p = std::move(std::make_shared<MatrixCRS>());
-
-        std::vector<std::shared_ptr<Serializable>> vecIn (hamiltonians.begin(), hamiltonians.end());
-        std::vector<std::shared_ptr<Serializable>> vecOut (diaghamiltonians_.begin(), diaghamiltonians_.end());
-        auto bufferSerializable = std::make_shared<MatrixCRS>();
-
-        run(vecIn, vecOut, bufferSerializable);
+    DemoSimple(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancingSimple(mpi, 1000) {
+        run(hamiltonians, diaghamiltonians_);
     }
 
     std::vector<std::shared_ptr<MatrixCRS>>& diaghamiltonians() {
@@ -153,27 +148,19 @@ public:
     }
 
 private:
-    std::shared_ptr<Serializable> doProcessing(std::shared_ptr<Serializable> work) { // zeroth slave of slave group
-        auto crs = std::static_pointer_cast<MatrixCRS>(work);
-        crs->multiplyScalar(-1.);
-        return crs;
+    std::shared_ptr<MatrixCRS> doProcessing(std::shared_ptr<MatrixCRS> work) { // zeroth slave of slave group
+        work->multiplyScalar(-1.);
+        return work;
     }
 };
 
 
-class Demo : private MpiLoadbalancing {
+class Demo : private MpiLoadbalancingComplex<MatrixCRS, MatrixCRS, MatrixCOO> { // <TIn, TOut, TVec>
     std::vector<std::shared_ptr<MatrixCRS>> diaghamiltonians_;
 
 public:
-    Demo(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancing(mpi, 10), diaghamiltonians_(hamiltonians) {
-        for (auto &p: diaghamiltonians_) p = std::move(std::make_shared<MatrixCRS>());
-
-        std::vector<std::shared_ptr<Serializable>> vecIn (hamiltonians.begin(), hamiltonians.end());
-        std::vector<std::shared_ptr<Serializable>> vecOut (diaghamiltonians_.begin(), diaghamiltonians_.end());
-        auto bufferSerializable = std::make_shared<MatrixCRS>();
-        auto bufferVectorizable = std::make_shared<MatrixCOO>();
-
-        run(vecIn, vecOut, bufferSerializable, bufferVectorizable);
+    Demo(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancingComplex(mpi, 10) {
+        run(hamiltonians, diaghamiltonians_);
     }
 
     std::vector<std::shared_ptr<MatrixCRS>>& diaghamiltonians() {
@@ -181,17 +168,14 @@ public:
     }
 
 private:
-    std::shared_ptr<Vectorizable> doMainprocessing(std::shared_ptr<Serializable> work) { // all slaves within slave group
-        auto crs = std::static_pointer_cast<MatrixCRS>(work);
-        crs->multiplyScalar(-2.);
-        return crs->toCOO();
+    std::shared_ptr<MatrixCOO> doMainprocessing(std::shared_ptr<MatrixCRS> work) { // all slaves within slave group
+        work->multiplyScalar(-2.);
+        return work->toCOO();
     }
 
-    std::shared_ptr<Serializable> doPostprocessing(std::shared_ptr<Vectorizable> resultCombined, std::shared_ptr<Serializable> work) { // zeroth slave of slave group
-        auto coo = std::static_pointer_cast<MatrixCOO>(resultCombined);
-        auto crs = std::static_pointer_cast<MatrixCRS>(work);
-        coo->setDimensions(crs->getDimensions());
-        return coo->toCRS();
+    std::shared_ptr<MatrixCRS> doPostprocessing(std::shared_ptr<MatrixCOO> resultCombined, std::shared_ptr<MatrixCRS> work) { // zeroth slave of slave group
+        resultCombined->setDimensions(work->getDimensions());
+        return resultCombined->toCRS();
     }
 };
 
