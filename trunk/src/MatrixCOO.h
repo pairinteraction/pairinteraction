@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <memory>
+#include <numeric>
 
 class MatrixCRS;
 
@@ -22,8 +23,10 @@ public:
     void multiplyScalar(real_t &&scalar);
     void order();
     void sumup();
+    void deleteZerocols();
+    void deleteZerorows();
     void print();
-    std::shared_ptr<MatrixCRS> toCRS();
+    MatrixCRS toCRS();
     std::vector<Triple> vectorize();
     void devectorize(std::vector<Triple> &vector);
     size_t getNumRows();

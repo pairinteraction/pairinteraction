@@ -58,9 +58,9 @@ public:
         // === Construct new data type ===
         Triple trp;
         int cntBlock = 4;
-        int lenBlock[cntBlock] = {1, 1, 1, 1};
-        MPI_Aint displ[cntBlock] = {0, reinterpret_cast<MPI_Aint>(&trp.col) - reinterpret_cast<MPI_Aint>(&trp), reinterpret_cast<MPI_Aint>(&trp.val) - reinterpret_cast<MPI_Aint>(&trp), sizeof(trp)};
-        MPI_Datatype type[cntBlock] = {IDX_T, IDX_T, REAL_T, MPI_UB};
+        int lenBlock[] = {1, 1, 1, 1};
+        MPI_Aint displ[] = {0, reinterpret_cast<MPI_Aint>(&trp.col) - reinterpret_cast<MPI_Aint>(&trp), reinterpret_cast<MPI_Aint>(&trp.val) - reinterpret_cast<MPI_Aint>(&trp), sizeof(trp)};
+        MPI_Datatype type[] = {IDX_T, IDX_T, REAL_T, MPI_UB};
 
         MPI_Type_struct(cntBlock, &lenBlock[0], &displ[0], &type[0], &MPI_COSTUME);
         MPI_Type_commit(&MPI_COSTUME);
@@ -224,7 +224,7 @@ protected:
 private:
     int numSlaves;
     std::vector<int> vecSlave0;
-    MPI_Datatype MPI_COSTUME;  
+    MPI_Datatype MPI_COSTUME;
 };
 
 #endif

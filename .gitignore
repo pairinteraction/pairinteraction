@@ -8,3 +8,9 @@ bin/
 __pycache__/
 obj/
 /old/examples/*
+
+# Mac specific files
+._*
+.DS_Store
+.AppleDouble
+.LSOverride

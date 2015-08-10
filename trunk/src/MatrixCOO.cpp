@@ -69,8 +69,72 @@ void MatrixCOO::sumup() {
             data.push_back(Triple(oldRow,oldCol,sumVal));
         }
 
+        data.shrink_to_fit();
+
         sumuped = true;
     }
+}
+
+void MatrixCOO::deleteZerocols() {
+    // Search for columns with at least one non-zero entry
+    std::vector<bool> nonzero(nCols,false);
+    for (auto &trp: data) {
+        if (std::abs(trp.val) > 1e-12) {
+            nonzero[trp.col] = true;
+        }
+    }
+
+    size_t i = 0;
+    std::vector<size_t> mapping(nCols,false);
+    for (size_t idx = 0; idx < nCols; ++idx) {
+        if (nonzero[idx]) mapping[idx] = i++;
+    }
+    nCols = i++;
+
+    // Copy
+    auto tripleTmp(data);
+    data.clear();
+    data.reserve(tripleTmp.size());
+
+    // Delete columns consisting of zero entries only
+    for (auto &trp: tripleTmp) {
+        if (std::abs(trp.val) > 1e-12) {
+            data.push_back(Triple(trp.row,mapping[trp.col],trp.val));
+        }
+    }
+
+    data.shrink_to_fit();
+}
+
+void MatrixCOO::deleteZerorows() {
+    // Search for columns with at least one non-zero entry
+    std::vector<bool> nonzero(nRows,false);
+    for (auto &trp: data) {
+        if (std::abs(trp.val) > 1e-12) {
+            nonzero[trp.row] = true;
+        }
+    }
+
+    size_t i = 0;
+    std::vector<size_t> mapping(nRows,false);
+    for (size_t idx = 0; idx < nRows; ++idx) {
+        if (nonzero[idx]) mapping[idx] = i++;
+    }
+    nRows = i++;
+
+    // Copy
+    auto tripleTmp(data);
+    data.clear();
+    data.reserve(tripleTmp.size());
+
+    // Delete columns consisting of zero entries only
+    for (auto &trp: tripleTmp) {
+        if (std::abs(trp.val) > 1e-12) {
+            data.push_back(Triple(mapping[trp.row],trp.col,trp.val));
+        }
+    }
+
+    data.shrink_to_fit();
 }
 
 void MatrixCOO::print() {
@@ -99,17 +163,15 @@ void MatrixCOO::print() {
     }
 }
 
-std::shared_ptr<MatrixCRS> MatrixCOO::toCRS() {
+MatrixCRS MatrixCOO::toCRS() {
     std::stable_sort(data.begin(), data.end(),[](Triple t1, Triple t2) {return t1.row < t2.row;});
 
-    auto crs = std::make_shared<MatrixCRS>(nRows, nCols, data.size());
-    idx_t lastRow = 0;
+    MatrixCRS crs(nRows, nCols, data.size());
     for (auto &trp: data) {
         idx_t row = trp.row;
         idx_t col = trp.col;
         real_t val = trp.val;
-        crs->add(row-lastRow, col, val);
-        lastRow = row;
+        crs.add(row, col, val);
     }
     return crs;
 }
