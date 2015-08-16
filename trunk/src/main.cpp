@@ -2,8 +2,6 @@
 #include "MpiEnvironment.h"
 #include "MpiLoadbalancingComplex.h"
 #include "MpiLoadbalancingSimple.h"
-#include "MatrixCOO.h"
-#include "MatrixCRS.h"
 #include "Vectorizable.h"
 #include "Serializable.h"
 
@@ -11,10 +9,20 @@
 #include <tuple>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
+#include <stdio.h>
+#include <inttypes.h>
+#include <sstream>
 
 #include <iostream>
 #include <vector>
 #include <math.h>
+#include <string>
+
+
+#include <Eigen/Sparse>
+#include <Eigen/Eigenvalues>
+
 
 /*
 ///////////////////// Sources /////////////////////
@@ -31,6 +39,11 @@
 * #define MPI_FLAG    #ifdef MPI_FLAG ... #endif
 * use std::vector< bytes_t> instead of std::vector<triple>
 * do not use the mpi c++ binding (it is depreciated)
+
+* second loop only over relevant basis states
+* find submatrices
+* parallelize construction of Hamiltonian
+* nur eine Hälfte der symmetrischen Matrizen aufbauen
 
 
 ///////////////////// Structure /////////////////////
@@ -64,202 +77,89 @@ overlap.save(json);
 (*) maybe WITH slave groups, too
 
 
-///////////////////// Stuff to implement  /////////////////////
+///////////////////// Commands /////////////////////
 
-class Eigensystem : private MpiLoadbalancingSimple {
-    VecHamiltonian diaghamiltonians_;
-
-public:
-    Eigensystem(std::shared_ptr<MpiEnvironment> mpi, VecHamiltonian &hamiltonians) : MpiLoadbalancingSimple(mpi, 1000), diaghamiltonians_(hamiltonians.num_positions(), hamiltonians.num_blocks()) {
-        std::vector<std::shared_ptr<Serializable>> vecIn;
-        std::vector<std::shared_ptr<Serializable>> vecOut;
-
-        if (mpi->rank() == 0) {
-            vecIn->reserve(hamiltonians.size());
-            vecOut->reserve(hamiltonians.size());
-
-            for (auto &p: hamiltonians) {
-                vecIn.push_back(p);
-            }
-
-            for (auto &p: diaghamiltonians_) {
-                vecOut.push_back(p);
-            }
-        }
-
-        auto bufferSerializable = std::make_shared<Hamiltonian>();
-
-        run(vecIn, vecOut, bufferSerializable);
-    }
-
-    std::vector<std::vector<real_t>> potentials() {
-        std::vector<std::vector<idx_t>> potentials;
-        for (size_t n = 0; n<hamiltonians.num_blocks(); ++n) {
-            for (auto &p: diaghamiltonians_.GetBlockbasis(n)) {
-                // TODO connect basis elements with largest overlapp
-            }
-            // TODO save to potentials, how the basis elements are connected
-        }
-        return potentials;
-    }
-
-private:
-    std::shared_ptr<Serializable> doProcessing(std::shared_ptr<Serializable> work) {
-
-        auto hamiltonian = std::static_pointer_cast<Hamiltonian>(work);
-        auto filepath = hamiltonian->filepath();
-
-        if (hamiltonian->is_buffered()) {
-            return std::make_shared<Hamiltonian>(filepath);
-
-        } else {
-            auto matrix = hamiltonian->matrix();
-            auto basis = hamiltonian->basis();
-
-            MatrixCRS diag;
-            MatrixCRS evecs;
-            diagonalize(matrix, diag, evecs);
-
-            auto diaghamiltonian = std::make_shared<Hamiltonian>(diag, basis*evecs, filepath);
-            diaghamiltonian->save();
-            return diaghamiltonian;
-        }
-    }
-
-    void diagonalize(MatrixCRS &matrix, MatrixCRS &diag, MatrixCRS &evecs) {
-        // TODO implement the diagonalization
-    }
-};
+char filename[20+1+3+1]; sprintf(filename, "%020" PRIu64 ".mat", FNV64(&bytes[idxStart], bytes.size()));
 */
 
 
-// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+#include "Iter.h"
 
-class DemoSimple : private MpiLoadbalancingSimple<MatrixCRS, MatrixCRS> { // <TIn, TOut>
-    std::vector<std::shared_ptr<MatrixCRS>> diaghamiltonians_;
-
-public:
-    DemoSimple(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancingSimple(mpi, 1000) {
-        run(hamiltonians, diaghamiltonians_);
-    }
-
-    std::vector<std::shared_ptr<MatrixCRS>>& diaghamiltonians() {
-        return diaghamiltonians_;
-    }
-
-private:
-    std::shared_ptr<MatrixCRS> doProcessing(std::shared_ptr<MatrixCRS> work) { // zeroth slave of slave group
-        work->multiplyScalar(-1.);
-        return work;
-    }
-};
-
-
-class Demo : private MpiLoadbalancingComplex<MatrixCRS, MatrixCRS, MatrixCOO> { // <TIn, TOut, TVec>
-    std::vector<std::shared_ptr<MatrixCRS>> diaghamiltonians_;
-
-public:
-    Demo(std::shared_ptr<MpiEnvironment> mpi, std::vector<std::shared_ptr<MatrixCRS>> &hamiltonians) : MpiLoadbalancingComplex(mpi, 10) {
-        run(hamiltonians, diaghamiltonians_);
-    }
-
-    std::vector<std::shared_ptr<MatrixCRS>>& diaghamiltonians() {
-        return diaghamiltonians_;
-    }
-
-private:
-    std::shared_ptr<MatrixCOO> doMainprocessing(std::shared_ptr<MatrixCRS> work) { // all slaves within slave group
-        work->multiplyScalar(-2.);
-        return std::make_shared<MatrixCOO>(work->toCOO());
-    }
-
-    std::shared_ptr<MatrixCRS> doPostprocessing(std::shared_ptr<MatrixCOO> resultCombined, std::shared_ptr<MatrixCRS> work) { // zeroth slave of slave group
-        resultCombined->setDimensions(work->getDimensions());
-        return std::make_shared<MatrixCRS>(resultCombined->toCRS());
-    }
-};
-
-// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
-#include <array>
-
-
-class State {
-public:
-    State(int n_, int l_, float s_, float j_, float m_) {
-        n[0] = n_;
-        l[0] = l_;
-        s[0] = s_;
-        j[0] = j_;
-        m[0] = m_;
-        n[1] = 0;
-        l[1] = 0;
-        s[1] = 0;
-        j[1] = 0;
-        m[1] = 0;
-    }
-    State(std::array<int, 2> n_, std::array<int, 2> l_, std::array<float, 2> s_, std::array<float, 2> j_, std::array<float, 2> m_) {
-        n = n_;
-        l = l_;
-        s = s_;
-        j = j_;
-        m = m_;
-    }
-protected:
-    std::array<int, 2> n, l;
-    std::array<float, 2> s, j, m;
-};
-
-
-// ----------------------------------------
-
-class Basisnames {
+template<class T> class Basisnames {
 public:
     Basisnames() {}
-    size_t size() {
-        return size_;
+
+    size_t size() const {
+        return names_.size();
     }
-    State& get(size_t idx) {
-        return names[idx];
+    size_t dim() const {
+        return names_.back().idx+1;
+    }
+    T& get (size_t idx) {
+        return names_[idx];
+    }
+    const T& get (size_t idx) const {
+        return names_[idx];
+    }
+    void set (size_t i, const T &v) {
+        names_[i] = v;
+    }
+    Iter<Basisnames, T> begin() const {
+        return Iter<Basisnames, T>( this, 0 );
+    }
+    Iter<Basisnames, T> end() const {
+        return Iter<Basisnames, T>( this, names_.size() );
     }
 
 protected:
-    size_t size_;
-    std::vector<State> names;
+    std::vector<T> names_;
 };
 
 
-class BasisnamesOne : public Basisnames{
+class BasisnamesOne : public Basisnames<StateOne>{
 public:
     BasisnamesOne() {
-        size_ = 4;
-        names.reserve(size_);
+        size_t size = 4; // TODO
+        names_.reserve(size);
 
-        for (size_t i=0; i < size_; ++i) { // loop over quantum numbers
-            names.push_back(State(i,i,i,i,i));
+        idx_t idx = 0;
+
+        // loop over quantum numbers
+        for (idx_t i=0; i < size; ++i) { // TODO
+            names_.push_back(StateOne(idx++,1,1,1,1,1));
         }
     }
 };
 
 
-class BasisnamesTwo : public Basisnames{
+class BasisnamesTwo : public Basisnames<StateTwo>{
 public:
-    BasisnamesTwo(BasisnamesOne basis_one) {
-        size_ = basis_one.size()*basis_one.size();
-        names.reserve(size_);
+    BasisnamesTwo(const BasisnamesOne &basis_one) {
+        size_t size = basis_one.size()*basis_one.size();
+        names_.reserve(size);
 
-        for (size_t idx_1 = 0; idx_1 < basis_one.size(); ++idx_1) {
-            auto state_1 = basis_one.get(idx_1);
+        idx_t idx = 0;
 
-            for (size_t idx_2 = 0; idx_2 < basis_one.size(); ++idx_2) {
-                auto state_2 = basis_one.get(idx_2);
-
-                (void) state_1;
-                (void) state_2;
-
-                names.push_back(State(1,1,1,1,1));
+        // loop over single atom states
+        for (const auto &state_1 : basis_one) {
+            for (const auto &state_2 : basis_one) {
+                names_.push_back(StateTwo(idx++,state_1,state_2));
             }
         }
+    }
+    void removeUnnecessaryStates(const std::vector<bool> &isNecessary) {
+        auto tmp = names_;
+        names_.clear();
+        names_.reserve(tmp.size());
+
+        // loop over all two-atom states
+        for (auto state : tmp) {
+            if (isNecessary[state.idx]) {
+                names_.push_back(state);
+            }
+        }
+
+        names_.shrink_to_fit();
     }
 };
 
@@ -268,234 +168,380 @@ public:
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix() : Serializable() {}
-    Hamiltonianmatrix(size_t nBasis, size_t nCoordinates, size_t size) : Serializable(), num_basisvectors_(nBasis), num_coordinates_(nCoordinates), entries_(nBasis,nBasis,size), basis_(nCoordinates,nBasis,size)  {}
-    Hamiltonianmatrix(MatrixCRS entries, MatrixCRS basis) : Serializable(), num_basisvectors_(basis.getNumCols()), num_coordinates_(basis.getNumRows()), entries_(entries), basis_(basis) {}
-    MatrixCRS& entries() {
+    Hamiltonianmatrix(size_t nBasis, size_t nCoordinates) : Serializable(), entries_(nBasis,nBasis), basis_(nCoordinates,nBasis)  {}
+    Hamiltonianmatrix(eigen_sparse_t entries, eigen_sparse_t basis) : Serializable(), entries_(entries), basis_(basis) {}
+
+    eigen_sparse_t& entries() {
+        bytes.clear();
         return entries_;
     }
-    MatrixCRS& basis() {
+    const eigen_sparse_t& entries() const {
+        return entries_;
+    }
+    eigen_sparse_t& basis() {
+        bytes.clear();
         return basis_;
     }
-    std::array<MatrixCRS,2> basis_symmetric() {
-        size_t num_coordinates_single = sqrt(num_coordinates_);
+    const eigen_sparse_t& basis() const {
+        return basis_;
+    }
+    size_t num_basisvectors() const {
+        return basis_.cols();
+    }
+    size_t num_coordinates() const {
+        return basis_.rows();
+    }
 
-        // --- construct vector of basis indices ---
-        std::vector<std::array<size_t,2>> basisindices;
-        basisindices.reserve(num_coordinates_);
+    Hamiltonianmatrix abs() const {
+        return Hamiltonianmatrix(entries_.cwiseAbs(), basis_);
+    }
+    Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const{
+        auto transformator = basis_.transpose()*basis;
+        auto entries = transformator.transpose()*entries_*transformator;
+        return Hamiltonianmatrix(entries, basis);
+    }
+    Hamiltonianmatrix duplicateSym() const {
+        return duplicate(SYM);
+    }
+    Hamiltonianmatrix duplicateAsym() const {
+        return duplicate(ASYM);
+    }
+    Hamiltonianmatrix duplicateAll() const {
+        return duplicate(ALL);
+    }
 
-        for (size_t idx_1 = 0; idx_1 < num_coordinates_single; ++idx_1) {
-            for (size_t idx_2 = 0; idx_2 < num_coordinates_single; ++idx_2) {
-                basisindices.push_back({idx_1,idx_2});
+    void applyCutoff(real_t cutoff) {
+        bytes.clear();
+
+        // build transformator
+        auto diag = entries_.diagonal();
+
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(num_basisvectors());
+
+        size_t idxBasis = 0;
+        for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
+            if (std::abs(diag[idx]) < cutoff) {
+                triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
             }
         }
 
-        // --- construct symmetrization matrix ---
-        MatrixCRS sym_crs((num_coordinates_+num_coordinates_single)/2,num_coordinates_,num_coordinates_);
-        MatrixCRS asym_crs((num_coordinates_-num_coordinates_single)/2,num_coordinates_,num_coordinates_-num_coordinates_single);
+        eigen_sparse_t transformator(this->num_basisvectors(),idxBasis);
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
-        idx_t sym_idx_row = 0;
-        idx_t asym_idx_row = 0;
+        // apply transformator
+        basis_ = basis_*transformator;
+        entries_= transformator.transpose()*entries_*transformator;
+    }
 
-        for (auto basisindices_row : basisindices) {
-
-            if (basisindices_row[0] > basisindices_row[1]) {
-                continue;
+    void findUnnecessaryStates(std::vector<bool> &isNecessary) const {
+        for (eigen_idx_t k=0; k<basis_.outerSize(); ++k) {
+            for (eigen_iterator_t it(basis_,k); it; ++it) {
+                isNecessary[it.row()] = true;
             }
+        }
+    }
 
-            short parts = 0;
+    void removeUnnecessaryStates(const std::vector<bool> &isNecessary) {
+        bytes.clear();
 
-            for (auto basisindices_col : basisindices) {
-                idx_t idx_col = num_coordinates_single*basisindices_col[0] + basisindices_col[1];
+        // build transformator
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(num_coordinates());
 
-                if (basisindices_row[0] == basisindices_row[1] && basisindices_row[0] == basisindices_col[0] && basisindices_row[1] == basisindices_col[1]) { // e.g 11, 11
-                    sym_crs.add(sym_idx_row, idx_col, 1);
-
-                    sym_idx_row++;
-                    break;
-
-                } else if (basisindices_row[0] == basisindices_col[0] && basisindices_row[1] == basisindices_col[1]) { // e.g 12, 12
-                    sym_crs.add(sym_idx_row, idx_col, 1./sqrt(2.));
-                    asym_crs.add(asym_idx_row, idx_col, 1./sqrt(2.));
-
-                    parts++;
-
-                } else if (basisindices_row[0] == basisindices_col[1] && basisindices_row[1] == basisindices_col[0]) { // e.g 12, 21
-                    sym_crs.add(sym_idx_row, idx_col, 1./sqrt(2.));
-                    asym_crs.add(asym_idx_row, idx_col, -1./sqrt(2.));
-
-                    parts++;
-                }
-
-                if (parts == 2) {
-                    sym_idx_row++;
-                    asym_idx_row++;
-                    break;
-                }
+        size_t idxCoordinate = 0;
+        for (size_t idx = 0; idx < this->num_coordinates(); ++idx) {
+            if (isNecessary[idx]) {
+                triplets_transformator.push_back(eigen_triplet_t(idxCoordinate++,idx,1));
             }
         }
 
-        return std::array<MatrixCRS,2>({sym_crs,asym_crs});
+        eigen_sparse_t transformator(idxCoordinate,this->num_coordinates());
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+        // apply transformator
+        basis_ = transformator*basis_;
     }
-    void add(Hamiltonianmatrix matrix) {
-        (void) matrix; // assimilate basis and add another matrix
+
+    friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
+        lhs.bytes.clear();
+        lhs.entries_ += rhs.entries_;
+        return lhs;
     }
-    void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, real_t val, MatrixCOO &coo) {
-        idx_t row = mapping[num_basisvectors_*row_1 + row_2];
-        idx_t col = mapping[num_basisvectors_*col_1 + col_2];
+    friend Hamiltonianmatrix operator*(const real_t& lhs,  Hamiltonianmatrix rhs) {
+        rhs.bytes.clear();
+        rhs.entries_ *= lhs;
+        return rhs;
+    }
+    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs,  const real_t& rhs) {
+        lhs.bytes.clear();
+        lhs.entries_ *= rhs;
+        return lhs;
+    }
+    Hamiltonianmatrix& operator+=(const Hamiltonianmatrix& rhs) {
+        bytes.clear();
+        entries_ += rhs.entries_;
+        return *this;
+    }
+
+    bytes_t& serialize() {
+        doSerialization();
+        return bytes;
+    }
+
+    void doSerialization() {
+        if (bytes.size() == 0) {
+            entries_.makeCompressed();
+            basis_.makeCompressed();
+
+            std::vector<char> name(filename_.begin(), filename_.end());
+            size_t entries_mode = (entries_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+            size_t entries_rows = entries_.rows();
+            size_t entries_cols = entries_.cols();
+            std::vector<storage_real_t> entries_data(entries_.valuePtr(), entries_.valuePtr()+entries_.nonZeros());
+            std::vector<storage_idx_t> entries_indices(entries_.innerIndexPtr(), entries_.innerIndexPtr()+entries_.nonZeros());
+            std::vector<storage_idx_t> entries_indptr(entries_.outerIndexPtr(), entries_.outerIndexPtr()+entries_.outerSize());
+            size_t basis_mode = (basis_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+            size_t basis_rows = basis_.rows();
+            size_t basis_cols = basis_.cols();
+            std::vector<storage_real_t> basis_data(basis_.valuePtr(), basis_.valuePtr()+basis_.nonZeros());
+            std::vector<storage_idx_t> basis_indices(basis_.innerIndexPtr(), basis_.innerIndexPtr()+basis_.nonZeros());
+            std::vector<storage_idx_t> basis_indptr(basis_.outerIndexPtr(), basis_.outerIndexPtr()+basis_.outerSize());
+
+            Serializer s;
+            s << name;
+            idxStart = s.position();
+            s << entries_mode;
+            s << entries_rows;
+            s << entries_cols;
+            s << entries_data;
+            s << entries_indices;
+            s << entries_indptr;
+            s << basis_mode;
+            s << basis_rows;
+            s << basis_cols;
+            s << basis_data;
+            s << basis_indices;
+            s << basis_indptr;
+            s.save(bytes);
+        }
+    }
+
+    void deserialize(bytes_t &bytesin) {
+        bytes = bytesin;
+        doDeserialization();
+    }
+
+    void doDeserialization() {
+        std::vector<char> name;
+        size_t entries_mode, entries_rows, entries_cols;
+        std::vector<real_t> entries_data;
+        std::vector<idx_t> entries_indices;
+        std::vector<idx_t> entries_indptr;
+        size_t basis_mode, basis_rows, basis_cols;
+        std::vector<real_t> basis_data;
+        std::vector<idx_t> basis_indices;
+        std::vector<idx_t> basis_indptr;
+
+
+        Serializer s;
+        s.load(bytes);
+        s >> name;
+        idxStart = s.position();
+        s >> entries_mode;
+        s >> entries_rows;
+        s >> entries_cols;
+        s >> entries_data;
+        s >> entries_indices;
+        s >> entries_indptr;
+        s >> basis_mode;
+        s >> basis_rows;
+        s >> basis_cols;
+        s >> basis_data;
+        s >> basis_indices;
+        s >> basis_indptr;
+
+        filename_ = std::string(&name[0], name.size());
+        entries_ = eigen_sparse_t(entries_rows,entries_cols);
+        entries_.makeCompressed();
+        entries_.resizeNonZeros(entries_data.size());
+        std::copy(entries_data.begin(),entries_data.end(),entries_.valuePtr());
+        std::copy(entries_indices.begin(),entries_indices.end(),entries_.innerIndexPtr());
+        std::copy(entries_indptr.begin(),entries_indptr.end(),entries_.outerIndexPtr());
+        entries_.finalize();
+        basis_ = eigen_sparse_t(basis_rows,basis_cols);
+        basis_.makeCompressed();
+        basis_.resizeNonZeros(basis_data.size());
+        std::copy(basis_data.begin(),basis_data.end(),basis_.valuePtr());
+        std::copy(basis_indices.begin(),basis_indices.end(),basis_.innerIndexPtr());
+        std::copy(basis_indptr.begin(),basis_indptr.end(),basis_.outerIndexPtr());
+        basis_.finalize();
+    }
+    void setFilename(std::string name) {
+        filename_ = name;
+    }
+
+    std::string& filename() {
+        return filename_;
+    }
+
+    void save() {
+        doSerialization();
+
+        // open file
+        FILE *pFile;
+        pFile = fopen(filename_.c_str() , "wb" );
+
+        // write
+        fwrite(&bytes[idxStart], 1 , sizeof(byte_t)*(bytes.size()-idxStart), pFile );
+
+        // close file
+        fclose(pFile);
+    }
+    bool load() {
+        // open file
+        if (FILE *pFile = fopen(filename_.c_str() , "rb" )) {
+
+            // obtain file size:
+            fseek (pFile , 0 , SEEK_END);
+            size_t size_file = ftell(pFile);
+            rewind(pFile);
+
+            // prepare bytes
+            std::vector<char> name(filename_.begin(), filename_.end());
+            Serializer s;
+            s << name;
+            idxStart = s.position();
+            s.save(bytes);
+            bytes.resize(size_file/sizeof(byte_t)+idxStart);
+
+            // read
+            size_t size_result = fread(&bytes[idxStart], 1 , sizeof(byte_t)*(bytes.size()-idxStart) , pFile );
+            if (size_result != size_file) throw std::runtime_error("Matrix could not be read from file.");
+
+            // close file
+            fclose(pFile);
+
+            doDeserialization();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+protected:
+    void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, real_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
+        idx_t row = mapping[this->num_basisvectors()*row_1 + row_2];
+        idx_t col = mapping[this->num_basisvectors()*col_1 + col_2];
         if((mode == ALL) || (mode == SYM && row_1 <= row_2 && col_1 <= col_2) || (mode == ASYM && row_1 < row_2 && col_1 < col_2)) {
             double factor = 1;
             if (mode == SYM && row_1 == row_2) factor *= 1./sqrt(2.);
             if (mode == SYM && col_1 == col_2) factor *= 1./sqrt(2.);
-            coo.add(row, col, factor*val);
+            triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
         }
     }
-    friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
-        return rhs; // TODO
-    }
-    friend Hamiltonianmatrix operator*(real_t lhs, const Hamiltonianmatrix& rhs) {
-        return rhs; // TODO
-    }
-    Hamiltonianmatrix duplicateSym() {
-        return duplicate(SYM);
-    }
-    Hamiltonianmatrix duplicateAsym() {
-        return duplicate(ASYM);
-    }
-    Hamiltonianmatrix duplicateAll() {
-        return duplicate(ALL);
-    }
-    Hamiltonianmatrix duplicate(mode_t mode) {
+    Hamiltonianmatrix duplicate(mode_t mode) const {
         // --- mapping ---
         idx_t i = 0;
-        std::vector<idx_t> mapping(num_basisvectors_*num_basisvectors_);
-        for (idx_t idx_1 = 0; idx_1 < num_basisvectors_; ++idx_1) {
-            for (idx_t idx_2 = 0; idx_2 < num_basisvectors_; ++idx_2) {
+        std::vector<idx_t> mapping(this->num_basisvectors()*this->num_basisvectors());
+        for (idx_t idx_1 = 0; idx_1 < this->num_basisvectors(); ++idx_1) {
+            for (idx_t idx_2 = 0; idx_2 < this->num_basisvectors(); ++idx_2) {
                 if ((mode != ALL && idx_1 < idx_2) || (mode == ALL) || (mode == SYM && idx_1 == idx_2)) {
-                    idx_t idx = num_coordinates_*idx_1 + idx_2;
+                    idx_t idx = this->num_coordinates()*idx_1 + idx_2;
                     mapping[idx] = i++;
                 }
             }
         }
 
+        Hamiltonianmatrix mat(i,this->num_coordinates()*this->num_coordinates());
+
         // --- duplicate basis_ ---
-        MatrixCOO basis_coo(num_coordinates_*num_coordinates_,i,basis_.size()*basis_.size()); //TODO
+        std::vector<eigen_triplet_t> triplets_basis;
+        triplets_basis.reserve(basis_.nonZeros()*basis_.nonZeros());
 
-        for (auto triple_1 : basis_) {
-            for (auto triple_2 : basis_) {
-                if ((mode != ALL && triple_1.col < triple_2.col)) {
-                    idx_t idx_row1 = num_basisvectors_*triple_1.row + triple_2.row; // coord1
-                    idx_t idx_row2 = num_basisvectors_*triple_2.row + triple_1.row; // coord2
-                    idx_t idx_col = mapping[num_coordinates_*triple_1.col + triple_2.col]; // vec
+        for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+            for (eigen_iterator_t triple_1(basis_,k_1); triple_1; ++triple_1) {
+                for (eigen_idx_t k_2=0; k_2<basis_.outerSize(); ++k_2) {
+                    for (eigen_iterator_t triple_2(basis_,k_2); triple_2; ++triple_2) {
+                        if ((mode != ALL && triple_1.col() < triple_2.col())) {
+                            idx_t idx_row1 = this->num_basisvectors()*triple_1.row() + triple_2.row(); // coord1
+                            idx_t idx_row2 = this->num_basisvectors()*triple_2.row() + triple_1.row(); // coord2
+                            idx_t idx_col = mapping[this->num_coordinates()*triple_1.col() + triple_2.col()]; // vec
 
-                    int factor = (mode == ASYM) ? -1 : 1;
-                    basis_coo.add(idx_row1, idx_col, triple_1.val*triple_2.val/sqrt(2.));
-                    basis_coo.add(idx_row2, idx_col, triple_1.val*triple_2.val/sqrt(2.)*factor);
+                            int factor = (mode == ASYM) ? -1 : 1;
+                            triplets_basis.push_back(eigen_triplet_t(idx_row1, idx_col, triple_1.value()*triple_2.value()/sqrt(2.)));
+                            triplets_basis.push_back(eigen_triplet_t(idx_row2, idx_col, triple_1.value()*triple_2.value()/sqrt(2.)*factor));
 
-                } else if ((mode == ALL) || (mode == SYM && triple_1.col == triple_2.col)) {
-                    idx_t idx_row = num_basisvectors_*triple_1.row + triple_2.row; // coord
-                    idx_t idx_col = mapping[num_coordinates_*triple_1.col + triple_2.col]; // vec
-                    basis_coo.add(idx_row, idx_col, triple_1.val*triple_2.val);
+                        } else if ((mode == ALL) || (mode == SYM && triple_1.col() == triple_2.col())) {
+                            idx_t idx_row = this->num_basisvectors()*triple_1.row() + triple_2.row(); // coord
+                            idx_t idx_col = mapping[this->num_coordinates()*triple_1.col() + triple_2.col()]; // vec
+                            triplets_basis.push_back(eigen_triplet_t(idx_row, idx_col, triple_1.value()*triple_2.value()));
+                        }
+                    }
                 }
             }
         }
 
-        basis_coo.sumup();
+        mat.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
 
         // --- duplicate entries_ ---
-        MatrixCOO entries_coo(i,i,2*entries_.size()*num_basisvectors_); //TODO
+        std::vector<eigen_triplet_t> triplets_entries;
+        triplets_entries.reserve(2*entries_.nonZeros()*this->num_basisvectors());
 
-        for (auto hamiltonian_triple : entries_) {
-            for (size_t unitmatrix_idx = 0; unitmatrix_idx < num_basisvectors_; ++unitmatrix_idx) {
-                idx_t row_1, row_2, col_1, col_2;
-                real_t val = hamiltonian_triple.val;
+        for (eigen_idx_t k_1=0; k_1<entries_.outerSize(); ++k_1) {
+            for (eigen_iterator_t hamiltonian_triple(entries_,k_1); hamiltonian_triple; ++hamiltonian_triple) {
+                for (size_t unitmatrix_idx = 0; unitmatrix_idx < this->num_basisvectors(); ++unitmatrix_idx) {
+                    idx_t row_1, row_2, col_1, col_2;
+                    real_t val = hamiltonian_triple.value();
 
-                // --- ordered terms ---
-                // <1a 2a|V x I|1b 2b> = <2a 1a|I x V|2b 1b>
-                row_1 = hamiltonian_triple.row;
-                row_2 = unitmatrix_idx;
-                col_1 = hamiltonian_triple.col;
-                col_2 = unitmatrix_idx;
-                addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, entries_coo);
+                    // --- ordered terms ---
+                    // <1a 2a|V x I|1b 2b> = <2a 1a|I x V|2b 1b>
+                    row_1 = hamiltonian_triple.row();
+                    row_2 = unitmatrix_idx;
+                    col_1 = hamiltonian_triple.col();
+                    col_2 = unitmatrix_idx;
+                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
-                // <1a 2a|I x V|1b 2b> = <2a 1a|V x I|2b 1b>
-                row_1 = unitmatrix_idx;
-                row_2 = hamiltonian_triple.row;
-                col_1 = unitmatrix_idx;
-                col_2 = hamiltonian_triple.col;
-                addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, entries_coo);
+                    // <1a 2a|I x V|1b 2b> = <2a 1a|V x I|2b 1b>
+                    row_1 = unitmatrix_idx;
+                    row_2 = hamiltonian_triple.row();
+                    col_1 = unitmatrix_idx;
+                    col_2 = hamiltonian_triple.col();
+                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
-                // --- mixed terms ---
-                if (mode == ALL) continue;
+                    // --- mixed terms ---
+                    if (mode == ALL) continue;
 
-                // <1a 2a|V x I|2b 1b> = <2a 1a|I x V|1b 2b>
-                row_1 = hamiltonian_triple.row;
-                row_2 = unitmatrix_idx;
-                col_1 = unitmatrix_idx;
-                col_2 = hamiltonian_triple.col;
-                addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, entries_coo);
+                    // <1a 2a|V x I|2b 1b> = <2a 1a|I x V|1b 2b>
+                    row_1 = hamiltonian_triple.row();
+                    row_2 = unitmatrix_idx;
+                    col_1 = unitmatrix_idx;
+                    col_2 = hamiltonian_triple.col();
+                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
-                // <1a 2a|I x V|2b 1b> = <2a 1a|V x I|1b 2b>
-                row_1 = unitmatrix_idx;
-                row_2 = hamiltonian_triple.row;
-                col_1 = hamiltonian_triple.col;
-                col_2 = unitmatrix_idx;
-                addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, entries_coo);
+                    // <1a 2a|I x V|2b 1b> = <2a 1a|V x I|1b 2b>
+                    row_1 = unitmatrix_idx;
+                    row_2 = hamiltonian_triple.row();
+                    col_1 = hamiltonian_triple.col();
+                    col_2 = unitmatrix_idx;
+                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
+                }
             }
         }
 
-        entries_coo.sumup();
+        mat.entries().setFromTriplets(triplets_entries.begin(), triplets_entries.end());
 
-        return Hamiltonianmatrix(entries_coo.toCRS(), basis_coo.toCRS());
-    }
-    Hamiltonianmatrix changeBasis(MatrixCRS basis) {
-        auto entries = entries_.transformBackward(basis_).transformForward(basis);
-        return Hamiltonianmatrix(entries, basis);
+        return mat;
     }
 
-    bytes_t serialize() {
-        bytes_t bytes_entries = entries_.serialize();
-        bytes_t bytes_basis = basis_.serialize();
-        size_t entries_size = bytes_entries.size();
-        size_t basis_size = bytes_basis.size();
-
-        bytes_t bytes(2*sizeof(size_t));
-
-        auto pbytes = bytes.begin();
-        serializeItem(pbytes,entries_size);
-        serializeItem(pbytes,basis_size);
-
-        bytes.reserve(bytes.size() + bytes_entries.size() + bytes_basis.size() );
-        bytes.insert(bytes.end(), bytes_entries.begin(), bytes_entries.end());
-        bytes.insert(bytes.end(), bytes_basis.begin(), bytes_basis.end());
-
-        return bytes;
-    }
-    void deserialize(bytes_t &bytes) {
-        size_t entries_size;
-        size_t basis_size;
-
-        auto pbytes = bytes.begin();
-        deserializeItem(pbytes,entries_size);
-        deserializeItem(pbytes,basis_size);
-
-        bytes_t bytes_entries(pbytes, pbytes+entries_size);
-        bytes_t bytes_basis(pbytes+entries_size, pbytes+entries_size+basis_size);
-
-        entries_.deserialize(bytes_entries);
-        basis_.deserialize(bytes_basis);
-
-        num_basisvectors_ = basis_.getNumCols();
-        num_coordinates_ = basis_.getNumRows();
-    }
-
-protected:
-    size_t num_basisvectors_;
-    size_t num_coordinates_;
-    MatrixCRS entries_;
-    MatrixCRS basis_;
+    eigen_sparse_t entries_;
+    eigen_sparse_t basis_;
     enum mode_t {ALL, SYM, ASYM};
 
+    bytes_t bytes;
+    size_t idxStart;
 
+    std::string filename_;
 };
 
 class Hamiltonian : protected MpiLoadbalancingSimple<Hamiltonianmatrix, Hamiltonianmatrix> {
@@ -504,13 +550,42 @@ public:
     std::shared_ptr<Hamiltonianmatrix> get(size_t idx) {
         return matrix_diag[idx];
     }
+    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const{
+        return matrix_diag[idx];
+    }
     size_t size() const {
         return matrix_diag.size();
     }
 
 protected:
     std::shared_ptr<Hamiltonianmatrix> doProcessing(std::shared_ptr<Hamiltonianmatrix> work) {
-        work->entries().multiplyScalar(-1.); // Diagonalization
+
+        std::cout << work->entries().rows() << std::endl;
+
+        // if results can not be loaded
+        if (!work->load()) {
+
+            // diagonalization
+            Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
+
+            // eigenvalues
+            auto evals = eigensolver.eigenvalues();
+            work->entries().setZero();
+            work->entries().reserve(evals.size());
+            for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
+                work->entries().insert(idx, idx) = evals.coeffRef(idx);
+            }
+            work->entries().makeCompressed();
+
+            // eigenvectors
+            auto tmp = work->basis();
+            work->basis() = tmp*eigensolver.eigenvectors();
+            work->basis().prune(1e-4,0.5);
+
+            // save result
+            work->save();
+        }
+
         return work;
     }
 
@@ -520,38 +595,44 @@ protected:
 
 class HamiltonianOne : public Hamiltonian{
 public:
-    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, BasisnamesOne basis_one) : Hamiltonian(mpi) {
+    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi) : Hamiltonian(mpi), basis_one() {
 
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
-            size_t nSteps = 10;
+            size_t nSteps = 100;
             matrix.reserve(nSteps);
 
             // loop over distances
-            for (size_t idx_i = 0; idx_i < nSteps; ++idx_i) {
-                auto mat = std::make_shared<Hamiltonianmatrix>(basis_one.size(),basis_one.size(),basis_one.size()*basis_one.size()*0.5);
+            for (size_t step = 0; step < nSteps; ++step) {
+                std::vector<eigen_triplet_t> triplets_entries;
+                std::vector<eigen_triplet_t> triplets_basis;
+                triplets_entries.reserve(basis_one.size()*basis_one.size());
+                triplets_basis.reserve(basis_one.size());
 
-                for (size_t idx_row = 0; idx_row < basis_one.size(); ++idx_row) {
-                    auto state_row = basis_one.get(idx_row);
-
-                    for (size_t idx_col = 0; idx_col < basis_one.size(); ++idx_col) {
-                        auto state_col = basis_one.get(idx_col);
-
-                        (void) state_row;
-                        (void) state_col;
+                // loop over basis states
+                for (const auto &state_col : basis_one) {
+                    for (const auto &state_row : basis_one) {
 
                         // add entries
-                        if (idx_row == idx_col) { // check for selection rules // TODO
-                            real_t val = idx_row; // calculate value of matrix element // TODO
-                            mat->entries().add(idx_row,idx_col,val);
+                        if (state_row.idx == state_col.idx) { // check for selection rules // TODO
+                            real_t val = state_row.idx; // calculate value of matrix element // TODO
+                            triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                         }
 
                         // add basis
-                        if (idx_row == idx_col) {
-                            mat->basis().add(idx_row,idx_col,1);
+                        if (state_row.idx == state_col.idx) {
+                            triplets_basis.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
                         }
                     }
                 }
+
+                auto mat = std::make_shared<Hamiltonianmatrix>(basis_one.dim(),basis_one.dim());
+                mat->entries().setFromTriplets(triplets_entries.begin(), triplets_entries.end());
+                mat->basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
+
+                std::stringstream s;
+                s << "output/hamiltonian_one_" << step << ".mat";
+                mat->setFilename(s.str());
 
                 matrix.push_back(std::move(mat));
             }
@@ -560,71 +641,130 @@ public:
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
         run(matrix, matrix_diag);
     }
+
+    const BasisnamesOne& names() const {
+        return basis_one;
+    }
+
+private:
+    BasisnamesOne basis_one;
 };
 
 class HamiltonianTwo : public Hamiltonian {
 public:
-    HamiltonianTwo(std::shared_ptr<MpiEnvironment> mpi, BasisnamesTwo basis_two, HamiltonianOne hamiltonian_one) : Hamiltonian(mpi) {
+    HamiltonianTwo(std::shared_ptr<MpiEnvironment> mpi, const HamiltonianOne &hamiltonian_one) : Hamiltonian(mpi),  basis_two(hamiltonian_one.names()) {
 
         if (mpi->rank() == 0) {
             bool distant_dependent = (hamiltonian_one.size() == 1) ? false : true;
-            size_t nSteps = (distant_dependent) ? hamiltonian_one.size() : 10;
+            size_t nSteps = (distant_dependent) ? hamiltonian_one.size() : 4; // TODO
+
+            real_t energycutoff = 5; // TODO
+
+            std::cout << 1 << std::endl;
 
             // --- load one-atom Hamiltonians ---
-            auto free_sym = hamiltonian_one.get(0)->duplicateSym();
-            auto free_asym = hamiltonian_one.get(0)->duplicateAsym();
+            std::vector<Hamiltonianmatrix> free_sym_list;
+            std::vector<Hamiltonianmatrix> free_asym_list;
+            free_sym_list.reserve(hamiltonian_one.size());
+            free_asym_list.reserve(hamiltonian_one.size());
 
-            // use energy cuttoff
-            // TODO
+            std::vector<bool> isNecessary(basis_two.size(),false);
+
+            for (size_t i = 0; i < hamiltonian_one.size(); ++i) {
+                free_sym_list.push_back(hamiltonian_one.get(i)->duplicateSym());
+                free_asym_list.push_back(hamiltonian_one.get(i)->duplicateAsym());
+
+                // use energy cutoff
+                free_sym_list.back().applyCutoff(energycutoff);
+                free_asym_list.back().applyCutoff(energycutoff);
+
+                // find states that became unnecessary
+                free_sym_list.back().findUnnecessaryStates(isNecessary);
+                free_asym_list.back().findUnnecessaryStates(isNecessary);
+            }
+
+            // remove unnecessary states
+            basis_two.removeUnnecessaryStates(isNecessary);
+
+            std::cout << 2 << std::endl;
 
             // --- calculate two-atom Hamiltonians ---
-            Hamiltonianmatrix interaction_dipdip(basis_two.size(),basis_two.size(),25);
-            Hamiltonianmatrix interaction_dipquad(basis_two.size(),basis_two.size(),25);
-            Hamiltonianmatrix interaction_quadquad(basis_two.size(),basis_two.size(),25);
+            std::vector<eigen_triplet_t> triplets_entries_dipdip;
+            std::vector<eigen_triplet_t> triplets_entries_dipquad;
+            std::vector<eigen_triplet_t> triplets_entries_quadquad;
+            std::vector<eigen_triplet_t> triplets_basis_dipdip;
+            std::vector<eigen_triplet_t> triplets_basis_dipquad;
+            std::vector<eigen_triplet_t> triplets_basis_quadquad;
+            triplets_entries_dipdip.reserve(basis_two.size()*basis_two.size());
+            triplets_entries_dipquad.reserve(basis_two.size()*basis_two.size());
+            triplets_entries_quadquad.reserve(basis_two.size()*basis_two.size());
+            triplets_basis_dipdip.reserve(basis_two.size());
+            triplets_basis_dipquad.reserve(basis_two.size());
+            triplets_basis_quadquad.reserve(basis_two.size());
 
-            for (idx_t idx_row = 0; idx_row < basis_two.size(); ++idx_row) {
-                auto state_row = basis_two.get(idx_row);
+            std::cout << 2.5 << std::endl;
 
-                for (idx_t idx_col = 0; idx_col < basis_two.size(); ++idx_col) {
-                    auto state_col = basis_two.get(idx_col);
-
-                    (void) state_row;
-                    (void) state_col;
+            // loop over basis states
+            for (const auto &state_col : basis_two) {
+                for (const auto &state_row : basis_two) {
 
                     // add entries
                     if (true) { // check for selection rules // TODO
-                        real_t val = 2; // calculate value of matrix element // TODO
-                        interaction_dipdip.entries().add(idx_row,idx_col,val);
+                        real_t val = 0.2; // calculate value of matrix element // TODO
+                        triplets_entries_dipdip.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                     }
                     if (true) { // check for selection rules // TODO
-                        real_t val = 2; // calculate value of matrix element // TODO
-                        interaction_dipquad.entries().add(idx_row,idx_col,val);
+                        real_t val = 0.2; // calculate value of matrix element // TODO
+                        triplets_entries_dipquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                     }
                     if (true) { // check for selection rules // TODO
-                        real_t val = 2; // calculate value of matrix element // TODO
-                        interaction_quadquad.entries().add(idx_row,idx_col,val);
+                        real_t val = 0.2; // calculate value of matrix element // TODO
+                        triplets_entries_quadquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                     }
 
                     // add basis
-                    if (idx_row == idx_col) {
-                        interaction_dipdip.basis().add(idx_row,idx_col,1);
-                        interaction_dipquad.basis().add(idx_row,idx_col,1);
-                        interaction_quadquad.basis().add(idx_row,idx_col,1);
+                    if (state_row.idx == state_col.idx) {
+                        triplets_basis_dipdip.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
+                        triplets_basis_dipquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
+                        triplets_basis_quadquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
                     }
                 }
             }
 
-            auto interaction_dipdip_sym = interaction_dipdip.changeBasis(free_sym.basis());
-            auto interaction_dipquad_sym = interaction_dipquad.changeBasis(free_sym.basis());
-            auto interaction_quadquad_sym = interaction_quadquad.changeBasis(free_sym.basis());
+            std::cout << 2.6 << std::endl;
 
-            auto interaction_dipdip_asym = interaction_dipdip.changeBasis(free_asym.basis());
-            auto interaction_dipquad_asym = interaction_dipquad.changeBasis(free_asym.basis());
-            auto interaction_quadquad_asym = interaction_quadquad.changeBasis(free_asym.basis());
+            Hamiltonianmatrix interaction_dipdip(basis_two.dim(),basis_two.dim());
+            Hamiltonianmatrix interaction_dipquad(basis_two.dim(),basis_two.dim());
+            Hamiltonianmatrix interaction_quadquad(basis_two.dim(),basis_two.dim());
+
+            std::cout << 2.7 << std::endl;
+
+            interaction_dipdip.entries().setFromTriplets(triplets_entries_dipdip.begin(), triplets_entries_dipdip.end());
+            interaction_dipdip.basis().setFromTriplets(triplets_basis_dipdip.begin(), triplets_basis_dipdip.end());
+            interaction_dipquad.entries().setFromTriplets(triplets_entries_dipquad.begin(), triplets_entries_dipquad.end());
+            interaction_dipquad.basis().setFromTriplets(triplets_basis_dipquad.begin(), triplets_basis_dipquad.end());
+            interaction_quadquad.entries().setFromTriplets(triplets_entries_quadquad.begin(), triplets_entries_quadquad.end());
+            interaction_quadquad.basis().setFromTriplets(triplets_basis_quadquad.begin(), triplets_basis_quadquad.end());
+
+            std::cout << 3 << std::endl;
+
+            auto interaction_dipdip_sym = interaction_dipdip.changeBasis(free_sym_list[0].basis());
+            auto interaction_dipquad_sym = interaction_dipquad.changeBasis(free_sym_list[0].basis());
+            auto interaction_quadquad_sym = interaction_quadquad.changeBasis(free_sym_list[0].basis());
+            auto interaction_dipdip_asym = interaction_dipdip.changeBasis(free_asym_list[0].basis());
+            auto interaction_dipquad_asym = interaction_dipquad.changeBasis(free_asym_list[0].basis());
+            auto interaction_quadquad_asym = interaction_quadquad.changeBasis(free_asym_list[0].basis());
+
+            std::cout << 4 << std::endl;
 
             // --- search for submatrices ---
-            auto test_sym = free_sym+interaction_dipdip_sym+interaction_dipquad_sym+interaction_quadquad_sym; // TODO Watch out for distant dependent free_sym/free_asym
-            auto test_asym = free_asym+interaction_dipdip_asym+interaction_dipquad_asym+interaction_quadquad_asym;
+            auto test_sym = interaction_dipdip_sym.abs()+interaction_dipquad_sym.abs()+interaction_quadquad_sym.abs();
+            auto test_asym = interaction_dipdip_asym.abs()+interaction_dipquad_asym.abs()+interaction_quadquad_asym.abs();
+            for (size_t i = 0; i < hamiltonian_one.size(); ++i) {
+                test_sym += free_sym_list[i].abs();
+                test_asym += free_asym_list[i].abs();
+            }
+
             (void) test_sym; // TODO
             (void) test_asym; // TODO
 
@@ -634,76 +774,74 @@ public:
             size_t nSubmatrices = 2; // TODO
 
             // save submatrices (treat sym/asym as submatrices, too)
-            std::vector<Hamiltonianmatrix> arr_free;
             std::vector<Hamiltonianmatrix> arr_interaction_dipdip;
             std::vector<Hamiltonianmatrix> arr_interaction_dipquad;
             std::vector<Hamiltonianmatrix> arr_interaction_quadquad;
-            arr_free.reserve(nSubmatrices);
             arr_interaction_dipdip.reserve(nSubmatrices);
             arr_interaction_dipquad.reserve(nSubmatrices);
             arr_interaction_quadquad.reserve(nSubmatrices);
 
-            arr_free.push_back(free_sym); // TODO
             arr_interaction_dipdip.push_back(interaction_dipdip_sym);
             arr_interaction_dipquad.push_back(interaction_dipquad_sym);
             arr_interaction_quadquad.push_back(interaction_quadquad_sym);
-
-            arr_free.push_back(free_asym); // TODO
             arr_interaction_dipdip.push_back(interaction_dipdip_asym);
             arr_interaction_dipquad.push_back(interaction_dipquad_asym);
             arr_interaction_quadquad.push_back(interaction_quadquad_asym);
 
+            std::vector<std::vector<Hamiltonianmatrix>> arr_free_list(hamiltonian_one.size());
+            for (size_t i = 0; i < hamiltonian_one.size(); ++i) {
+                arr_free_list[i].reserve(nSubmatrices);
+
+                arr_free_list[i].push_back(free_sym_list[i]);
+                arr_free_list[i].push_back(free_asym_list[i]);
+            }
+
+            std::cout << 5 << std::endl;
+
             // --- construct total Hamiltonians ---
             matrix.reserve(nSteps*nSubmatrices);
 
+            size_t i = 0;
+
             // loop over distances
             for (size_t step = 0; step < nSteps; ++step) {
-                real_t distance = 1; // TODO
+                real_t distance = 1*step/30.+1; // TODO
 
                 // loop over submatrices
                 for (size_t sub = 0; sub < nSubmatrices; ++sub) {
 
                     // add the two-atom Hamiltonians to the one-atom Hamiltonians
-                    auto mat = arr_free[sub] + 1./pow(distance,3.)*arr_interaction_dipdip[sub] + 1./pow(distance,4.)*arr_interaction_dipquad[sub] + 1./pow(distance,5.)*arr_interaction_quadquad[sub];
+                    auto mat = std::make_shared<Hamiltonianmatrix>(arr_free_list[i][sub] +
+                                                                   1./pow(distance,3.)*arr_interaction_dipdip[sub] +
+                                                                   1./pow(distance,4.)*arr_interaction_dipquad[sub] +
+                                                                   1./pow(distance,5.)*arr_interaction_quadquad[sub]);
+
+                    std::stringstream s;
+                    s << "output/hamiltonian_two_" << step << "_" << sub << ".mat";
+                    mat->setFilename(s.str());
 
                     // store the total Hamiltonian
-                    matrix.push_back(std::move(std::make_shared<Hamiltonianmatrix>(mat)));
+                    matrix.push_back(std::move(mat));
                 }
 
-                // load new one-atom Hamiltonians, if they are distant dependent
-                if (distant_dependent && step+1 < hamiltonian_one.size()) {
-                    free_sym = hamiltonian_one.get(step+1)->duplicateSym();
-                    free_asym = hamiltonian_one.get(step+1)->duplicateAsym();
-                }
+                // select new one-atom Hamiltonians, if they are distant dependent
+                if (distant_dependent && i+1 < hamiltonian_one.size()) ++i;
             }
+
+            std::cout << 6 << std::endl;
         }
 
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
         run(matrix, matrix_diag);
-
-        // --- output ---
-        if (mpi->rank() == 0) {
-            for (auto m: matrix_diag) {
-                m->basis().print();
-                std::cout << "------------" << std::endl;
-            }
-        }
     }
+
+    const BasisnamesTwo& names() const{
+        return basis_two;
+    }
+
+private:
+    BasisnamesTwo basis_two;
 };
-
-
-// ----------------------------------------
-
-
-
-
-
-
-
-
-
-
-// ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 // ############################################################################
@@ -713,84 +851,28 @@ public:
 int main(int argc, char **argv) {
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
 
-    BasisnamesOne basis_one;
-    HamiltonianOne hamiltonian_one(mpi, basis_one);
+    HamiltonianOne hamiltonian_one(mpi);
+    HamiltonianTwo hamiltonian_two(mpi, hamiltonian_one);
 
-    BasisnamesTwo basis_two(basis_one);
-    HamiltonianTwo hamiltonian_two(mpi, basis_two, hamiltonian_one);
-
-
-    //BasisnamesOne basis_two(basis_one);
-
-
-    /*std::vector<std::shared_ptr<MatrixCRS>> hamiltonians;
     if (mpi->rank() == 0) {
-        for (int i = 0; i < 3; ++i) {
-            auto crs = std::make_shared<MatrixCRS>(5,4,5);
-            crs->add(1,0,2);
-            crs->add(1,0,3);
-            crs->add(0,2,4);
-            crs->add(0,2,2);
-            crs->add(0,1,10*i);
-            crs->sumup();
-            hamiltonians.push_back(std::move(crs));
+        if (hamiltonian_two.names().size() < 20) {
+            std::cout << std::endl ;
+
+            Eigen::IOFormat CleanFmt(2, 0, "  ", "\n", "", "");
+
+            auto mat = hamiltonian_two.get(0);
+            std::cout << Eigen::MatrixXd(mat->entries()).format(CleanFmt) << std::endl<< std::endl;
+            std::cout << Eigen::MatrixXd(mat->basis()).format(CleanFmt) << std::endl<< std::endl;
+
+            mat = hamiltonian_two.get(1);
+            std::cout << Eigen::MatrixXd(mat->entries()).format(CleanFmt) << std::endl<< std::endl;
+            std::cout << Eigen::MatrixXd(mat->basis()).format(CleanFmt) << std::endl<< std::endl;
+
+            for (const auto &state : hamiltonian_two.names()) {
+                std::cout << state << std::endl;
+            }
         }
     }
-
-    auto demo_simple = DemoSimple(mpi, hamiltonians);
-    auto demo = Demo(mpi, hamiltonians);
-
-    if (mpi->rank() == 0) {
-        std::cout << std::endl << std::endl;
-        for(auto &p: demo_simple.diaghamiltonians()) {
-            p->print();
-            std::cout <<  "--------------------" << std::endl;
-        }
-        std::cout << std::endl << std::endl;
-
-        for(auto &p: demo.diaghamiltonians()) {
-            p->print();
-            std::cout <<  "--------------------" << std::endl;
-        }
-        std::cout << std::endl << std::endl;
-    }
-
-
-    if (mpi->rank() == 0) {
-        MatrixCOO coo(4,4,5);
-        coo.add(2,1,1);
-        coo.add(1,0,2);
-        coo.add(2,0,3);
-        coo.add(2,2,4);
-        coo.add(2,2,2);
-        coo.sumup();
-        coo.print();
-        std::cout << "-------" << std::endl;
-
-        auto crs = coo.toCRS();
-        crs->print();
-        std::cout << "-------" << std::endl;
-
-        auto coo2 = crs->toCOO();
-        coo2->print();
-        std::cout << "-------" << std::endl;
-
-        MatrixCRS crs2(4,4,5);
-        crs2.add(1,0,2);
-        crs2.add(1,0,3);
-        crs2.add(0,2,4);
-        crs2.add(0,2,2);
-        crs2.add(0,1,1);
-        crs2.sumup();
-        crs2.print();
-        std::cout << "-------" << std::endl;
-
-        auto tmp = crs2.serialize();
-        MatrixCRS crs3(tmp);
-        crs3.print();
-        std::cout << "-------" << std::endl;
-
-    }*/
 
     return 0;
 }

@@ -12,12 +12,13 @@ else # Ubuntu etc.
 	SUSE= false
 	CC=/usr/bin/mpicxx
 	LIB= -L/usr/lib/openmpi/lib
+	INC= -I/usr/include/eigen3
 endif
 
 SDIR = src
 ODIR = obj
 PROG = bin/diagonalize
-_OBJS = main.o MatrixCOO.o MatrixCRS.o MpiEnvironment.o MpiLoadbalancing.o MpiVariables.o MpiLoadbalancingSimple.o \
+_OBJS = main.o MpiEnvironment.o MpiLoadbalancing.o MpiVariables.o MpiLoadbalancingSimple.o \
 
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 
@@ -37,6 +38,6 @@ clean:
 	\rm -rf $(OBJS) $(PROG)
 
 test:
-	mpiexec -n 4 bin/diagonalize; # --hostfile /nodes/active_ompi
+	mpiexec -n 5 bin/diagonalize; # --hostfile /nodes/active_ompi
 
 check: all test
