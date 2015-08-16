@@ -2,23 +2,85 @@
 #define DTYPES_H
 
 #include <vector>
+#include <array>
+#include <iostream>
+#include <iomanip>
+#include <Eigen/Sparse>
+#include <Eigen/Dense>
 
 #define REAL_T MPI_FLOAT
 #define IDX_T MPI_UNSIGNED
 #define BYTE_T MPI_UNSIGNED_CHAR
+#define ORDER Eigen::ColMajor
 
 typedef float real_t;
-typedef unsigned int idx_t;
-typedef unsigned char byte_t;
+typedef uint32_t idx_t;
+typedef float storage_real_t;
+typedef int32_t storage_idx_t;
+typedef int32_t eigen_idx_t;
+
+typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
 typedef std::nullptr_t invalid_t;
 
-struct Triple {
+typedef Eigen::Triplet<real_t> eigen_triplet_t;
+typedef Eigen::SparseMatrix<real_t, ORDER, eigen_idx_t> eigen_sparse_t;
+typedef Eigen::SparseMatrix<real_t, ORDER, eigen_idx_t>::InnerIterator eigen_iterator_t;
+typedef Eigen::Matrix<real_t,Eigen::Dynamic,Eigen::Dynamic,ORDER> eigen_dense_t;
+
+class Triple {
+public:
     Triple() : row(0), col(0), val(0) { }
     Triple(idx_t row, idx_t col, real_t val) : row(row), col(col), val(val) { }
     idx_t row;
     idx_t col;
     real_t val;
+};
+
+class State {
+public:
+    State(idx_t idx) : idx(idx) { }
+    idx_t idx;
+};
+
+class StateOne : public State {
+public:
+    StateOne() : State(0), n(0), l(0), s(0), j(0), m(0) { }
+    StateOne(idx_t idx, int n, int l, float s, float j, float m) : State(idx), n(n), l(l), s(s), j(j), m(m) { }
+    friend std::ostream& operator<< (std::ostream &out, const StateOne &state) {
+        out << "i  =" << std::setw(5) << state.idx << ",   ";
+        out << "n  =" << std::setw(3) << state.n << ",   ";
+        out << "l  =" << std::setw(2) << state.l << ",   ";
+        out << "s  =" << std::setprecision(2) << std::setw(4) << state.s << ",   ";
+        out << "j  =" << std::setprecision(2) << std::setw(4) << state.j << ",   ";
+        out << "m  =" << std::setprecision(2) << std::setw(4) << state.m;
+        return out;
+    }
+
+    int n, l;
+    float s, j, m;
+};
+
+class StateTwo : public State {
+public:
+    StateTwo() : State(0), n({0,0}), l({0,0}), s({0,0}), j({0,0}), m({0,0}) { }
+    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(idx), n(n), l(l), s(s), j(j), m(m) { }
+    StateTwo(idx_t idx, const StateOne &a, const StateOne &b) : State(idx), n({a.n,b.n}), l({a.l,b.l}), s({a.s,b.s}), j({a.j,b.j}), m({a.m,b.m}) { }
+    friend std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
+        out << "i  =" << std::setw(5) << state.idx << ",   ";
+        for (size_t i = 0; i < 2; ++i) {
+            out << "n" << i << " =" << std::setw(3) << state.n[i] << ",   ";
+            out << "l" << i << " =" << std::setw(2) << state.l[i] << ",   ";
+            out << "s" << i << " =" << std::setprecision(2) << std::setw(4) << state.s[i] << ",   ";
+            out << "j" << i << " =" << std::setprecision(2) << std::setw(4) << state.j[i] << ",   ";
+            out << "m" << i << " =" << std::setprecision(2) << std::setw(4) << state.m[i];
+            if (i == 0) out << ",   ";
+        }
+        return out;
+    }
+
+    std::array<int, 2> n, l;
+    std::array<float, 2> s, j, m;
 };
 
 #endif
