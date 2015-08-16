@@ -10,7 +10,8 @@ typedef double real_t;
 class Numerov {
 private:
   std::string species;
-  int n, l, m, Z;
+  int n, l;
+  double j;
   QuantumDefect qd;
   int nsteps;
   real_t limit_inner;
@@ -19,13 +20,12 @@ private:
   std::vector<real_t> x;
   std::vector<real_t> y;
 
-  real_t E();
   real_t V(real_t x);
   real_t g(real_t x);
   real_t step(int i);
   
 public:
-  Numerov(std::string species, int n, int l, int m, double j, int Z);
+  Numerov(std::string species, int n, int l, double j);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
