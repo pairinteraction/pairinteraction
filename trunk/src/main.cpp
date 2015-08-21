@@ -295,15 +295,15 @@ public:
             basis_.makeCompressed();
 
             std::vector<char> name(filename_.begin(), filename_.end());
-            size_t entries_mode = (entries_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
-            size_t entries_rows = entries_.rows();
-            size_t entries_cols = entries_.cols();
+            storage_idx_t entries_mode = (entries_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+            storage_idx_t entries_rows = entries_.rows();
+            storage_idx_t entries_cols = entries_.cols();
             std::vector<storage_real_t> entries_data(entries_.valuePtr(), entries_.valuePtr()+entries_.nonZeros());
             std::vector<storage_idx_t> entries_indices(entries_.innerIndexPtr(), entries_.innerIndexPtr()+entries_.nonZeros());
             std::vector<storage_idx_t> entries_indptr(entries_.outerIndexPtr(), entries_.outerIndexPtr()+entries_.outerSize());
-            size_t basis_mode = (basis_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
-            size_t basis_rows = basis_.rows();
-            size_t basis_cols = basis_.cols();
+            storage_idx_t basis_mode = (basis_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+            storage_idx_t basis_rows = basis_.rows();
+            storage_idx_t basis_cols = basis_.cols();
             std::vector<storage_real_t> basis_data(basis_.valuePtr(), basis_.valuePtr()+basis_.nonZeros());
             std::vector<storage_idx_t> basis_indices(basis_.innerIndexPtr(), basis_.innerIndexPtr()+basis_.nonZeros());
             std::vector<storage_idx_t> basis_indptr(basis_.outerIndexPtr(), basis_.outerIndexPtr()+basis_.outerSize());
@@ -334,11 +334,11 @@ public:
 
     void doDeserialization() {
         std::vector<char> name;
-        size_t entries_mode, entries_rows, entries_cols;
+        storage_idx_t entries_mode, entries_rows, entries_cols;
         std::vector<real_t> entries_data;
         std::vector<idx_t> entries_indices;
         std::vector<idx_t> entries_indptr;
-        size_t basis_mode, basis_rows, basis_cols;
+        storage_idx_t basis_mode, basis_rows, basis_cols;
         std::vector<real_t> basis_data;
         std::vector<idx_t> basis_indices;
         std::vector<idx_t> basis_indptr;

@@ -7,9 +7,10 @@ from scipy import sparse
 
 typeIds = {1016 : 'int16', 1032 : 'int32', 1064 : 'int64', 1116 : 'uint16', 1132 : 'uint32', \
     1164 : 'int64', 2032 : 'float32', 2064 : 'float64'}
+type_t = 'uint16'
 
 def readNumber(f, sz = 1):
-    datatype = typeIds[np.fromfile(f, dtype=np.dtype('uint16'), count=1)[0]]
+    datatype = typeIds[np.fromfile(f, dtype=np.dtype(type_t), count=1)[0]]
     return np.squeeze(np.fromfile(f, dtype=np.dtype(datatype), count=sz))
 
 def readVector(f):

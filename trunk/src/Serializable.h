@@ -16,7 +16,7 @@ public:
     virtual void deserialize(bytes_t &bytes) = 0;
 };
 
-
+typedef uint16_t type_t;
 
 class Serializer {
 public:
@@ -49,11 +49,11 @@ public:
 
         for (size_t i = 0; i < nItems; ++i) {
             if (buffer_isVector[i]) {
-                serialize(&type_ids[std::type_index(typeid(storage_idx_t))], sizeof(uint16_t));
+                serialize(&type_ids[std::type_index(typeid(storage_idx_t))], sizeof(type_t));
                 serialize(&buffer_nums[i], sizeof(storage_idx_t));
             }
 
-            serialize(&buffer_types[i], sizeof(uint16_t));
+            serialize(&buffer_types[i], sizeof(type_t));
             serialize(buffer_pitems[i], buffer_nums[i]*buffer_sizes[i]);
         }
 
@@ -240,10 +240,10 @@ private:
 
         for (size_t i = 0; i < nItems; ++i) {
             if (buffer_isVector[i]) {
-                totalsize += sizeof(uint16_t);
+                totalsize += sizeof(type_t);
                 totalsize += sizeof(storage_idx_t);
             }
-            totalsize += sizeof(uint16_t);
+            totalsize += sizeof(type_t);
             totalsize += buffer_nums[i]*buffer_sizes[i];
         }
 
@@ -261,7 +261,7 @@ private:
     void deserialize(T &data, size_t num) {
         uint16_t type;
 
-        auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
+        auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
         std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
         cpbytes += sizeof(type);
 
@@ -312,7 +312,7 @@ private:
     void deserialize(std::vector<T> &data, size_t num) {
         uint16_t type;
 
-        auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
+        auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
         std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
         cpbytes += sizeof(type);
 
