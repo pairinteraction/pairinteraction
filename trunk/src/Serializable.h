@@ -318,43 +318,52 @@ private:
 
         if (type == type_ids[std::type_index(typeid(int16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const int16_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<int16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(int16_t)*num;
         } else if (type == type_ids[std::type_index(typeid(int32_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const int32_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<int32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(int32_t)*num;
         } else if (type == type_ids[std::type_index(typeid(int64_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const int64_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<int64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(int64_t)*num;
         } else if (type == type_ids[std::type_index(typeid(uint16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<uint16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(uint16_t)*num;
         } else if (type == type_ids[std::type_index(typeid(uint32_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const uint32_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<uint32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(uint32_t)*num;
         } else if (type == type_ids[std::type_index(typeid(uint64_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const uint64_t*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<uint64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(uint64_t)*num;
         } else if (type == type_ids[std::type_index(typeid(float))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const float*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<float> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(float)*num;
         } else if (type == type_ids[std::type_index(typeid(double))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const double*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<double> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(double)*num;
         } else if (type == type_ids[std::type_index(typeid(char))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const char*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::vector<char> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(char)*num;
         }else {
             auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
-            data = std::vector<T>(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num,back_inserter(data));
             cpbytes += sizeof(T)*num;
         }
     }
