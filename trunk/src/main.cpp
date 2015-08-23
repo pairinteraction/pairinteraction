@@ -849,6 +849,8 @@ private:
 // ############################################################################
 
 int main(int argc, char **argv) {
+    std::cout << std::unitbuf;
+
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
 
     HamiltonianOne hamiltonian_one(mpi);
