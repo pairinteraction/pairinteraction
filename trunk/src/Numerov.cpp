@@ -1,14 +1,5 @@
 #include "Numerov.hpp"
-#include "utils.hpp"
 #include "QuantumDefect.hpp"
-
-
-#include <iostream>
-void vprint(std::vector<real_t> x) {
-  for (std::vector<real_t>::iterator it = x.begin(); it != x.end(); it++)
-    std::cout << *it << ' ';
-  std::cout << std::endl;
-}
 
 #include <string>
 #include <complex>
@@ -17,14 +8,20 @@ void vprint(std::vector<real_t> x) {
 
 //#include <boost/math/special_functions/spherical_harmonic.hpp>
 
-Numerov::Numerov(std::string species, int n, int l, double j)
-  : species(species), n(n), l(l), j(j), qd(species,n,l,j) {
-  nsteps = 1000;
-  limit_inner = 2.0e-5;
-  limit_outer = 2.0e+2;
-  dx = (limit_outer - limit_inner)/(nsteps-1);
-  x = utils::linspace(limit_outer, limit_inner, nsteps);
-  y.assign(nsteps,0.0);
+
+Numerov::Numerov(std::string species, int n, int l, real_t j)
+  : species(species), n(n), l(l), j(j), qd(species,n,l,j),
+    nsteps(nsteps_), xmin(xmin_), xmax(xmax_), dx(dx_) {
+  dx_ = 0.001;
+  xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
+  xmin_ = floor(sqrt(( 2.08 > xmin_ ? 2.08 : xmin_ )));
+  xmax_ = sqrt(2*n*(n+15));
+  nsteps_ = ceil((xmax_ - xmin_)/dx_);
+  x.resize(nsteps_);
+  for (int i = 0; i < nsteps_; i++) {
+    x[i] = xmin_ + i*dx_;
+  }
+  y.assign(nsteps_,0.0);
 }
 
 
@@ -36,26 +33,30 @@ std::vector<real_t> Numerov::axis() {
 std::vector<real_t> Numerov::integrate() {
   // Set the initial condition
   if ( (n-l) % 2 == 0 )
-    y[1] = -1e-10;
+    y[nsteps_-2] = -1e-10;
   else
-    y[1] = 1e-10;
+    y[nsteps_-2] = 1e-10;
 
   // Perform the integration using Numerov's scheme
-  for (int i = 2; i < nsteps; i++)
+  for (int i = nsteps_-3; i >= 0; i--)
     y[i] = step(i);
 
   // Normalization
-  for (int i = 0; i < nsteps; i++)
-    y[i] /= x[i];
-
   real_t norm = 0;
-  for (int i = 0; i < nsteps; i++)
-    norm += y[i]*y[i] * x[i]*x[i] * dx;
-  norm = sqrt(norm);
+  for (int i = 0; i < nsteps_; i++)
+    norm += y[i]*y[i] * x[i]*x[i] * dx_;
+  norm = sqrt(2*norm);
 
-  for (int i = 0; i < nsteps; i++)
-    y[i] /= norm;
-  
+  if ( norm != 0.0 ) {
+    for (int i = 0; i < nsteps_; i++)
+      y[i] /= norm;
+  }
+
+  /*
+  for (int i = 0; i < nsteps_; i++)
+    y[i] /= pow(x[i],1.5);
+  */
+
   return y;
 }
 
@@ -75,15 +76,14 @@ real_t Numerov::V(real_t x) {
 
 
 real_t Numerov::g(real_t x) {
-  return l*(l+1)/(x*x) + 2.*(V(x) - qd.energy);
-  //return (2.*l+.5)*(2.*l+1.5)/(x*x) + 8.*(x*x)*(V(x*x) - qd.energy);
+  //return l*(l+1)/(x*x) + 2.*(V(x) - qd.energy);
+  return (2.*l+.5)*(2.*l+1.5)/(x*x) + 8.*(x*x)*(V(x*x) - qd.energy);
 }
 
 
 real_t Numerov::step(int i) {
-  real_t A = (2. + 5./6. * dx*dx * g(x[i-1])) * y[i-1];
-  real_t B = (1. - 1./12.* dx*dx * g(x[i-2])) * y[i-2];
-  real_t C =  1. - 1./12.* dx*dx * g(x[i]);
+  real_t A = (2. + 5./6. * dx_*dx_ * g(x[i+1])) * y[i+1];
+  real_t B = (1. - 1./12.* dx_*dx_ * g(x[i+2])) * y[i+2];
+  real_t C =  1. - 1./12.* dx_*dx_ * g(x[i]);
   return (A - B)/C  ;
 }
-

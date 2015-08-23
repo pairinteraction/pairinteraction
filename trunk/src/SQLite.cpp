@@ -5,7 +5,7 @@
 std::ostream& operator<<(std::ostream& os, const SQLite3Result& res) {
   os << "Result has " << res.nRow << " rows and "
      << res.nColumn << " columns" << std::endl;
-  for (int i = 0; i < res.nRow*res.nColumn; i += res.nColumn) {
+  for (int i = 0; i <= res.nRow*res.nColumn; i += res.nColumn) {
     for (int j = 0; j < res.nColumn; j++)
       os << res.azResult[i+j] << (j < res.nColumn-1 ? '|' : '\n');
   }

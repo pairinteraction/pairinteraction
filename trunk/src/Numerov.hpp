@@ -11,12 +11,12 @@ class Numerov {
 private:
   std::string species;
   int n, l;
-  double j;
+  real_t j;
   QuantumDefect qd;
-  int nsteps;
-  real_t limit_inner;
-  real_t limit_outer;
-  real_t dx;
+  int nsteps_;
+  real_t xmin_;
+  real_t xmax_;
+  real_t dx_;
   std::vector<real_t> x;
   std::vector<real_t> y;
 
@@ -25,7 +25,11 @@ private:
   real_t step(int i);
   
 public:
-  Numerov(std::string species, int n, int l, double j);
+  const int &nsteps;
+  const real_t &xmin;
+  const real_t &xmax;
+  const real_t &dx;
+  Numerov(std::string species, int n, int l, real_t j);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
