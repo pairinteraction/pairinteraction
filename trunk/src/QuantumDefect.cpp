@@ -1,4 +1,6 @@
 #include "QuantumDefect.hpp"
+#include "SQLite.hpp"
+
 #include <string>
 #include <iostream>
 #include <sstream>
@@ -61,11 +63,23 @@ void QuantumDefect::Rb87(int n, int l, double j) {
     rc_ = 4.79831327;
     break;
   }
-  // Testcase: n = 113, l = 6, j = NULL
-  (void) n;
-  (void) l;
-  (void) j;
-  energy_ = -.5/(113*113);
+
+  double nstar = n;
+  std::stringstream ss;
+
+  ss << "select n,l,j,nstar from RbLevels where ((n = " << n
+     << ") and (l = " << l
+     << ") and (j = " << j << "));";
+  SQLite3 db("Rb87Levels.db");
+  SQLite3Result res = db.query(ss.str().c_str());
+
+  ss.str(std::string());
+  if (res.nRow > 0) {
+    // Select last element of the query (which should be nstar)
+    ss << res.azResult[res.nRow*res.nColumn + res.nColumn-1];
+    ss >> nstar;
+  }
+  energy_ = -.5/(nstar*nstar);
 }
 
 
