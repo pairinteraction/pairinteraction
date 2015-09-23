@@ -5,6 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 
 #include <gsl/gsl_sf_coupling.h>
 
@@ -65,7 +66,17 @@ real_t angular_element(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m
   real_t A = pow( -1, roundf(j1-m1 + l1+s+j2+1 + l1) );
   real_t B = sqrt((2*l1+1)*(2*l2+1)) * sqrt((2*j1+1)*(2*j2+1));
   real_t C = wigner3j(j1,1,j2 , -m1,q,m2);
-  real_t D = wigner6j(l1,j1,s, j2,l2,1);
-  real_t E = wigner3j(l1,1,l2, 0,0,0);
+  real_t D = wigner6j(l1,j1,s , j2,l2,1);
+  real_t E = wigner3j(l1,1,l2 , 0,0,0);
   return A*B*C*D*E;
+}
+
+bool selection_rules(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m2) {
+  int delta_l = abs(l1-l2);
+  real_t delta_j = fabs(j1-j2);
+  real_t delta_m = fabs(m1-m2);
+  bool select_l = ( delta_l == 1 );
+  bool select_j = ( delta_j == 0 || delta_j == 1 );
+  bool select_m = ( delta_m == 0 || delta_m == 1 );
+  return ( select_l && select_j && select_m );
 }
