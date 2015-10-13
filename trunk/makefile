@@ -3,7 +3,7 @@ ARCH=$(shell uname -m | sed 's/x86_//;s/i[3-6]86/32/')
 VER=$(shell lsb_release -sr)
 
 CFLAGS=-c -std=c++0x -O3 -pthread -flto -DNDEBUG -Wall -Wpointer-arith -Wextra -Wno-literal-suffix #-Wshadow -pedantic -Wcast-qual -Wstrict-overflow=5 -m64 -Ofast  -march=native -funroll-loops
-LDFLAGS= -pthread -flto
+LDFLAGS= -pthread -flto -lm -lgsl -lgslcblas -lsqlite3
 
 ifeq ($(strip $(OS)),$(filter $(strip $(OS)),SUSE LINUX openSUSE project)) # Suse
 	SUSE= true
@@ -18,7 +18,7 @@ endif
 SDIR = src
 ODIR = obj
 PROG = bin/diagonalize
-_OBJS = main.o MpiEnvironment.o MpiLoadbalancing.o MpiVariables.o MpiLoadbalancingSimple.o \
+_OBJS = main.o MpiEnvironment.o MpiLoadbalancing.o MpiVariables.o MpiLoadbalancingSimple.o Numerov.o QuantumDefect.o DipoleMatrix.o SQLite.o\
 
 OBJS = $(patsubst %,$(ODIR)/%,$(_OBJS))
 

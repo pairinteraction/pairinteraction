@@ -9,13 +9,13 @@
 
 #include <gsl/gsl_sf_coupling.h>
 
-double wigner3j(real_t ja, real_t jb, real_t jc,
+real_t wigner3j(real_t ja, real_t jb, real_t jc,
                 real_t ma, real_t mb, real_t mc) {
   return gsl_sf_coupling_3j(2*ja, 2*jb, 2*jc,
                             2*ma, 2*mb, 2*mc);
 }
 
-double wigner6j(real_t ja, real_t jb, real_t jc,
+real_t wigner6j(real_t ja, real_t jb, real_t jc,
                 real_t ma, real_t mb, real_t mc) {
   return gsl_sf_coupling_6j(2*ja, 2*jb, 2*jc,
                             2*ma, 2*mb, 2*mc);

@@ -3,9 +3,10 @@
 
 #include <string>
 #include <vector>
+#include "dtypes.h"
 #include "QuantumDefect.hpp"
 
-typedef double real_t;
+//typedef double real_t;
 
 class Numerov {
 private:

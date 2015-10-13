@@ -4,6 +4,7 @@
 #include "MpiLoadbalancingSimple.h"
 #include "Vectorizable.h"
 #include "Serializable.h"
+#include "DipoleMatrix.hpp"
 
 #include <memory>
 #include <tuple>
@@ -629,7 +630,23 @@ public:
 
                         // add entries
                         if (state_row.idx == state_col.idx) { // check for selection rules // TODO
-                            real_t val = (rand() % 100 - 50)/20.+state_row.idx; // calculate value of matrix element // TODO
+                            //real_t val = (rand() % 100 - 50)/20.+state_row.idx; // calculate value of matrix element // TODO
+                            real_t val = 0;
+                            int order = 1;
+                            int q_pol = 1;
+
+                            int n1 = state_row.n;
+                            int l1 = state_row.l;
+                            int j1 = state_row.j;
+                            int m1 = state_row.m;
+
+                            int n2 = state_col.n;
+                            int l2 = state_col.l;
+                            int j2 = state_col.j;
+                            int m2 = state_col.m;
+
+                            if ( selection_rules(l1, j1, m1, l2, j2, m2) )
+                                val = radial_element("Rb", n1, l1, j1, order, "Rb", n2, l2, j2) * angular_element(l1, j1, m1, l2, j2, m2, q_pol);
                             triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                         }
 

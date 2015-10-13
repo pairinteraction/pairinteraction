@@ -2,23 +2,26 @@
 #define QUANTUM_DEFECT_HPP
 
 #include <string>
+#include "dtypes.h"
+
+//typedef double real_t;
 
 class QuantumDefect {
 private:
-  double ac_;
+  real_t ac_;
   int Z_;
-  double a1_, a2_, a3_, a4_;
-  double rc_;
-  double energy_;
+  real_t a1_, a2_, a3_, a4_;
+  real_t rc_;
+  real_t energy_;
   void H(int n);
-  void Rb(int n, int l, double j);
+  void Rb(int n, int l, real_t j);
 public:
-  QuantumDefect(std::string species, int n, int l, double j);
-  const double &ac;
+  QuantumDefect(std::string species, int n, int l, real_t j);
+  const real_t &ac;
   const int &Z;
-  const double &a1, &a2, &a3, &a4;
-  const double &rc;
-  const double &energy;
+  const real_t &a1, &a2, &a3, &a4;
+  const real_t &rc;
+  const real_t &energy;
 };
 
 #endif // QUANTUM_DEFECT_HPP
