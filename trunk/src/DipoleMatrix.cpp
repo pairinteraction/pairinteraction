@@ -61,14 +61,24 @@ real_t radial_element(std::string species1, int n1, int l1, real_t j1, int power
   return mu;
 }
 
-real_t angular_element(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m2, real_t q) {
+real_t angular_L_basis(int l1, int l2) {
+  real_t A = pow( -1, l1 );
+  real_t B = sqrt((2*l1+1)*(2*l2+1));
+  real_t C = wigner3j(l1,1,l2 , 0,0,0);
+  return A*B*C;
+}
+
+real_t angular_J_basis(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m2, real_t q) {
   real_t s = 0.5;
-  real_t A = pow( -1, roundf(j1-m1 + l1+s+j2+1 + l1) );
-  real_t B = sqrt((2*l1+1)*(2*l2+1)) * sqrt((2*j1+1)*(2*j2+1));
+  real_t A = pow( -1, roundf(j1-m1 + l1+s+j2+1) );
+  real_t B = sqrt((2*j1+1)*(2*j2+1));
   real_t C = wigner3j(j1,1,j2 , -m1,q,m2);
   real_t D = wigner6j(l1,j1,s , j2,l2,1);
-  real_t E = wigner3j(l1,1,l2 , 0,0,0);
-  return A*B*C*D*E;
+  return A*B*C*D;
+}
+
+real_t angular_element(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m2, real_t q) {
+  return angular_L_basis(l1, l2) * angular_J_basis(l1, j1, m1, l2, j2, m2, q);
 }
 
 bool selection_rules(int l1, real_t j1, real_t m1, int l2, real_t j2, real_t m2) {

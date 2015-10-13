@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <exception>
+#include <cmath>
 
 
 struct no_defect : public std::exception {
@@ -27,7 +28,7 @@ void QuantumDefect::H(int n) {
 }
 
 
-void QuantumDefect::Rb87(int n, int l, double j) {
+void QuantumDefect::Rb(int n, int l, double j) {
   //***************
   //* Rubidium 87 *
   //***************
@@ -63,32 +64,37 @@ void QuantumDefect::Rb87(int n, int l, double j) {
     rc_ = 4.79831327;
     break;
   }
-
-  double nstar = n;
-  std::stringstream ss;
-
-  ss << "select n,l,j,nstar from RbLevels where ((n = " << n
-     << ") and (l = " << l
-     << ") and (j = " << j << "));";
-  SQLite3 db("Rb87Levels.db");
-  SQLite3Result res = db.query(ss.str().c_str());
-
-  ss.str(std::string());
-  if (res.nRow > 0) {
-    // Select last element of the query (which should be nstar)
-    ss << res.azResult[res.nRow*res.nColumn + res.nColumn-1];
-    ss >> nstar;
-  }
-  energy_ = -.5/(nstar*nstar);
 }
 
 
 QuantumDefect::QuantumDefect(std::string species, int n, int l, double j)
   : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), energy(energy_)
 {
-  if (species == std::string("Rb87"))
-    Rb87(n, l, j);
+  if (species == std::string("Rb"))
+    Rb(n, l, j);
   else if (species == std::string("H"))
     H(n);
   else throw no_defect();
+
+  std::stringstream ss;
+  ss << "select d0,d2,d4,d6,d8,Ry from quantum_defects where ("
+     << "(element = '" << species << "') "
+     << "and (L = " << l << ") "
+     << "and (J = " << j << ") "
+     << ");";
+  SQLite3 db("quantum_defects.db");
+  SQLite3Result res = db.query(ss.str().c_str());
+
+  ss.str(std::string());
+  double nstar = n;
+  double Ry_inf = 109737.31568525;
+  double d0, d2, d4, d6, d8, Ry = Ry_inf;
+  if (res.nRow > 0) {
+    for (int i = 0; i < res.nColumn; i++)
+      ss << res.azResult[res.nRow*res.nColumn + i] << " ";
+    ss >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
+    nstar -= d0 + d2/pow(n-d0,2) + d4/pow(n-d0,4)
+      + d6/pow(n-d0,6) + d8/pow(n-d0,8);
+  }
+  energy_ = -.5*(Ry/Ry_inf)/(nstar*nstar);
 }

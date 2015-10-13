@@ -11,7 +11,7 @@ private:
   double rc_;
   double energy_;
   void H(int n);
-  void Rb87(int n, int l, double j);
+  void Rb(int n, int l, double j);
 public:
   QuantumDefect(std::string species, int n, int l, double j);
   const double &ac;
