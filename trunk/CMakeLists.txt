@@ -1,0 +1,60 @@
+cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+
+project(pairinteraction CXX)
+
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cfg)
+set(CMAKE_CXX_COMPILER mpicxx)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Ofast -march=native -pipe ")
+
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif(NOT CMAKE_BUILD_TYPE)
+
+# add the binary tree to the search path for include files
+include_directories("${PROJECT_BINARY_DIR}")
+
+# add the executable
+file(GLOB pairinteraction_SRCS *.cpp)
+add_executable(pairinteraction ${pairinteraction_SRCS})
+
+# add external libraries
+find_package(Eigen3 REQUIRED)
+if(EIGEN3_FOUND)
+  include_directories(${EIGEN3_INCLUDE_DIR})
+else(EIGEN3_FOUND)
+  message(FATAL_ERROR "=================\n"
+                      "Eigen3 not found!\n"
+                      "=================\n")
+endif(EIGEN3_FOUND)
+
+find_package(Sqlite3 REQUIRED)
+if(SQLITE3_FOUND)
+  include_directories(${SQLITE3_INCLUDE_DIR})
+  target_link_libraries(pairinteraction ${SQLITE3_LIBRARY})
+else(SQLITE3_FOUND)
+  message(FATAL_ERROR "==================\n"
+                      "Sqlite3 not found!\n"
+                      "==================\n")
+endif(SQLITE3_FOUND)
+
+find_package(GSL REQUIRED)
+if(GSL_FOUND)
+  target_link_libraries(pairinteraction ${GSL_LIBRARIES})
+else(GSL_FOUND)
+  message(FATAL_ERROR "==============\n"
+                      "GSL not found!\n"
+                      "==============\n")
+endif(GSL_FOUND)
+
+find_package(MPI REQUIRED)
+if(MPI_FOUND)
+  target_link_libraries(pairinteraction ${MPI_LIBRARIES})
+else(MPI_FOUND)
+  message(FATAL_ERROR "==============\n"
+                      "MPI not found!\n"
+                      "==============\n")
+endif(MPI_FOUND)
+
+# set c++11
+set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
+set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)

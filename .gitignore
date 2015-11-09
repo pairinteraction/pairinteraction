@@ -8,6 +8,7 @@ bin/
 __pycache__/
 obj/
 /old/examples/*
+/build
 
 # Mac specific files
 ._*
