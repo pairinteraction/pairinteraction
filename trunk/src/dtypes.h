@@ -1,6 +1,8 @@
 #ifndef DTYPES_H
 #define DTYPES_H
 
+#include "utils.hpp"
+
 #include <vector>
 #include <array>
 #include <iostream>
@@ -58,9 +60,31 @@ public:
         return out;
     }
 
+    friend bool operator== (const StateOne& s1, const StateOne& s2)
+    {
+        return ((s1.n == s2.n) && (s1.l == s2.l)  && (s1.s == s2.s)  && (s1.j == s2.j)  && (s1.m == s2.m));
+    }
+
     int n, l;
     float s, j, m;
 };
+
+
+namespace std {
+template <> struct hash<StateOne>
+{
+    size_t operator()(const StateOne & s) const
+    {
+        size_t seed = 0;
+        utils::hash_combine(seed, s.n);
+        utils::hash_combine(seed, s.l);
+        utils::hash_combine(seed, s.s);
+        utils::hash_combine(seed, s.j);
+        utils::hash_combine(seed, s.m);
+        return seed;
+    }
+};
+}
 
 class StateTwo : public State {
 public:

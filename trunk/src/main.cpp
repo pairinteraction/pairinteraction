@@ -22,6 +22,7 @@
 
 #include <assert.h>
 
+#include <unordered_set>
 
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
@@ -143,6 +144,46 @@ public:
             }
         }
         std::cout << names_.size() << std::endl;
+        std::cout << "----------------" << std::endl;
+    }
+
+    BasisnamesOne(const StateOne &startstate1, const StateOne &startstate2) {
+        size_t size = 4; // TODO
+        std::unordered_set<StateOne> names_set;
+        names_set.reserve(size);
+
+        idx_t idx = 0;
+
+        int delta_n = 1; // TODO
+        int delta_l = 2; // TODO
+        int delta_j = 100; // TODO
+        int delta_m = 3; // TODO
+
+        // loop over quantum numbers of startstate1
+        for (int n = fmax(0, startstate1.n - delta_n); n <= startstate1.n + delta_n; ++n) {
+            for (int l = fmax(0, startstate1.l - delta_l); l <= fmin(n-1,startstate1.l + delta_l); ++l) {
+                for (float j = fmax(abs(l - startstate1.s), startstate1.j - delta_j); j <= fmin(l + startstate1.s, startstate1.j + delta_j); ++j) {
+                    for (float m = fmax(-j, startstate1.m - delta_m); m <= fmin(j, startstate1.m + delta_m); ++m) {
+                        names_set.insert(StateOne(idx++,n,l,startstate1.s,j,0));
+                    }
+                }
+            }
+        }
+
+        // loop over quantum numbers of startstate2
+        for (int n = fmax(0, startstate2.n - delta_n); n <= startstate2.n + delta_n; ++n) {
+            for (int l = fmax(0, startstate2.l - delta_l); l <= fmin(n-1,startstate2.l + delta_l); ++l) {
+                for (float j = fmax(abs(l - startstate2.s), startstate2.j - delta_j); j <= fmin(l + startstate2.s, startstate2.j + delta_j); ++j) {
+                    for (float m = fmax(-j, startstate2.m - delta_m); m <= fmin(j, startstate2.m + delta_m); ++m) {
+                        names_set.insert(StateOne(idx++,n,l,startstate2.s,j,0));
+                    }
+                }
+            }
+        }
+
+        names_ = std::vector<StateOne>(names_set.begin(), names_set.end());
+        std::cout << names_.size() << std::endl;
+        std::cout << "----------------" << std::endl;
     }
 };
 
@@ -610,8 +651,20 @@ protected:
 
 class HamiltonianOne : public Hamiltonian{
 public:
-    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, const StateOne &startstate) : Hamiltonian(mpi), basis_one(startstate) {
+    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, const StateOne &startstate1 , const StateOne &startstate2) : Hamiltonian(mpi), basis_one(startstate1, startstate2) {
+        build();
+    }
 
+    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, const StateOne &startstate) : Hamiltonian(mpi), basis_one(startstate) {
+        build();
+    }
+
+    const BasisnamesOne& names() const {
+        return basis_one;
+    }
+
+protected:
+    void build() {
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
             size_t nSteps = 1;
@@ -671,10 +724,6 @@ public:
 
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
         run(matrix, matrix_diag);
-    }
-
-    const BasisnamesOne& names() const {
-        return basis_one;
     }
 
 private:
@@ -887,8 +936,8 @@ int main(int argc, char **argv) {
 
     StateTwo startstate({120,120}, {4,4}, {0.5,0.5}, {4.5,4.5}, {0.5,0.5}); // n, l, s, j, m // TODO
 
-    HamiltonianOne hamiltonian_one1(mpi, startstate.first());
     HamiltonianOne hamiltonian_one2(mpi, startstate.second());
+    HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());
     HamiltonianTwo hamiltonian_two(mpi, hamiltonian_one1, hamiltonian_one2);
 
     if (mpi->rank() == 0) {
