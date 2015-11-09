@@ -4,11 +4,12 @@ project(pairinteraction CXX)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cfg)
 set(CMAKE_CXX_COMPILER mpicxx)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Ofast -march=native -pipe ")
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
+
+add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}")
