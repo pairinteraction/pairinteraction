@@ -136,7 +136,7 @@ public:
         // loop over quantum numbers
         for (int n = fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
             for (int l = fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
-                for (float j = fmax(abs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
+                for (float j = fmax(fabs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) {
                         names_.push_back(StateOne(idx++,n,l,startstate.s,j,0));
                     }
@@ -162,7 +162,7 @@ public:
         // loop over quantum numbers of startstate1
         for (int n = fmax(0, startstate1.n - delta_n); n <= startstate1.n + delta_n; ++n) {
             for (int l = fmax(0, startstate1.l - delta_l); l <= fmin(n-1,startstate1.l + delta_l); ++l) {
-                for (float j = fmax(abs(l - startstate1.s), startstate1.j - delta_j); j <= fmin(l + startstate1.s, startstate1.j + delta_j); ++j) {
+                for (float j = fmax(fabs(l - startstate1.s), startstate1.j - delta_j); j <= fmin(l + startstate1.s, startstate1.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate1.m - delta_m); m <= fmin(j, startstate1.m + delta_m); ++m) {
                         names_set.insert(StateOne(idx++,n,l,startstate1.s,j,0));
                     }
@@ -173,7 +173,7 @@ public:
         // loop over quantum numbers of startstate2
         for (int n = fmax(0, startstate2.n - delta_n); n <= startstate2.n + delta_n; ++n) {
             for (int l = fmax(0, startstate2.l - delta_l); l <= fmin(n-1,startstate2.l + delta_l); ++l) {
-                for (float j = fmax(abs(l - startstate2.s), startstate2.j - delta_j); j <= fmin(l + startstate2.s, startstate2.j + delta_j); ++j) {
+                for (float j = fmax(fabs(l - startstate2.s), startstate2.j - delta_j); j <= fmin(l + startstate2.s, startstate2.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate2.m - delta_m); m <= fmin(j, startstate2.m + delta_m); ++m) {
                         names_set.insert(StateOne(idx++,n,l,startstate2.s,j,0));
                     }
@@ -934,7 +934,7 @@ int main(int argc, char **argv) {
 
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
 
-    StateTwo startstate({120,120}, {4,4}, {0.5,0.5}, {4.5,4.5}, {0.5,0.5}); // n, l, s, j, m // TODO
+    StateTwo startstate({{120,120}}, {{4,4}}, {{0.5,0.5}}, {{4.5,4.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
 
     HamiltonianOne hamiltonian_one2(mpi, startstate.second());
     HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());

@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 from version import *
 import system_settings as ss
 
@@ -34,7 +32,7 @@ class InputPanel(wx.lib.scrolledpanel.ScrolledPanel):
         vSizer.Add(wx.StaticLine(self,), 0, wx.ALL|wx.EXPAND, 5)
 
         # Maybe replace with GridBagSizer
-        gSizer = wx.FlexGridSizer(rows=len(ss.par), cols=2)
+        gSizer = wx.FlexGridSizer(rows=len(ss.par), cols=2, gap=wx.Size(0,0))
         gSizer.AddGrowableCol(0, 0)
         gSizer.AddGrowableCol(1, 1)
 
@@ -130,7 +128,7 @@ class MyForm(wx.Frame):
         self.Bind(wx.EVT_MENU, self.__OnExit, menuExit)
 
     def __OnExit(self, e):
-        print "Close window called"
+        print("Close window called")
         self.Destroy()
 
     def __OnOpen(self, e):
@@ -159,7 +157,7 @@ class MyForm(wx.Frame):
                 try:
                     parameters[key] = ss.par[key]['type'](ss.par[key]['wx'].GetValue())
                 except:
-                    print "Type Error!"
+                    print("Type Error!")
             json.dump(parameters, f, indent=4)
             f.close()
         dlg.Destroy()
