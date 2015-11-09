@@ -28,7 +28,7 @@ void QuantumDefect::H(int n) {
 }
 
 
-void QuantumDefect::Rb(int n, int l, real_t j) {
+void QuantumDefect::Rb(int l /*, real_t j*/) {
   //***************
   //* Rubidium 87 *
   //***************
@@ -71,7 +71,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), energy(energy_)
 {
   if (species == std::string("Rb"))
-    Rb(n, l, j);
+    Rb(l/*, j*/);
   else if (species == std::string("H"))
     H(n);
   else throw no_defect();
