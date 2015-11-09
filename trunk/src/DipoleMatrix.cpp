@@ -1,5 +1,6 @@
 #include "Numerov.hpp"
 #include "DipoleMatrix.hpp"
+#include "SQLite.hpp"
 
 #include <string>
 #include <vector>
@@ -30,6 +31,52 @@ size_t find(std::vector<real_t> x, real_t d) {
   return i;
 }
 
+
+real_t radial_element_cached(std::string species1, int n1, int l1, real_t j1,
+                             int power,
+                             std::string species2, int n2, int l2, real_t j2) {
+  real_t mu = 0;
+  std::stringstream ss;
+
+  SQLite3 db("radial_elements.db");
+  ss << "select mu "
+     << "from radial_elements where ("
+     << "(species1 = '" << species1 << "') "
+     << "and (n1 = " << n1 << ") "
+     << "and (l1 = " << l1 << ") "
+     << "and (j1 = " << j1 << ") "
+     << "and (power = " << power << ") "
+     << "and (species2 = '" << species2 << "') "
+     << "and (n2 = " << n2 << ") "
+     << "and (l2 = " << l2 << ") "
+     << "and (j2 = " << j2 << ") "
+     << ");";
+
+  SQLite3Result res = db.query(ss.str().c_str());
+  ss.str(std::string());
+  if (res.nRow > 0) {
+    printf("Element found!\n");
+    ss << res.azResult[res.nRow*res.nColumn + res.nColumn-1];
+    ss >> mu;
+  }
+  printf("Element not found!\n");
+
+  mu = radial_element(species1, n1, l1, j1, power, species2, n2, l2, j2);
+
+  ss.str(std::string());
+  ss << "insert or ignore into radial_elements "
+     << "(species1,n1,l1,j1,power,species2,n2,l2,j2,mu)"
+     << "values("
+     << "'" << species1 << "'," << n1 << "," << l1 << "," << j1 << ","
+     << power << ","
+     << "'" << species2 << "'," << n2 << "," << l2 << "," << j2 << ","
+     << mu << ");";
+  db.query(ss.str().c_str());
+
+  return mu;
+}
+
+
 real_t radial_element(std::string species1, int n1, int l1, real_t j1, int power,
                       std::string species2, int n2, int l2, real_t j2) {
   Numerov N1(species1, n1, l1, j1);
@@ -57,7 +104,7 @@ real_t radial_element(std::string species1, int n1, int l1, real_t j1, int power
     }
     mu = fabs(2*mu);
   }
-
+  
   return mu;
 }
 

@@ -64,10 +64,10 @@ public:
 
 class StateTwo : public State {
 public:
-    StateTwo() : State(0), n({0,0}), l({0,0}), s({0,0}), j({0,0}), m({0,0}) { }
+    StateTwo() : State(0), n({{0,0}}), l({{0,0}}), s({{0,0}}), j({{0,0}}), m({{0,0}}) { }
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(idx), n(n), l(l), s(s), j(j), m(m) { }
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(0), n(n), l(l), s(s), j(j), m(m) { }
-    StateTwo(idx_t idx, const StateOne &a, const StateOne &b) : State(idx), n({a.n,b.n}), l({a.l,b.l}), s({a.s,b.s}), j({a.j,b.j}), m({a.m,b.m}) { }
+    StateTwo(idx_t idx, const StateOne &a, const StateOne &b) : State(idx), n({{a.n,b.n}}), l({{a.l,b.l}}), s({{a.s,b.s}}), j({{a.j,b.j}}), m({{a.m,b.m}}) { }
     friend std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
         out << "i  =" << std::setw(5) << state.idx << ",   ";
         for (size_t i = 0; i < 2; ++i) {
