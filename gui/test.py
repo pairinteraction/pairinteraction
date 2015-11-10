@@ -39,11 +39,11 @@ def load(filename):
 
 # create output directory if necessary
 import os
-folder = "output"
+folder = "../build/output"
 if not os.path.exists(folder):
     os.makedirs(folder)
 
-# delete old files (otherwise the c++ program uses them, cache)
+"""# delete old files (otherwise the c++ program uses them, cache)
 for the_file in os.listdir(folder):
     file_path = os.path.join(folder, the_file)
     if os.path.isfile(file_path): os.unlink(file_path)
@@ -53,21 +53,22 @@ import subprocess
 p = subprocess.Popen(["make","check"], stdout=subprocess.PIPE)
 for line in iter(p.stdout.readline, b""):
     print (line.decode('utf-8'), end="")
-    if not line: break
+    if not line: break"""
 
 # load results
-nSteps = 100
-files = os.path.join(folder,"hamiltonian_two_{}_{}.mat")
+nSteps = 30
+files = os.path.join(folder,"hamiltonian_one_{}.mat")
 energies_sym = [None]*nSteps
 energies_asym = [None]*nSteps
 for step in range(nSteps):
-    energies_sym[step] = load(files.format(step,0))[0]
-    energies_asym[step] = load(files.format(step,1))[0]
+    energies_sym[step] = load(files.format(step))[0]
+
 
 # plot results
 import matplotlib as mpl
-mpl.use('Agg')
+#mpl.use('Agg')
 import matplotlib.pyplot as plt
 plt.plot(energies_sym,'r-')
 plt.plot(energies_asym,'b-')
-plt.savefig('test.png')
+plt.show()
+#plt.savefig('test.png')

@@ -97,7 +97,7 @@ public:
         return names_.size();
     }
     size_t dim() const {
-        return names_.back().idx+1;
+        return dim_;
     }
     T& get (size_t idx) {
         return names_[idx];
@@ -117,6 +117,7 @@ public:
 
 protected:
     std::vector<T> names_;
+    size_t dim_;
 };
 
 
@@ -128,43 +129,44 @@ public:
 
         idx_t idx = 0;
 
-        int delta_n = 1; // TODO
-        int delta_l = 2; // TODO
-        int delta_j = 100; // TODO
-        int delta_m = 3; // TODO
+        int delta_n = 8; // TODO
+        int delta_l = 3; // TODO
+        int delta_j = 2; // TODO
+        int delta_m = 10; // TODO
 
         // loop over quantum numbers
         for (int n = fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
             for (int l = fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
                 for (float j = fmax(fabs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) {
-                        names_.push_back(StateOne(idx++,n,l,startstate.s,j,0));
+                        names_.push_back(StateOne(idx++,n,l,startstate.s,j,m));
                     }
                 }
             }
         }
-        std::cout << names_.size() << std::endl;
-        std::cout << "----------------" << std::endl;
+
+        dim_ = idx;
     }
 
     BasisnamesOne(const StateOne &startstate1, const StateOne &startstate2) {
         size_t size = 4; // TODO
-        std::unordered_set<StateOne> names_set;
+        std::unordered_set<StateOne> names_set; // TODO auf das sortierte set wechseln
         names_set.reserve(size);
 
         idx_t idx = 0;
 
         int delta_n = 1; // TODO
-        int delta_l = 2; // TODO
-        int delta_j = 100; // TODO
-        int delta_m = 3; // TODO
+        int delta_l = 1; // TODO
+        int delta_j = 1; // TODO
+        int delta_m = 1; // TODO
 
         // loop over quantum numbers of startstate1
         for (int n = fmax(0, startstate1.n - delta_n); n <= startstate1.n + delta_n; ++n) {
             for (int l = fmax(0, startstate1.l - delta_l); l <= fmin(n-1,startstate1.l + delta_l); ++l) {
                 for (float j = fmax(fabs(l - startstate1.s), startstate1.j - delta_j); j <= fmin(l + startstate1.s, startstate1.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate1.m - delta_m); m <= fmin(j, startstate1.m + delta_m); ++m) {
-                        names_set.insert(StateOne(idx++,n,l,startstate1.s,j,0));
+                        auto result = names_set.insert(StateOne(idx,n,l,startstate1.s,j,m));
+                        if (result.second) idx++;
                     }
                 }
             }
@@ -175,15 +177,15 @@ public:
             for (int l = fmax(0, startstate2.l - delta_l); l <= fmin(n-1,startstate2.l + delta_l); ++l) {
                 for (float j = fmax(fabs(l - startstate2.s), startstate2.j - delta_j); j <= fmin(l + startstate2.s, startstate2.j + delta_j); ++j) {
                     for (float m = fmax(-j, startstate2.m - delta_m); m <= fmin(j, startstate2.m + delta_m); ++m) {
-                        names_set.insert(StateOne(idx++,n,l,startstate2.s,j,0));
+                        auto result = names_set.insert(StateOne(idx,n,l,startstate2.s,j,m));
+                        if (result.second) idx++;
                     }
                 }
             }
         }
 
+        dim_ = idx;
         names_ = std::vector<StateOne>(names_set.begin(), names_set.end());
-        std::cout << names_.size() << std::endl;
-        std::cout << "----------------" << std::endl;
     }
 };
 
@@ -616,16 +618,13 @@ public:
 protected:
     std::shared_ptr<Hamiltonianmatrix> doProcessing(std::shared_ptr<Hamiltonianmatrix> work) {
 
-        std::cout << work->entries().rows() << std::endl;
-
         // if results can not be loaded
-        if (!work->load()) {
-
+        if (true or !work->load()) {
             // diagonalization
             Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
             // eigenvalues
-            auto evals = eigensolver.eigenvalues();
+            eigen_vector_t evals = eigensolver.eigenvalues();
             work->entries().setZero();
             work->entries().reserve(evals.size());
             for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
@@ -634,14 +633,15 @@ protected:
             work->entries().makeCompressed();
 
             // eigenvectors
-            auto tmp = work->basis();
-            work->basis() = tmp*eigensolver.eigenvectors();
-            work->basis().prune(1e-4,0.5);
+            //work->basis() = work->basis()*eigensolver.eigenvectors().sparseView();
+            //work->basis().prune(1e-4,0.5);
+            work->basis() = (work->basis()*eigensolver.eigenvectors().sparseView(1e-4,0.5)).pruned(1e-4,0.5);
 
             // save result
             work->save();
-        }
 
+            std::cout << evals.size() << std::endl;
+        }
         return work;
     }
 
@@ -667,7 +667,7 @@ protected:
     void build() {
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
-            size_t nSteps = 1;
+            size_t nSteps = 100;
             matrix.reserve(nSteps);
 
             // loop over distances
@@ -717,6 +717,7 @@ protected:
                 std::stringstream s;
                 s << "output/hamiltonian_one_" << step << ".mat";
                 mat->setFilename(s.str());
+
 
                 matrix.push_back(std::move(mat));
             }
@@ -937,8 +938,8 @@ int main(int argc, char **argv) {
     StateTwo startstate({{120,120}}, {{4,4}}, {{0.5,0.5}}, {{4.5,4.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
 
     HamiltonianOne hamiltonian_one2(mpi, startstate.second());
-    HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());
-    HamiltonianTwo hamiltonian_two(mpi, hamiltonian_one1, hamiltonian_one2);
+    //HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());
+    /*HamiltonianTwo hamiltonian_two(mpi, hamiltonian_one1, hamiltonian_one2);
 
     if (mpi->rank() == 0) {
         if (hamiltonian_two.names().size() < 20) {
@@ -958,7 +959,7 @@ int main(int argc, char **argv) {
                 std::cout << state << std::endl;
             }
         }
-    }
+    }*/
 
     return 0;
 }

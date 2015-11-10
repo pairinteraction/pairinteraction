@@ -29,6 +29,7 @@ typedef Eigen::Triplet<real_t> eigen_triplet_t;
 typedef Eigen::SparseMatrix<real_t, ORDER, eigen_idx_t> eigen_sparse_t;
 typedef Eigen::SparseMatrix<real_t, ORDER, eigen_idx_t>::InnerIterator eigen_iterator_t;
 typedef Eigen::Matrix<real_t,Eigen::Dynamic,Eigen::Dynamic,ORDER> eigen_dense_t;
+typedef Eigen::Matrix<real_t,Eigen::Dynamic,1,ORDER> eigen_vector_t;
 
 class Triple {
 public:
