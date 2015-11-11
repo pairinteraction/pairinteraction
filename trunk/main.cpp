@@ -5,6 +5,7 @@
 #include "Vectorizable.h"
 #include "Serializable.h"
 #include "DipoleMatrix.hpp"
+#include "QuantumDefect.hpp"
 
 #include <memory>
 #include <tuple>
@@ -129,10 +130,10 @@ public:
 
         idx_t idx = 0;
 
-        int delta_n = 8; // TODO
-        int delta_l = 3; // TODO
-        int delta_j = 2; // TODO
-        int delta_m = 10; // TODO
+        int delta_n = 4; // TODO
+        int delta_l = 4; // TODO
+        int delta_j = 4; // TODO
+        int delta_m = 0; // TODO
 
         // loop over quantum numbers
         for (int n = fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
@@ -146,6 +147,7 @@ public:
         }
 
         dim_ = idx;
+        std::cout << dim_ << std::endl;
     }
 
     BasisnamesOne(const StateOne &startstate1, const StateOne &startstate2) {
@@ -635,7 +637,7 @@ protected:
             // eigenvectors
             //work->basis() = work->basis()*eigensolver.eigenvectors().sparseView();
             //work->basis().prune(1e-4,0.5);
-            work->basis() = (work->basis()*eigensolver.eigenvectors().sparseView(1e-4,0.5)).pruned(1e-4,0.5);
+            work->basis() = (work->basis()*eigensolver.eigenvectors().sparseView(1e-4,0.5)).pruned(1e-4,0.5); //TODO
 
             // save result
             work->save();
@@ -667,7 +669,7 @@ protected:
     void build() {
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
-            size_t nSteps = 100;
+            size_t nSteps = 5;
             matrix.reserve(nSteps);
 
             // loop over distances
@@ -680,26 +682,18 @@ protected:
                 // loop over basis states
                 for (const auto &state_col : basis_one) {
                     for (const auto &state_row : basis_one) {
-
                         // add entries
-                        if (state_row.idx == state_col.idx) { // check for selection rules // TODO
-                            //real_t val = (rand() % 100 - 50)/20.+state_row.idx; // calculate value of matrix element // TODO
-                            real_t val = 0;
+                        real_t val = 0;
+                        if (state_row.idx == state_col.idx) {
+                            val += energy_level("Rb",state_row.n,state_row.l,state_row.j);
+                            triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
+                        } else if (selection_rules(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m) ) {
                             int order = 1;
-                            int q_pol = 1;
-
-                            int n1 = state_row.n;
-                            int l1 = state_row.l;
-                            int j1 = state_row.j;
-                            int m1 = state_row.m;
-
-                            int n2 = state_col.n;
-                            int l2 = state_col.l;
-                            int j2 = state_col.j;
-                            int m2 = state_col.m;
-
-                            if ( selection_rules(l1, j1, m1, l2, j2, m2) )
-                                val = radial_element("Rb", n1, l1, j1, order, "Rb", n2, l2, j2) * angular_element(l1, j1, m1, l2, j2, m2, q_pol);
+                            int q_pol = 0;
+                            val += radial_element("Rb", state_row.n, state_row.l, state_row.j, order, "Rb", state_col.n, state_col.l, state_col.j) *
+                                    angular_element(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m, q_pol) * step*1e-10;
+                        }
+                        if (fabs(val) > 1e-32) { // TODO
                             triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
                         }
 
@@ -708,6 +702,7 @@ protected:
                             triplets_basis.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
                         }
                     }
+                    std::cout << state_col.idx << std::endl;
                 }
 
                 auto mat = std::make_shared<Hamiltonianmatrix>(basis_one.dim(),basis_one.dim());
@@ -935,7 +930,7 @@ int main(int argc, char **argv) {
 
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
 
-    StateTwo startstate({{120,120}}, {{4,4}}, {{0.5,0.5}}, {{4.5,4.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
+    StateTwo startstate({{66,66}}, {{0,0}}, {{0.5,0.5}}, {{0.5,0.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
 
     HamiltonianOne hamiltonian_one2(mpi, startstate.second());
     //HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());

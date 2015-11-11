@@ -24,4 +24,6 @@ public:
   const real_t &energy;
 };
 
+real_t energy_level(std::string species, int n, int l, real_t j);
+
 #endif // QUANTUM_DEFECT_HPP

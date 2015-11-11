@@ -9,7 +9,7 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif(NOT CMAKE_BUILD_TYPE)
 
-add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
+add_definitions(-Wall -Wextra -pedantic -O3 -march=native -pipe)
 
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}")

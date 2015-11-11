@@ -56,19 +56,24 @@ for line in iter(p.stdout.readline, b""):
     if not line: break"""
 
 # load results
-nSteps = 30
+nSteps = 5
 files = os.path.join(folder,"hamiltonian_one_{}.mat")
 energies_sym = [None]*nSteps
 energies_asym = [None]*nSteps
 for step in range(nSteps):
     energies_sym[step] = load(files.format(step))[0]
 
+energies_sym = np.array(energies_sym)  
+energies_sym *= 6579683.920729 #au to MHz
+
+field = np.arange(nSteps)*1e-10*5.14220652e11/100 #au to V/cm
+
 
 # plot results
 import matplotlib as mpl
 #mpl.use('Agg')
 import matplotlib.pyplot as plt
-plt.plot(energies_sym,'r-')
-plt.plot(energies_asym,'b-')
+plt.plot(field,energies_sym,'r-')
+plt.plot(field,energies_asym,'b-')
 plt.show()
 #plt.savefig('test.png')

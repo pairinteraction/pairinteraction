@@ -98,3 +98,8 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   }
   energy_ = -.5*(Ry/Ry_inf)/(nstar*nstar);
 }
+
+real_t energy_level(std::string species, int n, int l, real_t j) {
+    QuantumDefect qd(species, n, l, j);
+    return qd.energy;
+}
