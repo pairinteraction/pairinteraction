@@ -6,6 +6,8 @@
 #include "Serializable.h"
 #include "DipoleMatrix.hpp"
 #include "QuantumDefect.hpp"
+#include "Basisnames.h"
+#include "MatrixElements.h"
 
 #include <memory>
 #include <tuple>
@@ -88,148 +90,20 @@ char filename[20+1+3+1]; sprintf(filename, "%020" PRIu64 ".mat", FNV64(&bytes[id
 */
 
 
-#include "Iter.h"
 
-template<class T> class Basisnames {
-public:
-    Basisnames() {}
-
-    size_t size() const {
-        return names_.size();
-    }
-    size_t dim() const {
-        return dim_;
-    }
-    T& get (size_t idx) {
-        return names_[idx];
-    }
-    const T& get (size_t idx) const {
-        return names_[idx];
-    }
-    void set (size_t i, const T &v) {
-        names_[i] = v;
-    }
-    Iter<Basisnames, T> begin() const {
-        return Iter<Basisnames, T>( this, 0 );
-    }
-    Iter<Basisnames, T> end() const {
-        return Iter<Basisnames, T>( this, names_.size() );
-    }
-
-protected:
-    std::vector<T> names_;
-    size_t dim_;
-};
-
-
-class BasisnamesOne : public Basisnames<StateOne>{
-public:
-    BasisnamesOne(const StateOne &startstate) {
-        size_t size = 4; // TODO
-        names_.reserve(size);
-
-        idx_t idx = 0;
-
-        int delta_n = 4; // TODO
-        int delta_l = 4; // TODO
-        int delta_j = 4; // TODO
-        int delta_m = 0; // TODO
-
-        // loop over quantum numbers
-        for (int n = fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
-            for (int l = fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
-                for (float j = fmax(fabs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
-                    for (float m = fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) {
-                        names_.push_back(StateOne(idx++,n,l,startstate.s,j,m));
-                    }
-                }
-            }
-        }
-
-        dim_ = idx;
-        std::cout << dim_ << std::endl;
-    }
-
-    BasisnamesOne(const StateOne &startstate1, const StateOne &startstate2) {
-        size_t size = 4; // TODO
-        std::unordered_set<StateOne> names_set; // TODO auf das sortierte set wechseln
-        names_set.reserve(size);
-
-        idx_t idx = 0;
-
-        int delta_n = 1; // TODO
-        int delta_l = 1; // TODO
-        int delta_j = 1; // TODO
-        int delta_m = 1; // TODO
-
-        // loop over quantum numbers of startstate1
-        for (int n = fmax(0, startstate1.n - delta_n); n <= startstate1.n + delta_n; ++n) {
-            for (int l = fmax(0, startstate1.l - delta_l); l <= fmin(n-1,startstate1.l + delta_l); ++l) {
-                for (float j = fmax(fabs(l - startstate1.s), startstate1.j - delta_j); j <= fmin(l + startstate1.s, startstate1.j + delta_j); ++j) {
-                    for (float m = fmax(-j, startstate1.m - delta_m); m <= fmin(j, startstate1.m + delta_m); ++m) {
-                        auto result = names_set.insert(StateOne(idx,n,l,startstate1.s,j,m));
-                        if (result.second) idx++;
-                    }
-                }
-            }
-        }
-
-        // loop over quantum numbers of startstate2
-        for (int n = fmax(0, startstate2.n - delta_n); n <= startstate2.n + delta_n; ++n) {
-            for (int l = fmax(0, startstate2.l - delta_l); l <= fmin(n-1,startstate2.l + delta_l); ++l) {
-                for (float j = fmax(fabs(l - startstate2.s), startstate2.j - delta_j); j <= fmin(l + startstate2.s, startstate2.j + delta_j); ++j) {
-                    for (float m = fmax(-j, startstate2.m - delta_m); m <= fmin(j, startstate2.m + delta_m); ++m) {
-                        auto result = names_set.insert(StateOne(idx,n,l,startstate2.s,j,m));
-                        if (result.second) idx++;
-                    }
-                }
-            }
-        }
-
-        dim_ = idx;
-        names_ = std::vector<StateOne>(names_set.begin(), names_set.end());
-    }
-};
-
-
-class BasisnamesTwo : public Basisnames<StateTwo>{
-public:
-    BasisnamesTwo(const BasisnamesOne &basis_one1, const BasisnamesOne &basis_one2) {
-        size_t size = basis_one1.size()*basis_one2.size();
-        names_.reserve(size);
-
-        idx_t idx = 0;
-
-        // loop over single atom states
-        for (const auto &state_1 : basis_one1) {
-            for (const auto &state_2 : basis_one2) {
-                names_.push_back(StateTwo(idx++,state_1,state_2));
-            }
-        }
-    }
-    void removeUnnecessaryStates(const std::vector<bool> &isNecessary) {
-        auto tmp = names_;
-        names_.clear();
-        names_.reserve(tmp.size());
-
-        // loop over all two-atom states
-        for (auto state : tmp) {
-            if (isNecessary[state.idx]) {
-                names_.push_back(state);
-            }
-        }
-
-        names_.shrink_to_fit();
-    }
-};
 
 // ----------------------------------------
 
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix() : Serializable() {}
-    Hamiltonianmatrix(size_t nBasis, size_t nCoordinates) : Serializable(), entries_(nBasis,nBasis), basis_(nCoordinates,nBasis)  {}
+    //Hamiltonianmatrix(size_t nBasis, size_t nCoordinates) : Serializable(), entries_(nBasis,nBasis), basis_(nCoordinates,nBasis)  {}
     Hamiltonianmatrix(eigen_sparse_t entries, eigen_sparse_t basis) : Serializable(), entries_(entries), basis_(basis) {}
+
+    Hamiltonianmatrix(size_t szBasis, size_t szCoordinates) : Serializable()  {
+        triplets_basis.reserve(szBasis);
+        triplets_entries.reserve(szCoordinates);
+    }
 
     eigen_sparse_t& entries() {
         bytes.clear();
@@ -250,6 +124,21 @@ public:
     }
     size_t num_coordinates() const {
         return basis_.rows();
+    }
+
+    void addBasis(idx_t row, idx_t col, real_t val) {
+        triplets_basis.push_back(eigen_triplet_t(row,col,val));
+    }
+    void addEntries(idx_t row, idx_t col, real_t val) {
+        triplets_entries.push_back(eigen_triplet_t(row,col,val));
+    }
+    void compress(size_t nBasis, size_t nCoordinates) {
+        basis_.resize(nCoordinates,nBasis);
+        entries_.resize(nBasis,nBasis);
+        basis_.setFromTriplets(triplets_basis.begin(), triplets_basis.end());
+        entries_.setFromTriplets(triplets_entries.begin(), triplets_entries.end());
+        triplets_basis.clear();
+        triplets_entries.clear();
     }
 
     Hamiltonianmatrix abs() const {
@@ -328,6 +217,11 @@ public:
         lhs.entries_ += rhs.entries_;
         return lhs;
     }
+    friend Hamiltonianmatrix operator-(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
+        lhs.bytes.clear();
+        lhs.entries_ -= rhs.entries_;
+        return lhs;
+    }
     friend Hamiltonianmatrix operator*(const real_t& lhs,  Hamiltonianmatrix rhs) {
         rhs.bytes.clear();
         rhs.entries_ *= lhs;
@@ -341,6 +235,11 @@ public:
     Hamiltonianmatrix& operator+=(const Hamiltonianmatrix& rhs) {
         bytes.clear();
         entries_ += rhs.entries_;
+        return *this;
+    }
+    Hamiltonianmatrix& operator-=(const Hamiltonianmatrix& rhs) {
+        bytes.clear();
+        entries_ -= rhs.entries_;
         return *this;
     }
 
@@ -602,6 +501,9 @@ protected:
     size_t idxStart;
 
     std::string filename_;
+
+    std::vector<eigen_triplet_t> triplets_basis;
+    std::vector<eigen_triplet_t> triplets_entries;
 };
 
 class Hamiltonian : protected MpiLoadbalancingSimple<Hamiltonianmatrix, Hamiltonianmatrix> {
@@ -669,57 +571,286 @@ protected:
     void build() {
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
-            size_t nSteps = 5;
-            matrix.reserve(nSteps);
+            size_t nSteps = 7*4*10;
 
-            // loop over distances
-            for (size_t step = 0; step < nSteps; ++step) {
-                std::vector<eigen_triplet_t> triplets_entries;
-                std::vector<eigen_triplet_t> triplets_basis;
-                triplets_entries.reserve(basis_one.size()*basis_one.size());
-                triplets_basis.reserve(basis_one.size());
+            real_t tol = 1e-32;
 
-                // loop over basis states
-                for (const auto &state_col : basis_one) {
-                    for (const auto &state_row : basis_one) {
-                        // add entries
-                        real_t val = 0;
-                        if (state_row.idx == state_col.idx) {
-                            val += energy_level("Rb",state_row.n,state_row.l,state_row.j);
-                            triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                        } else if (selection_rules(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m) ) {
-                            int order = 1;
-                            int q_pol = 0;
-                            val += radial_element("Rb", state_row.n, state_row.l, state_row.j, order, "Rb", state_col.n, state_col.l, state_col.j) *
-                                    angular_element(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m, q_pol) * step*1e-10;
+            real_t min_E_0 = 0;
+            real_t min_E_p = 0;
+            real_t min_E_m = 0;
+            real_t min_B_0 = 50*4.254382e-10;
+            real_t min_B_p = 0;
+            real_t min_B_m = 0;
+            real_t max_E_0 = 1e-11;
+            real_t max_E_p = 0;
+            real_t max_E_m = 0;
+            real_t max_B_0 = 50*4.254382e-10;
+            real_t max_B_p = 0;
+            real_t max_B_m = 0;
+
+            real_t energycutoff = 0.7e-5;
+
+            // === calculate one-atom Hamiltonians ===
+
+            bool exist_E_0 = (min_E_0 != 0 || max_E_0 != 0);
+            bool exist_E_p = (min_E_p != 0 || max_E_p != 0);
+            bool exist_E_m = (min_E_m != 0 || max_E_m != 0);
+            bool exist_B_0 = (min_B_0 != 0 || max_B_0 != 0);
+            bool exist_B_p = (min_B_p != 0 || max_B_p != 0);
+            bool exist_B_m = (min_B_m != 0 || max_B_m != 0);
+
+            // --- count entries of Hamiltonian parts ---
+            size_t size_basis = basis_one.size();
+            size_t size_energy = basis_one.size();
+            size_t size_d_0 = 0;
+            size_t size_d_p = 0;
+            size_t size_d_m = 0;
+            size_t size_S_0 = 0;
+            size_t size_S_p = 0;
+            size_t size_S_m = 0;
+            size_t size_L_0 = 0;
+            size_t size_L_p = 0;
+            size_t size_L_m = 0;
+
+            std::cout << 8.1 << std::endl;
+
+            for (const auto &state_col : basis_one) {
+                for (const auto &state_row : basis_one) {
+                    if (state_row.idx < state_col.idx) {
+                        continue;
+                    }
+
+                    if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
+                        size_d_0++;
+                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, 1) ) {
+                        size_d_p++;
+                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, -1) ) {
+                        size_d_m++;
+                    }
+
+                    if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
+                        size_S_0++;
+                        size_L_0++;
+                    } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
+                        size_S_p++;
+                        size_L_p++;
+                    } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
+                        size_S_m++;
+                        size_L_m++;
+                    }
+                }
+            }
+
+            std::cout << 8.2 << std::endl;
+
+            // --- construct energy Hamiltonian part ---
+            Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
+
+            real_t energy_initial = 0;
+            for (const auto &state: basis_one.initial()) {
+                energy_initial += energy_level("Rb",state.n,state.l,state.j);
+            }
+            energy_initial /= basis_one.initial().size();
+
+            std::vector<bool> is_necessary(basis_one.size(),false);
+            idx_t idx = 0;
+            for (const auto &state : basis_one) {
+                real_t val = energy_level("Rb",state.n,state.l,state.j)-energy_initial;
+                if (fabs(val) <= energycutoff) {
+                    is_necessary[state.idx] = true;
+                    hamiltonian_energy.addEntries(idx,idx,val);
+                    hamiltonian_energy.addBasis(idx,idx,1);
+                    ++idx;
+                }
+            }
+            basis_one.removeUnnecessaryStates(is_necessary);
+
+            hamiltonian_energy.compress(basis_one.dim(), basis_one.dim());
+
+            std::cout << basis_one.size() << std::endl;
+
+            // --- precalculate matrix elements ---
+            MatrixElements matrix_elements;
+
+            if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
+                matrix_elements.precalculate(basis_one, exist_E_0, exist_E_p, exist_E_m, exist_B_0, exist_B_p, exist_B_m);
+            }
+
+            // --- construct field Hamiltonian parts ---
+            Hamiltonianmatrix hamiltonian_d_0(size_basis, size_d_0);
+            Hamiltonianmatrix hamiltonian_d_p(size_basis, size_d_p);
+            Hamiltonianmatrix hamiltonian_d_m(size_basis, size_d_m);
+            Hamiltonianmatrix hamiltonian_m_0(size_basis, size_S_0);
+            Hamiltonianmatrix hamiltonian_m_p(size_basis, size_S_p);
+            Hamiltonianmatrix hamiltonian_m_m(size_basis, size_S_m);
+
+            for (const auto &state_col : basis_one) {
+                for (const auto &state_row : basis_one) {
+                    if (state_row.idx < state_col.idx) {
+                        continue;
+                    }
+
+                    if (state_row.idx == state_col.idx) {
+                        hamiltonian_d_0.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_d_p.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_d_m.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_m_0.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_m_p.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_m_m.addBasis(state_row.idx,state_col.idx,1);
+                    }
+
+                    if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
+                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_d_0.addEntries(state_row.idx,state_col.idx,val);
                         }
-                        if (fabs(val) > 1e-32) { // TODO
-                            triplets_entries.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
+                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, 1) ) {
+                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_d_p.addEntries(state_row.idx,state_col.idx,val);
                         }
-
-                        // add basis
-                        if (state_row.idx == state_col.idx) {
-                            triplets_basis.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
+                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, -1) ) {
+                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_d_m.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
-                    std::cout << state_col.idx << std::endl;
-                }
 
-                auto mat = std::make_shared<Hamiltonianmatrix>(basis_one.dim(),basis_one.dim());
-                mat->entries().setFromTriplets(triplets_entries.begin(), triplets_entries.end());
-                mat->basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
+                    if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
+                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_m_0.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
+                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_m_p.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
+                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        if (fabs(val) > tol) {
+                            hamiltonian_m_m.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    }
+                }
+            }
+
+            std::cout << 8.4 << std::endl;
+
+            hamiltonian_d_0.compress(basis_one.dim(), basis_one.dim());
+            hamiltonian_d_p.compress(basis_one.dim(), basis_one.dim());
+            hamiltonian_d_m.compress(basis_one.dim(), basis_one.dim());
+            hamiltonian_m_0.compress(basis_one.dim(), basis_one.dim());
+            hamiltonian_m_p.compress(basis_one.dim(), basis_one.dim());
+            hamiltonian_m_m.compress(basis_one.dim(), basis_one.dim());
+
+            std::cout << 8.5 << std::endl;
+
+            // --- construct Hamiltonians ---
+            matrix.reserve(nSteps);
+
+            for (size_t step = 0; step < nSteps; ++step) {
+                auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
+                                                               -hamiltonian_d_0*(min_E_0+step*(max_E_0-min_E_0)/(nSteps-1))
+                                                               -hamiltonian_d_p*(min_E_p+step*(max_E_p-min_E_p)/(nSteps-1))
+                                                               -hamiltonian_d_m*(min_E_m+step*(max_E_m-min_E_m)/(nSteps-1))
+                                                               +hamiltonian_m_0*(min_B_0+step*(max_B_0-min_B_0)/(nSteps-1))
+                                                               +hamiltonian_m_p*(min_B_p+step*(max_B_p-min_B_p)/(nSteps-1))
+                                                               +hamiltonian_m_m*(min_B_m+step*(max_B_m-min_B_m)/(nSteps-1))
+                                                               );
 
                 std::stringstream s;
                 s << "output/hamiltonian_one_" << step << ".mat";
                 mat->setFilename(s.str());
 
+                matrix.push_back(std::move(mat));
+            }
+
+            std::cout << 8.6 << std::endl;
+        }
+
+        // === diagonalize matrices using MpiLoadbalancingSimple ===
+        run(matrix, matrix_diag);
+
+
+
+
+
+
+
+
+
+
+
+
+
+            /*std::vector<eigen_triplet_t> triplets_energy;
+            std::vector<eigen_triplet_t> triplets_d_0;
+            std::vector<eigen_triplet_t> triplets_d_p;
+            std::vector<eigen_triplet_t> triplets_d_m;
+            std::vector<eigen_triplet_t> triplets_basis;
+            triplets_energy.reserve(basis_one.size()*basis_one.size()*0.1);
+            triplets_d_0.reserve(basis_one.size()*basis_one.size()*0.1);
+            triplets_d_p.reserve(basis_one.size()*basis_one.size()*0.1);
+            triplets_d_m.reserve(basis_one.size()*basis_one.size()*0.1);
+            triplets_basis.reserve(basis_one.size());
+
+            std::cout << 2.5 << std::endl;
+
+            // loop over basis states
+            for (const auto &state_col : basis_one) {
+                for (const auto &state_row : basis_one) {
+                    if (state_row.idx < state_col.idx) {
+                        continue;
+                    }
+
+                    // add entries
+                    if (state_row.idx == state_col.idx) {
+                        real_t val = energy_level("Rb",state_row.n,state_row.l,state_row.j);
+                        triplets_energy.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
+                    } else if (selection_rules(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m) ) {
+                        int order = 1;
+                        int q_pol = 0;
+                        real_t val = radial_element("Rb", state_row.n, state_row.l, state_row.j, order, "Rb", state_col.n, state_col.l, state_col.j) *
+                                angular_element(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m, q_pol);
+
+                        if (fabs(val) > 1e-32) { // TODO
+                            triplets_d_0.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
+                        }
+                    }
+
+                    // add basis
+                    if (state_row.idx == state_col.idx) {
+                        triplets_basis.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
+                    }
+                }
+            }
+
+            std::cout << 2.6 << std::endl;
+
+            Hamiltonianmatrix hamiltonian_energy(basis_one.dim(),basis_one.dim());
+            Hamiltonianmatrix hamiltonian_d_0(basis_one.dim(),basis_one.dim());
+
+            hamiltonian_energy.entries().setFromTriplets(triplets_energy.begin(), triplets_energy.end());
+            hamiltonian_energy.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
+            hamiltonian_d_0.entries().setFromTriplets(triplets_d_0.begin(), triplets_d_0.end());
+            hamiltonian_d_0.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
+
+            std::cout << 2.7 << std::endl;
+
+            // loop over distances
+            for (size_t step = 0; step < nSteps; ++step) {
+                auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy+hamiltonian_d_0*step*1e-11);
+
+                std::stringstream s;
+                s << "output/hamiltonian_one_" << step << ".mat";
+                mat->setFilename(s.str());
 
                 matrix.push_back(std::move(mat));
             }
-        }
+            std::cout << 2.8 << std::endl;
+        }*/
 
-        // --- diagonalize matrices using MpiLoadbalancingSimple ---
-        run(matrix, matrix_diag);
     }
 
 private:

@@ -12,7 +12,7 @@
 Numerov::Numerov(std::string species, int n, int l, real_t j)
   : species(species), n(n), l(l), j(j), qd(species,n,l,j),
     nsteps(nsteps_), xmin(xmin_), xmax(xmax_), dx(dx_) {
-  dx_ = 0.001;
+  dx_ = 0.001*10; // TODO
   xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
   xmin_ = floor(sqrt(( 2.08 > xmin_ ? 2.08 : xmin_ )));
   xmax_ = sqrt(2*n*(n+15));
