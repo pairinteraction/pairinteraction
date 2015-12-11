@@ -21,9 +21,11 @@ typedef uint16_t type_t;
 class Serializer {
 public:
     Serializer() {
+        type_ids[std::type_index(typeid(int8_t))] = 1008;
         type_ids[std::type_index(typeid(int16_t))] = 1016;
         type_ids[std::type_index(typeid(int32_t))] = 1032;
         type_ids[std::type_index(typeid(int64_t))] = 1064;
+        type_ids[std::type_index(typeid(uint8_t))] = 1108;
         type_ids[std::type_index(typeid(uint16_t))] = 1116;
         type_ids[std::type_index(typeid(uint32_t))] = 1132;
         type_ids[std::type_index(typeid(uint64_t))] = 1164;
@@ -265,7 +267,11 @@ private:
         std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
         cpbytes += sizeof(type);
 
-        if (type == type_ids[std::type_index(typeid(int16_t))]) {
+        if (type == type_ids[std::type_index(typeid(int8_t))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const int8_t*>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
+            cpbytes += sizeof(int8_t)*num;
+        } else if (type == type_ids[std::type_index(typeid(int16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const int16_t*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
             cpbytes += sizeof(int16_t)*num;
@@ -277,6 +283,10 @@ private:
             auto pbytes_reinterpreted = reinterpret_cast<const int64_t*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
             cpbytes += sizeof(int64_t)*num;
+        } else if (type == type_ids[std::type_index(typeid(uint8_t))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t*>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
+            cpbytes += sizeof(uint8_t)*num;
         } else if (type == type_ids[std::type_index(typeid(uint16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
@@ -316,7 +326,12 @@ private:
         std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
         cpbytes += sizeof(type);
 
-        if (type == type_ids[std::type_index(typeid(int16_t))]) {
+        if (type == type_ids[std::type_index(typeid(int8_t))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const int8_t*>(&(*cpbytes));
+            std::vector<int8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(int8_t)*num;
+        } else if (type == type_ids[std::type_index(typeid(int16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const int16_t*>(&(*cpbytes));
             std::vector<int16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
             data.insert(data.end(),vectmp.begin(), vectmp.end());
@@ -331,6 +346,11 @@ private:
             std::vector<int64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
             data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(int64_t)*num;
+        } else if (type == type_ids[std::type_index(typeid(uint8_t))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t*>(&(*cpbytes));
+            std::vector<uint8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(uint8_t)*num;
         } else if (type == type_ids[std::type_index(typeid(uint16_t))]) {
             auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
             std::vector<uint16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);

@@ -94,6 +94,9 @@ char filename[20+1+3+1]; sprintf(filename, "%020" PRIu64 ".mat", FNV64(&bytes[id
 
 // ----------------------------------------
 
+const uint8_t csr_not_csc = 0x01; // xxx0: csc, xxx1: csr
+const uint8_t complex_not_real = 0x02; // xx0x: real, xx1x: complex
+
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix() : Serializable() {}
@@ -126,10 +129,10 @@ public:
         return basis_.rows();
     }
 
-    void addBasis(idx_t row, idx_t col, real_t val) {
+    void addBasis(idx_t row, idx_t col, scalar_t val) {
         triplets_basis.push_back(eigen_triplet_t(row,col,val));
     }
-    void addEntries(idx_t row, idx_t col, real_t val) {
+    void addEntries(idx_t row, idx_t col, scalar_t val) {
         triplets_entries.push_back(eigen_triplet_t(row,col,val));
     }
     void compress(size_t nBasis, size_t nCoordinates) {
@@ -142,7 +145,7 @@ public:
     }
 
     Hamiltonianmatrix abs() const {
-        return Hamiltonianmatrix(entries_.cwiseAbs(), basis_);
+        return Hamiltonianmatrix(entries_.cwiseAbs().cast<scalar_t>(), basis_);
     }
     Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const{
         auto transformator = basis_.transpose()*basis;
@@ -154,7 +157,7 @@ public:
         bytes.clear();
 
         // build transformator
-        auto diag = entries_.diagonal();
+        eigen_vector_t diag = entries_.diagonal();
 
         std::vector<eigen_triplet_t> triplets_transformator;
         triplets_transformator.reserve(num_basisvectors());
@@ -222,12 +225,12 @@ public:
         lhs.entries_ -= rhs.entries_;
         return lhs;
     }
-    friend Hamiltonianmatrix operator*(const real_t& lhs,  Hamiltonianmatrix rhs) {
+    friend Hamiltonianmatrix operator*(const scalar_t& lhs,  Hamiltonianmatrix rhs) {
         rhs.bytes.clear();
         rhs.entries_ *= lhs;
         return rhs;
     }
-    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs,  const real_t& rhs) {
+    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs,  const scalar_t& rhs) {
         lhs.bytes.clear();
         lhs.entries_ *= rhs;
         return lhs;
@@ -248,38 +251,93 @@ public:
         return bytes;
     }
 
+    template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
+    void mergeComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+        std::vector<storage_real_t>::iterator real_it, imag_it;
+        complex.reserve(real.size());
+        for (real_it = real.begin(), imag_it = imag.begin(); real_it != real.end(); ++real_it, ++imag_it) {
+            complex.push_back(T(*real_it,*imag_it));
+        }
+    }
+
+    template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
+    void mergeComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+        (void) imag;
+        complex = real;
+    }
+
+    template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
+    void splitComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+        real.reserve(complex.size());
+        imag.reserve(imag.size());
+        for (auto complex_it = complex.begin(); complex_it != complex.end(); ++complex_it) {
+            real.push_back(complex_it->real());
+            imag.push_back(complex_it->imag());
+        }
+    }
+
+    template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
+    void splitComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+        imag = std::vector<storage_real_t>();
+        real = complex; //std::vector<storage_real_t>(complex.begin(),complex.end());
+    }
+
     void doSerialization() {
         if (bytes.size() == 0) {
             entries_.makeCompressed();
             basis_.makeCompressed();
 
+            // convert filename to vector of primitive data type
             std::vector<char> name(filename_.begin(), filename_.end());
-            storage_idx_t entries_mode = (entries_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+
+            // convert matrix "entries" to vectors of primitive data types
+            byte_t entries_flags = 0;
+            if (entries_.IsRowMajor) {
+                entries_flags |= csr_not_csc;
+            }
+            if (utils::is_complex<scalar_t>::value) {
+                entries_flags |= complex_not_real;
+            }
             storage_idx_t entries_rows = entries_.rows();
             storage_idx_t entries_cols = entries_.cols();
-            std::vector<storage_real_t> entries_data(entries_.valuePtr(), entries_.valuePtr()+entries_.nonZeros());
+            std::vector<scalar_t> entries_data(entries_.valuePtr(), entries_.valuePtr()+entries_.nonZeros());
+            std::vector<storage_real_t> entries_data_real, entries_data_imag;
+            splitComplex(entries_data_real,entries_data_imag,entries_data);
             std::vector<storage_idx_t> entries_indices(entries_.innerIndexPtr(), entries_.innerIndexPtr()+entries_.nonZeros());
             std::vector<storage_idx_t> entries_indptr(entries_.outerIndexPtr(), entries_.outerIndexPtr()+entries_.outerSize());
-            storage_idx_t basis_mode = (basis_.IsRowMajor) ? 1 : 0; // 0: csc, 1: csr
+
+            // convert matrix "basis" to vectors of primitive data types
+            byte_t basis_flags = 0;
+            if (basis_.IsRowMajor) {
+                basis_flags |= csr_not_csc;
+            }
+            if (utils::is_complex<scalar_t>::value) {
+                basis_flags |= complex_not_real;
+            }
             storage_idx_t basis_rows = basis_.rows();
             storage_idx_t basis_cols = basis_.cols();
-            std::vector<storage_real_t> basis_data(basis_.valuePtr(), basis_.valuePtr()+basis_.nonZeros());
+            std::vector<scalar_t> basis_data(basis_.valuePtr(), basis_.valuePtr()+basis_.nonZeros());
+            std::vector<storage_real_t> basis_data_real, basis_data_imag;
+            splitComplex(basis_data_real,basis_data_imag,basis_data);
             std::vector<storage_idx_t> basis_indices(basis_.innerIndexPtr(), basis_.innerIndexPtr()+basis_.nonZeros());
             std::vector<storage_idx_t> basis_indptr(basis_.outerIndexPtr(), basis_.outerIndexPtr()+basis_.outerSize());
 
+            // serialize vectors of primitive data types
             Serializer s;
             s << name;
             idxStart = s.position();
-            s << entries_mode;
+            s << entries_flags;
             s << entries_rows;
             s << entries_cols;
-            s << entries_data;
+            s << entries_data_real;
+            if (entries_flags & complex_not_real) s << entries_data_imag;
             s << entries_indices;
             s << entries_indptr;
-            s << basis_mode;
+            s << basis_flags;
             s << basis_rows;
             s << basis_cols;
-            s << basis_data;
+            s << basis_data_real;
+            if (basis_flags & complex_not_real) s << basis_data_imag;
             s << basis_indices;
             s << basis_indptr;
             s.save(bytes);
@@ -292,35 +350,50 @@ public:
     }
 
     void doDeserialization() {
+        // deserialize vectors of primitive data types
         std::vector<char> name;
-        storage_idx_t entries_mode, entries_rows, entries_cols;
-        std::vector<real_t> entries_data;
+        byte_t entries_flags;
+        storage_idx_t entries_rows, entries_cols;
+        std::vector<storage_real_t> entries_data_real, entries_data_imag;
         std::vector<idx_t> entries_indices;
         std::vector<idx_t> entries_indptr;
-        storage_idx_t basis_mode, basis_rows, basis_cols;
-        std::vector<real_t> basis_data;
+        byte_t basis_flags;
+        storage_idx_t basis_rows, basis_cols;
+        std::vector<storage_real_t> basis_data_real, basis_data_imag;
         std::vector<idx_t> basis_indices;
         std::vector<idx_t> basis_indptr;
-
 
         Serializer s;
         s.load(bytes);
         s >> name;
         idxStart = s.position();
-        s >> entries_mode;
+        s >> entries_flags;
         s >> entries_rows;
         s >> entries_cols;
-        s >> entries_data;
+        s >> entries_data_real;
+        if (entries_flags & complex_not_real) s >> entries_data_imag;
         s >> entries_indices;
         s >> entries_indptr;
-        s >> basis_mode;
+        s >> basis_flags;
         s >> basis_rows;
         s >> basis_cols;
-        s >> basis_data;
+        s >> basis_data_real;
+        if (basis_flags & complex_not_real) s >> basis_data_imag;
         s >> basis_indices;
         s >> basis_indptr;
 
+        if((((entries_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value) ||
+                (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
+            std::cout << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl;
+            abort();
+        }
+
+        // build filename
         filename_ = std::string(&name[0], name.size());
+
+        // build matrix "entries_"
+        std::vector<scalar_t> entries_data;
+        mergeComplex(entries_data_real,entries_data_imag,entries_data);
         entries_ = eigen_sparse_t(entries_rows,entries_cols);
         entries_.makeCompressed();
         entries_.resizeNonZeros(entries_data.size());
@@ -328,6 +401,10 @@ public:
         std::copy(entries_indices.begin(),entries_indices.end(),entries_.innerIndexPtr());
         std::copy(entries_indptr.begin(),entries_indptr.end(),entries_.outerIndexPtr());
         entries_.finalize();
+
+        // build matrix "basis_"
+        std::vector<scalar_t> basis_data;
+        mergeComplex(basis_data_real,basis_data_imag,basis_data);
         basis_ = eigen_sparse_t(basis_rows,basis_cols);
         basis_.makeCompressed();
         basis_.resizeNonZeros(basis_data.size());
@@ -389,11 +466,11 @@ public:
     }
 
 protected:
-    void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, real_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
+    void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, scalar_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
         idx_t row = mapping[this->num_basisvectors()*row_1 + row_2];
         idx_t col = mapping[this->num_basisvectors()*col_1 + col_2];
         if((mode == ALL) || (mode == SYM && row_1 <= row_2 && col_1 <= col_2) || (mode == ASYM && row_1 < row_2 && col_1 < col_2)) {
-            double factor = 1;
+            real_t factor = 1;
             if (mode == SYM && row_1 == row_2) factor *= 1./sqrt(2.);
             if (mode == SYM && col_1 == col_2) factor *= 1./sqrt(2.);
             triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
@@ -428,8 +505,10 @@ protected:
                             idx_t idx_col = mapping[rhs.num_coordinates()*triple_1.col() + triple_2.col()]; // vec
 
                             int factor = (mode == ASYM) ? -1 : 1;
-                            triplets_basis.push_back(eigen_triplet_t(idx_row1, idx_col, triple_1.value()*triple_2.value()/sqrt(2.)));
-                            triplets_basis.push_back(eigen_triplet_t(idx_row2, idx_col, triple_1.value()*triple_2.value()/sqrt(2.)*factor));
+                            real_t multiplier = 1/sqrt(2.);
+                            triplets_basis.push_back(eigen_triplet_t(idx_row1, idx_col, triple_1.value()*triple_2.value()*multiplier));
+                            multiplier = 1/sqrt(2.)*factor;
+                            triplets_basis.push_back(eigen_triplet_t(idx_row2, idx_col, triple_1.value()*triple_2.value()*multiplier));
 
                         } else if ((mode == ALL) || (mode == SYM && triple_1.col() == triple_2.col())) {
                             idx_t idx_row = rhs.num_basisvectors()*triple_1.row() + triple_2.row(); // coord
@@ -451,7 +530,7 @@ protected:
             for (eigen_iterator_t hamiltonian_triple(entries_,k_1); hamiltonian_triple; ++hamiltonian_triple) {
                 for (size_t unitmatrix_idx = 0; unitmatrix_idx < this->num_basisvectors(); ++unitmatrix_idx) {
                     idx_t row_1, row_2, col_1, col_2;
-                    real_t val = hamiltonian_triple.value();
+                    scalar_t val = hamiltonian_triple.value();
 
                     // --- ordered terms ---
                     // <1a 2a|V x I|1b 2b> = <2a 1a|I x V|2b 1b>
@@ -528,7 +607,7 @@ protected:
             Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
             // eigenvalues
-            eigen_vector_t evals = eigensolver.eigenvalues();
+            eigen_vector_t evals = eigensolver.eigenvalues().cast<scalar_t>();
             work->entries().setZero();
             work->entries().reserve(evals.size());
             for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
@@ -568,36 +647,61 @@ public:
     }
 
 protected:
+
+    template <class T>
+    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, T& val_p, T& val_m, T& val_0) {
+        std::cout << "test" << val_x << std::endl;
+        if(val_x != 0 || val_y != 0) {
+            std::cout << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
+            abort();
+        }
+        val_p = val_x;
+        val_m = val_y;
+        val_0 = val_z;
+    }
+
+    template <class T>
+    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<T>& val_p, std::complex<T>& val_m, std::complex<T>& val_0) {
+        val_p = std::complex<T>(-val_x/std::sqrt(2),val_y/std::sqrt(2));
+        val_m = std::complex<T>(val_x/std::sqrt(2),val_y/std::sqrt(2));
+        val_0 = std::complex<T>(val_z,0);
+    }
+
     void build() {
         if (mpi->rank() == 0) {
             // if not distant dependent, nSteps should be 1 here
-            size_t nSteps = 7*4*10;
+            size_t nSteps = 7*4;
 
             real_t tol = 1e-32;
 
-            real_t min_E_0 = 0;
-            real_t min_E_p = 0;
-            real_t min_E_m = 0;
-            real_t min_B_0 = 50*4.254382e-10;
-            real_t min_B_p = 0;
-            real_t min_B_m = 0;
-            real_t max_E_0 = 1e-11;
-            real_t max_E_p = 0;
-            real_t max_E_m = 0;
-            real_t max_B_0 = 50*4.254382e-10;
-            real_t max_B_p = 0;
-            real_t max_B_m = 0;
-
             real_t energycutoff = 0.7e-5;
 
-            // === calculate one-atom Hamiltonians ===
+            real_t min_E_x = 0;
+            real_t min_E_y = 0;
+            real_t min_E_z = 0;
+            real_t max_E_x = 0;
+            real_t max_E_y = 0;
+            real_t max_E_z = 1e-11;
+            real_t min_B_x = 0;
+            real_t min_B_y = 0;
+            real_t min_B_z = 50*4.254382e-10;
+            real_t max_B_x = 0;
+            real_t max_B_y = 0;
+            real_t max_B_z = 50*4.254382e-10;
 
-            bool exist_E_0 = (min_E_0 != 0 || max_E_0 != 0);
-            bool exist_E_p = (min_E_p != 0 || max_E_p != 0);
-            bool exist_E_m = (min_E_m != 0 || max_E_m != 0);
-            bool exist_B_0 = (min_B_0 != 0 || max_B_0 != 0);
-            bool exist_B_p = (min_B_p != 0 || max_B_p != 0);
-            bool exist_B_m = (min_B_m != 0 || max_B_m != 0);
+            // === calculate one-atom Hamiltonians ===
+            scalar_t min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m, max_B_0, max_B_p, max_B_m;
+            changeToSpherical(min_E_x, min_E_y, min_E_z, min_E_p, min_E_m, min_E_0);
+            changeToSpherical(max_E_x, max_E_y, max_E_z, max_E_p, max_E_m, max_E_0);
+            changeToSpherical(min_B_x, min_B_y, min_B_z, min_B_p, min_B_m, min_B_0);
+            changeToSpherical(max_B_x, max_B_y, max_B_z, max_B_p, max_B_m, max_B_0);
+
+            bool exist_E_0 = (std::abs(min_E_0) != 0 || std::abs(max_E_0) != 0);
+            bool exist_E_p = (std::abs(min_E_p) != 0 || std::abs(max_E_p) != 0);
+            bool exist_E_m = (std::abs(min_E_m) != 0 || std::abs(max_E_m) != 0);
+            bool exist_B_0 = (std::abs(min_B_0) != 0 || std::abs(max_B_0) != 0);
+            bool exist_B_p = (std::abs(min_B_p) != 0 || std::abs(max_B_p) != 0);
+            bool exist_B_m = (std::abs(min_B_m) != 0 || std::abs(max_B_m) != 0);
 
             // --- count entries of Hamiltonian parts ---
             size_t size_basis = basis_one.size();
@@ -656,7 +760,7 @@ protected:
             idx_t idx = 0;
             for (const auto &state : basis_one) {
                 real_t val = energy_level("Rb",state.n,state.l,state.j)-energy_initial;
-                if (fabs(val) <= energycutoff) {
+                if (std::abs(val) <= energycutoff) {
                     is_necessary[state.idx] = true;
                     hamiltonian_energy.addEntries(idx,idx,val);
                     hamiltonian_energy.addBasis(idx,idx,1);
@@ -701,34 +805,34 @@ protected:
 
                     if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
                         real_t val = matrix_elements.getDipole(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_d_0.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_E_p && selectionRulesDipole(state_row, state_col, 1) ) {
                         real_t val = matrix_elements.getDipole(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_d_p.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_E_m && selectionRulesDipole(state_row, state_col, -1) ) {
                         real_t val = matrix_elements.getDipole(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_d_m.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
 
                     if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
                         real_t val = matrix_elements.getMomentum(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_m_0.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
                         real_t val = matrix_elements.getMomentum(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_m_p.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
                         real_t val = matrix_elements.getMomentum(state_row, state_col);
-                        if (fabs(val) > tol) {
+                        if (std::abs(val) > tol) {
                             hamiltonian_m_m.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
@@ -750,13 +854,14 @@ protected:
             matrix.reserve(nSteps);
 
             for (size_t step = 0; step < nSteps; ++step) {
+                real_t normalized_position = step/(nSteps-1.);
                 auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
-                                                               -hamiltonian_d_0*(min_E_0+step*(max_E_0-min_E_0)/(nSteps-1))
-                                                               -hamiltonian_d_p*(min_E_p+step*(max_E_p-min_E_p)/(nSteps-1))
-                                                               -hamiltonian_d_m*(min_E_m+step*(max_E_m-min_E_m)/(nSteps-1))
-                                                               +hamiltonian_m_0*(min_B_0+step*(max_B_0-min_B_0)/(nSteps-1))
-                                                               +hamiltonian_m_p*(min_B_p+step*(max_B_p-min_B_p)/(nSteps-1))
-                                                               +hamiltonian_m_m*(min_B_m+step*(max_B_m-min_B_m)/(nSteps-1))
+                                                               -hamiltonian_d_0*(min_E_0+normalized_position*(max_E_0-min_E_0))
+                                                               -hamiltonian_d_p*(min_E_p+normalized_position*(max_E_p-min_E_p))
+                                                               -hamiltonian_d_m*(min_E_m+normalized_position*(max_E_m-min_E_m))
+                                                               +hamiltonian_m_0*(min_B_0+normalized_position*(max_B_0-min_B_0))
+                                                               +hamiltonian_m_p*(min_B_p+normalized_position*(max_B_p-min_B_p))
+                                                               +hamiltonian_m_m*(min_B_m+normalized_position*(max_B_m-min_B_m))
                                                                );
 
                 std::stringstream s;
@@ -784,7 +889,7 @@ protected:
 
 
 
-            /*std::vector<eigen_triplet_t> triplets_energy;
+        /*std::vector<eigen_triplet_t> triplets_energy;
             std::vector<eigen_triplet_t> triplets_d_0;
             std::vector<eigen_triplet_t> triplets_d_p;
             std::vector<eigen_triplet_t> triplets_d_m;

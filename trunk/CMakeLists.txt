@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 
 project(pairinteraction CXX)
 
+SET(CMAKE_COLOR_MAKEFILE ON)
+SET(CMAKE_VERBOSE_MAKEFILE OFF)
+
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cfg)
 set(CMAKE_CXX_COMPILER mpicxx)
 
@@ -11,8 +14,20 @@ endif(NOT CMAKE_BUILD_TYPE)
 
 add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 
+# data type used for scalars
+set (SCALAR_DTYPE "complex_t") # "real_t", "complex_t"
+
+# configure a header file to pass some of the CMake settings to the source code
+configure_file (
+  "${PROJECT_SOURCE_DIR}/config.h.in"
+  "${PROJECT_BINARY_DIR}/config.h"
+  )
+
 # add the binary tree to the search path for include files
 include_directories("${PROJECT_BINARY_DIR}")
+
+# add the source tree to the search path for include files
+include_directories("${PROJECT_SOURCE_DIR}")
 
 # add the executable
 file(GLOB pairinteraction_SRCS *.cpp)

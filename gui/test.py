@@ -5,9 +5,11 @@ from scipy import sparse
 
 # --- methods to read energies and basis from files ---
 
-typeIds = {1016 : 'int16', 1032 : 'int32', 1064 : 'int64', 1116 : 'uint16', 1132 : 'uint32', \
+typeIds = {1008: 'int8', 1016 : 'int16', 1032 : 'int32', 1064 : 'int64', 1108 : 'uint8', 1116 : 'uint16', 1132 : 'uint32', \
     1164 : 'int64', 2032 : 'float32', 2064 : 'float64'}
 type_t = 'uint16'
+csr_not_csc = 0x01; # xxx0: csc, xxx1: csr
+complex_not_real = 0x02; # xx0x: real, xx1x: complex
 
 def readNumber(f, sz = 1):
     datatype = typeIds[np.fromfile(f, dtype=np.dtype(type_t), count=1)[0]]
@@ -18,14 +20,15 @@ def readVector(f):
     return readNumber(f, size)
 
 def readMatrix(f):
-    mode = readNumber(f)
+    flags = readNumber(f)
     rows = readNumber(f)
     cols = readNumber(f)
-    data = readVector(f)
+    if flags & complex_not_real: data = readVector(f) + readVector(f)*1j
+    else: data = readVector(f)
     indices = readVector(f)
     indptr = np.append(readVector(f),len(data))
-    if mode == 0: return sparse.csc_matrix((data, indices, indptr), shape=(rows, cols))
-    elif mode == 1: return sparse.csr_matrix((data, indices, indptr), shape=(rows, cols))
+    if flags & csr_not_csc: return sparse.csr_matrix((data, indices, indptr), shape=(rows, cols))
+    else: return sparse.csc_matrix((data, indices, indptr), shape=(rows, cols))
 
 def load(filename):
     with open(filename,'rb') as f:
@@ -56,12 +59,12 @@ for line in iter(p.stdout.readline, b""):
     if not line: break"""
 
 # load results
-nSteps = 7*4*10
+nSteps = 7*4
 files = os.path.join(folder,"hamiltonian_one_{}.mat")
 energies_sym = [None]*nSteps
 energies_asym = [None]*nSteps
 for step in range(nSteps):
-    energies_sym[step] = load(files.format(step))[0]
+    energies_sym[step] = load(files.format(step))[0].real
 
 energies_sym = np.array(energies_sym)
 energies_sym *= 6579683.920729 #au to MHz

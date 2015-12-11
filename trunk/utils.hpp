@@ -1,9 +1,14 @@
 #ifndef __UTILS_HPP
 #define __UTILS_HPP
 
+#include <complex>
+#include <type_traits>
 #include <functional>
 
 namespace utils {
+
+template<typename T> struct is_complex : public std::false_type {};
+template<typename T> struct is_complex<std::complex<T>> : public std::true_type {};
 
 // https://de.wikipedia.org/wiki/FNV_(Informatik)
 inline uint64_t FNV64(uint8_t *s, size_t sz)

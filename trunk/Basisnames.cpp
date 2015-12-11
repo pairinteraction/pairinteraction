@@ -18,7 +18,7 @@ BasisnamesOne::BasisnamesOne(const StateOne &startstate) {
         for (int l = fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
             for (float j = fmax(fabs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
                 //for (float m = fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) {
-                for (float m = fmax(-j, -3.5); m <= fmin(j, 3.5); ++m) {
+                for (float m = fmax(-j, -1.5); m <= fmin(j, 1.5); ++m) {
                     names_.push_back(StateOne(idx++,n,l,startstate.s,j,m));
                 }
             }
