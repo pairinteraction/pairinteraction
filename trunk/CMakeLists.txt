@@ -16,7 +16,6 @@ add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 
 # copy databases
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/radial_elements.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 # data type used for scalars
 set (SCALAR_DTYPE "complex_t") # "real_t", "complex_t"
@@ -74,6 +73,16 @@ else(MPI_FOUND)
                       "MPI not found!\n"
                       "==============\n")
 endif(MPI_FOUND)
+
+find_package(JSONCPP REQUIRED)
+if(JSONCPP_FOUND)
+  include_directories(${JSONCPP_INCLUDE_DIRS})
+  target_link_libraries(pairinteraction ${JSONCPP_LIBRARIES})
+else(JSONCPP_FOUND)
+  message(FATAL_ERROR "==================\n"
+                      "JSONCPP not found!\n"
+                      "==================\n")
+endif(JSONCPP_FOUND)
 
 # set c++11
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)

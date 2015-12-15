@@ -2,7 +2,7 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "json/json.h"
+#include "json.h"
 
 int Configuration::load_from_json(std::string filename)
 {
