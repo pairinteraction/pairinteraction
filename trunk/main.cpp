@@ -27,6 +27,8 @@
 
 #include <unordered_set>
 
+#include <unordered_map>
+
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
 
@@ -591,11 +593,119 @@ public:
     std::shared_ptr<Hamiltonianmatrix> get(size_t idx) {
         return matrix_diag[idx];
     }
-    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const{
+    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const {
         return matrix_diag[idx];
     }
     size_t size() const {
         return matrix_diag.size();
+    }
+    void saveLines() const {
+        if (mpi->rank() == 0) {
+            std::shared_ptr<Hamiltonianmatrix> mat_previous = nullptr;
+
+            //std::vector<std::vector<real_t>> lines; // TODO stattdessen indices+1 in sparse matrix abspeichern
+
+            idx_t lines_idx_max = 0;
+            std::vector<eigen_triplet_real_t> triplets_lines_eigenenergies;
+            triplets_lines_eigenenergies.reserve(matrix_diag.size()*matrix_diag.front()->entries().outerSize()*1.2);
+            std::unordered_map<eigen_idx_t,eigen_idx_t> lines_idx;
+
+            eigen_sparse_real_t overlap_root(matrix_diag.front()->basis().rows(),matrix_diag.front()->basis().rows());
+
+            idx_t step = 0;
+            for (const auto &mat_current: matrix_diag) {
+                if (mat_previous != nullptr) {
+                    overlap_root = (mat_previous->basis().adjoint() * mat_current->basis()).pruned(1e-4,0.5).cwiseAbs(); // for row major order, the result has to be transposed
+                }
+                eigen_vector_real_t eigenenergies = mat_current->entries().diagonal().real();
+
+                //eigen_sparse_real_t overlap_root = (mat_current->basis().dot(mat_previous->basis())).pruned(1e-4,0.5).cwiseAbs();
+                //eigen_sparse_real_t overlap_root = (mat_previous->basis()).cwiseAbs(); // hiermit waere es viel schneller
+
+                /*eigen_sparse_t overlap_tmp(mat_current->basis().innerSize(),mat_current->basis().innerSize());
+                std::vector<eigen_triplet_t> triplets;
+                triplets.reserve(std::max(mat_current->basis().nonZeros(),mat_previous->basis().nonZeros())*mat_current->basis().outerSize());
+                //std::cout << 1000 << std::endl;
+                //scalar_t number = 0;
+                for (eigen_idx_t k=0; k<mat_current->basis().outerSize(); ++k) {
+                    for (eigen_iterator_t it_i(mat_current->basis(),k); it_i; ++it_i) {
+                        for (eigen_iterator_t it_j(mat_previous->basis(),k); it_j; ++it_j) {
+                            //number += it_i.value()*it_j.value();
+                            triplets.push_back(eigen_triplet_t(it_i.index(),it_j.index(),0));//std::conj(it_i.value())*it_j.value()));
+                        }
+                    }
+                }
+                //std::cout << 1001 << std::endl;
+                overlap_tmp.setFromTriplets(triplets.begin(), triplets.end());
+                //std::cout << 1002 << std::endl;
+                eigen_sparse_real_t overlap_root = (mat_previous->basis()).cwiseAbs();
+                //std::cout << 1003 << std::endl;*/
+
+                std::unordered_map<eigen_idx_t,eigen_idx_t> lines_idx_new;
+
+                for (eigen_idx_t k=0; k<overlap_root.outerSize(); ++k) {
+                    eigen_idx_t idx_current = k;
+
+                    eigen_idx_t idx_previous = -1;
+                    for (eigen_iterator_real_t it(overlap_root,k); it; ++it) {
+                        if (it.value() > std::sqrt(0.5)) {
+                            idx_previous = it.index();
+                            break;
+                        }
+                    }
+
+                    real_t eigenenergies_current = eigenenergies[idx_current];
+                    if (idx_previous >= 0) {
+                        //lines[lines_idx[idx_previous]].push_back(eigenenergies_current);
+                        triplets_lines_eigenenergies.push_back(eigen_triplet_real_t(lines_idx[idx_previous],step,eigenenergies_current));
+                        lines_idx_new[idx_current] = lines_idx[idx_previous];
+                    } else {
+                        //lines.push_back(std::vector<real_t>(1,eigenenergies_current));
+                        triplets_lines_eigenenergies.push_back(eigen_triplet_real_t(lines_idx_max,step,eigenenergies_current));
+                        lines_idx_new[idx_current] = lines_idx_max++;
+                    }
+                }
+
+                lines_idx = lines_idx_new;
+                mat_previous = mat_current;
+                step++;
+            }
+
+            std::cout << lines_idx_max << " " << step << std::endl;
+            eigen_sparse_real_t lines_eigenenergies(lines_idx_max,step);
+            lines_eigenenergies.setFromTriplets(triplets_lines_eigenenergies.begin(), triplets_lines_eigenenergies.end());
+
+            // save lines
+            byte_t lines_flags = 0;
+            if (lines_eigenenergies.IsRowMajor) {
+                lines_flags |= csr_not_csc;
+            }
+            storage_idx_t lines_rows = lines_eigenenergies.rows();
+            storage_idx_t lines_cols = lines_eigenenergies.cols();
+            std::vector<storage_real_t> lines_data(lines_eigenenergies.valuePtr(), lines_eigenenergies.valuePtr()+lines_eigenenergies.nonZeros());
+            std::vector<storage_idx_t> lines_indices(lines_eigenenergies.innerIndexPtr(), lines_eigenenergies.innerIndexPtr()+lines_eigenenergies.nonZeros());
+            std::vector<storage_idx_t> lines_indptr(lines_eigenenergies.outerIndexPtr(), lines_eigenenergies.outerIndexPtr()+lines_eigenenergies.outerSize());
+
+            bytes_t bytes;
+            Serializer s;
+            s << lines_flags;
+            s << lines_rows;
+            s << lines_cols;
+            s << lines_data;
+            s << lines_indices;
+            s << lines_indptr;
+            s.save(bytes);
+
+            // open file
+            FILE *pFile;
+            pFile = fopen("output/lines.mat" , "wb" ); // filename_.c_str()
+
+            // write
+            fwrite(&bytes[0], 1 , sizeof(byte_t)*bytes.size(), pFile );
+
+            // close file
+            fclose(pFile);
+        }
     }
 
 protected:
@@ -607,7 +717,7 @@ protected:
             Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
             // eigenvalues
-            eigen_vector_t evals = eigensolver.eigenvalues().cast<scalar_t>();
+            eigen_vector_real_t evals = eigensolver.eigenvalues();
             work->entries().setZero();
             work->entries().reserve(evals.size());
             for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
@@ -648,8 +758,7 @@ public:
 
 protected:
 
-    template <class T>
-    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, T& val_p, T& val_m, T& val_0) {
+    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
         std::cout << "test" << val_x << std::endl;
         if(val_x != 0 || val_y != 0) {
             std::cout << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
@@ -660,11 +769,10 @@ protected:
         val_0 = val_z;
     }
 
-    template <class T>
-    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<T>& val_p, std::complex<T>& val_m, std::complex<T>& val_0) {
-        val_p = std::complex<T>(-val_x/std::sqrt(2),val_y/std::sqrt(2));
-        val_m = std::complex<T>(val_x/std::sqrt(2),val_y/std::sqrt(2));
-        val_0 = std::complex<T>(val_z,0);
+    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<real_t>& val_p, std::complex<real_t>& val_m, std::complex<real_t>& val_0) {
+        val_p = std::complex<real_t>(-val_x/std::sqrt(2),val_y/std::sqrt(2));
+        val_m = std::complex<real_t>(val_x/std::sqrt(2),val_y/std::sqrt(2));
+        val_0 = std::complex<real_t>(val_z,0);
     }
 
     void build() {
@@ -676,18 +784,21 @@ protected:
 
             real_t energycutoff = 0.7e-5;
 
+            real_t theta = 0*M_PI/180.;
+            real_t theta2 = 60*M_PI/180.;
+
             real_t min_E_x = 0;
             real_t min_E_y = 0;
             real_t min_E_z = 0;
             real_t max_E_x = 0;
-            real_t max_E_y = 0;
-            real_t max_E_z = 1e-11;
+            real_t max_E_y = 1e-11*std::sin(theta2);
+            real_t max_E_z = 1e-11*std::cos(theta2);
             real_t min_B_x = 0;
-            real_t min_B_y = 0;
-            real_t min_B_z = 50*4.254382e-10;
+            real_t min_B_y = 50*4.254382e-10*std::sin(theta);
+            real_t min_B_z = 50*4.254382e-10*std::cos(theta);
             real_t max_B_x = 0;
-            real_t max_B_y = 0;
-            real_t max_B_z = 50*4.254382e-10;
+            real_t max_B_y = 50*4.254382e-10*std::sin(theta);
+            real_t max_B_z = 50*4.254382e-10*std::cos(theta);
 
             // === calculate one-atom Hamiltonians ===
             scalar_t min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m, max_B_0, max_B_p, max_B_m;
@@ -1168,7 +1279,9 @@ int main(int argc, char **argv) {
 
     StateTwo startstate({{66,66}}, {{0,0}}, {{0.5,0.5}}, {{0.5,0.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
 
-    HamiltonianOne hamiltonian_one2(mpi, startstate.second());
+    HamiltonianOne hamiltonian_one(mpi, startstate.second());
+    hamiltonian_one.saveLines();
+
     //HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());
     /*HamiltonianTwo hamiltonian_two(mpi, hamiltonian_one1, hamiltonian_one2);
 

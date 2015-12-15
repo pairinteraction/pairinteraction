@@ -133,7 +133,7 @@ class MyForm(wx.Frame):
 
     def __OnOpen(self, e):
         self.dirname = ''
-        dlg = wx.FileDialog(self, "Load file", self.dirname, "", "*.json", wx.OPEN)
+        dlg = wx.FileDialog(self, "Load file", self.dirname, "", "*.json", wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.filename = dlg.GetFilename()
             self.dirname = dlg.GetDirectory()
@@ -147,7 +147,7 @@ class MyForm(wx.Frame):
 
     def __OnSave(self, e):
         self.dirname = ''
-        dlg = wx.FileDialog(self, "Save file", self.dirname, "", "*.json", wx.OPEN)
+        dlg = wx.FileDialog(self, "Save file", self.dirname, "", "*.json", wx.FD_SAVE)
         if dlg.ShowModal() == wx.ID_OK:
             self.filename = dlg.GetFilename()
             self.dirname = dlg.GetDirectory()

@@ -35,7 +35,11 @@ def load(filename):
         energies = readMatrix(f).diagonal()
         basis = readMatrix(f)
         return energies, basis
-    return None, None
+
+def load2(filename):
+    with open(filename,'rb') as f:
+        energies = readMatrix(f)
+        return energies
 
 
 # --- usage example ---
@@ -57,6 +61,30 @@ p = subprocess.Popen(["make","check"], stdout=subprocess.PIPE)
 for line in iter(p.stdout.readline, b""):
     print (line.decode('utf-8'), end="")
     if not line: break"""
+    
+
+# plot lines
+path_lines = os.path.join(folder,"lines.mat")
+linessparse = load2(path_lines).T* 6579683.920729 #au to MHz
+nSteps = 7*4
+field = np.arange(nSteps)/(nSteps-1)*1e-11*5.14220652e11/100 #au to V/cm
+
+lines = linessparse.todense()
+lines_mask = np.ones_like(lines,dtype=np.bool)
+lines_mask[linessparse.nonzero()] = False
+lines[lines_mask] = np.nan
+
+import matplotlib.pyplot as plt
+plt.plot(field,lines,'-')
+plt.xlim(-0.005,0.05)
+#plt.ylim(-2,2)
+plt.ylim(2.0,4.8)
+plt.show()
+
+
+
+
+exit()
 
 # load results
 nSteps = 7*4
@@ -79,10 +107,11 @@ import matplotlib.pyplot as plt
 plt.plot(field,energies_sym,'r-')
 plt.plot(field,energies_asym,'b-')
 #plt.ylim(-0.055,0.021)
-plt.xlim(-0.05,0.5)
+plt.xlim(-0.005,0.05)
 #plt.xlim(0,0.4)
-plt.ylim(-1,5)
-plt.ylim(2.65,3.95)
-plt.xlim(-0.0005,0.047)
+#plt.ylim(-1,5)
+plt.ylim(2.0,4.8)
+#plt.ylim(2.65,3.95)
+#plt.xlim(-0.0005,0.047)
 plt.show()
 #plt.savefig('test.png')

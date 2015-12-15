@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(pairinteraction CXX)
 
 SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_VERBOSE_MAKEFILE OFF)
 
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cfg)
+set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/modules)
 set(CMAKE_CXX_COMPILER mpicxx)
 
 if(NOT CMAKE_BUILD_TYPE)
@@ -13,6 +13,10 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
+
+# copy databases
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/radial_elements.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 # data type used for scalars
 set (SCALAR_DTYPE "complex_t") # "real_t", "complex_t"
