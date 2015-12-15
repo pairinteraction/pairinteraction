@@ -1,18 +1,12 @@
-#ifndef JSON_PARSER_HPP
-#define JSON_PARSER_HPP
+#ifndef CONF_PARSER_HPP
+#define CONF_PARSER_HPP
 
 #include <string>
 #include "dtypes.h"
-#include "json/json.h"
 
-class JsonParser {
-private:
-  Json::Value datadict;
-  Json::Reader reader;
-  std::string filename;
+class Configuration {
 public:
-  JsonParser(std::string filename);
-  int parse();
+  int load_from_json(std::string filename);
   std::string element;
   int n1;
   int n2;
@@ -55,4 +49,4 @@ public:
 };
 
 
-#endif // JSON_PARSER_HPP
+#endif // CONF_PARSER_HPP

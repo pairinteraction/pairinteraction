@@ -1,15 +1,13 @@
-#include "JsonParser.hpp"
+#include "ConfParser.hpp"
 #include <string>
 #include <fstream>
 #include <iostream>
 #include "json/json.h"
 
-
-JsonParser::JsonParser(std::string filename)
-  : filename(filename) {}
-
-int JsonParser::parse()
+int Configuration::load_from_json(std::string filename)
 {
+  Json::Value datadict;
+  Json::Reader reader;
   std::ifstream conffile(filename);
   if ( !reader.parse(conffile, datadict) )
   {
