@@ -32,21 +32,20 @@ size_t find(std::vector<real_t> x, real_t d) {
 }
 
 
-real_t radial_element_cached(std::string species1, int n1, int l1, real_t j1,
+real_t radial_element_cached(std::string species, int n1, int l1, real_t j1,
                              int power,
-                             std::string species2, int n2, int l2, real_t j2) {
+                             int n2, int l2, real_t j2) {
   real_t mu = 0;
   std::stringstream ss;
 
   SQLite3 db("radial_elements.db");
   ss << "select mu "
      << "from radial_elements where ("
-     << "(species1 = '" << species1 << "') "
+     << "(species = '" << species << "') "
      << "and (n1 = " << n1 << ") "
      << "and (l1 = " << l1 << ") "
      << "and (j1 = " << j1 << ") "
      << "and (power = " << power << ") "
-     << "and (species2 = '" << species2 << "') "
      << "and (n2 = " << n2 << ") "
      << "and (l2 = " << l2 << ") "
      << "and (j2 = " << j2 << ") "
@@ -61,15 +60,15 @@ real_t radial_element_cached(std::string species1, int n1, int l1, real_t j1,
   }
   printf("Element not found!\n");
 
-  mu = radial_element(species1, n1, l1, j1, power, species2, n2, l2, j2);
+  mu = radial_element(species, n1, l1, j1, power, n2, l2, j2);
 
   ss.str(std::string());
   ss << "insert or ignore into radial_elements "
-     << "(species1,n1,l1,j1,power,species2,n2,l2,j2,mu)"
+     << "(species,n1,l1,j1,power,n2,l2,j2,mu)"
      << "values("
-     << "'" << species1 << "'," << n1 << "," << l1 << "," << j1 << ","
+     << "'" << species << "'," << n1 << "," << l1 << "," << j1 << ","
      << power << ","
-     << "'" << species2 << "'," << n2 << "," << l2 << "," << j2 << ","
+     << "'" << "'," << n2 << "," << l2 << "," << j2 << ","
      << mu << ");";
   db.query(ss.str().c_str());
 
@@ -77,10 +76,10 @@ real_t radial_element_cached(std::string species1, int n1, int l1, real_t j1,
 }
 
 
-real_t radial_element(std::string species1, int n1, int l1, real_t j1, int power,
-                      std::string species2, int n2, int l2, real_t j2) {
-  Numerov N1(species1, n1, l1, j1);
-  Numerov N2(species2, n2, l2, j2);
+real_t radial_element(std::string species, int n1, int l1, real_t j1, int power,
+                      int n2, int l2, real_t j2) {
+  Numerov N1(species, n1, l1, j1);
+  Numerov N2(species, n2, l2, j2);
 
   std::vector<real_t> x1 = N1.axis();
   std::vector<real_t> y1 = N1.integrate();
