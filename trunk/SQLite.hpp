@@ -26,6 +26,7 @@ public:
   SQLite3(const char* filename);
   ~SQLite3();
   SQLite3Result query(const char* sql);
+  void exec(const char* sql);
 };
 
 #endif // SQLITE_BINDINGS

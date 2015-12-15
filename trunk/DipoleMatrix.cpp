@@ -68,7 +68,7 @@ real_t radial_element_cached(std::string species, int n1, int l1, real_t j1,
      << "values("
      << "'" << species << "'," << n1 << "," << l1 << "," << j1 << ","
      << power << ","
-     << "'" << "'," << n2 << "," << l2 << "," << j2 << ","
+     << n2 << "," << l2 << "," << j2 << ","
      << mu << ");";
   db.query(ss.str().c_str());
 

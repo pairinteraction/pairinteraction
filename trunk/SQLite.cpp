@@ -35,3 +35,11 @@ SQLite3Result SQLite3::query(const char* sql) {
   }
   return res;
 }
+
+void SQLite3::exec(const char* sql) {
+  rc = sqlite3_exec(db, sql, NULL, NULL, &zErrMsg);
+  if ( rc != SQLITE_OK ) {
+    std::cerr << "SQL error: " << zErrMsg << std::endl;
+    sqlite3_free(zErrMsg);
+  }
+}

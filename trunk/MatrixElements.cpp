@@ -1,4 +1,8 @@
 #include "MatrixElements.h"
+#include "SQLite.hpp"
+#include <sstream>
+#include <iostream>
+#include <string>
 
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q) {
     return (abs(state1.l-state2.l) == 1) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1);
@@ -21,6 +25,31 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
     //TODO: check if k = 1 in case of exist_m
 
     // determine elements
+
+    SQLite3 db("matrix_elements.db");
+
+    db.exec("CREATE TEMPORARY TABLE tmp_nlj ("
+            "n1 integer, l1 integer, j1 double,"
+            "n2 integer, l2 integer, j2 double);");
+
+    db.exec("CREATE TEMPORARY TABLE tmp_lj_s ("
+            "l1 integer, j1 double,"
+            "l2 integer, j2 double);");
+
+
+    db.exec("CREATE TEMPORARY TABLE tmp_lj_l ("
+            "l1 integer, j1 double,"
+            "l2 integer, j2 double);");
+
+
+    db.exec("CREATE TEMPORARY TABLE tmp_jm ("
+            "j1 integer, m1 double,"
+            "j2 integer, m2 double);");
+
+    std::stringstream ss;
+
+    db.exec("begin transaction;");
+
     for (const auto &state_col : basis_one) {
         for (const auto &state_row : basis_one) {
             if (state_row.idx < state_col.idx) {
@@ -38,7 +67,11 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
                     auto result_nlj = element_nlj.insert(std::make_pair<StateTwo,real_t>(
                                                                StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
                     if (result_nlj.second) {
-                        //TODO: query
+                        ss.str(std::string());
+                        ss << "insert into tmp_nlj (n1,l1,j1,n2,l2,j2) values ("
+                           << state_row.n << "," << state_row.l << "," << state_row.j << ","
+                           << state_col.n << "," << state_col.l << "," << state_col.j << ");";
+                        db.exec(ss.str().c_str());
                     }
                 }
 
@@ -46,24 +79,38 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
                     auto result_lj = element_lj_s.insert(std::make_pair<StateTwo,real_t>(
                                                            StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
                     if (result_lj.second) {
-                        //TODO: query
+                        ss.str(std::string());
+                        ss << "insert into tmp_lj_l (l1,j1,l2,j2) values ("
+                           << state_row.l << "," << state_row.j << ","
+                           << state_col.l << "," << state_col.j << ");";
+                        db.exec(ss.str().c_str());
                     }
                 }
 
                 auto result_lj = element_lj_l.insert(std::make_pair<StateTwo,real_t>(
                                                        StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
                 if (result_lj.second) {
-                    //TODO: query
+                    ss.str(std::string());
+                    ss << "insert into tmp_lj_l (l1,j1,l2,j2) values ("
+                       << state_row.l << "," << state_row.j << ","
+                       << state_col.l << "," << state_col.j << ");";
+                    db.exec(ss.str().c_str());
                 }
 
                 auto result_jm = element_jm.insert(std::make_pair<StateTwo,real_t>(
                                                        StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order(), std::numeric_limits<real_t>::max()));
                 if (result_jm.second) {
-                    //TODO: query
+                    ss.str(std::string());
+                    ss << "insert into tmp_jm (j1,m1,j2,m2) values ("
+                       << state_row.j << "," << state_row.m << ","
+                       << state_col.j << "," << state_col.m << ");";
+                    db.exec(ss.str().c_str());
                 }
             }
         }
     }
+
+    db.exec("end transaction;");
 
     std::cout << 8.31 << std::endl;
 
@@ -77,7 +124,7 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
-                        radial_element(alkali, element.first.n[0], element.first.l[0], element.first.j[0], 1, alkali, element.first.n[1], element.first.l[1], element.first.j[1]); // TODO <Rb|Cs> not possible, so Rb is enough
+                        radial_element(alkali, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]); // TODO <Rb|Cs> not possible, so Rb is enough
                 //TODO: query
             }
         }
