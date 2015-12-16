@@ -14,19 +14,39 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
 
 MatrixElements::MatrixElements() {
     k = 1;
-    alkali = "Rb";
+    species = "Rb";
 
     muB = 0.5;
     gS = 2.0023192;
-    gL = 1;
+    gL = 1;    
 }
 
 void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
     //TODO: check if k = 1 in case of exist_m
 
-    // determine elements
-
     SQLite3 db("matrix_elements.db");
+
+    // create cache tables if necessary
+
+    db.exec("CREATE TABLE IF NOT EXISTS cache_nlj ("
+            "species text, k integer, n1 integer, l1 integer, j1 double,"
+            "n2 integer, l2 integer, j2 double, value double, UNIQUE (species, k, n1, l1, j1, n2, l2, j2));");
+
+    db.exec("CREATE TABLE IF NOT EXISTS cache_lj_s ("
+            "species text, k integer, l1 integer, j1 double,"
+            "l2 integer, j2 double, value double, UNIQUE (species, k, l1, j1, l2, j2));");
+
+
+    db.exec("CREATE TABLE IF NOT EXISTS cache_lj_l ("
+            "species text, k integer, l1 integer, j1 double,"
+            "l2 integer, j2 double, value double, UNIQUE (species, k, l1, j1, l2, j2));");
+
+
+    db.exec("CREATE TABLE IF NOT EXISTS cache_jm ("
+            "species text, k integer, j1 integer, m1 double,"
+            "j2 integer, m2 double, value double, UNIQUE (species, k, j1, m1, j2, m2));");
+
+    // determine elements
 
     db.exec("CREATE TEMPORARY TABLE tmp_nlj ("
             "n1 integer, l1 integer, j1 double,"
@@ -63,47 +83,53 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
                     (exist_m_p && selectionRulesMomentum(state_row, state_col, 1)) ||
                     (exist_m_m && selectionRulesMomentum(state_row, state_col, -1))) {
 
+                StateTwo state;
+
                 if ((exist_d_0 || exist_d_p || exist_d_m) && (abs(state_row.l-state_col.l) == 1)) {
-                    auto result_nlj = element_nlj.insert(std::make_pair<StateTwo,real_t>(
-                                                               StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
+                    state = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
+                    auto result_nlj = element_nlj.insert({state, std::numeric_limits<real_t>::max()});
+
                     if (result_nlj.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_nlj (n1,l1,j1,n2,l2,j2) values ("
-                           << state_row.n << "," << state_row.l << "," << state_row.j << ","
-                           << state_col.n << "," << state_col.l << "," << state_col.j << ");";
+                           << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
+                           << state.n[1] << "," << state.l[1] << "," << state.j[1] << ");";
                         db.exec(ss.str().c_str());
                     }
                 }
 
                 if ((exist_m_0 || exist_m_p || exist_m_m) && (state_row.l == state_col.l) && (state_row.n == state_col.n) ) {
-                    auto result_lj = element_lj_s.insert(std::make_pair<StateTwo,real_t>(
-                                                           StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
+                    state = StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
+                    auto result_lj = element_lj_s.insert({state, std::numeric_limits<real_t>::max()});
+
                     if (result_lj.second) {
                         ss.str(std::string());
-                        ss << "insert into tmp_lj_l (l1,j1,l2,j2) values ("
-                           << state_row.l << "," << state_row.j << ","
-                           << state_col.l << "," << state_col.j << ");";
+                        ss << "insert into tmp_lj_s (l1,j1,l2,j2) values ("
+                           << state.l[0] << "," << state.j[0] << ","
+                           << state.l[1] << "," << state.j[1] << ");";
                         db.exec(ss.str().c_str());
                     }
                 }
 
-                auto result_lj = element_lj_l.insert(std::make_pair<StateTwo,real_t>(
-                                                       StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order(), std::numeric_limits<real_t>::max()));
+                state = StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
+                auto result_lj = element_lj_l.insert({state, std::numeric_limits<real_t>::max()});
+
                 if (result_lj.second) {
                     ss.str(std::string());
                     ss << "insert into tmp_lj_l (l1,j1,l2,j2) values ("
-                       << state_row.l << "," << state_row.j << ","
-                       << state_col.l << "," << state_col.j << ");";
+                       << state.l[0] << "," << state.j[0] << ","
+                       << state.l[1] << "," << state.j[1] << ");";
                     db.exec(ss.str().c_str());
                 }
 
-                auto result_jm = element_jm.insert(std::make_pair<StateTwo,real_t>(
-                                                       StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order(), std::numeric_limits<real_t>::max()));
+                state = StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order();
+                auto result_jm = element_jm.insert({state, std::numeric_limits<real_t>::max()});
+
                 if (result_jm.second) {
                     ss.str(std::string());
                     ss << "insert into tmp_jm (j1,m1,j2,m2) values ("
-                       << state_row.j << "," << state_row.m << ","
-                       << state_col.j << "," << state_col.m << ");";
+                       << state.j[0] << "," << state.m[0] << ","
+                       << state.j[1] << "," << state.m[1] << ");";
                     db.exec(ss.str().c_str());
                 }
             }
@@ -115,20 +141,100 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
     std::cout << 8.31 << std::endl;
 
     // load from database
-    // TODO
+    int n1, n2, l1, l2;
+    float j1, j2, m1, m2;
+    double value;
+
+    if (exist_d_0 || exist_d_p || exist_d_m) {
+        ss.str(std::string());
+        ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj c INNER JOIN tmp_nlj t ON ("
+           << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
+           << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
+        SQLite3Result2 result_nlj = db.query2(ss.str().c_str());
+        for (const auto r : result_nlj) {
+            r[0] >> n1;
+            r[1] >> l1;
+            r[2] >> j1;
+            r[3] >> n2;
+            r[4] >> l2;
+            r[5] >> j2;
+            r[6] >> value;
+            element_nlj[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+        }
+    }
+
+    if (exist_m_0 || exist_m_p || exist_m_m) {
+        ss.str(std::string());
+        ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_lj_s c INNER JOIN tmp_lj_s t ON ("
+           << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
+           << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
+        SQLite3Result2 result_lj_s = db.query2(ss.str().c_str());
+        for (const auto r : result_lj_s) {
+            r[0] >> l1;
+            r[1] >> j1;
+            r[2] >> l2;
+            r[3] >> j2;
+            r[4] >> value;
+            element_lj_s[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+        }
+    }
+
+    ss.str(std::string());
+    ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_lj_l c INNER JOIN tmp_lj_l t ON ("
+       << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
+       << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
+    SQLite3Result2 result_lj_l = db.query2(ss.str().c_str());
+    for (const auto r : result_lj_l) {
+        r[0] >> l1;
+        r[1] >> j1;
+        r[2] >> l2;
+        r[3] >> j2;
+        r[4] >> value;
+        element_lj_l[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+    }
+
+    ss.str(std::string());
+    ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_jm c INNER JOIN tmp_jm t ON ("
+       << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
+       << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
+    SQLite3Result2 result_jm = db.query2(ss.str().c_str());
+    for (const auto r : result_jm) {
+        r[0] >> j1;
+        r[1] >> m1;
+        r[2] >> j2;
+        r[3] >> m2;
+        r[4] >> value;
+        element_jm[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
+    }
+
+
+    std::cout << 8.311 << std::endl;
+
 
     // calculate missing elements
+
+    db.exec("begin transaction;");
+
     if (exist_d_0 || exist_d_p || exist_d_m) {
         for (auto &element : element_nlj) {
             if (element.second == std::numeric_limits<real_t>::max()) {
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
-                        radial_element(alkali, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]); // TODO <Rb|Cs> not possible, so Rb is enough
-                //TODO: query
+                        radial_element(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]); // TODO <Rb|Cs> not possible, so Rb is enough
+
+                ss.str(std::string());
+                ss << "insert into cache_nlj (species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                   << "'" << species << "'" << "," << k << ","
+                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                   << element.second << ");";
+                db.exec(ss.str().c_str());
             }
         }
     }
+
+    std::cout << 8.312 << std::endl;
 
     if (exist_m_0 || exist_m_p || exist_m_m) {
         for (auto &element : element_lj_s) { // j1 = s, j2 = l
@@ -136,7 +242,14 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
 
                 element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
                         gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
-                //TODO: query
+
+                ss.str(std::string());
+                ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
+                   << "'" << species << "'" << "," << k << ","
+                   << element.first.l[0] << "," << element.first.j[0] << ","
+                   << element.first.l[1] << "," << element.first.j[1] << ","
+                   << element.second << ");";
+                db.exec(ss.str().c_str());
             }
         }
     }
@@ -146,7 +259,14 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
 
             element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
                     gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
-            //TODO: query
+
+            ss.str(std::string());
+            ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
+               << "'" << species << "'" << "," << k << ","
+               << element.first.l[0] << "," << element.first.j[0] << ","
+               << element.first.l[1] << "," << element.first.j[1] << ","
+               << element.second << ");";
+            db.exec(ss.str().c_str());
         }
     }
 
@@ -155,9 +275,18 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
             int q = element.first.m[0]-element.first.m[1];
 
             element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
-            //TODO: query
+
+            ss.str(std::string());
+            ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
+               << "'" << species << "'" << "," << k << ","
+               << element.first.j[0] << "," << element.first.m[0] << ","
+               << element.first.j[1] << "," << element.first.m[1] << ","
+               << element.second << ");";
+            db.exec(ss.str().c_str());
         }
     }
+
+    db.exec("end transaction;");
 
 
 

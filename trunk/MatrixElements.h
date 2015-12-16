@@ -20,7 +20,7 @@ public:
     real_t getMomentum(StateOne state_row, StateOne state_col);
 private:
     int k;
-    std::string alkali;
+    std::string species;
     std::unordered_map<StateTwo,real_t> element_nlj;
     std::unordered_map<StateTwo,real_t> element_nlj_m;
     std::unordered_map<StateTwo,real_t> element_lj_s;
