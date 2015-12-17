@@ -23,7 +23,7 @@ public:
     }
     std::stringstream operator[](int index) const {
         std::stringstream ss;
-        ss << azResult[pos*nColumn+index];
+        ss << azResult[(pos+1)*nColumn+index];
         return ss;
     }
 private:
@@ -36,7 +36,7 @@ public:
     SQLite3Iter(char **azResult, int pos, int nColumn) : azResult(azResult), pos(pos), nColumn(nColumn) {
     }
     bool operator!= (const SQLite3Iter& other) const {
-        return (pos-1) != other.pos; // "1" is needed because of the mysql header
+        return pos != other.pos;
     }
     const SQLite3Row operator* () const {
         return SQLite3Row(azResult, pos, nColumn);
@@ -62,10 +62,16 @@ public:
         return nRow;
     }
     SQLite3Iter begin() const {
-        return SQLite3Iter(azResult, 1, nColumn); // "1" is needed because of the mysql header
+        return SQLite3Iter(azResult, 0, nColumn);
     }
     SQLite3Iter end() const {
         return SQLite3Iter(azResult, nRow, nColumn);
+    }
+    SQLite3Row first() {
+        return SQLite3Row(azResult, 0, nColumn);
+    }
+    SQLite3Row header() {
+        return SQLite3Row(azResult, -1, nColumn);
     }
     char **azResult;
     int nRow, nColumn;

@@ -74,7 +74,7 @@ else(MPI_FOUND)
                       "==============\n")
 endif(MPI_FOUND)
 
-find_package(JSONCPP REQUIRED)
+find_package(Jsoncpp REQUIRED)
 if(JSONCPP_FOUND)
   include_directories(${JSONCPP_INCLUDE_DIRS})
   target_link_libraries(pairinteraction ${JSONCPP_LIBRARIES})
