@@ -716,8 +716,10 @@ protected:
             // diagonalization
             Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
-            // eigenvalues
+            // eigenvalues and eigenvectors
             eigen_vector_real_t evals = eigensolver.eigenvalues();
+            eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView(1e-4,0.5);
+
             work->entries().setZero();
             work->entries().reserve(evals.size());
             for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
@@ -725,10 +727,7 @@ protected:
             }
             work->entries().makeCompressed();
 
-            // eigenvectors
-            //work->basis() = work->basis()*eigensolver.eigenvectors().sparseView();
-            //work->basis().prune(1e-4,0.5);
-            work->basis() = (work->basis()*eigensolver.eigenvectors().sparseView(1e-4,0.5)).pruned(1e-4,0.5); //TODO
+            work->basis() = (work->basis() * evecs).pruned(1e-4,0.5);
 
             // save result
             work->save();
