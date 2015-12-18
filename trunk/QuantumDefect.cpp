@@ -89,10 +89,8 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   real_t nstar = n;
   real_t Ry_inf = 109737.31568525;
   real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
-  if (res.nRow > 0) {
-    for (int i = 0; i < res.nColumn; i++)
-      ss << res.azResult[res.nRow*res.nColumn + i] << " ";
-    ss >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
+  if (res.size() > 0) {
+    res.first() >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
     nstar -= d0 + d2/pow(n-d0,2) + d4/pow(n-d0,4)
       + d6/pow(n-d0,6) + d8/pow(n-d0,8);
   }

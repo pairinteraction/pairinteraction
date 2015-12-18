@@ -53,10 +53,9 @@ real_t radial_element_cached(std::string species, int n1, int l1, real_t j1,
 
   SQLite3Result res = db.query(ss.str().c_str());
   ss.str(std::string());
-  if (res.nRow > 0) {
+  if (res.size() > 0) {
     printf("Element found!\n");
-    ss << res.azResult[res.nRow*res.nColumn + res.nColumn-1];
-    ss >> mu;
+    res.first() >> mu;
   }
   printf("Element not found!\n");
 

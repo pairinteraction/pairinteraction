@@ -150,15 +150,9 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj c INNER JOIN tmp_nlj t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
-        SQLite3Result2 result_nlj = db.query2(ss.str().c_str());
-        for (const auto r : result_nlj) {
-            r[0] >> n1;
-            r[1] >> l1;
-            r[2] >> j1;
-            r[3] >> n2;
-            r[4] >> l2;
-            r[5] >> j2;
-            r[6] >> value;
+        SQLite3Result result_nlj = db.query(ss.str().c_str());
+        for (auto r : result_nlj) {
+            r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
             element_nlj[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -168,13 +162,9 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_lj_s c INNER JOIN tmp_lj_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
-        SQLite3Result2 result_lj_s = db.query2(ss.str().c_str());
-        for (const auto r : result_lj_s) {
-            r[0] >> l1;
-            r[1] >> j1;
-            r[2] >> l2;
-            r[3] >> j2;
-            r[4] >> value;
+        SQLite3Result result_lj_s = db.query(ss.str().c_str());
+        for (auto r : result_lj_s) {
+            r >> l1 >> j1 >> l2 >> j2 >> value;
             element_lj_s[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -183,13 +173,9 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
     ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_lj_l c INNER JOIN tmp_lj_l t ON ("
        << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
        << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
-    SQLite3Result2 result_lj_l = db.query2(ss.str().c_str());
-    for (const auto r : result_lj_l) {
-        r[0] >> l1;
-        r[1] >> j1;
-        r[2] >> l2;
-        r[3] >> j2;
-        r[4] >> value;
+    SQLite3Result result_lj_l = db.query(ss.str().c_str());
+    for (auto r : result_lj_l) {
+        r >> l1 >> j1 >> l2 >> j2 >> value;
         element_lj_l[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
     }
 
@@ -197,13 +183,9 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
     ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_jm c INNER JOIN tmp_jm t ON ("
        << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
        << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
-    SQLite3Result2 result_jm = db.query2(ss.str().c_str());
-    for (const auto r : result_jm) {
-        r[0] >> j1;
-        r[1] >> m1;
-        r[2] >> j2;
-        r[3] >> m2;
-        r[4] >> value;
+    SQLite3Result result_jm = db.query(ss.str().c_str());
+    for (auto r : result_jm) {
+        r >> j1 >> m1 >> j2 >> m2 >> value;
         element_jm[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
     }
 
