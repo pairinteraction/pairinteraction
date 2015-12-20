@@ -32,6 +32,7 @@ public:
         type_ids[std::type_index(typeid(float))] = 2032; // float32_t
         type_ids[std::type_index(typeid(double))] = 2064; // float64_t
         type_ids[std::type_index(typeid(char))] = 3000;
+        type_ids[std::type_index(typeid(bool))] = 4000;
     }
 
     void load(const bytes_t &bytes) {
@@ -311,6 +312,10 @@ private:
             auto pbytes_reinterpreted = reinterpret_cast<const char*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
             cpbytes += sizeof(char)*num;
+        } else if (type == type_ids[std::type_index(typeid(bool))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const bool*>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
+            cpbytes += sizeof(bool)*num;
         }else {
             auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
@@ -381,7 +386,12 @@ private:
             std::vector<char> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
             data.insert(data.end(),vectmp.begin(), vectmp.end());
             cpbytes += sizeof(char)*num;
-        }else {
+        } else if (type == type_ids[std::type_index(typeid(bool))]) {
+            auto pbytes_reinterpreted = reinterpret_cast<const bool*>(&(*cpbytes));
+            std::vector<bool> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
+            data.insert(data.end(),vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(bool)*num;
+        } else {
             auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
             std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num,back_inserter(data));
             cpbytes += sizeof(T)*num;

@@ -2,50 +2,67 @@
 #define CONF_PARSER_HPP
 
 #include <string>
+#include <sstream>
+#include <map>
 #include "dtypes.h"
 
 class Configuration {
 public:
-  int load_from_json(std::string filename);
-  std::string element;
-  int n1;
-  int n2;
-  int l1;
-  int l2;
-  real_t j1;
-  real_t j2;
-  real_t m1;
-  real_t m2;
-  std::string symmetry;
-  real_t angle;
-  bool enable_dipdip;
-  bool enable_dipquad;
-  bool enable_quadquad;
-  real_t efield_strength;
-  bool efield_increasing;
-  real_t bfield_strength;
-  bool bfield_increasing;
-  int delta_n;
-  int delta_l;
-  int delta_m;
-  real_t delta_energy;
-  bool preserve_M;
-  bool preserve_submatrix;
-  bool preserve_parityL;
-  real_t distance_min;
-  real_t distance_max;
-  int distance_steps;
-  real_t energyrange;
-/*
- diagonalizer;
- cutoff_eigenVec;
- cutoff_interactionMat;
- slepc_numeigenpairs;
- slepc_solvertollerance;
- slepc_maxiteration;
- slp_blockdimension;
- slp_enablesquaregrid;
-*/
+    class value {
+    public:
+        value();
+        value(std::stringstream val);
+        std::string str();
+        void str(std::string s);
+        template<typename T>
+        Configuration::value& operator<<(const T& rhs) {
+            val << rhs;
+            return *this;
+        }
+        template<typename T>
+        Configuration::value& operator>>(T& rhs) {
+            val >> rhs;
+            return *this;
+        }
+        template<typename T>
+        Configuration::value& operator=(const T& rhs) {
+            val.str(std::string());
+            val << rhs;
+            return *this;
+        }
+        Configuration::value& operator=(Configuration::value& rhs);
+    private:
+        std::stringstream val;
+    };
+
+    class iterator {
+    public:
+        class entry {
+        public:
+            entry(const std::string key, Configuration::value& value);
+            const std::string key;
+            Configuration::value& value;
+        };
+        iterator(std::map<std::string, Configuration::value>::iterator itr);
+        bool operator!= (const iterator& other) const;
+        const iterator& operator++ ();
+        iterator::entry operator* ();
+    private:
+        std::map<std::string, Configuration::value>::iterator itr;
+        int pos, nColumn;
+        int rc;
+    };
+
+    int load_from_json(std::string filename);
+    int save_to_json(std::string filename);
+    Configuration::value &operator[](std::string key);
+    size_t size() const;
+    Configuration::iterator begin();
+    Configuration::iterator end();
+    bool operator==(Configuration &rhs);
+
+private:
+    std::map<std::string, Configuration::value> params;
 };
 
 

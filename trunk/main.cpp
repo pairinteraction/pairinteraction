@@ -8,6 +8,8 @@
 #include "QuantumDefect.hpp"
 #include "Basisnames.h"
 #include "MatrixElements.h"
+#include "SQLite.hpp"
+#include "ConfParser.hpp"
 
 #include <memory>
 #include <tuple>
@@ -32,6 +34,10 @@
 #include <Eigen/Sparse>
 #include <Eigen/Eigenvalues>
 
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/algorithm/hex.hpp>
+#include <boost/filesystem.hpp>
 
 /*
 ///////////////////// Sources /////////////////////
@@ -327,6 +333,7 @@ public:
             // serialize vectors of primitive data types
             Serializer s;
             s << name;
+            s << isExisting_;
             idxStart = s.position();
             s << entries_flags;
             s << entries_rows;
@@ -368,6 +375,7 @@ public:
         Serializer s;
         s.load(bytes);
         s >> name;
+        s >> isExisting_;
         idxStart = s.position();
         s >> entries_flags;
         s >> entries_rows;
@@ -415,12 +423,33 @@ public:
         std::copy(basis_indptr.begin(),basis_indptr.end(),basis_.outerIndexPtr());
         basis_.finalize();
     }
-    void setFilename(std::string name) {
+    void addFilename(std::string name) {
+        bytes.clear();
         filename_ = name;
+    }
+    void addIsExisting(bool isExisting) {
+        bytes.clear();
+        isExisting_ = isExisting;
     }
 
     std::string& filename() {
         return filename_;
+    }
+
+    uint64_t hashEntries() {
+        // TODO bring this functionality to the matrix class and use it for serialization, too
+        doSerialization();
+        return utils::FNV64(&bytes[idxStart], bytes.size());
+    }
+
+    uint64_t hashBasis() {
+        // TODO bring this functionality to the matrix class and use it for serialization, too
+        doSerialization();
+        return utils::FNV64(&bytes[idxStart], bytes.size());
+    }
+
+    bool exist() {
+        return isExisting_;
     }
 
     void save() {
@@ -449,6 +478,7 @@ public:
             std::vector<char> name(filename_.begin(), filename_.end());
             Serializer s;
             s << name;
+            s << isExisting_;
             idxStart = s.position();
             s.save(bytes);
             bytes.resize(size_file/sizeof(byte_t)+idxStart);
@@ -582,6 +612,7 @@ protected:
     size_t idxStart;
 
     std::string filename_;
+    bool isExisting_;
 
     std::vector<eigen_triplet_t> triplets_basis;
     std::vector<eigen_triplet_t> triplets_entries;
@@ -712,7 +743,7 @@ protected:
     std::shared_ptr<Hamiltonianmatrix> doProcessing(std::shared_ptr<Hamiltonianmatrix> work) {
 
         // if results can not be loaded
-        if (true or !work->load()) {
+        if (!work->exist() || !work->load()) {
             // diagonalization
             Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
@@ -731,9 +762,8 @@ protected:
 
             // save result
             work->save();
-
-            std::cout << evals.size() << std::endl;
         }
+        std::cout << "diagonalized" << std::endl;
         return work;
     }
 
@@ -743,11 +773,11 @@ protected:
 
 class HamiltonianOne : public Hamiltonian{
 public:
-    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, const StateOne &startstate1 , const StateOne &startstate2) : Hamiltonian(mpi), basis_one(startstate1, startstate2) {
+    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<Configuration> config, const StateOne &startstate1 , const StateOne &startstate2) : Hamiltonian(mpi), config(config), basis_one(startstate1, startstate2) {
         build();
     }
 
-    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, const StateOne &startstate) : Hamiltonian(mpi), basis_one(startstate) {
+    HamiltonianOne(std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<Configuration> config, const StateOne &startstate) : Hamiltonian(mpi), config(config), basis_one(startstate) {
         build();
     }
 
@@ -963,20 +993,143 @@ protected:
             // --- construct Hamiltonians ---
             matrix.reserve(nSteps);
 
+            // create ConfParser object
+            Configuration params;
+            params["species"] = (*config)["species1"]; // or 1 <-> 2 // TODO
+            params["n1"] = (*config)["n1"]; // or 1 <-> 2 // TODO
+            params["l1"] = (*config)["l1"]; // or 1 <-> 2 // TODO
+            params["j1"] = (*config)["j1"]; // or 1 <-> 2 // TODO
+            params["m1"] = (*config)["m1"]; // or 1 <-> 2 // TODO
+            params["n2"] = (*config)["n2"]; // or 0 // TODO
+            params["l2"] = (*config)["l2"]; // or 0 // TODO
+            params["j2"] = (*config)["j2"]; // or 0 // TODO
+            params["m2"] = (*config)["m2"]; // or 0 // TODO
+            params["deltaN"] = (*config)["deltaN"];
+            params["deltaL"] = (*config)["deltaL"];
+            params["deltaJ"] = (*config)["deltaM"];
+            params["cutoff"] = (*config)["cutoff"];
+
+            // open database
+            std::string dbname;
+            if (utils::is_complex<scalar_t>::value) {
+                dbname = "cache_matrix_complex.db";
+            } else {
+                dbname = "cache_matrix_real.db";
+            }
+            SQLite3 db(dbname);
+
+            // initialize uuid generator
+            boost::uuids::random_generator generator;
+
+            // loop through steps
             for (size_t step = 0; step < nSteps; ++step) {
+
+                // calculate Hamiltonian
                 real_t normalized_position = step/(nSteps-1.);
+                scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
+                scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
+                scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
+                scalar_t B_0 = min_B_0+normalized_position*(max_B_0-min_B_0);
+                scalar_t B_p = min_B_p+normalized_position*(max_B_p-min_B_p);
+                scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
+
                 auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
-                                                               -hamiltonian_d_0*(min_E_0+normalized_position*(max_E_0-min_E_0))
-                                                               -hamiltonian_d_p*(min_E_p+normalized_position*(max_E_p-min_E_p))
-                                                               -hamiltonian_d_m*(min_E_m+normalized_position*(max_E_m-min_E_m))
-                                                               +hamiltonian_m_0*(min_B_0+normalized_position*(max_B_0-min_B_0))
-                                                               +hamiltonian_m_p*(min_B_p+normalized_position*(max_B_p-min_B_p))
-                                                               +hamiltonian_m_m*(min_B_m+normalized_position*(max_B_m-min_B_m))
+                                                               -hamiltonian_d_0*E_0
+                                                               -hamiltonian_d_p*E_p
+                                                               -hamiltonian_d_m*E_m
+                                                               +hamiltonian_m_0*B_0
+                                                               +hamiltonian_m_p*B_p
+                                                               +hamiltonian_m_m*B_m
                                                                );
 
-                std::stringstream s;
-                s << "output/hamiltonian_one_" << step << ".mat";
-                mat->setFilename(s.str());
+                // save fields to ConfParser object
+                params["Ex"] = min_E_x+normalized_position*(max_E_x-min_E_x);
+                params["Ey"] = min_E_y+normalized_position*(max_E_y-min_E_y);
+                params["Ez"] = min_E_z+normalized_position*(max_E_z-min_E_z);
+                params["Bx"] = min_B_x+normalized_position*(max_B_x-min_B_x);
+                params["By"] = min_B_y+normalized_position*(max_B_y-min_B_y);
+                params["Bz"] = min_B_z+normalized_position*(max_B_z-min_B_z);
+
+                // create table if necessary
+                std::stringstream query;
+                std::string spacer = "";
+
+                if (step == 0) {
+                    query << "CREATE TABLE IF NOT EXISTS cache_one (uuid text NOT NULL PRIMARY KEY, "
+                             "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                             "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
+                    for (auto p: params) {
+                        query << ", " << p.key << " text";
+                    }
+                    query << ", UNIQUE (";
+                    for (auto p: params) {
+                        query << spacer << p.key;
+                        spacer = ", ";
+                    }
+                    query << "));";
+                    db.exec(query.str());
+                }
+
+                // get uuid as filename
+                std::string uuid;
+
+                query.str(std::string());
+                spacer = "";
+                query << "SELECT uuid FROM cache_one WHERE ";
+                for (auto p: params) {
+                    query << spacer << p.key << "='" << p.value.str() << "'";
+                    spacer = " AND ";
+                }
+                query << ";";
+                SQLite3Result result = db.query(query.str());
+
+                if (result.size() == 1) {
+                    uuid = result.first().str();
+
+                    query.str(std::string());
+                    query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
+                    db.exec(query.str());
+                } else {
+                    boost::uuids::uuid u = generator();
+                    boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+
+                    query.str(std::string());
+                    query << "INSERT INTO cache_one (uuid";
+                    for (auto p: params) {
+                        query << ", " << p.key;
+                    }
+                    query << ") values ( '" << uuid << "'";
+                    for (auto p: params) {
+                        query << ", " << "'" << p.value.str() << "'";
+                    }
+                    query << ");";
+                    db.exec(query.str());
+                }
+
+                // check whether .mat and .json file exists and compare settings in program with settings in .json file
+                boost::filesystem::path path_mat, path_json;
+                path_mat = boost::filesystem::absolute("output/one_" + uuid + ".mat");
+                path_json = boost::filesystem::absolute("output/one_" + uuid + ".json");
+
+                bool is_existing = false;
+                if (boost::filesystem::exists(path_mat)) {
+                    if (boost::filesystem::exists(path_json)) {
+                        Configuration params_loaded;
+                        params_loaded.load_from_json(path_json.string());
+                        if (params == params_loaded) {
+                            is_existing = true;
+                        }
+                    }
+                }
+
+                // create .json file if "is_existing" is false
+                if (!is_existing) {
+                    params.save_to_json(path_json.string());
+                }
+
+                // save everything
+                mat->addFilename(path_mat.string());
+                mat->addIsExisting(is_existing);
 
                 matrix.push_back(std::move(mat));
             }
@@ -986,89 +1139,10 @@ protected:
 
         // === diagonalize matrices using MpiLoadbalancingSimple ===
         run(matrix, matrix_diag);
-
-
-
-
-
-
-
-
-
-
-
-
-
-        /*std::vector<eigen_triplet_t> triplets_energy;
-            std::vector<eigen_triplet_t> triplets_d_0;
-            std::vector<eigen_triplet_t> triplets_d_p;
-            std::vector<eigen_triplet_t> triplets_d_m;
-            std::vector<eigen_triplet_t> triplets_basis;
-            triplets_energy.reserve(basis_one.size()*basis_one.size()*0.1);
-            triplets_d_0.reserve(basis_one.size()*basis_one.size()*0.1);
-            triplets_d_p.reserve(basis_one.size()*basis_one.size()*0.1);
-            triplets_d_m.reserve(basis_one.size()*basis_one.size()*0.1);
-            triplets_basis.reserve(basis_one.size());
-
-            std::cout << 2.5 << std::endl;
-
-            // loop over basis states
-            for (const auto &state_col : basis_one) {
-                for (const auto &state_row : basis_one) {
-                    if (state_row.idx < state_col.idx) {
-                        continue;
-                    }
-
-                    // add entries
-                    if (state_row.idx == state_col.idx) {
-                        real_t val = energy_level("Rb",state_row.n,state_row.l,state_row.j);
-                        triplets_energy.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                    } else if (selection_rules(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m) ) {
-                        int order = 1;
-                        int q_pol = 0;
-                        real_t val = radial_element("Rb", state_row.n, state_row.l, state_row.j, order, "Rb", state_col.n, state_col.l, state_col.j) *
-                                angular_element(state_row.l, state_row.j, state_row.m, state_col.l, state_col.j, state_col.m, q_pol);
-
-                        if (fabs(val) > 1e-32) { // TODO
-                            triplets_d_0.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                        }
-                    }
-
-                    // add basis
-                    if (state_row.idx == state_col.idx) {
-                        triplets_basis.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
-                    }
-                }
-            }
-
-            std::cout << 2.6 << std::endl;
-
-            Hamiltonianmatrix hamiltonian_energy(basis_one.dim(),basis_one.dim());
-            Hamiltonianmatrix hamiltonian_d_0(basis_one.dim(),basis_one.dim());
-
-            hamiltonian_energy.entries().setFromTriplets(triplets_energy.begin(), triplets_energy.end());
-            hamiltonian_energy.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
-            hamiltonian_d_0.entries().setFromTriplets(triplets_d_0.begin(), triplets_d_0.end());
-            hamiltonian_d_0.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
-
-            std::cout << 2.7 << std::endl;
-
-            // loop over distances
-            for (size_t step = 0; step < nSteps; ++step) {
-                auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy+hamiltonian_d_0*step*1e-11);
-
-                std::stringstream s;
-                s << "output/hamiltonian_one_" << step << ".mat";
-                mat->setFilename(s.str());
-
-                matrix.push_back(std::move(mat));
-            }
-            std::cout << 2.8 << std::endl;
-        }*/
-
     }
 
 private:
+    std::shared_ptr<Configuration> config;
     BasisnamesOne basis_one;
 };
 
@@ -1241,7 +1315,7 @@ public:
 
                     std::stringstream s;
                     s << "output/hamiltonian_two_" << step << "_" << sub << ".mat";
-                    mat->setFilename(s.str());
+                    mat->addFilename(s.str());
 
                     // store the total Hamiltonian
                     matrix.push_back(std::move(mat));
@@ -1275,10 +1349,22 @@ int main(int argc, char **argv) {
     std::cout << std::unitbuf;
 
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
+    auto config = std::make_shared<Configuration>();
+    config->load_from_json("params.json"); // TODO Dateiname ueber Komandozeile uebergeben
 
-    StateTwo startstate({{66,66}}, {{0,0}}, {{0.5,0.5}}, {{0.5,0.5}}, {{0.5,0.5}}); // n, l, s, j, m // TODO
+    int n1, n2, l1, l2;
+    float j1, j2, m1, m2;
+    (*config)["n1"] >> n1;
+    (*config)["n2"] >> n2;
+    (*config)["l1"] >> l1;
+    (*config)["l2"] >> l2;
+    (*config)["j1"] >> j1;
+    (*config)["j2"] >> j2;
+    (*config)["m1"] >> m1;
+    (*config)["m2"] >> m2;
+    StateTwo startstate({{n1,n2}}, {{l1,l2}}, {{0.5,0.5}}, {{j1,j2}}, {{m1,m2}}); // TODO startsate(config)
 
-    HamiltonianOne hamiltonian_one(mpi, startstate.second());
+    HamiltonianOne hamiltonian_one(mpi, config, startstate.second());
     hamiltonian_one.saveLines();
 
     //HamiltonianOne hamiltonian_one1(mpi, startstate.first(), startstate.second());

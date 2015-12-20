@@ -89,6 +89,16 @@ else(JSONCPP_FOUND)
                       "==================\n")
 endif(JSONCPP_FOUND)
 
+find_package(Boost COMPONENTS filesystem system REQUIRED)
+if(Boost_FOUND)
+  include_directories(${Boost_INCLUDE_DIRS})
+  target_link_libraries(pairinteraction ${Boost_LIBRARIES})
+else(Boost_FOUND)
+  message(FATAL_ERROR "================\n"
+                      "Boost not found!\n"
+                      "================\n")
+endif(Boost_FOUND)
+
 # set c++11
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)

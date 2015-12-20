@@ -4,46 +4,88 @@
 #include <iostream>
 #include "json/json.h"
 
+Configuration::value::value() : val() {
+}
+Configuration::value::value(std::stringstream v) {
+    val.str(v.str());
+}
+std::string Configuration::value::str() {
+    return val.str();
+}
+void Configuration::value::str(std::string s) {
+    val.str(s);
+}
+Configuration::value& Configuration::value::operator=(Configuration::value& rhs) {
+    val.str(std::string());
+    val << rhs.str();
+    return *this;
+}
+Configuration::iterator::entry::entry(const std::string key, Configuration::value& value) : key(key), value(value) {
+}
+Configuration::iterator::iterator(std::map<std::string, Configuration::value>::iterator itr) : itr(itr) {
+}
+bool Configuration::iterator::operator!= (const iterator& other) const {
+    return itr != other.itr;
+}
+const Configuration::iterator& Configuration::iterator::operator++ () {
+    ++itr;
+    return *this;
+}
+Configuration::iterator::entry Configuration::iterator::operator* () {
+    return iterator::entry(itr->first, itr->second);
+}
 int Configuration::load_from_json(std::string filename)
 {
-  Json::Value datadict;
-  Json::Reader reader;
-  std::ifstream conffile(filename);
-  if ( !reader.parse(conffile, datadict) )
-  {
-    std::cerr << reader.getFormattedErrorMessages();
-    return 1;
-  }
-  
-  element            = datadict["element"].asString();
-  n1                 = datadict["n1"].asInt();
-  n2                 = datadict["n2"].asInt();
-  l1                 = datadict["l1"].asInt();
-  l2                 = datadict["l2"].asInt();
-  j1                 = datadict["j1"].asDouble();
-  j2                 = datadict["j2"].asDouble();
-  m1                 = datadict["m1"].asDouble();
-  m2                 = datadict["m2"].asDouble();
-  symmetry           = datadict["symmetry"].asString();
-  angle              = datadict["angle"].asDouble();
-  enable_dipdip      = datadict["enable_dipdip"].asBool();
-  enable_dipquad     = datadict["enable_dipquad"].asBool();
-  enable_quadquad    = datadict["enable_quadquad"].asBool();
-  efield_strength    = datadict["efield_strength"].asDouble();
-  efield_increasing  = datadict["efield_increasing"].asBool();
-  bfield_strength    = datadict["bfield_strength"].asDouble();
-  bfield_increasing  = datadict["bfield_increasing"].asBool();
-  delta_n            = datadict["delta_n"].asInt();
-  delta_l            = datadict["delta_l"].asInt();
-  delta_m            = datadict["delta_m"].asInt();
-  delta_energy       = datadict["delta_energy"].asDouble();
-  preserve_M         = datadict["preserve_M"].asBool();
-  preserve_submatrix = datadict["preserve_submatrix"].asBool();
-  preserve_parityL   = datadict["preserve_parityL"].asBool();
-  distance_min       = datadict["distance_min"].asDouble();
-  distance_max       = datadict["distance_max"].asDouble();
-  distance_steps     = datadict["distance_steps"].asInt();
-  energyrange        = datadict["energyrange"].asDouble();
+    Json::Value datadict;
+    Json::Reader reader;
+    std::ifstream conffile(filename);
+    if ( !reader.parse(conffile, datadict) )
+    {
+        std::cerr << reader.getFormattedErrorMessages();
+        conffile.close();
+        return 1;
+    }
+    conffile.close();
 
-  return 0;
+    for(Json::Value::iterator itr = datadict.begin(); itr !=datadict.end(); ++itr) {
+        params[itr.key().asString()] << itr->asString();
+    }
+
+    return 0;
+}
+int Configuration::save_to_json(std::string filename)
+{
+    Json::StyledWriter styledWriter;
+    Json::Value datadict;
+    std::ofstream conffile(filename);
+    for (auto p: *this) {
+        datadict[p.key] = p.value.str();
+    }
+    conffile << styledWriter.write(datadict);
+    conffile.close();
+
+    return 0;
+}
+Configuration::value& Configuration::operator [](std::string key) {
+    return params[key];
+}
+size_t Configuration::size() const {
+    return params.size();
+}
+Configuration::iterator Configuration::begin() {
+    return Configuration::iterator(std::move(params.begin()));
+}
+Configuration::iterator Configuration::end() {
+    return Configuration::iterator(std::move(params.end()));
+}
+bool Configuration::operator==(Configuration &rhs) { // TODO bool Configuration::operator==(const Configuration &rhs) const {
+    if (this->size() != rhs.size()) {
+        return false;
+    }
+    for (auto p: *this) {
+        if (rhs[p.key].str() != p.value.str()) {
+            return false;
+        }
+    }
+    return true;
 }
