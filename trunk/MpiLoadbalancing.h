@@ -105,9 +105,13 @@ protected:
             } else {
                 // --- Receive message from slaves ---
                 Message message_in = ReceiveFromSlave();
+                size_t num = numSlave2numWork[message_in.process];
 
                 // Save message
-                dataOut[numSlave2numWork[message_in.process]]->deserialize(message_in.data);
+                dataOut[num]->deserialize(message_in.data);
+
+                // Do rework
+                doRework(num);
 
                 // --- Send new work ---
                 numSlave2numWork[message_in.process]=numWork;
@@ -120,9 +124,13 @@ protected:
         for (unsigned int i = 0; i < numWorkingSlaves0; i++) {
             // --- Receive message from slaves ---
             Message message_in = ReceiveFromSlave();
+            size_t num = numSlave2numWork[message_in.process];
 
             // Save message
-            dataOut[numSlave2numWork[message_in.process]]->deserialize(message_in.data);
+            dataOut[num]->deserialize(message_in.data);
+
+            // Do rework
+            doRework(num);
         }
 
         // === Kill all slaves0 ===
@@ -137,6 +145,10 @@ protected:
     }
 
     virtual void runSlave() = 0;
+
+    virtual void doRework(size_t numWork) {
+        (void) numWork;
+    }
 
     void SendToSlave(Message &message) {
         mpi->world().Send(&message.data[0], message.size, BYTE_T, message.process, WORKTAG);

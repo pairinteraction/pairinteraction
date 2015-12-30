@@ -9,13 +9,13 @@ Configuration::value::value() : val() {
 Configuration::value::value(std::stringstream v) {
     val.str(v.str());
 }
-std::string Configuration::value::str() {
+std::string Configuration::value::str() const {
     return val.str();
 }
 void Configuration::value::str(std::string s) {
     val.str(s);
 }
-Configuration::value& Configuration::value::operator=(Configuration::value& rhs) {
+Configuration::value& Configuration::value::operator=(const Configuration::value& rhs) {
     val.str(std::string());
     val << rhs.str();
     return *this;
@@ -23,6 +23,9 @@ Configuration::value& Configuration::value::operator=(Configuration::value& rhs)
 Configuration::iterator::entry::entry(const std::string key, Configuration::value& value) : key(key), value(value) {
 }
 Configuration::iterator::iterator(std::map<std::string, Configuration::value>::iterator itr) : itr(itr) {
+}
+bool Configuration::iterator::operator== (const iterator& other) const {
+    return itr == other.itr;
 }
 bool Configuration::iterator::operator!= (const iterator& other) const {
     return itr != other.itr;
@@ -33,6 +36,23 @@ const Configuration::iterator& Configuration::iterator::operator++ () {
 }
 Configuration::iterator::entry Configuration::iterator::operator* () {
     return iterator::entry(itr->first, itr->second);
+}
+Configuration::const_iterator::entry::entry(const std::string key, const Configuration::value& value) : key(key), value(value) {
+}
+Configuration::const_iterator::const_iterator(std::map<std::string, Configuration::value>::const_iterator itr) : itr(itr) {
+}
+bool Configuration::const_iterator::operator== (const const_iterator& other) const {
+    return itr == other.itr;
+}
+bool Configuration::const_iterator::operator!= (const const_iterator& other) const {
+    return itr != other.itr;
+}
+const Configuration::const_iterator& Configuration::const_iterator::operator++ () {
+    ++itr;
+    return *this;
+}
+Configuration::const_iterator::entry Configuration::const_iterator::operator* () {
+    return const_iterator::entry(itr->first, itr->second);
 }
 int Configuration::load_from_json(std::string filename)
 {
@@ -66,11 +86,21 @@ int Configuration::save_to_json(std::string filename)
 
     return 0;
 }
-Configuration::value& Configuration::operator [](std::string key) {
+Configuration::value& Configuration::operator [](const std::string& key) {
     return params[key];
+}
+const Configuration::value& Configuration::operator [](const std::string& key) const{
+    return params.at(key);
 }
 size_t Configuration::size() const {
     return params.size();
+}
+Configuration::iterator Configuration::find (const std::string& key) {
+    return Configuration::iterator(std::move(params.find(key)));
+}
+
+Configuration::const_iterator Configuration::find (const std::string& key) const {
+    return Configuration::const_iterator(std::move(params.find(key)));
 }
 Configuration::iterator Configuration::begin() {
     return Configuration::iterator(std::move(params.begin()));
@@ -78,14 +108,22 @@ Configuration::iterator Configuration::begin() {
 Configuration::iterator Configuration::end() {
     return Configuration::iterator(std::move(params.end()));
 }
-bool Configuration::operator==(Configuration &rhs) { // TODO bool Configuration::operator==(const Configuration &rhs) const {
+Configuration::const_iterator Configuration::begin() const {
+    return Configuration::const_iterator(std::move(params.begin()));
+}
+Configuration::const_iterator Configuration::end() const {
+    return Configuration::const_iterator(std::move(params.end()));
+}
+bool Configuration::operator==(const Configuration &rhs) const {
     if (this->size() != rhs.size()) {
         return false;
     }
     for (auto p: *this) {
-        if (rhs[p.key].str() != p.value.str()) {
+        if (rhs.find(p.key) == rhs.end() || rhs[p.key].str() != p.value.str()) {
             return false;
         }
     }
     return true;
+}
+Configuration::Configuration() {
 }

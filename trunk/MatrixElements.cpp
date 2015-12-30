@@ -12,17 +12,21 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1) && (state1.n == state2.n);
 }
 
-MatrixElements::MatrixElements() {
-    k = 1;
-    species = "Rb";
-
+MatrixElements::MatrixElements(std::string species, int k) : species(species), k(k) {
     muB = 0.5;
     gS = 2.0023192;
-    gL = 1;    
+    gL = 1;
 }
 
-void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
-    //TODO: check if k = 1 in case of exist_m
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
+    precalculate(basis_one,exist_0,exist_p,exist_m,false,false,false);
+}
+
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
+    if ((exist_m_0 || exist_m_p || exist_m_m) && k != 1) {
+        std::cout << "For calculating momentum matrix elements, it must be k=1." << std::endl;
+        abort();
+    }
 
     SQLite3 db("cache_matrix_elements.db");
 
@@ -70,8 +74,8 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
 
     db.exec("begin transaction;");
 
-    for (const auto &state_col : basis_one) {
-        for (const auto &state_row : basis_one) {
+    for (const auto &state_col : *basis_one) {
+        for (const auto &state_row : *basis_one) {
             if (state_row.idx < state_col.idx) {
                 continue;
             }
@@ -193,7 +197,7 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
     std::cout << 8.311 << std::endl;
 
 
-    // calculate missing elements
+    // calculate missing elements and write them to the database
 
     db.exec("begin transaction;");
 
@@ -203,7 +207,7 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
-                        radial_element(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]); // TODO <Rb|Cs> not possible, so Rb is enough
+                        radial_element(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
 
                 ss.str(std::string());
                 ss << "insert into cache_nlj (species, k, n1, l1, j1, n2, l2, j2, value) values ("
@@ -270,12 +274,7 @@ void MatrixElements::precalculate(BasisnamesOne basis_one, bool exist_d_0, bool 
 
     db.exec("end transaction;");
 
-
-
     std::cout << 8.32 << std::endl;
-
-    // write missing elements to database
-    //TODO
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
