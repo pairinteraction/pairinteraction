@@ -6,7 +6,6 @@ SET(CMAKE_COLOR_MAKEFILE ON)
 SET(CMAKE_VERBOSE_MAKEFILE ON)
 
 set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/modules)
-set(CMAKE_CXX_COMPILER mpicxx)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -44,7 +43,7 @@ add_executable(pairinteraction ${pairinteraction_SRCS})
 # add external libraries
 find_package(Eigen3 REQUIRED)
 if(EIGEN3_FOUND)
-  include_directories(${EIGEN3_INCLUDE_DIR})
+  include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 else(EIGEN3_FOUND)
   message(FATAL_ERROR "=================\n"
                       "Eigen3 not found!\n"
@@ -72,7 +71,10 @@ endif(GSL_FOUND)
 
 find_package(MPI REQUIRED)
 if(MPI_FOUND)
-  target_link_libraries(pairinteraction ${MPI_LIBRARIES})
+  include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
+  target_link_libraries(pairinteraction ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+  set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
 else(MPI_FOUND)
   message(FATAL_ERROR "==============\n"
                       "MPI not found!\n"
@@ -104,27 +106,35 @@ set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)
 
 # CPack
-install(TARGETS pairinteraction RUNTIME DESTINATION bin)
+if(WIN32)
 
-set(CPACK_GENERATOR "TGZ;RPM;DEB")
+  # TODO: build NSIS installer
 
-# General
-set(CPACK_PACKAGE_NAME "pairinteraction")
-set(CPACK_PACKAGE_VERSION "0.1.1")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
+else(WIN32)
 
-# DEB
-set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, libgsl0ldbl, openmpi-bin, libjsoncpp0, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
-set(CPACK_DEBIAN_PACKAGE_SECTION "science")
-set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+  install(TARGETS pairinteraction RUNTIME DESTINATION bin)
 
-# RPM
-set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, libgsl0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc5")
-set(CPACK_RPM_PACKAGE_VENDOR "PI5")
-set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
-set(CPACK_RPM_PACKAGE_PRIORITY "optional")
+  set(CPACK_GENERATOR "TGZ;RPM;DEB")
 
-include(CPack)
+  # General
+  set(CPACK_PACKAGE_NAME "pairinteraction")
+  set(CPACK_PACKAGE_VERSION "0.0")
+  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
+
+  # DEB
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, libgsl0ldbl, openmpi-bin, libjsoncpp0, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
+  set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+  set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+  # RPM
+  set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
+  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, libgsl0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc5")
+  set(CPACK_RPM_PACKAGE_VENDOR "PI5")
+  set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
+  set(CPACK_RPM_PACKAGE_PRIORITY "optional")
+
+  include(CPack)
+
+endif(WIN32)
