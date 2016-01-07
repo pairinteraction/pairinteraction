@@ -102,3 +102,29 @@ endif(Boost_FOUND)
 # set c++11
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
 set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)
+
+# CPack
+install(TARGETS pairinteraction RUNTIME DESTINATION bin)
+
+set(CPACK_GENERATOR "TGZ;RPM;DEB")
+
+# General
+set(CPACK_PACKAGE_NAME "pairinteraction")
+set(CPACK_PACKAGE_VERSION "0.1.1")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
+
+# DEB
+set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, libgsl0ldbl, openmpi-bin, libjsoncpp0, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
+set(CPACK_DEBIAN_PACKAGE_SECTION "science")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+
+# RPM
+set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
+set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, libgsl0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc5")
+set(CPACK_RPM_PACKAGE_VENDOR "PI5")
+set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
+set(CPACK_RPM_PACKAGE_PRIORITY "optional")
+
+include(CPack)
