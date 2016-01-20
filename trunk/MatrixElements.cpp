@@ -154,7 +154,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
         SQLite3Result result_nlj = db.query(ss.str());
         for (auto r : result_nlj) {
-            r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
+            *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
             element_nlj[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -166,7 +166,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
         SQLite3Result result_lj_s = db.query(ss.str());
         for (auto r : result_lj_s) {
-            r >> l1 >> j1 >> l2 >> j2 >> value;
+            *r >> l1 >> j1 >> l2 >> j2 >> value;
             element_lj_s[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -177,7 +177,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
        << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
     SQLite3Result result_lj_l = db.query(ss.str());
     for (auto r : result_lj_l) {
-        r >> l1 >> j1 >> l2 >> j2 >> value;
+        *r >> l1 >> j1 >> l2 >> j2 >> value;
         element_lj_l[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
     }
 
@@ -187,7 +187,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
        << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
     SQLite3Result result_jm = db.query(ss.str());
     for (auto r : result_jm) {
-        r >> j1 >> m1 >> j2 >> m2 >> value;
+        *r >> j1 >> m1 >> j2 >> m2 >> value;
         element_jm[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
     }
 

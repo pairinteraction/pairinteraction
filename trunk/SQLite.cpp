@@ -7,7 +7,7 @@ SQLite3Result::iterator::iterator(const SQLite3Result* result, int pos, int nCol
 bool SQLite3Result::iterator::operator!= (const SQLite3Result::iterator& other) const {
     return pos != other.pos;
 }
-std::stringstream SQLite3Result::iterator::operator* () const {
+std::unique_ptr<std::stringstream> SQLite3Result::iterator::operator* () const {
     return result->getRow(pos);
 }
 const SQLite3Result::iterator& SQLite3Result::iterator::operator++ () {
@@ -28,20 +28,20 @@ SQLite3Result::iterator SQLite3Result::begin() const {
 SQLite3Result::iterator SQLite3Result::end() const {
     return SQLite3Result::iterator(this, nRow, nColumn);
 }
-std::stringstream SQLite3Result::first() const {
+std::unique_ptr<std::stringstream> SQLite3Result::first() const {
     return getRow(0);
 }
-std::stringstream SQLite3Result::header() const {
+std::unique_ptr<std::stringstream> SQLite3Result::header() const {
     return getRow(-1);
 }
-std::stringstream SQLite3Result::getRow(int pos) const {
+std::unique_ptr<std::stringstream> SQLite3Result::getRow(int pos) const {
     std::stringstream ss;
     std::string spacer = "";
     for (int i = 0; i < nColumn; ++i) {
         ss << spacer << azResult[(pos+1)*nColumn+i];
         spacer = " ";
     }
-    return ss;
+    return std::unique_ptr<std::stringstream>(new std::stringstream(ss.str()));
 }
 
 SQLite3::SQLite3(const std::string filename) : zErrMsg(NULL) {

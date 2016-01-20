@@ -55,7 +55,7 @@ real_t radial_element_cached(std::string species, int n1, int l1, real_t j1,
   ss.str(std::string());
   if (res.size() > 0) {
     printf("Element found!\n");
-    res.first() >> mu;
+    *res.first() >> mu;
   }
   printf("Element not found!\n");
 

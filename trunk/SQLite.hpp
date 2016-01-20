@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <sqlite3.h>
+#include <memory>
 #include "Iter.h"
 
 class SQLite3Result {
@@ -14,7 +15,7 @@ public:
     public:
         iterator(const SQLite3Result* result, int pos, int nColumn);
         bool operator!= (const iterator& other) const;
-        std::stringstream operator* () const;
+        std::unique_ptr<std::stringstream> operator* () const;
         const iterator& operator++ ();
     private:
         const SQLite3Result* result;
@@ -26,9 +27,9 @@ public:
     size_t size() const;
     SQLite3Result::iterator begin() const;
     SQLite3Result::iterator end() const;
-    std::stringstream first() const;
-    std::stringstream header() const;
-    std::stringstream getRow(int pos) const;
+    std::unique_ptr<std::stringstream> first() const;
+    std::unique_ptr<std::stringstream> header() const;
+    std::unique_ptr<std::stringstream> getRow(int pos) const;
     char **azResult;
     int nRow, nColumn;
 };
