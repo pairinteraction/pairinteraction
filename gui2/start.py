@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 from PyQt4 import QtCore, QtGui
 from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py
@@ -35,7 +37,8 @@ pg.setConfigOptions(antialias=True)
 
 class Converter:
     converter = dict()
-    converter['dimensionless'] = 1
+    dimensionless = Q('1')
+    converter[str(dimensionless.dimensionality)] = dimensionless
     au_energy = C('atomic unit of energy')/C('Planck constant')
     converter[str(au_energy.dimensionality)] = au_energy
     au_bfield = C('atomic unit of mag. flux density')
@@ -61,8 +64,7 @@ class Units:
     efield = Q('volt/centimeter').units
     bfield = Q('gauss').units
     angle = Q('degree').units
-    dimensionless = Q('dimensionless').units
-    
+    dimensionless = Q('1').units    
 
 class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
     def __init__(self, ui):
@@ -136,8 +138,12 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
     def load(self, f):
         params = json.load(f)
         for k, v in params.items():
-            try: self[k] = Q(v)
-            except (UndefinedUnitError, TypeError): self[k] = v            
+            try:
+                if not isinstance(v, str): raise TypeError
+                v = v.replace("dimensionless","1")
+                self[k] = Q(v)
+            except (UndefinedUnitError, TypeError):
+                self[k] = v
             
     def saveInAU(self, f, exclude = []):
         params = dict()
