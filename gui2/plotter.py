@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'plotter.ui'
 #
-# Created: Wed Jan 20 23:40:48 2016
+# Created: Wed Jan 20 23:44:57 2016
 #      by: PyQt4 UI code generator 4.11.3
 #
 # WARNING! All changes made in this file will be lost!
@@ -54,7 +54,7 @@ class Ui_plotwindow(object):
         self.toolBox.setFrameShape(QtGui.QFrame.NoFrame)
         self.toolBox.setObjectName(_fromUtf8("toolBox"))
         self.page_2 = QtGui.QWidget()
-        self.page_2.setGeometry(QtCore.QRect(0, 0, 400, 494))
+        self.page_2.setGeometry(QtCore.QRect(0, 0, 400, 534))
         self.page_2.setObjectName(_fromUtf8("page_2"))
         self.verticalLayout_2 = QtGui.QVBoxLayout(self.page_2)
         self.verticalLayout_2.setObjectName(_fromUtf8("verticalLayout_2"))
@@ -305,6 +305,7 @@ class Ui_plotwindow(object):
         self.label_39.setFont(font)
         self.label_39.setTextFormat(QtCore.Qt.AutoText)
         self.label_39.setAlignment(QtCore.Qt.AlignBottom|QtCore.Qt.AlignLeading|QtCore.Qt.AlignLeft)
+        self.label_39.setWordWrap(True)
         self.label_39.setObjectName(_fromUtf8("label_39"))
         self.verticalLayout_8.addWidget(self.label_39)
         self.verticalLayout_2.addWidget(self.groupBox_3)
@@ -1579,7 +1580,7 @@ class Ui_plotwindow(object):
         self.lineedit_system_deltaE2.setText(_translate("plotwindow", "0", None))
         self.label_35.setText(_translate("plotwindow", "unperturbed pair state (GHz)", None))
         self.lineedit_system_deltaE.setText(_translate("plotwindow", "0", None))
-        self.checkbox_system_samebasis.setText(_translate("plotwindow", "use same basis states for first and second atom", None))
+        self.checkbox_system_samebasis.setText(_translate("plotwindow", "use same basis for first and second atom", None))
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_2), _translate("plotwindow", "States", None))
         self.groupbox_system_efield.setTitle(_translate("plotwindow", "Electric field (Stark effect)", None))
         self.label_46.setText(_translate("plotwindow", "at start", None))
@@ -1625,9 +1626,9 @@ class Ui_plotwindow(object):
         self.toolBox.setItemText(self.toolBox.indexOf(self.page_4), _translate("plotwindow", "Numerics", None))
         self.tabWidget_2.setTabText(self.tabWidget_2.indexOf(self.tab_4), _translate("plotwindow", "System configuration", None))
         self.groupBox_11.setTitle(_translate("plotwindow", "Axes configuration", None))
-        self.label_26.setText(_translate("plotwindow", "minimum (GHz)", None))
+        self.label_26.setText(_translate("plotwindow", "min. (GHz)", None))
         self.lineedit_plot_minE.setText(_translate("plotwindow", "None", None))
-        self.label_27.setText(_translate("plotwindow", "maximum (GHz)", None))
+        self.label_27.setText(_translate("plotwindow", "max. (GHz)", None))
         self.lineedit_plot_maxE.setText(_translate("plotwindow", "None", None))
         self.groupbox_plot_points.setTitle(_translate("plotwindow", "Points", None))
         self.label_55.setText(_translate("plotwindow", "size", None))

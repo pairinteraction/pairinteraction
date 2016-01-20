@@ -66,7 +66,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>494</height>
+             <height>534</height>
             </rect>
            </property>
            <attribute name="label">
@@ -575,6 +575,9 @@
                  <property name="alignment">
                   <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
                  </property>
+                 <property name="wordWrap">
+                  <bool>true</bool>
+                 </property>
                 </widget>
                </item>
               </layout>
@@ -1005,7 +1008,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>use same basis states for first and second atom</string>
+                  <string>use same basis for first and second atom</string>
                  </property>
                  <property name="checked">
                   <bool>true</bool>
@@ -1894,7 +1897,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>minimum (GHz)</string>
+                      <string>min. (GHz)</string>
                      </property>
                      <property name="textFormat">
                       <enum>Qt::AutoText</enum>
@@ -1952,7 +1955,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>maximum (GHz)</string>
+                      <string>max. (GHz)</string>
                      </property>
                      <property name="textFormat">
                       <enum>Qt::AutoText</enum>
