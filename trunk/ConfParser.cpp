@@ -125,5 +125,8 @@ bool Configuration::operator==(const Configuration &rhs) const {
     }
     return true;
 }
+size_t Configuration::count(const std::string& key) const {
+    return params.count(key);
+}
 Configuration::Configuration() {
 }

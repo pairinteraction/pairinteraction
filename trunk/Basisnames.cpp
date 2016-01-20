@@ -10,8 +10,23 @@ BasisnamesOne BasisnamesOne::fromFirst(const Configuration &config) {
    config["m1"] >> startstate.m;
 
    BasisnamesOne basisnames;
+   basisnames._constructedFromFirst = true;
    basisnames.configure(config);
    basisnames.build(startstate, config["species1"].str());
+   return basisnames;
+}
+BasisnamesOne BasisnamesOne::fromFirst(std::shared_ptr<const BasisnamesTwo> basis_two) {
+   Configuration config = basis_two->getConf();
+   StateOne startstate;
+   config["n1"] >> startstate.n;
+   config["l1"] >> startstate.l;
+   config["j1"] >> startstate.j;
+   config["m1"] >> startstate.m;
+
+   BasisnamesOne basisnames;
+   basisnames._constructedFromFirst = true;
+   basisnames.configure(config);
+   basisnames.build(startstate, config["species1"].str(), basis_two, 0);
    return basisnames;
 }
 BasisnamesOne BasisnamesOne::fromSecond(const Configuration &config) {
@@ -22,8 +37,23 @@ BasisnamesOne BasisnamesOne::fromSecond(const Configuration &config) {
     config["m2"] >> startstate.m;
 
     BasisnamesOne basisnames;
+    basisnames._constructedFromFirst = false;
     basisnames.configure(config);
     basisnames.build(startstate, config["species2"].str());
+    return basisnames;
+}
+BasisnamesOne BasisnamesOne::fromSecond(std::shared_ptr<const BasisnamesTwo> basis_two) {
+    Configuration config = basis_two->getConf();
+    StateOne startstate;
+    config["n2"] >> startstate.n;
+    config["l2"] >> startstate.l;
+    config["j2"] >> startstate.j;
+    config["m2"] >> startstate.m;
+
+    BasisnamesOne basisnames;
+    basisnames._constructedFromFirst = false;
+    basisnames.configure(config);
+    basisnames.build(startstate, config["species2"].str(),basis_two, 1);
     return basisnames;
 }
 BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
@@ -42,20 +72,24 @@ BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
         abort();
     }
 
-    if ((startstate.n[0] == startstate.n[1]) &&
+    BasisnamesOne basisnames;
+    basisnames._constructedFromFirst = false;
+    basisnames.configure(config);
+    basisnames.build(startstate.order(), config["species1"].str());
+    return basisnames;
+
+    /*if ((startstate.n[0] == startstate.n[1]) &&
         (startstate.l[0] == startstate.l[1]) &&
         (startstate.j[0] == startstate.j[1]) &&
         (startstate.m[0] == startstate.m[1])) {
         BasisnamesOne basisnames;
+        basisnames._constructedFromFirst = false;
         basisnames.configure(config);
         basisnames.build(startstate.first(), config["species1"].str());
         return basisnames;
     } else {
-        BasisnamesOne basisnames;
-        basisnames.configure(config);
-        basisnames.build(startstate.order(), config["species1"].str());
-        return basisnames;
-    }
+
+    }*/ // TODO
 }
 void BasisnamesOne::build(StateTwo startstate, std::string species) {
     states_initial.push_back(startstate.first());
@@ -102,8 +136,6 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
     names_ = std::vector<StateOne>(names_set.begin(), names_set.end());
 
     dim_ = idx;
-
-    std::cout << dim_ << std::endl;
 }
 void BasisnamesOne::build(StateOne startstate, std::string species) {
     states_initial.push_back(startstate);
@@ -133,10 +165,119 @@ void BasisnamesOne::build(StateOne startstate, std::string species) {
 
     dim_ = idx;
 }
+void BasisnamesOne::build(StateOne startstate, std::string species, std::shared_ptr<const BasisnamesTwo> basis_two, int i) {
+    states_initial.push_back(startstate);
+
+    conf["species"] << species;
+    conf["n1"] << startstate.n;
+    conf["l1"] << startstate.l;
+    conf["j1"] << startstate.j;
+    conf["m1"] << startstate.m;
+    conf["n2"] << "";
+    conf["l2"] << "";
+    conf["j2"] << "";
+    conf["m2"] << "";
+
+    std::unordered_set<StateOne> names_set; // TODO auf das sortierte set wechseln
+
+    idx_t idx = 0;
+
+    // loop over quantum numbers
+    for (auto state : *basis_two) {
+        auto result = names_set.insert(StateOne(idx,state.n[i],state.l[i],0.5,state.j[i],state.m[i]));
+        if (result.second) idx++;
+    }
+
+    names_ = std::vector<StateOne>(names_set.begin(), names_set.end());
+
+    dim_ = idx;
+}
 const std::vector<StateOne>& BasisnamesOne::initial() const {
     return states_initial;
 }
 void BasisnamesOne::removeUnnecessaryStates(const std::vector<bool> &is_necessary) {
+    auto tmp = names_;
+    names_.clear();
+    names_.reserve(tmp.size());
+
+    // loop over all one-atom states
+    idx_t idx = 0;
+    for (auto state : tmp) {
+        if (is_necessary[state.idx]) {
+            state.idx = idx++;
+            names_.push_back(state);
+        }
+    }
+
+    dim_ = idx;
+    names_.shrink_to_fit();
+}
+
+
+bool BasisnamesOne::constructedFromFirst() {
+    return _constructedFromFirst;
+}
+
+BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1) {
+    const Configuration conf1 = basis_one1->getConf();
+
+    if (conf1["n2"].str() == "") {
+        std::cout << "BasisnamesTwo can be only constructed from two BasisnamesOne::fromFirst / BasisnamesOne::fromSecond." << std::endl;
+        abort();
+    }
+
+    configure(conf1);
+    conf["combined"] << 1;
+
+    StateTwo startstate;
+    conf1["n1"] >> startstate.n[0];
+    conf1["l1"] >> startstate.l[0];
+    conf1["j1"] >> startstate.j[0];
+    conf1["m1"] >> startstate.m[0];
+    conf1["n2"] >> startstate.n[1];
+    conf1["l2"] >> startstate.l[1];
+    conf1["j2"] >> startstate.j[1];
+    conf1["m2"] >> startstate.m[1];
+
+    std::array<std::string,2> species({{conf1["species"].str(),conf1["species"].str()}}); // TODO : species in state class mit aufnehmen
+    build(startstate, species, basis_one1, basis_one1);
+}
+
+
+BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
+    const Configuration conf1 = basis_one1->getConf();
+    const Configuration conf2 = basis_one2->getConf();
+
+    if (conf1["n2"].str() != "" || conf2["n2"].str() != "") {
+        std::cout << "BasisnamesTwo can be only constructed from one single BasisnamesOne::fromBoth." << std::endl;
+        abort();
+    }
+
+    configure(conf1);
+    conf["combined"] << 0;
+
+    StateTwo startstate;
+    conf1["n1"] >> startstate.n[0];
+    conf1["l1"] >> startstate.l[0];
+    conf1["j1"] >> startstate.j[0];
+    conf1["m1"] >> startstate.m[0];
+    conf2["n1"] >> startstate.n[1];
+    conf2["l1"] >> startstate.l[1];
+    conf2["j1"] >> startstate.j[1];
+    conf2["m1"] >> startstate.m[1];
+
+    StateTwo startstateOrdered = startstate.order();
+
+    if (startstateOrdered != startstate) {
+        std::array<std::string,2> speciesOrdered({{conf2["species"].str(),conf1["species"].str()}}); // TODO : species in state class mit aufnehmen
+        build(startstateOrdered, speciesOrdered, basis_one2, basis_one1);
+    } else {
+        std::array<std::string,2> speciesOrdered({{conf1["species"].str(),conf2["species"].str()}}); // TODO : species in state class mit aufnehmen
+        build(startstateOrdered, speciesOrdered, basis_one1, basis_one2);
+    }
+}
+
+void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessary) {
     auto tmp = names_;
     names_.clear();
     names_.reserve(tmp.size());
@@ -154,57 +295,29 @@ void BasisnamesOne::removeUnnecessaryStates(const std::vector<bool> &is_necessar
     names_.shrink_to_fit();
 }
 
+void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
+    conf["species1"] << species[0];
+    conf["n1"] << startstate.n[0];
+    conf["l1"] << startstate.l[0];
+    conf["j1"] << startstate.j[0];
+    conf["m1"] << startstate.m[0];
+    conf["species2"] << species[0];
+    conf["n2"] << startstate.n[1];
+    conf["l2"] << startstate.l[1];
+    conf["j2"] << startstate.j[1];
+    conf["m2"] << startstate.m[1];
 
-
-
-
-BasisnamesTwo::BasisnamesTwo(const BasisnamesOne &basis_one1, const BasisnamesOne &basis_one2) {
-    const Configuration conf1 = basis_one2.getConf();
-    const Configuration conf2 = basis_one2.getConf();
-    if (conf1 == conf2) {
-        conf = conf1;
-    } else {
-        conf = conf1;
-        conf["n1"] = conf1["n"];
-        conf["l1"] = conf1["l"];
-        conf["j1"] = conf1["j"];
-        conf["m1"] = conf1["m"];
-        conf["n2"] = conf2["n"];
-        conf["l2"] = conf2["l"];
-        conf["j2"] = conf2["j"];
-        conf["m2"] = conf2["m"];
-        // conf.erase("n");
-        // conf.erase("l");
-        // conf.erase("j");
-        // conf.erase("m");
-    }
-
-    configure(basis_one1.getConf());
-
-    size_t size = basis_one1.size()*basis_one2.size();
+    size_t size = basis_one1->size()*basis_one2->size();
     names_.reserve(size);
 
     idx_t idx = 0;
 
     // loop over single atom states
-    for (const auto &state_1 : basis_one1) {
-        for (const auto &state_2 : basis_one2) {
+    for (const auto &state_1 : *basis_one1) {
+        for (const auto &state_2 : *basis_one2) {
             names_.push_back(StateTwo(idx++,state_1,state_2));
         }
     }
-}
 
-void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &isNecessary) {
-    auto tmp = names_;
-    names_.clear();
-    names_.reserve(tmp.size());
-
-    // loop over all two-atom states
-    for (auto state : tmp) {
-        if (isNecessary[state.idx]) {
-            names_.push_back(state);
-        }
-    }
-
-    names_.shrink_to_fit();
+    dim_ = idx;
 }

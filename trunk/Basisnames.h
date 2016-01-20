@@ -56,21 +56,28 @@ protected:
 
 };
 
+class BasisnamesTwo;
+
 
 class BasisnamesOne : public Basisnames<StateOne>{
 public:
     /*BasisnamesOne(const Configuration &config, const StateOne &startstate);
     BasisnamesOne(const Configuration &config, const StateTwo &startstate);*/
     static BasisnamesOne fromFirst(const Configuration &config);
+    static BasisnamesOne fromFirst(std::shared_ptr<const BasisnamesTwo> basis_two);
     static BasisnamesOne fromSecond(const Configuration &config);
+    static BasisnamesOne fromSecond(std::shared_ptr<const BasisnamesTwo> basis_two);
     static BasisnamesOne fromBoth(const Configuration &config);
     const std::vector<StateOne>& initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &is_necessary);
+    bool constructedFromFirst();
 private:
     BasisnamesOne();
     void build(StateOne startstate, std::string species);
+    void build(StateOne startstate, std::string species, std::shared_ptr<const BasisnamesTwo> basis_two, int i);
     void build(StateTwo startstate, std::string species);
     std::vector<StateOne> states_initial;
+    bool _constructedFromFirst;
 };
 
 
@@ -78,8 +85,11 @@ private:
 
 class BasisnamesTwo : public Basisnames<StateTwo>{
 public:
-    BasisnamesTwo(const BasisnamesOne &basis_one1, const BasisnamesOne &basis_one2);
+    BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);
+    BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1);
     void removeUnnecessaryStates(const std::vector<bool> &isNecessary);
+protected:
+    void build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);
 };
 
 #endif

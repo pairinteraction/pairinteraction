@@ -20,6 +20,8 @@ push_element('j2', 0.5, 'j2')
 push_element('m2', -0.5, 'm2')
 
 push_element('steps', 21, 'Simulation steps')
+push_element('minR', 0, 'Minimal distance (au)')
+push_element('maxR', 1e5, 'Maximal distance (au)')
 push_element('minBx', 0, 'Minimal b-field in X-direction (au)')
 push_element('minBy', 0, 'Minimal b-field in Y-direction (au)')
 push_element('minBz', 2.127191e-8, 'Minimal b-field in Z-direction (au)')

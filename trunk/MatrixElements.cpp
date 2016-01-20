@@ -142,8 +142,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     db.exec("end transaction;");
 
-    std::cout << 8.31 << std::endl;
-
     // load from database
     int n1, n2, l1, l2;
     float j1, j2, m1, m2;
@@ -193,10 +191,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         element_jm[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
     }
 
-
-    std::cout << 8.311 << std::endl;
-
-
     // calculate missing elements and write them to the database
 
     db.exec("begin transaction;");
@@ -219,8 +213,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             }
         }
     }
-
-    std::cout << 8.312 << std::endl;
 
     if (exist_m_0 || exist_m_p || exist_m_m) {
         for (auto &element : element_lj_s) { // j1 = s, j2 = l
@@ -273,8 +265,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     db.exec("end transaction;");
-
-    std::cout << 8.32 << std::endl;
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {

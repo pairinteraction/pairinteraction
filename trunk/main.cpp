@@ -221,6 +221,9 @@ public:
     friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs) {
         return lhs.duplicate(ASYM, rhs);
     }
+    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
+        return lhs.duplicate(rhs, deltaE);
+    }
     friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs) {
         return lhs.duplicate(ALL, rhs);
     }
@@ -509,6 +512,109 @@ protected:
             triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
         }
     }
+    Hamiltonianmatrix duplicate(const Hamiltonianmatrix &rhs, const real_t &deltaE) const {
+        real_t tol = 1e-32;
+
+        size_t num_basisvectors = this->num_basisvectors()*rhs.num_basisvectors();
+        size_t num_coordinates = this->num_coordinates()*rhs.num_coordinates();
+
+        size_t size_basis = basis_.nonZeros()/this->num_basisvectors() * rhs.basis().nonZeros()/rhs.num_basisvectors() * num_basisvectors;
+        size_t size_entries = num_basisvectors;
+
+        Hamiltonianmatrix mat(size_basis, size_entries);
+
+        // --- mapping ---
+
+        std::vector<ptrdiff_t> mapping(num_basisvectors, -1);
+
+        eigen_vector_t diag1 = entries_.diagonal();
+        eigen_vector_t diag2 = rhs.entries().diagonal();
+
+        size_t i = 0;
+
+        for (size_t idx_1 = 0; idx_1 < this->num_basisvectors(); ++idx_1) {
+            for (size_t idx_2 = 0; idx_2 < rhs.num_basisvectors(); ++idx_2) {
+                size_t idx = rhs.num_basisvectors()*idx_1 + idx_2;
+                scalar_t val = diag1[idx_1] + diag2[idx_2]; // diag(V) x I + I x diag(V)
+
+                if (std::abs(val) < deltaE) {
+                    mapping[idx] = i++;
+                }
+            }
+        }
+
+        num_basisvectors = i;
+
+        // --- duplicate basis_ ---
+
+        for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+            for (eigen_iterator_t triple_1(basis_,k_1); triple_1; ++triple_1) {
+                for (eigen_idx_t k_2=0; k_2<rhs.basis().outerSize(); ++k_2) {
+                    for (eigen_iterator_t triple_2(rhs.basis(),k_2); triple_2; ++triple_2) {
+                        ptrdiff_t col = mapping[rhs.num_basisvectors()*triple_1.col() + triple_2.col()]; // basis vector
+                        if (col >= 0) {
+                            size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
+                            scalar_t val = triple_1.value() * triple_2.value();
+
+                            mat.addBasis(row,col,val);
+                        }
+                    }
+                }
+            }
+        }
+
+        // --- duplicate entries_ ---
+
+        // V x I
+        for (eigen_idx_t k=0; k<entries_.outerSize(); ++k) {
+            for (eigen_iterator_t it(entries_,k); it; ++it) {
+                for (size_t unitmatrix_idx = 0; unitmatrix_idx < rhs.num_basisvectors(); ++unitmatrix_idx) {
+                    scalar_t val = it.value();
+
+                    if (std::abs(val) > tol) {
+                        size_t row_1 = it.row();
+                        size_t row_2 = unitmatrix_idx;
+                        size_t col_1 = it.col();
+                        size_t col_2 = unitmatrix_idx;
+
+                        ptrdiff_t row = mapping[rhs.num_basisvectors()*row_1 + row_2];
+                        ptrdiff_t col = mapping[rhs.num_basisvectors()*col_1 + col_2];
+
+                        if (row >= 0 && col >= 0) {
+                            mat.addEntries(row,col,val);
+                        }
+                    }
+                }
+            }
+        }
+
+        // I x V
+        for (eigen_idx_t k=0; k<rhs.entries().outerSize(); ++k) {
+            for (eigen_iterator_t it(rhs.entries(),k); it; ++it) {
+                for (size_t unitmatrix_idx = 0; unitmatrix_idx < this->num_basisvectors(); ++unitmatrix_idx) {
+                    scalar_t val = it.value();
+
+                    if (std::abs(val) > tol) {
+                        size_t row_1 = unitmatrix_idx;
+                        size_t row_2 = it.row();
+                        size_t col_1 = unitmatrix_idx;
+                        size_t col_2 = it.col();
+
+                        ptrdiff_t row = mapping[rhs.num_basisvectors()*row_1 + row_2];
+                        ptrdiff_t col = mapping[rhs.num_basisvectors()*col_1 + col_2];
+
+                        if (row >= 0 && col >= 0) {
+                            mat.addEntries(row,col,val);
+                        }
+                    }
+                }
+            }
+        }
+
+        mat.compress(num_basisvectors, num_coordinates);
+
+        return mat;
+    }
     Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs) const {
         // --- mapping ---
         idx_t i = 0;
@@ -742,7 +848,6 @@ public:
 
 protected:
     std::shared_ptr<Hamiltonianmatrix> doProcessing(std::shared_ptr<Hamiltonianmatrix> work) {
-
         // if results can not be loaded
         if (!work->exist() || !work->load()) {
             // diagonalization
@@ -768,13 +873,18 @@ protected:
         return work;
     }
 
-    void doRework(size_t numWork) {
-        std::cout << ">>OUT " << matrix_path[numWork] << std::endl;
+    void doPrework(size_t numWork) {
+        std::cout << ">>DIM" << std::setw(7) << matrix_dimension[numWork] << std::endl;
+    }
+
+    void doPostwork(size_t numWork) {
+        std::cout << ">>OUT" << std::setw(7) << numWork+1 << " " << matrix_path[numWork] << std::endl;
     }
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag;
     std::vector<std::string> matrix_path;
+    std::vector<size_t> matrix_dimension;
 };
 
 class HamiltonianOne : public Hamiltonian{
@@ -784,8 +894,12 @@ public:
         build();
     }
 
-    const BasisnamesOne& names() const { //TODO entfernen
-        return *basis_one;
+    std::shared_ptr<const BasisnamesOne> names() const {
+        return basis_one;
+    }
+
+    const Configuration& getConf() const { // TODO in Configurable Klasse auslagern, von der geerbt werrden soll
+        return conf;
     }
 
 protected:
@@ -808,7 +922,7 @@ protected:
 
     void configure(const Configuration &config) {
         conf = basis_one->getConf();
-        conf["deltaE"] = config["deltaE"];
+        conf["deltaE"] = basis_one->constructedFromFirst() ? config["deltaE1"] : config["deltaE2"]; // TODO
 
         conf["deltaE"] >> deltaE;
         conf["species"] >> species;
@@ -1038,24 +1152,7 @@ protected:
 
             // loop through steps
             for (size_t step = 0; step < nSteps; ++step) {
-
-                // calculate Hamiltonian
                 real_t normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
-                scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
-                scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
-                scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
-                scalar_t B_0 = min_B_0+normalized_position*(max_B_0-min_B_0);
-                scalar_t B_p = min_B_p+normalized_position*(max_B_p-min_B_p);
-                scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
-
-                auto mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
-                                                               -hamiltonian_d_0*E_0
-                                                               -hamiltonian_d_p*E_p
-                                                               -hamiltonian_d_m*E_m
-                                                               +hamiltonian_m_0*B_0
-                                                               +hamiltonian_m_p*B_p
-                                                               +hamiltonian_m_m*B_m
-                                                               );
 
                 // save fields to ConfParser object
                 params["Ex"] = min_E_x+normalized_position*(max_E_x-min_E_x);
@@ -1146,12 +1243,38 @@ protected:
                     params.save_to_json(path_json.string());
                 }
 
+                // calculate Hamiltonian if "is_existing" is false
+                std::shared_ptr<Hamiltonianmatrix> mat;
+                if (!is_existing) {
+                    scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
+                    scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
+                    scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
+                    scalar_t B_0 = min_B_0+normalized_position*(max_B_0-min_B_0);
+                    scalar_t B_p = min_B_p+normalized_position*(max_B_p-min_B_p);
+                    scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
+
+                    mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
+                                                              -hamiltonian_d_0*E_0
+                                                              -hamiltonian_d_p*E_p
+                                                              -hamiltonian_d_m*E_m
+                                                              +hamiltonian_m_0*B_0
+                                                              +hamiltonian_m_p*B_p
+                                                              +hamiltonian_m_m*B_m
+                                                              );
+                } else {
+                    mat = std::make_shared<Hamiltonianmatrix>();
+                    //mat->compress(hamiltonian_energy.num_basisvectors(),hamiltonian_energy.num_coordinates());
+                }
+
                 // save everything
                 mat->addFilename(path_mat.string());
                 mat->addIsExisting(is_existing);
                 matrix.push_back(std::move(mat));
                 matrix_path.push_back(path.string());
+                matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
             }
+
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
 
             std::cout << 8.6 << std::endl;
         }
@@ -1171,13 +1294,342 @@ private:
 
 class HamiltonianTwo : public Hamiltonian {
 public:
-    HamiltonianTwo(std::shared_ptr<MpiEnvironment> mpi, const Configuration &config, const HamiltonianOne &hamiltonian_one1, const HamiltonianOne &hamiltonian_one2) : Hamiltonian(mpi),  basis_two(hamiltonian_one1.names(), hamiltonian_one2.names()) {
-        assert(hamiltonian_one1.size() == hamiltonian_one2.size());
+    HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one)  :
+        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one->names())) { // TODO
 
-        (void) config; // TODO
+        // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
+        conf = basis_two->getConf();
+        conf["deltaE"] = config["deltaE"];
+
+        conf["deltaE"] >> deltaE;
+        deltaE = std::fmax(deltaE,1e-24); // TODO remove hack
+        conf["species1"] >> species1;
+        conf["species2"] >> species2;
+
+        config["steps"] >> nSteps_two;
+        config["minR"] >> min_R;
+        config["maxR"] >> max_R;
+
+        dipoledipole = config["dd"].str() == "true"; // TODO
+
+        if (min_R == max_R){
+            nSteps_two = 1;
+        } else {
+            config["steps"] >> nSteps_two;
+        }
+
+        calculate();
+    }
+
+    HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one1, std::shared_ptr<const HamiltonianOne> hamiltonian_one2) :
+        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names())) {
+
+        // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
+        conf = basis_two->getConf();
+        conf["deltaE"] = config["deltaE"];
+
+        conf["deltaE"] >> deltaE;
+        deltaE = std::fmax(deltaE,1e-24); // TODO remove hack
+        conf["species1"] >> species1;
+        conf["species2"] >> species2;
+
+        config["steps"] >> nSteps_two;
+        config["minR"] >> min_R;
+        config["maxR"] >> max_R;
+
+        dipoledipole = config["dd"].str() == "true"; // TODO
+
+        if (min_R == max_R){
+            nSteps_two = 1;
+        } else {
+            config["steps"] >> nSteps_two;
+        }
+        calculate();
+    }
+
+    void calculate() {
 
         if (mpi->rank() == 0) {
-            bool distant_dependent = (hamiltonian_one1.size() == 1) ? false : true;
+            real_t tol = 1e-32;
+
+            if (hamiltonian_one1->size() != hamiltonian_one2->size()) {
+                std::cout << "The number of single atom Hamiltonians must be the same for both atoms." << std::endl;
+                abort();
+            }
+
+            size_t nSteps_one = hamiltonian_one1->size();
+
+            std::cout << 0.1 << std::endl;
+
+            // --- load one-atom Hamiltonians ---
+            std::vector<Hamiltonianmatrix> free_list;
+            free_list.reserve(nSteps_one);
+
+            std::vector<bool> is_necessary(basis_two->size(), false);
+
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff
+                free_list.push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE));
+
+                // find states that became unnecessary
+                free_list.back().findUnnecessaryStates(is_necessary);
+            }
+
+            std::cout << 0.2 << std::endl;
+
+            // remove unnecessary states
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                free_list[i].removeUnnecessaryStates(is_necessary);
+            }
+            basis_two->removeUnnecessaryStates(is_necessary);
+
+            std::cout << free_list[0].num_coordinates() << std::endl;
+            std::cout << free_list.back().num_basisvectors() << std::endl;
+            std::cout << free_list[0].num_basisvectors() << std::endl;
+
+            std::cout << 0.3 << std::endl;
+
+            // --- precalculate matrix elements ---
+            MatrixElements matrix_elements_k1_atom1(species1, 1); // TODO auf dipole quadrupole etc. erweitern
+            MatrixElements matrix_elements_k1_atom2(species2, 1);
+
+            auto basis_one_atom1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two));
+            auto basis_one_atom2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two));
+
+            std::cout << 0.4 << std::endl;
+
+            matrix_elements_k1_atom1.precalculate(basis_one_atom1, true, true, true);
+            matrix_elements_k1_atom2.precalculate(basis_one_atom2, true, true, true);
+
+            std::cout << 1.1 << std::endl;
+
+            // --- count entries of Hamiltonian parts ---
+            size_t size_basis = basis_two->size();
+            size_t size_k1 = 0;
+
+            for (const auto &state_col : *basis_two) {
+                for (const auto &state_row : *basis_two) {
+                    if (state_row.idx < state_col.idx) {
+                        continue;
+                    }
+
+                    if (dipoledipole) {
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            size_k1++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            size_k1++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            size_k1++;
+                        }
+                    }
+
+                    // TODO state_two soll std::array<state_one, 2> sein! Dann geht auch die Abfrage der selection rules eindeutiger
+                }
+            }
+
+            std::cout << 1.2 << std::endl;
+
+            // --- construct Hamiltonian parts ---
+            Hamiltonianmatrix hamiltonian_k1(size_basis, size_k1);
+
+            for (const auto &state_col : *basis_two) {
+                for (const auto &state_row : *basis_two) {
+                    if (state_row.idx < state_col.idx) {
+                        continue;
+                    }
+
+                    if (state_row.idx == state_col.idx) {
+                        hamiltonian_k1.addBasis(state_row.idx,state_col.idx,1);
+                    }
+
+                    if (dipoledipole) {
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            hamiltonian_k1.compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
+
+            std::cout << 1.3 << std::endl;
+
+
+
+
+
+
+            // --- construct Hamiltonians --- // TODO Logik in eigene Klasse
+            matrix.reserve(nSteps_two);
+
+            // create ConfParser object
+            Configuration params(conf);
+
+            // open database
+            std::string dbname;
+            if (utils::is_complex<scalar_t>::value) {
+                dbname = "cache_matrix_complex.db";
+            } else {
+                dbname = "cache_matrix_real.db";
+            }
+            SQLite3 db(dbname);
+
+            // initialize uuid generator
+            boost::uuids::random_generator generator;
+
+            // loop through steps
+            size_t step_one = 0;
+            Hamiltonianmatrix hamiltonian_k1_transformed = hamiltonian_k1.changeBasis(free_list[step_one].basis());
+
+            for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
+                real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
+                real_t position = min_R+normalized_position*(max_R-min_R);
+
+                // save fields to ConfParser object
+                params["Ex"] = 1; // TODO
+                params["Ey"] = 0; // TODO
+                params["Ez"] = 0; // TODO
+                params["Bx"] = 0; // TODO
+                params["By"] = 0; // TODO
+                params["Bz"] = 0; // TODO
+                params["R"] = position;
+
+                // create table if necessary
+                std::stringstream query;
+                std::string spacer = "";
+
+                if (step_two == 0) {
+                    query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
+                             "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                             "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
+                    for (auto p: params) {
+                        query << ", " << p.key << " text";
+                    }
+                    query << ", UNIQUE (";
+                    for (auto p: params) {
+                        query << spacer << p.key;
+                        spacer = ", ";
+                    }
+                    query << "));";
+                    db.exec(query.str());
+                }
+
+                // get uuid as filename
+                std::string uuid;
+
+                query.str(std::string());
+                spacer = "";
+                query << "SELECT uuid FROM cache_two WHERE ";
+                for (auto p: params) {
+                    query << spacer << p.key << "='" << p.value.str() << "'";
+                    spacer = " AND ";
+                }
+                query << ";";
+                SQLite3Result result = db.query(query.str());
+
+                if (result.size() == 1) {
+                    uuid = result.first().str();
+
+                    query.str(std::string());
+                    query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
+                    db.exec(query.str());
+                } else {
+                    boost::uuids::uuid u = generator();
+                    boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+
+                    query.str(std::string());
+                    query << "INSERT INTO cache_two (uuid";
+                    for (auto p: params) {
+                        query << ", " << p.key;
+                    }
+                    query << ") values ( '" << uuid << "'";
+                    for (auto p: params) {
+                        query << ", " << "'" << p.value.str() << "'";
+                    }
+                    query << ");";
+                    db.exec(query.str());
+                }
+
+                // check whether .mat and .json file exists and compare settings in program with settings in .json file
+                boost::filesystem::path path, path_mat, path_json;
+
+                path = boost::filesystem::absolute("output/two_" + uuid);
+                path_mat = path;
+                path_mat.replace_extension(".mat");
+                path_json = path;
+                path_json.replace_extension(".json");
+
+                bool is_existing = false;
+                if (boost::filesystem::exists(path_mat)) {
+                    if (boost::filesystem::exists(path_json)) {
+                        Configuration params_loaded;
+                        params_loaded.load_from_json(path_json.string());
+                        if (params == params_loaded) {
+                            is_existing = true;
+                        }
+                    }
+                }
+
+                // create .json file if "is_existing" is false
+                if (!is_existing) {
+                    params.save_to_json(path_json.string());
+                }
+
+                // calculate Hamiltonian if "is_existing" is false
+                std::shared_ptr<Hamiltonianmatrix> mat;
+                if (!is_existing) {
+                    if (nSteps_one > 1 && step_one < step_two) {
+                        ++step_one;
+                        hamiltonian_k1_transformed = hamiltonian_k1.changeBasis(free_list[step_one].basis());
+                    }
+
+                    real_t position_k1 = 1./std::pow(position,3);
+                    mat = std::make_shared<Hamiltonianmatrix>(free_list[step_one] + hamiltonian_k1_transformed*position_k1);
+                } else {
+                    mat = std::make_shared<Hamiltonianmatrix>();
+                    //mat->compress(free_list[step_one].num_basisvectors(),free_list[step_one].num_coordinates());
+                }
+
+                // save everything
+                mat->addFilename(path_mat.string());
+                mat->addIsExisting(is_existing);
+                matrix.push_back(std::move(mat));
+                matrix_path.push_back(path.string());
+                matrix_dimension.push_back(free_list[step_one].num_basisvectors());
+            }
+
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
+
+            std::cout << 1.4 << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+            /*bool distant_dependent = (hamiltonian_one1.size() == 1) ? false : true;
             size_t nSteps = (distant_dependent) ? hamiltonian_one1.size() : 100; // TODO
 
             real_t energycutoff = 5; // TODO
@@ -1350,19 +1802,27 @@ public:
                 if (distant_dependent && i+1 < hamiltonian_one1.size()) ++i;
             }
 
-            std::cout << 6 << std::endl;
+            std::cout << 6 << std::endl;*/
         }
 
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
         run(matrix, matrix_diag);
     }
 
-    const BasisnamesTwo& names() const{
+    std::shared_ptr<const BasisnamesTwo> names() const{
         return basis_two;
     }
 
 private:
-    BasisnamesTwo basis_two;
+    std::shared_ptr<const HamiltonianOne> hamiltonian_one1;
+    std::shared_ptr<const HamiltonianOne> hamiltonian_one2;
+    std::shared_ptr<BasisnamesTwo> basis_two;
+    Configuration conf;
+    real_t deltaE;
+    size_t nSteps_two;
+    std::string species1, species2;
+    real_t min_R, max_R;
+    bool dipoledipole;
 };
 
 
@@ -1373,7 +1833,7 @@ private:
 int main(int argc, char **argv) {
     std::cout << std::unitbuf;
 
-    // === Get options from command line ===
+    // === Parse command line ===
     boost::filesystem::path path_config;
     int c;
     opterr = 0;
@@ -1408,16 +1868,59 @@ int main(int argc, char **argv) {
     Configuration config;
     config.load_from_json(path_config.string());
 
+    bool existAtom1 = config.count("species1") && config.count("n1") && config.count("l1") && config.count("j1") && config.count("m1");
+    bool existAtom2 = config.count("species2") && config.count("n2") && config.count("l2") && config.count("j2") && config.count("m2");
+
     // === Solve the system ===
     auto mpi = std::make_shared<MpiEnvironment>(argc, argv);
 
-    auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
+    bool combined = config["samebasis"].str() == "true";
 
-    auto hamiltonian_one = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one);
-    hamiltonian_one->saveLines();
+    if (combined) {
+        if (config["species1"].str() != config["species2"].str()) {
+            std::cout << "species1 and species2 has to be the same in order to use the same basis set." << std::endl;
+            return 1;
+        }
+        if (config["deltaE1"].str() != config["deltaE2"].str()) {
+            std::cout << "deltaE1 and deltaE2 has to be the same in order to use the same basis set." << std::endl;
+            return 1;
+        }
+        std::shared_ptr<HamiltonianOne> hamiltonian_one;
+        if (existAtom1 && existAtom2) {
+            if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 3 << std::endl;
+            auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
+            hamiltonian_one = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one);
+        }
+        std::shared_ptr<HamiltonianTwo> hamiltonian_two;
+        if (existAtom1 && existAtom2 && config.count("minR")) {
+            if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
+            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, mpi, hamiltonian_one);
+        }
+    } else {
+        std::shared_ptr<HamiltonianOne> hamiltonian_one1;
+        if (existAtom1) {
+            if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 0 << std::endl;
+            auto basisnames_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
+            hamiltonian_one1 = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one1);
+        }
+        std::shared_ptr<HamiltonianOne> hamiltonian_one2;
+        if (existAtom2) {
+            if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 1 << std::endl;
+            auto basisnames_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
+            hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one2);
+        }
+        std::shared_ptr<HamiltonianTwo> hamiltonian_two;
+        if (existAtom1 && existAtom2 && config.count("minR")) {
+            if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
+            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, mpi, hamiltonian_one1, hamiltonian_one2);
+        }
+    }
 
-    std::cout << ">>END" << std::endl;
+    // hamiltonian_two->saveLines(); //TODO
 
+    // === Communicate that everything is finished ===
+    mpi->world().Barrier();
+    if (mpi->rank() == 0) std::cout << ">>END" << std::endl;
 
 
 

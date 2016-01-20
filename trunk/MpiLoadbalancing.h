@@ -100,6 +100,9 @@ protected:
                 Message message_out = Message(work, work.size(), vecSlave0[numWorkingSlaves0]);
                 SendToSlave(message_out);
 
+                // Do prework
+                doPrework(numWork);
+
                 // --- Increase number of working slaves0 ---
                 numWorkingSlaves0 += 1;
             } else {
@@ -110,13 +113,16 @@ protected:
                 // Save message
                 dataOut[num]->deserialize(message_in.data);
 
-                // Do rework
-                doRework(num);
+                // Do postwork
+                doPostwork(num);
 
                 // --- Send new work ---
                 numSlave2numWork[message_in.process]=numWork;
                 Message message_out = Message(work, work.size(), message_in.process);
                 SendToSlave(message_out);
+
+                // Do prework
+                doPrework(numWork);
             }
         }
 
@@ -130,7 +136,7 @@ protected:
             dataOut[num]->deserialize(message_in.data);
 
             // Do rework
-            doRework(num);
+            doPostwork(num);
         }
 
         // === Kill all slaves0 ===
@@ -146,7 +152,11 @@ protected:
 
     virtual void runSlave() = 0;
 
-    virtual void doRework(size_t numWork) {
+    virtual void doPostwork(size_t numWork) {
+        (void) numWork;
+    }
+
+    virtual void doPrework(size_t numWork) {
         (void) numWork;
     }
 

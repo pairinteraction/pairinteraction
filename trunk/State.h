@@ -74,6 +74,11 @@ public:
         return ((s1.n[0] == s2.n[0]) && (s1.l[0] == s2.l[0])  && (s1.s[0] == s2.s[0])  && (s1.j[0] == s2.j[0])  && (s1.m[0] == s2.m[0]) &&
                 (s1.n[1] == s2.n[1]) && (s1.l[1] == s2.l[1])  && (s1.s[1] == s2.s[1])  && (s1.j[1] == s2.j[1])  && (s1.m[1] == s2.m[1]));
     }
+    friend bool operator!= (const StateTwo& s1, const StateTwo& s2)
+    {
+        return ((s1.n[0] != s2.n[0]) || (s1.l[0] != s2.l[0])  || (s1.s[0] != s2.s[0])  || (s1.j[0] != s2.j[0])  || (s1.m[0] != s2.m[0]) ||
+                (s1.n[1] != s2.n[1]) || (s1.l[1] != s2.l[1])  || (s1.s[1] != s2.s[1])  || (s1.j[1] != s2.j[1])  || (s1.m[1] != s2.m[1]));
+    }
     StateOne first() const {
         return StateOne(idx, n[0], l[0], s[0], j[0], m[0]);
     }
