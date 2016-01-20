@@ -66,7 +66,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>470</height>
+             <height>494</height>
             </rect>
            </property>
            <attribute name="label">
@@ -638,7 +638,7 @@
                    <property name="verticalSpacing">
                     <number>0</number>
                    </property>
-                   <item row="1" column="0">
+                   <item row="2" column="0">
                     <widget class="QLabel" name="label_9">
                      <property name="font">
                       <font>
@@ -653,17 +653,59 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
+                   <item row="2" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaN">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>40</width>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <pointsize>12</pointsize>
+                      </font>
+                     </property>
+                     <property name="maximum">
+                      <number>99</number>
+                     </property>
+                     <property name="value">
+                      <number>0</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="0">
+                    <widget class="QLabel" name="label_12">
+                     <property name="font">
+                      <font>
+                       <pointsize>12</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>Δj</string>
+                     </property>
+                     <property name="textFormat">
+                      <enum>Qt::AutoText</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="3" column="1">
+                    <widget class="QSpinBox" name="spinbox_system_deltaJ">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -714,14 +756,14 @@
                    <item row="1" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaL">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>40</width>
+                       <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -738,81 +780,7 @@
                      </property>
                     </widget>
                    </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QFormLayout" name="formLayout_7">
-                   <property name="fieldGrowthPolicy">
-                    <enum>QFormLayout::ExpandingFieldsGrow</enum>
-                   </property>
-                   <property name="labelAlignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                   <property name="formAlignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <property name="verticalSpacing">
-                    <number>0</number>
-                   </property>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_12">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>Δj</string>
-                     </property>
-                     <property name="textFormat">
-                      <enum>Qt::AutoText</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QSpinBox" name="spinbox_system_deltaJ">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>40</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
-                     <property name="maximum">
-                      <number>99</number>
-                     </property>
-                     <property name="value">
-                      <number>0</number>
-                     </property>
-                    </widget>
-                   </item>
-                  </layout>
-                 </item>
-                 <item>
-                  <layout class="QFormLayout" name="formLayout_2">
-                   <property name="fieldGrowthPolicy">
-                    <enum>QFormLayout::ExpandingFieldsGrow</enum>
-                   </property>
-                   <property name="labelAlignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-                   </property>
-                   <property name="formAlignment">
-                    <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-                   </property>
-                   <property name="verticalSpacing">
-                    <number>0</number>
-                   </property>
-                   <item row="1" column="0">
+                   <item row="2" column="0">
                     <widget class="QLabel" name="label_13">
                      <property name="font">
                       <font>
@@ -827,17 +795,17 @@
                      </property>
                     </widget>
                    </item>
-                   <item row="1" column="1">
+                   <item row="2" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaM">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>40</width>
+                       <width>0</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -1070,7 +1038,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>450</width>
+             <width>400</width>
              <height>390</height>
             </rect>
            </property>
@@ -1462,7 +1430,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>450</width>
+             <width>400</width>
              <height>390</height>
             </rect>
            </property>
@@ -1707,7 +1675,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>450</width>
+             <width>400</width>
              <height>390</height>
             </rect>
            </property>
@@ -1926,7 +1894,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>min. energy (GHz)</string>
+                      <string>minimum (GHz)</string>
                      </property>
                      <property name="textFormat">
                       <enum>Qt::AutoText</enum>
@@ -1984,7 +1952,7 @@
                       </font>
                      </property>
                      <property name="text">
-                      <string>max. energy (GHz)</string>
+                      <string>maximum (GHz)</string>
                      </property>
                      <property name="textFormat">
                       <enum>Qt::AutoText</enum>
