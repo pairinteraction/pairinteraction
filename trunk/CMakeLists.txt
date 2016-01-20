@@ -62,6 +62,7 @@ endif(SQLITE3_FOUND)
 
 find_package(GSL REQUIRED)
 if(GSL_FOUND)
+  include_directories(${GSL_INCLUDE_DIRS})
   target_link_libraries(pairinteraction ${GSL_LIBRARIES})
 else(GSL_FOUND)
   message(FATAL_ERROR "==============\n"
