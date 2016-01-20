@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <gsl/gsl_sf_coupling.h>
 #include <memory>
+#include <sstream>
 
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);

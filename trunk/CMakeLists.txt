@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(pairinteraction CXX)
 
@@ -115,8 +115,9 @@ else(Boost_FOUND)
 endif(Boost_FOUND)
 
 # set c++11
-set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
-set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)
+#set_property(TARGET pairinteraction PROPERTY CXX_STANDARD 11)
+#set_property(TARGET pairinteraction PROPERTY CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 # CPack
 if(WIN32)

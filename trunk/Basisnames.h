@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <unordered_set>
+#include <memory>
 
 template<class T> class Basisnames {
 public:
