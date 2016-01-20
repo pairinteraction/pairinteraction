@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>960</width>
-    <height>760</height>
+    <height>640</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -66,7 +66,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>510</height>
+             <height>470</height>
             </rect>
            </property>
            <attribute name="label">
@@ -656,14 +656,14 @@
                    <item row="1" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaN">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>0</width>
+                       <width>40</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -714,14 +714,14 @@
                    <item row="1" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaL">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>0</width>
+                       <width>40</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -772,14 +772,14 @@
                    <item row="1" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaJ">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>0</width>
+                       <width>40</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -830,14 +830,14 @@
                    <item row="1" column="1">
                     <widget class="QSpinBox" name="spinbox_system_deltaM">
                      <property name="sizePolicy">
-                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                      <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                        <horstretch>0</horstretch>
                        <verstretch>0</verstretch>
                       </sizepolicy>
                      </property>
                      <property name="minimumSize">
                       <size>
-                       <width>0</width>
+                       <width>40</width>
                        <height>0</height>
                       </size>
                      </property>
@@ -1070,8 +1070,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>510</height>
+             <width>450</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1462,8 +1462,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>510</height>
+             <width>450</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1707,8 +1707,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>510</height>
+             <width>450</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1854,7 +1854,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>646</height>
+             <height>603</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
