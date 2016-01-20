@@ -68,7 +68,7 @@ int Configuration::load_from_json(std::string filename)
     conffile.close();
 
     for(Json::Value::iterator itr = datadict.begin(); itr !=datadict.end(); ++itr) {
-      params[itr.key().asString()] << (*itr).asString();
+      params[itr.key().asString()] << (*itr).toStyledString();
     }
 
     return 0;

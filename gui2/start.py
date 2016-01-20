@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
+from pint import UnitRegistry
+from pint.unit import UndefinedUnitError
 from PyQt4 import QtCore, QtGui
 from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py
 import pyqtgraph as pg
@@ -19,8 +21,6 @@ import signal
 from queue import Queue
 import ctypes
 import sip
-from pint import UnitRegistry
-from pint.unit import UndefinedUnitError
 from scipy import constants
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
