@@ -68,7 +68,10 @@ int Configuration::load_from_json(std::string filename)
     conffile.close();
 
     for(Json::Value::iterator itr = datadict.begin(); itr !=datadict.end(); ++itr) {
-      params[itr.key().asString()] << (*itr).toStyledString();
+        std::string s = (*itr).toStyledString();
+        s.erase(remove( s.begin(), s.end(), '\"' ), s.end()); // TODO remove hack
+         s.erase(remove( s.begin(), s.end(), '\n' ), s.end()); // TODO remove hack
+        params[itr.key().asString()] << s;
     }
 
     return 0;
