@@ -482,6 +482,24 @@ class DoublenoneValidator(QtGui.QDoubleValidator):
     def fixup(self, s):
         return 'None'
 
+class DoublepositiveValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        status = super().validate(s, pos)
+        
+        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
+            return (QtGui.QValidator.Invalid, s, pos)
+        
+        if status[0] == QtGui.QValidator.Acceptable and float(s) < 0:
+            return (QtGui.QValidator.Invalid, s, pos)
+        
+        return status
+
+    def fixup(self, s):
+        return "0"
+
 class DoubleValidator(QtGui.QDoubleValidator):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -540,9 +558,10 @@ class MainWindow(QtGui.QMainWindow):
         # Set validators
         validator_double = DoubleValidator()
         validator_doublenone = DoublenoneValidator()
-        self.ui.lineedit_system_deltaE1.setValidator(validator_double)
-        self.ui.lineedit_system_deltaE2.setValidator(validator_double)
-        self.ui.lineedit_system_deltaE.setValidator(validator_double)
+        validator_doublepositive = DoublepositiveValidator()
+        self.ui.lineedit_system_deltaE1.setValidator(validator_doublepositive)
+        self.ui.lineedit_system_deltaE2.setValidator(validator_doublepositive)
+        self.ui.lineedit_system_deltaE.setValidator(validator_doublepositive)
         self.ui.lineedit_system_minEx.setValidator(validator_double)
         self.ui.lineedit_system_minEy.setValidator(validator_double)
         self.ui.lineedit_system_minEz.setValidator(validator_double)
@@ -555,10 +574,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_system_maxBx.setValidator(validator_double)
         self.ui.lineedit_system_maxBy.setValidator(validator_double)
         self.ui.lineedit_system_maxBz.setValidator(validator_double)
-        self.ui.lineedit_system_minR.setValidator(validator_double)
-        self.ui.lineedit_system_maxR.setValidator(validator_double)
+        self.ui.lineedit_system_minR.setValidator(validator_doublepositive)
+        self.ui.lineedit_system_maxR.setValidator(validator_doublepositive)
         self.ui.lineedit_system_theta.setValidator(validator_double)
-        self.ui.lineedit_system_precision.setValidator(validator_double)
+        self.ui.lineedit_system_precision.setValidator(validator_doublepositive)
         self.ui.lineedit_plot_minE.setValidator(validator_doublenone)
         self.ui.lineedit_plot_maxE.setValidator(validator_doublenone)
         
