@@ -1198,9 +1198,9 @@ protected:
                 if (result.size() == 1) {
                     uuid = result.first()->str();
 
-                    query.str(std::string());
+                    /*query.str(std::string());
                     query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
-                    db.exec(query.str());
+                    db.exec(query.str());*/ // TODO This is very slow on rqo-donkey!
                 } else {
                     boost::uuids::uuid u = generator();
                     boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
@@ -1547,9 +1547,9 @@ public:
                 if (result.size() == 1) {
                     uuid = result.first()->str();
 
-                    query.str(std::string());
+                    /*query.str(std::string());
                     query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
-                    db.exec(query.str());
+                    db.exec(query.str());*/ // TODO
                 } else {
                     boost::uuids::uuid u = generator();
                     boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
