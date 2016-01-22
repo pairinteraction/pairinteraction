@@ -1,0 +1,3 @@
+[submodule "trunk/wignerSymbols"]
+	path = trunk/wignerSymbols
+	url = https://github.com/valandil/wignerSymbols.git

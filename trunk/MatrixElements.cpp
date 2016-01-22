@@ -12,6 +12,15 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1) && (state1.n == state2.n);
 }
 
+size_t findidx(std::vector<real_t> x, real_t d) {
+ size_t i;
+ for (i = 0; i < x.size(); ++i) {
+   if (x[i] == d)
+     break;
+ }
+ return i;
+}
+
 MatrixElements::MatrixElements(std::string species, int k) : species(species), k(k) {
     muB = 0.5;
     gS = 2.0023192;
@@ -201,7 +210,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
-                        radial_element(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
 
                 ss.str(std::string());
                 ss << "insert into cache_nlj (species, k, n1, l1, j1, n2, l2, j2, value) values ("
@@ -218,8 +227,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         for (auto &element : element_lj_s) { // j1 = s, j2 = l
             if (element.second == std::numeric_limits<real_t>::max()) {
 
+                //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+                //        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
+
                 element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
+                        WignerSymbols::wigner6j(0.5, element.first.j[0], element.first.l[0], element.first.j[1], 0.5, k);
 
                 ss.str(std::string());
                 ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
@@ -235,8 +247,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     for (auto &element : element_lj_l) { // j1 = l, j2 = s
         if (element.second == std::numeric_limits<real_t>::max()) {
 
+            //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+            //        gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
+
             element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                    gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
+                    WignerSymbols::wigner6j(element.first.l[0], element.first.j[0], 0.5, element.first.j[1], element.first.l[1], k);
 
             ss.str(std::string());
             ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
@@ -252,7 +267,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         if (element.second == std::numeric_limits<real_t>::max()) {
             int q = element.first.m[0]-element.first.m[1];
 
-            element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
+            //element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
+            element.second = WignerSymbols::wigner3j(element.first.j[0], k, element.first.j[1], -element.first.m[0],q,element.first.m[1]);
 
             ss.str(std::string());
             ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
@@ -265,6 +281,37 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     db.exec("end transaction;");
+}
+
+real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, real_t j1, int power,
+                      int n2, int l2, real_t j2) {
+  Numerov N1(species, n1, l1, j1);
+  Numerov N2(species, n2, l2, j2);
+
+  std::vector<real_t> x1 = N1.axis();
+  std::vector<real_t> y1 = N1.integrate();
+  std::vector<real_t> x2 = N2.axis();
+  std::vector<real_t> y2 = N2.integrate();
+
+  real_t xmin = N1.xmin >= N2.xmin ? N1.xmin : N2.xmin;
+  real_t xmax = N1.xmax <= N2.xmax ? N1.xmax : N2.xmax;
+
+  real_t mu = 0;
+  // If there is an overlap, calculate the matrix element
+  if (xmin <= xmax) {
+    int start1 = findidx(x1, xmin);
+    int end1   = findidx(x1, xmax);
+    int start2 = findidx(x2, xmin);
+    int end2   = findidx(x2, xmax);
+
+    int i1, i2;
+    for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; i1++, i2++) {
+      mu += y1[i1]*y2[i2] * pow(x1[i1], 2*power+2) * N1.dx;
+    }
+    mu = fabs(2*mu);
+  }
+
+  return mu;
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {

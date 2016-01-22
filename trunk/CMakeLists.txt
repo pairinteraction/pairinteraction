@@ -60,15 +60,15 @@ else(SQLITE3_FOUND)
                       "==================\n")
 endif(SQLITE3_FOUND)
 
-find_package(GSL REQUIRED)
-if(GSL_FOUND)
-  include_directories(${GSL_INCLUDE_DIRS})
-  target_link_libraries(pairinteraction ${GSL_LIBRARIES})
-else(GSL_FOUND)
-  message(FATAL_ERROR "==============\n"
-                      "GSL not found!\n"
-                      "==============\n")
-endif(GSL_FOUND)
+#find_package(GSL REQUIRED)
+#if(GSL_FOUND)
+#  include_directories(${GSL_INCLUDE_DIRS})
+#  target_link_libraries(pairinteraction ${GSL_LIBRARIES})
+#else(GSL_FOUND)
+#  message(FATAL_ERROR "==============\n"
+#                      "GSL not found!\n"
+#                      "==============\n")
+#endif(GSL_FOUND)
 
 if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "mingw32")
 
@@ -126,6 +126,11 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
+
+# add library wignerSymbols
+add_subdirectory(wignerSymbols)
+include_directories(wignerSymbols/include)
+target_link_libraries(pairinteraction wignerSymbols)
 
 # CPack
 if(WIN32)

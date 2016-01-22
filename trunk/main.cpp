@@ -4,7 +4,6 @@
 #include "MpiLoadbalancingSimple.h"
 #include "Vectorizable.h"
 #include "Serializable.h"
-#include "DipoleMatrix.hpp"
 #include "QuantumDefect.hpp"
 #include "Basisnames.h"
 #include "MatrixElements.h"

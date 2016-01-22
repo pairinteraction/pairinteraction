@@ -3,16 +3,19 @@
 
 #include "dtypes.h"
 #include "Basisnames.h"
-#include "DipoleMatrix.hpp"
+#include "Numerov.hpp"
 
 #include <string>
 #include <unordered_map>
-#include <gsl/gsl_sf_coupling.h>
+//#include <gsl/gsl_sf_coupling.h>
 #include <memory>
 #include <sstream>
+#include <wignerSymbols.h>
 
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
+
+size_t findidx(std::vector<real_t> x, real_t d);
 
 class MatrixElements {
 public:
@@ -22,6 +25,7 @@ public:
     real_t getDipole(StateOne state_row, StateOne state_col);
     real_t getMomentum(StateOne state_row, StateOne state_col);
 private:
+    real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
     std::string species;
     int k;
     std::unordered_map<StateTwo,real_t> element_nlj;
