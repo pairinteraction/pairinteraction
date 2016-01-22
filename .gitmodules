@@ -1,3 +1,3 @@
 [submodule "trunk/wignerSymbols"]
 	path = trunk/wignerSymbols
-	url = git@github.com:sebastianweber/wignerSymbols.git
+	url = https://github.com/sebastianweber/wignerSymbols.git
