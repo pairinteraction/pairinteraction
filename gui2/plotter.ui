@@ -65,8 +65,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>387</width>
-             <height>584</height>
+             <width>385</width>
+             <height>568</height>
             </rect>
            </property>
            <attribute name="label">
@@ -346,6 +346,47 @@
                    <property name="verticalSpacing">
                     <number>0</number>
                    </property>
+                   <item row="1" column="0">
+                    <widget class="QLabel" name="label_8">
+                     <property name="font">
+                      <font>
+                       <pointsize>12</pointsize>
+                      </font>
+                     </property>
+                     <property name="text">
+                      <string>atom 2</string>
+                     </property>
+                     <property name="textFormat">
+                      <enum>Qt::AutoText</enum>
+                     </property>
+                    </widget>
+                   </item>
+                   <item row="1" column="1">
+                    <widget class="QComboBox" name="combobox_system_species2">
+                     <property name="sizePolicy">
+                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                       <horstretch>0</horstretch>
+                       <verstretch>0</verstretch>
+                      </sizepolicy>
+                     </property>
+                     <property name="minimumSize">
+                      <size>
+                       <width>0</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="font">
+                      <font>
+                       <pointsize>12</pointsize>
+                      </font>
+                     </property>
+                     <item>
+                      <property name="text">
+                       <string>Rb</string>
+                      </property>
+                     </item>
+                    </widget>
+                   </item>
                    <item row="3" column="0">
                     <widget class="QLabel" name="label_18">
                      <property name="font">
@@ -512,47 +553,6 @@
                      <property name="value">
                       <double>0.500000000000000</double>
                      </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="0">
-                    <widget class="QLabel" name="label_8">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
-                     <property name="text">
-                      <string>atom 2</string>
-                     </property>
-                     <property name="textFormat">
-                      <enum>Qt::AutoText</enum>
-                     </property>
-                    </widget>
-                   </item>
-                   <item row="1" column="1">
-                    <widget class="QComboBox" name="combobox_system_species2">
-                     <property name="sizePolicy">
-                      <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                       <horstretch>0</horstretch>
-                       <verstretch>0</verstretch>
-                      </sizepolicy>
-                     </property>
-                     <property name="minimumSize">
-                      <size>
-                       <width>0</width>
-                       <height>0</height>
-                      </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
-                     <item>
-                      <property name="text">
-                       <string>Rb</string>
-                      </property>
-                     </item>
                     </widget>
                    </item>
                   </layout>
@@ -1070,7 +1070,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>400</height>
+             <height>424</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1462,7 +1462,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>400</height>
+             <height>424</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1707,7 +1707,7 @@
              <x>0</x>
              <y>0</y>
              <width>400</width>
-             <height>400</height>
+             <height>424</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1852,8 +1852,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>384</width>
-             <height>574</height>
+             <width>385</width>
+             <height>581</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3224,7 +3224,7 @@
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -3236,6 +3236,8 @@
     <addaction name="separator"/>
     <addaction name="action_system_save"/>
     <addaction name="action_plot_save"/>
+    <addaction name="separator"/>
+    <addaction name="actionQuit"/>
    </widget>
    <addaction name="menu_File"/>
   </widget>
@@ -3298,7 +3300,7 @@
     <string>Open plot configuration</string>
    </property>
    <property name="shortcut">
-    <string>Meta+Ctrl+O</string>
+    <string>Ctrl+Shift+O</string>
    </property>
   </action>
   <action name="action_system_save">
@@ -3314,7 +3316,15 @@
     <string>Save plot configuration</string>
    </property>
    <property name="shortcut">
-    <string>Meta+Ctrl+S</string>
+    <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
    </property>
   </action>
  </widget>
@@ -3325,6 +3335,83 @@
    <header>pyqtgraph</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget_2</tabstop>
+  <tabstop>combobox_system_species1</tabstop>
+  <tabstop>spinbox_system_n1</tabstop>
+  <tabstop>spinbox_system_l1</tabstop>
+  <tabstop>spinbox_system_j1</tabstop>
+  <tabstop>spinbox_system_m1</tabstop>
+  <tabstop>combobox_system_species2</tabstop>
+  <tabstop>spinbox_system_n2</tabstop>
+  <tabstop>spinbox_system_l2</tabstop>
+  <tabstop>spinbox_system_j2</tabstop>
+  <tabstop>spinbox_system_m2</tabstop>
+  <tabstop>spinbox_system_deltaN</tabstop>
+  <tabstop>spinbox_system_deltaL</tabstop>
+  <tabstop>spinbox_system_deltaJ</tabstop>
+  <tabstop>spinbox_system_deltaM</tabstop>
+  <tabstop>checkBox_3</tabstop>
+  <tabstop>checkBox_2</tabstop>
+  <tabstop>checkBox</tabstop>
+  <tabstop>lineedit_system_deltaE1</tabstop>
+  <tabstop>lineedit_system_deltaE2</tabstop>
+  <tabstop>lineedit_system_deltaE</tabstop>
+  <tabstop>checkbox_system_samebasis</tabstop>
+  <tabstop>lineedit_system_minEx</tabstop>
+  <tabstop>lineedit_system_maxEx</tabstop>
+  <tabstop>lineedit_system_minEy</tabstop>
+  <tabstop>lineedit_system_maxEy</tabstop>
+  <tabstop>lineedit_system_minEz</tabstop>
+  <tabstop>lineedit_system_maxEz</tabstop>
+  <tabstop>lineedit_system_minBx</tabstop>
+  <tabstop>lineedit_system_maxBx</tabstop>
+  <tabstop>lineedit_system_minBy</tabstop>
+  <tabstop>lineedit_system_maxBy</tabstop>
+  <tabstop>lineedit_system_minBz</tabstop>
+  <tabstop>lineedit_system_maxBz</tabstop>
+  <tabstop>lineedit_system_minR</tabstop>
+  <tabstop>lineedit_system_maxR</tabstop>
+  <tabstop>checkbox_system_dd</tabstop>
+  <tabstop>checkbox_system_dq</tabstop>
+  <tabstop>checkbox_system_qq</tabstop>
+  <tabstop>lineedit_system_theta</tabstop>
+  <tabstop>spinbox_system_steps</tabstop>
+  <tabstop>lineedit_system_precision</tabstop>
+  <tabstop>scrollArea</tabstop>
+  <tabstop>lineedit_plot_minE</tabstop>
+  <tabstop>lineedit_plot_maxE</tabstop>
+  <tabstop>groupbox_plot_points</tabstop>
+  <tabstop>spinbox_plot_szPoint</tabstop>
+  <tabstop>spinbox_plot_transpPoint</tabstop>
+  <tabstop>groupbox_plot_lines</tabstop>
+  <tabstop>spinbox_plot_szLine</tabstop>
+  <tabstop>spinbox_plot_transpLine</tabstop>
+  <tabstop>groupbox_plot_labels</tabstop>
+  <tabstop>spinbox_plot_szLabel</tabstop>
+  <tabstop>spinbox_plot_transpLabel</tabstop>
+  <tabstop>groupbox_plot_overlap</tabstop>
+  <tabstop>radiobutton_plot_overlapUnperturbed</tabstop>
+  <tabstop>radiobutton_plot_overlapDefined</tabstop>
+  <tabstop>spinbox_plot_n1</tabstop>
+  <tabstop>spinbox_plot_l1</tabstop>
+  <tabstop>spinbox_plot_j1</tabstop>
+  <tabstop>spinbox_plot_m1</tabstop>
+  <tabstop>spinbox_plot_n2</tabstop>
+  <tabstop>spinbox_plot_l2</tabstop>
+  <tabstop>spinbox_plot_j2</tabstop>
+  <tabstop>spinbox_plot_m2</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>graphicsview_field1_plot</tabstop>
+  <tabstop>pushbutton_field1_calc</tabstop>
+  <tabstop>pushbutton_field1_save</tabstop>
+  <tabstop>graphicsview_field2_plot</tabstop>
+  <tabstop>pushbutton_field2_calc</tabstop>
+  <tabstop>pushbutton_field2_save</tabstop>
+  <tabstop>graphicsview_potential_plot</tabstop>
+  <tabstop>pushbutton_potential_calc</tabstop>
+  <tabstop>pushbutton_potential_save</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

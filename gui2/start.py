@@ -640,6 +640,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_system_save.triggered.connect(self.saveSystemConf)
         self.ui.action_plot_open.triggered.connect(self.openPlotConf)
         self.ui.action_plot_save.triggered.connect(self.savePlotConf)
+        self.ui.actionQuit.triggered.connect(self.close)
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_potential_calc.clicked.connect(self.startCalc)
