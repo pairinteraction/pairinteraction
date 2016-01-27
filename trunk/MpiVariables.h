@@ -3,6 +3,7 @@
 
 #define OMPI_SKIP_MPICXX
 
+#include <inttypes.h>
 #include <mpi.h>
 
 class MpiVariables {

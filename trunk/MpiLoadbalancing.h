@@ -240,7 +240,7 @@ protected:
         }
 
         // Collect everything into slave0
-        MPI_Gather(&vectorIn[0], vectorIn.size(), MPI_COSTUME, &vectorOut[0], &numElements[0], &displacement[0], MPI_COSTUME, 0, mympi->world());
+        MPI_Gatherv(&vectorIn[0], vectorIn.size(), MPI_COSTUME, &vectorOut[0], &numElements[0], &displacement[0], MPI_COSTUME, 0, mympi->world());
 
         return vectorOut;
     }

@@ -4,6 +4,7 @@
 #define OMPI_SKIP_MPICXX
 
 #include "MpiVariables.h"
+#include <inttypes.h>
 #include <mpi.h>
 #include <cassert>
 

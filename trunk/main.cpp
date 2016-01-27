@@ -17,6 +17,7 @@
 #include <iterator>
 #include <stdexcept>
 #include <stdio.h>
+#include <getopt.h>
 #include <inttypes.h>
 #include <sstream>
 
@@ -501,6 +502,7 @@ public:
     }
 
 protected:
+    enum mode_t {ALL, SYM, ASYM};
     void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, scalar_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
         idx_t row = mapping[this->num_basisvectors()*row_1 + row_2];
         idx_t col = mapping[this->num_basisvectors()*col_1 + col_2];
@@ -712,7 +714,6 @@ protected:
 
     eigen_sparse_t entries_;
     eigen_sparse_t basis_;
-    enum mode_t {ALL, SYM, ASYM};
 
     bytes_t bytes;
     size_t idxStart;
