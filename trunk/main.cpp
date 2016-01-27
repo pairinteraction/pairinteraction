@@ -881,7 +881,7 @@ protected:
     }
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
-    std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag;
+    std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag; // TODO figure out whether the same pointers as in matrix
     std::vector<std::string> matrix_path;
     std::vector<size_t> matrix_dimension;
 };
@@ -1918,7 +1918,7 @@ int main(int argc, char **argv) {
     // hamiltonian_two->saveLines(); //TODO
 
     // === Communicate that everything is finished ===
-    mpi->world().Barrier();
+    MPI_Barrier(mpi->world());
     if (mpi->rank() == 0) std::cout << ">>END" << std::endl;
 
 

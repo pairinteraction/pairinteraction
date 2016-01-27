@@ -16,8 +16,8 @@ struct Message{
     Message() : data(), size(0), process(-1){ }
     Message(bytes_t &data, size_t size, long process) : data(data), size(size), process(process){ }
     bytes_t data;
-    long size;
-    long process;
+    int size;
+    int process;
 };
 
 template <class TIn, class TOut>
@@ -53,7 +53,9 @@ public:
         }
 
         // === Build slave specific communicator ===
-        mympi = std::make_shared<MpiVariables>(mpi->world().Split(myColor, mpi->rank()));
+        MPI_Comm mympicomm;
+        MPI_Comm_split(mpi->world(),myColor,mpi->rank(), &mympicomm); // TODO integrate this into mympi
+        mympi = std::make_shared<MpiVariables>(mympicomm);
 
         // === Construct new data type ===
         Triple trp;
@@ -66,7 +68,7 @@ public:
         MPI_Type_commit(&MPI_COSTUME);
 
         // === Wait for all datatypes and slave communicators to be build ===
-        mpi->world().Barrier();
+        MPI_Barrier(mpi->world());
     }
 
 protected:
@@ -140,14 +142,14 @@ protected:
         }
 
         // === Kill all slaves0 ===
-        std::vector<MPI::Request> requests;
-        requests.reserve(std::min(dataIn.size(), vecSlave0.size()));
+        std::vector<MPI_Request> requests(std::min(dataIn.size(), vecSlave0.size()));
 
+        size_t pos = 0;
         for (auto &dest: vecSlave0) {
-            requests.push_back(mpi->world().Isend(NULL, 0, MPI::INT, dest, DIETAG));
+            MPI_Isend(NULL, 0, MPI_INT, dest, DIETAG, mpi->world(), &requests[pos++]);
         }
 
-        MPI::Request::Waitall(requests.size(), &requests[0]);
+        MPI_Waitall(requests.size(), &requests[0], MPI_STATUSES_IGNORE);
     }
 
     virtual void runSlave() = 0;
@@ -161,52 +163,52 @@ protected:
     }
 
     void SendToSlave(Message &message) {
-        mpi->world().Send(&message.data[0], message.size, BYTE_T, message.process, WORKTAG);
+        MPI_Send(&message.data[0], message.size, BYTE_T, message.process, WORKTAG, mpi->world());
     }
 
     void SendToMaster(Message &message) {
-        mpi->world().Send(&message.data[0], message.size, BYTE_T, 0, 0);
+        MPI_Send(&message.data[0], message.size, BYTE_T, 0, 0, mpi->world());
     }
 
     Message ReceiveFromSlave() {
         // Probe for an incoming message from slaves
-        MPI::Status status;
-        mpi->world().Probe(MPI::ANY_SOURCE, MPI::ANY_TAG, status);
+        MPI_Status status;
+        MPI_Probe(MPI_ANY_SOURCE, MPI_ANY_TAG, mpi->world(), &status);
 
         // Initialize new message
         Message message;
-        message.process = status.Get_source();
+        message.process = status.MPI_SOURCE;
 
         // Allocate buffer
-        message.size = status.Get_count(BYTE_T);
+        MPI_Get_count(&status,BYTE_T,&message.size);
         message.data.resize(message.size);
 
         // Receive message
-        mpi->world().Recv(&message.data[0], message.size, BYTE_T, message.process, MPI::ANY_TAG);
+        MPI_Recv(&message.data[0], message.size, BYTE_T, message.process, MPI_ANY_TAG, mpi->world(), &status);
 
         return message;
     }
 
     Message ReceiveFromMaster() {
         // Probe for an incoming message from master
-        MPI::Status status;
-        mpi->world().Probe(0, MPI::ANY_TAG, status);
+        MPI_Status status;
+        MPI_Probe(0, MPI_ANY_TAG, mpi->world(), &status);
 
         // Initialize new message
         Message message;
         message.process = 0;
 
-        if (status.Get_tag() != DIETAG) {
+        if (status.MPI_TAG != DIETAG) {
             // Allocate buffer
-            message.size = status.Get_count(BYTE_T);
+            MPI_Get_count(&status,BYTE_T,&message.size);
             message.data.resize(message.size);
 
             // Receive message
-            this->mpi->world().Recv(&message.data[0], message.size, BYTE_T, 0, MPI::ANY_TAG);
+            MPI_Recv(&message.data[0], message.size, BYTE_T, 0, MPI_ANY_TAG, mpi->world(), &status);
 
         } else {
             // Receive message
-            this->mpi->world().Recv(NULL, 0, BYTE_T, 0, MPI::ANY_TAG);
+            MPI_Recv(NULL, 0, BYTE_T, 0, MPI_ANY_TAG, mpi->world(), &status);
 
             // Account for the DIETAG
             message.size = -1;
@@ -221,7 +223,7 @@ protected:
         // Tell slave0 how many elements one has
         std::vector<int> numElements(mympi->size());
         int sz = vectorIn.size();
-        mympi->world().Gather(&sz, 1, MPI::INT, &numElements[0], 1, MPI::INT, 0);
+        MPI_Gather(&sz, 1, MPI_INT, &numElements[0], 1, MPI_INT, 0, mympi->world());
 
         // Calculate displacements
         std::vector<int> displacement(mympi->size());
@@ -238,7 +240,7 @@ protected:
         }
 
         // Collect everything into slave0
-        mympi->world().Gatherv(&vectorIn[0], vectorIn.size(), MPI_COSTUME, &vectorOut[0], &numElements[0], &displacement[0], MPI_COSTUME, 0);
+        MPI_Gather(&vectorIn[0], vectorIn.size(), MPI_COSTUME, &vectorOut[0], &numElements[0], &displacement[0], MPI_COSTUME, 0, mympi->world());
 
         return vectorOut;
     }

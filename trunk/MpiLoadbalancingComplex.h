@@ -27,7 +27,7 @@ protected:
             // --- Receive message from slave0 ---
             if (this->mympi->size() > 1) {
                 // Broadcast message size
-                this->mympi->world().Bcast(&message_in.size, 1, MPI::INT, 0);
+                MPI_Bcast(&message_in.size, 1, MPI_INT, 0, this->mympi->world());
 
                 if (message_in.size != -1) {
                     if (this->mympi->rank() != 0 ) {

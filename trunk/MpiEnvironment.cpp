@@ -3,13 +3,11 @@
 MpiEnvironment::MpiEnvironment(int argc, char **argv) : MpiVariables(Init(argc, argv)) {
 }
 
-const MPI::Intracomm& MpiEnvironment::Init(int argc, char **argv) {
-    MPI::Init(argc, argv);
-    assert(MPI::Is_initialized() == true);
-    return MPI::COMM_WORLD;
+MPI_Comm MpiEnvironment::Init(int argc, char **argv) {
+    MPI_Init (&argc, &argv);
+    return MPI_COMM_WORLD;
 }
 
 MpiEnvironment::~MpiEnvironment() {
-    MPI::Finalize();
-    assert(MPI::Is_finalized() == true);
+    MPI_Finalize();
 }

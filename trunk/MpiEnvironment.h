@@ -1,7 +1,7 @@
 #ifndef MPIENVIRONMENT_H
 #define MPIENVIRONMENT_H
 
-#define _MPI_CPP_BINDINGS
+#define OMPI_SKIP_MPICXX
 
 #include "MpiVariables.h"
 #include <mpi.h>
@@ -12,7 +12,7 @@ public:
     MpiEnvironment(int argc, char **argv);
     ~MpiEnvironment();
 private:
-    const MPI::Intracomm& Init(int argc, char **argv);
+    MPI_Comm Init(int argc, char **argv);
 };
 
 #endif

@@ -50,7 +50,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>400</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -65,8 +65,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>385</width>
-             <height>568</height>
+             <width>300</width>
+             <height>524</height>
             </rect>
            </property>
            <attribute name="label">
@@ -567,7 +567,7 @@
                   </font>
                  </property>
                  <property name="text">
-                  <string>Note: we define the quantization axis to be the Z-axis.</string>
+                  <string>Note: the quantization axis is the Z-axis.</string>
                  </property>
                  <property name="textFormat">
                   <enum>Qt::AutoText</enum>
@@ -1069,8 +1069,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>424</height>
+             <width>300</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1461,8 +1461,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>424</height>
+             <width>300</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1676,7 +1676,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Note: we define the interatomic axis to lie in the YZ-plane (the Z-axis is the quantization axis). The angle between the interatomic axis and quantization axis is called theta. It is meassured starting from the Z-axis.</string>
+               <string>Note: the interatomic axis lies in the YZ-plane (Z-axis is quantization axis). The angle between the interatomic and quantization axis is called theta. It is meassured starting from the Z-axis.</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -1706,8 +1706,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>400</width>
-             <height>424</height>
+             <width>300</width>
+             <height>390</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1775,7 +1775,7 @@
                  </font>
                 </property>
                 <property name="inputMask">
-                 <string>1e-12; </string>
+                 <string>1e-12</string>
                 </property>
                </widget>
               </item>
@@ -1834,7 +1834,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>400</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -1852,8 +1852,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>385</width>
-             <height>581</height>
+             <width>300</width>
+             <height>603</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3084,7 +3084,7 @@
         <bool>true</bool>
        </property>
        <attribute name="title">
-        <string>Field map of first atom</string>
+        <string>Field map of atom 1</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_10">
         <item>
@@ -3101,7 +3101,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Calculate field map of first atom</string>
+             <string>Calculate field map of atom 1</string>
             </property>
            </widget>
           </item>
@@ -3127,7 +3127,7 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Field map of second atom</string>
+        <string>Field map of atom 2</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_11">
         <item>
@@ -3144,7 +3144,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Calculate field map of second atom</string>
+             <string>Calculate field map of atom 2</string>
             </property>
            </widget>
           </item>
@@ -3187,7 +3187,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Calculate pair potential (this also computes field maps)</string>
+             <string>Calculate pair potential</string>
             </property>
            </widget>
           </item>
