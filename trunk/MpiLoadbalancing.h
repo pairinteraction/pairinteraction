@@ -142,7 +142,7 @@ protected:
         }
 
         // === Kill all slaves0 ===
-        std::vector<MPI_Request> requests(std::min(dataIn.size(), vecSlave0.size()));
+        std::vector<MPI_Request> requests(vecSlave0.size());
 
         size_t pos = 0;
         for (auto &dest: vecSlave0) {
