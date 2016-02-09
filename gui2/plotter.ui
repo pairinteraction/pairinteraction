@@ -66,7 +66,7 @@
              <x>0</x>
              <y>0</y>
              <width>280</width>
-             <height>356</height>
+             <height>369</height>
             </rect>
            </property>
            <attribute name="label">
@@ -77,7 +77,6 @@
              <widget class="QLabel" name="label_63">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -121,22 +120,7 @@
                 <property name="verticalSpacing">
                  <number>0</number>
                 </property>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_7">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>atom 1</string>
-                  </property>
-                  <property name="textFormat">
-                   <enum>Qt::AutoText</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
+                <item row="0" column="1">
                  <widget class="QComboBox" name="combobox_system_species1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -150,11 +134,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <item>
                    <property name="text">
                     <string>Rb</string>
@@ -162,22 +141,7 @@
                   </item>
                  </widget>
                 </item>
-                <item row="2" column="0">
-                 <widget class="QLabel" name="label_2">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>n&lt;sub&gt;1&lt;/sub&gt;</string>
-                  </property>
-                  <property name="textFormat">
-                   <enum>Qt::AutoText</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="2" column="1">
+                <item row="1" column="1">
                  <widget class="QSpinBox" name="spinbox_system_n1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -191,11 +155,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -207,19 +166,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_3">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>l&lt;sub&gt;1&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="3" column="1">
+                <item row="2" column="1">
                  <widget class="QSpinBox" name="spinbox_system_l1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -233,29 +180,12 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="maximum">
                    <number>100</number>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_4">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>j&lt;sub&gt;1&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
+                <item row="3" column="1">
                  <widget class="QDoubleSpinBox" name="spinbox_system_j1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -269,11 +199,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="decimals">
                    <number>1</number>
                   </property>
@@ -285,19 +210,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_5">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>m&lt;sub&gt;1&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="1">
+                <item row="4" column="1">
                  <widget class="QDoubleSpinBox" name="spinbox_system_m1">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -311,11 +224,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="decimals">
                    <number>1</number>
                   </property>
@@ -327,6 +235,47 @@
                   </property>
                   <property name="value">
                    <double>0.500000000000000</double>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_7">
+                  <property name="text">
+                   <string>atom 1</string>
+                  </property>
+                  <property name="textFormat">
+                   <enum>Qt::AutoText</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>n&lt;sub&gt;1&lt;/sub&gt;</string>
+                  </property>
+                  <property name="textFormat">
+                   <enum>Qt::AutoText</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_3">
+                  <property name="text">
+                   <string>l&lt;sub&gt;1&lt;/sub&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_4">
+                  <property name="text">
+                   <string>j&lt;sub&gt;1&lt;/sub&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_5">
+                  <property name="text">
+                   <string>m&lt;sub&gt;1&lt;/sub&gt;</string>
                   </property>
                  </widget>
                 </item>
@@ -349,22 +298,7 @@
                 <property name="verticalSpacing">
                  <number>0</number>
                 </property>
-                <item row="1" column="0">
-                 <widget class="QLabel" name="label_8">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>atom 2</string>
-                  </property>
-                  <property name="textFormat">
-                   <enum>Qt::AutoText</enum>
-                  </property>
-                 </widget>
-                </item>
-                <item row="1" column="1">
+                <item row="0" column="1">
                  <widget class="QComboBox" name="combobox_system_species2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -378,11 +312,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <item>
                    <property name="text">
                     <string>Rb</string>
@@ -390,22 +319,17 @@
                   </item>
                  </widget>
                 </item>
-                <item row="3" column="0">
-                 <widget class="QLabel" name="label_18">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="label_8">
                   <property name="text">
-                   <string>n&lt;sub&gt;2&lt;/sub&gt;</string>
+                   <string>atom 2</string>
                   </property>
                   <property name="textFormat">
                    <enum>Qt::AutoText</enum>
                   </property>
                  </widget>
                 </item>
-                <item row="3" column="1">
+                <item row="1" column="1">
                  <widget class="QSpinBox" name="spinbox_system_n2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -419,11 +343,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="minimum">
                    <number>1</number>
                   </property>
@@ -435,19 +354,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="0">
-                 <widget class="QLabel" name="label_19">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>l&lt;sub&gt;2&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="4" column="1">
+                <item row="2" column="1">
                  <widget class="QSpinBox" name="spinbox_system_l2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -461,29 +368,12 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="maximum">
                    <number>100</number>
                   </property>
                  </widget>
                 </item>
-                <item row="5" column="0">
-                 <widget class="QLabel" name="label_20">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>j&lt;sub&gt;2&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="5" column="1">
+                <item row="3" column="1">
                  <widget class="QDoubleSpinBox" name="spinbox_system_j2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -497,11 +387,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="decimals">
                    <number>1</number>
                   </property>
@@ -513,19 +398,7 @@
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="0">
-                 <widget class="QLabel" name="label_21">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
-                  <property name="text">
-                   <string>m&lt;sub&gt;2&lt;/sub&gt;</string>
-                  </property>
-                 </widget>
-                </item>
-                <item row="6" column="1">
+                <item row="4" column="1">
                  <widget class="QDoubleSpinBox" name="spinbox_system_m2">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
@@ -538,11 +411,6 @@
                     <width>0</width>
                     <height>0</height>
                    </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
                   </property>
                   <property name="decimals">
                    <number>1</number>
@@ -558,17 +426,43 @@
                   </property>
                  </widget>
                 </item>
+                <item row="1" column="0">
+                 <widget class="QLabel" name="label_18">
+                  <property name="text">
+                   <string>n&lt;sub&gt;2&lt;/sub&gt;</string>
+                  </property>
+                  <property name="textFormat">
+                   <enum>Qt::AutoText</enum>
+                  </property>
+                 </widget>
+                </item>
+                <item row="2" column="0">
+                 <widget class="QLabel" name="label_19">
+                  <property name="text">
+                   <string>l&lt;sub&gt;2&lt;/sub&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="3" column="0">
+                 <widget class="QLabel" name="label_20">
+                  <property name="text">
+                   <string>j&lt;sub&gt;2&lt;/sub&gt;</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="4" column="0">
+                 <widget class="QLabel" name="label_21">
+                  <property name="text">
+                   <string>m&lt;sub&gt;2&lt;/sub&gt;</string>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
              </layout>
             </item>
             <item>
              <widget class="QLabel" name="label_39">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>Note: the quantization axis is the z-axis.</string>
               </property>
@@ -606,8 +500,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>386</height>
+             <width>267</width>
+             <height>420</height>
             </rect>
            </property>
            <attribute name="label">
@@ -618,13 +512,12 @@
              <widget class="QLabel" name="label_75">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Max. energy difference (GHz) from ...</string>
+               <string>Max. energy difference (GHz) from unperturbed ...</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -649,20 +542,15 @@
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
               </property>
               <property name="horizontalSpacing">
-               <number>-1</number>
+               <number>6</number>
               </property>
               <property name="verticalSpacing">
                <number>0</number>
               </property>
               <item row="0" column="0">
                <widget class="QLabel" name="label_15">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
-                 <string>unperturbed single atom states</string>
+                 <string>single atom states</string>
                 </property>
                 <property name="textFormat">
                  <enum>Qt::AutoText</enum>
@@ -677,11 +565,6 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -695,11 +578,6 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -707,13 +585,8 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_16">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
-                 <string>unperturbed pair state</string>
+                 <string>pair state</string>
                 </property>
                 <property name="textFormat">
                  <enum>Qt::AutoText</enum>
@@ -742,13 +615,12 @@
              <widget class="QLabel" name="label_64">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Criteria for building single atom basis</string>
+               <string>Criteria for single atom basis</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -763,11 +635,6 @@
             </item>
             <item>
              <widget class="QCheckBox" name="checkbox_system_samebasis">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>use same basis for both atoms</string>
               </property>
@@ -790,18 +657,13 @@
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                 </property>
                 <property name="horizontalSpacing">
-                 <number>-1</number>
+                 <number>6</number>
                 </property>
                 <property name="verticalSpacing">
                  <number>0</number>
                 </property>
                 <item row="4" column="0">
                  <widget class="QLabel" name="label_36">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δn</string>
                   </property>
@@ -824,11 +686,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="maximum">
                    <number>999</number>
                   </property>
@@ -839,11 +696,6 @@
                 </item>
                 <item row="5" column="0">
                  <widget class="QLabel" name="label_45">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δl</string>
                   </property>
@@ -865,11 +717,6 @@
                     <width>0</width>
                     <height>0</height>
                    </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
                   </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δl is choosen to be as large as possible.</string>
@@ -903,11 +750,6 @@
                 </property>
                 <item row="4" column="0">
                  <widget class="QLabel" name="label_50">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δj</string>
                   </property>
@@ -930,11 +772,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δj is choosen to be as large as possible.</string>
                   </property>
@@ -951,11 +788,6 @@
                 </item>
                 <item row="5" column="0">
                  <widget class="QLabel" name="label_57">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δm</string>
                   </property>
@@ -977,11 +809,6 @@
                     <width>0</width>
                     <height>0</height>
                    </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
                   </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δm is choosen to be as large as possible.</string>
@@ -1021,13 +848,12 @@
              <widget class="QLabel" name="label_65">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
               </property>
               <property name="text">
-               <string>Criteria for building pair basis</string>
+               <string>Criteria for pair basis</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -1074,18 +900,13 @@
                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
                 </property>
                 <property name="horizontalSpacing">
-                 <number>-1</number>
+                 <number>6</number>
                 </property>
                 <property name="verticalSpacing">
                  <number>0</number>
                 </property>
                 <item row="4" column="0">
                  <widget class="QLabel" name="label_58">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δn</string>
                   </property>
@@ -1111,11 +932,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="maximum">
                    <number>999</number>
                   </property>
@@ -1126,11 +942,6 @@
                 </item>
                 <item row="5" column="0">
                  <widget class="QLabel" name="label_72">
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="text">
                    <string>Δl</string>
                   </property>
@@ -1155,11 +966,6 @@
                     <width>0</width>
                     <height>0</height>
                    </size>
-                  </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
                   </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δl is choosen to be as large as possible.</string>
@@ -1223,11 +1029,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δj is choosen to be as large as possible.</string>
                   </property>
@@ -1274,11 +1075,6 @@
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="font">
-                   <font>
-                    <pointsize>12</pointsize>
-                   </font>
-                  </property>
                   <property name="statusTip">
                    <string>A value of -1 means that Δm is choosen to be as large as possible.</string>
                   </property>
@@ -1324,7 +1120,7 @@
              <x>0</x>
              <y>0</y>
              <width>280</width>
-             <height>356</height>
+             <height>369</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1335,7 +1131,6 @@
              <widget class="QLabel" name="label_66">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -1361,11 +1156,6 @@
               </property>
               <item row="0" column="1">
                <widget class="QLabel" name="label_46">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at start</string>
                 </property>
@@ -1373,11 +1163,6 @@
               </item>
               <item row="3" column="1">
                <widget class="QLineEdit" name="lineedit_system_minEz">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1385,11 +1170,6 @@
               </item>
               <item row="1" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxEx">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1397,11 +1177,6 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_43">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>E&lt;sub&gt;x&lt;/sub&gt; (V/cm)</string>
                 </property>
@@ -1409,11 +1184,6 @@
               </item>
               <item row="0" column="2">
                <widget class="QLabel" name="label_47">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at end</string>
                 </property>
@@ -1421,11 +1191,6 @@
               </item>
               <item row="3" column="0">
                <widget class="QLabel" name="label_51">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>E&lt;sub&gt;z&lt;/sub&gt; (V/cm)</string>
                 </property>
@@ -1433,11 +1198,6 @@
               </item>
               <item row="3" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxEz">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1445,11 +1205,6 @@
               </item>
               <item row="1" column="1">
                <widget class="QLineEdit" name="lineedit_system_minEx">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1457,11 +1212,6 @@
               </item>
               <item row="2" column="1">
                <widget class="QLineEdit" name="lineedit_system_minEy">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1469,11 +1219,6 @@
               </item>
               <item row="2" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxEy">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1481,11 +1226,6 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_52">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>E&lt;sub&gt;y&lt;/sub&gt; (V/cm)</string>
                 </property>
@@ -1513,7 +1253,6 @@
              <widget class="QLabel" name="label_71">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -1539,11 +1278,6 @@
               </property>
               <item row="0" column="1">
                <widget class="QLabel" name="label_48">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at start</string>
                 </property>
@@ -1551,11 +1285,6 @@
               </item>
               <item row="3" column="1">
                <widget class="QLineEdit" name="lineedit_system_minBz">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1563,11 +1292,6 @@
               </item>
               <item row="1" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxBx">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1575,11 +1299,6 @@
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="label_44">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>B&lt;sub&gt;x&lt;/sub&gt; (G)</string>
                 </property>
@@ -1587,11 +1306,6 @@
               </item>
               <item row="0" column="2">
                <widget class="QLabel" name="label_49">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at end</string>
                 </property>
@@ -1599,11 +1313,6 @@
               </item>
               <item row="3" column="0">
                <widget class="QLabel" name="label_53">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>B&lt;sub&gt;z&lt;/sub&gt; (G)</string>
                 </property>
@@ -1611,11 +1320,6 @@
               </item>
               <item row="3" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxBz">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1623,11 +1327,6 @@
               </item>
               <item row="1" column="1">
                <widget class="QLineEdit" name="lineedit_system_minBx">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1635,11 +1334,6 @@
               </item>
               <item row="2" column="1">
                <widget class="QLineEdit" name="lineedit_system_minBy">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1647,11 +1341,6 @@
               </item>
               <item row="2" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxBy">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1659,11 +1348,6 @@
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_54">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>B&lt;sub&gt;y&lt;/sub&gt; (G)</string>
                 </property>
@@ -1692,7 +1376,7 @@
              <x>0</x>
              <y>0</y>
              <width>280</width>
-             <height>356</height>
+             <height>369</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1703,7 +1387,6 @@
              <widget class="QLabel" name="label_61">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -1720,11 +1403,6 @@
               </property>
               <item row="2" column="0">
                <widget class="QLabel" name="label_41">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>distance (µm)</string>
                 </property>
@@ -1732,11 +1410,6 @@
               </item>
               <item row="1" column="1">
                <widget class="QLabel" name="label_59">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at start</string>
                 </property>
@@ -1744,11 +1417,6 @@
               </item>
               <item row="1" column="2">
                <widget class="QLabel" name="label_42">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>at end</string>
                 </property>
@@ -1756,11 +1424,6 @@
               </item>
               <item row="2" column="1">
                <widget class="QLineEdit" name="lineedit_system_minR">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1768,11 +1431,6 @@
               </item>
               <item row="2" column="2">
                <widget class="QLineEdit" name="lineedit_system_maxR">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -1800,7 +1458,6 @@
              <widget class="QLabel" name="label_62">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -1826,11 +1483,6 @@
               </property>
               <item row="0" column="0">
                <widget class="QLabel" name="label_60">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>angle (deg)</string>
                 </property>
@@ -1843,11 +1495,6 @@
                <widget class="QLineEdit" name="lineedit_system_theta">
                 <property name="enabled">
                  <bool>false</bool>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
                 </property>
                 <property name="statusTip">
                  <string>Angle between interatomic axis (lies in the xy-plane) and quantization axis (z-axis)</string>
@@ -1879,7 +1526,6 @@
              <widget class="QLabel" name="label_40">
               <property name="font">
                <font>
-                <pointsize>12</pointsize>
                 <weight>75</weight>
                 <bold>true</bold>
                </font>
@@ -1891,11 +1537,6 @@
             </item>
             <item>
              <widget class="QCheckBox" name="checkbox_system_dd">
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>dipole-dipole</string>
               </property>
@@ -1909,11 +1550,6 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
-              </property>
               <property name="text">
                <string>dipole-quadrupole</string>
               </property>
@@ -1923,11 +1559,6 @@
              <widget class="QCheckBox" name="checkbox_system_qq">
               <property name="enabled">
                <bool>false</bool>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>12</pointsize>
-               </font>
               </property>
               <property name="text">
                <string>quadrupole-quadrupole</string>
@@ -1958,7 +1589,7 @@
              <x>0</x>
              <y>0</y>
              <width>280</width>
-             <height>356</height>
+             <height>369</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1982,13 +1613,8 @@
               <property name="verticalSpacing">
                <number>2</number>
               </property>
-              <item row="1" column="0">
+              <item row="0" column="0">
                <widget class="QLabel" name="label_37">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
                 <property name="text">
                  <string>number of steps</string>
                 </property>
@@ -1997,19 +1623,7 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="0">
-               <widget class="QLabel" name="label_38">
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
-                </property>
-                <property name="text">
-                 <string>numerical precision (au)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
+              <item row="0" column="1">
                <widget class="QSpinBox" name="spinbox_system_steps">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2028,7 +1642,14 @@
                 </property>
                </widget>
               </item>
-              <item row="3" column="1">
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_38">
+                <property name="text">
+                 <string>numerical precision (au)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
                <widget class="QLineEdit" name="lineedit_system_precision">
                 <property name="enabled">
                  <bool>false</bool>
@@ -2038,11 +1659,6 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
-                </property>
-                <property name="font">
-                 <font>
-                  <pointsize>12</pointsize>
-                 </font>
                 </property>
                 <property name="inputMask">
                  <string>1e-12</string>
@@ -2103,8 +1719,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>603</height>
+             <width>270</width>
+             <height>554</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -2124,11 +1740,6 @@
                 <width>0</width>
                 <height>0</height>
                </size>
-              </property>
-              <property name="font">
-               <font>
-                <pointsize>13</pointsize>
-               </font>
               </property>
               <property name="title">
                <string>Energy limits (GHz)</string>
@@ -2170,11 +1781,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_26">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>lower</string>
                      </property>
@@ -2196,11 +1802,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="text">
                       <string>None</string>
@@ -2228,11 +1829,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_27">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>upper</string>
                      </property>
@@ -2254,11 +1850,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="text">
                       <string>None</string>
@@ -2290,11 +1881,6 @@
             </item>
             <item>
              <widget class="QGroupBox" name="groupbox_plot_points">
-              <property name="font">
-               <font>
-                <pointsize>13</pointsize>
-               </font>
-              </property>
               <property name="title">
                <string>Points</string>
               </property>
@@ -2332,11 +1918,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_55">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>size</string>
                      </property>
@@ -2358,11 +1939,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>1</number>
@@ -2402,11 +1978,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_56">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>alpha</string>
                      </property>
@@ -2428,11 +1999,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>3</number>
@@ -2479,11 +2045,6 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="font">
-               <font>
-                <pointsize>13</pointsize>
-               </font>
-              </property>
               <property name="title">
                <string>Lines</string>
               </property>
@@ -2524,11 +2085,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_67">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>size</string>
                      </property>
@@ -2550,11 +2106,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>1</number>
@@ -2594,11 +2145,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_68">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>alpha</string>
                      </property>
@@ -2620,11 +2166,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>3</number>
@@ -2671,11 +2212,6 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="font">
-               <font>
-                <pointsize>13</pointsize>
-               </font>
-              </property>
               <property name="title">
                <string>Labels</string>
               </property>
@@ -2716,11 +2252,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_69">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>size</string>
                      </property>
@@ -2742,11 +2273,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>1</number>
@@ -2786,11 +2312,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_70">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>alpha</string>
                      </property>
@@ -2812,11 +2333,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>3</number>
@@ -2863,11 +2379,6 @@
               <property name="enabled">
                <bool>false</bool>
               </property>
-              <property name="font">
-               <font>
-                <pointsize>13</pointsize>
-               </font>
-              </property>
               <property name="title">
                <string>Overlap</string>
               </property>
@@ -2889,11 +2400,6 @@
                </property>
                <item>
                 <widget class="QRadioButton" name="radiobutton_plot_overlapUnperturbed">
-                 <property name="font">
-                  <font>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
                  <property name="text">
                   <string>with the unperturbed state</string>
                  </property>
@@ -2904,11 +2410,6 @@
                </item>
                <item>
                 <widget class="QRadioButton" name="radiobutton_plot_overlapDefined">
-                 <property name="font">
-                  <font>
-                   <pointsize>12</pointsize>
-                  </font>
-                 </property>
                  <property name="text">
                   <string>with the state defined below</string>
                  </property>
@@ -2935,11 +2436,6 @@
                    </property>
                    <item row="1" column="0">
                     <widget class="QLabel" name="label_6">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>n&lt;sub&gt;1&lt;/sub&gt;</string>
                      </property>
@@ -2962,11 +2458,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="minimum">
                       <number>1</number>
                      </property>
@@ -2980,11 +2471,6 @@
                    </item>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_10">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>l&lt;sub&gt;1&lt;/sub&gt;</string>
                      </property>
@@ -3004,11 +2490,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="maximum">
                       <number>100</number>
                      </property>
@@ -3016,11 +2497,6 @@
                    </item>
                    <item row="3" column="0">
                     <widget class="QLabel" name="label_11">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>j&lt;sub&gt;1&lt;/sub&gt;</string>
                      </property>
@@ -3040,11 +2516,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="decimals">
                       <number>1</number>
                      </property>
@@ -3058,11 +2529,6 @@
                    </item>
                    <item row="4" column="0">
                     <widget class="QLabel" name="label_14">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>m&lt;sub&gt;1&lt;/sub&gt;</string>
                      </property>
@@ -3081,11 +2547,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>1</number>
@@ -3119,11 +2580,6 @@
                    </property>
                    <item row="2" column="0">
                     <widget class="QLabel" name="label_22">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>n&lt;sub&gt;2&lt;/sub&gt;</string>
                      </property>
@@ -3146,11 +2602,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="minimum">
                       <number>1</number>
                      </property>
@@ -3164,11 +2615,6 @@
                    </item>
                    <item row="3" column="0">
                     <widget class="QLabel" name="label_23">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>l&lt;sub&gt;2&lt;/sub&gt;</string>
                      </property>
@@ -3188,11 +2634,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="maximum">
                       <number>100</number>
                      </property>
@@ -3200,11 +2641,6 @@
                    </item>
                    <item row="4" column="0">
                     <widget class="QLabel" name="label_24">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>j&lt;sub&gt;2&lt;/sub&gt;</string>
                      </property>
@@ -3224,11 +2660,6 @@
                        <height>0</height>
                       </size>
                      </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="decimals">
                       <number>1</number>
                      </property>
@@ -3242,11 +2673,6 @@
                    </item>
                    <item row="5" column="0">
                     <widget class="QLabel" name="label_25">
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
-                     </property>
                      <property name="text">
                       <string>m&lt;sub&gt;2&lt;/sub&gt;</string>
                      </property>
@@ -3265,11 +2691,6 @@
                        <width>0</width>
                        <height>0</height>
                       </size>
-                     </property>
-                     <property name="font">
-                      <font>
-                       <pointsize>12</pointsize>
-                      </font>
                      </property>
                      <property name="decimals">
                       <number>1</number>
@@ -3475,7 +2896,7 @@
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -3588,16 +3009,6 @@
  </customwidgets>
  <tabstops>
   <tabstop>tabWidget_2</tabstop>
-  <tabstop>combobox_system_species1</tabstop>
-  <tabstop>spinbox_system_n1</tabstop>
-  <tabstop>spinbox_system_l1</tabstop>
-  <tabstop>spinbox_system_j1</tabstop>
-  <tabstop>spinbox_system_m1</tabstop>
-  <tabstop>combobox_system_species2</tabstop>
-  <tabstop>spinbox_system_n2</tabstop>
-  <tabstop>spinbox_system_l2</tabstop>
-  <tabstop>spinbox_system_j2</tabstop>
-  <tabstop>spinbox_system_m2</tabstop>
   <tabstop>lineedit_system_minEx</tabstop>
   <tabstop>lineedit_system_maxEx</tabstop>
   <tabstop>lineedit_system_minEy</tabstop>
@@ -3616,8 +3027,6 @@
   <tabstop>checkbox_system_dq</tabstop>
   <tabstop>checkbox_system_qq</tabstop>
   <tabstop>lineedit_system_theta</tabstop>
-  <tabstop>spinbox_system_steps</tabstop>
-  <tabstop>lineedit_system_precision</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>lineedit_plot_minE</tabstop>
   <tabstop>lineedit_plot_maxE</tabstop>
