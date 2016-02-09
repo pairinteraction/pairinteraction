@@ -27,7 +27,11 @@ typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
 typedef std::nullptr_t invalid_t;
 
-#include "config.h"
+#ifdef USE_COMPLEX
+    typedef complex_t scalar_t;
+#else
+    typedef real_t scalar_t;
+#endif
 
 typedef Eigen::Triplet<scalar_t> eigen_triplet_t;
 typedef Eigen::Triplet<real_t> eigen_triplet_real_t;

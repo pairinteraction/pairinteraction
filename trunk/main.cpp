@@ -1867,6 +1867,7 @@ int main(int argc, char **argv) {
     // === Load configuration ===
     Configuration config;
     config.load_from_json(path_config.string());
+    config["deltaE2"] = config["deltaE1"]; // TODO
 
     bool existAtom1 = config.count("species1") && config.count("n1") && config.count("l1") && config.count("j1") && config.count("m1");
     bool existAtom2 = config.count("species2") && config.count("n2") && config.count("l2") && config.count("j2") && config.count("m2");
@@ -1921,8 +1922,6 @@ int main(int argc, char **argv) {
     // === Communicate that everything is finished ===
     MPI_Barrier(mpi->world());
     if (mpi->rank() == 0) std::cout << ">>END" << std::endl;
-
-
 
 
     //StateTwo startstate(config);

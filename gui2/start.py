@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# TODO timings, use real_t complex_t !!!!!!
+
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
@@ -9,7 +11,8 @@ import pyqtgraph as pg
 
 import collections
 from abc import ABCMeta, abstractmethod
-from time import sleep
+from time import sleep, process_time
+from datetime import timedelta
 import locale
 import json
 import os
@@ -178,7 +181,7 @@ class SystemDict(GUIDict):
         store["deltaJ"] = {'widget': ui.spinbox_system_deltaJ, 'unit': Units.dimensionless}
         store["deltaM"] = {'widget': ui.spinbox_system_deltaM, 'unit': Units.dimensionless}
         store["deltaE1"] = {'widget': ui.lineedit_system_deltaE1, 'unit': Units.energy}
-        store["deltaE2"] = {'widget': ui.lineedit_system_deltaE2, 'unit': Units.energy}
+        #store["deltaE2"] = {'widget': ui.lineedit_system_deltaE2, 'unit': Units.energy}
         store["deltaE"] = {'widget': ui.lineedit_system_deltaE, 'unit': Units.energy}
         store["samebasis"] = {'widget': ui.checkbox_system_samebasis}
         store["minEx"] = {'widget': ui.lineedit_system_minEx, 'unit': Units.efield}
@@ -267,6 +270,9 @@ class Worker(QtCore.QThread):
         with self.dataqueue_field12.mutex: self.dataqueue_field12.queue.clear()
         with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
         
+        # Take time
+        starttime = process_time()
+        
         # Parse stdout
         dim = 0
         type = 0
@@ -293,11 +299,11 @@ class Worker(QtCore.QThread):
                 
             elif line[:5] == b">>DIM":
                 dim = int(line[5:12])
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices already processed".format(dim, dim, current,total)
+                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(dim, dim, current,total)
                 
             elif line[:5] == b">>OUT":
                 current += 1
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices already processed".format(dim, dim, current,total)
+                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(dim, dim, current,total)
                 
                 filenumber = int(line[5:12].decode('utf-8'))
                 filename = line[13:-1].decode('utf-8')
@@ -318,7 +324,7 @@ class Worker(QtCore.QThread):
             else:
                 print (line.decode('utf-8'), end="")
             
-            self.output.emit(status_type + status_progress)
+            self.output.emit(status_type + status_progress +" ({})".format(timedelta(seconds=process_time()-starttime)))
         
         # Clear data queue if thread has aborted
         if not finishedgracefully:
@@ -354,7 +360,7 @@ class BinaryLoader:
         if flags & self.complex_not_real: data = self.readVector(f) + self.readVector(f)*1j
         else: data = self.readVector(f)
         indices = self.readVector(f)
-        indptr = np.append(self.readVector(f),len(data)) # TODO TypeError: object of type 'numpy.complex128' has no len()
+        indptr = np.append(self.readVector(f),len(data))
         if flags & self.csr_not_csc: return sparse.csr_matrix((data, indices, indptr), shape=(rows, cols))
         else: return sparse.csc_matrix((data, indices, indptr), shape=(rows, cols))
 
@@ -532,7 +538,8 @@ class MainWindow(QtGui.QMainWindow):
         self.numprocessors = max(2,multiprocessing.cpu_count())
         self.path_base = os.path.dirname(os.path.abspath(__file__))
         self.path_workingdir = os.path.join(self.path_base,"../build/")
-        self.path_cpp = os.path.join(self.path_base,"../build/pairinteraction")
+        self.path_cpp_real = os.path.join(self.path_base,"../build/pairinteraction-real")
+        self.path_cpp_complex = os.path.join(self.path_base,"../build/pairinteraction-complex")
         
         self.proc = None
         self.thread = Worker()
@@ -560,7 +567,7 @@ class MainWindow(QtGui.QMainWindow):
         validator_doublenone = DoublenoneValidator()
         validator_doublepositive = DoublepositiveValidator()
         self.ui.lineedit_system_deltaE1.setValidator(validator_doublepositive)
-        self.ui.lineedit_system_deltaE2.setValidator(validator_doublepositive)
+        #self.ui.lineedit_system_deltaE2.setValidator(validator_doublepositive)
         self.ui.lineedit_system_deltaE.setValidator(validator_doublepositive)
         self.ui.lineedit_system_minEx.setValidator(validator_double)
         self.ui.lineedit_system_minEy.setValidator(validator_double)
@@ -583,7 +590,7 @@ class MainWindow(QtGui.QMainWindow):
         
         # Connect signals and slots
         """self.ui.lineedit_system_deltaE1.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_deltaE2.textChanged.connect(self.checkState)
+        #self.ui.lineedit_system_deltaE2.textChanged.connect(self.checkState)
         self.ui.lineedit_system_deltaE.textChanged.connect(self.checkState)
         self.ui.lineedit_system_minEx.textChanged.connect(self.checkState)
         self.ui.lineedit_system_minEy.textChanged.connect(self.checkState)
@@ -632,7 +639,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfinteger)
         
         self.ui.lineedit_system_deltaE1.textChanged.connect(self.forbidSamebasis)
-        self.ui.lineedit_system_deltaE2.textChanged.connect(self.forbidSamebasis)
+        #self.ui.lineedit_system_deltaE2.textChanged.connect(self.forbidSamebasis)
         self.ui.combobox_system_species1.currentIndexChanged.connect(self.forbidSamebasis)
         self.ui.combobox_system_species2.currentIndexChanged.connect(self.forbidSamebasis)
         
@@ -677,7 +684,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_m1.valueChanged.emit(self.ui.spinbox_plot_m1.value())
         self.ui.spinbox_plot_m2.valueChanged.emit(self.ui.spinbox_plot_m2.value())
         self.ui.lineedit_system_deltaE1.textChanged.emit(self.ui.lineedit_system_deltaE1.text())
-        self.ui.lineedit_system_deltaE2.textChanged.emit(self.ui.lineedit_system_deltaE2.text())
+        #self.ui.lineedit_system_deltaE2.textChanged.emit(self.ui.lineedit_system_deltaE2.text())
         self.ui.combobox_system_species1.currentIndexChanged.emit(self.ui.combobox_system_species1.currentIndex())
         self.ui.combobox_system_species2.currentIndexChanged.emit(self.ui.combobox_system_species2.currentIndex())
     
@@ -880,7 +887,14 @@ class MainWindow(QtGui.QMainWindow):
                 self.ui.pushbutton_field2_calc.setEnabled(True)
             if self.ui.pushbutton_potential_calc != self.senderbutton:
                 self.ui.pushbutton_potential_calc.setEnabled(True)
-            self.senderbutton.setText("Start calculation")
+            if self.ui.pushbutton_field1_calc == self.senderbutton:
+                self.senderbutton.setText("Calculate field map of atom 1")
+            if self.ui.pushbutton_field2_calc == self.senderbutton:
+                self.senderbutton.setText("Calculate field map of atom 2")
+            if self.ui.pushbutton_potential_calc == self.senderbutton:
+                self.senderbutton.setText("Calculate pair potential")
+            
+            
             
             # Reset status bar
             self.ui.statusbar.showMessage('')
@@ -903,8 +917,7 @@ class MainWindow(QtGui.QMainWindow):
     
     @QtCore.pyqtSlot(str)
     def forbidSamebasis(self):
-        if self.ui.lineedit_system_deltaE1.text() != self.ui.lineedit_system_deltaE2.text() or \
-            self.ui.combobox_system_species1.currentIndex() != self.ui.combobox_system_species2.currentIndex():
+        if self.ui.combobox_system_species1.currentIndex() != self.ui.combobox_system_species2.currentIndex():
             self.ui.checkbox_system_samebasis.setEnabled(False)
             if self.samebasis_state is None:
                 self.samebasis_state = self.ui.checkbox_system_samebasis.checkState()
@@ -1052,8 +1065,14 @@ class MainWindow(QtGui.QMainWindow):
                     elif self.senderbutton == self.ui.pushbutton_potential_calc:
                         self.systemdict.saveInAU_potential(f)
                     
-                # Start c++ process # TODO use pairinteraction-real if possible
-                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,self.path_cpp,"-c",path_config],
+                # Start c++ process
+                if self.systemdict["minEx"].magnitude != 0 or self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0 or \
+                        self.systemdict["minBx"].magnitude != 0 or self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0:
+                    path_cpp = self.path_cpp_complex
+                else:
+                    path_cpp = self.path_cpp_real
+                    
+                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",path_config],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
         
                 # Start thread that collects the output
