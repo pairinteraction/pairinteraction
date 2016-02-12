@@ -157,7 +157,7 @@ public:
         return Hamiltonianmatrix(entries_.cwiseAbs().cast<scalar_t>(), basis_);
     }
     Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const{
-        auto transformator = basis_.transpose()*basis;
+        auto transformator = basis_.transpose()*basis; // TODO conjugate transpose / inverse (auch an anderen Stellen) !!!!!!!!!!!!!!!!!
         auto entries = transformator.transpose()*entries_*transformator;
         return Hamiltonianmatrix(entries, basis);
     }
@@ -194,7 +194,40 @@ public:
         }
     }
 
-    void removeUnnecessaryStates(const std::vector<bool> &isNecessary) {
+    void removeUnnecessaryBasisvectors(const std::vector<bool> &isNecessaryCoordinate) {
+        bytes.clear();
+
+        // build transformator
+        std::vector<bool> isNecessaryBasisvector(num_basisvectors(),false);
+        for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+            for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
+                ptrdiff_t col = triple.col(); // basis vector
+                ptrdiff_t row = triple.row(); // coordinate
+                if (isNecessaryCoordinate[row]) {
+                    isNecessaryBasisvector[col] = true;
+                }
+            }
+        }
+
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(num_basisvectors());
+
+        size_t idxBasis = 0;
+        for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
+            if (isNecessaryBasisvector[idx]) {
+                triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
+            }
+        }
+
+        eigen_sparse_t transformator(this->num_basisvectors(),idxBasis);
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+        // apply transformator
+        basis_ = basis_*transformator;
+        entries_= transformator.transpose()*entries_*transformator;
+    }
+
+    void removeUnnecessaryStates(const std::vector<bool> &isNecessaryCoordinate) {
         bytes.clear();
 
         // build transformator
@@ -203,7 +236,7 @@ public:
 
         size_t idxCoordinate = 0;
         for (size_t idx = 0; idx < this->num_coordinates(); ++idx) {
-            if (isNecessary[idx]) {
+            if (isNecessaryCoordinate[idx]) {
                 triplets_transformator.push_back(eigen_triplet_t(idxCoordinate++,idx,1));
             }
         }
@@ -215,17 +248,14 @@ public:
         basis_ = transformator*basis_;
     }
 
-    friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs) {
-        return lhs.duplicate(SYM, rhs);
+    friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
+        return lhs.duplicate(SYM, rhs, deltaE);
     }
-    friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs) {
-        return lhs.duplicate(ASYM, rhs);
+    friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
+        return lhs.duplicate(ASYM, rhs, deltaE);
     }
     friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
-        return lhs.duplicate(rhs, deltaE);
-    }
-    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs) {
-        return lhs.duplicate(ALL, rhs);
+        return lhs.duplicate(ALL, rhs, deltaE);
     }
     friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
         lhs.bytes.clear();
@@ -513,7 +543,7 @@ protected:
             triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
         }
     }
-    Hamiltonianmatrix duplicate(const Hamiltonianmatrix &rhs, const real_t &deltaE) const {
+    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs, const real_t &deltaE) const {
         real_t tol = 1e-32;
 
         size_t num_basisvectors = this->num_basisvectors()*rhs.num_basisvectors();
@@ -535,6 +565,14 @@ protected:
 
         for (size_t idx_1 = 0; idx_1 < this->num_basisvectors(); ++idx_1) {
             for (size_t idx_2 = 0; idx_2 < rhs.num_basisvectors(); ++idx_2) {
+                if (mode == SYM && idx_2 < idx_1) {
+                    continue;
+                }
+
+                if (mode == ASYM && idx_2 <= idx_1) {
+                    continue;
+                }
+
                 size_t idx = rhs.num_basisvectors()*idx_1 + idx_2;
                 scalar_t val = diag1[idx_1] + diag2[idx_2]; // diag(V) x I + I x diag(V)
 
@@ -554,17 +592,29 @@ protected:
                     for (eigen_iterator_t triple_2(rhs.basis(),k_2); triple_2; ++triple_2) {
                         ptrdiff_t col = mapping[rhs.num_basisvectors()*triple_1.col() + triple_2.col()]; // basis vector
                         if (col >= 0) {
-                            size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
-                            scalar_t val = triple_1.value() * triple_2.value();
+                            if (mode == ALL || triple_1.col() == triple_2.col()) {
+                                size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
+                                scalar_t val = triple_1.value() * triple_2.value();
+                                mat.addBasis(row,col,val);
 
-                            mat.addBasis(row,col,val);
+                            } else {
+                                size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
+                                scalar_t val = triple_1.value() * triple_2.value();
+                                val /= std::sqrt(2);
+                                mat.addBasis(row,col,val);
+
+                                row = rhs.num_coordinates()*triple_2.row() + triple_1.row(); // coordinate
+                                val *= (mode == ASYM) ? -1 : 1;
+                                mat.addBasis(row,col,val);
+                            }
+
                         }
                     }
                 }
             }
         }
 
-        // --- duplicate entries_ ---
+        // --- duplicate entries_ (does proberly work only if entries_ is diagonal) --- // TODO
 
         // V x I
         for (eigen_idx_t k=0; k<entries_.outerSize(); ++k) {
@@ -904,7 +954,6 @@ public:
 
 protected:
     void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
-        std::cout << "test" << val_x << std::endl;
         if(val_x != 0 || val_y != 0) {
             std::cout << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
             abort();
@@ -1365,25 +1414,45 @@ public:
             std::vector<Hamiltonianmatrix> free_list;
             free_list.reserve(nSteps_one);
 
-            std::vector<bool> is_necessary(basis_two->size(), false);
-
             for (size_t i = 0; i < nSteps_one; ++i) {
                 // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff
-                free_list.push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE));
-
-                // find states that became unnecessary
-                free_list.back().findUnnecessaryStates(is_necessary);
+                free_list.push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE)); // TODO
             }
 
             std::cout << 0.2 << std::endl;
 
-            // remove unnecessary states
-            for (size_t i = 0; i < nSteps_one; ++i) {
-                free_list[i].removeUnnecessaryStates(is_necessary);
-            }
-            basis_two->removeUnnecessaryStates(is_necessary);
+            // --- remove unnecessary basisvectors ---
+            std::vector<bool> is_necessary_coordinate(basis_two->size(), false);
 
-            std::cout << free_list[0].num_coordinates() << std::endl;
+            // find states (coordinates) that are necessary
+            StateTwo initial = basis_two->initial();
+            float M = initial.m[0]+initial.m[1];
+            int parity = (initial.l[0]+initial.l[1]) % 2;
+
+            for (const auto &state: *basis_two) {
+                if (state.m[0]+state.m[1] == M && (state.l[0]+state.l[1]) % 2 == parity) {
+                    is_necessary_coordinate[state.idx] = true;
+                }
+            }
+
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                free_list[i].removeUnnecessaryBasisvectors(is_necessary_coordinate);
+            }
+
+            // --- remove unnecessary states --- // TODO wie richtig? so ist es eine Operation, die von mehreren matrizen abhaengt
+            std::vector<bool> is_used_coordinate(basis_two->size(), false);
+
+            // find states (coordinates) that are used
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                free_list[i].findUnnecessaryStates(is_used_coordinate);
+            }
+
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                free_list[i].removeUnnecessaryStates(is_used_coordinate);
+            }
+            basis_two->removeUnnecessaryStates(is_used_coordinate);
+
+            std::cout << free_list[0].num_coordinates() << std::endl; // TODO ausgeben
             std::cout << free_list.back().num_basisvectors() << std::endl;
             std::cout << free_list[0].num_basisvectors() << std::endl;
 
@@ -1448,18 +1517,21 @@ public:
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
                             real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
                             real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val);
                             }
                         }
                     }

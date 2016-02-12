@@ -277,6 +277,10 @@ BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, st
     }
 }
 
+const StateTwo& BasisnamesTwo::initial() const {
+    return state_initial;
+}
+
 void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessary) {
     auto tmp = names_;
     names_.clear();
@@ -296,6 +300,8 @@ void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessar
 }
 
 void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
+    state_initial = startstate;
+
     conf["species1"] << species[0];
     conf["n1"] << startstate.n[0];
     conf["l1"] << startstate.l[0];

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-# TODO timings, use real_t complex_t !!!!!!
-
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
@@ -11,7 +9,7 @@ import pyqtgraph as pg
 
 import collections
 from abc import ABCMeta, abstractmethod
-from time import sleep, process_time
+from time import sleep, time
 from datetime import timedelta
 import locale
 import json
@@ -25,6 +23,7 @@ from queue import Queue
 import ctypes
 import sip
 from scipy import constants
+import psutil
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -176,13 +175,18 @@ class SystemDict(GUIDict):
         store["j2"] = {'widget': ui.spinbox_system_j2, 'unit': Units.dimensionless}
         store["m1"] = {'widget': ui.spinbox_system_m1, 'unit': Units.dimensionless}
         store["m2"] = {'widget': ui.spinbox_system_m2, 'unit': Units.dimensionless}
-        store["deltaN"] = {'widget': ui.spinbox_system_deltaN, 'unit': Units.dimensionless}
-        store["deltaL"] = {'widget': ui.spinbox_system_deltaL, 'unit': Units.dimensionless}
-        store["deltaJ"] = {'widget': ui.spinbox_system_deltaJ, 'unit': Units.dimensionless}
-        store["deltaM"] = {'widget': ui.spinbox_system_deltaM, 'unit': Units.dimensionless}
-        store["deltaE1"] = {'widget': ui.lineedit_system_deltaE1, 'unit': Units.energy}
-        #store["deltaE2"] = {'widget': ui.lineedit_system_deltaE2, 'unit': Units.energy}
-        store["deltaE"] = {'widget': ui.lineedit_system_deltaE, 'unit': Units.energy}
+        store["deltaN"] = {'widget': ui.spinbox_system_deltaNSingle, 'unit': Units.dimensionless} # TODO
+        store["deltaL"] = {'widget': ui.spinbox_system_deltaLSingle, 'unit': Units.dimensionless} # TODO
+        store["deltaJ"] = {'widget': ui.spinbox_system_deltaJSingle, 'unit': Units.dimensionless} # TODO
+        store["deltaM"] = {'widget': ui.spinbox_system_deltaMSingle, 'unit': Units.dimensionless} # TODO
+        store["deltaNPair"] = {'widget': ui.spinbox_system_deltaNPair, 'unit': Units.dimensionless}
+        store["deltaLPair"] = {'widget': ui.spinbox_system_deltaLPair, 'unit': Units.dimensionless}
+        store["deltaJPair"] = {'widget': ui.spinbox_system_deltaJPair, 'unit': Units.dimensionless}
+        store["deltaMPair"] = {'widget': ui.spinbox_system_deltaMPair, 'unit': Units.dimensionless}
+        store["deltaE1"] = {'widget': ui.lineedit_system_deltaESingle, 'unit': Units.energy} # TODO
+        store["deltaE"] = {'widget': ui.lineedit_system_deltaEPair, 'unit': Units.energy} # TODO
+        store["pairbasisSame"] = {'widget': ui.radiobutton_system_pairbasisSame}
+        store["pairbasisDefined"] = {'widget': ui.radiobutton_system_pairbasisDefined}
         store["samebasis"] = {'widget': ui.checkbox_system_samebasis}
         store["minEx"] = {'widget': ui.lineedit_system_minEx, 'unit': Units.efield}
         store["minEy"] = {'widget': ui.lineedit_system_minEy, 'unit': Units.efield}
@@ -243,11 +247,11 @@ class PlotDict(GUIDict):
         store["m2"] = {'widget': ui.spinbox_plot_m2, 'unit': Units.dimensionless}
 
 class Worker(QtCore.QThread):
-    output = QtCore.pyqtSignal(str)
 
     def __init__(self, parent = None):
         super().__init__(parent)
         self.exiting = False
+        self.message = ""
         self.dataqueue_field1 = Queue()
         self.dataqueue_field2 = Queue()
         self.dataqueue_field12 = Queue()
@@ -260,18 +264,23 @@ class Worker(QtCore.QThread):
     def execute(self, stdout): 
         self.stdout = stdout   
         self.start()
+        
+    def clear(self):
+        with self.dataqueue_field1.mutex: self.dataqueue_field1.queue.clear()
+        with self.dataqueue_field2.mutex: self.dataqueue_field2.queue.clear()
+        with self.dataqueue_field12.mutex: self.dataqueue_field1.queue.clear()
+        with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
 
     def run(self):
         finishedgracefully = False
+        
+        self.message = ""
         
         # Clear data queue
         with self.dataqueue_field1.mutex: self.dataqueue_field1.queue.clear()
         with self.dataqueue_field2.mutex: self.dataqueue_field2.queue.clear()
         with self.dataqueue_field12.mutex: self.dataqueue_field12.queue.clear()
         with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
-        
-        # Take time
-        starttime = process_time()
         
         # Parse stdout
         dim = 0
@@ -324,14 +333,11 @@ class Worker(QtCore.QThread):
             else:
                 print (line.decode('utf-8'), end="")
             
-            self.output.emit(status_type + status_progress +" ({})".format(timedelta(seconds=process_time()-starttime)))
+            self.message = status_type + status_progress
         
         # Clear data queue if thread has aborted
         if not finishedgracefully:
-            with self.dataqueue_field1.mutex: self.dataqueue_field1.queue.clear()
-            with self.dataqueue_field2.mutex: self.dataqueue_field2.queue.clear()
-            with self.dataqueue_field12.mutex: self.dataqueue_field1.queue.clear()
-            with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
+            self.clear()
             
 class BinaryLoader:
     def __init__(self):
@@ -544,6 +550,20 @@ class MainWindow(QtGui.QMainWindow):
         self.proc = None
         self.thread = Worker()
         self.timer = QtCore.QTimer()
+        self.watchdog = QtCore.QTimer()
+        
+        # TODO implement the following functions
+        self.ui.groupbox_plot_lines.setEnabled(False)
+        self.ui.groupbox_plot_labels.setEnabled(False)
+        self.ui.groupbox_plot_overlap.setEnabled(False)
+        self.ui.radiobutton_system_pairbasisDefined.setEnabled(False)
+        self.ui.lineedit_system_theta.setEnabled(False)
+        self.ui.checkbox_system_dq.setEnabled(False)
+        self.ui.checkbox_system_qq.setEnabled(False)
+        self.ui.lineedit_system_precision.setEnabled(False)
+        self.ui.pushbutton_field1_save.setEnabled(False)
+        self.ui.pushbutton_field2_save.setEnabled(False)
+        self.ui.pushbutton_potential_save.setEnabled(False)
         
         # Setup plot
         self.minE = None
@@ -566,9 +586,8 @@ class MainWindow(QtGui.QMainWindow):
         validator_double = DoubleValidator()
         validator_doublenone = DoublenoneValidator()
         validator_doublepositive = DoublepositiveValidator()
-        self.ui.lineedit_system_deltaE1.setValidator(validator_doublepositive)
-        #self.ui.lineedit_system_deltaE2.setValidator(validator_doublepositive)
-        self.ui.lineedit_system_deltaE.setValidator(validator_doublepositive)
+        self.ui.lineedit_system_deltaESingle.setValidator(validator_doublepositive)
+        self.ui.lineedit_system_deltaEPair.setValidator(validator_doublepositive)
         self.ui.lineedit_system_minEx.setValidator(validator_double)
         self.ui.lineedit_system_minEy.setValidator(validator_double)
         self.ui.lineedit_system_minEz.setValidator(validator_double)
@@ -638,33 +657,45 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_m1.editingFinished.connect(self.validateHalfinteger)
         self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfinteger)
         
-        self.ui.lineedit_system_deltaE1.textChanged.connect(self.forbidSamebasis)
-        #self.ui.lineedit_system_deltaE2.textChanged.connect(self.forbidSamebasis)
         self.ui.combobox_system_species1.currentIndexChanged.connect(self.forbidSamebasis)
         self.ui.combobox_system_species2.currentIndexChanged.connect(self.forbidSamebasis)
+        
+        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
+        self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
+        
+        self.ui.spinbox_system_deltaNSingle.valueChanged.connect(self.adjustPairlimits)
+        self.ui.spinbox_system_deltaLSingle.valueChanged.connect(self.adjustPairlimits)
+        self.ui.spinbox_system_deltaJSingle.valueChanged.connect(self.adjustPairlimits)
+        self.ui.spinbox_system_deltaMSingle.valueChanged.connect(self.adjustPairlimits)
         
         self.ui.action_system_open.triggered.connect(self.openSystemConf)
         self.ui.action_system_save.triggered.connect(self.saveSystemConf)
         self.ui.action_plot_open.triggered.connect(self.openPlotConf)
         self.ui.action_plot_save.triggered.connect(self.savePlotConf)
-        self.ui.actionQuit.triggered.connect(self.close)
+        self.ui.action_quit.triggered.connect(self.close)
+        self.ui.action_whatsthis.triggered.connect(QtGui.QWhatsThis.enterWhatsThisMode)
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_potential_calc.clicked.connect(self.startCalc)
-        self.thread.output.connect(self.updateStatus)
         self.timer.timeout.connect(self.checkForData)
         
         # Load last settings
         self.path_system_last = os.path.join(self.path_base,"lastsystem.json")
         self.path_plot_last = os.path.join(self.path_base,"lastplotter.json")
         
-        if os.path.isfile(self.path_system_last):
-            with open(self.path_system_last, 'r') as f:
-                self.systemdict.load(f)
+        try: # TODO
+            if os.path.isfile(self.path_system_last):
+                with open(self.path_system_last, 'r') as f:
+                    self.systemdict.load(f)
+        except:
+            pass
         
-        if os.path.isfile(self.path_plot_last):
-            with open(self.path_plot_last, 'r') as f:
-                self.plotdict.load(f)
+        try:
+            if os.path.isfile(self.path_plot_last):
+                with open(self.path_plot_last, 'r') as f:
+                    self.plotdict.load(f)
+        except:
+            pass
         
         # Emit change-signals in order to let the validation run
         self.ui.spinbox_system_n1.valueChanged.emit(self.ui.spinbox_system_n1.value())
@@ -683,10 +714,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_j2.valueChanged.emit(self.ui.spinbox_plot_j2.value())
         self.ui.spinbox_plot_m1.valueChanged.emit(self.ui.spinbox_plot_m1.value())
         self.ui.spinbox_plot_m2.valueChanged.emit(self.ui.spinbox_plot_m2.value())
-        self.ui.lineedit_system_deltaE1.textChanged.emit(self.ui.lineedit_system_deltaE1.text())
-        #self.ui.lineedit_system_deltaE2.textChanged.emit(self.ui.lineedit_system_deltaE2.text())
+        self.ui.lineedit_system_deltaESingle.textChanged.emit(self.ui.lineedit_system_deltaESingle.text())
+        self.ui.lineedit_system_deltaEPair.textChanged.emit(self.ui.lineedit_system_deltaEPair.text())
         self.ui.combobox_system_species1.currentIndexChanged.emit(self.ui.combobox_system_species1.currentIndex())
         self.ui.combobox_system_species2.currentIndexChanged.emit(self.ui.combobox_system_species2.currentIndex())
+        self.ui.radiobutton_system_pairbasisDefined.toggled.emit(self.ui.radiobutton_system_pairbasisDefined.isChecked())
+        self.ui.radiobutton_plot_overlapDefined.toggled.emit(self.ui.radiobutton_plot_overlapDefined.isChecked())
+        self.ui.spinbox_system_deltaNSingle.valueChanged.emit(self.ui.spinbox_system_deltaNSingle.value())
     
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -697,9 +731,30 @@ class MainWindow(QtGui.QMainWindow):
         maxEField = np.linalg.norm([self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude]) # TODO
         minBField = np.linalg.norm([self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude]) # TODO
         maxBField = np.linalg.norm([self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude]) # TODO
-        return (maxEField != minEField) or (maxBField == minBField)        
+        return (maxEField != minEField) or (maxBField == minBField)
+        
+    def abortCalculation(self):
+        # kill c++ process - this terminates the self.thread, too
+        if self.proc is not None: self.proc.kill()
+        
+        # wait until self.thread has finished
+        self.thread.wait()
+        
+        # clear queues
+        self.thread.clear()
     
     def checkForData(self):
+        # print status
+        elapsedtime = "{}".format(timedelta(seconds=int(time()-self.starttime)))
+        if self.thread.message != "":
+            self.ui.statusbar.showMessage(self.thread.message+", elapsed time "+elapsedtime)
+        else:
+            self.ui.statusbar.showMessage("Elapsed time "+elapsedtime)
+    
+        # check if memory consumption is to high
+        if psutil.virtual_memory().percent > 95: # TODO: is the virtual or swap memory the problem on rqo-donkey?
+            self.abortCalculation()
+            QtGui.QMessageBox.critical(self, "Message", "The program has run out of memory.")
 
         # check if there is some new data to plot
         if not self.thread.dataqueue_potential.empty():
@@ -869,6 +924,29 @@ class MainWindow(QtGui.QMainWindow):
         # check if thread has finished
         if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_field12.empty() and self.thread.dataqueue_potential.empty():
         
+            
+            """c6 = 0.008750183201815791 # 40
+            c6 = 0.009304149469320561 # 39
+            c6 = 0.009104493144885473 # 38
+            c6 = -0.044880307113037206 # 46
+            c6 = -465453.7925703782
+
+            #c6 = -10.306017051622977
+            #c6 = -450153.7925703782
+            x = np.linspace(self.systemdict["minR"].magnitude,self.systemdict["maxR"].magnitude,500)
+            y = -c6/x**6
+            
+            if self.plotdict["minE"] is not None:
+                minE = self.plotdict["minE"].magnitude
+                x = x[y >= minE]
+                y = y[y >= minE]
+            if self.plotdict["maxE"] is not None:
+                maxE = self.plotdict["maxE"].magnitude
+                x = x[y <= maxE]
+                y = y[y <= maxE]
+            
+            self.ui.graphicsview_potential_plot.plot(x,y,pen={'color': (255,0,0), 'width': 1})"""
+            
             # Enable auto range again
             #self.ui.graphicsview_potential_plot.autoRange()
         
@@ -914,6 +992,40 @@ class MainWindow(QtGui.QMainWindow):
         else:
             color = '#f6989d'
         sender.setStyleSheet('QLineEdit { background-color: %s }' % color)"""
+    
+    @QtCore.pyqtSlot(float)
+    def adjustPairlimits(self, value):
+        sender = self.sender()
+        
+        if value == -1:
+            maximum = 999
+            minimum = -1
+        else:
+            maximum = value
+            minimum = 0
+        
+        if sender == self.ui.spinbox_system_deltaNSingle:
+            self.ui.spinbox_system_deltaNPair.setMaximum(maximum)
+            self.ui.spinbox_system_deltaNPair.setMinimum(minimum)
+        elif sender == self.ui.spinbox_system_deltaLSingle:
+            self.ui.spinbox_system_deltaLPair.setMaximum(maximum)
+            self.ui.spinbox_system_deltaLPair.setMinimum(minimum)
+        elif sender == self.ui.spinbox_system_deltaJSingle:
+            self.ui.spinbox_system_deltaJPair.setMaximum(maximum)
+            self.ui.spinbox_system_deltaJPair.setMinimum(minimum)
+        elif sender == self.ui.spinbox_system_deltaMSingle:
+            self.ui.spinbox_system_deltaMPair.setMaximum(maximum)
+            self.ui.spinbox_system_deltaMPair.setMinimum(minimum)
+    
+    @QtCore.pyqtSlot(bool)
+    def togglePairbasis(self):
+        checked = self.ui.radiobutton_system_pairbasisDefined.isChecked()
+        self.ui.widget_system_pair.setEnabled(checked)
+    
+    @QtCore.pyqtSlot(bool)
+    def toggleOverlapstate(self):
+        checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
+        self.ui.widget_plot_qn.setEnabled(checked)
     
     @QtCore.pyqtSlot(str)
     def forbidSamebasis(self):
@@ -996,10 +1108,6 @@ class MainWindow(QtGui.QMainWindow):
     def validateHalfinteger(self):
         value = self.sender().value()
         self.sender().setValue(np.floor(value)+0.5)
-    
-    @QtCore.pyqtSlot(str)      
-    def updateStatus(self, msg):
-        if not self.proc is None: self.ui.statusbar.showMessage(msg)
             
     @QtCore.pyqtSlot()
     def startCalc(self):   
@@ -1074,6 +1182,8 @@ class MainWindow(QtGui.QMainWindow):
                     
                 self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",path_config],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
+                
+                self.starttime = time()
         
                 # Start thread that collects the output
                 self.thread.execute(self.proc.stdout)
@@ -1082,8 +1192,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.timer.start(0)
             
         else:
-            # Kill c++ process - this terminates the self.thread and clears self.thread.dataqueue, too
-            self.proc.kill()            
+            self.abortCalculation()            
     
     @QtCore.pyqtSlot()
     def saveSystemConf(self):
@@ -1133,7 +1242,7 @@ class MainWindow(QtGui.QMainWindow):
             
     def closeEvent(self, event):
         # Kill c++ program if necessary 
-        if self.proc is not None: self.proc.kill()
+        self.abortCalculation()
         
         # Save last settings
         self.path_system_last = os.path.join(self.path_base,"lastsystem.json")

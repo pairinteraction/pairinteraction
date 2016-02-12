@@ -88,9 +88,12 @@ class BasisnamesTwo : public Basisnames<StateTwo>{
 public:
     BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);
     BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1);
+    const StateTwo& initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &isNecessary);
 protected:
     void build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);
+private:
+    StateTwo state_initial;
 };
 
 #endif
