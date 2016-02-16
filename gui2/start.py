@@ -543,9 +543,9 @@ class MainWindow(QtGui.QMainWindow):
         
         self.numprocessors = max(2,multiprocessing.cpu_count())
         self.path_base = os.path.dirname(os.path.abspath(__file__))
-        self.path_workingdir = os.path.join(self.path_base,"../build/")
-        self.path_cpp_real = os.path.join(self.path_base,"../build/pairinteraction-real")
-        self.path_cpp_complex = os.path.join(self.path_base,"../build/pairinteraction-complex")
+        self.path_workingdir = os.path.join(self.path_base,"../build/trunk/")
+        self.path_cpp_real = os.path.join(self.path_base,"../build/trunk/pairinteraction-real")
+        self.path_cpp_complex = os.path.join(self.path_base,"../build/trunk/pairinteraction-complex")
         
         self.proc = None
         self.thread = Worker()

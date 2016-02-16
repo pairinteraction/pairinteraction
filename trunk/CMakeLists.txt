@@ -1,34 +1,16 @@
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-project(pairinteraction CXX)
-
-set(CMAKE_MACOSX_RPATH 0)
-
-set(CMAKE_COLOR_MAKEFILE ON)
-#set(CMAKE_VERBOSE_MAKEFILE ON)
-
-set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/modules)
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif(NOT CMAKE_BUILD_TYPE)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
-
-# create output directory
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
 
 # copy databases
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 # add the executables
 file(GLOB pairinteraction_SRCS *.cpp)
-
 add_executable(pairinteraction-real ${pairinteraction_SRCS})
 add_executable(pairinteraction-complex ${pairinteraction_SRCS})
-
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 # add external libraries
@@ -120,36 +102,7 @@ target_link_libraries(pairinteraction-real wignerSymbols)
 target_link_libraries(pairinteraction-complex wignerSymbols)
 
 # CPack
-if(WIN32)
 
-  # TODO: build NSIS installer
-
-else(WIN32)
-
-  install(TARGETS pairinteraction-real RUNTIME DESTINATION bin)
-  install(TARGETS pairinteraction-complex RUNTIME DESTINATION bin)
-
-  set(CPACK_GENERATOR "TGZ;RPM;DEB")
-
-  # General
-  set(CPACK_PACKAGE_NAME "pairinteraction")
-  set(CPACK_PACKAGE_VERSION "0.0")
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
-
-  # DEB
-  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, libgsl0ldbl, openmpi-bin, libjsoncpp0, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1")
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
-  set(CPACK_DEBIAN_PACKAGE_SECTION "science")
-  set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-
-  # RPM
-  set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, libgsl0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc5")
-  set(CPACK_RPM_PACKAGE_VENDOR "PI5")
-  set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
-  set(CPACK_RPM_PACKAGE_PRIORITY "optional")
-
-  include(CPack)
-
-endif(WIN32)
+install(TARGETS pairinteraction-real RUNTIME DESTINATION bin)
+install(TARGETS pairinteraction-complex RUNTIME DESTINATION bin)
+install(FILES databases/quantum_defects.db DESTINATION share/pairinteraction)
