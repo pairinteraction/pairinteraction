@@ -128,6 +128,12 @@ bool Configuration::operator==(const Configuration &rhs) const {
     }
     return true;
 }
+Configuration& Configuration::operator+=(const Configuration& rhs) {
+    for (auto p: rhs) {
+        (*this)[p.key] = p.value;
+    }
+    return *this;
+}
 size_t Configuration::count(const std::string& key) const {
     return params.count(key);
 }

@@ -95,6 +95,7 @@ public:
     Configuration::const_iterator begin() const;
     Configuration::const_iterator end() const;
     bool operator==(const Configuration &rhs) const;
+    Configuration& operator+=(const Configuration& rhs);
     size_t count(const std::string& key) const;
     Configuration();
 

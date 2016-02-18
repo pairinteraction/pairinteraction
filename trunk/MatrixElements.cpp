@@ -21,7 +21,7 @@ size_t findidx(std::vector<real_t> x, real_t d) {
  return i;
 }
 
-MatrixElements::MatrixElements(std::string species, int k) : species(species), k(k) {
+MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname) {
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
@@ -37,7 +37,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         abort();
     }
 
-    SQLite3 db("cache_matrix_elements.db");
+    SQLite3 db(dbname);
 
     // create cache tables if necessary
 

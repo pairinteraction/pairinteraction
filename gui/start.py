@@ -4,7 +4,7 @@ import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
 from PyQt4 import QtCore, QtGui
-from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py
+from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py or py3uic4 plotter.ui > plotter.py
 import pyqtgraph as pg
 
 import collections
@@ -76,6 +76,9 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
     @abstractmethod
     def _setup(self, store, ui):
         pass
+        
+    def __getattr__(self, key):
+        return self.__getitem__(key)
 
     def __getitem__(self, key):
         widget = self.store[key]['widget']
@@ -147,13 +150,13 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
             except (UndefinedUnitError, TypeError):
                 self[k] = v
             
-    def saveInAU(self, f, exclude = []):
+    def paramsInAU(self, f, exclude = []):
         params = dict()
         for k, v in self.items():
             if k in exclude: continue
             if isinstance(v, Q): params[k] = Converter.toAU(v).magnitude                    
             else: params[k] = v
-        json.dump(params, f, indent=4, sort_keys=True)
+        return params
     
     def saveInOriginalunits(self, f, exclude = []):
         params = dict()
@@ -175,16 +178,16 @@ class SystemDict(GUIDict):
         store["j2"] = {'widget': ui.spinbox_system_j2, 'unit': Units.dimensionless}
         store["m1"] = {'widget': ui.spinbox_system_m1, 'unit': Units.dimensionless}
         store["m2"] = {'widget': ui.spinbox_system_m2, 'unit': Units.dimensionless}
-        store["deltaN"] = {'widget': ui.spinbox_system_deltaNSingle, 'unit': Units.dimensionless} # TODO
-        store["deltaL"] = {'widget': ui.spinbox_system_deltaLSingle, 'unit': Units.dimensionless} # TODO
-        store["deltaJ"] = {'widget': ui.spinbox_system_deltaJSingle, 'unit': Units.dimensionless} # TODO
-        store["deltaM"] = {'widget': ui.spinbox_system_deltaMSingle, 'unit': Units.dimensionless} # TODO
+        store["deltaNSingle"] = {'widget': ui.spinbox_system_deltaNSingle, 'unit': Units.dimensionless}
+        store["deltaLSingle"] = {'widget': ui.spinbox_system_deltaLSingle, 'unit': Units.dimensionless}
+        store["deltaJSingle"] = {'widget': ui.spinbox_system_deltaJSingle, 'unit': Units.dimensionless}
+        store["deltaMSingle"] = {'widget': ui.spinbox_system_deltaMSingle, 'unit': Units.dimensionless}
         store["deltaNPair"] = {'widget': ui.spinbox_system_deltaNPair, 'unit': Units.dimensionless}
         store["deltaLPair"] = {'widget': ui.spinbox_system_deltaLPair, 'unit': Units.dimensionless}
         store["deltaJPair"] = {'widget': ui.spinbox_system_deltaJPair, 'unit': Units.dimensionless}
         store["deltaMPair"] = {'widget': ui.spinbox_system_deltaMPair, 'unit': Units.dimensionless}
-        store["deltaE1"] = {'widget': ui.lineedit_system_deltaESingle, 'unit': Units.energy} # TODO
-        store["deltaE"] = {'widget': ui.lineedit_system_deltaEPair, 'unit': Units.energy} # TODO
+        store["deltaESingle"] = {'widget': ui.lineedit_system_deltaESingle, 'unit': Units.energy}
+        store["deltaEPair"] = {'widget': ui.lineedit_system_deltaEPair, 'unit': Units.energy}
         store["pairbasisSame"] = {'widget': ui.radiobutton_system_pairbasisSame}
         store["pairbasisDefined"] = {'widget': ui.radiobutton_system_pairbasisDefined}
         store["samebasis"] = {'widget': ui.checkbox_system_samebasis}
@@ -210,16 +213,25 @@ class SystemDict(GUIDict):
         store["precision"] = {'widget': ui.lineedit_system_precision, 'unit': Units.dimensionless}
     
     def saveInAU_field1(self, f):
-        self.saveInAU(f,['species2','n2','l2','m2','j2','minR','maxR','theta','dd','dq','qq']) # TODO 'deltaE2', 'deltaE'
+        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','species2','n2','l2','m2','j2','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
+        json.dump(params, f, indent=4, sort_keys=True)
     
     def saveInAU_field2(self, f):
-        self.saveInAU(f,['species1','n1','l1','m1','j1','minR','maxR','theta','dd','dq','qq']) # TODO 'deltaE1', 'deltaE'
+        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','species1','n1','l1','m1','j1','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
+        json.dump(params, f, indent=4, sort_keys=True)
     
     def saveInAU_field12(self, f):
-        self.saveInAU(f,['minR','maxR','theta','dd','dq','qq']) # TODO 'deltaE'
+        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
+        json.dump(params, f, indent=4, sort_keys=True)
     
     def saveInAU_potential(self, f):
-        self.saveInAU(f,[])
+        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined'])
+        if self["pairbasisSame"]:
+            params["deltaNPair"] = -1
+            params["deltaLPair"] = -1
+            params["deltaJPair"] = -1
+            params["deltaMPair"] = -1
+        json.dump(params, f, indent=4, sort_keys=True)
 
 class PlotDict(GUIDict):
     def _setup(self, store, ui):
@@ -301,6 +313,10 @@ class Worker(QtCore.QThread):
                 type = int(line[5:12].decode('utf-8'))
                 status_type = ["Field map of first atom: ", "Field map of second atom: ", "Pair potential: ", "Field maps: "][type]
                 status_progress = "construct matrices"
+            
+            elif line[:5] == b">>BAS":
+                basissize = int(line[5:12].decode('utf-8'))
+                status_progress = "construct matrices using {} basis vectors".format(basissize)
                 
             elif line[:5] == b">>TOT":
                 total = int(line[5:12].decode('utf-8'))
@@ -512,6 +528,22 @@ class DoublepositiveValidator(QtGui.QDoubleValidator):
     def fixup(self, s):
         return "0"
 
+class DoubledeltaValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        status = super().validate(s, pos)
+        
+        if status[0] == QtGui.QValidator.Acceptable and float(s) < 0 and float(s) != -1:
+            return (QtGui.QValidator.Intermediate, s, pos)
+        
+        return status
+
+    def fixup(self, s):
+        if float(s) < 0: return "-1"
+        return "0"
+
 class DoubleValidator(QtGui.QDoubleValidator):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -542,52 +574,66 @@ class MainWindow(QtGui.QMainWindow):
         self.plotfile = None
         
         self.numprocessors = max(2,multiprocessing.cpu_count())
-        self.path_base = os.path.dirname(os.path.abspath(__file__))
-        self.path_workingdir = os.path.join(self.path_base,"../build/trunk/")
-        self.path_cpp_real = os.path.join(self.path_base,"../build/trunk/pairinteraction-real")
-        self.path_cpp_complex = os.path.join(self.path_base,"../build/trunk/pairinteraction-complex")
+        self.path_base = os.path.dirname(os.path.realpath(__file__))
+        self.path_workingdir = os.path.join(self.path_base,"../trunk/")
+        self.path_cpp_real = os.path.join(self.path_base,"../trunk/pairinteraction-real")
+        self.path_cpp_complex = os.path.join(self.path_base,"../trunk/pairinteraction-complex")
+        if os.name == 'nt': self.path_out = os.path.join(os.path.expanduser('~user'), "pairinteraction/")
+        else: self.path_out = os.path.join(os.path.expanduser('~'), ".pairinteraction/")
+        self.path_system_last = os.path.join(self.path_out,"lastsystem.json")
+        self.path_plot_last = os.path.join(self.path_out,"lastplotter.json")
+        self.path_config = os.path.join(self.path_out,"conf.json")
         
         self.proc = None
+        
         self.thread = Worker()
         self.timer = QtCore.QTimer()
-        self.watchdog = QtCore.QTimer()
         
-        # TODO implement the following functions
+        # TODOs
         self.ui.groupbox_plot_lines.setEnabled(False)
         self.ui.groupbox_plot_labels.setEnabled(False)
         self.ui.groupbox_plot_overlap.setEnabled(False)
-        self.ui.radiobutton_system_pairbasisDefined.setEnabled(False)
         self.ui.lineedit_system_theta.setEnabled(False)
-        self.ui.checkbox_system_dq.setEnabled(False)
-        self.ui.checkbox_system_qq.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
         self.ui.pushbutton_field1_save.setEnabled(False)
         self.ui.pushbutton_field2_save.setEnabled(False)
         self.ui.pushbutton_potential_save.setEnabled(False)
+        self.ui.checkbox_system_dq.setEnabled(False)
+        self.ui.checkbox_system_qq.setEnabled(False)
+        self.ui.lineedit_system_deltaESingle.setStatusTip('A value of -1 means that there are no restrictions for single atom energies.')
+        self.ui.lineedit_system_deltaEPair.setStatusTip('A value of -1 means that there are no restrictions for pair energies.')
+        self.ui.radiobutton_system_pairbasisDefined.setText("use the restrictions below")
         
-        # Setup plot
-        self.minE = None
-        self.maxE = None
+        # Create directories
+        if not os.path.exists(self.path_out):
+            os.makedirs(self.path_out)	
+            if os.name == 'nt':
+                ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
+                if not ret: raise ctypes.WinError()
+                
+        # Load last settings
+        try: # TODO
+            if os.path.isfile(self.path_system_last):
+                with open(self.path_system_last, 'r') as f:
+                    self.systemdict.load(f)
+        except:
+            pass
         
-        self.plotOverEField = self.nonconstEField()
-        
-        for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
-            plotarea.setDownsampling(ds=True, auto=True, mode='peak')
-            plotarea.setClipToView(True)
-            plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
-        
-        if self.plotOverEField:
-            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Electric field strength ('+str(Units.efield)+')')
-        else:
-            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field strength ('+str(Units.bfield)+')')
-        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
-        
+        try:
+            if os.path.isfile(self.path_plot_last):
+                with open(self.path_plot_last, 'r') as f:
+                    self.plotdict.load(f)
+        except:
+            pass
+
         # Set validators
         validator_double = DoubleValidator()
         validator_doublenone = DoublenoneValidator()
         validator_doublepositive = DoublepositiveValidator()
-        self.ui.lineedit_system_deltaESingle.setValidator(validator_doublepositive)
-        self.ui.lineedit_system_deltaEPair.setValidator(validator_doublepositive)
+        validator_doubledelta = DoubledeltaValidator()
+        
+        self.ui.lineedit_system_deltaESingle.setValidator(validator_doubledelta)
+        self.ui.lineedit_system_deltaEPair.setValidator(validator_doubledelta)
         self.ui.lineedit_system_minEx.setValidator(validator_double)
         self.ui.lineedit_system_minEy.setValidator(validator_double)
         self.ui.lineedit_system_minEz.setValidator(validator_double)
@@ -607,30 +653,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_plot_minE.setValidator(validator_doublenone)
         self.ui.lineedit_plot_maxE.setValidator(validator_doublenone)
         
-        # Connect signals and slots
-        """self.ui.lineedit_system_deltaE1.textChanged.connect(self.checkState)
-        #self.ui.lineedit_system_deltaE2.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_deltaE.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minEx.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minEy.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minEz.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxEx.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxEy.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxEz.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minBx.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minBy.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minBz.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxBx.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxBy.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxBz.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minR.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_minR.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_maxR.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_theta.textChanged.connect(self.checkState)
-        self.ui.lineedit_system_precision.textChanged.connect(self.checkState)
-        self.ui.lineedit_plot_minE.textChanged.connect(self.checkState)
-        self.ui.lineedit_plot_maxE.textChanged.connect(self.checkState)"""
-        
+        # Connect signals and slots        
         self.ui.spinbox_system_n1.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_n2.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_l1.valueChanged.connect(self.validateQuantumnumbers)
@@ -674,64 +697,81 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_plot_save.triggered.connect(self.savePlotConf)
         self.ui.action_quit.triggered.connect(self.close)
         self.ui.action_whatsthis.triggered.connect(QtGui.QWhatsThis.enterWhatsThisMode)
+        
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_potential_calc.clicked.connect(self.startCalc)
+        
         self.timer.timeout.connect(self.checkForData)
-        
-        # Load last settings
-        self.path_system_last = os.path.join(self.path_base,"lastsystem.json")
-        self.path_plot_last = os.path.join(self.path_base,"lastplotter.json")
-        
-        try: # TODO
-            if os.path.isfile(self.path_system_last):
-                with open(self.path_system_last, 'r') as f:
-                    self.systemdict.load(f)
-        except:
-            pass
-        
-        try:
-            if os.path.isfile(self.path_plot_last):
-                with open(self.path_plot_last, 'r') as f:
-                    self.plotdict.load(f)
-        except:
-            pass
         
         # Emit change-signals in order to let the validation run
         self.ui.spinbox_system_n1.valueChanged.emit(self.ui.spinbox_system_n1.value())
         self.ui.spinbox_system_n2.valueChanged.emit(self.ui.spinbox_system_n2.value())
-        self.ui.spinbox_system_l1.valueChanged.emit(self.ui.spinbox_system_l1.value())
-        self.ui.spinbox_system_l2.valueChanged.emit(self.ui.spinbox_system_l2.value())
-        self.ui.spinbox_system_j1.valueChanged.emit(self.ui.spinbox_system_j1.value())
-        self.ui.spinbox_system_j2.valueChanged.emit(self.ui.spinbox_system_j2.value())
-        self.ui.spinbox_system_m1.valueChanged.emit(self.ui.spinbox_system_m1.value())
-        self.ui.spinbox_system_m2.valueChanged.emit(self.ui.spinbox_system_m2.value())
         self.ui.spinbox_plot_n1.valueChanged.emit(self.ui.spinbox_plot_n1.value())
         self.ui.spinbox_plot_n2.valueChanged.emit(self.ui.spinbox_plot_n2.value())
-        self.ui.spinbox_plot_l1.valueChanged.emit(self.ui.spinbox_plot_l1.value())
-        self.ui.spinbox_plot_l2.valueChanged.emit(self.ui.spinbox_plot_l2.value())
-        self.ui.spinbox_plot_j1.valueChanged.emit(self.ui.spinbox_plot_j1.value())
-        self.ui.spinbox_plot_j2.valueChanged.emit(self.ui.spinbox_plot_j2.value())
-        self.ui.spinbox_plot_m1.valueChanged.emit(self.ui.spinbox_plot_m1.value())
-        self.ui.spinbox_plot_m2.valueChanged.emit(self.ui.spinbox_plot_m2.value())
-        self.ui.lineedit_system_deltaESingle.textChanged.emit(self.ui.lineedit_system_deltaESingle.text())
-        self.ui.lineedit_system_deltaEPair.textChanged.emit(self.ui.lineedit_system_deltaEPair.text())
+        
+        self.ui.spinbox_system_j1.editingFinished.emit()
+        self.ui.spinbox_system_j2.editingFinished.emit()
+        self.ui.spinbox_system_m1.editingFinished.emit()
+        self.ui.spinbox_system_m2.editingFinished.emit()
+        self.ui.spinbox_plot_j1.editingFinished.emit()
+        self.ui.spinbox_plot_j2.editingFinished.emit()
+        self.ui.spinbox_plot_m1.editingFinished.emit()
+        self.ui.spinbox_plot_m2.editingFinished.emit()
+        
         self.ui.combobox_system_species1.currentIndexChanged.emit(self.ui.combobox_system_species1.currentIndex())
-        self.ui.combobox_system_species2.currentIndexChanged.emit(self.ui.combobox_system_species2.currentIndex())
+        
         self.ui.radiobutton_system_pairbasisDefined.toggled.emit(self.ui.radiobutton_system_pairbasisDefined.isChecked())
         self.ui.radiobutton_plot_overlapDefined.toggled.emit(self.ui.radiobutton_plot_overlapDefined.isChecked())
+        
         self.ui.spinbox_system_deltaNSingle.valueChanged.emit(self.ui.spinbox_system_deltaNSingle.value())
-    
+        self.ui.spinbox_system_deltaLSingle.valueChanged.emit(self.ui.spinbox_system_deltaLSingle.value())
+        self.ui.spinbox_system_deltaJSingle.valueChanged.emit(self.ui.spinbox_system_deltaJSingle.value())
+        self.ui.spinbox_system_deltaMSingle.valueChanged.emit(self.ui.spinbox_system_deltaMSingle.value())
+        
+        # Setup plot
+        self.minE = None
+        self.maxE = None
+        
+        self.constDistance = self.getConstDistance()
+        self.constEField = self.getConstEField()
+        self.constBField = self.getConstBField()
+        
+        for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
+            plotarea.setDownsampling(ds=True, auto=True, mode='peak')
+            plotarea.setClipToView(True)
+            plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
+        
+        if self.constEField and not self.constBField:
+            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+        else:
+            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+        
+        if self.constDistance and not self.constEField:
+            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+        elif self.constDistance and not self.constBField:
+            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+        else:
+            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+            
     def resizeEvent(self, event):
         super().resizeEvent(event)
         if sys.platform == "darwin": QtGui.QApplication.processEvents() # hack to circumvent the no-redraw-after-resizing-bug
     
-    def nonconstEField(self):
-        minEField = np.linalg.norm([self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude]) # TODO
-        maxEField = np.linalg.norm([self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude]) # TODO
-        minBField = np.linalg.norm([self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude]) # TODO
-        maxBField = np.linalg.norm([self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude]) # TODO
-        return (maxEField != minEField) or (maxBField == minBField)
+    def getConstEField(self):
+        minVec = np.array([self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude])
+        maxVec = np.array([self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude])
+        return np.all(minVec==maxVec)
+    
+    def getConstBField(self):
+        minVec = np.array([self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude])
+        maxVec = np.array([self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude])
+        return np.all(minVec==maxVec)
+    
+    def getConstDistance(self):
+        minR = self.systemdict['minR'].magnitude # TODO
+        maxR = self.systemdict['maxR'].magnitude # TODO
+        return minR == maxR
         
     def abortCalculation(self):
         # kill c++ process - this terminates the self.thread, too
@@ -752,7 +792,7 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.statusbar.showMessage("Elapsed time "+elapsedtime)
     
         # check if memory consumption is to high
-        if psutil.virtual_memory().percent > 95: # TODO: is the virtual or swap memory the problem on rqo-donkey?
+        if psutil.virtual_memory().percent > 99: # TODO: is the virtual or swap memory the problem on rqo-donkey?
             self.abortCalculation()
             QtGui.QMessageBox.critical(self, "Message", "The program has run out of memory.")
 
@@ -766,7 +806,15 @@ class MainWindow(QtGui.QMainWindow):
             while not self.thread.dataqueue_potential.empty():
                 eigensystem = Eigensystem(self.thread.dataqueue_potential.get())
                 energies = eigensystem.energies
-                position = float(eigensystem.params["R"])
+                
+                if self.constDistance and not self.constEField:
+                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                elif self.constDistance and not self.constBField:
+                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                else:
+                    position = float(eigensystem.params["R"])
                 
                 if self.minE is not None: energies = energies[energies >= self.minE]
                 if self.maxE is not None: energies = energies[energies <= self.maxE]
@@ -777,7 +825,10 @@ class MainWindow(QtGui.QMainWindow):
                 if len(x) > 5000: break                
             
             if len(x) > 0:
-                x *= Converter.fromAU(1,Units.length).magnitude
+                if self.constDistance and not self.constEField: x *= Converter.fromAU(1,Units.efield).magnitude
+                elif self.constDistance and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
+                else: x *= Converter.fromAU(1,Units.length).magnitude
+                
                 y *= Converter.fromAU(1,Units.energy).magnitude
             
                 if self.ui.groupbox_plot_points.isChecked():
@@ -798,8 +849,12 @@ class MainWindow(QtGui.QMainWindow):
             while not self.thread.dataqueue_field1.empty():
                 eigensystem = Eigensystem(self.thread.dataqueue_field1.get())
                 energies = eigensystem.energies
-                if self.plotOverEField: position = np.linalg.norm([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])  # TODO
-                else: position = np.linalg.norm([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])  # TODO
+                if self.constEField and not self.constBField:
+                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                else:
+                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
                 
                 if self.minE is not None: energies = energies[energies >= self.minE]
                 if self.maxE is not None: energies = energies[energies <= self.maxE]
@@ -810,8 +865,8 @@ class MainWindow(QtGui.QMainWindow):
                 if len(x) > 5000: break                
             
             if len(x) > 0:
-                if self.plotOverEField: x *= Converter.fromAU(1,Units.efield).magnitude
-                else: x *= Converter.fromAU(1,Units.bfield).magnitude
+                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
+                else: x *= Converter.fromAU(1,Units.efield).magnitude
                 y *= Converter.fromAU(1,Units.energy).magnitude
             
                 if self.ui.groupbox_plot_points.isChecked():
@@ -832,8 +887,12 @@ class MainWindow(QtGui.QMainWindow):
             while not self.thread.dataqueue_field2.empty():
                 eigensystem = Eigensystem(self.thread.dataqueue_field2.get())
                 energies = eigensystem.energies
-                if self.plotOverEField: position = np.linalg.norm([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])  # TODO
-                else: position = np.linalg.norm([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])  # TODO
+                if self.constEField and not self.constBField:
+                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                else:
+                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
                 
                 if self.minE is not None: energies = energies[energies >= self.minE]
                 if self.maxE is not None: energies = energies[energies <= self.maxE]
@@ -844,8 +903,8 @@ class MainWindow(QtGui.QMainWindow):
                 if len(x) > 5000: break                
             
             if len(x) > 0:
-                if self.plotOverEField: x *= Converter.fromAU(1,Units.efield).magnitude
-                else: x *= Converter.fromAU(1,Units.bfield).magnitude
+                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
+                else: x *= Converter.fromAU(1,Units.efield).magnitude
                 y *= Converter.fromAU(1,Units.energy).magnitude
             
                 if self.ui.groupbox_plot_points.isChecked():
@@ -866,8 +925,12 @@ class MainWindow(QtGui.QMainWindow):
             while not self.thread.dataqueue_field12.empty():
                 eigensystem = Eigensystem(self.thread.dataqueue_field12.get())
                 energies = eigensystem.energies
-                if self.plotOverEField: position = np.linalg.norm([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])  # TODO
-                else: position = np.linalg.norm([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])  # TODO
+                if self.constEField and not self.constBField:
+                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                else:
+                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
                 
                 if self.minE is not None: energies = energies[energies >= self.minE]
                 if self.maxE is not None: energies = energies[energies <= self.maxE]
@@ -878,8 +941,8 @@ class MainWindow(QtGui.QMainWindow):
                 if len(x) > 5000: break                
             
             if len(x) > 0:
-                if self.plotOverEField: x *= Converter.fromAU(1,Units.efield).magnitude
-                else: x *= Converter.fromAU(1,Units.bfield).magnitude
+                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
+                else: x *= Converter.fromAU(1,Units.efield).magnitude
                 y *= Converter.fromAU(1,Units.energy).magnitude
             
                 if self.ui.groupbox_plot_points.isChecked():
@@ -1075,18 +1138,6 @@ class MainWindow(QtGui.QMainWindow):
                 if j.value() < abs(m.value()):
                     j_err |= True
                     m_err |= True
-            
-                """if n_err: n.setStyleSheet('QSpinBox { background-color: #f6989d }')
-                else: n.setStyleSheet('QSpinBox { background-color: #ffffff }')
-            
-                if l_err: l.setStyleSheet('QSpinBox { background-color: #f6989d }')
-                else: l.setStyleSheet('QSpinBox { background-color: #ffffff }')
-            
-                if j_err: j.setStyleSheet('QDoubleSpinBox { background-color: #f6989d }')
-                else: j.setStyleSheet('QDoubleSpinBox { background-color: #ffffff }')
-            
-                if m_err: m.setStyleSheet('QDoubleSpinBox { background-color: #f6989d }')
-                else: m.setStyleSheet('QDoubleSpinBox { background-color: #ffffff }')"""
                 
                 if n_err or l_err or j_err or m_err:
                     self.invalidQuantumnumbers[i] = True
@@ -1095,14 +1146,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if np.any(self.invalidQuantumnumbers):
             self.ui.statusbar.showMessage('Invalide quantum numbers specified.')
-            """self.ui.pushbutton_field1_calc.setEnabled(False)
-            self.ui.pushbutton_field2_calc.setEnabled(False)
-            self.ui.pushbutton_potential_calc.setEnabled(False)"""
         else:
             self.ui.statusbar.showMessage('')
-            """self.ui.pushbutton_field1_calc.setEnabled(True)
-            self.ui.pushbutton_field2_calc.setEnabled(True)
-            self.ui.pushbutton_potential_calc.setEnabled(True)"""
     
     @QtCore.pyqtSlot(str)   
     def validateHalfinteger(self):
@@ -1110,14 +1155,19 @@ class MainWindow(QtGui.QMainWindow):
         self.sender().setValue(np.floor(value)+0.5)
             
     @QtCore.pyqtSlot()
-    def startCalc(self):   
+    def startCalc(self):         
         if self.proc is None:
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
                 
             else:
-                path_config = os.path.join(self.path_base,"../build/system.json")
+                # Save last settings
+                with open(self.path_system_last, 'w') as f:
+                    self.systemdict.saveInOriginalunits(f)
         
+                with open(self.path_plot_last, 'w') as f:
+                    self.plotdict.saveInOriginalunits(f)
+            
                 # Change buttons
                 self.senderbutton = self.sender()
                 if self.senderbutton != self.ui.pushbutton_field1_calc:
@@ -1132,23 +1182,27 @@ class MainWindow(QtGui.QMainWindow):
                 self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
             
                 # Clear plots and set them up # disable auto range (for higher update speed) # TODO set axis range manually, self.ui.graphicsview_field1_plot.disableAutoRange()
-                self.plotOverEField = self.nonconstEField()
+                self.constDistance = self.getConstDistance()
+                self.constEField = self.getConstEField()
+                self.constBField = self.getConstBField()
             
                 if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field1_plot.clear()
                     self.ui.graphicsview_field1_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.plotOverEField: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                    else: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                    if self.constEField and not self.constBField: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                    else: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                 if self.senderbutton in [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field2_plot.clear()
                     self.ui.graphicsview_field2_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.plotOverEField: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                    else: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                    if self.constEField and not self.constBField: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                    else: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
                     self.ui.graphicsview_potential_plot.clear()
                     self.ui.graphicsview_potential_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
-            
+                    if self.constDistance and not self.constEField: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                    elif self.constDistance and not self.constBField: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                    else: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+                    
                 # Set limits
                 self.minE = self.plotdict["minE"]
                 if self.minE is not None:
@@ -1159,7 +1213,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.maxE = Converter.toAU(self.maxE).magnitude
             
                 # Save configuration to json file
-                with open(path_config, 'w') as f:
+                with open(self.path_config, 'w') as f:
                     if self.senderbutton == self.ui.pushbutton_field1_calc:
                         if self.samebasis:
                             self.systemdict.saveInAU_field12(f)
@@ -1180,7 +1234,7 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     path_cpp = self.path_cpp_real
                     
-                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",path_config],
+                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",self.path_config, "-o", self.path_out],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
                 
                 self.starttime = time()
@@ -1245,9 +1299,6 @@ class MainWindow(QtGui.QMainWindow):
         self.abortCalculation()
         
         # Save last settings
-        self.path_system_last = os.path.join(self.path_base,"lastsystem.json")
-        self.path_plot_last = os.path.join(self.path_base,"lastplotter.json")
-        
         with open(self.path_system_last, 'w') as f:
             self.systemdict.saveInOriginalunits(f)
         

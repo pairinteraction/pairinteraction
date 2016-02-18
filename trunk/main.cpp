@@ -112,9 +112,9 @@ public:
     //Hamiltonianmatrix(size_t nBasis, size_t nCoordinates) : Serializable(), entries_(nBasis,nBasis), basis_(nCoordinates,nBasis)  {}
     Hamiltonianmatrix(eigen_sparse_t entries, eigen_sparse_t basis) : Serializable(), entries_(entries), basis_(basis) {}
 
-    Hamiltonianmatrix(size_t szBasis, size_t szCoordinates) : Serializable()  {
+    Hamiltonianmatrix(size_t szBasis, size_t szEntries) : Serializable()  {
         triplets_basis.reserve(szBasis);
-        triplets_entries.reserve(szCoordinates);
+        triplets_entries.reserve(szEntries);
     }
 
     eigen_sparse_t& entries() {
@@ -153,6 +153,11 @@ public:
         triplets_entries.clear();
     }
 
+    std::vector<Hamiltonianmatrix> findSubs() const { // TODO
+        std::vector<Hamiltonianmatrix> submatrices;
+        submatrices.push_back(*this);
+        return submatrices;
+    }
     Hamiltonianmatrix abs() const {
         return Hamiltonianmatrix(entries_.cwiseAbs().cast<scalar_t>(), basis_);
     }
@@ -186,10 +191,17 @@ public:
         entries_= transformator.transpose()*entries_*transformator;
     }
 
-    void findUnnecessaryStates(std::vector<bool> &isNecessary) const {
+    void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const {
+        std::vector<real_t> isNecessaryCoordinate_real(num_coordinates(),0);
         for (eigen_idx_t k=0; k<basis_.outerSize(); ++k) {
-            for (eigen_iterator_t it(basis_,k); it; ++it) {
-                isNecessary[it.row()] = true;
+            for (eigen_iterator_t triple(basis_,k); triple; ++triple) {
+                isNecessaryCoordinate_real[triple.row()] += std::pow(std::abs(triple.value()),2);
+            }
+        }
+
+        for (size_t idx = 0; idx < this->num_coordinates(); ++idx) {
+            if (isNecessaryCoordinate_real[idx] > 0.05) { // TODO
+                isNecessaryCoordinate[idx] = true;
             }
         }
     }
@@ -198,13 +210,13 @@ public:
         bytes.clear();
 
         // build transformator
-        std::vector<bool> isNecessaryBasisvector(num_basisvectors(),false);
+        std::vector<real_t> isNecessaryBasisvector(num_basisvectors(),0);
         for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
             for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
                 ptrdiff_t col = triple.col(); // basis vector
                 ptrdiff_t row = triple.row(); // coordinate
                 if (isNecessaryCoordinate[row]) {
-                    isNecessaryBasisvector[col] = true;
+                    isNecessaryBasisvector[col] += std::pow(std::abs(triple.value()),2);
                 }
             }
         }
@@ -214,7 +226,37 @@ public:
 
         size_t idxBasis = 0;
         for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
-            if (isNecessaryBasisvector[idx]) {
+            if (isNecessaryBasisvector[idx] > 0.05) { // TODO
+                triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
+            }
+        }
+
+        eigen_sparse_t transformator(this->num_basisvectors(),idxBasis);
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+        // apply transformator
+        basis_ = basis_*transformator;
+        entries_= transformator.transpose()*entries_*transformator;
+    }
+
+    void removeUnnecessaryBasisvectors() {
+        bytes.clear();
+
+        // build transformator
+        std::vector<real_t> isNecessaryBasisvector(num_basisvectors(),0);
+        for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+            for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
+                ptrdiff_t col = triple.col(); // basis vector
+                isNecessaryBasisvector[col] += std::pow(std::abs(triple.value()),2);
+            }
+        }
+
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(num_basisvectors());
+
+        size_t idxBasis = 0;
+        for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
+            if (isNecessaryBasisvector[idx] > 0.05) { // TODO
                 triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
             }
         }
@@ -248,14 +290,14 @@ public:
         basis_ = transformator*basis_;
     }
 
-    friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
-        return lhs.duplicate(SYM, rhs, deltaE);
+    friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
+        return lhs.duplicate(SYM, rhs, deltaE, necessary1, necessary2, necessary);
     }
-    friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
-        return lhs.duplicate(ASYM, rhs, deltaE);
+    friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
+        return lhs.duplicate(ASYM, rhs, deltaE, necessary1, necessary2, necessary);
     }
-    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE) {
-        return lhs.duplicate(ALL, rhs, deltaE);
+    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
+        return lhs.duplicate(ALL, rhs, deltaE, necessary1, necessary2, necessary);
     }
     friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
         lhs.bytes.clear();
@@ -533,7 +575,7 @@ public:
 
 protected:
     enum mode_t {ALL, SYM, ASYM};
-    void addSymetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, scalar_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
+    void addSymmetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, scalar_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
         idx_t row = mapping[this->num_basisvectors()*row_1 + row_2];
         idx_t col = mapping[this->num_basisvectors()*col_1 + col_2];
         if((mode == ALL) || (mode == SYM && row_1 <= row_2 && col_1 <= col_2) || (mode == ASYM && row_1 < row_2 && col_1 < col_2)) {
@@ -543,19 +585,13 @@ protected:
             triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
         }
     }
-    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs, const real_t &deltaE) const {
+    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) const {
         real_t tol = 1e-32;
 
         size_t num_basisvectors = this->num_basisvectors()*rhs.num_basisvectors();
         size_t num_coordinates = this->num_coordinates()*rhs.num_coordinates();
 
-        size_t size_basis = basis_.nonZeros()/this->num_basisvectors() * rhs.basis().nonZeros()/rhs.num_basisvectors() * num_basisvectors;
-        size_t size_entries = num_basisvectors;
-
-        Hamiltonianmatrix mat(size_basis, size_entries);
-
         // --- mapping ---
-
         std::vector<ptrdiff_t> mapping(num_basisvectors, -1);
 
         eigen_vector_t diag1 = entries_.diagonal();
@@ -576,36 +612,51 @@ protected:
                 size_t idx = rhs.num_basisvectors()*idx_1 + idx_2;
                 scalar_t val = diag1[idx_1] + diag2[idx_2]; // diag(V) x I + I x diag(V)
 
-                if (std::abs(val) < deltaE) {
+                if (std::abs(val) < deltaE+1e-11 || deltaE < 0) {
                     mapping[idx] = i++;
                 }
             }
         }
 
-        num_basisvectors = i;
+        size_t num_basisvectors_new = i;
+
+        // --- initialize matrix ---
+        size_t size_basis = basis_.nonZeros() / (4.*num_basisvectors) * rhs.basis().nonZeros() * num_basisvectors_new ; //basis_.nonZeros()/this->num_basisvectors() * rhs.basis().nonZeros()/rhs.num_basisvectors() * num_basisvectors;
+        size_t size_entries = num_basisvectors;
+
+        Hamiltonianmatrix mat(size_basis, size_entries);
+
+        num_basisvectors = num_basisvectors_new;
 
         // --- duplicate basis_ ---
 
         for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+
             for (eigen_iterator_t triple_1(basis_,k_1); triple_1; ++triple_1) {
+                if (!necessary1[triple_1.row()]) continue;
+
                 for (eigen_idx_t k_2=0; k_2<rhs.basis().outerSize(); ++k_2) {
+
                     for (eigen_iterator_t triple_2(rhs.basis(),k_2); triple_2; ++triple_2) {
+                        if (!necessary2[triple_2.row()]) continue;
+
                         ptrdiff_t col = mapping[rhs.num_basisvectors()*triple_1.col() + triple_2.col()]; // basis vector
+
                         if (col >= 0) {
                             if (mode == ALL || triple_1.col() == triple_2.col()) {
                                 size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
                                 scalar_t val = triple_1.value() * triple_2.value();
-                                mat.addBasis(row,col,val);
+                                if (necessary[row]) mat.addBasis(row,col,val);
 
                             } else {
                                 size_t row = rhs.num_coordinates()*triple_1.row() + triple_2.row(); // coordinate
                                 scalar_t val = triple_1.value() * triple_2.value();
                                 val /= std::sqrt(2);
-                                mat.addBasis(row,col,val);
+                                if (necessary[row]) mat.addBasis(row,col,val);
 
                                 row = rhs.num_coordinates()*triple_2.row() + triple_1.row(); // coordinate
                                 val *= (mode == ASYM) ? -1 : 1;
-                                mat.addBasis(row,col,val);
+                                if (necessary[row]) mat.addBasis(row,col,val);
                             }
 
                         }
@@ -728,14 +779,14 @@ protected:
                     row_2 = unitmatrix_idx;
                     col_1 = hamiltonian_triple.col();
                     col_2 = unitmatrix_idx;
-                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
+                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
                     // <1a 2a|I x V|1b 2b> = <2a 1a|V x I|2b 1b>
                     row_1 = unitmatrix_idx;
                     row_2 = hamiltonian_triple.row();
                     col_1 = unitmatrix_idx;
                     col_2 = hamiltonian_triple.col();
-                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
+                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
                     // --- mixed terms ---
                     if (mode == ALL) continue;
@@ -745,14 +796,14 @@ protected:
                     row_2 = unitmatrix_idx;
                     col_1 = unitmatrix_idx;
                     col_2 = hamiltonian_triple.col();
-                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
+                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
 
                     // <1a 2a|I x V|2b 1b> = <2a 1a|V x I|1b 2b>
                     row_1 = unitmatrix_idx;
                     row_2 = hamiltonian_triple.row();
                     col_1 = hamiltonian_triple.col();
                     col_2 = unitmatrix_idx;
-                    addSymetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
+                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
                 }
             }
         }
@@ -783,6 +834,9 @@ public:
     }
     std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const {
         return matrix_diag[idx];
+    }
+    std::shared_ptr<const Configuration> getParams(size_t idx) const {
+        return params[idx];
     }
     size_t size() const {
         return matrix_diag.size();
@@ -886,7 +940,7 @@ public:
 
             // open file
             FILE *pFile;
-            pFile = fopen("output/lines.mat" , "wb" ); // filename_.c_str()
+            pFile = fopen("output/lines.mat" , "wb" ); // filename_.c_str() // TODO
 
             // write
             fwrite(&bytes[0], 1 , sizeof(byte_t)*bytes.size(), pFile );
@@ -900,21 +954,24 @@ protected:
     std::shared_ptr<Hamiltonianmatrix> doProcessing(std::shared_ptr<Hamiltonianmatrix> work) {
         // if results can not be loaded
         if (!work->exist() || !work->load()) {
-            // diagonalization
-            Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
-            // eigenvalues and eigenvectors
-            eigen_vector_real_t evals = eigensolver.eigenvalues();
-            eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView(1e-4,0.5);
+            if (work->num_basisvectors() > 1) {
+                // diagonalization
+                Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(work->entries()));
 
-            work->entries().setZero();
-            work->entries().reserve(evals.size());
-            for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
-                work->entries().insert(idx, idx) = evals.coeffRef(idx);
+                // eigenvalues and eigenvectors
+                eigen_vector_real_t evals = eigensolver.eigenvalues();
+                eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView(1e-4,0.5);
+
+                work->entries().setZero();
+                work->entries().reserve(evals.size());
+                for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
+                    work->entries().insert(idx, idx) = evals.coeffRef(idx);
+                }
+                work->entries().makeCompressed();
+
+                work->basis() = (work->basis() * evecs).pruned(1e-4,0.5);
             }
-            work->entries().makeCompressed();
-
-            work->basis() = (work->basis() * evecs).pruned(1e-4,0.5);
 
             // save result
             work->save();
@@ -933,6 +990,7 @@ protected:
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag; // TODO figure out whether the same pointers as in matrix
+    std::vector<std::shared_ptr<Configuration>> params;
     std::vector<std::string> matrix_path;
     std::vector<size_t> matrix_dimension;
 };
@@ -970,11 +1028,21 @@ protected:
     }
 
     void configure(const Configuration &config) {
-        conf = basis_one->getConf();
-        conf["deltaE"] = basis_one->constructedFromFirst() ? config["deltaE1"] : config["deltaE2"]; // TODO
+        path_out = boost::filesystem::absolute(config["out"].str());
+        if (utils::is_complex<scalar_t>::value) {
+            path_cache = path_out / "cache_matrix_complex";
+        } else {
+            path_cache = path_out / "cache_matrix_real";
+        }
+        if(!boost::filesystem::exists(path_cache)){
+            boost::filesystem::create_directory(path_cache);
+        }
 
-        conf["deltaE"] >> deltaE;
-        conf["species"] >> species;
+        conf = basis_one->getConf();
+        conf["deltaESingle"] = config["deltaESingle"];
+
+        conf["deltaESingle"] >> deltaE;
+        conf["species1"] >> species;
 
         config["minBx"] >> min_B_x;
         config["minBy"] >> min_B_y;
@@ -1046,15 +1114,15 @@ protected:
 
             real_t energy_initial = 0;
             for (const auto &state: basis_one->initial()) {
-                energy_initial += energy_level("Rb",state.n,state.l,state.j);
+                energy_initial += energy_level("Rb",state.n,state.l,state.j); // TODO Rb
             }
             energy_initial /= basis_one->initial().size();
 
             std::vector<bool> is_necessary(basis_one->size(),false);
             idx_t idx = 0;
             for (const auto &state : *basis_one) {
-                real_t val = energy_level("Rb",state.n,state.l,state.j)-energy_initial;
-                if (std::abs(val) <= deltaE) {
+                real_t val = energy_level("Rb",state.n,state.l,state.j)-energy_initial; // TODO Rb
+                if (std::abs(val) < deltaE+1e-11 || deltaE < 0) { // TODO
                     is_necessary[state.idx] = true;
                     hamiltonian_energy.addEntries(idx,idx,val);
                     hamiltonian_energy.addBasis(idx,idx,1);
@@ -1067,8 +1135,10 @@ protected:
 
             std::cout << basis_one->size() << std::endl;
 
+            std::cout << ">>BAS" << std::setw(7) << basis_one->size() << std::endl;
+
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements(species, 1);
+            MatrixElements matrix_elements(species, 1, (path_out / "cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate(basis_one, exist_E_0, exist_E_p, exist_E_m, exist_B_0, exist_B_p, exist_B_m);
@@ -1183,18 +1253,17 @@ protected:
 
             // --- construct Hamiltonians ---
             matrix.reserve(nSteps);
-
-            // create ConfParser object
-            Configuration params(conf);
+            params.reserve(nSteps);
 
             // open database
-            std::string dbname;
+            boost::filesystem::path path_db;
+
             if (utils::is_complex<scalar_t>::value) {
-                dbname = "cache_matrix_complex.db";
+                path_db = path_out / "cache_matrix_complex.db";
             } else {
-                dbname = "cache_matrix_real.db";
+                path_db = path_out / "cache_matrix_real.db";
             }
-            SQLite3 db(dbname);
+            SQLite3 db(path_db.string());
 
             // initialize uuid generator
             boost::uuids::random_generator generator;
@@ -1203,13 +1272,15 @@ protected:
             for (size_t step = 0; step < nSteps; ++step) {
                 real_t normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
 
+                std::shared_ptr<Configuration> par = std::make_shared<Configuration>(conf);
+
                 // save fields to ConfParser object
-                params["Ex"] = min_E_x+normalized_position*(max_E_x-min_E_x);
-                params["Ey"] = min_E_y+normalized_position*(max_E_y-min_E_y);
-                params["Ez"] = min_E_z+normalized_position*(max_E_z-min_E_z);
-                params["Bx"] = min_B_x+normalized_position*(max_B_x-min_B_x);
-                params["By"] = min_B_y+normalized_position*(max_B_y-min_B_y);
-                params["Bz"] = min_B_z+normalized_position*(max_B_z-min_B_z);
+                (*par)["Ex"] = min_E_x+normalized_position*(max_E_x-min_E_x);
+                (*par)["Ey"] = min_E_y+normalized_position*(max_E_y-min_E_y);
+                (*par)["Ez"] = min_E_z+normalized_position*(max_E_z-min_E_z);
+                (*par)["Bx"] = min_B_x+normalized_position*(max_B_x-min_B_x);
+                (*par)["By"] = min_B_y+normalized_position*(max_B_y-min_B_y);
+                (*par)["Bz"] = min_B_z+normalized_position*(max_B_z-min_B_z);
 
                 // create table if necessary
                 std::stringstream query;
@@ -1219,11 +1290,11 @@ protected:
                     query << "CREATE TABLE IF NOT EXISTS cache_one (uuid text NOT NULL PRIMARY KEY, "
                              "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                              "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                    for (auto p: params) {
+                    for (auto p: *par) {
                         query << ", " << p.key << " text";
                     }
                     query << ", UNIQUE (";
-                    for (auto p: params) {
+                    for (auto p: *par) {
                         query << spacer << p.key;
                         spacer = ", ";
                     }
@@ -1237,7 +1308,7 @@ protected:
                 query.str(std::string());
                 spacer = "";
                 query << "SELECT uuid FROM cache_one WHERE ";
-                for (auto p: params) {
+                for (auto p: *par) {
                     query << spacer << p.key << "='" << p.value.str() << "'";
                     spacer = " AND ";
                 }
@@ -1256,11 +1327,11 @@ protected:
 
                     query.str(std::string());
                     query << "INSERT INTO cache_one (uuid";
-                    for (auto p: params) {
+                    for (auto p: *par) {
                         query << ", " << p.key;
                     }
                     query << ") values ( '" << uuid << "'";
-                    for (auto p: params) {
+                    for (auto p: *par) {
                         query << ", " << "'" << p.value.str() << "'";
                     }
                     query << ");";
@@ -1270,7 +1341,7 @@ protected:
                 // check whether .mat and .json file exists and compare settings in program with settings in .json file
                 boost::filesystem::path path, path_mat, path_json;
 
-                path = boost::filesystem::absolute("output/one_" + uuid);
+                path = path_cache/ ("one_" + uuid);
                 path_mat = path;
                 path_mat.replace_extension(".mat");
                 path_json = path;
@@ -1281,7 +1352,7 @@ protected:
                     if (boost::filesystem::exists(path_json)) {
                         Configuration params_loaded;
                         params_loaded.load_from_json(path_json.string());
-                        if (params == params_loaded) {
+                        if (*par == params_loaded) {
                             is_existing = true;
                         }
                     }
@@ -1289,7 +1360,7 @@ protected:
 
                 // create .json file if "is_existing" is false
                 if (!is_existing) {
-                    params.save_to_json(path_json.string());
+                    par->save_to_json(path_json.string());
                 }
 
                 // calculate Hamiltonian if "is_existing" is false
@@ -1319,6 +1390,7 @@ protected:
                 mat->addFilename(path_mat.string());
                 mat->addIsExisting(is_existing);
                 matrix.push_back(std::move(mat));
+                params.push_back(std::move(par));
                 matrix_path.push_back(path.string());
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
             }
@@ -1339,6 +1411,8 @@ private:
     real_t min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
     size_t nSteps;
     std::string species;
+    boost::filesystem::path path_out;
+    boost::filesystem::path path_cache;
 };
 
 class HamiltonianTwo : public Hamiltonian {
@@ -1346,6 +1420,10 @@ public:
     HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one)  :
         Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one->names())) { // TODO
 
+        samebasis = true;
+
+        /*size_t nSteps_one = hamiltonian_one1->size(); // TODO
+
         // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
         conf = basis_two->getConf();
         conf["deltaE"] = config["deltaE"];
@@ -1361,18 +1439,22 @@ public:
 
         dipoledipole = config["dd"].str() == "true"; // TODO
 
-        if (min_R == max_R){
+        if (min_R == max_R && nSteps_one == 1){
             nSteps_two = 1;
         } else {
             config["steps"] >> nSteps_two;
-        }
+        }*/
 
-        calculate();
+        calculate(config);
     }
 
     HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one1, std::shared_ptr<const HamiltonianOne> hamiltonian_one2) :
         Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names())) {
 
+        samebasis = false;
+
+        /*size_t nSteps_one = hamiltonian_one1->size(); // TODO
+
         // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
         conf = basis_two->getConf();
         conf["deltaE"] = config["deltaE"];
@@ -1388,15 +1470,25 @@ public:
 
         dipoledipole = config["dd"].str() == "true"; // TODO
 
-        if (min_R == max_R){
+        if (min_R == max_R && nSteps_one == 1){
             nSteps_two = 1;
         } else {
             config["steps"] >> nSteps_two;
-        }
-        calculate();
+        }*/
+
+        calculate(config);
     }
 
-    void calculate() {
+    void calculate(const Configuration &conf_tot) {
+        path_out = boost::filesystem::absolute(conf_tot["out"].str());
+        if (utils::is_complex<scalar_t>::value) {
+            path_cache = path_out / "cache_matrix_complex";
+        } else {
+            path_cache = path_out / "cache_matrix_real";
+        }
+        if(!boost::filesystem::exists(path_cache)){
+            boost::filesystem::create_directory(path_cache);
+        }
 
         if (mpi->rank() == 0) {
             real_t tol = 1e-32;
@@ -1408,87 +1500,270 @@ public:
 
             size_t nSteps_one = hamiltonian_one1->size();
 
-            std::cout << 0.1 << std::endl;
+            // --- generate configuration ---
+            std::vector<Configuration> conf_mat;
+            conf_mat.reserve(nSteps_one);
 
-            // --- load one-atom Hamiltonians ---
-            std::vector<Hamiltonianmatrix> free_list;
-            free_list.reserve(nSteps_one);
+            // new, pair hamiltonian specific configuration
+            Configuration conf_matpair = basis_two->getConf();
+            conf_matpair["deltaEPair"] = conf_tot["deltaEPair"];
+            conf_matpair["deltaNPair"] = conf_tot["deltaNPair"];
+            conf_matpair["deltaLPair"] = conf_tot["deltaLPair"];
+            conf_matpair["deltaJPair"] = conf_tot["deltaJPair"];
+            conf_matpair["deltaMPair"] = conf_tot["deltaMPair"];
+            conf_matpair["dd"] = conf_tot["dd"];
+            conf_matpair["dq"] = conf_tot["dq"];
+            conf_matpair["qq"] = conf_tot["qq"];
 
             for (size_t i = 0; i < nSteps_one; ++i) {
-                // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff
-                free_list.push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE)); // TODO
+                // old, single atom hamiltonian specific configuration
+                Configuration conf_matsingle = *hamiltonian_one1->getParams(i);  // TODO
+                conf_matsingle += conf_matpair;
+                conf_mat.push_back(conf_matsingle);
+                //conf_mat.push_back(conf_matsingle + conf_matpair); // conf_matpair overwrites settings in conf_matsingle // TODO !!!!!!!!!!!!!!!!!!
             }
 
-            std::cout << 0.2 << std::endl;
+            // setup variables
+            conf_mat.back()["species1"] >> species1; // TODO order state inside cinfiguration object config.order()
+            conf_mat.back()["species2"] >> species2; // TODO order state inside cinfiguration object
+            conf_mat.back()["deltaEPair"] >> deltaE;
+            conf_mat.back()["deltaNPair"] >> deltaN;
+            conf_mat.back()["deltaLPair"] >> deltaL;
+            conf_mat.back()["deltaJPair"] >> deltaJ;
+            conf_mat.back()["deltaMPair"] >> deltaM;
+            dipoledipole = conf_tot["dd"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
+            dipolequadrupole = conf_tot["dq"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
+            quadrupolequadrupole = conf_tot["qq"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
+            conf_tot["steps"] >> nSteps_two;
+            conf_tot["minR"] >> min_R;
+            conf_tot["maxR"] >> max_R;
 
-            // --- remove unnecessary basisvectors ---
-            std::vector<bool> is_necessary_coordinate(basis_two->size(), false);
+            real_t minEx, minEy, minEz, maxEx, maxEy, maxEz, minBx, minBy, minBz, maxBx, maxBy, maxBz;
+            conf_tot["minEx"] >> minEx;
+            conf_tot["minEy"] >> minEy;
+            conf_tot["minEz"] >> minEz;
+            conf_tot["maxEx"] >> maxEx;
+            conf_tot["maxEy"] >> maxEy;
+            conf_tot["maxEz"] >> maxEz;
+            conf_tot["minBx"] >> minBx;
+            conf_tot["minBy"] >> minBy;
+            conf_tot["minBz"] >> minBz;
+            conf_tot["maxBx"] >> maxBx;
+            conf_tot["maxBy"] >> maxBy;
+            conf_tot["maxBz"] >> maxBz;
+            bool fields_change_m = (minEx != 0) || (minEy != 0) || (maxEx != 0) || (maxEy != 0) || (minBx != 0) || (minBy != 0) || (maxBx != 0) || (maxBy != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
+            bool fields_change_l = (minEx != 0) || (minEy != 0) || (minEz != 0) || (maxEx != 0) || (maxEy != 0) || (maxEz != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
 
-            // find states (coordinates) that are necessary
+            //fields_change_m = true; // TODO
+            //fields_change_l = true; // TODO
+
+            if (min_R == max_R && nSteps_one == 1){
+                nSteps_two = 1;
+            }
+
+            std::cout << 0.1 << std::endl;
+
+            // --- determine necessary symmetries ---
+            enum symmetries_t {ALL, SYM, ASYM};
+
+            bool symmetries_sym, symmetries_asym, symmetries_all;
+            if (samebasis) {
+                StateTwo initialstate = basis_two->initial();
+                symmetries_sym = true;
+                symmetries_asym = initialstate.first() != initialstate.second();
+                symmetries_all = false;
+            } else {
+                symmetries_sym = false;
+                symmetries_asym = false;
+                symmetries_all = true;
+            }
+
+            std::vector<symmetries_t> symmetries;
+            if (symmetries_sym) symmetries.push_back(SYM);
+            if (symmetries_asym) symmetries.push_back(ASYM);
+            if (symmetries_all) symmetries.push_back(ALL);
+
+            // --- determine coordinates whose usage is not restricted ---
+            auto basis_one1 = hamiltonian_one1->names();
+            auto basis_one2 = hamiltonian_one2->names();
+            std::vector<bool> notrestricted_coordinate1(basis_one1->size(), false);
+            std::vector<bool> notrestricted_coordinate2(basis_one2->size(), false);
+            std::vector<bool> notrestricted_coordinate(basis_two->size(), false);
+            std::vector<StateOne> initial1 = basis_one1->initial();
+            std::vector<StateOne> initial2 = basis_one2->initial();
             StateTwo initial = basis_two->initial();
+
+            // coordinates of atom 1
+            for (const auto &state: *basis_one1) {
+                bool validN = false;
+                bool validL = false;
+                bool validJ = false;
+                bool validM = false;
+
+                for (const auto &initial: initial1) {
+                    if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) validN = true;
+                    if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) validL = true;
+                    if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) validJ = true;
+                    if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) validM = true;
+                }
+
+                if (validN && validL && validJ && validM) {
+                    notrestricted_coordinate1[state.idx] = true;
+                }
+            }
+
+            // coordinates of atom 2
+            for (const auto &state: *basis_one2) {
+                bool validN = false;
+                bool validL = false;
+                bool validJ = false;
+                bool validM = false;
+
+                for (const auto &initial: initial2) {
+                    if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) validN = true;
+                    if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) validL = true;
+                    if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) validJ = true;
+                    if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) validM = true;
+                }
+
+                if (validN && validL && validJ && validM) {
+                    notrestricted_coordinate2[state.idx] = true;
+                }
+            }
+
+            // coordinates of the atom pair
             float M = initial.m[0]+initial.m[1];
             int parity = (initial.l[0]+initial.l[1]) % 2;
 
             for (const auto &state: *basis_two) {
-                if (state.m[0]+state.m[1] == M && (state.l[0]+state.l[1]) % 2 == parity) {
-                    is_necessary_coordinate[state.idx] = true;
+                if (!fields_change_m && state.m[0]+state.m[1] != M) continue;
+                if (!fields_change_l && (state.l[0]+state.l[1]) % 2 != parity) continue;
+
+                notrestricted_coordinate[state.idx] = true;
+            }
+
+            std::cout << 0.15 << std::endl;
+
+            // --- load one-atom Hamiltonians ---
+            std::vector<Hamiltonianmatrix> mat_single_sym;
+            std::vector<Hamiltonianmatrix> mat_single_asym;
+            std::vector<Hamiltonianmatrix> mat_single_all;
+            if (symmetries_sym) mat_single_sym.reserve(nSteps_one);
+            if (symmetries_asym) mat_single_asym.reserve(nSteps_one);
+            if (symmetries_all) mat_single_all.reserve(nSteps_one);
+
+            // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff and the list of necessary coordinates
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                if (symmetries_sym) mat_single_sym.push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                if (symmetries_asym) mat_single_asym.push_back(combineAsym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                if (symmetries_all) mat_single_all.push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                std::cout << i+1 << std::endl;
+            }
+
+            std::cout << 0.2 << std::endl;
+
+            // --- remove unnecessary (i.e. more or less empty) basisvectors ---
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                if (symmetries_sym) mat_single_sym[i].removeUnnecessaryBasisvectors();
+                if (symmetries_asym) mat_single_asym[i].removeUnnecessaryBasisvectors();
+                if (symmetries_all) mat_single_all[i].removeUnnecessaryBasisvectors();
+            }
+
+            std::cout << 0.25 << std::endl;
+
+            // --- find coordinates that are used ---
+            std::vector<bool> used_coordinate(basis_two->size(), false);
+
+            for (size_t i = 0; i < nSteps_one; ++i) {
+                if (symmetries_sym) mat_single_sym[i].findUnnecessaryStates(used_coordinate);
+                if (symmetries_asym) mat_single_asym[i].findUnnecessaryStates(used_coordinate);
+                if (symmetries_all) mat_single_all[i].findUnnecessaryStates(used_coordinate);
+            }
+
+            auto basis_two_used = std::make_shared<BasisnamesTwo>(*basis_two);
+            basis_two_used->removeUnnecessaryStates(used_coordinate);
+
+            /*// if a coordinate is not necessary it does not matter that it is used
+            for (size_t i = 0; i < basis_two->size(); ++i) {
+                if (!is_necessary_coordinate[i]) {
+                    is_used_coordinate[i] = false;
                 }
             }
 
-            for (size_t i = 0; i < nSteps_one; ++i) {
-                free_list[i].removeUnnecessaryBasisvectors(is_necessary_coordinate);
+            for (size_t i = 0; i < nSteps_one; ++i) { // TODO nicht verwenden
+                if (symmetries_sym) mat_single_sym[i].removeUnnecessaryStates(is_used_coordinate);
+                if (symmetries_asym) mat_single_asym[i].removeUnnecessaryStates(is_used_coordinate);
+                if (symmetries_all) mat_single_all[i].removeUnnecessaryStates(is_used_coordinate);
             }
+            basis_two->removeUnnecessaryStates(is_used_coordinate); // TODO skipUnnecessaryStates(is_used_coordinate)*/
 
-            // --- remove unnecessary states --- // TODO wie richtig? so ist es eine Operation, die von mehreren matrizen abhaengt
-            std::vector<bool> is_used_coordinate(basis_two->size(), false);
+            /*std::cout << mat_single_sym[0].num_coordinates() << std::endl; // TODO
+            std::cout << mat_single_sym.back().num_basisvectors() << std::endl;// TODO
+            std::cout << mat_single_sym[0].num_basisvectors() << std::endl;// TODO*/
 
-            // find states (coordinates) that are used
-            for (size_t i = 0; i < nSteps_one; ++i) {
-                free_list[i].findUnnecessaryStates(is_used_coordinate);
-            }
-
-            for (size_t i = 0; i < nSteps_one; ++i) {
-                free_list[i].removeUnnecessaryStates(is_used_coordinate);
-            }
-            basis_two->removeUnnecessaryStates(is_used_coordinate);
-
-            std::cout << free_list[0].num_coordinates() << std::endl; // TODO ausgeben
-            std::cout << free_list.back().num_basisvectors() << std::endl;
-            std::cout << free_list[0].num_basisvectors() << std::endl;
+            std::cout << ">>BAS" << std::setw(7) << basis_two_used->size() << std::endl;
 
             std::cout << 0.3 << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements_k1_atom1(species1, 1); // TODO auf dipole quadrupole etc. erweitern
-            MatrixElements matrix_elements_k1_atom2(species2, 1);
+            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_out / "cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_out / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_out / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_out / "cache_elements.db").string());
 
-            auto basis_one_atom1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two));
-            auto basis_one_atom2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two));
+            basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
+            basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
 
             std::cout << 0.4 << std::endl;
 
-            matrix_elements_k1_atom1.precalculate(basis_one_atom1, true, true, true);
-            matrix_elements_k1_atom2.precalculate(basis_one_atom2, true, true, true);
+            if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom1.precalculate(basis_one1, true, true, true);
+            if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom2.precalculate(basis_one2, true, true, true);
+            if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom1.precalculate(basis_one1, true, true, true); // TODO
+            if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom2.precalculate(basis_one2, true, true, true); // TODO
 
             std::cout << 1.1 << std::endl;
 
             // --- count entries of Hamiltonian parts ---
             size_t size_basis = basis_two->size();
-            size_t size_k1 = 0;
+            size_t size_dd = 0;
+            size_t size_dq = 0;
+            size_t size_qq = 0;
 
             for (const auto &state_col : *basis_two) {
+                if (!used_coordinate[state_col.idx]) continue;
+
                 for (const auto &state_row : *basis_two) {
-                    if (state_row.idx < state_col.idx) {
-                        continue;
-                    }
+                    if (!used_coordinate[state_row.idx]) continue;
+
+                    if (state_row.idx < state_col.idx) continue;
 
                     if (dipoledipole) {
                         if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            size_k1++;
+                            size_dd++;
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            size_k1++;
+                            size_dd++;
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            size_k1++;
+                            size_dd++;
+                        }
+                    }
+
+                    if (dipolequadrupole) { // TODO
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            size_dq++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            size_dq++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            size_dq++;
+                        }
+                    }
+
+                    if (quadrupolequadrupole) { // TODO
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            size_qq++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            size_qq++;
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            size_qq++;
                         }
                     }
 
@@ -1499,16 +1774,22 @@ public:
             std::cout << 1.2 << std::endl;
 
             // --- construct Hamiltonian parts ---
-            Hamiltonianmatrix hamiltonian_k1(size_basis, size_k1);
+            Hamiltonianmatrix hamiltonian_dd(size_basis, 2*size_dd);
+            Hamiltonianmatrix hamiltonian_dq(size_basis, 2*size_dq);
+            Hamiltonianmatrix hamiltonian_qq(size_basis, 2*size_qq);
 
             for (const auto &state_col : *basis_two) {
+                if (!used_coordinate[state_col.idx]) continue;
+
                 for (const auto &state_row : *basis_two) {
-                    if (state_row.idx < state_col.idx) {
-                        continue;
-                    }
+                    if (!used_coordinate[state_row.idx]) continue;
+
+                    if (state_row.idx < state_col.idx) continue;
 
                     if (state_row.idx == state_col.idx) {
-                        hamiltonian_k1.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_dd.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_dq.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_qq.addBasis(state_row.idx,state_col.idx,1);
                     }
 
                     if (dipoledipole) {
@@ -1516,22 +1797,72 @@ public:
                             real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
-                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
                             real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
-                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val);
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
                             real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
-                                hamiltonian_k1.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_k1.addEntries(state_col.idx,state_row.idx,val);
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        }
+                    }
+
+                    if (dipolequadrupole) { // TODO
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        }
+                    }
+
+                    if (quadrupolequadrupole) { // TODO
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         }
                     }
@@ -1539,7 +1870,9 @@ public:
             }
 
 
-            hamiltonian_k1.compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
+            hamiltonian_dd.compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
+            hamiltonian_dq.compress(basis_two->dim(), basis_two->dim());
+            hamiltonian_qq.compress(basis_two->dim(), basis_two->dim());
 
             std::cout << 1.3 << std::endl;
 
@@ -1551,330 +1884,209 @@ public:
             // --- construct Hamiltonians --- // TODO Logik in eigene Klasse
             matrix.reserve(nSteps_two);
 
-            // create ConfParser object
-            Configuration params(conf);
-
             // open database
-            std::string dbname;
+            boost::filesystem::path path_db;
+
             if (utils::is_complex<scalar_t>::value) {
-                dbname = "cache_matrix_complex.db";
+                path_db = path_out / "cache_matrix_complex.db";
             } else {
-                dbname = "cache_matrix_real.db";
+                path_db = path_out / "cache_matrix_real.db";
             }
-            SQLite3 db(dbname);
+            SQLite3 db(path_db.string());
 
             // initialize uuid generator
             boost::uuids::random_generator generator;
 
-            // loop through steps
+            // initialize variables
+            Configuration conf;
             size_t step_one = 0;
-            Hamiltonianmatrix hamiltonian_k1_transformed = hamiltonian_k1.changeBasis(free_list[step_one].basis());
+            size_t step_one_sym = 0;
+            size_t step_one_asym = 0;
+            size_t step_one_all = 0;
+            Hamiltonianmatrix hamiltonian_dd_transformed_sym;
+            Hamiltonianmatrix hamiltonian_dd_transformed_asym;
+            Hamiltonianmatrix hamiltonian_dd_transformed_all;
+            Hamiltonianmatrix hamiltonian_dq_transformed_sym;
+            Hamiltonianmatrix hamiltonian_dq_transformed_asym;
+            Hamiltonianmatrix hamiltonian_dq_transformed_all;
+            Hamiltonianmatrix hamiltonian_qq_transformed_sym;
+            Hamiltonianmatrix hamiltonian_qq_transformed_asym;
+            Hamiltonianmatrix hamiltonian_qq_transformed_all;
 
+            bool flag_perhapsmissingtable = true;
+
+            // loop through steps
             for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
                 real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
                 real_t position = min_R+normalized_position*(max_R-min_R);
 
-                // save fields to ConfParser object
-                params["Ex"] = 1; // TODO
-                params["Ey"] = 0; // TODO
-                params["Ez"] = 0; // TODO
-                params["Bx"] = 0; // TODO
-                params["By"] = 0; // TODO
-                params["Bz"] = 0; // TODO
-                params["R"] = position;
-
-                // create table if necessary
-                std::stringstream query;
-                std::string spacer = "";
-
-                if (step_two == 0) {
-                    query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
-                             "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                             "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                    for (auto p: params) {
-                        query << ", " << p.key << " text";
-                    }
-                    query << ", UNIQUE (";
-                    for (auto p: params) {
-                        query << spacer << p.key;
-                        spacer = ", ";
-                    }
-                    query << "));";
-                    db.exec(query.str());
+                if (step_two == 0 || (nSteps_one > 1 && step_one <= step_two)) {
+                    conf = conf_mat[step_one++];
                 }
 
-                // get uuid as filename
-                std::string uuid;
+                conf["R"] = position;
 
-                query.str(std::string());
-                spacer = "";
-                query << "SELECT uuid FROM cache_two WHERE ";
-                for (auto p: params) {
-                    query << spacer << p.key << "='" << p.value.str() << "'";
-                    spacer = " AND ";
-                }
-                query << ";";
-                SQLite3Result result = db.query(query.str());
+                // loop through symmetries
+                for (symmetries_t symmetry : symmetries) {
+                    Hamiltonianmatrix totalmatrix;
+                    real_t position_dd = 1./std::pow(position,3);
+                    real_t position_dq = 1./std::pow(position,4); // TODO
+                    real_t position_qq = 1./std::pow(position,5); // TODO
 
-                if (result.size() == 1) {
-                    uuid = result.first()->str();
+                    if (symmetry == SYM) {
+                        conf["symmetry"] = "sym";
 
-                    /*query.str(std::string());
-                    query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
-                    db.exec(query.str());*/ // TODO
-                } else {
-                    boost::uuids::uuid u = generator();
-                    boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
-
-                    query.str(std::string());
-                    query << "INSERT INTO cache_two (uuid";
-                    for (auto p: params) {
-                        query << ", " << p.key;
-                    }
-                    query << ") values ( '" << uuid << "'";
-                    for (auto p: params) {
-                        query << ", " << "'" << p.value.str() << "'";
-                    }
-                    query << ");";
-                    db.exec(query.str());
-                }
-
-                // check whether .mat and .json file exists and compare settings in program with settings in .json file
-                boost::filesystem::path path, path_mat, path_json;
-
-                path = boost::filesystem::absolute("output/two_" + uuid);
-                path_mat = path;
-                path_mat.replace_extension(".mat");
-                path_json = path;
-                path_json.replace_extension(".json");
-
-                bool is_existing = false;
-                if (boost::filesystem::exists(path_mat)) {
-                    if (boost::filesystem::exists(path_json)) {
-                        Configuration params_loaded;
-                        params_loaded.load_from_json(path_json.string());
-                        if (params == params_loaded) {
-                            is_existing = true;
+                        if (step_two == 0 || (nSteps_one > 1 && step_one_sym <= step_two)) {
+                            step_one_sym++;
+                            if (dipoledipole) hamiltonian_dd_transformed_sym = hamiltonian_dd.changeBasis(mat_single_sym[step_one_sym-1].basis());
+                            if (dipolequadrupole) hamiltonian_dq_transformed_sym = hamiltonian_dq.changeBasis(mat_single_sym[step_one_sym-1].basis());
+                            if (quadrupolequadrupole) hamiltonian_qq_transformed_sym = hamiltonian_qq.changeBasis(mat_single_sym[step_one_sym-1].basis());
                         }
+
+                        totalmatrix = mat_single_sym[step_one_sym-1];
+                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_sym*position_dd;
+                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_sym*position_dq;
+                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_sym*position_qq;
+
+                    } else if (symmetry == ASYM) {
+                        conf["symmetry"] = "asym";
+
+                        if (step_two == 0 || (nSteps_one > 1 && step_one_asym <= step_two)) {
+                            step_one_asym++;
+                            if (dipoledipole) hamiltonian_dd_transformed_asym = hamiltonian_dd.changeBasis(mat_single_asym[step_one_asym-1].basis());
+                            if (dipolequadrupole) hamiltonian_dq_transformed_asym = hamiltonian_dq.changeBasis(mat_single_asym[step_one_asym-1].basis());
+                            if (quadrupolequadrupole) hamiltonian_qq_transformed_asym = hamiltonian_qq.changeBasis(mat_single_asym[step_one_asym-1].basis());
+                        }
+
+                        totalmatrix = mat_single_asym[step_one_asym-1];
+                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_asym*position_dd;
+                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_asym*position_dq;
+                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_asym*position_qq;
+
+                    } else if (symmetry == ALL) {
+                        conf["symmetry"] = "all";
+
+                        if (step_two == 0 || (nSteps_one > 1 && step_one_all <= step_two)) {
+                            step_one_all++;
+                            if (dipoledipole) hamiltonian_dd_transformed_all = hamiltonian_dd.changeBasis(mat_single_all[step_one_all-1].basis());
+                            if (dipolequadrupole) hamiltonian_dq_transformed_all = hamiltonian_dq.changeBasis(mat_single_all[step_one_all-1].basis());
+                            if (quadrupolequadrupole) hamiltonian_qq_transformed_all = hamiltonian_qq.changeBasis(mat_single_all[step_one_all-1].basis());
+                        }
+
+                        totalmatrix = mat_single_all[step_one_all-1];
+                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_all*position_dd;
+                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_all*position_dq;
+                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_all*position_qq;
+                    }
+
+                    auto submatrices = totalmatrix.findSubs(); // TODO
+
+                    for (size_t subidx = 0; subidx < submatrices.size(); ++subidx) {
+                        // if (no overlap with startstate): continue // TODO
+
+                        conf["sub"] = subidx;
+
+                        // create table if necessary
+                        std::stringstream query;
+                        std::string spacer = "";
+
+                        if (flag_perhapsmissingtable) {
+                            query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
+                                     "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                                     "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
+                            for (auto p: conf) {
+                                query << ", " << p.key << " text";
+                            }
+                            query << ", UNIQUE (";
+                            for (auto p: conf) {
+                                query << spacer << p.key;
+                                spacer = ", ";
+                            }
+                            query << "));";
+                            db.exec(query.str());
+
+                            flag_perhapsmissingtable = false;
+                        }
+
+                        // get uuid as filename
+                        std::string uuid;
+
+                        query.str(std::string());
+                        spacer = "";
+                        query << "SELECT uuid FROM cache_two WHERE ";
+                        for (auto p: conf) {
+                            query << spacer << p.key << "='" << p.value.str() << "'";
+                            spacer = " AND ";
+                        }
+                        query << ";";
+                        SQLite3Result result = db.query(query.str());
+
+                        if (result.size() == 1) {
+                            uuid = result.first()->str();
+
+                            /*query.str(std::string());
+                            query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
+                            db.exec(query.str());*/ // TODO
+
+                        } else {
+                            boost::uuids::uuid u = generator();
+                            boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+
+                            query.str(std::string());
+                            query << "INSERT INTO cache_two (uuid";
+                            for (auto p: conf) {
+                                query << ", " << p.key;
+                            }
+                            query << ") values ( '" << uuid << "'";
+                            for (auto p: conf) {
+                                query << ", " << "'" << p.value.str() << "'";
+                            }
+                            query << ");";
+                            db.exec(query.str());
+                        }
+
+                        // check whether .mat and .json file exists and compare settings in program with settings in .json file
+                        boost::filesystem::path path, path_mat, path_json;
+
+                        path = path_cache / ("two_" + uuid);
+                        path_mat = path;
+                        path_mat.replace_extension(".mat");
+                        path_json = path;
+                        path_json.replace_extension(".json");
+
+                        bool is_existing = false;
+                        if (boost::filesystem::exists(path_mat)) {
+                            if (boost::filesystem::exists(path_json)) {
+                                Configuration params_loaded;
+                                params_loaded.load_from_json(path_json.string());
+                                if (conf == params_loaded) {
+                                    is_existing = true;
+                                }
+                            }
+                        }
+
+                        // create .json file if "is_existing" is false
+                        if (!is_existing) {
+                            conf.save_to_json(path_json.string());
+                        }
+
+                        // save everything
+                        std::shared_ptr<Hamiltonianmatrix> mat = std::make_shared<Hamiltonianmatrix>(submatrices[subidx]);
+                        mat->addFilename(path_mat.string());
+                        mat->addIsExisting(is_existing);
+                        params.push_back(std::make_shared<Configuration>(conf)); // TODO
+                        matrix_path.push_back(path.string());
+                        matrix_dimension.push_back(mat->num_basisvectors());
+                        matrix.push_back(std::move(mat));
+
+                        std::cout << matrix.size() << std::endl;
                     }
                 }
-
-                // create .json file if "is_existing" is false
-                if (!is_existing) {
-                    params.save_to_json(path_json.string());
-                }
-
-                // calculate Hamiltonian if "is_existing" is false
-                std::shared_ptr<Hamiltonianmatrix> mat;
-                if (!is_existing) {
-                    if (nSteps_one > 1 && step_one < step_two) {
-                        ++step_one;
-                        hamiltonian_k1_transformed = hamiltonian_k1.changeBasis(free_list[step_one].basis());
-                    }
-
-                    real_t position_k1 = 1./std::pow(position,3);
-                    mat = std::make_shared<Hamiltonianmatrix>(free_list[step_one] + hamiltonian_k1_transformed*position_k1);
-                } else {
-                    mat = std::make_shared<Hamiltonianmatrix>();
-                    //mat->compress(free_list[step_one].num_basisvectors(),free_list[step_one].num_coordinates());
-                }
-
-                // save everything
-                mat->addFilename(path_mat.string());
-                mat->addIsExisting(is_existing);
-                matrix.push_back(std::move(mat));
-                matrix_path.push_back(path.string());
-                matrix_dimension.push_back(free_list[step_one].num_basisvectors());
             }
 
             std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
 
             std::cout << 1.4 << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-            /*bool distant_dependent = (hamiltonian_one1.size() == 1) ? false : true;
-            size_t nSteps = (distant_dependent) ? hamiltonian_one1.size() : 100; // TODO
-
-            real_t energycutoff = 5; // TODO
-
-            std::cout << 1 << std::endl;
-
-            // --- load one-atom Hamiltonians ---
-            std::vector<Hamiltonianmatrix> free_sym_list;
-            std::vector<Hamiltonianmatrix> free_asym_list;
-            free_sym_list.reserve(hamiltonian_one1.size());
-            free_asym_list.reserve(hamiltonian_one1.size());
-
-            std::vector<bool> isNecessary(basis_two.size(),false);
-
-            for (size_t i = 0; i < hamiltonian_one1.size(); ++i) {
-                free_sym_list.push_back(combineSym(*hamiltonian_one1.get(i), *hamiltonian_one2.get(i)));
-                free_asym_list.push_back(combineAsym(*hamiltonian_one1.get(i), *hamiltonian_one2.get(i)));
-
-                // use energy cutoff
-                free_sym_list.back().applyCutoff(energycutoff);
-                free_asym_list.back().applyCutoff(energycutoff);
-
-                // find states that became unnecessary
-                free_sym_list.back().findUnnecessaryStates(isNecessary);
-                free_asym_list.back().findUnnecessaryStates(isNecessary);
-            }
-
-            // remove unnecessary states
-            basis_two.removeUnnecessaryStates(isNecessary);
-
-            std::cout << 2 << std::endl;
-
-            // --- calculate two-atom Hamiltonians ---
-            std::vector<eigen_triplet_t> triplets_entries_dipdip;
-            std::vector<eigen_triplet_t> triplets_entries_dipquad;
-            std::vector<eigen_triplet_t> triplets_entries_quadquad;
-            std::vector<eigen_triplet_t> triplets_basis_dipdip;
-            std::vector<eigen_triplet_t> triplets_basis_dipquad;
-            std::vector<eigen_triplet_t> triplets_basis_quadquad;
-            triplets_entries_dipdip.reserve(basis_two.size()*basis_two.size());
-            triplets_entries_dipquad.reserve(basis_two.size()*basis_two.size());
-            triplets_entries_quadquad.reserve(basis_two.size()*basis_two.size());
-            triplets_basis_dipdip.reserve(basis_two.size());
-            triplets_basis_dipquad.reserve(basis_two.size());
-            triplets_basis_quadquad.reserve(basis_two.size());
-
-            std::cout << 2.5 << std::endl;
-
-            // loop over basis states
-            for (const auto &state_col : basis_two) {
-                for (const auto &state_row : basis_two) {
-
-                    // add entries
-                    if (true) { // check for selection rules // TODO
-                        real_t val = (rand() % 100 - 50)/10.; // calculate value of matrix element // TODO
-                        triplets_entries_dipdip.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                    }
-                    if (true) { // check for selection rules // TODO
-                        real_t val = 0; // calculate value of matrix element // TODO
-                        triplets_entries_dipquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                    }
-                    if (true) { // check for selection rules // TODO
-                        real_t val = 0; // calculate value of matrix element // TODO
-                        triplets_entries_quadquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,val));
-                    }
-
-                    // add basis
-                    if (state_row.idx == state_col.idx) {
-                        triplets_basis_dipdip.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
-                        triplets_basis_dipquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
-                        triplets_basis_quadquad.push_back(eigen_triplet_t(state_row.idx,state_col.idx,1));
-                    }
-                }
-            }
-
-            std::cout << 2.6 << std::endl;
-
-            Hamiltonianmatrix interaction_dipdip(basis_two.dim(),basis_two.dim());
-            Hamiltonianmatrix interaction_dipquad(basis_two.dim(),basis_two.dim());
-            Hamiltonianmatrix interaction_quadquad(basis_two.dim(),basis_two.dim());
-
-            std::cout << 2.7 << std::endl;
-
-            interaction_dipdip.entries().setFromTriplets(triplets_entries_dipdip.begin(), triplets_entries_dipdip.end());
-            interaction_dipdip.basis().setFromTriplets(triplets_basis_dipdip.begin(), triplets_basis_dipdip.end());
-            interaction_dipquad.entries().setFromTriplets(triplets_entries_dipquad.begin(), triplets_entries_dipquad.end());
-            interaction_dipquad.basis().setFromTriplets(triplets_basis_dipquad.begin(), triplets_basis_dipquad.end());
-            interaction_quadquad.entries().setFromTriplets(triplets_entries_quadquad.begin(), triplets_entries_quadquad.end());
-            interaction_quadquad.basis().setFromTriplets(triplets_basis_quadquad.begin(), triplets_basis_quadquad.end());
-
-            std::cout << 3 << std::endl;
-
-            auto interaction_dipdip_sym = interaction_dipdip.changeBasis(free_sym_list[0].basis());
-            auto interaction_dipquad_sym = interaction_dipquad.changeBasis(free_sym_list[0].basis());
-            auto interaction_quadquad_sym = interaction_quadquad.changeBasis(free_sym_list[0].basis());
-            auto interaction_dipdip_asym = interaction_dipdip.changeBasis(free_asym_list[0].basis());
-            auto interaction_dipquad_asym = interaction_dipquad.changeBasis(free_asym_list[0].basis());
-            auto interaction_quadquad_asym = interaction_quadquad.changeBasis(free_asym_list[0].basis());
-
-            std::cout << 4 << std::endl;
-
-            // --- search for submatrices ---
-            auto test_sym = interaction_dipdip_sym.abs()+interaction_dipquad_sym.abs()+interaction_quadquad_sym.abs();
-            auto test_asym = interaction_dipdip_asym.abs()+interaction_dipquad_asym.abs()+interaction_quadquad_asym.abs();
-            for (size_t i = 0; i < hamiltonian_one1.size(); ++i) {
-                test_sym += free_sym_list[i].abs();
-                test_asym += free_asym_list[i].abs();
-            }
-
-            (void) test_sym; // TODO
-            (void) test_asym; // TODO
-
-            // neglect irrelevant submatrices
-            // TODO
-
-            size_t nSubmatrices = 2; // TODO
-
-            // save submatrices (treat sym/asym as submatrices, too)
-            std::vector<Hamiltonianmatrix> arr_interaction_dipdip;
-            std::vector<Hamiltonianmatrix> arr_interaction_dipquad;
-            std::vector<Hamiltonianmatrix> arr_interaction_quadquad;
-            arr_interaction_dipdip.reserve(nSubmatrices);
-            arr_interaction_dipquad.reserve(nSubmatrices);
-            arr_interaction_quadquad.reserve(nSubmatrices);
-
-            arr_interaction_dipdip.push_back(interaction_dipdip_sym);
-            arr_interaction_dipquad.push_back(interaction_dipquad_sym);
-            arr_interaction_quadquad.push_back(interaction_quadquad_sym);
-            arr_interaction_dipdip.push_back(interaction_dipdip_asym);
-            arr_interaction_dipquad.push_back(interaction_dipquad_asym);
-            arr_interaction_quadquad.push_back(interaction_quadquad_asym);
-
-            std::vector<std::vector<Hamiltonianmatrix>> arr_free_list(hamiltonian_one1.size());
-            for (size_t i = 0; i < hamiltonian_one1.size(); ++i) {
-                arr_free_list[i].reserve(nSubmatrices);
-
-                arr_free_list[i].push_back(free_sym_list[i]);
-                arr_free_list[i].push_back(free_asym_list[i]);
-            }
-
-            std::cout << 5 << std::endl;
-
-            // --- construct total Hamiltonians ---
-            matrix.reserve(nSteps*nSubmatrices);
-
-            size_t i = 0;
-
-            // loop over distances
-            for (size_t step = 0; step < nSteps; ++step) {
-                real_t distance = 1*step/30.+1; // TODO
-
-                // loop over submatrices
-                for (size_t sub = 0; sub < nSubmatrices; ++sub) {
-
-                    // add the two-atom Hamiltonians to the one-atom Hamiltonians
-                    auto mat = std::make_shared<Hamiltonianmatrix>(arr_free_list[i][sub] +
-                                                                   1./pow(distance,3.)*arr_interaction_dipdip[sub] +
-                                                                   1./pow(distance,4.)*arr_interaction_dipquad[sub] +
-                                                                   1./pow(distance,5.)*arr_interaction_quadquad[sub]);
-
-                    std::stringstream s;
-                    s << "output/hamiltonian_two_" << step << "_" << sub << ".mat";
-                    mat->addFilename(s.str());
-
-                    // store the total Hamiltonian
-                    matrix.push_back(std::move(mat));
-                }
-
-                // select new one-atom Hamiltonians, if they are distant dependent
-                if (distant_dependent && i+1 < hamiltonian_one1.size()) ++i;
-            }
-
-            std::cout << 6 << std::endl;*/
         }
 
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
@@ -1889,12 +2101,20 @@ private:
     std::shared_ptr<const HamiltonianOne> hamiltonian_one1;
     std::shared_ptr<const HamiltonianOne> hamiltonian_one2;
     std::shared_ptr<BasisnamesTwo> basis_two;
-    Configuration conf;
     real_t deltaE;
+    int deltaN;
+    int deltaL;
+    int deltaJ;
+    int deltaM;
     size_t nSteps_two;
     std::string species1, species2;
     real_t min_R, max_R;
     bool dipoledipole;
+    bool dipolequadrupole;
+    bool quadrupolequadrupole;
+    bool samebasis;
+    boost::filesystem::path path_out;
+    boost::filesystem::path path_cache;
 };
 
 
@@ -1907,12 +2127,16 @@ int main(int argc, char **argv) {
 
     // === Parse command line ===
     boost::filesystem::path path_config;
+    boost::filesystem::path path_out;
     int c;
     opterr = 0;
-    while((c = getopt (argc, argv, "c:")) != -1) {
+    while((c = getopt (argc, argv, "c:o:")) != -1) {
         switch (c) {
         case 'c':
             path_config = boost::filesystem::absolute(optarg);
+            break;
+        case 'o':
+            path_out = boost::filesystem::absolute(optarg);
             break;
         case '?':
             if (optopt == 'c') {
@@ -1936,10 +2160,20 @@ int main(int argc, char **argv) {
         return 1;
     }
 
+    if (not path_out.string().size()) {
+        std::cout << "Required option \"-c filename.json\"." << std::endl;
+        return 1;
+    }
+
+    if (not boost::filesystem::exists(path_out)) {
+        std::cout << "Path " << path_out << " does not exist." << std::endl;
+        return 1;
+    }
+
     // === Load configuration ===
     Configuration config;
     config.load_from_json(path_config.string());
-    config["deltaE2"] = config["deltaE1"]; // TODO
+    config["out"] << path_out.string();
 
     bool existAtom1 = config.count("species1") && config.count("n1") && config.count("l1") && config.count("j1") && config.count("m1");
     bool existAtom2 = config.count("species2") && config.count("n2") && config.count("l2") && config.count("j2") && config.count("m2");
@@ -1952,10 +2186,6 @@ int main(int argc, char **argv) {
     if (combined) {
         if (config["species1"].str() != config["species2"].str()) {
             std::cout << "species1 and species2 has to be the same in order to use the same basis set." << std::endl;
-            return 1;
-        }
-        if (config["deltaE1"].str() != config["deltaE2"].str()) {
-            std::cout << "deltaE1 and deltaE2 has to be the same in order to use the same basis set." << std::endl;
             return 1;
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one;

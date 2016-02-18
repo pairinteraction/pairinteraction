@@ -1,3 +1,7 @@
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
+
+set(CMAKE_MACOSX_RPATH 0)
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
@@ -101,8 +105,9 @@ include_directories(wignerSymbols/include)
 target_link_libraries(pairinteraction-real wignerSymbols)
 target_link_libraries(pairinteraction-complex wignerSymbols)
 
+
 # CPack
 
-install(TARGETS pairinteraction-real RUNTIME DESTINATION bin)
-install(TARGETS pairinteraction-complex RUNTIME DESTINATION bin)
-install(FILES databases/quantum_defects.db DESTINATION share/pairinteraction)
+install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/trunk)
+install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/trunk)
+install(FILES databases/quantum_defects.db DESTINATION share/pairinteraction/trunk)

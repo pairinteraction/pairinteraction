@@ -19,7 +19,7 @@ size_t findidx(std::vector<real_t> x, real_t d);
 
 class MatrixElements {
 public:
-    MatrixElements(std::string species, int k);
+    MatrixElements(std::string species, int k, std::string dbname);
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_m_0, bool exist_m_p, bool exist_m_m);
     real_t getDipole(StateOne state_row, StateOne state_col);
@@ -28,6 +28,7 @@ private:
     real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
     std::string species;
     int k;
+    std::string dbname;
     std::unordered_map<StateTwo,real_t> element_nlj;
     std::unordered_map<StateTwo,real_t> element_nlj_m;
     std::unordered_map<StateTwo,real_t> element_lj_s;

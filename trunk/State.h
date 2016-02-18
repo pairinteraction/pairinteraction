@@ -44,6 +44,21 @@ public:
         return ((s1.n == s2.n) && (s1.l == s2.l)  && (s1.s == s2.s)  && (s1.j == s2.j)  && (s1.m == s2.m));
     }
 
+    friend bool operator!= (const StateOne& s1, const StateOne& s2)
+    {
+        return ((s1.n != s2.n) || (s1.l != s2.l)  || (s1.s != s2.s)  || (s1.j != s2.j)  || (s1.m != s2.m));
+    }
+
+    friend bool operator< (const StateOne& s1, const StateOne& s2)
+    {
+        return (s1.idx  < s2.idx);
+    }
+
+    friend bool operator> (const StateOne& s1, const StateOne& s2)
+    {
+        return (s1.idx > s2.idx);
+    }
+
     int n, l;
     float s, j, m;
 };

@@ -7,6 +7,7 @@
 #include "ConfParser.hpp"
 
 #include <vector>
+#include <set>
 #include <unordered_set>
 #include <memory>
 
@@ -15,14 +16,14 @@ public:
     Basisnames() {
     }
     void configure(const Configuration &config) {
-        conf["deltaN"] = config["deltaN"];
-        conf["deltaL"] = config["deltaL"];
-        conf["deltaJ"] = config["deltaJ"];
-        conf["deltaM"] = config["deltaM"];
-        conf["deltaN"] >> delta_n;
-        conf["deltaL"] >> delta_l;
-        conf["deltaJ"] >> delta_j;
-        conf["deltaM"] >> delta_m;
+        conf["deltaNSingle"] = config["deltaNSingle"];
+        conf["deltaLSingle"] = config["deltaLSingle"];
+        conf["deltaJSingle"] = config["deltaJSingle"];
+        conf["deltaMSingle"] = config["deltaMSingle"];
+        conf["deltaNSingle"] >> delta_n;
+        conf["deltaLSingle"] >> delta_l;
+        conf["deltaJSingle"] >> delta_j;
+        conf["deltaMSingle"] >> delta_m;
     }
     size_t size() const {
         return names_.size();

@@ -5,11 +5,16 @@ project(pairinteraction CXX)
 set(CMAKE_MACOSX_RPATH 0)
 
 set(CMAKE_COLOR_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+IF(NOT CMAKE_BUILD_TYPE)
+   SET(CMAKE_BUILD_TYPE Release ... FORCE)
+ENDIF(NOT CMAKE_BUILD_TYPE)
 
 # create output directory
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
+# file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
 
-add_subdirectory(gui2)
+add_subdirectory(gui)
 add_subdirectory(trunk)
 
 # CPack
