@@ -229,6 +229,15 @@ bool BasisnamesOne::constructedFromFirst() {
     return _constructedFromFirst;
 }
 
+void BasisnamesOne::save(std::string path) {
+    std::ofstream csvfile;
+    csvfile.open(path);
+    for (const auto &state: *this) {
+        csvfile << state.idx << "\t" << state.n << "\t" << state.l << "\t" << state.j << "\t" << state.m <<  std::endl;
+    }
+    csvfile.close();
+}
+
 BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1) {
     const Configuration conf1 = basis_one1->getConf();
 
@@ -337,4 +346,13 @@ void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species
     }
 
     dim_ = idx;
+}
+
+void BasisnamesTwo::save(std::string path) {
+    std::ofstream csvfile;
+    csvfile.open(path);
+    for (const auto &state: *this) {
+        csvfile << state.idx << "\t" << state.n[0] << "\t" << state.l[0] << "\t" << state.j[0] << "\t" << state.m[0] << "\t" << state.n[1] << "\t" << state.l[1] << "\t" << state.j[1] << "\t" << state.m[1] << std::endl;
+    }
+    csvfile.close();
 }

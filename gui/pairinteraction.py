@@ -263,10 +263,13 @@ class Worker(QtCore.QThread):
     def __init__(self, parent = None):
         super().__init__(parent)
         self.exiting = False
+        self.samebasis = False
         self.message = ""
+        self.basisfile_field1 = ""
+        self.basisfile_field2 = ""
+        self.basisfile_potential = ""
         self.dataqueue_field1 = Queue()
         self.dataqueue_field2 = Queue()
-        self.dataqueue_field12 = Queue()
         self.dataqueue_potential = Queue()
         
     def __del__(self):
@@ -280,18 +283,21 @@ class Worker(QtCore.QThread):
     def clear(self):
         with self.dataqueue_field1.mutex: self.dataqueue_field1.queue.clear()
         with self.dataqueue_field2.mutex: self.dataqueue_field2.queue.clear()
-        with self.dataqueue_field12.mutex: self.dataqueue_field1.queue.clear()
         with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
 
     def run(self):
         finishedgracefully = False
-        
+                
         self.message = ""
+        
+        # Clear filenames
+        self.basisfile_field1 = ""
+        self.basisfile_field2 = ""
+        self.basisfile_potential = ""
         
         # Clear data queue
         with self.dataqueue_field1.mutex: self.dataqueue_field1.queue.clear()
         with self.dataqueue_field2.mutex: self.dataqueue_field2.queue.clear()
-        with self.dataqueue_field12.mutex: self.dataqueue_field12.queue.clear()
         with self.dataqueue_potential.mutex: self.dataqueue_potential.queue.clear()
         
         # Parse stdout
@@ -313,10 +319,22 @@ class Worker(QtCore.QThread):
                 type = int(line[5:12].decode('utf-8'))
                 status_type = ["Field map of first atom: ", "Field map of second atom: ", "Pair potential: ", "Field maps: "][type]
                 status_progress = "construct matrices"
+                
+                if type == 3: self.samebasis = True
+                elif type == 0 or type == 1: self.samebasis = False
             
             elif line[:5] == b">>BAS":
                 basissize = int(line[5:12].decode('utf-8'))
                 status_progress = "construct matrices using {} basis vectors".format(basissize)
+            
+            elif line[:5] == b">>STA":
+                filename = line[6:-1].decode('utf-8')
+                if type == 0 or type == 3:
+                    self.basisfile_field1 = filename
+                elif type == 1:
+                    self.basisfile_field2 = filename
+                elif type == 2:
+                    self.basisfile_potential = filename
                 
             elif line[:5] == b">>TOT":
                 total = int(line[5:12].decode('utf-8'))
@@ -331,16 +349,15 @@ class Worker(QtCore.QThread):
                 status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(dim, dim, current,total)
                 
                 filenumber = int(line[5:12].decode('utf-8'))
-                filename = line[13:-1].decode('utf-8')
+                filestep = int(line[12:19].decode('utf-8'))
+                filename = line[20:-1].decode('utf-8')
                 
-                if type == 0:
-                    self.dataqueue_field1.put(filename)
+                if type == 0 or type == 3:
+                    self.dataqueue_field1.put([filestep,filename])
                 elif type == 1:
-                    self.dataqueue_field2.put(filename)
+                    self.dataqueue_field2.put([filestep,filename])
                 elif type == 2:
-                    self.dataqueue_potential.put(filename)
-                elif type == 3:
-                    self.dataqueue_field12.put(filename)
+                    self.dataqueue_potential.put([filestep,filename])
                     
             elif line[:5] == b">>END":
                 finishedgracefully = True
@@ -436,13 +453,13 @@ else:
     drawPoints = getattr(qtlib, '_ZN8QPainter10drawPointsEPK7QPointFi')
 
 class PointsItem(QtGui.QGraphicsItem):
-    def __init__(self, x=None, y=None, size=1, alpha=80):
+    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0,0,0)):
         QtGui.QGraphicsItem.__init__(self)
         self.size = size
         self.alpha = alpha
         #self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
         #self.pen.setDashPattern([1, 20, 5, 4])
-        self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,cosmetic=True)
+        self.pen = pg.mkPen(color+(self.alpha,),width=self.size,cosmetic=True)
         self.setData(x, y)
         #self.ItemIgnoresTransformations = True
         #self.setFlag(QtGui.QGraphicsItem.ItemIgnoresTransformations, True)
@@ -520,7 +537,7 @@ class DoublepositiveValidator(QtGui.QDoubleValidator):
         if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
             return (QtGui.QValidator.Invalid, s, pos)
         
-        if status[0] == QtGui.QValidator.Acceptable and float(s) < 0:
+        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
             return (QtGui.QValidator.Invalid, s, pos)
         
         return status
@@ -535,13 +552,13 @@ class DoubledeltaValidator(QtGui.QDoubleValidator):
     def validate(self, s, pos):
         status = super().validate(s, pos)
         
-        if status[0] == QtGui.QValidator.Acceptable and float(s) < 0 and float(s) != -1:
+        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0 and locale.atof(s) != -1:
             return (QtGui.QValidator.Intermediate, s, pos)
         
         return status
 
     def fixup(self, s):
-        if float(s) < 0: return "-1"
+        if locale.atof(s) < 0: return "-1"
         return "0"
 
 class DoubleValidator(QtGui.QDoubleValidator):
@@ -553,6 +570,11 @@ class DoubleValidator(QtGui.QDoubleValidator):
 
     def fixup(self, s):
         return "0"
+
+def unique_rows(a):
+    a = np.ascontiguousarray(a)
+    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
+    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -575,9 +597,9 @@ class MainWindow(QtGui.QMainWindow):
         
         self.numprocessors = max(2,multiprocessing.cpu_count())
         self.path_base = os.path.dirname(os.path.realpath(__file__))
-        self.path_workingdir = os.path.join(self.path_base,"../trunk/")
-        self.path_cpp_real = os.path.join(self.path_base,"../trunk/pairinteraction-real")
-        self.path_cpp_complex = os.path.join(self.path_base,"../trunk/pairinteraction-complex")
+        self.path_workingdir = os.path.join(self.path_base,"../calc/")
+        self.path_cpp_real = os.path.join(self.path_base,"../calc/pairinteraction-real")
+        self.path_cpp_complex = os.path.join(self.path_base,"../calc/pairinteraction-complex")
         if os.name == 'nt': self.path_out = os.path.join(os.path.expanduser('~user'), "pairinteraction/")
         else: self.path_out = os.path.join(os.path.expanduser('~'), ".pairinteraction/")
         self.path_system_last = os.path.join(self.path_out,"lastsystem.json")
@@ -589,9 +611,15 @@ class MainWindow(QtGui.QMainWindow):
         self.thread = Worker()
         self.timer = QtCore.QTimer()
         
+        self.momentumcolors = [(55,126,184),(77,175,74),(228,26,28),(152,78,163),(0,0,0),(255//5,255//5,255//5)] # s, p, d, f, other, undetermined
+        
+        self.momentummat = [None]*3
+        self.labelmat = [None]*3
+        self.labelstates = [None]*3
+        self.momentumstrings = [None]*3
+        
         # TODOs
         self.ui.groupbox_plot_lines.setEnabled(False)
-        self.ui.groupbox_plot_labels.setEnabled(False)
         self.ui.groupbox_plot_overlap.setEnabled(False)
         self.ui.lineedit_system_theta.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
@@ -784,177 +812,342 @@ class MainWindow(QtGui.QMainWindow):
         self.thread.clear()
     
     def checkForData(self):
-        # print status
+        # === print status ===
         elapsedtime = "{}".format(timedelta(seconds=int(time()-self.starttime)))
         if self.thread.message != "":
             self.ui.statusbar.showMessage(self.thread.message+", elapsed time "+elapsedtime)
         else:
             self.ui.statusbar.showMessage("Elapsed time "+elapsedtime)
     
-        # check if memory consumption is to high
+        # === check if memory consumption is to high ===
         if psutil.virtual_memory().percent > 99: # TODO: is the virtual or swap memory the problem on rqo-donkey?
             self.abortCalculation()
             QtGui.QMessageBox.critical(self, "Message", "The program has run out of memory.")
+        
+        # === process potential map ===
+        
+        # --- load basis states ---
+        
+        if self.thread.basisfile_potential != "":
+            # load basis
+            basis = np.loadtxt(self.thread.basisfile_potential)
+                        
+            # extract labels
+            nlj = basis[:,[1,2,3,5,6,7]]
+            
+            sorter = np.lexsort(nlj.T[::-1])
+            nlj = nlj[sorter]
+            diff = np.append([True],np.diff(nlj, axis=0).any(axis=1))
+            cumsum = np.cumsum(diff)[np.argsort(sorter)]
+            
+            self.labelstates_potential = nlj[diff]            
+            self.labelmat_potential = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates_potential))).tocsc() #nStates, nLabels
+            
+            self.momentumstrings_potential = [" {}".format(i) for i in np.arange(np.max(self.labelstates_potential[:,[1,4]])+1).astype(np.int)]
+            self.momentumstrings_potential[:4] = ['S','P','D','F']
+                        
+            # remove basis file from hard disk
+            os.remove(self.thread.basisfile_potential)
+                        
+            # indicate that the basis file is already processed
+            self.thread.basisfile_potential = ""
 
-        # check if there is some new data to plot
+        # --- check if there is some new data and if yes, plot it ---
+        
         if not self.thread.dataqueue_potential.empty():
         
-            # Draw hole buffer at once, at least if it is no very large
+            # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
             x = np.array([])
             y = np.array([])
             
             while not self.thread.dataqueue_potential.empty():
-                eigensystem = Eigensystem(self.thread.dataqueue_potential.get())
+                # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
+                filestep, filename = self.thread.dataqueue_potential.get()
+                eigensystem = Eigensystem(filename)
                 energies = eigensystem.energies
+                basis = eigensystem.basis
+            
+                # --- determine which basis elements are within the energy range ---
+                boolarr = np.ones(len(energies),dtype=np.bool)
+                if self.minE is not None: boolarr &= energies >= self.minE
+                if self.maxE is not None: boolarr &= energies <= self.maxE
+            
+                # cut the energies
+                energies = energies[boolarr]
+            
+                # convert the energies
+                energies *= self.converter_y
+            
+                # cut the basis
+                idxarr, = np.nonzero(boolarr)
+                transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsc()
+                basis *= transformator
                 
+                # probability to be in a certain state
+                probs = np.abs(basis).power(2) # nState, nBasis
+            
+                # --- calculate the position (x value) ---
                 if self.constDistance and not self.constEField:
                     vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_potential
                 elif self.constDistance and not self.constBField:
                     vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
+                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_potential
                 else:
-                    position = float(eigensystem.params["R"])
-                
-                if self.minE is not None: energies = energies[energies >= self.minE]
-                if self.maxE is not None: energies = energies[energies <= self.maxE]
-                                
+                    position = float(eigensystem.params["R"])*self.converter_x_potential
+            
+                # --- store data to plot several points at once ---  
                 x = np.append(x,position*np.ones_like(energies))
                 y = np.append(y,energies)
-                
-                if len(x) > 5000: break                
             
-            if len(x) > 0:
-                if self.constDistance and not self.constEField: x *= Converter.fromAU(1,Units.efield).magnitude
-                elif self.constDistance and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
-                else: x *= Converter.fromAU(1,Units.length).magnitude
-                
-                y *= Converter.fromAU(1,Units.energy).magnitude
+                # --- draw labels at the beginning of the plotting --- 
+                if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
             
-                if self.ui.groupbox_plot_points.isChecked():
-                    size = self.ui.spinbox_plot_szPoint.value()
-                    alpha = self.ui.spinbox_plot_transpPoint.value()*255
-                    curve = PointsItem(x, y, size, alpha)
+                    # probability to find a label inside a basis element
+                    labelprob = probs.T*self.labelmat_potential #nBasis, nLabels
+                
+                    # total probability to find a label
+                    cumprob = np.array(labelprob.sum(axis=0).flat)
+                    boolarr = cumprob > 0.1
+                
+                    # normalize in such a way that the total probability is always one
+                    idxarr, = np.nonzero(boolarr)
+                    normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(labelprob.shape[1], len(idxarr))).tocsc()
+                
+                    # store the energetic expectation value of the labels
+                    labelenergies = ((labelprob*normalizer).T*energies)
+                
+                    # store the position of the labels
+                    labelposition = position
+
+                    # get size and alpha value of labels
+                    size = '{}'.format(max(int(round(self.ui.spinbox_plot_szLabel.value()*11)),1))
+                    alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
+                
+                    # draw the labels
+                    for labelstate, labelenergy in zip(self.labelstates_potential[boolarr],labelenergies):
+                        sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
+
+                        text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);">'\
+                            +'{}{}<sub style="font-size: '.format(int(sn1),self.momentumstrings_potential[int(sl1)]) \
+                            +size+'pt;">{}/2</sub>'.format(int(2*sj1))\
+                            +' {}{}<sub style="font-size: '.format(int(sn2),self.momentumstrings_potential[int(sl2)]) \
+                            +size+'pt;">{}/2</sub>'.format(int(2*sj2))\
+                            +'</span></div>',anchor=(1, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255)) # TODO anchor dependent on start < end !!!!!!!!!!!!!!!!!!!
+                        text.setPos(labelposition, labelenergy)
+                        text.setZValue(15)
+                        self.ui.graphicsview_potential_plot.addItem(text)
+
+                    curve = PointsItem(labelposition*np.ones_like(labelenergies), labelenergies, 0, 0, (0,0,0))
+                    curve.setZValue(5)
                     self.ui.graphicsview_potential_plot.addItem(curve)
                 
-                self.ui.graphicsview_potential_plot.repaint()
-        
-        # check if there is some new data to plot
-        if not self.thread.dataqueue_field1.empty():
-        
-            # Draw hole buffer at once, at least if it is no very large
-            x = np.array([])
-            y = np.array([])
+                    # break since drawing labels already take some time
+                    break
             
-            while not self.thread.dataqueue_field1.empty():
-                eigensystem = Eigensystem(self.thread.dataqueue_field1.get())
-                energies = eigensystem.energies
-                if self.constEField and not self.constBField:
-                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                else:
-                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                
-                if self.minE is not None: energies = energies[energies >= self.minE]
-                if self.maxE is not None: energies = energies[energies <= self.maxE]
-                
-                x = np.append(x,position*np.ones_like(energies))
-                y = np.append(y,energies)
-                
+                # --- break if enough points are collected --- 
                 if len(x) > 5000: break                
+        
+            # --- plot the stored data ---
+            if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
+        
+                # get size and alpha value of points
+                size = self.ui.spinbox_plot_szPoint.value()
+                alpha = self.ui.spinbox_plot_transpPoint.value()*255
+                
+                # plot the basis elements
+                curve = PointsItem(x, y, size, alpha, (0,0,0))
+                curve.setZValue(10)
+                self.ui.graphicsview_potential_plot.addItem(curve)
+        
+            # --- update the graphics view ---
+            self.ui.graphicsview_potential_plot.repaint()
+        
+        # === process field maps ===
+             
+        for idx in range(2):
+        
+            dataqueue = [self.thread.dataqueue_field1, self.thread.dataqueue_field2][idx]
+            basisfile = [self.thread.basisfile_field1, self.thread.basisfile_field2][idx]
+            graphicsview_plot = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]
             
-            if len(x) > 0:
-                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
-                else: x *= Converter.fromAU(1,Units.efield).magnitude
-                y *= Converter.fromAU(1,Units.energy).magnitude
+            # --- load basis states ---
             
-                if self.ui.groupbox_plot_points.isChecked():
+            if basisfile != "":
+                # load basis
+                basis = np.loadtxt(basisfile)
+            
+                # calculate a matrix that can be used to determine the momenta inside a basis element 
+                momentum = basis[:,2]
+                self.momentummat[idx] = sparse.csc_matrix((momentum[:,None] == np.arange(np.max(momentum)+1)[None,:]).astype(int))
+
+                # extract labels
+                nlj = basis[:,[1,2,3]]
+                
+                sorter = np.lexsort(nlj.T[::-1])
+                nlj = nlj[sorter]
+                diff = np.append([True],np.diff(nlj, axis=0).any(axis=1))
+                cumsum = np.cumsum(diff)[np.argsort(sorter)]
+            
+                self.labelstates[idx] = nlj[diff]            
+                self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates[idx]))).tocsc() #nStates, nLabels
+                #self.labelstates[idx] = unique_rows(nlj)
+                #self.labelmat[idx] = sparse.csc_matrix((nlj[:,None,:] == self.labelstates[idx][None,:,:]).all(axis=-1).astype(int)) #nStates, nLabels
+            
+                self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(np.max(self.labelstates[idx][:,1])+1).astype(np.int)]
+                self.momentumstrings[idx][:4] = ['S','P','D','F']  
+            
+                # remove basis file from hard disk
+                os.remove(basisfile)
+            
+                # indicate that the basis file is already processed
+                if idx == 0: self.thread.basisfile_field1 = ""
+                elif idx == 1: self.thread.basisfile_field2 = ""
+                
+            
+            # --- check if there is some new data and if yes, plot it ---
+            
+            if not dataqueue.empty():
+            
+                # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
+                x = np.array([])
+                y = np.array([])
+                l = np.array([])
+            
+                while not dataqueue.empty():
+                    # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
+                    filestep, filename = dataqueue.get()
+                    eigensystem = Eigensystem(filename)
+                    energies = eigensystem.energies
+                    basis = eigensystem.basis
+                
+                    # --- determine which basis elements are within the energy range ---
+                    boolarr = np.ones(len(energies),dtype=np.bool)
+                    if self.minE is not None: boolarr &= energies >= self.minE
+                    if self.maxE is not None: boolarr &= energies <= self.maxE
+                
+                    # cut the energies
+                    energies = energies[boolarr]
+                
+                    # convert the energies
+                    energies *= self.converter_y
+                
+                    # cut the basis
+                    idxarr, = np.nonzero(boolarr)
+                    transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsc()
+                    basis *= transformator
+                    
+                    # probability to be in a certain state
+                    probs = np.abs(basis).power(2) # nState, nBasis
+                    
+                    # --- calculate the momentum that is associated with a basis element ---
+                    # calculate which momenta appear in a basis element
+                    momentum_probabilty = probs.T*self.momentummat[idx] # nBasis, nMomentum
+                
+                    # keep information about the momentum that appears with a probability > 0.5 only
+                    momentum_probabilty.data[:] *= momentum_probabilty.data>0.5
+                    momentum_probabilty.eliminate_zeros()
+                    momentum_probabilty = sparse.coo_matrix(momentum_probabilty)
+                
+                    # store the value of this momentum
+                    momentum = -np.ones(momentum_probabilty.shape[0],dtype=np.int) # -1 means no determinable momentum
+                    momentum[momentum_probabilty.row] = momentum_probabilty.col
+                
+                    # --- calculate the position (x value) ---                
+                    if self.constEField and not self.constBField:
+                        vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                        position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_field
+                    else:
+                        vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                        position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_field
+                
+                    # --- store data to plot several points at once ---  
+                    x = np.append(x,position*np.ones_like(energies))
+                    y = np.append(y,energies)
+                    l = np.append(l,momentum)
+                
+                    # --- draw labels at the beginning of the plotting --- 
+                    if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
+                
+                        # probability to find a label inside a basis element
+                        labelprob = probs.T*self.labelmat[idx] #nBasis, nLabels
+                    
+                        # total probability to find a label
+                        cumprob = np.array(labelprob.sum(axis=0).flat)
+                        boolarr = cumprob > 0.1
+                    
+                        # normalize in such a way that the total probability is always one
+                        idxarr, = np.nonzero(boolarr)
+                        normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(labelprob.shape[1], len(idxarr))).tocsc()
+                    
+                        # store the energetic expectation value of the labels
+                        labelenergies = ((labelprob*normalizer).T*energies)
+                    
+                        # store the position of the labels
+                        labelposition = position
+
+                        # get size and alpha value of labels
+                        size = '{}'.format(max(int(round(self.ui.spinbox_plot_szLabel.value()*11)),1))
+                        alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
+                    
+                        # draw the labels
+                        for labelstate, labelenergy in zip(self.labelstates[idx][boolarr],labelenergies):
+                            sn, sl, sj = labelstate
+                            
+                            for j in range(2):
+                                if not self.thread.samebasis and j != idx: continue
+                                text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;">'\
+                                    +'<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(int(sn),self.momentumstrings[idx][int(sl)]) \
+                                    +size+'pt;">{}/2</sub></span></div>'.format(int(2*sj)),anchor=(0, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255)) # TODO anchor dependent on start < end !!!!!!!!!!!!!!!!!!!
+                                text.setPos(labelposition, labelenergy)
+                                text.setZValue(15)
+                                graphicsview_plot[j].addItem(text)
+                            
+                        for j in range(2):
+                            if not self.thread.samebasis and j != idx: continue
+                            curve = PointsItem(labelposition*np.ones_like(labelenergies), labelenergies, 0, 0, (0,0,0))
+                            curve.setZValue(5)
+                            graphicsview_plot[j].addItem(curve)
+                    
+                        # break since drawing labels already take some time
+                        break
+                
+                    # --- break if enough points are collected --- 
+                    if len(x) > 5000: break                
+            
+                # --- plot the stored data ---
+                if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
+            
+                    # get size and alpha value of points
                     size = self.ui.spinbox_plot_szPoint.value()
                     alpha = self.ui.spinbox_plot_transpPoint.value()*255
-                    curve = PointsItem(x, y, size, alpha)
-                    self.ui.graphicsview_field1_plot.addItem(curve)
                 
-                self.ui.graphicsview_field1_plot.repaint()
+                    # cut the momenta to reasonable values
+                    l[l>len(self.momentumcolors)-2] = len(self.momentumcolors)-2
+                    l[l<0] = len(self.momentumcolors)-1
+                
+                    # loop over momenta
+                    for i in range(len(self.momentumcolors)):
+                        # determine which basis elements have the current momentum
+                        boolarr = l == i
+                        if (np.sum(boolarr) == 0): continue
+                    
+                        # determine the associated color
+                        color = self.momentumcolors[i]
+                    
+                        # plot the basis elements
+                        for j in range(2):
+                            if not self.thread.samebasis and j != idx: continue
+                            curve = PointsItem(x[boolarr], y[boolarr], size, alpha, color)
+                            curve.setZValue(10)
+                            graphicsview_plot[j].addItem(curve)
+            
+                # --- update the graphics view ---
+                for j in range(2):
+                    if not self.thread.samebasis and j != idx: continue
+                    graphicsview_plot[j].repaint()
         
-        # check if there is some new data to plot
-        if not self.thread.dataqueue_field2.empty():
-        
-            # Draw hole buffer at once, at least if it is no very large
-            x = np.array([])
-            y = np.array([])
-            
-            while not self.thread.dataqueue_field2.empty():
-                eigensystem = Eigensystem(self.thread.dataqueue_field2.get())
-                energies = eigensystem.energies
-                if self.constEField and not self.constBField:
-                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                else:
-                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                
-                if self.minE is not None: energies = energies[energies >= self.minE]
-                if self.maxE is not None: energies = energies[energies <= self.maxE]
-                
-                x = np.append(x,position*np.ones_like(energies))
-                y = np.append(y,energies)
-                
-                if len(x) > 5000: break                
-            
-            if len(x) > 0:
-                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
-                else: x *= Converter.fromAU(1,Units.efield).magnitude
-                y *= Converter.fromAU(1,Units.energy).magnitude
-            
-                if self.ui.groupbox_plot_points.isChecked():
-                    size = self.ui.spinbox_plot_szPoint.value()
-                    alpha = self.ui.spinbox_plot_transpPoint.value()*255
-                    curve = PointsItem(x, y, size, alpha)
-                    self.ui.graphicsview_field2_plot.addItem(curve)
-                
-                self.ui.graphicsview_field2_plot.repaint()
-        
-        # check if there is some new data to plot
-        if not self.thread.dataqueue_field12.empty():
-        
-            # Draw hole buffer at once, at least if it is no very large
-            x = np.array([])
-            y = np.array([])
-            
-            while not self.thread.dataqueue_field12.empty():
-                eigensystem = Eigensystem(self.thread.dataqueue_field12.get())
-                energies = eigensystem.energies
-                if self.constEField and not self.constBField:
-                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                else:
-                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)  # TODO
-                
-                if self.minE is not None: energies = energies[energies >= self.minE]
-                if self.maxE is not None: energies = energies[energies <= self.maxE]
-                
-                x = np.append(x,position*np.ones_like(energies))
-                y = np.append(y,energies)
-                
-                if len(x) > 5000: break                
-            
-            if len(x) > 0:
-                if self.constEField and not self.constBField: x *= Converter.fromAU(1,Units.bfield).magnitude
-                else: x *= Converter.fromAU(1,Units.efield).magnitude
-                y *= Converter.fromAU(1,Units.energy).magnitude
-            
-                if self.ui.groupbox_plot_points.isChecked():
-                    size = self.ui.spinbox_plot_szPoint.value()
-                    alpha = self.ui.spinbox_plot_transpPoint.value()*255
-                    curve1 = PointsItem(x, y, size, alpha)
-                    curve2 = PointsItem(x, y, size, alpha)
-                    self.ui.graphicsview_field1_plot.addItem(curve1)
-                    self.ui.graphicsview_field2_plot.addItem(curve2)
-                
-                self.ui.graphicsview_field1_plot.repaint()
-                self.ui.graphicsview_field2_plot.repaint()
+
             
             
             
@@ -962,7 +1155,6 @@ class MainWindow(QtGui.QMainWindow):
             
             #Converter.fromAU(1,'gauss').magnitude
             #Converter.fromAU(1,'volt/centimeter').magnitude
-            
             
         
             #self.ui.graphicsview_potential_plot.clear()
@@ -974,7 +1166,6 @@ class MainWindow(QtGui.QMainWindow):
             """curve = gl.GLScatterPlotItem(pos=np.transpose([x,y,np.zeros_like(x)]))"""
             
             
-            
             # TODO lines
             #self.ui.graphicsview_potential_plot.plot(x,y)
         
@@ -983,10 +1174,12 @@ class MainWindow(QtGui.QMainWindow):
             #self.ui.graphicsview_potential_plot.repaint()
         
             #self.ui.graphicsview_potential_plot.plot(eigensystem.energies)
+            
+        
+        # === terminate thread ===
         
         # check if thread has finished
-        if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_field12.empty() and self.thread.dataqueue_potential.empty():
-        
+        if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_potential.empty():
             
             """c6 = 0.008750183201815791 # 40
             c6 = 0.009304149469320561 # 39
@@ -1034,9 +1227,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.senderbutton.setText("Calculate field map of atom 2")
             if self.ui.pushbutton_potential_calc == self.senderbutton:
                 self.senderbutton.setText("Calculate pair potential")
-            
-            
-            
+
             # Reset status bar
             self.ui.statusbar.showMessage('')
     
@@ -1189,19 +1380,35 @@ class MainWindow(QtGui.QMainWindow):
                 if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field1_plot.clear()
                     self.ui.graphicsview_field1_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constEField and not self.constBField: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                    else: self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                    if self.constEField and not self.constBField:
+                        self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                        self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
+                    else:
+                        self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                        self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
                 if self.senderbutton in [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field2_plot.clear()
                     self.ui.graphicsview_field2_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constEField and not self.constBField: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                    else: self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                    if self.constEField and not self.constBField:
+                        self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                        self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
+                    else:
+                        self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                        self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
                     self.ui.graphicsview_potential_plot.clear()
                     self.ui.graphicsview_potential_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constDistance and not self.constEField: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                    elif self.constDistance and not self.constBField: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                    else: self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+                    if self.constDistance and not self.constEField:
+                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                        self.converter_x_potential = Converter.fromAU(1,Units.efield).magnitude
+                    elif self.constDistance and not self.constBField:
+                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                        self.converter_x_potential = Converter.fromAU(1,Units.bfield).magnitude
+                    else:
+                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+                        self.converter_x_potential = Converter.fromAU(1,Units.length).magnitude
+                        
+                self.converter_y = Converter.fromAU(1,Units.energy).magnitude 
                     
                 # Set limits
                 self.minE = self.plotdict["minE"]

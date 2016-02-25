@@ -108,6 +108,6 @@ target_link_libraries(pairinteraction-complex wignerSymbols)
 
 # CPack
 
-install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/trunk)
-install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/trunk)
-install(FILES databases/quantum_defects.db DESTINATION share/pairinteraction/trunk)
+install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
+install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
+install(FILES databases/quantum_defects.db DESTINATION share/pairinteraction/calc)

@@ -9,7 +9,7 @@ bool selectionRulesDipole(StateOne state1, StateOne state2, int q) {
 }
 
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
-    return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1) && (state1.n == state2.n);
+    return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
 }
 
 size_t findidx(std::vector<real_t> x, real_t d) {
@@ -41,9 +41,13 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     // create cache tables if necessary
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_nlj ("
+    db.exec("CREATE TABLE IF NOT EXISTS cache_nlj_k ("
             "species text, k integer, n1 integer, l1 integer, j1 double,"
             "n2 integer, l2 integer, j2 double, value double, UNIQUE (species, k, n1, l1, j1, n2, l2, j2));");
+
+    db.exec("CREATE TABLE IF NOT EXISTS cache_nlj_0 ("
+            "species text, n1 integer, l1 integer, j1 double,"
+            "n2 integer, l2 integer, j2 double, value double, UNIQUE (species, n1, l1, j1, n2, l2, j2));");
 
     db.exec("CREATE TABLE IF NOT EXISTS cache_lj_s ("
             "species text, k integer, l1 integer, j1 double,"
@@ -61,7 +65,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     // determine elements
 
-    db.exec("CREATE TEMPORARY TABLE tmp_nlj ("
+    db.exec("CREATE TEMPORARY TABLE tmp_nlj_k ("
+            "n1 integer, l1 integer, j1 double,"
+            "n2 integer, l2 integer, j2 double);");
+
+    db.exec("CREATE TEMPORARY TABLE tmp_nlj_0 ("
             "n1 integer, l1 integer, j1 double,"
             "n2 integer, l2 integer, j2 double);");
 
@@ -100,18 +108,18 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if ((exist_d_0 || exist_d_p || exist_d_m) && (abs(state_row.l-state_col.l) == 1)) {
                     state = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
-                    auto result_nlj = element_nlj.insert({state, std::numeric_limits<real_t>::max()});
+                    auto result_nlj_k = element_nlj_k.insert({state, std::numeric_limits<real_t>::max()});
 
-                    if (result_nlj.second) {
+                    if (result_nlj_k.second) {
                         ss.str(std::string());
-                        ss << "insert into tmp_nlj (n1,l1,j1,n2,l2,j2) values ("
+                        ss << "insert into tmp_nlj_k (n1,l1,j1,n2,l2,j2) values ("
                            << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                            << state.n[1] << "," << state.l[1] << "," << state.j[1] << ");";
                         db.exec(ss.str());
                     }
                 }
 
-                if ((exist_m_0 || exist_m_p || exist_m_m) && (state_row.l == state_col.l) && (state_row.n == state_col.n) ) {
+                if ((exist_m_0 || exist_m_p || exist_m_m) && (state_row.l == state_col.l)) {
                     state = StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
                     auto result_lj = element_lj_s.insert({state, std::numeric_limits<real_t>::max()});
 
@@ -120,6 +128,17 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_lj_s (l1,j1,l2,j2) values ("
                            << state.l[0] << "," << state.j[0] << ","
                            << state.l[1] << "," << state.j[1] << ");";
+                        db.exec(ss.str());
+                    }
+
+                    state = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
+                    auto result_nlj_0 = element_nlj_0.insert({state, std::numeric_limits<real_t>::max()});
+
+                    if (result_nlj_0.second) {
+                        ss.str(std::string());
+                        ss << "insert into tmp_nlj_0 (n1,l1,j1,n2,l2,j2) values ("
+                           << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
+                           << state.n[1] << "," << state.l[1] << "," << state.j[1] << ");";
                         db.exec(ss.str());
                     }
                 }
@@ -158,13 +177,13 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (exist_d_0 || exist_d_p || exist_d_m) {
         ss.str(std::string());
-        ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj c INNER JOIN tmp_nlj t ON ("
+        ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj_k c INNER JOIN tmp_nlj_k t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
-        SQLite3Result result_nlj = db.query(ss.str());
-        for (auto r : result_nlj) {
+        SQLite3Result result_nlj_k = db.query(ss.str());
+        for (auto r : result_nlj_k) {
             *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
-            element_nlj[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            element_nlj_k[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -177,6 +196,16 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         for (auto r : result_lj_s) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
             element_lj_s[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+        }
+
+        ss.str(std::string());
+        ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj_0 c INNER JOIN tmp_nlj_0 t ON ("
+           << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
+           << "WHERE c.species = '" << species << "';";
+        SQLite3Result result_nlj_0 = db.query(ss.str());
+        for (auto r : result_nlj_0) {
+            *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
+            element_nlj_0[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -200,12 +229,22 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         element_jm[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
     }
 
+    /*std::cout << "Same n" << std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 50, 0, 0.5)<< std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 50, 0, 1.5)<< std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 50, 1, 0.5)<< std::endl;
+
+    std::cout << "Different n" << std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 51, 0, 0.5)<< std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 51, 0, 1.5)<< std::endl;
+    std::cout << calcRadialElement(species, 50, 0, 0.5, 0, 51, 1, 0.5)<< std::endl;*/
+
     // calculate missing elements and write them to the database
 
     db.exec("begin transaction;");
 
     if (exist_d_0 || exist_d_p || exist_d_m) {
-        for (auto &element : element_nlj) {
+        for (auto &element : element_nlj_k) {
             if (element.second == std::numeric_limits<real_t>::max()) {
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
@@ -213,7 +252,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
 
                 ss.str(std::string());
-                ss << "insert into cache_nlj (species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
                    << "'" << species << "'" << "," << k << ","
                    << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
                    << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
@@ -238,6 +277,23 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << "'" << species << "'" << "," << k << ","
                    << element.first.l[0] << "," << element.first.j[0] << ","
                    << element.first.l[1] << "," << element.first.j[1] << ","
+                   << element.second << ");";
+                db.exec(ss.str());
+            }
+        }
+
+        for (auto &element : element_nlj_0) {
+            if (element.second == std::numeric_limits<real_t>::max()) {
+                int lmax = fmax(element.first.l[0],element.first.l[1]);
+
+                element.second =
+                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
+
+                ss.str(std::string());
+                ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
+                   << "'" << species << "'" << ","
+                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
                    << element.second << ");";
                 db.exec(ss.str());
             }
@@ -316,7 +372,7 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) *
-            element_nlj[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+            element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
             element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
 
@@ -331,6 +387,7 @@ real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
             sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)));*/
 
     return pow(-1, state_row.j-state_row.m) * muB *
+            element_nlj_0[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
             (gL*element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) * pow(-1, 0.5+state_col.l+state_row.j) +

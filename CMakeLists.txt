@@ -15,7 +15,7 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 # file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
 
 add_subdirectory(gui)
-add_subdirectory(trunk)
+add_subdirectory(calc)
 
 # CPack
 if(WIN32)

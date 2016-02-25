@@ -10,6 +10,8 @@
 #include <set>
 #include <unordered_set>
 #include <memory>
+#include <string>
+#include <fstream>
 
 template<class T> class Basisnames {
 public:
@@ -73,6 +75,7 @@ public:
     const std::vector<StateOne>& initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &is_necessary);
     bool constructedFromFirst();
+    void save(std::string path);
 private:
     BasisnamesOne();
     void build(StateOne startstate, std::string species);
@@ -91,6 +94,7 @@ public:
     BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1);
     const StateTwo& initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &isNecessary);
+    void save(std::string path);
 protected:
     void build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);
 private:

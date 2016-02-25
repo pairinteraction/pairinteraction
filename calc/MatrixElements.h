@@ -29,7 +29,8 @@ private:
     std::string species;
     int k;
     std::string dbname;
-    std::unordered_map<StateTwo,real_t> element_nlj;
+    std::unordered_map<StateTwo,real_t> element_nlj_k;
+    std::unordered_map<StateTwo,real_t> element_nlj_0;
     std::unordered_map<StateTwo,real_t> element_nlj_m;
     std::unordered_map<StateTwo,real_t> element_lj_s;
     std::unordered_map<StateTwo,real_t> element_lj_l;

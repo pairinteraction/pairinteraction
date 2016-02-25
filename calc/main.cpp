@@ -985,13 +985,14 @@ protected:
     }
 
     void doPostwork(size_t numWork) {
-        std::cout << ">>OUT" << std::setw(7) << numWork+1 << " " << matrix_path[numWork] << std::endl;
+        std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step[numWork] << " " << matrix_path[numWork] << std::endl;
     }
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag; // TODO figure out whether the same pointers as in matrix
     std::vector<std::shared_ptr<Configuration>> params;
     std::vector<std::string> matrix_path;
+    std::vector<size_t> matrix_step;
     std::vector<size_t> matrix_dimension;
 };
 
@@ -1137,6 +1138,21 @@ protected:
 
             std::cout << ">>BAS" << std::setw(7) << basis_one->size() << std::endl;
 
+            // initialize uuid generator
+            boost::uuids::random_generator generator;
+
+            // generate uuid
+            std::string uuid;
+            boost::uuids::uuid u = generator();
+            boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+
+            // save basis
+            boost::filesystem::path path_basis = "/tmp";
+            path_basis /= "basis_one_"+uuid+".csv";
+            basis_one->save(path_basis.string());
+
+            std::cout << ">>STA " << path_basis.string() << std::endl;
+
             // --- precalculate matrix elements ---
             MatrixElements matrix_elements(species, 1, (path_out / "cache_elements.db").string());
 
@@ -1265,9 +1281,6 @@ protected:
             }
             SQLite3 db(path_db.string());
 
-            // initialize uuid generator
-            boost::uuids::random_generator generator;
-
             // loop through steps
             for (size_t step = 0; step < nSteps; ++step) {
                 real_t normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
@@ -1392,6 +1405,7 @@ protected:
                 matrix.push_back(std::move(mat));
                 params.push_back(std::move(par));
                 matrix_path.push_back(path.string());
+                matrix_step.push_back(step);
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
             }
 
@@ -1703,6 +1717,21 @@ public:
 
             std::cout << ">>BAS" << std::setw(7) << basis_two_used->size() << std::endl;
 
+            // initialize uuid generator
+            boost::uuids::random_generator generator;
+
+            // generate uuid
+            std::string uuid;
+            boost::uuids::uuid u = generator();
+            boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+
+            // save basis
+            boost::filesystem::path path_basis = "/tmp";
+            path_basis /= "basis_two_"+uuid+".csv";
+            basis_two->save(path_basis.string());
+
+            std::cout << ">>STA " << path_basis.string() << std::endl;
+
             std::cout << 0.3 << std::endl;
 
             // --- precalculate matrix elements ---
@@ -1894,9 +1923,6 @@ public:
             }
             SQLite3 db(path_db.string());
 
-            // initialize uuid generator
-            boost::uuids::random_generator generator;
-
             // initialize variables
             Configuration conf;
             size_t step_one = 0;
@@ -2076,6 +2102,7 @@ public:
                         mat->addIsExisting(is_existing);
                         params.push_back(std::make_shared<Configuration>(conf)); // TODO
                         matrix_path.push_back(path.string());
+                        matrix_step.push_back(step_two);
                         matrix_dimension.push_back(mat->num_basisvectors());
                         matrix.push_back(std::move(mat));
 
