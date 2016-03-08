@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
+
+
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
 from PyQt4 import QtCore, QtGui
 from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py or py3uic4 plotter.ui > plotter.py
 import pyqtgraph as pg
-
+import numpy as np
 import collections
 from abc import ABCMeta, abstractmethod
 from time import sleep, time
@@ -16,7 +18,6 @@ import json
 import os
 import multiprocessing
 import subprocess
-import numpy as np
 from scipy import sparse
 import signal
 from queue import Queue
@@ -24,6 +25,8 @@ import ctypes
 import sip
 from scipy import constants
 import psutil
+from scipy.ndimage.filters import gaussian_filter
+from palettable import cubehelix
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -35,7 +38,23 @@ locale.setlocale(locale.LC_NUMERIC, '') # TODO auf Englisch umstellen, auch in d
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
-pg.setConfigOptions(antialias=True)
+#pg.setConfigOptions(antialias=True)  # TODO !!!!!!!
+
+
+# ----- Returns a normalized image -----
+
+def normscale(data, cmin=None, cmax=None):
+    if cmin is None:
+        cmin = np.nanmin(data)
+    if cmax is None:
+        cmax = np.nanmax(data)
+    return (data-cmin)/(cmax-cmin or 1)
+
+# ----- Returns a byte-scaled image -----
+
+def bytescale(data, cmin=None, cmax=None, high=255, low=0):
+    return (normscale(data,cmin,cmax)*(high - low + 0.9999) + low).astype(int)
+
 
 class Converter:
     converter = dict()
@@ -350,14 +369,15 @@ class Worker(QtCore.QThread):
                 
                 filenumber = int(line[5:12].decode('utf-8'))
                 filestep = int(line[12:19].decode('utf-8'))
-                filename = line[20:-1].decode('utf-8')
+                blocknumber = int(line[19:26].decode('utf-8'))
+                filename = line[27:-1].decode('utf-8')
                 
                 if type == 0 or type == 3:
-                    self.dataqueue_field1.put([filestep,filename])
+                    self.dataqueue_field1.put([filestep,blocknumber,filename])
                 elif type == 1:
-                    self.dataqueue_field2.put([filestep,filename])
+                    self.dataqueue_field2.put([filestep,blocknumber,filename])
                 elif type == 2:
-                    self.dataqueue_potential.put([filestep,filename])
+                    self.dataqueue_potential.put([filestep,blocknumber,filename])
                     
             elif line[:5] == b">>END":
                 finishedgracefully = True
@@ -495,13 +515,15 @@ class PointsItem(QtGui.QGraphicsItem):
 
 # https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
 class MultiLine(pg.QtGui.QGraphicsPathItem):
-    def __init__(self, x, y):
+    def __init__(self, x, y, size=1, alpha=80, color=(0,0,0)):
         """x and y are 2D arrays of shape (Nplots, Nsamples)"""
-        connect = np.ones(x.shape, dtype=bool)
-        connect[:,-1] = 0 # don't draw the segment between each trace
-        self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connect.flatten())
+        connections = np.ones(x.shape, dtype=bool)
+        connections[:,-1] = 0 # don't draw the segment between each trace
+        
+        self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connections.flatten())
         pg.QtGui.QGraphicsPathItem.__init__(self, self.path)
-        self.setPen(pg.mkPen((0,0,0,50),width=1))
+        pen = pg.mkPen(color+(alpha,),width=size,cosmetic=True)
+        self.setPen(pen)
     def shape(self): # override because QGraphicsPathItem.shape is too expensive.
         return pg.QtGui.QGraphicsItem.shape(self)
     def boundingRect(self):
@@ -537,7 +559,7 @@ class DoublepositiveValidator(QtGui.QDoubleValidator):
         if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
             return (QtGui.QValidator.Invalid, s, pos)
         
-        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
+        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0: # TODO atof soll auch mit englischem Zahlenformat umgehen koennen
             return (QtGui.QValidator.Invalid, s, pos)
         
         return status
@@ -579,6 +601,27 @@ def unique_rows(a):
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
+        
+        del pg.graphicsItems.GradientEditorItem.Gradients['greyclip']
+        del pg.graphicsItems.GradientEditorItem.Gradients['grey']
+        del pg.graphicsItems.GradientEditorItem.Gradients['cyclic']
+        del pg.graphicsItems.GradientEditorItem.Gradients['spectrum']
+        del pg.graphicsItems.GradientEditorItem.Gradients['bipolar']
+        
+        
+        color = cubehelix.Cubehelix.make(sat=1.8,n=7,rotation=1.21,start=1.2,reverse=True).colors[::-1]
+        color = np.append(color, [[255]]*len(color), axis=1).astype(np.ubyte)
+        pos = np.linspace(0,1,len(color))
+        pg.graphicsItems.GradientEditorItem.Gradients['cubehelix1'] = {'mode':'rgb', 'ticks':[(p, tuple(c)) for c, p in zip(color,pos)]}
+        
+        
+        color = cubehelix.Cubehelix.make(sat=1.5,n=7,rotation=-1.0,start=0.9,reverse=True).colors[::-1]
+        color = np.append(color, [[255]]*len(color), axis=1).astype(np.ubyte)
+        pos = np.linspace(0,1,len(color))
+        pg.graphicsItems.GradientEditorItem.Gradients['cubehelix2'] = {'mode':'rgb', 'ticks':[(p, tuple(c)) for c, p in zip(color,pos)]}
+        
+        
+        
         self.ui = Ui_plotwindow()
         self.ui.setupUi(self)
         
@@ -613,14 +656,55 @@ class MainWindow(QtGui.QMainWindow):
         
         self.momentumcolors = [(55,126,184),(77,175,74),(228,26,28),(152,78,163),(0,0,0),(255//5,255//5,255//5)] # s, p, d, f, other, undetermined
         
-        self.momentummat = [None]*3
-        self.labelmat = [None]*3
-        self.labelstates = [None]*3
-        self.momentumstrings = [None]*3
+        self.momentummat = [None]*2
+        self.labelmat = [None]*2
+        self.labelstates = [None]*2
+        self.momentumstrings = [None]*2
+        
+        self.buffer_basis = [{}]*2
+        self.buffer_energies = [{}]*2
+        self.buffer_positions = [{}]*2
+        self.buffer_boolarr = [{}]*2
+        self.buffer_basis_potential = {}
+        self.buffer_energies_potential = {}
+        self.buffer_positions_potential = {}
+        
+        self.buffer_energiesMap = [{}]*2
+        self.buffer_positionsMap = [{}]*2
+        self.buffer_energiesMap_potential = {}
+        self.buffer_positionsMap_potential = {}
+        self.buffer_overlapMap_potential = {}
+        
+
+        
+        
+        #clrmp = pg.ColorMap(pos,color)
+        #self.lut = clrmp.getLookupTable()
+        
+        if True:
+        
+            self.ui.gradientwidget_plot_gradient.setOrientation("top")
+            self.ui.gradientwidget_plot_gradient.loadPreset('cubehelix1')
+            
+            
+            
+            
+            #self.ui.gradientwidget_plot_gradient.updateGradient()
+            
+            
+            #('grey', {'ticks': [(0.0, (0, 0, 0, 255)), (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}),
+            
+            #self.ui.gradientwidget_plot_gradient.restoreState(state)
+            
+            
+            
+            #self.hist.setImageItem(img)
+            #self.hist.setHistogramRange(0,1)
+                            
+            #self.gradient.updateGradient()
+                            
         
         # TODOs
-        self.ui.groupbox_plot_lines.setEnabled(False)
-        self.ui.groupbox_plot_overlap.setEnabled(False)
         self.ui.lineedit_system_theta.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
         self.ui.pushbutton_field1_save.setEnabled(False)
@@ -628,9 +712,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pushbutton_potential_save.setEnabled(False)
         self.ui.checkbox_system_dq.setEnabled(False)
         self.ui.checkbox_system_qq.setEnabled(False)
-        self.ui.lineedit_system_deltaESingle.setStatusTip('A value of -1 means that there are no restrictions for single atom energies.')
-        self.ui.lineedit_system_deltaEPair.setStatusTip('A value of -1 means that there are no restrictions for pair energies.')
-        self.ui.radiobutton_system_pairbasisDefined.setText("use the restrictions below")
         
         # Create directories
         if not os.path.exists(self.path_out):
@@ -764,11 +845,13 @@ class MainWindow(QtGui.QMainWindow):
         self.constDistance = self.getConstDistance()
         self.constEField = self.getConstEField()
         self.constBField = self.getConstBField()
+        #self.sameSpecies = self.getSameSpecies()
         
         for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
             plotarea.setDownsampling(ds=True, auto=True, mode='peak')
             plotarea.setClipToView(True)
             plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
+            #plotarea.setAntialiasing(True) # TODO !!!!!!!
         
         if self.constEField and not self.constBField:
             for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -786,6 +869,10 @@ class MainWindow(QtGui.QMainWindow):
         super().resizeEvent(event)
         if sys.platform == "darwin": QtGui.QApplication.processEvents() # hack to circumvent the no-redraw-after-resizing-bug
     
+    def get1DPosition(self, x, y, z):
+        vec = np.array([x,y,z])
+        return np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)
+        
     def getConstEField(self):
         minVec = np.array([self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude])
         maxVec = np.array([self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude])
@@ -800,6 +887,9 @@ class MainWindow(QtGui.QMainWindow):
         minR = self.systemdict['minR'].magnitude # TODO
         maxR = self.systemdict['maxR'].magnitude # TODO
         return minR == maxR
+    
+    #def getSameSpecies(self):
+    #    return self.systemdict['species1'] == self.systemdict['species2']
         
     def abortCalculation(self):
         # kill c++ process - this terminates the self.thread, too
@@ -812,6 +902,8 @@ class MainWindow(QtGui.QMainWindow):
         self.thread.clear()
     
     def checkForData(self):
+        dataamount = 0
+    
         # === print status ===
         elapsedtime = "{}".format(timedelta(seconds=int(time()-self.starttime)))
         if self.thread.message != "":
@@ -831,18 +923,41 @@ class MainWindow(QtGui.QMainWindow):
         if self.thread.basisfile_potential != "":
             # load basis
             basis = np.loadtxt(self.thread.basisfile_potential)
+            
+            if self.ui.groupbox_plot_overlap.isChecked():
+                self.stateidx_potential = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]] == self.overlapstate[None,:],axis=-1))[0]
+                if len(self.stateidx_potential) == 0: self.stateidx_potential =  -1
+                else: self.stateidx_potential = self.stateidx_potential[0]
+                
+                self.displayunits2pixelunits_x = np.nan
+                self.displayunits2pixelunits_y = np.nan
                         
             # extract labels
             nlj = basis[:,[1,2,3,5,6,7]]
             
+            if self.thread.samebasis:
+                order = np.sum(nlj * (np.array([1,2,3,4,5,6]) * 10000)[None,:], axis = -1)
+                order_reversed = np.sum(nlj * (np.array([4,5,6,1,2,3]) * 10000)[None,:], axis = -1)
+                boolarr = order < order_reversed
+                nlj[boolarr] = nlj[boolarr][:,[3,4,5,0,1,2]]
+            
             sorter = np.lexsort(nlj.T[::-1])
             nlj = nlj[sorter]
+            
             diff = np.append([True],np.diff(nlj, axis=0).any(axis=1))
+            
+            """if self.sameSpecies:
+                order = np.sum(nlj * (np.array([1,2,3,4,5,6]) * 10000)[None,:], axis = -1)
+                order_reversed = np.sum(nlj * (np.array([4,5,6,1,2,3]) * 10000)[None,:], axis = -1)
+                print(np.sum(diff), np.sum(order <= order_reversed), len(order))
+                diff &= order <= order_reversed
+                print(np.sum(diff), np.sum(order <= order_reversed), len(order))"""
+            
             cumsum = np.cumsum(diff)[np.argsort(sorter)]
             
             self.labelstates_potential = nlj[diff]            
             self.labelmat_potential = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates_potential))).tocsc() #nStates, nLabels
-            
+                
             self.momentumstrings_potential = [" {}".format(i) for i in np.arange(np.max(self.labelstates_potential[:,[1,4]])+1).astype(np.int)]
             self.momentumstrings_potential[:4] = ['S','P','D','F']
                         
@@ -860,15 +975,18 @@ class MainWindow(QtGui.QMainWindow):
             x = np.array([])
             y = np.array([])
             
-            while not self.thread.dataqueue_potential.empty():
+            while not self.thread.dataqueue_potential.empty() and dataamount < 5000:
                 # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
-                filestep, filename = self.thread.dataqueue_potential.get()
+                filestep, blocknumber, filename = self.thread.dataqueue_potential.get()
                 eigensystem = Eigensystem(filename)
                 energies = eigensystem.energies
                 basis = eigensystem.basis
             
                 # --- determine which basis elements are within the energy range ---
                 boolarr = np.ones(len(energies),dtype=np.bool)
+                boolarr[np.isnan(energies)] = False
+                energies[np.isnan(energies)] = 0
+                
                 if self.minE is not None: boolarr &= energies >= self.minE
                 if self.maxE is not None: boolarr &= energies <= self.maxE
             
@@ -888,17 +1006,11 @@ class MainWindow(QtGui.QMainWindow):
             
                 # --- calculate the position (x value) ---
                 if self.constDistance and not self.constEField:
-                    vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_potential
+                    position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x_potential
                 elif self.constDistance and not self.constBField:
-                    vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                    position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_potential
+                    position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x_potential
                 else:
                     position = float(eigensystem.params["R"])*self.converter_x_potential
-            
-                # --- store data to plot several points at once ---  
-                x = np.append(x,position*np.ones_like(energies))
-                y = np.append(y,energies)
             
                 # --- draw labels at the beginning of the plotting --- 
                 if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
@@ -908,7 +1020,7 @@ class MainWindow(QtGui.QMainWindow):
                 
                     # total probability to find a label
                     cumprob = np.array(labelprob.sum(axis=0).flat)
-                    boolarr = cumprob > 0.1
+                    boolarr = cumprob > 0.1             
                 
                     # normalize in such a way that the total probability is always one
                     idxarr, = np.nonzero(boolarr)
@@ -927,26 +1039,257 @@ class MainWindow(QtGui.QMainWindow):
                     # draw the labels
                     for labelstate, labelenergy in zip(self.labelstates_potential[boolarr],labelenergies):
                         sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
+                        
+                        if self.leftSmallerRight:
+                            anchorX = 0
+                        else:
+                            anchorX = 1
 
                         text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);">'\
                             +'{}{}<sub style="font-size: '.format(int(sn1),self.momentumstrings_potential[int(sl1)]) \
                             +size+'pt;">{}/2</sub>'.format(int(2*sj1))\
                             +' {}{}<sub style="font-size: '.format(int(sn2),self.momentumstrings_potential[int(sl2)]) \
                             +size+'pt;">{}/2</sub>'.format(int(2*sj2))\
-                            +'</span></div>',anchor=(1, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255)) # TODO anchor dependent on start < end !!!!!!!!!!!!!!!!!!!
+                            +'</span></div>',anchor=(anchorX, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255))
                         text.setPos(labelposition, labelenergy)
                         text.setZValue(15)
                         self.ui.graphicsview_potential_plot.addItem(text)
 
-                    curve = PointsItem(labelposition*np.ones_like(labelenergies), labelenergies, 0, 0, (0,0,0))
+                    posx = labelposition*np.ones_like(labelenergies)+1e-12
+                    posy = labelenergies+1e-12
+                    curve = PointsItem(np.append(posx, posx-2e-12), np.append(posy, posy-2e-12), 0, 0, (255,255,255))
                     curve.setZValue(5)
-                    self.ui.graphicsview_potential_plot.addItem(curve)
+                    self.ui.graphicsview_potential_plot.addItem(curve) 
                 
-                    # break since drawing labels already take some time
-                    break
-            
-                # --- break if enough points are collected --- 
-                if len(x) > 5000: break                
+                    # drawing labels take some time
+                    dataamount += 3000
+                
+                # --- draw colormap ---
+                if self.ui.groupbox_plot_overlap.isChecked():
+                    """if blocknumber not in self.buffer_energiesMap_potential.keys():
+                        self.buffer_energiesMap_potential[blocknumber] = {}
+                        self.buffer_positionsMap_potential[blocknumber] = {}
+                        self.buffer_overlapMap_potential[blocknumber] = {}"""
+                    
+                    if filestep not in self.buffer_positionsMap_potential.keys():
+                        self.buffer_positionsMap_potential[filestep] = position # TODO aufpassen mit submatrix idx
+                        self.buffer_energiesMap_potential[filestep] = []
+                        self.buffer_overlapMap_potential[filestep] = []
+                
+                    self.buffer_energiesMap_potential[filestep].append(energies) # TODO aufpassen mit submatrix idx
+                    
+                    if self.stateidx_potential < 0:
+                        self.buffer_overlapMap_potential[filestep].append(np.zeros_like(energies))
+                    else:
+                        self.buffer_overlapMap_potential[filestep].append(probs[self.stateidx_potential].toarray().flatten()) # TODO aufpassen mit submatrix idx
+                    
+                    buffer_minIdx = min(self.buffer_positionsMap_potential.keys()) # TODO !!!!!!!!!!!!!!! sicherstellen, dass monoton
+                                        
+                    while buffer_minIdx+1 in self.buffer_positionsMap_potential.keys() and buffer_minIdx+2 in self.buffer_positionsMap_potential.keys():
+                        if len(self.buffer_energiesMap_potential[filestep]) < 2: # TODO !!!!!!!!!!!!!!!
+                            buffer_minIdx += 1
+                            
+                            continue
+                        
+                        
+                        
+                        pos1 = self.buffer_positionsMap_potential[buffer_minIdx]
+                        pos2 = self.buffer_positionsMap_potential[buffer_minIdx+1]
+                        pos3 = self.buffer_positionsMap_potential[buffer_minIdx+2]
+                        energy = np.concatenate(self.buffer_energiesMap_potential[buffer_minIdx+1])
+                        overlap = np.concatenate(self.buffer_overlapMap_potential[buffer_minIdx+1])
+                        
+                        if len(energy) == 0:
+                            del self.buffer_energiesMap_potential[buffer_minIdx]
+                            del self.buffer_positionsMap_potential[buffer_minIdx]
+                            del self.buffer_overlapMap_potential[buffer_minIdx]
+                            buffer_minIdx += 1
+                                
+                            continue
+                        
+                        
+                                                
+                        posMin = (pos1+pos2)/2 # TODO schauen wie es sich mit der Plotreihenfolge vertraegt
+                        posMax = (pos2+pos3)/2
+                        
+                        energyMin = np.nanmin(energy)
+                        energyMax = np.nanmax(energy)
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        if np.isnan(self.displayunits2pixelunits_x) or np.isnan(self.displayunits2pixelunits_y):
+                            
+                            if self.maxE is not None:
+                                eneMax = self.maxE*self.converter_y
+                            else:
+                                eneMax = energyMax
+                                
+                            if self.minE is not None:
+                                eneMin = self.minE*self.converter_y
+                            else:
+                                eneMin = energyMin
+                        
+                            if posMax == posMin or eneMax == eneMin :
+                                del self.buffer_energiesMap_potential[buffer_minIdx]
+                                del self.buffer_positionsMap_potential[buffer_minIdx]
+                                del self.buffer_overlapMap_potential[buffer_minIdx]
+                                buffer_minIdx += 1
+                                
+                                continue
+                            
+                            # TODO get resolution of plot area
+                            
+                            
+                            
+                            
+                            self.displayunits2pixelunits_x = 5/(posMax-posMin)
+                            self.displayunits2pixelunits_y = 5*self.steps/(eneMax-eneMin)
+                            self.smootherX = 5
+                            self.smootherY = 5*self.steps / 100
+                        
+                        width_pixelunits = np.round((posMax-posMin)*self.displayunits2pixelunits_x)
+                        width_displayunits = width_pixelunits/self.displayunits2pixelunits_x
+                        
+                        margin_pixelunits = np.round(max(width_pixelunits/2,3*self.smootherY))
+                        margin_displayunits = margin_pixelunits/self.displayunits2pixelunits_y
+                        
+                        height_pixelunits = np.round((energyMax-energyMin)*self.displayunits2pixelunits_y)+2*margin_pixelunits
+                        height_displayunits = height_pixelunits/self.displayunits2pixelunits_y
+                        
+                        yMin = energyMin-margin_displayunits
+                        yMax = yMin+height_displayunits
+                                                
+                        map = np.zeros((width_pixelunits,height_pixelunits)) # x-y-coordinate system, origin is at the bottom left corner 
+                        
+                                             
+                        
+                        """map[::,::2] = 3
+                        map[-1,-1] = 10
+                        map[0,0] = 10"""
+                        
+                        
+                        idx_energy = bytescale(energy, low=0, high=height_pixelunits-1, cmin=yMin, cmax=yMax)
+                        mapmat = sparse.coo_matrix((overlap,(idx_energy,np.arange(len(idx_energy)))),shape=(height_pixelunits, len(idx_energy))).sum(axis=-1)
+                        
+                        
+                        
+                        map[(width_pixelunits-1)/2,:] = mapmat.flat
+                        
+                        map = gaussian_filter(map,(self.smootherX,self.smootherY),mode='mirror')
+                        
+                        normalizer = np.zeros((width_pixelunits,2*3*self.smootherY+1))
+                        normalizer[(width_pixelunits-1)/2,3*self.smootherY] = 1
+                        normalizer = gaussian_filter(normalizer,(self.smootherX,self.smootherY),mode='mirror')
+                        
+                        map /= np.max(normalizer)
+                        
+                        # TODO no auto limits
+                        
+                        
+                        
+                        #height = int(round(width*self.ratio_pixelunits_potential/self.ratio_displayunits_potential*ratio + 2*margin_pixelunits))
+                        
+                        
+                        
+                        
+                        #ratio = (energyMax-energyMin)/(posMax-posMin)
+                        
+                       
+                        
+                        
+                        
+                        #height = int(round(width*self.ratio_pixelunits_potential/self.ratio_displayunits_potential*ratio + 2*margin_pixelunits))
+                                                
+                        
+                        #0*marginInPointunit*(energyMax-energyMin)/map.shape[1]
+                        
+                        """map = np.zeros((width_pixelunits,height_pixelunits)) # x-y-coordinate system, origin is at the bottom left corner                        
+                        
+                        map[::,::2] = 3
+                        map[-1,-1] = 10
+                        map[0,0] = 10
+                        
+                        
+                        
+                        aspectRatio = map.shape[1]/map.shape[0] # TODO calculate it before"""
+                        
+                        
+                        
+                        
+                        
+                        img = pg.ImageItem(image=map, opacity=1, autoDownsample=True, lut=self.lut, levels=[0,1])
+                        img.setRect(QtCore.QRectF(posMin,yMin-0.5/self.displayunits2pixelunits_y,width_displayunits,height_displayunits+1/self.displayunits2pixelunits_y)) # xMin, yMin, xSize, ySize # TODO energyMin anpassen wegen Pixelgroesse
+                        img.setZValue(3)
+                        self.ui.graphicsview_potential_plot.addItem(img)
+                        
+                        dataamount += len(energy)*10
+                    
+                        del self.buffer_energiesMap_potential[buffer_minIdx]
+                        del self.buffer_positionsMap_potential[buffer_minIdx]
+                        del self.buffer_overlapMap_potential[buffer_minIdx]
+                        buffer_minIdx += 1
+                        
+                
+                    
+                    
+                    
+                                
+                # --- draw lines ---
+                if self.ui.groupbox_plot_lines.isChecked():
+                    if blocknumber not in self.buffer_basis_potential.keys():
+                        self.buffer_basis_potential[blocknumber] = {}
+                        self.buffer_energies_potential[blocknumber] = {}
+                        self.buffer_positions_potential[blocknumber] = {}
+                
+                    self.buffer_basis_potential[blocknumber][filestep] = basis
+                    self.buffer_energies_potential[blocknumber][filestep] = energies
+                    self.buffer_positions_potential[blocknumber][filestep] = position
+                                            
+                    # get size and alpha value of points
+                    size = self.ui.spinbox_plot_szLine.value()
+                    alpha = self.ui.spinbox_plot_transpLine.value()*255
+                    
+                    buffer_minIdx = min(self.buffer_basis_potential[blocknumber].keys())  # TODO sicherstellen, dass monoton !!!!!!!!!!!
+                    
+                    while buffer_minIdx+1 in self.buffer_basis_potential[blocknumber].keys():
+                        # determine the data to plot
+                        overlap = np.abs(self.buffer_basis_potential[blocknumber][buffer_minIdx].T*self.buffer_basis_potential[blocknumber][buffer_minIdx+1]) # nBasis first, nBasis second
+                        overlap.data[overlap.data <= np.sqrt(0.5)] = 0
+                        overlap.eliminate_zeros()
+                        overlap = overlap.tocoo()
+                            
+                        iFirst = overlap.row
+                        iSecond = overlap.col
+                        
+                        ydata = np.transpose([self.buffer_energies_potential[blocknumber][buffer_minIdx][iFirst],self.buffer_energies_potential[blocknumber][buffer_minIdx+1][iSecond]])
+                        xdata = np.ones_like(ydata)
+                        xdata[:,0] *= self.buffer_positions_potential[blocknumber][buffer_minIdx]
+                        xdata[:,1] *= self.buffer_positions_potential[blocknumber][buffer_minIdx+1]
+                        
+                        if len(iFirst) != 0:
+                            # plot the data
+                            curve = MultiLine(xdata, ydata, size, alpha, (0,0,0))
+                            curve.setZValue(4)
+                            self.ui.graphicsview_potential_plot.addItem(curve)
+                        
+                        del self.buffer_basis_potential[blocknumber][buffer_minIdx]
+                        del self.buffer_energies_potential[blocknumber][buffer_minIdx]
+                        del self.buffer_positions_potential[blocknumber][buffer_minIdx]
+                        
+                        buffer_minIdx += 1
+                        dataamount += len(iFirst)*10
+                    
+                # --- store data to plot several points at once ---
+                if self.ui.groupbox_plot_points.isChecked():
+                    x = np.append(x,position*np.ones_like(energies))
+                    y = np.append(y,energies)
+                    
+                    dataamount += len(x)            
         
             # --- plot the stored data ---
             if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
@@ -1014,15 +1357,19 @@ class MainWindow(QtGui.QMainWindow):
                 y = np.array([])
                 l = np.array([])
             
-                while not dataqueue.empty():
+                while not dataqueue.empty() and dataamount < 5000: # stop loop if enough data is collected
+                
                     # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
-                    filestep, filename = dataqueue.get()
+                    filestep, blocknumber, filename = dataqueue.get()
                     eigensystem = Eigensystem(filename)
                     energies = eigensystem.energies
                     basis = eigensystem.basis
                 
                     # --- determine which basis elements are within the energy range ---
                     boolarr = np.ones(len(energies),dtype=np.bool)
+                    boolarr[np.isnan(energies)] = False
+                    energies[np.isnan(energies)] = 0
+                
                     if self.minE is not None: boolarr &= energies >= self.minE
                     if self.maxE is not None: boolarr &= energies <= self.maxE
                 
@@ -1055,17 +1402,10 @@ class MainWindow(QtGui.QMainWindow):
                 
                     # --- calculate the position (x value) ---                
                     if self.constEField and not self.constBField:
-                        vec = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
-                        position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_field
+                        position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x_field
                     else:
-                        vec = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
-                        position = np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)*self.converter_x_field
-                
-                    # --- store data to plot several points at once ---  
-                    x = np.append(x,position*np.ones_like(energies))
-                    y = np.append(y,energies)
-                    l = np.append(l,momentum)
-                
+                        position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x_field
+
                     # --- draw labels at the beginning of the plotting --- 
                     if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
                 
@@ -1082,6 +1422,8 @@ class MainWindow(QtGui.QMainWindow):
                     
                         # store the energetic expectation value of the labels
                         labelenergies = ((labelprob*normalizer).T*energies)
+                        
+                        if len(labelenergies) == 0: continue
                     
                         # store the position of the labels
                         labelposition = position
@@ -1094,27 +1436,108 @@ class MainWindow(QtGui.QMainWindow):
                         for labelstate, labelenergy in zip(self.labelstates[idx][boolarr],labelenergies):
                             sn, sl, sj = labelstate
                             
+                            if self.leftSmallerRight:
+                                anchorX = 0
+                            else:
+                                anchorX = 1
+                            
                             for j in range(2):
                                 if not self.thread.samebasis and j != idx: continue
                                 text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;">'\
                                     +'<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(int(sn),self.momentumstrings[idx][int(sl)]) \
-                                    +size+'pt;">{}/2</sub></span></div>'.format(int(2*sj)),anchor=(0, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255)) # TODO anchor dependent on start < end !!!!!!!!!!!!!!!!!!!
+                                    +size+'pt;">{}/2</sub></span></div>'.format(int(2*sj)),anchor=(anchorX, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255))                    
                                 text.setPos(labelposition, labelenergy)
                                 text.setZValue(15)
                                 graphicsview_plot[j].addItem(text)
                             
                         for j in range(2):
                             if not self.thread.samebasis and j != idx: continue
-                            curve = PointsItem(labelposition*np.ones_like(labelenergies), labelenergies, 0, 0, (0,0,0))
+                            posx = labelposition*np.ones_like(labelenergies)+1e-12
+                            posy = labelenergies+1e-12
+                            curve = PointsItem(np.append(posx, posx-2e-12), np.append(posy, posy-2e-12), 0, 0, (255,255,255))
                             curve.setZValue(5)
-                            graphicsview_plot[j].addItem(curve)
+                            graphicsview_plot[j].addItem(curve)               
                     
-                        # break since drawing labels already take some time
-                        break
-                
-                    # --- break if enough points are collected --- 
-                    if len(x) > 5000: break                
-            
+                        # drawing labels take some time
+                        dataamount += 3000
+                    
+                    # --- draw lines ---
+                    if self.ui.groupbox_plot_lines.isChecked():
+                        self.buffer_basis[idx][filestep] = basis
+                        self.buffer_energies[idx][filestep] = energies
+                        self.buffer_positions[idx][filestep] = position
+                        self.buffer_boolarr[idx][filestep] = []
+                        
+                        # cut the momenta to reasonable values
+                        momentum[momentum>len(self.momentumcolors)-2] = len(self.momentumcolors)-2
+                        momentum[momentum<0] = len(self.momentumcolors)-1
+                        
+                        # loop over momenta
+                        for i in range(len(self.momentumcolors)):
+                            # determine which basis elements have the current momentum
+                            boolarr = momentum == i
+                            self.buffer_boolarr[idx][filestep].append(boolarr)
+                                                
+                        # get size and alpha value of points
+                        size = self.ui.spinbox_plot_szLine.value()
+                        alpha = self.ui.spinbox_plot_transpLine.value()*255
+                        
+                        buffer_minIdx = min(self.buffer_basis[idx].keys())
+                        
+                        while buffer_minIdx+1 in self.buffer_basis[idx].keys():
+                            # determine the data to plot
+                            overlap = np.abs(self.buffer_basis[idx][buffer_minIdx].T*self.buffer_basis[idx][buffer_minIdx+1]) # nBasis first, nBasis second
+                            overlap.data[overlap.data <= np.sqrt(0.8)] = 0
+                            overlap.eliminate_zeros()
+                            overlap = overlap.tocoo()
+                                
+                            iFirst = overlap.row
+                            iSecond = overlap.col
+                            
+                            ydata = np.transpose([self.buffer_energies[idx][buffer_minIdx][iFirst],self.buffer_energies[idx][buffer_minIdx+1][iSecond]])
+                            xdata = np.ones_like(ydata)
+                            xdata[:,0] *= self.buffer_positions[idx][buffer_minIdx]
+                            xdata[:,1] *= self.buffer_positions[idx][buffer_minIdx+1]
+                        
+                            # loop over momenta
+                            for i in range(len(self.momentumcolors)):
+                                if np.sum(self.buffer_boolarr[idx][buffer_minIdx][i]) == 0: continue
+                                boolarr = self.buffer_boolarr[idx][buffer_minIdx][i][iFirst]
+                                if np.sum(boolarr) == 0: continue
+                            
+                                # determine the associated color
+                                color = self.momentumcolors[i]
+                                
+                                # plot the data
+                                for j in range(2):
+                                    if not self.thread.samebasis and j != idx: continue
+                                    curve = MultiLine(xdata[boolarr], ydata[boolarr], size, alpha, color)
+                                    curve.setZValue(4)
+                                    graphicsview_plot[j].addItem(curve)
+                            
+                            del self.buffer_basis[idx][buffer_minIdx]
+                            del self.buffer_energies[idx][buffer_minIdx]
+                            del self.buffer_positions[idx][buffer_minIdx]
+                            del self.buffer_boolarr[idx][buffer_minIdx]
+                            
+                            buffer_minIdx += 1
+                            
+                            dataamount += len(iFirst)*10
+                            
+                            # TODO alpha and color der funktion zusammen uebergeben, Funktion um Daten zu speichern einbauen !!!!!!!!!!!!!!!!!!
+                            
+                            # TODO bug umgehen !!!!!!!!!!!
+                            # /usr/local/lib/python3.4/site-packages/pyqtgraph/functions.py:1307: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
+                            # if connect == 'pairs':
+                    
+                    # --- store data to plot several points at once ---
+                    if self.ui.groupbox_plot_points.isChecked():
+                        x = np.append(x,position*np.ones_like(energies))
+                        y = np.append(y,energies)
+                        l = np.append(l,momentum)
+                        
+                        dataamount += len(x)
+                    
                 # --- plot the stored data ---
                 if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
             
@@ -1205,6 +1628,21 @@ class MainWindow(QtGui.QMainWindow):
             
             # Enable auto range again
             #self.ui.graphicsview_potential_plot.autoRange()
+            
+            # Delete buffers
+            self.buffer_basis = [{}]*2
+            self.buffer_energies = [{}]*2
+            self.buffer_positions = [{}]*2
+            self.buffer_boolarr = [{}]*2
+            self.buffer_basis_potential = {}
+            self.buffer_energies_potential = {}
+            self.buffer_positions_potential = {}
+            
+            self.buffer_energiesMap = [{}]*2
+            self.buffer_positionsMap = [{}]*2
+            self.buffer_energiesMap_potential = {}
+            self.buffer_positionsMap_potential = {}
+            self.buffer_overlapMap_potential = {}
         
             # Delete c++ process
             if self.proc is not None:
@@ -1376,6 +1814,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.constDistance = self.getConstDistance()
                 self.constEField = self.getConstEField()
                 self.constBField = self.getConstBField()
+                #self.sameSpecies = self.getSameSpecies()
             
                 if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field1_plot.clear()
@@ -1383,32 +1822,72 @@ class MainWindow(QtGui.QMainWindow):
                     if self.constEField and not self.constBField:
                         self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
                         self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
                     else:
                         self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                         self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
                 if self.senderbutton in [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.ui.graphicsview_field2_plot.clear()
                     self.ui.graphicsview_field2_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
                     if self.constEField and not self.constBField:
                         self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
                         self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
                     else:
                         self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                         self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
                     self.ui.graphicsview_potential_plot.clear()
                     self.ui.graphicsview_potential_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
                     if self.constDistance and not self.constEField:
                         self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                         self.converter_x_potential = Converter.fromAU(1,Units.efield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
                     elif self.constDistance and not self.constBField:
                         self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
                         self.converter_x_potential = Converter.fromAU(1,Units.bfield).magnitude
+                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
                     else:
                         self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
                         self.converter_x_potential = Converter.fromAU(1,Units.length).magnitude
+                        posMin = self.systemdict['minR'].magnitude
+                        posMax = self.systemdict['maxR'].magnitude
                         
-                self.converter_y = Converter.fromAU(1,Units.energy).magnitude 
+                self.converter_y = Converter.fromAU(1,Units.energy).magnitude
+                self.leftSmallerRight = posMin < posMax
+                self.steps = self.systemdict['steps']
+                
+                if self.ui.groupbox_plot_overlap.isChecked():
+                    if self.plotdict["overlapUnperturbed"]:
+                        n1 = self.systemdict['n1']
+                        l1 = self.systemdict['l1']
+                        j1 = self.systemdict['j1']
+                        m1 = self.systemdict['m1']
+                        n2 = self.systemdict['n2']
+                        l2 = self.systemdict['l2']
+                        j2 = self.systemdict['j2']
+                        m2 = self.systemdict['m2']
+                    else:
+                        n1 = self.plotdict['n1']
+                        l1 = self.plotdict['l1']
+                        j1 = self.plotdict['j1']
+                        m1 = self.plotdict['m1']
+                        n2 = self.plotdict['n2']
+                        l2 = self.plotdict['l2']
+                        j2 = self.plotdict['j2']
+                        m2 = self.plotdict['m2']
+                    self.overlapstate = np.array([n1,l1,j1,m1,n2,l2,j2,m2])
+                    
+                self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)[::-1]
+                self.lut[0] = [255,255,255]
                     
                 # Set limits
                 self.minE = self.plotdict["minE"]
