@@ -1411,7 +1411,7 @@ protected:
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
+            std::cout << ">>TOT" << std::setw(7) << matrix.size()  << std::setw(7) << 1 << std::endl;
 
             std::cout << 8.6 << std::endl;
         }
@@ -2119,7 +2119,7 @@ public:
                 }
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::setw(7) << symmetries.size() << std::endl; // TODO
 
             std::cout << 1.4 << std::endl;
         }

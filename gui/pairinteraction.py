@@ -287,6 +287,9 @@ class Worker(QtCore.QThread):
         self.basisfile_field1 = ""
         self.basisfile_field2 = ""
         self.basisfile_potential = ""
+        self.numBlocks_field1 = 0
+        self.numBlocks_field2 = 0
+        self.numBlocks_potential = 0
         self.dataqueue_field1 = Queue()
         self.dataqueue_field2 = Queue()
         self.dataqueue_potential = Queue()
@@ -357,7 +360,14 @@ class Worker(QtCore.QThread):
                 
             elif line[:5] == b">>TOT":
                 total = int(line[5:12].decode('utf-8'))
+                numBlocks = int(line[12:19].decode('utf-8'))
                 current = 0
+                if type == 0 or type == 3:
+                    self.numBlocks_field1 = numBlocks
+                elif type == 1:
+                    self.numBlocks_field2 = numBlocks
+                elif type == 2:
+                    self.numBlocks_potential = numBlocks
                 
             elif line[:5] == b">>DIM":
                 dim = int(line[5:12])
@@ -680,29 +690,10 @@ class MainWindow(QtGui.QMainWindow):
         
         #clrmp = pg.ColorMap(pos,color)
         #self.lut = clrmp.getLookupTable()
-        
-        if True:
-        
-            self.ui.gradientwidget_plot_gradient.setOrientation("top")
-            self.ui.gradientwidget_plot_gradient.loadPreset('cubehelix1')
-            
-            
-            
-            
-            #self.ui.gradientwidget_plot_gradient.updateGradient()
-            
-            
-            #('grey', {'ticks': [(0.0, (0, 0, 0, 255)), (1.0, (255, 255, 255, 255))], 'mode': 'rgb'}),
-            
-            #self.ui.gradientwidget_plot_gradient.restoreState(state)
-            
-            
-            
-            #self.hist.setImageItem(img)
-            #self.hist.setHistogramRange(0,1)
-                            
-            #self.gradient.updateGradient()
-                            
+                
+        self.ui.gradientwidget_plot_gradient.setOrientation("top")
+        self.ui.gradientwidget_plot_gradient.loadPreset('cubehelix1')
+
         
         # TODOs
         self.ui.lineedit_system_theta.setEnabled(False)
@@ -1086,7 +1077,7 @@ class MainWindow(QtGui.QMainWindow):
                     buffer_minIdx = min(self.buffer_positionsMap_potential.keys()) # TODO !!!!!!!!!!!!!!! sicherstellen, dass monoton
                                         
                     while buffer_minIdx+1 in self.buffer_positionsMap_potential.keys() and buffer_minIdx+2 in self.buffer_positionsMap_potential.keys():
-                        if len(self.buffer_energiesMap_potential[filestep]) < 2: # TODO !!!!!!!!!!!!!!!
+                        if len(self.buffer_energiesMap_potential[filestep]) < self.thread.numBlocks_potential:
                             buffer_minIdx += 1
                             
                             continue
