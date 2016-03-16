@@ -65,8 +65,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>292</width>
+             <height>341</height>
             </rect>
            </property>
            <attribute name="label">
@@ -508,8 +508,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>406</height>
+             <width>265</width>
+             <height>450</height>
             </rect>
            </property>
            <attribute name="label">
@@ -573,6 +573,9 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="statusTip">
+                 <string>A value of -1 means that there are no restrictions for single atom energies.</string>
+                </property>
                 <property name="text">
                  <string>0</string>
                 </property>
@@ -585,6 +588,9 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>A value of -1 means that there are no restrictions for pair energies.</string>
                 </property>
                 <property name="text">
                  <string>0</string>
@@ -889,7 +895,7 @@
             <item>
              <widget class="QRadioButton" name="radiobutton_system_pairbasisDefined">
               <property name="text">
-               <string>try to use the restrictions below</string>
+               <string>use the restrictions below</string>
               </property>
              </widget>
             </item>
@@ -1710,8 +1716,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>590</height>
+             <width>269</width>
+             <height>700</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -2697,6 +2703,53 @@
                  </layout>
                 </widget>
                </item>
+               <item>
+                <widget class="Line" name="line">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="GradientWidget" name="gradientwidget_plot_gradient">
+                 <property name="enabled">
+                  <bool>true</bool>
+                 </property>
+                 <property name="sizePolicy">
+                  <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                   <horstretch>0</horstretch>
+                   <verstretch>0</verstretch>
+                  </sizepolicy>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>35</height>
+                  </size>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <item>
+                  <widget class="QLabel" name="label">
+                   <property name="text">
+                    <string>100%</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="label_9">
+                   <property name="text">
+                    <string>0%</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
               </layout>
              </widget>
             </item>
@@ -2744,7 +2797,11 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_10">
         <item>
-         <widget class="PlotWidget" name="graphicsview_field1_plot"/>
+         <widget class="PlotWidget" name="graphicsview_field1_plot">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
@@ -2995,6 +3052,11 @@
    <class>PlotWidget</class>
    <extends>QGraphicsView</extends>
    <header>pyqtgraph</header>
+  </customwidget>
+  <customwidget>
+   <class>GradientWidget</class>
+   <extends>QGraphicsView</extends>
+   <header>pyqtgraph.h</header>
   </customwidget>
  </customwidgets>
  <tabstops>

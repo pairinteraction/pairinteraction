@@ -985,7 +985,7 @@ protected:
     }
 
     void doPostwork(size_t numWork) {
-        std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step[numWork] << " " << matrix_path[numWork] << std::endl;
+        std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step[numWork] << std::setw(7) << matrix_block[numWork] << " " << matrix_path[numWork] << std::endl;
     }
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
@@ -993,6 +993,7 @@ protected:
     std::vector<std::shared_ptr<Configuration>> params;
     std::vector<std::string> matrix_path;
     std::vector<size_t> matrix_step;
+    std::vector<size_t> matrix_block;
     std::vector<size_t> matrix_dimension;
 };
 
@@ -1406,10 +1407,11 @@ protected:
                 params.push_back(std::move(par));
                 matrix_path.push_back(path.string());
                 matrix_step.push_back(step);
+                matrix_block.push_back(0); // TODO
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
+            std::cout << ">>TOT" << std::setw(7) << matrix.size()  << std::setw(7) << 1 << std::endl;
 
             std::cout << 8.6 << std::endl;
         }
@@ -1941,6 +1943,8 @@ public:
 
             bool flag_perhapsmissingtable = true;
 
+            int block;
+
             // loop through steps
             for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
                 real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
@@ -1961,6 +1965,7 @@ public:
 
                     if (symmetry == SYM) {
                         conf["symmetry"] = "sym";
+                        block = 0;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_sym <= step_two)) {
                             step_one_sym++;
@@ -1976,6 +1981,7 @@ public:
 
                     } else if (symmetry == ASYM) {
                         conf["symmetry"] = "asym";
+                        block = 1;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_asym <= step_two)) {
                             step_one_asym++;
@@ -1991,6 +1997,7 @@ public:
 
                     } else if (symmetry == ALL) {
                         conf["symmetry"] = "all";
+                        block = 2;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_all <= step_two)) {
                             step_one_all++;
@@ -2103,6 +2110,7 @@ public:
                         params.push_back(std::make_shared<Configuration>(conf)); // TODO
                         matrix_path.push_back(path.string());
                         matrix_step.push_back(step_two);
+                        matrix_block.push_back(block);
                         matrix_dimension.push_back(mat->num_basisvectors());
                         matrix.push_back(std::move(mat));
 
@@ -2111,7 +2119,7 @@ public:
                 }
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::setw(7) << symmetries.size() << std::endl; // TODO
 
             std::cout << 1.4 << std::endl;
         }
