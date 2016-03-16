@@ -6,6 +6,7 @@
 #include <sstream>
 #include <exception>
 #include <cmath>
+#include <algorithm>
 
 
 struct no_defect : public std::exception {
@@ -22,7 +23,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   std::stringstream ss;
   SQLite3 db("quantum_defects.db");
   int pot_max_l, ryd_max_l;
-  double ryd_max_j;
+  real_t ryd_max_j;
 
   // Determine maximal L for model potentials
   ss.str(std::string());

@@ -13,7 +13,7 @@
 #define BYTE_T MPI_UNSIGNED_CHAR
 #define ORDER Eigen::ColMajor
 
-typedef double real_t;
+typedef float real_t; // TODO
 typedef std::complex<real_t> complex_t;
 typedef uint32_t idx_t;
 typedef float storage_real_t;

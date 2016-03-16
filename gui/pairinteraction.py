@@ -28,17 +28,29 @@ import psutil
 from scipy.ndimage.filters import gaussian_filter
 from palettable import cubehelix
 
+locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+QtCore.QLocale.setDefault(QtCore.QLocale(locale.getlocale()[0]))
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
 ureg = UnitRegistry()
 Q = ureg.Quantity
 C = lambda s : Q(constants.value(s),constants.unit(s))
 
-locale.setlocale(locale.LC_NUMERIC, '') # TODO auf Englisch umstellen, auch in der mit QtDesigner
-
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
-#pg.setConfigOptions(antialias=True)  # TODO !!!!!!!
+
+# http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
+def csr_vappend(a,b):
+    """ Takes in 2 csr_matrices and appends the second one to the bottom of the first one. 
+    Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
+    the first matrix instead of copying it. The data, indices, and indptr still get copied."""
+
+    a.data = np.hstack((a.data,b.data))
+    a.indices = np.hstack((a.indices,b.indices))
+    a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
+    a._shape = (a.shape[0]+b.shape[0],b.shape[1])
+    #a = sparse.csr_matrix( (a.data,a.indices,a.indptr), shape=a.shape )
 
 
 # ----- Returns a normalized image -----
@@ -53,7 +65,7 @@ def normscale(data, cmin=None, cmax=None):
 # ----- Returns a byte-scaled image -----
 
 def bytescale(data, cmin=None, cmax=None, high=255, low=0):
-    return (normscale(data,cmin,cmax)*(high - low + 0.9999) + low).astype(int)
+    return np.array(normscale(data,cmin,cmax)*(high - low + 0.9999) + low).astype(int) # TODO
 
 
 class Converter:
@@ -159,8 +171,7 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
     def __len__(self):
         return len(self.store)
     
-    def load(self, f):
-        params = json.load(f)
+    def load(self, params):
         for k, v in params.items():
             try:
                 if not isinstance(v, str): raise TypeError
@@ -177,13 +188,13 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
             else: params[k] = v
         return params
     
-    def saveInOriginalunits(self, f, exclude = []):
+    def paramsInOriginalunits(self, exclude = []):
         params = dict()
         for k, v in self.items():
             if k in exclude: continue
             if isinstance(v, Q): params[k] = str(v)
             else: params[k] = v
-        json.dump(params, f, indent=4, sort_keys=True)
+        return params
 
 class SystemDict(GUIDict):
     def _setup(self, store, ui):
@@ -254,8 +265,12 @@ class SystemDict(GUIDict):
 
 class PlotDict(GUIDict):
     def _setup(self, store, ui):
-        store["minE"] = {'widget': ui.lineedit_plot_minE, 'unit': Units.energy}
-        store["maxE"] = {'widget': ui.lineedit_plot_maxE, 'unit': Units.energy}
+        store["minE_field1"] = {'widget': ui.lineedit_field1_minE, 'unit': Units.energy}
+        store["maxE_field1"] = {'widget': ui.lineedit_field1_maxE, 'unit': Units.energy}
+        store["minE_field2"] = {'widget': ui.lineedit_field2_minE, 'unit': Units.energy}
+        store["maxE_field2"] = {'widget': ui.lineedit_field2_maxE, 'unit': Units.energy}
+        store["minE_potential"] = {'widget': ui.lineedit_potential_minE, 'unit': Units.energy}
+        store["maxE_potential"] = {'widget': ui.lineedit_potential_maxE, 'unit': Units.energy}
         store["lines"] = {'widget': ui.groupbox_plot_lines}
         store["points"] = {'widget': ui.groupbox_plot_points}
         store["labels"] = {'widget': ui.groupbox_plot_labels}
@@ -263,11 +278,15 @@ class PlotDict(GUIDict):
         store["szLine"] = {'widget': ui.spinbox_plot_szLine, 'unit': Units.dimensionless}
         store["szPoint"] = {'widget': ui.spinbox_plot_szPoint, 'unit': Units.dimensionless}
         store["szLabel"] = {'widget': ui.spinbox_plot_szLabel, 'unit': Units.dimensionless}
+        store["szOverlap"] = {'widget': ui.spinbox_plot_szOverlap, 'unit': Units.dimensionless}
         store["transpLine"] = {'widget': ui.spinbox_plot_transpLine, 'unit': Units.dimensionless}
         store["transpPoint"] = {'widget': ui.spinbox_plot_transpPoint, 'unit': Units.dimensionless}
         store["transpLabel"] = {'widget': ui.spinbox_plot_transpLabel, 'unit': Units.dimensionless}
+        store["transpOverlap"] = {'widget': ui.spinbox_plot_transpOverlap, 'unit': Units.dimensionless}
         store["overlapUnperturbed"] = {'widget': ui.radiobutton_plot_overlapUnperturbed}
-        store["overlapDefined"] = {'widget': ui.radiobutton_plot_overlapDefined}
+        store["lin"] = {'widget': ui.radiobutton_plot_lin}
+        store["log"] = {'widget': ui.radiobutton_plot_log}
+        store["resolution"] = {'widget': ui.spinbox_plot_resolution}
         store["n1"] = {'widget': ui.spinbox_plot_n1, 'unit': Units.dimensionless}
         store["n2"] = {'widget': ui.spinbox_plot_n2, 'unit': Units.dimensionless}
         store["l1"] = {'widget': ui.spinbox_plot_l1, 'unit': Units.dimensionless}
@@ -276,6 +295,7 @@ class PlotDict(GUIDict):
         store["j2"] = {'widget': ui.spinbox_plot_j2, 'unit': Units.dimensionless}
         store["m1"] = {'widget': ui.spinbox_plot_m1, 'unit': Units.dimensionless}
         store["m2"] = {'widget': ui.spinbox_plot_m2, 'unit': Units.dimensionless}
+        store["antialiasing"] = {'widget': ui.checkbox_plot_antialiasing}
 
 class Worker(QtCore.QThread):
 
@@ -630,6 +650,9 @@ class MainWindow(QtGui.QMainWindow):
         pos = np.linspace(0,1,len(color))
         pg.graphicsItems.GradientEditorItem.Gradients['cubehelix2'] = {'mode':'rgb', 'ticks':[(p, tuple(c)) for c, p in zip(color,pos)]}
         
+        for k, v in pg.graphicsItems.GradientEditorItem.Gradients.items():
+            pg.graphicsItems.GradientEditorItem.Gradients[k]['ticks'] = [(1-p, c) for p, c in v['ticks']]
+        
         
         
         self.ui = Ui_plotwindow()
@@ -657,6 +680,7 @@ class MainWindow(QtGui.QMainWindow):
         else: self.path_out = os.path.join(os.path.expanduser('~'), ".pairinteraction/")
         self.path_system_last = os.path.join(self.path_out,"lastsystem.json")
         self.path_plot_last = os.path.join(self.path_out,"lastplotter.json")
+        self.path_tabs_last = os.path.join(self.path_out,"lasttabs.json")
         self.path_config = os.path.join(self.path_out,"conf.json")
         
         self.proc = None
@@ -665,6 +689,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer = QtCore.QTimer()
         
         self.momentumcolors = [(55,126,184),(77,175,74),(228,26,28),(152,78,163),(0,0,0),(255//5,255//5,255//5)] # s, p, d, f, other, undetermined
+        self.symmetrycolors = [(0,0,0),(140,81,10),(1,102,94)] # all, sym, asym
         
         self.momentummat = [None]*2
         self.labelmat = [None]*2
@@ -685,6 +710,13 @@ class MainWindow(QtGui.QMainWindow):
         self.buffer_positionsMap_potential = {}
         self.buffer_overlapMap_potential = {}
         
+        self.labelprob_potential = None
+        self.labelprob_num_potential = 0
+        
+        self.lines_buffer_minIdx = {}
+        self.colormap_buffer_minIdx = 0
+        self.lines_buffer_minIdx_field = 0
+        
 
         
         
@@ -694,7 +726,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.gradientwidget_plot_gradient.setOrientation("top")
         self.ui.gradientwidget_plot_gradient.loadPreset('cubehelix1')
 
-        
         # TODOs
         self.ui.lineedit_system_theta.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
@@ -711,20 +742,7 @@ class MainWindow(QtGui.QMainWindow):
                 ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
                 if not ret: raise ctypes.WinError()
                 
-        # Load last settings
-        try: # TODO
-            if os.path.isfile(self.path_system_last):
-                with open(self.path_system_last, 'r') as f:
-                    self.systemdict.load(f)
-        except:
-            pass
         
-        try:
-            if os.path.isfile(self.path_plot_last):
-                with open(self.path_plot_last, 'r') as f:
-                    self.plotdict.load(f)
-        except:
-            pass
 
         # Set validators
         validator_double = DoubleValidator()
@@ -750,8 +768,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_system_maxR.setValidator(validator_doublepositive)
         self.ui.lineedit_system_theta.setValidator(validator_double)
         self.ui.lineedit_system_precision.setValidator(validator_doublepositive)
-        self.ui.lineedit_plot_minE.setValidator(validator_doublenone)
-        self.ui.lineedit_plot_maxE.setValidator(validator_doublenone)
+        self.ui.lineedit_field1_minE.setValidator(validator_doublenone)
+        self.ui.lineedit_field1_maxE.setValidator(validator_doublenone)
+        self.ui.lineedit_field2_minE.setValidator(validator_doublenone)
+        self.ui.lineedit_field2_maxE.setValidator(validator_doublenone)
+        self.ui.lineedit_potential_minE.setValidator(validator_doublenone)
+        self.ui.lineedit_potential_maxE.setValidator(validator_doublenone)
         
         # Connect signals and slots        
         self.ui.spinbox_system_n1.valueChanged.connect(self.validateQuantumnumbers)
@@ -785,6 +807,9 @@ class MainWindow(QtGui.QMainWindow):
         
         self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
         self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
+        self.ui.radiobutton_plot_log.toggled.connect(self.toggleYScale)
+        
+        self.ui.checkbox_plot_antialiasing.toggled.connect(self.toggleAntialiasing)
         
         self.ui.spinbox_system_deltaNSingle.valueChanged.connect(self.adjustPairlimits)
         self.ui.spinbox_system_deltaLSingle.valueChanged.connect(self.adjustPairlimits)
@@ -803,6 +828,35 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pushbutton_potential_calc.clicked.connect(self.startCalc)
         
         self.timer.timeout.connect(self.checkForData)
+        
+        # Load last settings
+        try: # TODO
+            if os.path.isfile(self.path_system_last):
+                with open(self.path_system_last, 'r') as f:
+                    params = json.load(f)
+                    self.systemdict.load(params)
+        except:
+            pass
+        
+        try:
+            if os.path.isfile(self.path_plot_last):
+                with open(self.path_plot_last, 'r') as f:
+                    params = json.load(f)
+                    self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
+                    del params["gradientwidget"]
+                    self.plotdict.load(params)
+        except:
+            pass
+        
+        try:
+            if os.path.isfile(self.path_tabs_last):
+                with open(self.path_tabs_last, 'r') as f:
+                    params = json.load(f)
+                    self.ui.tabwidget_config.setCurrentIndex(params["config"])
+                    self.ui.tabwidget_plotter.setCurrentIndex(params["plotter"])
+                    self.ui.toolbox_system.setCurrentIndex(params["system"])
+        except:
+            pass
         
         # Emit change-signals in order to let the validation run
         self.ui.spinbox_system_n1.valueChanged.emit(self.ui.spinbox_system_n1.value())
@@ -823,15 +877,25 @@ class MainWindow(QtGui.QMainWindow):
         
         self.ui.radiobutton_system_pairbasisDefined.toggled.emit(self.ui.radiobutton_system_pairbasisDefined.isChecked())
         self.ui.radiobutton_plot_overlapDefined.toggled.emit(self.ui.radiobutton_plot_overlapDefined.isChecked())
+        self.ui.radiobutton_plot_log.toggled.emit(self.ui.radiobutton_plot_log.isChecked())
+        
+        self.ui.checkbox_plot_antialiasing.toggled.emit(self.ui.checkbox_plot_antialiasing.isChecked())
         
         self.ui.spinbox_system_deltaNSingle.valueChanged.emit(self.ui.spinbox_system_deltaNSingle.value())
         self.ui.spinbox_system_deltaLSingle.valueChanged.emit(self.ui.spinbox_system_deltaLSingle.value())
         self.ui.spinbox_system_deltaJSingle.valueChanged.emit(self.ui.spinbox_system_deltaJSingle.value())
         self.ui.spinbox_system_deltaMSingle.valueChanged.emit(self.ui.spinbox_system_deltaMSingle.value())
         
+        
+        
+        
         # Setup plot
-        self.minE = None
-        self.maxE = None
+        self.minE_field1 = None
+        self.minE_field2 = None
+        self.minE_potential = None
+        self.maxE_field1 = None
+        self.maxE_field2 = None
+        self.maxE_potential = None
         
         self.constDistance = self.getConstDistance()
         self.constEField = self.getConstEField()
@@ -842,7 +906,6 @@ class MainWindow(QtGui.QMainWindow):
             plotarea.setDownsampling(ds=True, auto=True, mode='peak')
             plotarea.setClipToView(True)
             plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
-            #plotarea.setAntialiasing(True) # TODO !!!!!!!
         
         if self.constEField and not self.constBField:
             for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -926,11 +989,12 @@ class MainWindow(QtGui.QMainWindow):
             # extract labels
             nlj = basis[:,[1,2,3,5,6,7]]
             
+            # sort pair state names
             if self.thread.samebasis:
-                order = np.sum(nlj * (np.array([1,2,3,4,5,6]) * 10000)[None,:], axis = -1)
-                order_reversed = np.sum(nlj * (np.array([4,5,6,1,2,3]) * 10000)[None,:], axis = -1)
-                boolarr = order < order_reversed
-                nlj[boolarr] = nlj[boolarr][:,[3,4,5,0,1,2]]
+                firstsmaller = np.argmax(np.append(nlj[:,0:3] < nlj[:,3:6],np.ones((len(nlj),1),dtype=bool),axis=-1),axis=-1) # TODO in Funktion auslagern
+                firstsmaller_reverted = np.argmax(np.append(nlj[:,3:6] < nlj[:,0:3],np.ones((len(nlj),1),dtype=bool),axis=-1),axis=-1) # TODO in Funktion auslagern
+                namesToSwap = firstsmaller > firstsmaller_reverted
+                nlj[namesToSwap] = nlj[namesToSwap][:,[3,4,5,0,1,2]]
             
             sorter = np.lexsort(nlj.T[::-1])
             nlj = nlj[sorter]
@@ -947,7 +1011,7 @@ class MainWindow(QtGui.QMainWindow):
             cumsum = np.cumsum(diff)[np.argsort(sorter)]
             
             self.labelstates_potential = nlj[diff]            
-            self.labelmat_potential = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates_potential))).tocsc() #nStates, nLabels
+            self.labelmat_potential = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates_potential))).tocsr() #nStates, nLabels
                 
             self.momentumstrings_potential = [" {}".format(i) for i in np.arange(np.max(self.labelstates_potential[:,[1,4]])+1).astype(np.int)]
             self.momentumstrings_potential[:4] = ['S','P','D','F']
@@ -963,8 +1027,8 @@ class MainWindow(QtGui.QMainWindow):
         if not self.thread.dataqueue_potential.empty():
         
             # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
-            x = np.array([])
-            y = np.array([])
+            x = [np.array([])]*3
+            y = [np.array([])]*3
             
             while not self.thread.dataqueue_potential.empty() and dataamount < 5000:
                 # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
@@ -972,14 +1036,16 @@ class MainWindow(QtGui.QMainWindow):
                 eigensystem = Eigensystem(filename)
                 energies = eigensystem.energies
                 basis = eigensystem.basis
+                
+                symmetry = blocknumber % 3
             
                 # --- determine which basis elements are within the energy range ---
                 boolarr = np.ones(len(energies),dtype=np.bool)
                 boolarr[np.isnan(energies)] = False
                 energies[np.isnan(energies)] = 0
                 
-                if self.minE is not None: boolarr &= energies >= self.minE
-                if self.maxE is not None: boolarr &= energies <= self.maxE
+                if self.minE_potential is not None: boolarr &= energies >= self.minE_potential
+                if self.maxE_potential is not None: boolarr &= energies <= self.maxE_potential
             
                 # cut the energies
                 energies = energies[boolarr]
@@ -989,7 +1055,7 @@ class MainWindow(QtGui.QMainWindow):
             
                 # cut the basis
                 idxarr, = np.nonzero(boolarr)
-                transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsc()
+                transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsr()
                 basis *= transformator
                 
                 # probability to be in a certain state
@@ -1005,58 +1071,76 @@ class MainWindow(QtGui.QMainWindow):
             
                 # --- draw labels at the beginning of the plotting --- 
                 if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
-            
+
                     # probability to find a label inside a basis element
-                    labelprob = probs.T*self.labelmat_potential #nBasis, nLabels
+                    if self.labelprob_potential is None:
+                        self.labelprob_potential = (probs.T*self.labelmat_potential).tocsr() #nBasis, nLabels
+                        self.labelprob_energy_potential = [energies]
+                        self.labelprob_num_potential = 1
+                    else:
+                        csr_vappend(self.labelprob_potential,(probs.T*self.labelmat_potential).tocsr())
+                        self.labelprob_energy_potential.append(energies)
+                        self.labelprob_num_potential += 1
+                                                               
+                    if not self.labelprob_num_potential < self.thread.numBlocks_potential:
+                    
+                        self.labelprob_energy_potential = np.concatenate(self.labelprob_energy_potential )
+                    
+                        # total probability to find a label
+                        cumprob = np.array(self.labelprob_potential.sum(axis=0).flat)
+                        boolarr = cumprob > 0.1
+                                                     
+                        # normalize in such a way that the total probability is always one
+                        idxarr, = np.nonzero(boolarr)
+                        normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(self.labelprob_potential.shape[1], len(idxarr))).tocsr()
                 
-                    # total probability to find a label
-                    cumprob = np.array(labelprob.sum(axis=0).flat)
-                    boolarr = cumprob > 0.1             
+                        # store the energetic expectation value of the labels
+                        labelenergies = ((self.labelprob_potential*normalizer).T*self.labelprob_energy_potential)
                 
-                    # normalize in such a way that the total probability is always one
-                    idxarr, = np.nonzero(boolarr)
-                    normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(labelprob.shape[1], len(idxarr))).tocsc()
-                
-                    # store the energetic expectation value of the labels
-                    labelenergies = ((labelprob*normalizer).T*energies)
-                
-                    # store the position of the labels
-                    labelposition = position
+                        # store the position of the labels
+                        labelposition = position
 
-                    # get size and alpha value of labels
-                    size = '{}'.format(max(int(round(self.ui.spinbox_plot_szLabel.value()*11)),1))
-                    alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
+                        # get size and alpha value of labels
+                        size = '{}'.format(max(int(round(self.ui.spinbox_plot_szLabel.value()*11)),1))
+                        alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
                 
-                    # draw the labels
-                    for labelstate, labelenergy in zip(self.labelstates_potential[boolarr],labelenergies):
-                        sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
+                        # draw the labels
+                        for labelstate, labelenergy in zip(self.labelstates_potential[boolarr],labelenergies):
+                            sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
                         
-                        if self.leftSmallerRight:
-                            anchorX = 0
-                        else:
-                            anchorX = 1
+                            if self.leftSmallerRight:
+                                anchorX = 0
+                            else:
+                                anchorX = 1
 
-                        text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);">'\
-                            +'{}{}<sub style="font-size: '.format(int(sn1),self.momentumstrings_potential[int(sl1)]) \
-                            +size+'pt;">{}/2</sub>'.format(int(2*sj1))\
-                            +' {}{}<sub style="font-size: '.format(int(sn2),self.momentumstrings_potential[int(sl2)]) \
-                            +size+'pt;">{}/2</sub>'.format(int(2*sj2))\
-                            +'</span></div>',anchor=(anchorX, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255))
-                        text.setPos(labelposition, labelenergy)
-                        text.setZValue(15)
-                        self.ui.graphicsview_potential_plot.addItem(text)
-
-                    posx = labelposition*np.ones_like(labelenergies)+1e-12
-                    posy = labelenergies+1e-12
-                    curve = PointsItem(np.append(posx, posx-2e-12), np.append(posy, posy-2e-12), 0, 0, (255,255,255))
-                    curve.setZValue(5)
-                    self.ui.graphicsview_potential_plot.addItem(curve) 
+                            text = pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);">'\
+                                +'{}{}<sub style="font-size: '.format(int(sn1),self.momentumstrings_potential[int(sl1)]) \
+                                +size+'pt;">{}/2</sub>'.format(int(2*sj1))\
+                                +' {}{}<sub style="font-size: '.format(int(sn2),self.momentumstrings_potential[int(sl2)]) \
+                                +size+'pt;">{}/2</sub>'.format(int(2*sj2))\
+                                +'</span></div>',anchor=(anchorX, 0.5),fill=(250,235,215,alpha),border=(255,228,181,255))
+                            text.setPos(labelposition, labelenergy)
+                            text.setZValue(15)
+                            self.ui.graphicsview_potential_plot.addItem(text)
+                        
+                        posx = labelposition*np.ones_like(labelenergies)+1e-12
+                        posy = labelenergies+1e-12
+                        curve = PointsItem(np.append(posx, posx-2e-12), np.append(posy, posy-2e-12), 0, 0, (255,255,255))
+                        curve.setZValue(5)
+                        self.ui.graphicsview_potential_plot.addItem(curve)
                 
-                    # drawing labels take some time
-                    dataamount += 3000
+                        # drawing labels take some time
+                        dataamount += 3000
                 
                 # --- draw colormap ---
                 if self.ui.groupbox_plot_overlap.isChecked():
+                    # get size and alpha value
+                    size = self.ui.spinbox_plot_szOverlap.value()
+                    alpha = self.ui.spinbox_plot_transpOverlap.value()
+                    
+                    # get resolution
+                    res = self.ui.spinbox_plot_resolution.value()
+                    
                     """if blocknumber not in self.buffer_energiesMap_potential.keys():
                         self.buffer_energiesMap_potential[blocknumber] = {}
                         self.buffer_positionsMap_potential[blocknumber] = {}
@@ -1073,38 +1157,40 @@ class MainWindow(QtGui.QMainWindow):
                         self.buffer_overlapMap_potential[filestep].append(np.zeros_like(energies))
                     else:
                         self.buffer_overlapMap_potential[filestep].append(probs[self.stateidx_potential].toarray().flatten()) # TODO aufpassen mit submatrix idx
-                    
-                    buffer_minIdx = min(self.buffer_positionsMap_potential.keys()) # TODO !!!!!!!!!!!!!!! sicherstellen, dass monoton
-                                        
-                    while buffer_minIdx+1 in self.buffer_positionsMap_potential.keys() and buffer_minIdx+2 in self.buffer_positionsMap_potential.keys():
-                        if len(self.buffer_energiesMap_potential[filestep]) < self.thread.numBlocks_potential:
-                            buffer_minIdx += 1
-                            
-                            continue
+                                                                                
+                    while self.colormap_buffer_minIdx in self.buffer_positionsMap_potential.keys() and self.colormap_buffer_minIdx+1 in self.buffer_positionsMap_potential.keys() and self.colormap_buffer_minIdx+2 in self.buffer_positionsMap_potential.keys():
+                        if len(self.buffer_energiesMap_potential[self.colormap_buffer_minIdx]) < self.thread.numBlocks_potential: break
+                        if len(self.buffer_energiesMap_potential[self.colormap_buffer_minIdx+1]) < self.thread.numBlocks_potential: break
+                        if len(self.buffer_energiesMap_potential[self.colormap_buffer_minIdx+2]) < self.thread.numBlocks_potential: break
                         
                         
                         
-                        pos1 = self.buffer_positionsMap_potential[buffer_minIdx]
-                        pos2 = self.buffer_positionsMap_potential[buffer_minIdx+1]
-                        pos3 = self.buffer_positionsMap_potential[buffer_minIdx+2]
-                        energy = np.concatenate(self.buffer_energiesMap_potential[buffer_minIdx+1])
-                        overlap = np.concatenate(self.buffer_overlapMap_potential[buffer_minIdx+1])
+                        pos1 = self.buffer_positionsMap_potential[self.colormap_buffer_minIdx]
+                        pos2 = self.buffer_positionsMap_potential[self.colormap_buffer_minIdx+1]
+                        pos3 = self.buffer_positionsMap_potential[self.colormap_buffer_minIdx+2]
+                        energy = np.concatenate(self.buffer_energiesMap_potential[self.colormap_buffer_minIdx+1])
+                        overlap = np.concatenate(self.buffer_overlapMap_potential[self.colormap_buffer_minIdx+1])
+                        
+                        
                         
                         if len(energy) == 0:
-                            del self.buffer_energiesMap_potential[buffer_minIdx]
-                            del self.buffer_positionsMap_potential[buffer_minIdx]
-                            del self.buffer_overlapMap_potential[buffer_minIdx]
-                            buffer_minIdx += 1
+                            del self.buffer_energiesMap_potential[self.colormap_buffer_minIdx]
+                            del self.buffer_positionsMap_potential[self.colormap_buffer_minIdx]
+                            del self.buffer_overlapMap_potential[self.colormap_buffer_minIdx]
+                            self.colormap_buffer_minIdx += 1
                                 
                             continue
                         
                         
                                                 
-                        posMin = (pos1+pos2)/2 # TODO schauen wie es sich mit der Plotreihenfolge vertraegt
-                        posMax = (pos2+pos3)/2
+                        #posMin = (pos1+pos2)/2 # TODO schauen wie es sich mit der Plotreihenfolge vertraegt
+                        #posMax = (pos2+pos3)/2
                         
-                        energyMin = np.nanmin(energy)
-                        energyMax = np.nanmax(energy)
+                        posMin = pos1
+                        posMax = pos3
+                        
+                        
+                        
 
                         
                         
@@ -1112,24 +1198,24 @@ class MainWindow(QtGui.QMainWindow):
                         
                         
                         
-                        
+                        # first call
                         if np.isnan(self.displayunits2pixelunits_x) or np.isnan(self.displayunits2pixelunits_y):
                             
-                            if self.maxE is not None:
-                                eneMax = self.maxE*self.converter_y
+                            if self.maxE_potential is not None:
+                                energyMax = self.maxE_potential*self.converter_y
                             else:
-                                eneMax = energyMax
+                                energyMax = np.nanmax(energy)
                                 
-                            if self.minE is not None:
-                                eneMin = self.minE*self.converter_y
+                            if self.minE_potential is not None:
+                                energyMin = self.minE_potential*self.converter_y
                             else:
-                                eneMin = energyMin
+                                energyMin = np.nanmin(energy)
                         
-                            if posMax == posMin or eneMax == eneMin :
-                                del self.buffer_energiesMap_potential[buffer_minIdx]
-                                del self.buffer_positionsMap_potential[buffer_minIdx]
-                                del self.buffer_overlapMap_potential[buffer_minIdx]
-                                buffer_minIdx += 1
+                            if posMax == posMin or energyMax == energyMin :
+                                del self.buffer_energiesMap_potential[self.colormap_buffer_minIdx]
+                                del self.buffer_positionsMap_potential[self.colormap_buffer_minIdx]
+                                del self.buffer_overlapMap_potential[self.colormap_buffer_minIdx]
+                                self.colormap_buffer_minIdx += 1
                                 
                                 continue
                             
@@ -1137,25 +1223,49 @@ class MainWindow(QtGui.QMainWindow):
                             
                             
                             
+                            self.height_pixelunits = res
                             
-                            self.displayunits2pixelunits_x = 5/(posMax-posMin)
-                            self.displayunits2pixelunits_y = 5*self.steps/(eneMax-eneMin)
-                            self.smootherX = 5
-                            self.smootherY = 5*self.steps / 100
+                            enlargement = max(np.round((self.height_pixelunits/self.steps-2)/2),0)
+                            
+                            self.width_pixelunits = 5+4*enlargement #np.round((posMax-posMin)*self.displayunits2pixelunits_x)
+                            
+                            
+                            self.displayunits2pixelunits_x = self.width_pixelunits/(posMax-posMin)
+                            self.displayunits2pixelunits_y = self.height_pixelunits/(energyMax-energyMin)
+                            self.smootherX = (enlargement*2+2)*1/2
+                            self.smootherY = self.height_pixelunits*1/150*size #250/self.steps
+                            
                         
-                        width_pixelunits = np.round((posMax-posMin)*self.displayunits2pixelunits_x)
-                        width_displayunits = width_pixelunits/self.displayunits2pixelunits_x
+                            #margin_pixelunits = np.round(max(self.width_pixelunits/2,3*self.smootherY))
+                            #margin_displayunits = margin_pixelunits/self.displayunits2pixelunits_y
                         
-                        margin_pixelunits = np.round(max(width_pixelunits/2,3*self.smootherY))
-                        margin_displayunits = margin_pixelunits/self.displayunits2pixelunits_y
+                            
+                            #height_displayunits = self.height_pixelunits/self.displayunits2pixelunits_y
+                            
+                            
+                            
+                            
+                            """self.displayunits2pixelunits_x = (5+4)/(posMax-posMin)
+                            self.displayunits2pixelunits_y = (5+4)*self.steps/(energyMax-energyMin)
+                            self.smootherX = 2
+                            self.smootherY = self.steps/17
+                            
+                            
                         
-                        height_pixelunits = np.round((energyMax-energyMin)*self.displayunits2pixelunits_y)+2*margin_pixelunits
-                        height_displayunits = height_pixelunits/self.displayunits2pixelunits_y
+                            width_pixelunits = 9 #np.round((posMax-posMin)*self.displayunits2pixelunits_x)
                         
-                        yMin = energyMin-margin_displayunits
-                        yMax = yMin+height_displayunits
+                            margin_pixelunits = np.round(max(width_pixelunits/2,3*self.smootherY))
+                            margin_displayunits = margin_pixelunits/self.displayunits2pixelunits_y
+                        
+                            self.height_pixelunits = np.round((energyMax-energyMin)*self.displayunits2pixelunits_y)+2*margin_pixelunits
+                            height_displayunits = self.height_pixelunits/self.displayunits2pixelunits_y"""
+                        
+                            self.yMin = energyMin#-margin_displayunits
+                            self.yMax = energyMax#self.yMin+height_displayunits
+                        
+                        #width_pixelunits = np.round((posMax-posMin)*self.displayunits2pixelunits_x)
                                                 
-                        map = np.zeros((width_pixelunits,height_pixelunits)) # x-y-coordinate system, origin is at the bottom left corner 
+                        map = np.zeros((self.width_pixelunits,self.height_pixelunits)) # x-y-coordinate system, origin is at the bottom left corner 
                         
                                              
                         
@@ -1163,18 +1273,53 @@ class MainWindow(QtGui.QMainWindow):
                         map[-1,-1] = 10
                         map[0,0] = 10"""
                         
+                        posLeft = (pos1+pos2)/2
+                        posRight = (pos2+pos3)/2
+                        
+                        idx_position = bytescale(np.array([pos1, pos2, pos3]), low=0, high=self.width_pixelunits-1, cmin=pos1, cmax=pos3)
+                        idx_left = bytescale(posLeft, low=0, high=self.width_pixelunits-1, cmin=pos1, cmax=pos3)
+                        idx_right = bytescale(posRight, low=0, high=self.width_pixelunits-1, cmin=pos1, cmax=pos3)
+                        
+                        
+                        for i in range(3):
+                            energy = np.concatenate(self.buffer_energiesMap_potential[self.colormap_buffer_minIdx+i])
+                            overlap = np.concatenate(self.buffer_overlapMap_potential[self.colormap_buffer_minIdx+i])
+                            
+                            boolarr = (energy >= self.yMin) & (energy <= self.yMax)
+                            energy = energy[boolarr]
+                            overlap = overlap[boolarr]
+                            
+                            if self.logscale:
+                                overlap[overlap < 1e-2] = 1e-2
+                                overlap = (2+np.log10(overlap))/2
+                            
+                            idx_energy = bytescale(energy, low=0, high=self.height_pixelunits-1, cmin=self.yMin, cmax=self.yMax)
+                            mapmat = sparse.coo_matrix((overlap,(idx_energy,np.arange(len(idx_energy)))),shape=(self.height_pixelunits, len(idx_energy))).sum(axis=-1)
+                            
+                            map[idx_position[i],:] = mapmat.flat
+
+                            
+                            
+                        
+                        
+                        """print(idx_position, idx_left, idx_right)
+                        
+                        # 0, 3, 6
+                        
                         
                         idx_energy = bytescale(energy, low=0, high=height_pixelunits-1, cmin=yMin, cmax=yMax)
                         mapmat = sparse.coo_matrix((overlap,(idx_energy,np.arange(len(idx_energy)))),shape=(height_pixelunits, len(idx_energy))).sum(axis=-1)
                         
                         
                         
-                        map[(width_pixelunits-1)/2,:] = mapmat.flat
+                        map[(width_pixelunits-1)/2,:] = mapmat.flat"""
                         
                         map = gaussian_filter(map,(self.smootherX,self.smootherY),mode='mirror')
                         
-                        normalizer = np.zeros((width_pixelunits,2*3*self.smootherY+1))
-                        normalizer[(width_pixelunits-1)/2,3*self.smootherY] = 1
+                        map = map[idx_left:idx_right]
+                        
+                        normalizer = np.zeros((self.width_pixelunits,2*3*self.smootherY+1))
+                        normalizer[(self.width_pixelunits-1)/2,3*self.smootherY] = 1
                         normalizer = gaussian_filter(normalizer,(self.smootherX,self.smootherY),mode='mirror')
                         
                         map /= np.max(normalizer)
@@ -1213,17 +1358,17 @@ class MainWindow(QtGui.QMainWindow):
                         
                         
                         
-                        img = pg.ImageItem(image=map, opacity=1, autoDownsample=True, lut=self.lut, levels=[0,1])
-                        img.setRect(QtCore.QRectF(posMin,yMin-0.5/self.displayunits2pixelunits_y,width_displayunits,height_displayunits+1/self.displayunits2pixelunits_y)) # xMin, yMin, xSize, ySize # TODO energyMin anpassen wegen Pixelgroesse
+                        img = pg.ImageItem(image=map, opacity=alpha, autoDownsample=True, lut=self.lut, levels=[0,1])
+                        img.setRect(QtCore.QRectF(posLeft-0.5/self.displayunits2pixelunits_x,self.yMin-0.5/self.displayunits2pixelunits_y,posRight-posLeft,self.yMax-self.yMin+1/self.displayunits2pixelunits_y)) # xMin, yMin, xSize, ySize # TODO energyMin anpassen wegen Pixelgroesse
                         img.setZValue(3)
                         self.ui.graphicsview_potential_plot.addItem(img)
                         
                         dataamount += len(energy)*10
                     
-                        del self.buffer_energiesMap_potential[buffer_minIdx]
-                        del self.buffer_positionsMap_potential[buffer_minIdx]
-                        del self.buffer_overlapMap_potential[buffer_minIdx]
-                        buffer_minIdx += 1
+                        del self.buffer_energiesMap_potential[self.colormap_buffer_minIdx]
+                        del self.buffer_positionsMap_potential[self.colormap_buffer_minIdx]
+                        del self.buffer_overlapMap_potential[self.colormap_buffer_minIdx]
+                        self.colormap_buffer_minIdx += 1
                         
                 
                     
@@ -1236,6 +1381,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.buffer_basis_potential[blocknumber] = {}
                         self.buffer_energies_potential[blocknumber] = {}
                         self.buffer_positions_potential[blocknumber] = {}
+                        self.lines_buffer_minIdx[blocknumber] = 0
                 
                     self.buffer_basis_potential[blocknumber][filestep] = basis
                     self.buffer_energies_potential[blocknumber][filestep] = energies
@@ -1244,12 +1390,10 @@ class MainWindow(QtGui.QMainWindow):
                     # get size and alpha value of points
                     size = self.ui.spinbox_plot_szLine.value()
                     alpha = self.ui.spinbox_plot_transpLine.value()*255
-                    
-                    buffer_minIdx = min(self.buffer_basis_potential[blocknumber].keys())  # TODO sicherstellen, dass monoton !!!!!!!!!!!
-                    
-                    while buffer_minIdx+1 in self.buffer_basis_potential[blocknumber].keys():
+                                        
+                    while self.lines_buffer_minIdx[blocknumber] in self.buffer_basis_potential[blocknumber].keys() and self.lines_buffer_minIdx[blocknumber]+1 in self.buffer_basis_potential[blocknumber].keys():
                         # determine the data to plot
-                        overlap = np.abs(self.buffer_basis_potential[blocknumber][buffer_minIdx].T*self.buffer_basis_potential[blocknumber][buffer_minIdx+1]) # nBasis first, nBasis second
+                        overlap = np.abs(self.buffer_basis_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]].T*self.buffer_basis_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]+1]) # nBasis first, nBasis second
                         overlap.data[overlap.data <= np.sqrt(0.5)] = 0
                         overlap.eliminate_zeros()
                         overlap = overlap.tocoo()
@@ -1257,28 +1401,28 @@ class MainWindow(QtGui.QMainWindow):
                         iFirst = overlap.row
                         iSecond = overlap.col
                         
-                        ydata = np.transpose([self.buffer_energies_potential[blocknumber][buffer_minIdx][iFirst],self.buffer_energies_potential[blocknumber][buffer_minIdx+1][iSecond]])
+                        ydata = np.transpose([self.buffer_energies_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]][iFirst],self.buffer_energies_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]+1][iSecond]])
                         xdata = np.ones_like(ydata)
-                        xdata[:,0] *= self.buffer_positions_potential[blocknumber][buffer_minIdx]
-                        xdata[:,1] *= self.buffer_positions_potential[blocknumber][buffer_minIdx+1]
+                        xdata[:,0] *= self.buffer_positions_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]]
+                        xdata[:,1] *= self.buffer_positions_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]+1]
                         
                         if len(iFirst) != 0:
                             # plot the data
-                            curve = MultiLine(xdata, ydata, size, alpha, (0,0,0))
+                            curve = MultiLine(xdata, ydata, size, alpha, self.symmetrycolors[symmetry])
                             curve.setZValue(4)
                             self.ui.graphicsview_potential_plot.addItem(curve)
                         
-                        del self.buffer_basis_potential[blocknumber][buffer_minIdx]
-                        del self.buffer_energies_potential[blocknumber][buffer_minIdx]
-                        del self.buffer_positions_potential[blocknumber][buffer_minIdx]
+                        del self.buffer_basis_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]]
+                        del self.buffer_energies_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]]
+                        del self.buffer_positions_potential[blocknumber][self.lines_buffer_minIdx[blocknumber]]
                         
-                        buffer_minIdx += 1
+                        self.lines_buffer_minIdx[blocknumber] += 1
                         dataamount += len(iFirst)*10
                     
                 # --- store data to plot several points at once ---
                 if self.ui.groupbox_plot_points.isChecked():
-                    x = np.append(x,position*np.ones_like(energies))
-                    y = np.append(y,energies)
+                    x[symmetry] = np.append(x[symmetry],position*np.ones_like(energies))
+                    y[symmetry] = np.append(y[symmetry],energies)
                     
                     dataamount += len(x)            
         
@@ -1290,9 +1434,13 @@ class MainWindow(QtGui.QMainWindow):
                 alpha = self.ui.spinbox_plot_transpPoint.value()*255
                 
                 # plot the basis elements
-                curve = PointsItem(x, y, size, alpha, (0,0,0))
-                curve.setZValue(10)
-                self.ui.graphicsview_potential_plot.addItem(curve)
+                
+                # loop over symmetries
+                for s in range(3):
+                    if len(x[s]) == 0: continue
+                    curve = PointsItem(x[s], y[s], size, alpha, self.symmetrycolors[s])
+                    curve.setZValue(10)
+                    self.ui.graphicsview_potential_plot.addItem(curve)
         
             # --- update the graphics view ---
             self.ui.graphicsview_potential_plot.repaint()
@@ -1304,6 +1452,15 @@ class MainWindow(QtGui.QMainWindow):
             dataqueue = [self.thread.dataqueue_field1, self.thread.dataqueue_field2][idx]
             basisfile = [self.thread.basisfile_field1, self.thread.basisfile_field2][idx]
             graphicsview_plot = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]
+            
+            if not self.thread.samebasis:
+                minE = [self.minE_field1, self.minE_field2][idx]
+                maxE = [self.maxE_field1, self.maxE_field2][idx]
+            else:
+                if self.minE_field1 is None or self.minE_field2 is None: minE = None
+                else: minE = min(self.minE_field1, self.minE_field2)
+                if self.maxE_field1 is None or self.maxE_field2 is None: maxE = None
+                else: maxE = max(self.maxE_field1, self.maxE_field2)
             
             # --- load basis states ---
             
@@ -1324,7 +1481,7 @@ class MainWindow(QtGui.QMainWindow):
                 cumsum = np.cumsum(diff)[np.argsort(sorter)]
             
                 self.labelstates[idx] = nlj[diff]            
-                self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates[idx]))).tocsc() #nStates, nLabels
+                self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates[idx]))).tocsr() #nStates, nLabels
                 #self.labelstates[idx] = unique_rows(nlj)
                 #self.labelmat[idx] = sparse.csc_matrix((nlj[:,None,:] == self.labelstates[idx][None,:,:]).all(axis=-1).astype(int)) #nStates, nLabels
             
@@ -1361,8 +1518,8 @@ class MainWindow(QtGui.QMainWindow):
                     boolarr[np.isnan(energies)] = False
                     energies[np.isnan(energies)] = 0
                 
-                    if self.minE is not None: boolarr &= energies >= self.minE
-                    if self.maxE is not None: boolarr &= energies <= self.maxE
+                    if minE is not None: boolarr &= energies >= minE
+                    if maxE is not None: boolarr &= energies <= maxE
                 
                     # cut the energies
                     energies = energies[boolarr]
@@ -1372,7 +1529,7 @@ class MainWindow(QtGui.QMainWindow):
                 
                     # cut the basis
                     idxarr, = np.nonzero(boolarr)
-                    transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsc()
+                    transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsr()
                     basis *= transformator
                     
                     # probability to be in a certain state
@@ -1409,7 +1566,7 @@ class MainWindow(QtGui.QMainWindow):
                     
                         # normalize in such a way that the total probability is always one
                         idxarr, = np.nonzero(boolarr)
-                        normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(labelprob.shape[1], len(idxarr))).tocsc()
+                        normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(labelprob.shape[1], len(idxarr))).tocsr()
                     
                         # store the energetic expectation value of the labels
                         labelenergies = ((labelprob*normalizer).T*energies)
@@ -1472,12 +1629,10 @@ class MainWindow(QtGui.QMainWindow):
                         # get size and alpha value of points
                         size = self.ui.spinbox_plot_szLine.value()
                         alpha = self.ui.spinbox_plot_transpLine.value()*255
-                        
-                        buffer_minIdx = min(self.buffer_basis[idx].keys())
-                        
-                        while buffer_minIdx+1 in self.buffer_basis[idx].keys():
+                                                
+                        while self.lines_buffer_minIdx_field in self.buffer_basis[idx].keys() and self.lines_buffer_minIdx_field+1 in self.buffer_basis[idx].keys():
                             # determine the data to plot
-                            overlap = np.abs(self.buffer_basis[idx][buffer_minIdx].T*self.buffer_basis[idx][buffer_minIdx+1]) # nBasis first, nBasis second
+                            overlap = np.abs(self.buffer_basis[idx][self.lines_buffer_minIdx_field].T*self.buffer_basis[idx][self.lines_buffer_minIdx_field+1]) # nBasis first, nBasis second
                             overlap.data[overlap.data <= np.sqrt(0.8)] = 0
                             overlap.eliminate_zeros()
                             overlap = overlap.tocoo()
@@ -1485,15 +1640,15 @@ class MainWindow(QtGui.QMainWindow):
                             iFirst = overlap.row
                             iSecond = overlap.col
                             
-                            ydata = np.transpose([self.buffer_energies[idx][buffer_minIdx][iFirst],self.buffer_energies[idx][buffer_minIdx+1][iSecond]])
+                            ydata = np.transpose([self.buffer_energies[idx][self.lines_buffer_minIdx_field][iFirst],self.buffer_energies[idx][self.lines_buffer_minIdx_field+1][iSecond]])
                             xdata = np.ones_like(ydata)
-                            xdata[:,0] *= self.buffer_positions[idx][buffer_minIdx]
-                            xdata[:,1] *= self.buffer_positions[idx][buffer_minIdx+1]
+                            xdata[:,0] *= self.buffer_positions[idx][self.lines_buffer_minIdx_field]
+                            xdata[:,1] *= self.buffer_positions[idx][self.lines_buffer_minIdx_field+1]
                         
                             # loop over momenta
                             for i in range(len(self.momentumcolors)):
-                                if np.sum(self.buffer_boolarr[idx][buffer_minIdx][i]) == 0: continue
-                                boolarr = self.buffer_boolarr[idx][buffer_minIdx][i][iFirst]
+                                if np.sum(self.buffer_boolarr[idx][self.lines_buffer_minIdx_field][i]) == 0: continue
+                                boolarr = self.buffer_boolarr[idx][self.lines_buffer_minIdx_field][i][iFirst]
                                 if np.sum(boolarr) == 0: continue
                             
                                 # determine the associated color
@@ -1502,24 +1657,21 @@ class MainWindow(QtGui.QMainWindow):
                                 # plot the data
                                 for j in range(2):
                                     if not self.thread.samebasis and j != idx: continue
-                                    curve = MultiLine(xdata[boolarr], ydata[boolarr], size, alpha, color)
+                                    curve = MultiLine(xdata[boolarr], ydata[boolarr], size, alpha, color) # TODO alpha and color der Funktion zusammen uebergeben
                                     curve.setZValue(4)
                                     graphicsview_plot[j].addItem(curve)
                             
-                            del self.buffer_basis[idx][buffer_minIdx]
-                            del self.buffer_energies[idx][buffer_minIdx]
-                            del self.buffer_positions[idx][buffer_minIdx]
-                            del self.buffer_boolarr[idx][buffer_minIdx]
+                            del self.buffer_basis[idx][self.lines_buffer_minIdx_field]
+                            del self.buffer_energies[idx][self.lines_buffer_minIdx_field]
+                            del self.buffer_positions[idx][self.lines_buffer_minIdx_field]
+                            del self.buffer_boolarr[idx][self.lines_buffer_minIdx_field]
                             
-                            buffer_minIdx += 1
+                            self.lines_buffer_minIdx_field += 1
                             
                             dataamount += len(iFirst)*10
                             
-                            # TODO alpha and color der funktion zusammen uebergeben, Funktion um Daten zu speichern einbauen !!!!!!!!!!!!!!!!!!
                             
-                            # TODO bug umgehen !!!!!!!!!!!
-                            # /usr/local/lib/python3.4/site-packages/pyqtgraph/functions.py:1307: FutureWarning: elementwise comparison failed; returning scalar instead, but in the future will perform elementwise comparison
-                            # if connect == 'pairs':
+                            
                     
                     # --- store data to plot several points at once ---
                     if self.ui.groupbox_plot_points.isChecked():
@@ -1634,6 +1786,13 @@ class MainWindow(QtGui.QMainWindow):
             self.buffer_energiesMap_potential = {}
             self.buffer_positionsMap_potential = {}
             self.buffer_overlapMap_potential = {}
+            
+            self.labelprob_potential = None
+            self.labelprob_num_potential = 0
+            
+            self.lines_buffer_minIdx = {}
+            self.colormap_buffer_minIdx = 0
+            self.lines_buffer_minIdx_field = 0
         
             # Delete c++ process
             if self.proc is not None:
@@ -1700,17 +1859,36 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.spinbox_system_deltaMPair.setMaximum(maximum)
             self.ui.spinbox_system_deltaMPair.setMinimum(minimum)
     
-    @QtCore.pyqtSlot(bool)
+    @QtCore.pyqtSlot(bool) # TODO
+    def toggleAntialiasing(self):
+        checked = self.ui.checkbox_plot_antialiasing.isChecked()
+        for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
+            plotarea.setAntialiasing(checked)
+        pg.setConfigOptions(antialias=checked) # TODO
+    
+    @QtCore.pyqtSlot(bool) # TODO
     def togglePairbasis(self):
         checked = self.ui.radiobutton_system_pairbasisDefined.isChecked()
         self.ui.widget_system_pair.setEnabled(checked)
     
-    @QtCore.pyqtSlot(bool)
+    @QtCore.pyqtSlot(bool) # TODO
     def toggleOverlapstate(self):
         checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
         self.ui.widget_plot_qn.setEnabled(checked)
     
-    @QtCore.pyqtSlot(str)
+    @QtCore.pyqtSlot(bool) # TODO
+    def toggleYScale(self):
+        log = self.ui.radiobutton_plot_log.isChecked()
+        if log:
+            self.ui.label_plot_1st.setText("< 0.01") # TODO
+            self.ui.label_plot_2nd.setText("0.1") # TODO
+            self.logscale = True
+        else:
+            self.ui.label_plot_1st.setText("0")
+            self.ui.label_plot_2nd.setText("0.5")
+            self.logscale = False
+    
+    @QtCore.pyqtSlot(str) # TODO
     def forbidSamebasis(self):
         if self.ui.combobox_system_species1.currentIndex() != self.ui.combobox_system_species2.currentIndex():
             self.ui.checkbox_system_samebasis.setEnabled(False)
@@ -1783,10 +1961,20 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 # Save last settings
                 with open(self.path_system_last, 'w') as f:
-                    self.systemdict.saveInOriginalunits(f)
-        
+                    params = self.systemdict.paramsInOriginalunits()
+                    json.dump(params, f, indent=4, sort_keys=True)
+                    
                 with open(self.path_plot_last, 'w') as f:
-                    self.plotdict.saveInOriginalunits(f)
+                    params = self.plotdict.paramsInOriginalunits()
+                    params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
+                    json.dump(params, f, indent=4, sort_keys=True)
+                    
+                with open(self.path_tabs_last, 'w') as f:
+                    params = dict()
+                    params["config"] = self.ui.tabwidget_config.currentIndex()
+                    params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
+                    params["system"] = self.ui.toolbox_system.currentIndex()
+                    json.dump(params, f, indent=4, sort_keys=True)
             
                 # Change buttons
                 self.senderbutton = self.sender()
@@ -1877,17 +2065,53 @@ class MainWindow(QtGui.QMainWindow):
                         m2 = self.plotdict['m2']
                     self.overlapstate = np.array([n1,l1,j1,m1,n2,l2,j2,m2])
                     
-                self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)[::-1]
+                self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)
                 self.lut[0] = [255,255,255]
                     
                 # Set limits
-                self.minE = self.plotdict["minE"]
-                if self.minE is not None:
-                    self.minE = Converter.toAU(self.minE).magnitude
+                self.minE_field1 = self.plotdict["minE_field1"]
+                if self.minE_field1 is not None:
+                    self.minE_field1 = Converter.toAU(self.minE_field1).magnitude
+                    self.ui.graphicsview_field1_plot.setLimits(yMin = self.minE_field1 * self.converter_y)
+                else:
+                    self.ui.graphicsview_field1_plot.setLimits(yMin = None)
+                    
+                self.minE_field2 = self.plotdict["minE_field2"]
+                if self.minE_field2 is not None:
+                    self.minE_field2 = Converter.toAU(self.minE_field2).magnitude
+                    self.ui.graphicsview_field2_plot.setLimits(yMin = self.minE_field2 * self.converter_y)
+                else:
+                    self.ui.graphicsview_field2_plot.setLimits(yMin = None)
                 
-                self.maxE = self.plotdict["maxE"]
-                if self.maxE is not None:
-                    self.maxE = Converter.toAU(self.maxE).magnitude
+                self.minE_potential = self.plotdict["minE_potential"]
+                if self.minE_potential is not None:
+                    self.minE_potential = Converter.toAU(self.minE_potential).magnitude
+                    self.ui.graphicsview_potential_plot.setLimits(yMin = self.minE_potential * self.converter_y)
+                else:
+                    self.ui.graphicsview_potential_plot.setLimits(yMin = None)
+                
+                self.maxE_field1 = self.plotdict["maxE_field1"]
+                if self.maxE_field1 is not None:
+                    self.maxE_field1 = Converter.toAU(self.maxE_field1).magnitude
+                    self.ui.graphicsview_field1_plot.setLimits(yMax = self.maxE_field1 * self.converter_y)
+                else:
+                    self.ui.graphicsview_field1_plot.setLimits(yMax = None)
+                    
+                self.maxE_field2 = self.plotdict["maxE_field2"]
+                if self.maxE_field2 is not None:
+                    self.maxE_field2 = Converter.toAU(self.maxE_field2).magnitude
+                    self.ui.graphicsview_field2_plot.setLimits(yMax = self.maxE_field2 * self.converter_y)
+                else:
+                    self.ui.graphicsview_field2_plot.setLimits(yMax = None)
+                
+                self.maxE_potential = self.plotdict["maxE_potential"]
+                if self.maxE_potential is not None:
+                    self.maxE_potential = Converter.toAU(self.maxE_potential).magnitude
+                    self.ui.graphicsview_potential_plot.setLimits(yMax = self.maxE_potential * self.converter_y)
+                else:
+                    self.ui.graphicsview_potential_plot.setLimits(yMax = None)
+                
+                
             
                 # Save configuration to json file
                 with open(self.path_config, 'w') as f:
@@ -1933,7 +2157,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if filename:
             with open(filename, 'w') as f:
-                self.systemdict.saveInOriginalunits(f)
+                params = self.systemdict.paramsInOriginalunits()
+                json.dump(params, f, indent=4, sort_keys=True)
             self.systemfile = filename
             self.systempath = os.path.dirname(filename)
     
@@ -1945,7 +2170,9 @@ class MainWindow(QtGui.QMainWindow):
         
         if filename:
             with open(filename, 'w') as f:
-                self.plotdict.saveInOriginalunits(f)
+                params = self.plotdict.paramsInOriginalunits()
+                params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
+                json.dump(params, f, indent=4, sort_keys=True)
             self.plotfile = filename
             self.plotpath = os.path.dirname(filename)
     
@@ -1956,7 +2183,8 @@ class MainWindow(QtGui.QMainWindow):
         
         if filename:
             with open(filename, 'r') as f:
-                self.systemdict.load(f)
+                params = json.load(f)
+                self.systemdict.load(params)
             self.systemfile = filename
             self.systempath = os.path.dirname(filename)
     
@@ -1967,7 +2195,10 @@ class MainWindow(QtGui.QMainWindow):
         
         if not (filename == ""):
             with open(filename, 'r') as f:
-                self.plotdict.load(f)
+                params = json.load(f)
+                self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
+                del params["gradientwidget"]
+                self.plotdict.load(params)
             self.plotfile = filename
             self.plotpath = os.path.dirname(filename)
             
@@ -1977,10 +2208,20 @@ class MainWindow(QtGui.QMainWindow):
         
         # Save last settings
         with open(self.path_system_last, 'w') as f:
-            self.systemdict.saveInOriginalunits(f)
+            params = self.systemdict.paramsInOriginalunits()
+            json.dump(params, f, indent=4, sort_keys=True)
         
         with open(self.path_plot_last, 'w') as f:
-            self.plotdict.saveInOriginalunits(f)
+            params = self.plotdict.paramsInOriginalunits()
+            params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
+            json.dump(params, f, indent=4, sort_keys=True)
+        
+        with open(self.path_tabs_last, 'w') as f:
+            params = dict()
+            params["config"] = self.ui.tabwidget_config.currentIndex()
+            params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
+            params["system"] = self.ui.toolbox_system.currentIndex()
+            json.dump(params, f, indent=4, sort_keys=True)
         
         # Close everything
         super().closeEvent(event)

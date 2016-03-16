@@ -1116,14 +1116,14 @@ protected:
 
             real_t energy_initial = 0;
             for (const auto &state: basis_one->initial()) {
-                energy_initial += energy_level("Rb",state.n,state.l,state.j); // TODO Rb
+                energy_initial += energy_level(species,state.n,state.l,state.j);
             }
             energy_initial /= basis_one->initial().size();
 
             std::vector<bool> is_necessary(basis_one->size(),false);
             idx_t idx = 0;
             for (const auto &state : *basis_one) {
-                real_t val = energy_level("Rb",state.n,state.l,state.j)-energy_initial; // TODO Rb
+                real_t val = energy_level(species,state.n,state.l,state.j)-energy_initial;
                 if (std::abs(val) < deltaE+1e-11 || deltaE < 0) { // TODO
                     is_necessary[state.idx] = true;
                     hamiltonian_energy.addEntries(idx,idx,val);
@@ -1965,7 +1965,7 @@ public:
 
                     if (symmetry == SYM) {
                         conf["symmetry"] = "sym";
-                        block = 0;
+                        block = 1;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_sym <= step_two)) {
                             step_one_sym++;
@@ -1981,7 +1981,7 @@ public:
 
                     } else if (symmetry == ASYM) {
                         conf["symmetry"] = "asym";
-                        block = 1;
+                        block = 2;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_asym <= step_two)) {
                             step_one_asym++;
@@ -1997,7 +1997,7 @@ public:
 
                     } else if (symmetry == ALL) {
                         conf["symmetry"] = "all";
-                        block = 2;
+                        block = 0;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_all <= step_two)) {
                             step_one_all++;
