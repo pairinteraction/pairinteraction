@@ -1,9 +1,6 @@
 #ifndef DTYPES_H
 #define DTYPES_H
 
-#include "utils.hpp"
-#include "ConfParser.hpp"
-
 #include <vector>
 #include <array>
 #include <iostream>
@@ -16,7 +13,7 @@
 #define BYTE_T MPI_UNSIGNED_CHAR
 #define ORDER Eigen::ColMajor
 
-typedef float real_t;
+typedef double real_t;
 typedef std::complex<real_t> complex_t;
 typedef uint32_t idx_t;
 typedef float storage_real_t;
