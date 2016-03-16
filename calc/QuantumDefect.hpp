@@ -13,8 +13,6 @@ private:
   real_t a1_, a2_, a3_, a4_;
   real_t rc_;
   real_t energy_;
-  void H(int n);
-  void Rb(int l/*, real_t j*/);
 public:
   QuantumDefect(std::string species, int n, int l, real_t j);
   const real_t &ac;
