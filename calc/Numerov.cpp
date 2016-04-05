@@ -68,7 +68,7 @@ real_t Numerov::V(real_t x) {
   real_t V_p = -qd.ac/(2.*x*x*x*x) * (1-exp(-pow(x/qd.rc,6)));
   real_t V_so = 0.0;
   if ( l < 4 ) {
-    real_t alpha = 7.29735257e-3;// ~1/137 fine-structure constant
+    real_t alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
     V_so = alpha*alpha/(4 * x*x*x) * (j*(j+1) - l*(l+1) - 0.5*(1+0.5));
   }
   return V_c + V_p + V_so;
