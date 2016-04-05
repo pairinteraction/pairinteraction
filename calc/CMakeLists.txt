@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_MACOSX_RPATH 0)
 
+add_subdirectory(databases)
+
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/modules)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
@@ -9,7 +11,7 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
 
 # copy databases
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
+# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
 
 # add the executables
 file(GLOB pairinteraction_SRCS *.cpp)
