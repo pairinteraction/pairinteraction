@@ -8,6 +8,11 @@ bool selectionRulesDipole(StateOne state1, StateOne state2, int q) {
     return (abs(state1.l-state2.l) == 1) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1);
 }
 
+bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q) {
+    return (abs(state1.l-state2.l) == 0 || abs(state1.l-state2.l) == 2) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 2) && (state1.j != 0.5 || state2.j != 0.5);
+}
+
+
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
 }
@@ -27,15 +32,36 @@ MatrixElements::MatrixElements(std::string species, int k, std::string dbname) :
     gL = 1;
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
-    precalculate(basis_one,exist_0,exist_p,exist_m,false,false,false);
+void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
+    precalculate(basis_one,false,false,false,false,false,false,false,false,exist_0,exist_p,exist_m);
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
+void MatrixElements::precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
+    precalculate(basis_one,exist_0,exist_p,exist_m,false,false,false,false,false,false,false,false);
+}
+
+void MatrixElements::precalculate_quadrupole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m, bool exist_pp, bool exist_mm) {
+    precalculate(basis_one,false,false,false,exist_0,exist_p,exist_m,exist_pp,exist_mm,false,false,false);
+}
+
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_q_0, bool exist_q_p, bool exist_q_m, bool exist_q_pp, bool exist_q_mm, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
+    if (!(exist_m_0 || exist_m_p || exist_m_m || exist_d_0 || exist_d_p || exist_d_m || exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) return;
+
     if ((exist_m_0 || exist_m_p || exist_m_m) && k != 1) {
         std::cout << "For calculating momentum matrix elements, it must be k=1." << std::endl;
         abort();
     }
+
+    if ((exist_d_0 || exist_d_p || exist_d_m) && k != 1) {
+        std::cout << "For calculating dipole matrix elements, it must be k=1." << std::endl;
+        abort();
+    }
+
+    if ((exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm) && k != 2) {
+        std::cout << "For calculating quadrupole matrix elements, it must be k=2." << std::endl;
+        abort();
+    }
+
 
     SQLite3 db(dbname);
 
@@ -100,13 +126,19 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             if ((exist_d_0 && selectionRulesDipole(state_row, state_col, 0)) ||
                     (exist_d_p && selectionRulesDipole(state_row, state_col, 1)) ||
                     (exist_d_m && selectionRulesDipole(state_row, state_col, -1)) ||
+                    (exist_q_0 && selectionRulesQuadrupole(state_row, state_col, 0)) ||
+                    (exist_q_p && selectionRulesQuadrupole(state_row, state_col, 1)) ||
+                    (exist_q_m && selectionRulesQuadrupole(state_row, state_col, -1)) ||
+                    (exist_q_pp && selectionRulesQuadrupole(state_row, state_col, 2)) ||
+                    (exist_q_mm && selectionRulesQuadrupole(state_row, state_col, -2)) ||
                     (exist_m_0 && selectionRulesMomentum(state_row, state_col, 0)) ||
                     (exist_m_p && selectionRulesMomentum(state_row, state_col, 1)) ||
                     (exist_m_m && selectionRulesMomentum(state_row, state_col, -1))) {
 
                 StateTwo state;
 
-                if ((exist_d_0 || exist_d_p || exist_d_m) && (abs(state_row.l-state_col.l) == 1)) {
+                if (((exist_d_0 || exist_d_p || exist_d_m) && (abs(state_row.l-state_col.l) == 1)) ||
+                        ((exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm) && (abs(state_row.l-state_col.l) == 0 || abs(state_row.l-state_col.l) == 2))) {
                     state = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
                     auto result_nlj_k = element_nlj_k.insert({state, std::numeric_limits<real_t>::max()});
 
@@ -175,7 +207,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     float j1, j2, m1, m2;
     double value;
 
-    if (exist_d_0 || exist_d_p || exist_d_m) {
+    if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
         ss.str(std::string());
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_nlj_k c INNER JOIN tmp_nlj_k t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
@@ -243,13 +275,17 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     db.exec("begin transaction;");
 
-    if (exist_d_0 || exist_d_p || exist_d_m) {
+    if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
         for (auto &element : element_nlj_k) {
             if (element.second == std::numeric_limits<real_t>::max()) {
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
-                element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
+                if (k == 1) { // dipole
+                    element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
                         calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                } else if (k == 2) { // quadrupole
+                    element.second = 0; // TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                }
 
                 ss.str(std::string());
                 ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
@@ -284,7 +320,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
         for (auto &element : element_nlj_0) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 element.second =
                         calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
@@ -371,21 +406,24 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
+    if (k != 1) abort();
+
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
             element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+}
 
+real_t MatrixElements::getQuadrupole(StateOne state_row, StateOne state_col) {
+    if (k != 2) abort();
+
+    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) *
+            element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] * // TODO !!!!!!!!!!!!!!!!!!
+            element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
+            element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
 }
 
 real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
-    /*return pow(-1, state_row.j-state_row.m+state_row.l+0.5+state_col.j) * muB *
-            element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-            (gL*element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-            sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) +
-            gS*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-            sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)));*/
-
     return pow(-1, state_row.j-state_row.m) * muB *
             element_nlj_0[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
@@ -393,14 +431,4 @@ real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
             sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) * pow(-1, 0.5+state_col.l+state_row.j) +
             gS*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)) * pow(-1, 0.5+state_col.j+state_row.l));
-
-    /*if ((state_row.j != state_col.j) || (state_row.l != state_col.l) || (state_row.m != state_col.m) || (state_row.n != state_col.n)) {
-        real_t gJ = 3./2.+(state_row.s*(state_row.s+1)-state_row.l*(state_row.l+1))/(2*state_row.j*(state_row.j+1));
-        return gJ*muB*state_row.m;
-
-        return pow(-1, state_row.j-state_row.m+state_row.l+0.5+state_col.j) * muB *
-                element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-                (gS-gL)*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-                sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1));
-    }*/
 }

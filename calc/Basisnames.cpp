@@ -286,15 +286,9 @@ BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, st
     conf2["j1"] >> startstate.j[1];
     conf2["m1"] >> startstate.m[1];
 
-    StateTwo startstateOrdered = startstate.order();
 
-    if (startstateOrdered != startstate) {
-        std::array<std::string,2> speciesOrdered({{conf2["species1"].str(),conf1["species1"].str()}}); // TODO : species in state class mit aufnehmen
-        build(startstateOrdered, speciesOrdered, basis_one2, basis_one1);
-    } else {
-        std::array<std::string,2> speciesOrdered({{conf1["species1"].str(),conf2["species1"].str()}}); // TODO : species in state class mit aufnehmen
-        build(startstateOrdered, speciesOrdered, basis_one1, basis_one2);
-    }
+    std::array<std::string,2> species({{conf1["species1"].str(),conf2["species1"].str()}}); // TODO : species in state class mit aufnehmen
+    build(startstate, species, basis_one1, basis_one2);
 }
 
 const StateTwo& BasisnamesTwo::initial() const {

@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>265</width>
+             <width>238</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>170</width>
+             <height>291</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1431,8 +1431,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>196</width>
+             <height>383</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1553,7 +1553,7 @@
                  <bool>true</bool>
                 </property>
                 <property name="statusTip">
-                 <string>Angle between interatomic axis (lies in the xy-plane) and quantization axis (z-axis)</string>
+                 <string/>
                 </property>
                 <property name="text">
                  <string>0</string>
@@ -1561,6 +1561,22 @@
                </widget>
               </item>
              </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_83">
+              <property name="text">
+               <string>Note: the angle is measured between the interatomic axis (lies in the xy-plane) and quantization axis (z-axis).</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
             </item>
             <item>
              <spacer name="verticalSpacer_21">
@@ -1638,8 +1654,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>242</width>
+             <height>83</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1767,7 +1783,7 @@
              <x>0</x>
              <y>0</y>
              <width>269</width>
-             <height>779</height>
+             <height>815</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -1902,7 +1918,7 @@
                       <double>1.000000000000000</double>
                      </property>
                      <property name="singleStep">
-                      <double>0.050000000000000</double>
+                      <double>0.100000000000000</double>
                      </property>
                      <property name="value">
                       <double>0.500000000000000</double>
@@ -2066,7 +2082,7 @@
                       <double>1.000000000000000</double>
                      </property>
                      <property name="singleStep">
-                      <double>0.050000000000000</double>
+                      <double>0.100000000000000</double>
                      </property>
                      <property name="value">
                       <double>0.500000000000000</double>
@@ -2074,6 +2090,66 @@
                     </widget>
                    </item>
                   </layout>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QFormLayout" name="formLayout_34">
+                 <property name="sizeConstraint">
+                  <enum>QLayout::SetDefaultConstraint</enum>
+                 </property>
+                 <property name="fieldGrowthPolicy">
+                  <enum>QFormLayout::ExpandingFieldsGrow</enum>
+                 </property>
+                 <property name="labelAlignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                 </property>
+                 <property name="formAlignment">
+                  <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+                 </property>
+                 <property name="verticalSpacing">
+                  <number>0</number>
+                 </property>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_84">
+                   <property name="text">
+                    <string>connection threshold</string>
+                   </property>
+                   <property name="textFormat">
+                    <enum>Qt::AutoText</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="1">
+                  <widget class="QDoubleSpinBox" name="spinbox_plot_connectionthreshold">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="decimals">
+                    <number>3</number>
+                   </property>
+                   <property name="minimum">
+                    <double>0.001000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>1.000000000000000</double>
+                   </property>
+                   <property name="singleStep">
+                    <double>0.100000000000000</double>
+                   </property>
+                   <property name="value">
+                    <double>0.500000000000000</double>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </item>
@@ -2230,7 +2306,7 @@
                       <double>1.000000000000000</double>
                      </property>
                      <property name="singleStep">
-                      <double>0.050000000000000</double>
+                      <double>0.100000000000000</double>
                      </property>
                      <property name="value">
                       <double>0.500000000000000</double>
@@ -2397,7 +2473,7 @@
                       <double>1.000000000000000</double>
                      </property>
                      <property name="singleStep">
-                      <double>0.050000000000000</double>
+                      <double>0.100000000000000</double>
                      </property>
                      <property name="value">
                       <double>0.500000000000000</double>
@@ -2961,6 +3037,9 @@
     </item>
     <item>
      <widget class="QTabWidget" name="tabwidget_plotter">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
         <horstretch>0</horstretch>
