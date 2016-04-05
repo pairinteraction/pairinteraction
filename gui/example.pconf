@@ -1,0 +1,103 @@
+{
+    "antialiasing": true,
+    "connectionthreshold": 0.1,
+    "gradientwidget": {
+        "mode": "rgb",
+        "ticks": [
+            [
+                1.0,
+                [
+                    0,
+                    0,
+                    0,
+                    255
+                ]
+            ],
+            [
+                0.6666666666666667,
+                [
+                    0,
+                    123,
+                    118,
+                    255
+                ]
+            ],
+            [
+                0.8333333333333334,
+                [
+                    12,
+                    67,
+                    0,
+                    255
+                ]
+            ],
+            [
+                0.16666666666666674,
+                [
+                    247,
+                    204,
+                    159,
+                    255
+                ]
+            ],
+            [
+                0.0,
+                [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            ],
+            [
+                0.33333333333333337,
+                [
+                    255,
+                    121,
+                    197,
+                    255
+                ]
+            ],
+            [
+                0.5,
+                [
+                    122,
+                    109,
+                    240,
+                    255
+                ]
+            ]
+        ]
+    },
+    "j1": "0.5 dimensionless",
+    "j2": "0.5 dimensionless",
+    "l1": "0 dimensionless",
+    "l2": "1 dimensionless",
+    "labels": true,
+    "lin": true,
+    "lines": true,
+    "log": false,
+    "m1": "0.5 dimensionless",
+    "m2": "0.5 dimensionless",
+    "maxE_field1": null,
+    "maxE_field2": null,
+    "maxE_potential": "1.0 gigahertz",
+    "minE_field1": null,
+    "minE_field2": null,
+    "minE_potential": "-0.5 gigahertz",
+    "n1": "80 dimensionless",
+    "n2": "79 dimensionless",
+    "overlap": true,
+    "overlapDefined": false,
+    "overlapUnperturbed": true,
+    "points": true,
+    "resolution": 400,
+    "szLabel": "1.0 dimensionless",
+    "szLine": "1.0 dimensionless",
+    "szOverlap": "1.0 dimensionless",
+    "szPoint": "1.0 dimensionless",
+    "transpLabel": "0.5 dimensionless",
+    "transpLine": "0.8 dimensionless",
+    "transpOverlap": "1.0 dimensionless",
+    "transpPoint": "1.0 dimensionless"
+}
