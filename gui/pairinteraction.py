@@ -654,10 +654,10 @@ def unique_rows(a):
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
-        super().__init__(parent)
-        
         locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
         QtCore.QLocale.setDefault(QtCore.QLocale(locale.getlocale()[0]))
+        
+        super().__init__(parent)
         
         del pg.graphicsItems.GradientEditorItem.Gradients['greyclip']
         #del pg.graphicsItems.GradientEditorItem.Gradients['grey']
