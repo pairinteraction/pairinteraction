@@ -1032,9 +1032,9 @@ protected:
     void configure(const Configuration &config) {
         path_out = boost::filesystem::absolute(config["out"].str());
         if (utils::is_complex<scalar_t>::value) {
-            path_cache = path_out / "cache_matrix_complex";
+            path_cache = path_out / "cache/cache_matrix_complex";
         } else {
-            path_cache = path_out / "cache_matrix_real";
+            path_cache = path_out / "cache/cache_matrix_real";
         }
         if(!boost::filesystem::exists(path_cache)){
             boost::filesystem::create_directory(path_cache);
@@ -1155,7 +1155,7 @@ protected:
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements(species, 1, (path_out / "cache_elements.db").string());
+            MatrixElements matrix_elements(species, 1, (path_out / "cache/cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
@@ -1277,9 +1277,9 @@ protected:
             boost::filesystem::path path_db;
 
             if (utils::is_complex<scalar_t>::value) {
-                path_db = path_out / "cache_matrix_complex.db";
+                path_db = path_out / "cache/cache_matrix_complex.db";
             } else {
-                path_db = path_out / "cache_matrix_real.db";
+                path_db = path_out / "cache/cache_matrix_real.db";
             }
             SQLite3 db(path_db.string());
 
@@ -1499,9 +1499,9 @@ public:
     void calculate(const Configuration &conf_tot) {
         path_out = boost::filesystem::absolute(conf_tot["out"].str());
         if (utils::is_complex<scalar_t>::value) {
-            path_cache = path_out / "cache_matrix_complex";
+            path_cache = path_out / "cache/cache_matrix_complex";
         } else {
-            path_cache = path_out / "cache_matrix_real";
+            path_cache = path_out / "cache/cache_matrix_real";
         }
         if(!boost::filesystem::exists(path_cache)){
             boost::filesystem::create_directory(path_cache);
@@ -1738,10 +1738,10 @@ public:
             std::cout << 0.3 << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_out / "cache_elements.db").string());
-            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_out / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_out / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_out / "cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_out / "cache/cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_out / "cache/cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_out / "cache/cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_out / "cache/cache_elements.db").string());
 
             basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
             basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
@@ -1965,9 +1965,9 @@ public:
             boost::filesystem::path path_db;
 
             if (utils::is_complex<scalar_t>::value) {
-                path_db = path_out / "cache_matrix_complex.db";
+                path_db = path_out / "cache/cache_matrix_complex.db";
             } else {
-                path_db = path_out / "cache_matrix_real.db";
+                path_db = path_out / "cache/cache_matrix_real.db";
             }
             SQLite3 db(path_db.string());
 
@@ -2248,6 +2248,11 @@ int main(int argc, char **argv) {
 
     if (not boost::filesystem::exists(path_out)) {
         std::cout << "Path " << path_out << " does not exist." << std::endl;
+        return 1;
+    }
+
+    if (not boost::filesystem::exists(path_out / "cache/")) {
+        std::cout << "Path " << path_out / "cache/" << " does not exist." << std::endl;
         return 1;
     }
 

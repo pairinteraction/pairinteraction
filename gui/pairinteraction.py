@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-
+version_settings = 0
+version_cache = 0
 
 import sys
 from pint import UnitRegistry
@@ -33,6 +34,7 @@ import zipfile
 from scipy import io
 from io import StringIO, BytesIO
 from shutil import copyfile
+import shutil
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -302,6 +304,8 @@ class PlotDict(GUIDict):
         store["transpOverlap"] = {'widget': ui.spinbox_plot_transpOverlap, 'unit': Units.dimensionless}
         store["overlapUnperturbed"] = {'widget': ui.radiobutton_plot_overlapUnperturbed}
         store["overlapDefined"] = {'widget': ui.radiobutton_plot_overlapDefined}
+        store["overlapTransition"] = {'widget': ui.radiobutton_plot_overlapTransition}
+        store["transition"] = {'widget': ui.combobox_plot_overlapTransition}
         store["connectionthreshold"] = {'widget': ui.spinbox_plot_connectionthreshold}
         store["lin"] = {'widget': ui.radiobutton_plot_lin}
         store["log"] = {'widget': ui.radiobutton_plot_log}
@@ -722,12 +726,18 @@ class MainWindow(QtGui.QMainWindow):
         self.path_workingdir = os.path.join(self.path_base,"../calc/")
         self.path_cpp_real = os.path.join(self.path_base,"../calc/pairinteraction-real")
         self.path_cpp_complex = os.path.join(self.path_base,"../calc/pairinteraction-complex")
+        
         if os.name == 'nt': self.path_out = os.path.join(self.userpath, "pairinteraction/")
         else: self.path_out = os.path.join(self.userpath, ".pairinteraction/")
-        self.path_system_last = os.path.join(self.path_out,"lastsettings.sconf")
-        self.path_plot_last = os.path.join(self.path_out,"lastsettings.pconf")
-        self.path_view_last = os.path.join(self.path_out,"lastsettings.json")
+        self.path_cache = os.path.join(self.path_out, "cache/")
+        self.path_lastsettings = os.path.join(self.path_out, "lastsettings/")
+        
+        self.path_system_last = os.path.join(self.path_lastsettings,"lastsettings.sconf")
+        self.path_plot_last = os.path.join(self.path_lastsettings,"lastsettings.pconf")
+        self.path_view_last = os.path.join(self.path_lastsettings,"lastsettings.json")
+        
         self.path_config = os.path.join(self.path_out,"conf.json")
+        self.path_version = os.path.join(self.path_out,"version.json")
         
         self.proc = None
         
@@ -784,13 +794,14 @@ class MainWindow(QtGui.QMainWindow):
         # TODOs
         self.ui.lineedit_system_theta.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
+        self.ui.checkbox_system_dq.setEnabled(False)
+        self.ui.checkbox_system_qq.setEnabled(False)
+        self.ui.checkbox_system_qq.setEnabled(False)
+        self.ui.combobox_plot_overlapTransition.setEnabled(False)
+        self.ui.radiobutton_plot_overlapTransition.setEnabled(False)
         
-        # Create directories
-        if not os.path.exists(self.path_out):
-            os.makedirs(self.path_out)	
-            if os.name == 'nt':
-                ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
-                if not ret: raise ctypes.WinError()
+        
+        
                 
         
 
@@ -884,17 +895,114 @@ class MainWindow(QtGui.QMainWindow):
         
         self.timer.timeout.connect(self.checkForData)
         
+        
+        # Check version
+        msg = None
+        
+        if os.path.exists(self.path_lastsettings):
+            # Load version
+            version_settings_saved = None
+            if os.path.isfile(self.path_version):
+                with open(self.path_version, 'r') as f:
+                    version_settings_saved = json.load(f)["version_settings"]
+            
+            # Compare version
+            if version_settings_saved != version_settings:
+                """msg = QtGui.QMessageBox() # TODO make class
+                msg.setText('A new version of the program has been installed. Clear cache and user data to avoid compatibility issues? This deletes the directory "{}".'.format(self.path_out))
+                msg.setIcon(QtGui.QMessageBox.Information);
+                checkbox = QtGui.QCheckBox("don't show message again")
+                checkbox.blockSignals(True)
+                msg.addButton(checkbox, QtGui.QMessageBox.ApplyRole)
+                msg.addButton(QtGui.QMessageBox.Yes)
+                msg.addButton(QtGui.QMessageBox.No)
+                msg.setDefaultButton(QtGui.QMessageBox.Yes)
+                answer = msg.exec()
+                
+                # Save version if "don't show message again")
+                if answer == QtGui.QMessageBox.No and checkbox.isChecked():
+                    with open(self.path_version, 'w') as f:
+                        json.dump({'version_settings': version_settings, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
+                
+                # Delete directory
+                if answer == QtGui.QMessageBox.Yes:
+                    shutil.rmtree(self.path_out)"""
+                
+                msg = QtGui.QMessageBox() # TODO make class
+                #msg.setText('A new program version has been installed. Due to major changes, cache and last settings have to be cleared. This deletes the directory "{}".'.format(self.path_out))
+                msg.setText('A new program version has been installed. Due to configuration changes, the last settings have to be cleared. This deletes the directory "{}".'.format(self.path_lastsettings))
+                msg.setIcon(QtGui.QMessageBox.Information);
+                msg.addButton(QtGui.QMessageBox.Cancel)
+                msg.addButton(QtGui.QMessageBox.Ok)
+                msg.setDefaultButton(QtGui.QMessageBox.Ok)
+                answer = msg.exec()
+                    
+                # Delete directory
+                if answer == QtGui.QMessageBox.Ok:
+                    shutil.rmtree(self.path_lastsettings)
+                else:
+                    sys.exit()
+                    
+        if os.path.exists(self.path_cache):     
+            # Load version
+            version_cache_saved = None
+            if os.path.isfile(self.path_version):
+                with open(self.path_version, 'r') as f:
+                    version_cache_saved = json.load(f)["version_cache"]
+                        
+            # Compare version
+            if version_cache_saved != version_cache:
+                msg = QtGui.QMessageBox()
+                msg.setText('A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory "{}".'.format(self.path_cache))
+                msg.setIcon(QtGui.QMessageBox.Information);
+                msg.addButton(QtGui.QMessageBox.Cancel)
+                msg.addButton(QtGui.QMessageBox.Ok)
+                msg.setDefaultButton(QtGui.QMessageBox.Ok)
+                answer = msg.exec()
+                
+                # Delete directory
+                if answer == QtGui.QMessageBox.Ok:
+                    shutil.rmtree(self.path_cache)
+                else:
+                    sys.exit()
+            
+        # Create directories
+        if not os.path.exists(self.path_out):
+            os.makedirs(self.path_out)	
+            if os.name == 'nt':
+                ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
+                if not ret: raise ctypes.WinError()
+            
+            with open(self.path_version, 'w') as f:
+                json.dump({'version_settings': version_settings, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
+        
+        if not os.path.exists(self.path_lastsettings):
+            os.makedirs(self.path_lastsettings)
+        
+            with open(self.path_version, 'r') as f:
+                version_cache_saved = json.load(f)["version_cache"]
+            
+            with open(self.path_version, 'w') as f:
+                json.dump({'version_settings': version_settings, 'version_cache': version_cache_saved}, f, indent=4, sort_keys=True)
+            
+        if not os.path.exists(self.path_cache):
+            os.makedirs(self.path_cache)
+        
+            with open(self.path_version, 'r') as f:
+                version_settings_saved = json.load(f)["version_settings"]
+            
+            with open(self.path_version, 'w') as f:
+                json.dump({'version_settings': version_settings_saved, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
+        
         # Load last settings
         if not os.path.isfile(self.path_system_last):
             copyfile(os.path.join(self.path_base,"example.sconf"),self.path_system_last)
-            
         with open(self.path_system_last, 'r') as f:
             params = json.load(f)
             self.systemdict.load(params)
     
         if not os.path.isfile(self.path_plot_last):
             copyfile(os.path.join(self.path_base,"example.pconf"),self.path_plot_last)
-            
         with open(self.path_plot_last, 'r') as f:
             params = json.load(f)
             self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
@@ -908,6 +1016,9 @@ class MainWindow(QtGui.QMainWindow):
                 self.ui.tabwidget_plotter.setCurrentIndex(params["plotter"])
                 self.ui.toolbox_system.setCurrentIndex(params["system"])
                 if "filepath" in params.keys(): self.filepath = params["filepath"]
+        
+        
+        
         
         self.samebasis_state = self.ui.checkbox_system_samebasis.checkState()
                 
