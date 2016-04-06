@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>238</width>
+             <width>265</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>170</width>
-             <height>291</height>
+             <width>280</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1431,8 +1431,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>196</width>
-             <height>383</height>
+             <width>280</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1654,8 +1654,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>242</width>
-             <height>83</height>
+             <width>280</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1781,9 +1781,9 @@
            <property name="geometry">
             <rect>
              <x>0</x>
-             <y>0</y>
+             <y>-313</y>
              <width>269</width>
-             <height>815</height>
+             <height>839</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3001,6 +3001,23 @@
                  </item>
                  <item row="1" column="1">
                   <widget class="QCheckBox" name="checkbox_plot_antialiasing">
+                   <property name="text">
+                    <string/>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_85">
+                   <property name="text">
+                    <string>Auto range</string>
+                   </property>
+                   <property name="textFormat">
+                    <enum>Qt::AutoText</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QCheckBox" name="checkbox_plot_autorange">
                    <property name="text">
                     <string/>
                    </property>

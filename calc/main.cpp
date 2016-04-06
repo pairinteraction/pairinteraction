@@ -1859,44 +1859,44 @@ public:
                         }
                     }
 
-                    if (dipolequadrupole) { // TODO !!!!!!!!!!!!!!
+                    if (dipolequadrupole) {
                         if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                            real_t val = 3/sqrt(5.)*sqrt(3.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                            real_t val = 3/sqrt(5.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                            real_t val = 3/sqrt(5.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = -2*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = -3/sqrt(5.)*sqrt(3.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = -3/sqrt(5.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = -3/sqrt(5.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
@@ -1905,37 +1905,37 @@ public:
                         }
                     }
 
-                    if (quadrupolequadrupole) { // TODO !!!!!!!!!!!!!!
+                    if (quadrupolequadrupole) {
                         if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = -2*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = 3/5.*6*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = 3/5.*4*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = 3/5.*4*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -2)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = 3/5.*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
                                 if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
                             }
                         } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 2)) {
-                            real_t val = -matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
+                            real_t val = 3/5.*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
                                     matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
                             if (std::abs(val) > tol) {
                                 hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);

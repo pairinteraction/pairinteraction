@@ -315,6 +315,7 @@ class PlotDict(GUIDict):
         store["m1"] = {'widget': ui.spinbox_plot_m1, 'unit': Units.dimensionless}
         store["m2"] = {'widget': ui.spinbox_plot_m2, 'unit': Units.dimensionless}
         store["antialiasing"] = {'widget': ui.checkbox_plot_antialiasing}
+        store["autorange"] = {'widget': ui.checkbox_plot_autorange}
 
 class Worker(QtCore.QThread):
 
@@ -942,7 +943,7 @@ class MainWindow(QtGui.QMainWindow):
         
         
         
-        # Setup plot
+        # Setup plot        
         self.minE_field1 = None
         self.minE_field2 = None
         self.minE_potential = None
@@ -959,6 +960,9 @@ class MainWindow(QtGui.QMainWindow):
             plotarea.setDownsampling(ds=True, auto=True, mode='peak')
             plotarea.setClipToView(True)
             plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
+            plotarea.scene().contextMenu = None
+            plotarea.plotItem.ctrlMenu = None
+            #plotarea.getViewBox().menu = None # AttributeError: 'NoneType' object has no attribute 'popup'
         
         if self.constEField and not self.constBField:
             for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -1883,8 +1887,29 @@ class MainWindow(QtGui.QMainWindow):
                 
                 # Store, whether the same basis should be used for both atoms
                 self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
+                
+                
+                # Get limits # TODO !!!!!!!! zusammen bringen mit set limits
+                self.minE_field1 = self.plotdict["minE_field1"]
+                if self.minE_field1 is not None: self.minE_field1 = self.minE_field1.magnitude
+                    
+                self.minE_field2 = self.plotdict["minE_field2"]
+                if self.minE_field2 is not None: self.minE_field2 = self.minE_field2.magnitude
+                
+                self.minE_potential = self.plotdict["minE_potential"]
+                if self.minE_potential is not None: self.minE_potential = self.minE_potential.magnitude
+                
+                self.maxE_field1 = self.plotdict["maxE_field1"]
+                if self.maxE_field1 is not None: self.maxE_field1 = self.maxE_field1.magnitude
+                    
+                self.maxE_field2 = self.plotdict["maxE_field2"]
+                if self.maxE_field2 is not None: self.maxE_field2 = self.maxE_field2.magnitude
+                
+                self.maxE_potential = self.plotdict["maxE_potential"]
+                if self.maxE_potential is not None: self.maxE_potential = self.maxE_potential.magnitude
+                
             
-                # Clear plots and set them up # disable auto range (for higher update speed) # TODO set axis range manually, self.ui.graphicsview_field1_plot.disableAutoRange()
+                # Clear plots and set them up
                 self.constDistance = self.getConstDistance()
                 self.constEField = self.getConstEField()
                 self.constBField = self.getConstBField()
@@ -1896,7 +1921,18 @@ class MainWindow(QtGui.QMainWindow):
                     self.storage_configuration[0] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
                     self.storage_configuration[0][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
                     
+                    # clear plot (with a hack)
+                    autorangestate = self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"]
+                    if autorangestate[0]:
+                        self.ui.graphicsview_field1_plot.disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_field1_plot.disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
                     self.ui.graphicsview_field1_plot.clear()
+                    if autorangestate[0]:
+                        self.ui.graphicsview_field1_plot.enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_field1_plot.enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
+                        
                     self.ui.graphicsview_field1_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
                     if self.constEField and not self.constBField:
                         self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -1909,13 +1945,33 @@ class MainWindow(QtGui.QMainWindow):
                         posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
                         posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
                     self.leftSmallerRight = posMin < posMax
+                    
+                    if self.ui.checkbox_plot_autorange.isChecked():
+                        self.ui.graphicsview_field1_plot.enableAutoRange()
+                    else:
+                        if self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"][0]:
+                            self.ui.graphicsview_field1_plot.setXRange(posMin, posMax)
+                        if self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"][1] and self.minE_field1 is not None and self.maxE_field1 is not None:
+                            self.ui.graphicsview_field1_plot.setYRange(self.minE_field1, self.maxE_field1)
+  
                 if self.senderbutton in [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
                     self.storage_data[1] = []
                     self.storage_states[1] = None
                     self.storage_configuration[1] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
                     self.storage_configuration[1][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
                     
+                    # clear plot (with a hack)
+                    autorangestate = self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"]
+                    if autorangestate[0]:
+                        self.ui.graphicsview_field2_plot.disableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_field2_plot.disableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().YAxis)
                     self.ui.graphicsview_field2_plot.clear()
+                    if autorangestate[0]:
+                        self.ui.graphicsview_field2_plot.enableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_field2_plot.enableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().YAxis)
+                        
                     self.ui.graphicsview_field2_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
                     if self.constEField and not self.constBField:
                         self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -1928,13 +1984,33 @@ class MainWindow(QtGui.QMainWindow):
                         posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
                         posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
                     self.leftSmallerRight = posMin < posMax
+                    
+                    if self.ui.checkbox_plot_autorange.isChecked():
+                        self.ui.graphicsview_field2_plot.enableAutoRange()
+                    else:
+                        if self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"][0]:
+                            self.ui.graphicsview_field2_plot.setXRange(posMin, posMax)
+                        if self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"][1] and self.minE_field2 is not None and self.maxE_field2 is not None:
+                            self.ui.graphicsview_field2_plot.setYRange(self.minE_field2, self.maxE_field2)
+                    
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
                     self.storage_data[2] = []
                     self.storage_states[2] = None
                     self.storage_configuration[2] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
                     self.storage_configuration[2][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
                     
+                    # clear plot (with a hack)
+                    autorangestate = self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"]
+                    if autorangestate[0]:
+                        self.ui.graphicsview_potential_plot.disableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_potential_plot.disableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().YAxis)
                     self.ui.graphicsview_potential_plot.clear()
+                    if autorangestate[0]:
+                        self.ui.graphicsview_potential_plot.enableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.ui.graphicsview_potential_plot.enableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().YAxis)
+                        
                     self.ui.graphicsview_potential_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
                     if self.constDistance and not self.constEField:
                         self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
@@ -1953,7 +2029,13 @@ class MainWindow(QtGui.QMainWindow):
                         posMax_potential = self.systemdict['maxR'].magnitude
                     self.leftSmallerRight_potential = posMin_potential < posMax_potential
                     
-                
+                    if self.ui.checkbox_plot_autorange.isChecked():
+                        self.ui.graphicsview_potential_plot.enableAutoRange()
+                    else:
+                        if self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"][0]:
+                            self.ui.graphicsview_potential_plot.setXRange(posMin_potential, posMax_potential)
+                        if self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"][1] and self.minE_potential is not None and self.maxE_potential is not None:
+                            self.ui.graphicsview_potential_plot.setYRange(self.minE_potential, self.maxE_potential)
                         
                 self.converter_y = Converter.fromAU(1,Units.energy).magnitude
                 
@@ -2154,7 +2236,7 @@ class MainWindow(QtGui.QMainWindow):
             
             for filestep, blocknumber, filename in sorted(self.storage_data[idx],key=itemgetter(0,1)):
                 eigensystem = Eigensystem(filename)
-                energies = eigensystem.energies # nBasis
+                energies = eigensystem.energies*self.converter_y # nBasis
                 basis = eigensystem.basis  # nState, nBasis (stored in Compressed Sparse Column format, CSC)
                     
                 if filestep != filestep_last: # new step
