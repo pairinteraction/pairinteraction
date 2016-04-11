@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-version_settings = 0
-version_cache = 0
+version_settings = 1
+version_cache = 1
 
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
-from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py or py3uic4 plotter.ui > plotter.py
 import pyqtgraph as pg
 import pyqtgraph.exporters
@@ -897,7 +897,63 @@ class MainWindow(QtGui.QMainWindow):
         
         
         # Check version
-        msg = None
+        
+        # Load version
+        version_settings_saved = None
+        version_cache_saved = None
+        if os.path.isfile(self.path_version):
+            with open(self.path_version, 'r') as f:
+                params = json.load(f)
+                version_settings_saved = params["version_settings"]
+                version_cache_saved =  params["version_cache"]
+        
+        # Compare version
+        if os.path.exists(self.path_out) and version_settings_saved != version_settings and version_cache_saved != version_cache:
+            msg = QtGui.QMessageBox()
+            msg.setText('A new program version has been installed. Due to major changes, cache and settings have to be cleared. This deletes the directory {}.'.format(self.path_out))
+            msg.setIcon(QtGui.QMessageBox.Information);
+            msg.addButton(QtGui.QMessageBox.Cancel)
+            msg.addButton(QtGui.QMessageBox.Ok)
+            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            answer = msg.exec()
+                    
+            # Delete directory
+            if answer == QtGui.QMessageBox.Ok:
+                shutil.rmtree(self.path_out)
+            else:
+                sys.exit()
+        
+        elif os.path.exists(self.path_lastsettings) and version_settings_saved != version_settings:
+            msg = QtGui.QMessageBox()
+            msg.setText('A new program version has been installed. Due to configuration changes, settings have to be cleared. This deletes the directory {}.'.format(self.path_lastsettings))
+            msg.setIcon(QtGui.QMessageBox.Information);
+            msg.addButton(QtGui.QMessageBox.Cancel)
+            msg.addButton(QtGui.QMessageBox.Ok)
+            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            answer = msg.exec()
+                
+            # Delete directory
+            if answer == QtGui.QMessageBox.Ok:
+                shutil.rmtree(self.path_lastsettings)
+            else:
+                sys.exit()
+        
+        elif os.path.exists(self.path_cache) and version_cache_saved != version_cache:
+            msg = QtGui.QMessageBox()
+            msg.setText('A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory {}.'.format(self.path_cache))
+            msg.setIcon(QtGui.QMessageBox.Information);
+            msg.addButton(QtGui.QMessageBox.Cancel)
+            msg.addButton(QtGui.QMessageBox.Ok)
+            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            answer = msg.exec()
+                
+            # Delete directory
+            if answer == QtGui.QMessageBox.Ok:
+                shutil.rmtree(self.path_cache)
+            else:
+                sys.exit()
+        
+        '''msg = None
         
         if os.path.exists(self.path_lastsettings):
             # Load version
@@ -964,7 +1020,7 @@ class MainWindow(QtGui.QMainWindow):
                 if answer == QtGui.QMessageBox.Ok:
                     shutil.rmtree(self.path_cache)
                 else:
-                    sys.exit()
+                    sys.exit()'''
             
         # Create directories
         if not os.path.exists(self.path_out):
@@ -1074,6 +1130,9 @@ class MainWindow(QtGui.QMainWindow):
             plotarea.scene().contextMenu = None
             plotarea.plotItem.ctrlMenu = None
             #plotarea.getViewBox().menu = None # AttributeError: 'NoneType' object has no attribute 'popup'
+            
+            plotarea.getAxis("bottom").setZValue(1000) # HACK to bring axis into the foreground
+            plotarea.getAxis("left").setZValue(1000) # HACK to bring axis into the foreground
         
         if self.constEField and not self.constBField:
             for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
@@ -1087,9 +1146,9 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
             
-    def resizeEvent(self, event):
+    """def resizeEvent(self, event):
         super().resizeEvent(event)
-        if sys.platform == "darwin": QtGui.QApplication.processEvents() # hack to circumvent the no-redraw-after-resizing-bug
+        if sys.platform == "darwin": QtGui.QApplication.processEvents() # hack to circumvent the no-redraw-after-resizing-bug"""
     
     def get1DPosition(self, x, y, z):
         vec = np.array([x,y,z])
@@ -1415,12 +1474,12 @@ class MainWindow(QtGui.QMainWindow):
                         
                         # calculate size of color map
                         height_pixelunits = res
-                        enlargement = max(np.round((height_pixelunits/self.steps-2)/2),0)
+                        enlargement = int(max(np.round((height_pixelunits/self.steps-2)/2),0))
                         width_pixelunits = 5+4*enlargement
                         
                         # calculate values to smooth the colormap
                         smootherX = (enlargement*2+2)*1/2
-                        smootherY = height_pixelunits*1/150*size 
+                        smootherY = height_pixelunits*1/150*size
                         
                         # --- build buffers ---
                         # initialize arrays if first run at a new position ("filestep")
@@ -1547,8 +1606,8 @@ class MainWindow(QtGui.QMainWindow):
                             colormap = colormap[idx_left:idx_right]
                             
                             # normalizing
-                            normalizer = np.zeros((width_pixelunits,2*3*smootherY+1))
-                            normalizer[(width_pixelunits-1)/2,3*smootherY] = 1
+                            normalizer = np.zeros((width_pixelunits,int(2*3*smootherY+1)))
+                            normalizer[int((width_pixelunits-1)/2),int(3*smootherY)] = 1
                             normalizer = gaussian_filter(normalizer,(smootherX,smootherY),mode='constant')
                             
                             colormap /= np.max(normalizer)
@@ -1910,7 +1969,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.ui.checkbox_system_samebasis.setEnabled(True)
                 self.ui.checkbox_system_samebasis.setCheckState(self.samebasis_state)
     
-    @QtCore.pyqtSlot(str)   
+    @QtCore.pyqtSlot()   
     def validateQuantumnumbers(self):
         sender = self.sender()
         
@@ -1956,7 +2015,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             self.ui.statusbar.showMessage('')
     
-    @QtCore.pyqtSlot(str)   
+    @QtCore.pyqtSlot()   
     def validateHalfinteger(self):
         value = self.sender().value()
         self.sender().setValue(np.floor(value)+0.5)
@@ -2277,7 +2336,7 @@ class MainWindow(QtGui.QMainWindow):
         if idx == 0 and self.ui.checkbox_system_samebasis.isChecked(): description = "field map of atom 1 and 2"
         else: description = ["field map of atom 1", "field map of atom 2", "pair potential"][idx]
         
-        filename = QtGui.QFileDialog.getSaveFileName(self, \
+        filename,_ = QtGui.QFileDialog.getSaveFileName(self, \
             "Save {}".format(description), path, "zip (*.zip)")
         
         if not filename:
@@ -2294,6 +2353,7 @@ class MainWindow(QtGui.QMainWindow):
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot][idx].getPlotItem()
             exporter = pg.exporters.ImageExporter(plotitem)
             exporter.parameters()['width'] = 2000
+            exporter.parameters()['height'] = 2000
             exporter.parameters()['antialias'] = True
             image = exporter.export(toBytes=True)
             
@@ -2398,7 +2458,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def saveSystemConf(self):
         path = self.systemfile if self.systemfile is not None else self.filepath
-        filename = QtGui.QFileDialog.getSaveFileName(self, \
+        filename,_ = QtGui.QFileDialog.getSaveFileName(self, \
             "Save system configuration",path, "sconf (*.sconf)")
         
         if filename:
@@ -2411,7 +2471,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def savePlotConf(self):
         path = self.plotfile if self.plotfile is not None else self.filepath
-        filename = QtGui.QFileDialog.getSaveFileName(self, \
+        filename,_ = QtGui.QFileDialog.getSaveFileName(self, \
             "Save plot configuration",path, "pconf (*.pconf)")
         
         if filename:
@@ -2424,7 +2484,7 @@ class MainWindow(QtGui.QMainWindow):
     
     @QtCore.pyqtSlot()
     def openSystemConf(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, \
+        filename,_ = QtGui.QFileDialog.getOpenFileName(self, \
             "Open system configuration",self.filepath, "sconf (*.sconf)")
         
         if filename:
@@ -2436,7 +2496,7 @@ class MainWindow(QtGui.QMainWindow):
     
     @QtCore.pyqtSlot()
     def openPlotConf(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, \
+        filename,_ = QtGui.QFileDialog.getOpenFileName(self, \
             "Open plot configuration",self.filepath, "pconf (*.pconf)")
         
         if not (filename == ""):

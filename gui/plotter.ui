@@ -50,7 +50,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>280</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -65,8 +65,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>292</width>
-             <height>341</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -121,10 +121,110 @@
                  <property name="verticalSpacing">
                   <number>0</number>
                  </property>
+                 <item row="1" column="1">
+                  <widget class="QSpinBox" name="spinbox_system_n1">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="minimum">
+                    <number>1</number>
+                   </property>
+                   <property name="maximum">
+                    <number>999</number>
+                   </property>
+                   <property name="value">
+                    <number>50</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="1">
+                  <widget class="QSpinBox" name="spinbox_system_l1">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximum">
+                    <number>100</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="1">
+                  <widget class="QDoubleSpinBox" name="spinbox_system_j1">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="decimals">
+                    <number>1</number>
+                   </property>
+                   <property name="minimum">
+                    <double>0.500000000000000</double>
+                   </property>
+                   <property name="maximum">
+                    <double>99.500000000000000</double>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_2">
+                   <property name="text">
+                    <string>n&lt;sub&gt;1&lt;/sub&gt;</string>
+                   </property>
+                   <property name="textFormat">
+                    <enum>Qt::AutoText</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_3">
+                   <property name="text">
+                    <string>l&lt;sub&gt;1&lt;/sub&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="QLabel" name="label_4">
+                   <property name="text">
+                    <string>j&lt;sub&gt;1&lt;/sub&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0">
+                  <widget class="QLabel" name="label_5">
+                   <property name="text">
+                    <string>m&lt;sub&gt;1&lt;/sub&gt;</string>
+                   </property>
+                  </widget>
+                 </item>
                  <item row="0" column="1">
                   <widget class="QComboBox" name="combobox_system_species1">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -170,79 +270,10 @@
                    </item>
                   </widget>
                  </item>
-                 <item row="1" column="1">
-                  <widget class="QSpinBox" name="spinbox_system_n1">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="minimum">
-                    <number>1</number>
-                   </property>
-                   <property name="maximum">
-                    <number>999</number>
-                   </property>
-                   <property name="value">
-                    <number>50</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QSpinBox" name="spinbox_system_l1">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="maximum">
-                    <number>100</number>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="1">
-                  <widget class="QDoubleSpinBox" name="spinbox_system_j1">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="decimals">
-                    <number>1</number>
-                   </property>
-                   <property name="minimum">
-                    <double>0.500000000000000</double>
-                   </property>
-                   <property name="maximum">
-                    <double>99.500000000000000</double>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="4" column="1">
                   <widget class="QDoubleSpinBox" name="spinbox_system_m1">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -277,37 +308,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="QLabel" name="label_2">
-                   <property name="text">
-                    <string>n&lt;sub&gt;1&lt;/sub&gt;</string>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::AutoText</enum>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="QLabel" name="label_3">
-                   <property name="text">
-                    <string>l&lt;sub&gt;1&lt;/sub&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="QLabel" name="label_4">
-                   <property name="text">
-                    <string>j&lt;sub&gt;1&lt;/sub&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>m&lt;sub&gt;1&lt;/sub&gt;</string>
-                   </property>
-                  </widget>
-                 </item>
                 </layout>
                </item>
                <item>
@@ -327,69 +327,10 @@
                  <property name="verticalSpacing">
                   <number>0</number>
                  </property>
-                 <item row="0" column="1">
-                  <widget class="QComboBox" name="combobox_system_species2">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <property name="whatsThis">
-                    <string>Chemical element of the second atom</string>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>H</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Li</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Na</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>K</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Rb</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>Cs</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
-                  <widget class="QLabel" name="label_8">
-                   <property name="text">
-                    <string>atom 2</string>
-                   </property>
-                   <property name="textFormat">
-                    <enum>Qt::AutoText</enum>
-                   </property>
-                  </widget>
-                 </item>
                  <item row="1" column="1">
                   <widget class="QSpinBox" name="spinbox_system_n2">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -414,7 +355,7 @@
                  <item row="2" column="1">
                   <widget class="QSpinBox" name="spinbox_system_l2">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -433,7 +374,7 @@
                  <item row="3" column="1">
                   <widget class="QDoubleSpinBox" name="spinbox_system_j2">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -458,7 +399,7 @@
                  <item row="4" column="1">
                   <widget class="QDoubleSpinBox" name="spinbox_system_m2">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -514,6 +455,65 @@
                    </property>
                   </widget>
                  </item>
+                 <item row="0" column="1">
+                  <widget class="QComboBox" name="combobox_system_species2">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="whatsThis">
+                    <string>Chemical element of the second atom</string>
+                   </property>
+                   <item>
+                    <property name="text">
+                     <string>H</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Li</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Na</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>K</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Rb</string>
+                    </property>
+                   </item>
+                   <item>
+                    <property name="text">
+                     <string>Cs</string>
+                    </property>
+                   </item>
+                  </widget>
+                 </item>
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_8">
+                   <property name="text">
+                    <string>atom 2</string>
+                   </property>
+                   <property name="textFormat">
+                    <enum>Qt::AutoText</enum>
+                   </property>
+                  </widget>
+                 </item>
                 </layout>
                </item>
               </layout>
@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>265</width>
+             <width>238</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>170</width>
+             <height>291</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1431,8 +1431,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>196</width>
+             <height>383</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1654,8 +1654,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>280</width>
-             <height>356</height>
+             <width>242</width>
+             <height>83</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1764,7 +1764,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>280</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -1782,7 +1782,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>270</width>
+             <width>285</width>
              <height>870</height>
             </rect>
            </property>
@@ -1933,7 +1933,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_15">
+             <spacer name="verticalSpacer_16">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2157,7 +2157,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_16">
+             <spacer name="verticalSpacer_22">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -2884,7 +2884,7 @@
                  <property name="verticalSpacing">
                   <number>0</number>
                  </property>
-                 <item row="2" column="0">
+                 <item row="1" column="0">
                   <widget class="GradientWidget" name="gradientwidget_plot_gradient">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -2900,7 +2900,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="2" column="0">
                   <layout class="QHBoxLayout" name="horizontalLayout_3">
                    <item>
                     <widget class="QLabel" name="label_plot_1st">
@@ -2931,7 +2931,7 @@
                    </item>
                   </layout>
                  </item>
-                 <item row="2" column="1">
+                 <item row="1" column="1">
                   <widget class="QWidget" name="verticalWidget" native="true">
                    <layout class="QVBoxLayout" name="verticalLayout_4">
                     <property name="leftMargin">
@@ -2952,7 +2952,7 @@
                        <string>lin</string>
                       </property>
                       <property name="checked">
-                       <bool>true</bool>
+                       <bool>false</bool>
                       </property>
                      </widget>
                     </item>
@@ -2972,7 +2972,7 @@
              </widget>
             </item>
             <item>
-             <spacer name="verticalSpacer_22">
+             <spacer name="verticalSpacer_15">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
               </property>
@@ -3056,6 +3056,9 @@
                   <widget class="QCheckBox" name="checkbox_plot_antialiasing">
                    <property name="text">
                     <string/>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
                    </property>
                   </widget>
                  </item>
@@ -3912,7 +3915,6 @@
   <tabstop>checkbox_system_qq</tabstop>
   <tabstop>lineedit_system_theta</tabstop>
   <tabstop>scrollArea</tabstop>
-  <tabstop>groupbox_plot_points</tabstop>
   <tabstop>spinbox_plot_szPoint</tabstop>
   <tabstop>spinbox_plot_transpPoint</tabstop>
   <tabstop>groupbox_plot_lines</tabstop>
@@ -3921,7 +3923,6 @@
   <tabstop>groupbox_plot_labels</tabstop>
   <tabstop>spinbox_plot_szLabel</tabstop>
   <tabstop>spinbox_plot_transpLabel</tabstop>
-  <tabstop>groupbox_plot_overlap</tabstop>
   <tabstop>spinbox_plot_n1</tabstop>
   <tabstop>spinbox_plot_l1</tabstop>
   <tabstop>spinbox_plot_j1</tabstop>

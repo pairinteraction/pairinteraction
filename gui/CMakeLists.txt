@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-FIND_PROGRAM(PYUIC NAMES pyuic4 py3uic4)
+FIND_PROGRAM(PYUIC NAMES pyuic5 py3uic5)
 IF(PYUIC)
   MESSAGE(STATUS "Found pyuic: ${PYUIC}")
 ELSE(PYUIC)

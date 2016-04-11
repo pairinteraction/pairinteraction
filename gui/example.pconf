@@ -6,33 +6,6 @@
         "mode": "rgb",
         "ticks": [
             [
-                1.0,
-                [
-                    0,
-                    0,
-                    0,
-                    255
-                ]
-            ],
-            [
-                0.16666666666666674,
-                [
-                    247,
-                    204,
-                    159,
-                    255
-                ]
-            ],
-            [
-                0.0,
-                [
-                    255,
-                    255,
-                    255,
-                    255
-                ]
-            ],
-            [
                 0.6666666666666667,
                 [
                     0,
@@ -51,6 +24,15 @@
                 ]
             ],
             [
+                1.0,
+                [
+                    0,
+                    0,
+                    0,
+                    255
+                ]
+            ],
+            [
                 0.5,
                 [
                     122,
@@ -60,11 +42,29 @@
                 ]
             ],
             [
+                0.16666666666666674,
+                [
+                    247,
+                    204,
+                    159,
+                    255
+                ]
+            ],
+            [
                 0.8333333333333334,
                 [
                     12,
                     67,
                     0,
+                    255
+                ]
+            ],
+            [
+                0.0,
+                [
+                    255,
+                    255,
+                    255,
                     255
                 ]
             ]
@@ -90,6 +90,7 @@
     "n2": "79 dimensionless",
     "overlap": true,
     "overlapDefined": false,
+    "overlapTransition": false,
     "overlapUnperturbed": true,
     "points": true,
     "resolution": 400,
@@ -97,6 +98,7 @@
     "szLine": "1.0 dimensionless",
     "szOverlap": "1.0 dimensionless",
     "szPoint": "1.0 dimensionless",
+    "transition": "\u03c0 transition to state below",
     "transpLabel": "0.5 dimensionless",
     "transpLine": "0.8 dimensionless",
     "transpOverlap": "1.0 dimensionless",
