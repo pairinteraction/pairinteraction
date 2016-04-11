@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-FIND_PROGRAM(PYUIC NAMES pyuic5 py3uic5)
+FIND_PROGRAM(PYUIC NAMES py3uic5 pyuic5)
 IF(PYUIC)
   MESSAGE(STATUS "Found pyuic: ${PYUIC}")
 ELSE(PYUIC)
   MESSAGE(FATAL_ERROR "Could not find pyuic")
 ENDIF(PYUIC)
 
-FIND_PROGRAM(PYTHON NAMES python)
+FIND_PROGRAM(PYTHON NAMES python3)
 IF(PYUIC)
   MESSAGE(STATUS "Found python: ${PYTHON}")
 ELSE(PYUIC)
@@ -28,6 +28,6 @@ add_custom_command(TARGET gui
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/example.sconf DESTINATION share/pairinteraction/gui)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/example.pconf DESTINATION share/pairinteraction/gui)
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plotter.py DESTINATION share/pairinteraction/gui)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/plotter.pyc DESTINATION share/pairinteraction/gui)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/__pycache__ DESTINATION share/pairinteraction/gui)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction.py DESTINATION share/pairinteraction/gui)
 install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION bin)

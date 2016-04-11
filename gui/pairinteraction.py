@@ -1345,7 +1345,8 @@ class MainWindow(QtGui.QMainWindow):
                     basis *= transformator
                     
                     # probability to be in a certain state
-                    probs = np.abs(basis).power(2) # nState, nBasis
+                    probs = np.abs(basis) # nState, nBasis
+                    probs.data **= 2
                     
                     # --- calculate the momentum that is associated with a basis element ---
                     if idx == 0 or idx == 1:
@@ -2509,7 +2510,7 @@ class MainWindow(QtGui.QMainWindow):
             self.filepath = os.path.dirname(filename)
             
     def closeEvent(self, event):
-        # Kill c++ program if necessary 
+        # Kill c++ program if necessary
         self.abortCalculation()
         
         # Save last settings
