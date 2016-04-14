@@ -1,7 +1,16 @@
 {
-    "antialiasing": true,
-    "autorange": false,
-    "connectionthreshold": 0.1,
+    "antialiasing": [
+        true,
+        null
+    ],
+    "autorange": [
+        false,
+        null
+    ],
+    "connectionthreshold": [
+        0.1,
+        null
+    ],
     "gradientwidget": {
         "mode": "rgb",
         "ticks": [
@@ -11,33 +20,6 @@
                     0,
                     123,
                     118,
-                    255
-                ]
-            ],
-            [
-                0.33333333333333337,
-                [
-                    255,
-                    121,
-                    197,
-                    255
-                ]
-            ],
-            [
-                1.0,
-                [
-                    0,
-                    0,
-                    0,
-                    255
-                ]
-            ],
-            [
-                0.5,
-                [
-                    122,
-                    109,
-                    240,
                     255
                 ]
             ],
@@ -67,40 +49,166 @@
                     255,
                     255
                 ]
+            ],
+            [
+                0.33333333333333337,
+                [
+                    255,
+                    121,
+                    197,
+                    255
+                ]
+            ],
+            [
+                0.5,
+                [
+                    122,
+                    109,
+                    240,
+                    255
+                ]
+            ],
+            [
+                1.0,
+                [
+                    0,
+                    0,
+                    0,
+                    255
+                ]
             ]
         ]
     },
-    "j1": "0.5 dimensionless",
-    "j2": "0.5 dimensionless",
-    "l1": "0 dimensionless",
-    "l2": "1 dimensionless",
-    "labels": true,
-    "lin": true,
-    "lines": true,
-    "log": false,
-    "m1": "0.5 dimensionless",
-    "m2": "0.5 dimensionless",
-    "maxE_field1": null,
-    "maxE_field2": null,
-    "maxE_potential": "1.0 gigahertz",
-    "minE_field1": null,
-    "minE_field2": null,
-    "minE_potential": "-0.5 gigahertz",
-    "n1": "80 dimensionless",
-    "n2": "79 dimensionless",
-    "overlap": true,
-    "overlapDefined": false,
-    "overlapTransition": false,
-    "overlapUnperturbed": true,
-    "points": true,
-    "resolution": 400,
-    "szLabel": "1.0 dimensionless",
-    "szLine": "1.0 dimensionless",
-    "szOverlap": "1.0 dimensionless",
-    "szPoint": "1.0 dimensionless",
-    "transition": "\u03c0 transition to state below",
-    "transpLabel": "0.5 dimensionless",
-    "transpLine": "0.8 dimensionless",
-    "transpOverlap": "1.0 dimensionless",
-    "transpPoint": "1.0 dimensionless"
+    "j1": [
+        0.5,
+        null
+    ],
+    "j2": [
+        0.5,
+        null
+    ],
+    "l1": [
+        0,
+        null
+    ],
+    "l2": [
+        1,
+        null
+    ],
+    "labels": [
+        true,
+        null
+    ],
+    "lin": [
+        true,
+        null
+    ],
+    "lines": [
+        true,
+        null
+    ],
+    "log": [
+        false,
+        null
+    ],
+    "m1": [
+        0.5,
+        null
+    ],
+    "m2": [
+        0.5,
+        null
+    ],
+    "maxE_field1": [
+        null,
+        "gigahertz"
+    ],
+    "maxE_field2": [
+        null,
+        "gigahertz"
+    ],
+    "maxE_potential": [
+        1.0,
+        "gigahertz"
+    ],
+    "minE_field1": [
+        null,
+        "gigahertz"
+    ],
+    "minE_field2": [
+        null,
+        "gigahertz"
+    ],
+    "minE_potential": [
+        -0.5,
+        "gigahertz"
+    ],
+    "n1": [
+        80,
+        null
+    ],
+    "n2": [
+        79,
+        null
+    ],
+    "overlap": [
+        true,
+        null
+    ],
+    "overlapDefined": [
+        false,
+        null
+    ],
+    "overlapTransition": [
+        false,
+        null
+    ],
+    "overlapUnperturbed": [
+        true,
+        null
+    ],
+    "points": [
+        true,
+        null
+    ],
+    "resolution": [
+        400,
+        null
+    ],
+    "szLabel": [
+        1.0,
+        null
+    ],
+    "szLine": [
+        1.0,
+        null
+    ],
+    "szOverlap": [
+        1.0,
+        null
+    ],
+    "szPoint": [
+        1.0,
+        null
+    ],
+    "transition": [
+        "\u03c0 transition to state below",
+        null
+    ],
+    "transpLabel": [
+        0.5,
+        null
+    ],
+    "transpLine": [
+        0.8,
+        null
+    ],
+    "transpOverlap": [
+        1.0,
+        null
+    ],
+    "transpPoint": [
+        1.0,
+        null
+    ]
 }

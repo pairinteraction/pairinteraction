@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
-version_settings = 1
-version_cache = 1
+version_settings = 2
+version_cache = 2
 
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
 from PyQt5 import QtCore, QtGui
-from plotter import Ui_plotwindow # pyuic4 plotter.ui > plotter.py or py3uic4 plotter.ui > plotter.py
+from plotter import Ui_plotwindow
 import pyqtgraph as pg
 import pyqtgraph.exporters
 import numpy as np
@@ -28,7 +28,6 @@ import sip
 from scipy import constants
 import psutil
 from scipy.ndimage.filters import gaussian_filter
-"""from palettable import cubehelix"""
 from operator import itemgetter
 import zipfile
 from scipy import io
@@ -36,16 +35,22 @@ from io import StringIO, BytesIO
 from shutil import copyfile
 import shutil
 
+# make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
-ureg = UnitRegistry()
-Q = ureg.Quantity
-C = lambda s : Q(constants.value(s),constants.unit(s))
 
+
+# global configurations of pyqtgraph
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
-# http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
+
+
+## utils.py
+import numpy as np
+
+# === append csr matrices ===
+#see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 def csr_vappend(a,b):
     """ Takes in 2 csr_matrices and appends the second one to the bottom of the first one. 
     Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
@@ -56,24 +61,25 @@ def csr_vappend(a,b):
     a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
     a._shape = (a.shape[0]+b.shape[0],b.shape[1])
 
+# === append csc matrices ===
+#see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 def csc_happend(a,b):
     """ Takes in 2 csc_matrices and appends the second one to the right of the first one."""
-
+    
     a.data = np.hstack((a.data,b.data))
     a.indices = np.hstack((a.indices,b.indices))
     a.indptr = np.hstack((a.indptr,(b.indptr + a.nnz)[1:]))
     a._shape = (b.shape[0],a.shape[1]+b.shape[1])
 
-#http://stackoverflow.com/questions/15992857/efficient-way-to-get-the-max-of-each-row-for-large-sparse-matrix
+# === keep only the values that are maximal within a row of a csr matrix ===
+#see http://stackoverflow.com/questions/15992857/efficient-way-to-get-the-max-of-each-row-for-large-sparse-matrix
 def csr_keepmax(a):
     boolarr = np.diff(a.indptr)>0
     ret = np.maximum.reduceat(a.data, a.indptr[:-1][boolarr])
     a.data[a.data != np.repeat(ret,np.diff(a.indptr)[boolarr])] = 0
     a.eliminate_zeros()
 
-
-# ----- Returns a normalized image -----
-
+# === return a normalized image ===
 def normscale(data, cmin=None, cmax=None):
     if cmin is None:
         cmin = np.nanmin(data)
@@ -81,44 +87,124 @@ def normscale(data, cmin=None, cmax=None):
         cmax = np.nanmax(data)
     return (data-cmin)/(cmax-cmin or 1)
 
-# ----- Returns a byte-scaled image -----
-
+# === return a byte-scaled image ===
 def bytescale(data, cmin=None, cmax=None, high=255, low=0):
-    return np.array(normscale(data,cmin,cmax)*(high - low + 0.9999) + low).astype(int) # TODO
+    return np.array(normscale(data,cmin,cmax)*(high - low + 0.9999) + low).astype(int)
 
 
-class Converter:
-    converter = dict()
-    dimensionless = Q('1')
-    converter[str(dimensionless.dimensionality)] = dimensionless
-    au_energy = C('atomic unit of energy')/C('Planck constant')
-    converter[str(au_energy.dimensionality)] = au_energy
-    au_bfield = C('atomic unit of mag. flux density')
-    converter[str(au_bfield.dimensionality)] = au_bfield
-    au_efield = C('atomic unit of electric field')
-    converter[str(au_efield.dimensionality)] = au_efield
-    au_length = C('atomic unit of length')
-    converter[str(au_length.dimensionality)] = au_length
 
-    @classmethod
-    def toAU(self,v):
-        dimensionality = v.dimensionality
-        return (v/self.converter[str(dimensionality)]).to('dimensionless')
+## quantity.py
+from pint import UnitRegistry
+#from rydberginteraction import units
 
-    @classmethod
-    def fromAU(self, v, units):
-        dimensionality = Q(1,units).dimensionality
-        return (v*self.converter[str(dimensionality)]).to(units)
+# === initialize unit registry ===
+ureg = UnitRegistry()
+Q = ureg.Quantity
+U = ureg.Unit
+C = lambda s : Q(constants.value(s),constants.unit(s))
 
+# === define units that are used in the python program for the gui (the c++ program uses atomic units) ===
 class Units:
-    length = Q('micrometer').units
-    energy = Q('gigahertz').units
-    efield = Q('volt/centimeter').units
-    bfield = Q('gauss').units
-    angle = Q('degree').units
-    dimensionless = Q('1').units    
+    length = 'micrometer'
+    energy = 'gigahertz'
+    efield = 'volt/centimeter'
+    bfield = 'gauss'
+    angle = 'degree'
+    au_length = 'au_length'
+    au_energy = 'au_energy'
+    au_efield = 'au_efield'
+    au_bfield = 'au_bfield'
+    au_angle = 'au_angle'
 
-class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
+# === handle quantities ===
+class Quantity:
+    au = dict()
+    au[Units.au_length] = C('atomic unit of length')
+    au[Units.au_energy] = C('atomic unit of energy')/C('Planck constant')
+    au[Units.au_efield] = C('atomic unit of electric field')
+    au[Units.au_bfield] = C('atomic unit of mag. flux density')
+    au[Units.au_angle] = Q('1')
+    
+    converter_au = dict()
+    converter_au[str(U(Units.length).dimensionality)] = [Units.au_length, au[Units.au_length]]
+    converter_au[str(U(Units.energy).dimensionality)] = [Units.au_energy, au[Units.au_energy]]
+    converter_au[str(U(Units.efield).dimensionality)] = [Units.au_efield, au[Units.au_efield]]
+    converter_au[str(U(Units.bfield).dimensionality)] = [Units.au_bfield, au[Units.au_bfield]]
+    converter_au[str(U(Units.angle).dimensionality)] = [Units.au_angle, au[Units.au_angle]]
+    
+    converter_uu = dict()
+    converter_uu[str(U(Units.length).dimensionality)] = Units.length
+    converter_uu[str(U(Units.energy).dimensionality)] = Units.energy
+    converter_uu[str(U(Units.efield).dimensionality)] = Units.efield
+    converter_uu[str(U(Units.bfield).dimensionality)] = Units.bfield
+    converter_uu[str(U(Units.angle).dimensionality)] = Units.angle
+    
+    def __init__(self, magnitude, units = None):
+        self._magnitude = magnitude
+        if units is None: self._units = units
+        else: self._units = str(units)
+
+    @property
+    def magnitude(self):
+        return self._magnitude
+    
+    @property
+    def units(self):
+        return self._units
+    
+    def toAU(self):        
+        if self.units is None:
+            return self
+            #raise Exception("Quantity can not be converted to atomic units.")
+        
+        if self.units[:3] == "au_": # already in atomic units
+            return self
+        
+        else: # from other units to atomic units
+            oldunits = U(self.units)
+            newunits, converter = self.converter_au[str(oldunits.dimensionality)]
+            
+            if self.magnitude is None:
+                return Quantity(self.magnitude, newunits)
+            
+            quantity = Q(self.magnitude, oldunits)
+            
+            quantity = (quantity/converter).to('dimensionless')
+            return Quantity(quantity.magnitude, newunits)
+    
+    def toUU(self):
+        if self.units is None:
+            return self
+            #raise Exception("Quantity can not be converted to user units.")
+        
+        if self.units[:3] == "au_": # from atomic units to user units
+            oldunits = self.au[self.units]
+            newunits = self.converter_uu[str(oldunits.dimensionality)]
+            
+            if self.magnitude is None:
+                return Quantity(self.magnitude, newunits)
+
+            quantity = self.magnitude*oldunits
+            
+        else: # from other units to user units
+            oldunits = U(self.units)
+            newunits = self.converter_uu[str(oldunits.dimensionality)]
+            
+            if self.magnitude is None:
+                return Quantity(self.magnitude, newunits)
+        
+            quantity = Q(self.magnitude, oldunits)
+            
+        quantity = quantity.to(newunits)
+        return Quantity(quantity.magnitude, newunits)
+
+## guidict.py
+from PyQt5 import QtGui
+from abc import ABCMeta, abstractmethod
+#from rydberginteraction import Quantity
+
+# === dictionary to manage the elements of the gui ===
+class GuiDict(collections.MutableMapping, metaclass=ABCMeta):
     def __init__(self, ui):
         self.store = dict()
         self._setup(self.store, ui)
@@ -132,7 +218,7 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
 
     def __getitem__(self, key):
         widget = self.store[key]['widget']
-        unit = self.store[key]['unit'] if 'unit' in self.store[key] else None
+        unit = self.store[key]['unit']
         
         value = None
         if isinstance(widget, QtGui.QComboBox):
@@ -151,18 +237,17 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
         elif isinstance(widget, QtGui.QGroupBox):
             value = widget.isChecked()
         
-        if unit is not None and value is not None:
-            return Q(value, unit)
-        else:
-            return value
+        return Quantity(value, unit)
 
     def __setitem__(self, key, value):
+        if not isinstance(value,Quantity):
+            raise Exception("value has to be of type quantity")
+        
         widget = self.store[key]['widget']
-        unit = self.store[key]['unit'] if 'unit' in self.store[key] else None
+        unit = self.store[key]['unit']
+        
+        value = value.toUU().magnitude
                 
-        if isinstance(value,Q):
-            value = value.to(unit).magnitude
-
         if isinstance(widget, QtGui.QComboBox):
             index = widget.findText(value)
             if index >= 0: widget.setCurrentIndex(index)
@@ -189,137 +274,151 @@ class GUIDict(collections.MutableMapping, metaclass=ABCMeta):
 
     def __len__(self):
         return len(self.store)
-    
-    def load(self, params):
-        for k, v in params.items():
+
+## guivalidators.py
+from PyQt5 import QtGui
+import locale
+
+class DoublenoneValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        if s == 'None':
+            return (QtGui.QValidator.Acceptable, s, pos)
+        
+        lastpos = -1
+        for c in s.lower():
             try:
-                if not isinstance(v, str): raise TypeError
-                v = v.replace("dimensionless","1")
-                self[k] = Q(v)
-            except (UndefinedUnitError, TypeError):
-                self[k] = v
-            
-    def paramsInAU(self, f, exclude = []):
-        params = dict()
-        for k, v in self.items():
-            if k in exclude: continue
-            if isinstance(v, Q): params[k] = Converter.toAU(v).magnitude                    
-            else: params[k] = v
-        return params
-    
-    def paramsInOriginalunits(self, exclude = []):
-        params = dict()
-        for k, v in self.items():
-            if k in exclude: continue
-            if isinstance(v, Q): params[k] = str(v)
-            else: params[k] = v
-        return params
+                lastpos = 'none'[lastpos+1:].index(c)
+            except ValueError:
+                return super().validate(s, pos)
+        
+        return (QtGui.QValidator.Intermediate, s, pos)
 
-class SystemDict(GUIDict):
-    def _setup(self, store, ui):
-        store["species1"] = {'widget': ui.combobox_system_species1}
-        store["species2"] = {'widget': ui.combobox_system_species2}
-        store["n1"] = {'widget': ui.spinbox_system_n1, 'unit': Units.dimensionless}
-        store["n2"] = {'widget': ui.spinbox_system_n2, 'unit': Units.dimensionless}
-        store["l1"] = {'widget': ui.spinbox_system_l1, 'unit': Units.dimensionless}
-        store["l2"] = {'widget': ui.spinbox_system_l2, 'unit': Units.dimensionless}
-        store["j1"] = {'widget': ui.spinbox_system_j1, 'unit': Units.dimensionless}
-        store["j2"] = {'widget': ui.spinbox_system_j2, 'unit': Units.dimensionless}
-        store["m1"] = {'widget': ui.spinbox_system_m1, 'unit': Units.dimensionless}
-        store["m2"] = {'widget': ui.spinbox_system_m2, 'unit': Units.dimensionless}
-        store["deltaNSingle"] = {'widget': ui.spinbox_system_deltaNSingle, 'unit': Units.dimensionless}
-        store["deltaLSingle"] = {'widget': ui.spinbox_system_deltaLSingle, 'unit': Units.dimensionless}
-        store["deltaJSingle"] = {'widget': ui.spinbox_system_deltaJSingle, 'unit': Units.dimensionless}
-        store["deltaMSingle"] = {'widget': ui.spinbox_system_deltaMSingle, 'unit': Units.dimensionless}
-        store["deltaNPair"] = {'widget': ui.spinbox_system_deltaNPair, 'unit': Units.dimensionless}
-        store["deltaLPair"] = {'widget': ui.spinbox_system_deltaLPair, 'unit': Units.dimensionless}
-        store["deltaJPair"] = {'widget': ui.spinbox_system_deltaJPair, 'unit': Units.dimensionless}
-        store["deltaMPair"] = {'widget': ui.spinbox_system_deltaMPair, 'unit': Units.dimensionless}
-        store["deltaESingle"] = {'widget': ui.lineedit_system_deltaESingle, 'unit': Units.energy}
-        store["deltaEPair"] = {'widget': ui.lineedit_system_deltaEPair, 'unit': Units.energy}
-        store["pairbasisSame"] = {'widget': ui.radiobutton_system_pairbasisSame}
-        store["pairbasisDefined"] = {'widget': ui.radiobutton_system_pairbasisDefined}
-        store["samebasis"] = {'widget': ui.checkbox_system_samebasis}
-        store["minEx"] = {'widget': ui.lineedit_system_minEx, 'unit': Units.efield}
-        store["minEy"] = {'widget': ui.lineedit_system_minEy, 'unit': Units.efield}
-        store["minEz"] = {'widget': ui.lineedit_system_minEz, 'unit': Units.efield}
-        store["minBx"] = {'widget': ui.lineedit_system_minBx, 'unit': Units.bfield}
-        store["minBy"] = {'widget': ui.lineedit_system_minBy, 'unit': Units.bfield}
-        store["minBz"] = {'widget': ui.lineedit_system_minBz, 'unit': Units.bfield}
-        store["maxEx"] = {'widget': ui.lineedit_system_maxEx, 'unit': Units.efield}
-        store["maxEy"] = {'widget': ui.lineedit_system_maxEy, 'unit': Units.efield}
-        store["maxEz"] = {'widget': ui.lineedit_system_maxEz, 'unit': Units.efield}
-        store["maxBx"] = {'widget': ui.lineedit_system_maxBx, 'unit': Units.bfield}
-        store["maxBy"] = {'widget': ui.lineedit_system_maxBy, 'unit': Units.bfield}
-        store["maxBz"] = {'widget': ui.lineedit_system_maxBz, 'unit': Units.bfield}
-        store["minR"] = {'widget': ui.lineedit_system_minR, 'unit': Units.length}
-        store["maxR"] = {'widget': ui.lineedit_system_maxR, 'unit': Units.length}
-        store["theta"] = {'widget': ui.lineedit_system_theta, 'unit': Units.angle}
-        store["dd"] = {'widget': ui.checkbox_system_dd}
-        store["dq"] = {'widget': ui.checkbox_system_dq}
-        store["qq"] = {'widget': ui.checkbox_system_qq}
-        store["steps"] = {'widget': ui.spinbox_system_steps, 'unit': Units.dimensionless}
-        store["precision"] = {'widget': ui.lineedit_system_precision, 'unit': Units.dimensionless}
-    
-    def saveInAU_field1(self, f):
-        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','species2','n2','l2','m2','j2','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
-        json.dump(params, f, indent=4, sort_keys=True)
-    
-    def saveInAU_field2(self, f):
-        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','species1','n1','l1','m1','j1','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
-        json.dump(params, f, indent=4, sort_keys=True)
-    
-    def saveInAU_field12(self, f):
-        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined','minR','maxR','theta','dd','dq','qq','deltaNPair','deltaLPair','deltaMPair','deltaJPair','deltaEPair'])
-        json.dump(params, f, indent=4, sort_keys=True)
-    
-    def saveInAU_potential(self, f):
-        params = self.paramsInAU(f,['pairbasisSame','pairbasisDefined'])
-        if self["pairbasisSame"]:
-            params["deltaNPair"] = -1
-            params["deltaLPair"] = -1
-            params["deltaJPair"] = -1
-            params["deltaMPair"] = -1
-        json.dump(params, f, indent=4, sort_keys=True)
+    def fixup(self, s):
+        return 'None'
 
-class PlotDict(GUIDict):
-    def _setup(self, store, ui):
-        store["minE_field1"] = {'widget': ui.lineedit_field1_minE, 'unit': Units.energy}
-        store["maxE_field1"] = {'widget': ui.lineedit_field1_maxE, 'unit': Units.energy}
-        store["minE_field2"] = {'widget': ui.lineedit_field2_minE, 'unit': Units.energy}
-        store["maxE_field2"] = {'widget': ui.lineedit_field2_maxE, 'unit': Units.energy}
-        store["minE_potential"] = {'widget': ui.lineedit_potential_minE, 'unit': Units.energy}
-        store["maxE_potential"] = {'widget': ui.lineedit_potential_maxE, 'unit': Units.energy}
-        store["lines"] = {'widget': ui.groupbox_plot_lines}
-        store["points"] = {'widget': ui.groupbox_plot_points}
-        store["labels"] = {'widget': ui.groupbox_plot_labels}
-        store["overlap"] = {'widget': ui.groupbox_plot_overlap}
-        store["szLine"] = {'widget': ui.spinbox_plot_szLine, 'unit': Units.dimensionless}
-        store["szPoint"] = {'widget': ui.spinbox_plot_szPoint, 'unit': Units.dimensionless}
-        store["szLabel"] = {'widget': ui.spinbox_plot_szLabel, 'unit': Units.dimensionless}
-        store["szOverlap"] = {'widget': ui.spinbox_plot_szOverlap, 'unit': Units.dimensionless}
-        store["transpLine"] = {'widget': ui.spinbox_plot_transpLine, 'unit': Units.dimensionless}
-        store["transpPoint"] = {'widget': ui.spinbox_plot_transpPoint, 'unit': Units.dimensionless}
-        store["transpLabel"] = {'widget': ui.spinbox_plot_transpLabel, 'unit': Units.dimensionless}
-        store["transpOverlap"] = {'widget': ui.spinbox_plot_transpOverlap, 'unit': Units.dimensionless}
-        store["overlapUnperturbed"] = {'widget': ui.radiobutton_plot_overlapUnperturbed}
-        store["overlapDefined"] = {'widget': ui.radiobutton_plot_overlapDefined}
-        store["overlapTransition"] = {'widget': ui.radiobutton_plot_overlapTransition}
-        store["transition"] = {'widget': ui.combobox_plot_overlapTransition}
-        store["connectionthreshold"] = {'widget': ui.spinbox_plot_connectionthreshold}
-        store["lin"] = {'widget': ui.radiobutton_plot_lin}
-        store["log"] = {'widget': ui.radiobutton_plot_log}
-        store["resolution"] = {'widget': ui.spinbox_plot_resolution}
-        store["n1"] = {'widget': ui.spinbox_plot_n1, 'unit': Units.dimensionless}
-        store["n2"] = {'widget': ui.spinbox_plot_n2, 'unit': Units.dimensionless}
-        store["l1"] = {'widget': ui.spinbox_plot_l1, 'unit': Units.dimensionless}
-        store["l2"] = {'widget': ui.spinbox_plot_l2, 'unit': Units.dimensionless}
-        store["j1"] = {'widget': ui.spinbox_plot_j1, 'unit': Units.dimensionless}
-        store["j2"] = {'widget': ui.spinbox_plot_j2, 'unit': Units.dimensionless}
-        store["m1"] = {'widget': ui.spinbox_plot_m1, 'unit': Units.dimensionless}
-        store["m2"] = {'widget': ui.spinbox_plot_m2, 'unit': Units.dimensionless}
-        store["antialiasing"] = {'widget': ui.checkbox_plot_antialiasing}
-        store["autorange"] = {'widget': ui.checkbox_plot_autorange}
+class DoublepositiveValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        status = super().validate(s, pos)
+        
+        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
+            return (QtGui.QValidator.Invalid, s, pos)
+        
+        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
+            return (QtGui.QValidator.Invalid, s, pos)
+        
+        return status
+
+    def fixup(self, s):
+        return "0"
+
+class DoubledeltaValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        status = super().validate(s, pos)
+        
+        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0 and locale.atof(s) != -1:
+            return (QtGui.QValidator.Intermediate, s, pos)
+        
+        return status
+
+    def fixup(self, s):
+        if locale.atof(s) < 0: return "-1"
+        return "0"
+
+class DoubleValidator(QtGui.QDoubleValidator):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def validate(self, s, pos):
+        return super().validate(s, pos)
+
+    def fixup(self, s):
+        return "0"
+
+## pyqtgraphadditions.py
+from PyQt5 import QtGui
+from ctypes.util import find_library
+    
+# see https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/pyqtgraph/O-d2L6qfPoo/i1zedC2Oda4J
+if sys.platform == 'win32':
+    qtlib = ctypes.windll.qtgui4
+    drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QEAAXPEBVQPointF@@H@Z')
+else:
+    """
+    pwd: /usr/lib/i386-linux-gnu
+    list: nm -D ./libQtGui.so.4 > ~./list.txt
+    """
+    qtlib = ctypes.cdll.LoadLibrary(find_library("QtGui"))
+    drawPoints = getattr(qtlib, '_ZN8QPainter10drawPointsEPK7QPointFi')
+
+# === points item (can be used with pyqtgraph) === # TODO !!!!!!!!!!!!!!!
+class PointsItem(QtGui.QGraphicsItem):
+    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0,0,0)):
+        QtGui.QGraphicsItem.__init__(self)
+        self.size = size
+        self.alpha = alpha
+        #self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
+        #self.pen.setDashPattern([1, 20, 5, 4])
+        self.pen = pg.mkPen(color+(self.alpha,),width=self.size,cosmetic=True)
+        self.setData(x, y)
+        #self.ItemIgnoresTransformations = True
+        #self.setFlag(QtGui.QGraphicsItem.ItemIgnoresTransformations, True)
+        
+    def setData(self, x, y):
+        if x is None:
+            x = np.array([])
+            y = np.array([])
+        self.data = np.empty((len(x), 2), dtype=np.float)
+        self.data[:,0] = x
+        self.data[:,1] = y
+        xmin = x.min()
+        xmax = x.max()
+        ymin = y.min()
+        ymax = y.max()
+        self.bounds = QtCore.QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
+        self.prepareGeometryChange()
+        
+        #self.qdata = [None]*len(x)
+        #for n,[a,b] in enumerate(zip(x,y)):
+        #    self.qdata[n] = QtCore.QPointF(a,b)
+        #self.qdata = QtGui.QPolygonF(self.qdata)
+
+    def boundingRect(self):
+        return self.bounds
+
+    def paint(self, p, *args):
+        p.setPen(self.pen)
+        
+        #p.drawPoints(self.qdata)
+        ptr = ctypes.c_void_p(sip.unwrapinstance(p))
+        drawPoints(ptr, self.data.ctypes, self.data.shape[0])
+
+# === multi line item (can be used with pyqtgraph) ===
+# https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
+class MultiLine(pg.QtGui.QGraphicsPathItem):
+    def __init__(self, x, y, size=1, alpha=80, color=(0,0,0)):
+        """x and y are 2D arrays of shape (Nplots, Nsamples)"""
+        connections = np.ones(x.shape, dtype=bool)
+        connections[:,-1] = 0 # don't draw the segment between each trace
+        
+        self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connections.flatten())
+        pg.QtGui.QGraphicsPathItem.__init__(self, self.path)
+        pen = pg.mkPen(color+(alpha,),width=size,cosmetic=True)
+        self.setPen(pen)
+    def shape(self): # override because QGraphicsPathItem.shape is too expensive.
+        return pg.QtGui.QGraphicsItem.shape(self)
+    def boundingRect(self):
+        return self.path.boundingRect()
+
+## worker.py
 
 class Worker(QtCore.QThread):
 
@@ -445,7 +544,9 @@ class Worker(QtCore.QThread):
         # Clear data queue if thread has aborted
         if not finishedgracefully:
             self.clear()
-            
+
+## binaryloader.py
+
 class BinaryLoader:
     def __init__(self):
         # types
@@ -476,6 +577,8 @@ class BinaryLoader:
         indptr = np.append(self.readVector(f),len(data))
         if flags & self.csr_not_csc: return sparse.csr_matrix((data, indices, indptr), shape=(rows, cols))
         else: return sparse.csc_matrix((data, indices, indptr), shape=(rows, cols))
+
+## eigensystem.py
 
 class Eigensystem(BinaryLoader):
     def __init__(self, filename):
@@ -512,145 +615,144 @@ class Eigensystem(BinaryLoader):
                 self._basis = self.readMatrix(f)
         return self._basis
 
-from ctypes.util import find_library
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#from rydberginteraction import GuiDict
+
+# === dictionary to manage the elements of the gui related to the plotter ===
+class PlotDict(GuiDict):
+    def _setup(self, store, ui):
+        store["minE_field1"] =          {'widget': ui.lineedit_field1_minE,                 'unit': Units.energy}
+        store["maxE_field1"] =          {'widget': ui.lineedit_field1_maxE,                 'unit': Units.energy}
+        store["minE_field2"] =          {'widget': ui.lineedit_field2_minE,                 'unit': Units.energy}
+        store["maxE_field2"] =          {'widget': ui.lineedit_field2_maxE,                 'unit': Units.energy}
+        store["minE_potential"] =       {'widget': ui.lineedit_potential_minE,              'unit': Units.energy}
+        store["maxE_potential"] =       {'widget': ui.lineedit_potential_maxE,              'unit': Units.energy}
+        store["lines"] =                {'widget': ui.groupbox_plot_lines,                  'unit': None}
+        store["points"] =               {'widget': ui.groupbox_plot_points,                 'unit': None}
+        store["labels"] =               {'widget': ui.groupbox_plot_labels,                 'unit': None}
+        store["overlap"] =              {'widget': ui.groupbox_plot_overlap,                'unit': None}
+        store["szLine"] =               {'widget': ui.spinbox_plot_szLine,                  'unit': None}
+        store["szPoint"] =              {'widget': ui.spinbox_plot_szPoint,                 'unit': None}
+        store["szLabel"] =              {'widget': ui.spinbox_plot_szLabel,                 'unit': None}
+        store["szOverlap"] =            {'widget': ui.spinbox_plot_szOverlap,               'unit': None}
+        store["transpLine"] =           {'widget': ui.spinbox_plot_transpLine,              'unit': None}
+        store["transpPoint"] =          {'widget': ui.spinbox_plot_transpPoint,             'unit': None}
+        store["transpLabel"] =          {'widget': ui.spinbox_plot_transpLabel,             'unit': None}
+        store["transpOverlap"] =        {'widget': ui.spinbox_plot_transpOverlap,           'unit': None}
+        store["overlapUnperturbed"] =   {'widget': ui.radiobutton_plot_overlapUnperturbed,  'unit': None}
+        store["overlapDefined"] =       {'widget': ui.radiobutton_plot_overlapDefined,      'unit': None}
+        store["overlapTransition"] =    {'widget': ui.radiobutton_plot_overlapTransition,   'unit': None}
+        store["transition"] =           {'widget': ui.combobox_plot_overlapTransition,      'unit': None}
+        store["connectionthreshold"] =  {'widget': ui.spinbox_plot_connectionthreshold,     'unit': None}
+        store["lin"] =                  {'widget': ui.radiobutton_plot_lin,                 'unit': None}
+        store["log"] =                  {'widget': ui.radiobutton_plot_log,                 'unit': None}
+        store["resolution"] =           {'widget': ui.spinbox_plot_resolution,              'unit': None}
+        store["n1"] =                   {'widget': ui.spinbox_plot_n1,                      'unit': None}
+        store["n2"] =                   {'widget': ui.spinbox_plot_n2,                      'unit': None}
+        store["l1"] =                   {'widget': ui.spinbox_plot_l1,                      'unit': None}
+        store["l2"] =                   {'widget': ui.spinbox_plot_l2,                      'unit': None}
+        store["j1"] =                   {'widget': ui.spinbox_plot_j1,                      'unit': None}
+        store["j2"] =                   {'widget': ui.spinbox_plot_j2,                      'unit': None}
+        store["m1"] =                   {'widget': ui.spinbox_plot_m1,                      'unit': None}
+        store["m2"] =                   {'widget': ui.spinbox_plot_m2,                      'unit': None}
+        store["antialiasing"] =         {'widget': ui.checkbox_plot_antialiasing,           'unit': None}
+        store["autorange"] =            {'widget': ui.checkbox_plot_autorange,              'unit': None}
+
+# === dictionary to manage the elements of the gui related to the system ===
+class SystemDict(GuiDict):
+    def _setup(self, store, ui):
+        store["species1"] =         {'widget': ui.combobox_system_species1,                 'unit': None}
+        store["species2"] =         {'widget': ui.combobox_system_species2,                 'unit': None}
+        store["n1"] =               {'widget': ui.spinbox_system_n1,                        'unit': None}
+        store["n2"] =               {'widget': ui.spinbox_system_n2,                        'unit': None}
+        store["l1"] =               {'widget': ui.spinbox_system_l1,                        'unit': None}
+        store["l2"] =               {'widget': ui.spinbox_system_l2,                        'unit': None}
+        store["j1"] =               {'widget': ui.spinbox_system_j1,                        'unit': None}
+        store["j2"] =               {'widget': ui.spinbox_system_j2,                        'unit': None}
+        store["m1"] =               {'widget': ui.spinbox_system_m1,                        'unit': None}
+        store["m2"] =               {'widget': ui.spinbox_system_m2,                        'unit': None}
+        store["deltaNSingle"] =     {'widget': ui.spinbox_system_deltaNSingle,              'unit': None}
+        store["deltaLSingle"] =     {'widget': ui.spinbox_system_deltaLSingle,              'unit': None}
+        store["deltaJSingle"] =     {'widget': ui.spinbox_system_deltaJSingle,              'unit': None}
+        store["deltaMSingle"] =     {'widget': ui.spinbox_system_deltaMSingle,              'unit': None}
+        store["deltaNPair"] =       {'widget': ui.spinbox_system_deltaNPair,                'unit': None}
+        store["deltaLPair"] =       {'widget': ui.spinbox_system_deltaLPair,                'unit': None}
+        store["deltaJPair"] =       {'widget': ui.spinbox_system_deltaJPair,                'unit': None}
+        store["deltaMPair"] =       {'widget': ui.spinbox_system_deltaMPair,                'unit': None}
+        store["deltaESingle"] =     {'widget': ui.lineedit_system_deltaESingle,             'unit': Units.energy}
+        store["deltaEPair"] =       {'widget': ui.lineedit_system_deltaEPair,               'unit': Units.energy}
+        store["pairbasisSame"] =    {'widget': ui.radiobutton_system_pairbasisSame,         'unit': None}
+        store["pairbasisDefined"] = {'widget': ui.radiobutton_system_pairbasisDefined,      'unit': None}
+        store["samebasis"] =        {'widget': ui.checkbox_system_samebasis,                'unit': None}
+        store["minEx"] =            {'widget': ui.lineedit_system_minEx,                    'unit': Units.efield}
+        store["minEy"] =            {'widget': ui.lineedit_system_minEy,                    'unit': Units.efield}
+        store["minEz"] =            {'widget': ui.lineedit_system_minEz,                    'unit': Units.efield}
+        store["minBx"] =            {'widget': ui.lineedit_system_minBx,                    'unit': Units.bfield}
+        store["minBy"] =            {'widget': ui.lineedit_system_minBy,                    'unit': Units.bfield}
+        store["minBz"] =            {'widget': ui.lineedit_system_minBz,                    'unit': Units.bfield}
+        store["maxEx"] =            {'widget': ui.lineedit_system_maxEx,                    'unit': Units.efield}
+        store["maxEy"] =            {'widget': ui.lineedit_system_maxEy,                    'unit': Units.efield}
+        store["maxEz"] =            {'widget': ui.lineedit_system_maxEz,                    'unit': Units.efield}
+        store["maxBx"] =            {'widget': ui.lineedit_system_maxBx,                    'unit': Units.bfield}
+        store["maxBy"] =            {'widget': ui.lineedit_system_maxBy,                    'unit': Units.bfield}
+        store["maxBz"] =            {'widget': ui.lineedit_system_maxBz,                    'unit': Units.bfield}
+        store["minR"] =             {'widget': ui.lineedit_system_minR,                     'unit': Units.length}
+        store["maxR"] =             {'widget': ui.lineedit_system_maxR,                     'unit': Units.length}
+        store["theta"] =            {'widget': ui.lineedit_system_theta,                    'unit': Units.angle}
+        store["dd"] =               {'widget': ui.checkbox_system_dd,                       'unit': None}
+        store["dq"] =               {'widget': ui.checkbox_system_dq,                       'unit': None}
+        store["qq"] =               {'widget': ui.checkbox_system_qq,                       'unit': None}
+        store["steps"] =            {'widget': ui.spinbox_system_steps,                     'unit': None}
+        store["precision"] =        {'widget': ui.lineedit_system_precision,                'unit': None}
     
-# see https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/pyqtgraph/O-d2L6qfPoo/i1zedC2Oda4J
-if sys.platform == 'win32':
-    qtlib = ctypes.windll.qtgui4
-    drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QEAAXPEBVQPointF@@H@Z')
-else:
-    """
-    pwd: /usr/lib/i386-linux-gnu
-    list: nm -D ./libQtGui.so.4 > ~./list.txt
-    """
-    qtlib = ctypes.cdll.LoadLibrary(find_library("QtGui"))
-    drawPoints = getattr(qtlib, '_ZN8QPainter10drawPointsEPK7QPointFi')
+    # field map of atom 1 (samebasis == False)
+    keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
+        "deltaNSingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
+        "samebasis", "steps","precision",
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
+    
+    # field map of atom 2 (samebasis == False)
+    keys_for_cprogram_field2 = ["species2", "n2", "l2", "j2", "m2",
+        "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
+        "samebasis", "steps","precision",
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
+    
+    # pair potential
+    keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
+        "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle","deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
+        "samebasis", "steps","precision", "theta", "dd", "dq", "qq",
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "minR", "maxR"]
+    
+    # field map of atom 1 and atom 2 (samebasis == True)
+    keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
+        "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
+        "samebasis", "steps","precision",
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
 
-class PointsItem(QtGui.QGraphicsItem):
-    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0,0,0)):
-        QtGui.QGraphicsItem.__init__(self)
-        self.size = size
-        self.alpha = alpha
-        #self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
-        #self.pen.setDashPattern([1, 20, 5, 4])
-        self.pen = pg.mkPen(color+(self.alpha,),width=self.size,cosmetic=True)
-        self.setData(x, y)
-        #self.ItemIgnoresTransformations = True
-        #self.setFlag(QtGui.QGraphicsItem.ItemIgnoresTransformations, True)
-        
-    def setData(self, x, y):
-        if x is None:
-            x = np.array([])
-            y = np.array([])
-        self.data = np.empty((len(x), 2), dtype=np.float)
-        self.data[:,0] = x
-        self.data[:,1] = y
-        xmin = x.min()
-        xmax = x.max()
-        ymin = y.min()
-        ymax = y.max()
-        self.bounds = QtCore.QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
-        self.prepareGeometryChange()
-        
-        #self.qdata = [None]*len(x)
-        #for n,[a,b] in enumerate(zip(x,y)):
-        #    self.qdata[n] = QtCore.QPointF(a,b)
-        #self.qdata = QtGui.QPolygonF(self.qdata)
 
-    def boundingRect(self):
-        return self.bounds
 
-    def paint(self, p, *args):
-        p.setPen(self.pen)
-        
-        #p.drawPoints(self.qdata)
-        ptr = ctypes.c_void_p(sip.unwrapinstance(p))
-        drawPoints(ptr, self.data.ctypes, self.data.shape[0])
-
-# https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
-class MultiLine(pg.QtGui.QGraphicsPathItem):
-    def __init__(self, x, y, size=1, alpha=80, color=(0,0,0)):
-        """x and y are 2D arrays of shape (Nplots, Nsamples)"""
-        connections = np.ones(x.shape, dtype=bool)
-        connections[:,-1] = 0 # don't draw the segment between each trace
-        
-        self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connections.flatten())
-        pg.QtGui.QGraphicsPathItem.__init__(self, self.path)
-        pen = pg.mkPen(color+(alpha,),width=size,cosmetic=True)
-        self.setPen(pen)
-    def shape(self): # override because QGraphicsPathItem.shape is too expensive.
-        return pg.QtGui.QGraphicsItem.shape(self)
-    def boundingRect(self):
-        return self.path.boundingRect()
-
-class DoublenoneValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        if s == 'None':
-            return (QtGui.QValidator.Acceptable, s, pos)
-        
-        lastpos = -1
-        for c in s.lower():
-            try:
-                lastpos = 'none'[lastpos+1:].index(c)
-            except ValueError:
-                return super().validate(s, pos)
-        
-        return (QtGui.QValidator.Intermediate, s, pos)
-
-    def fixup(self, s):
-        return 'None'
-
-class DoublepositiveValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        status = super().validate(s, pos)
-        
-        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
-            return (QtGui.QValidator.Invalid, s, pos)
-        
-        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
-            return (QtGui.QValidator.Invalid, s, pos)
-        
-        return status
-
-    def fixup(self, s):
-        return "0"
-
-class DoubledeltaValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        status = super().validate(s, pos)
-        
-        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0 and locale.atof(s) != -1:
-            return (QtGui.QValidator.Intermediate, s, pos)
-        
-        return status
-
-    def fixup(self, s):
-        if locale.atof(s) < 0: return "-1"
-        return "0"
-
-class DoubleValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        return super().validate(s, pos)
-
-    def fixup(self, s):
-        return "0"
-
-def unique_rows(a):
-    a = np.ascontiguousarray(a)
-    unique_a = np.unique(a.view([('', a.dtype)]*a.shape[1]))
-    return unique_a.view(a.dtype).reshape((unique_a.shape[0], a.shape[1]))
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -664,6 +766,9 @@ class MainWindow(QtGui.QMainWindow):
         del pg.graphicsItems.GradientEditorItem.Gradients['cyclic']
         del pg.graphicsItems.GradientEditorItem.Gradients['spectrum']
         del pg.graphicsItems.GradientEditorItem.Gradients['bipolar']
+        
+        # TODO make class, check if module exists
+        """from palettable import cubehelix"""
         
         
         """color = cubehelix.Cubehelix.make(sat=1.8,n=7,rotation=1.21,start=1.2,reverse=True).colors[::-1]
@@ -952,76 +1057,7 @@ class MainWindow(QtGui.QMainWindow):
                 shutil.rmtree(self.path_cache)
             else:
                 sys.exit()
-        
-        '''msg = None
-        
-        if os.path.exists(self.path_lastsettings):
-            # Load version
-            version_settings_saved = None
-            if os.path.isfile(self.path_version):
-                with open(self.path_version, 'r') as f:
-                    version_settings_saved = json.load(f)["version_settings"]
-            
-            # Compare version
-            if version_settings_saved != version_settings:
-                """msg = QtGui.QMessageBox() # TODO make class
-                msg.setText('A new version of the program has been installed. Clear cache and user data to avoid compatibility issues? This deletes the directory "{}".'.format(self.path_out))
-                msg.setIcon(QtGui.QMessageBox.Information);
-                checkbox = QtGui.QCheckBox("don't show message again")
-                checkbox.blockSignals(True)
-                msg.addButton(checkbox, QtGui.QMessageBox.ApplyRole)
-                msg.addButton(QtGui.QMessageBox.Yes)
-                msg.addButton(QtGui.QMessageBox.No)
-                msg.setDefaultButton(QtGui.QMessageBox.Yes)
-                answer = msg.exec()
-                
-                # Save version if "don't show message again")
-                if answer == QtGui.QMessageBox.No and checkbox.isChecked():
-                    with open(self.path_version, 'w') as f:
-                        json.dump({'version_settings': version_settings, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
-                
-                # Delete directory
-                if answer == QtGui.QMessageBox.Yes:
-                    shutil.rmtree(self.path_out)"""
-                
-                msg = QtGui.QMessageBox() # TODO make class
-                #msg.setText('A new program version has been installed. Due to major changes, cache and last settings have to be cleared. This deletes the directory "{}".'.format(self.path_out))
-                msg.setText('A new program version has been installed. Due to configuration changes, the last settings have to be cleared. This deletes the directory "{}".'.format(self.path_lastsettings))
-                msg.setIcon(QtGui.QMessageBox.Information);
-                msg.addButton(QtGui.QMessageBox.Cancel)
-                msg.addButton(QtGui.QMessageBox.Ok)
-                msg.setDefaultButton(QtGui.QMessageBox.Ok)
-                answer = msg.exec()
-                    
-                # Delete directory
-                if answer == QtGui.QMessageBox.Ok:
-                    shutil.rmtree(self.path_lastsettings)
-                else:
-                    sys.exit()
-                    
-        if os.path.exists(self.path_cache):     
-            # Load version
-            version_cache_saved = None
-            if os.path.isfile(self.path_version):
-                with open(self.path_version, 'r') as f:
-                    version_cache_saved = json.load(f)["version_cache"]
-                        
-            # Compare version
-            if version_cache_saved != version_cache:
-                msg = QtGui.QMessageBox()
-                msg.setText('A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory "{}".'.format(self.path_cache))
-                msg.setIcon(QtGui.QMessageBox.Information);
-                msg.addButton(QtGui.QMessageBox.Cancel)
-                msg.addButton(QtGui.QMessageBox.Ok)
-                msg.setDefaultButton(QtGui.QMessageBox.Ok)
-                answer = msg.exec()
-                
-                # Delete directory
-                if answer == QtGui.QMessageBox.Ok:
-                    shutil.rmtree(self.path_cache)
-                else:
-                    sys.exit()'''
-            
+
         # Create directories
         if not os.path.exists(self.path_out):
             os.makedirs(self.path_out)	
@@ -1053,28 +1089,14 @@ class MainWindow(QtGui.QMainWindow):
         # Load last settings
         if not os.path.isfile(self.path_system_last):
             copyfile(os.path.join(self.path_base,"example.sconf"),self.path_system_last)
-        with open(self.path_system_last, 'r') as f:
-            params = json.load(f)
-            self.systemdict.load(params)
+        self.loadSettingsSystem(self.path_system_last)
     
         if not os.path.isfile(self.path_plot_last):
             copyfile(os.path.join(self.path_base,"example.pconf"),self.path_plot_last)
-        with open(self.path_plot_last, 'r') as f:
-            params = json.load(f)
-            self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
-            del params["gradientwidget"]
-            self.plotdict.load(params)
+        self.loadSettingsPlotter(self.path_plot_last)
     
         if os.path.isfile(self.path_view_last):
-            with open(self.path_view_last, 'r') as f:
-                params = json.load(f)
-                self.ui.tabwidget_config.setCurrentIndex(params["config"])
-                self.ui.tabwidget_plotter.setCurrentIndex(params["plotter"])
-                self.ui.toolbox_system.setCurrentIndex(params["system"])
-                if "filepath" in params.keys(): self.filepath = params["filepath"]
-        
-        
-        
+            self.loadSettingsView(self.path_view_last)
         
         self.samebasis_state = self.ui.checkbox_system_samebasis.checkState()
                 
@@ -1110,45 +1132,90 @@ class MainWindow(QtGui.QMainWindow):
         
         
         
-        # Setup plot        
-        self.minE_field1 = None
-        self.minE_field2 = None
-        self.minE_potential = None
-        self.maxE_field1 = None
-        self.maxE_field2 = None
-        self.maxE_potential = None
+        # Setup plot
+        constDistance = self.getConstDistance()
+        constEField = self.getConstEField()
+        constBField = self.getConstBField()
         
-        self.constDistance = self.getConstDistance()
-        self.constEField = self.getConstEField()
-        self.constBField = self.getConstBField()
-        #self.sameSpecies = self.getSameSpecies()
+        self.graphicviews_plot = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]
         
-        for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
-            plotarea.setDownsampling(ds=True, auto=True, mode='peak')
-            plotarea.setClipToView(True)
-            plotarea.setLabel('left', 'Energy ('+str(Units.energy)+')')
-            plotarea.scene().contextMenu = None
-            plotarea.plotItem.ctrlMenu = None
-            #plotarea.getViewBox().menu = None # AttributeError: 'NoneType' object has no attribute 'popup'
+        for idx in range(3):
+            self.graphicviews_plot[idx].setDownsampling(ds=True, auto=True, mode='peak')
+            self.graphicviews_plot[idx].setClipToView(True)
+            self.graphicviews_plot[idx].setLabel('left', 'Energy ('+str(Units.energy)+')')
+            self.graphicviews_plot[idx].scene().contextMenu = None
+            self.graphicviews_plot[idx].plotItem.ctrlMenu = None
             
-            plotarea.getAxis("bottom").setZValue(1000) # HACK to bring axis into the foreground
-            plotarea.getAxis("left").setZValue(1000) # HACK to bring axis into the foreground
+            self.graphicviews_plot[idx].getAxis("bottom").setZValue(1000) # HACK to bring axis into the foreground
+            self.graphicviews_plot[idx].getAxis("left").setZValue(1000) # HACK to bring axis into the foreground
+    
+            if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constEField):
+                self.graphicviews_plot[idx].setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+            elif (idx in [0,1]) or (idx == 2 and constDistance and not constBField):
+                self.graphicviews_plot[idx].setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+            elif (idx == 2):
+                self.graphicviews_plot[idx].setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+
+    def loadSettingsSystem(self, path):
+        with open(path, 'r') as f:
+            params = json.load(f)
+            for k, v in params.items():
+                self.systemdict[k] = Quantity(v[0],v[1])
+
+    def loadSettingsPlotter(self, path):
+        with open(path, 'r') as f:
+            params = json.load(f)
+            self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
+            del params["gradientwidget"]
+            for k, v in params.items():
+                self.plotdict[k] = Quantity(v[0],v[1])
+    
+    def loadSettingsView(self, path):
+        with open(path, 'r') as f:
+            params = json.load(f)
+            self.ui.tabwidget_config.setCurrentIndex(params["config"])
+            self.ui.tabwidget_plotter.setCurrentIndex(params["plotter"])
+            self.ui.toolbox_system.setCurrentIndex(params["system"])
+            if "filepath" in params.keys(): self.filepath = params["filepath"]
+    
+    def saveSettingsSystem(self, path):
+        def save(f):
+            params = dict()
+            for k, v in self.systemdict.items():
+                params[k] = [v.magnitude, v.units]
+            json.dump(params, f, indent=4, sort_keys=True)
         
-        if self.constEField and not self.constBField:
-            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+        if isinstance(path, str):
+            with open(path, 'w') as f: save(f)
         else:
-            for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot]: plotarea.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+            save(path)
+
+    def saveSettingsPlotter(self, path):
+        def save(f):
+            params = dict()
+            for k, v in self.plotdict.items():
+                params[k] = [v.magnitude, v.units]
+            params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
+            json.dump(params, f, indent=4, sort_keys=True)
         
-        if self.constDistance and not self.constEField:
-            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-        elif self.constDistance and not self.constBField:
-            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+        if isinstance(path, str):
+            with open(path, 'w') as f: save(f)
         else:
-            self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
-            
-    """def resizeEvent(self, event):
-        super().resizeEvent(event)
-        if sys.platform == "darwin": QtGui.QApplication.processEvents() # hack to circumvent the no-redraw-after-resizing-bug"""
+            save(path)
+    
+    def saveSettingsView(self, path):
+        def save(f):
+            params = dict()
+            params["config"] = self.ui.tabwidget_config.currentIndex()
+            params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
+            params["system"] = self.ui.toolbox_system.currentIndex()
+            if self.filepath != self.userpath: params["filepath"] = self.filepath
+            json.dump(params, f, indent=4, sort_keys=True)
+        
+        if isinstance(path, str):
+            with open(path, 'w') as f: save(f)
+        else:
+            save(path)
     
     def get1DPosition(self, x, y, z):
         vec = np.array([x,y,z])
@@ -1237,7 +1304,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.momentummat[idx] = sparse.csc_matrix((momentum[:,None] == np.arange(np.max(momentum)+1)[None,:]).astype(int))
 
                 # extract labels
-                # TODO only i necessary !!!!!
+                # TODO only if necessary !!!!!
                 
                 if idx == 0 or idx == 1:
                     nlj = basis[:,[1,2,3]]
@@ -1259,19 +1326,6 @@ class MainWindow(QtGui.QMainWindow):
                 # determine labels of states
                 self.labelstates[idx] = nlj[diff]            
                 self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum),(np.arange(len(cumsum)),cumsum-1)),shape=(len(cumsum), len(self.labelstates[idx]))).tocsr() #nStates, nLabels
-                
-                """try:
-                    if idx == 0: self.labelidx1 = np.where(np.all(basis[:,[1,2,3,4]] == self.unperturbedstate[None,[0,1,2,3]],axis=-1))[0][0]
-                    elif idx == 1: self.labelidx1 = np.where(np.all(basis[:,[1,2,3,4]] == self.unperturbedstate[None,[4,5,6,7]],axis=-1))[0][0]
-                    elif idx == 2: self.labelidx1 = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]] == self.unperturbedstate[None,:],axis=-1))[0][0]
-                except:
-                    self.labelidx1 =  -1
-                
-                try:
-                    if idx == 0 and self.thread.samebasis: self.labelidx2 = np.where(np.all(basis[:,[1,2,3,4]] == self.unperturbedstate[None,[4,5,6,7]],axis=-1))[0][0]
-                    else: raise
-                except:
-                    self.labelidx2 = -1"""
  
                 # determine labels of momenta
                 if idx == 0 or idx == 1: # TODO !!!
@@ -1302,8 +1356,8 @@ class MainWindow(QtGui.QMainWindow):
                 graphicsview_plot = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]
                 
                 numBlocks = [self.thread.numBlocks_field1, self.thread.numBlocks_field2, self.thread.numBlocks_potential][idx]
-                minE = [self.minE_field1, self.minE_field2, self.minE_potential][idx]
-                maxE = [self.maxE_field1, self.maxE_field2, self.maxE_potential][idx]
+                minE = self.minE[idx]
+                maxE = self.maxE[idx]
                 
                 # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
                 x = np.array([])
@@ -1330,8 +1384,8 @@ class MainWindow(QtGui.QMainWindow):
                     boolarr[np.isnan(energies)] = False
                     energies[np.isnan(energies)] = 0
                 
-                    if minE is not None: boolarr &= energies >= minE
-                    if maxE is not None: boolarr &= energies <= maxE
+                    if minE is not None: boolarr &= energies >= minE/self.converter_y
+                    if maxE is not None: boolarr &= energies <= maxE/self.converter_y
                 
                     # cut the energies
                     energies = energies[boolarr]
@@ -1363,18 +1417,13 @@ class MainWindow(QtGui.QMainWindow):
                         momentum[momentum_probabilty.row] = momentum_probabilty.col
                 
                     # --- calculate the position (x value) ---
-                    if idx == 0 or idx == 1:
-                        if self.constEField and not self.constBField:
-                            position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x_field
-                        else:
-                            position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x_field
-                    elif idx == 2:
-                        if self.constDistance and not self.constEField:
-                            position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x_potential
-                        elif self.constDistance and not self.constBField:
-                            position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x_potential
-                        else:
-                            position = float(eigensystem.params["R"])*self.converter_x_potential
+                    
+                    if self.xAxis[idx] == 'B':
+                        position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x[idx]
+                    elif self.xAxis[idx] == 'E':
+                        position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x[idx]
+                    elif self.xAxis[idx] == 'R':
+                        position = float(eigensystem.params["R"])*self.converter_x[idx]
 
                     # --- draw labels at the beginning of the plotting ---
                     if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
@@ -1390,9 +1439,6 @@ class MainWindow(QtGui.QMainWindow):
                         labelprob_num_potential = len(self.labelprob_energy)
                                                                         
                         if labelprob_num_potential >= numBlocks:
-                            
-                            self.labelprob_energy = np.concatenate(self.labelprob_energy)
-                        
                             # total probability to find a label
                             cumprob = np.array(self.labelprob.sum(axis=0).flat)
                             boolarr = cumprob > 0.1
@@ -1402,7 +1448,7 @@ class MainWindow(QtGui.QMainWindow):
                             normalizer = sparse.coo_matrix((1/cumprob[idxarr],(idxarr,np.arange(len(idxarr)))),shape=(self.labelprob.shape[1], len(idxarr))).tocsr()
                         
                             # store the energetic expectation value of the labels
-                            labelenergies = ((self.labelprob*normalizer).T*self.labelprob_energy)
+                            labelenergies = ((self.labelprob*normalizer).T*np.concatenate(self.labelprob_energy))
                             
                             if len(labelenergies) == 0: continue
                                                     
@@ -1416,7 +1462,7 @@ class MainWindow(QtGui.QMainWindow):
                             # draw the labels
                             for labelstate, labelenergy in zip(self.labelstates[idx][boolarr],labelenergies):
                                 
-                                if ((idx == 0 or idx == 1) and self.leftSmallerRight) or (idx == 2 and self.leftSmallerRight_potential):
+                                if self.leftSmallerRight[idx]:
                                     anchorX = 0
                                 else:
                                     anchorX = 1
@@ -1491,9 +1537,9 @@ class MainWindow(QtGui.QMainWindow):
                             
                         # try to get limits
                         if self.yMax_field[idx] is None and maxE is not None:
-                            self.yMax_field[idx]  = maxE*self.converter_y  
+                            self.yMax_field[idx]  = maxE
                         if self.yMin_field[idx] is None and minE is not None:
-                            self.yMin_field[idx] = minE*self.converter_y
+                            self.yMin_field[idx] = minE
                                                                     
                         # check if limits do not exists
                         if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
@@ -1567,7 +1613,7 @@ class MainWindow(QtGui.QMainWindow):
  
                             # calculate position-indices
                             positions = [self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx]+i] for i in bufferidx]
-                            
+                                                        
                             # add outer points if at the end or start
                             if self.colormap_buffer_minIdx_field[idx] == self.steps-1: # end
                                 positions = positions + [2*positions[1]-positions[0]]
@@ -1767,65 +1813,11 @@ class MainWindow(QtGui.QMainWindow):
                 # --- update the graphics view ---
                 graphicsview_plot[idx].repaint()
         
-
-            
-            
-            
-            
-            
-            #Converter.fromAU(1,'gauss').magnitude
-            #Converter.fromAU(1,'volt/centimeter').magnitude
-            
-        
-            #self.ui.graphicsview_potential_plot.clear()
-        
-            #float(eigensystem.params["Ez"])*np.ones_like(eigensystem.energies)
-            """curve = pg.ScatterPlotItem(x=x, y=y, 
-                               pen='w', brush='b', size=3, 
-                               pxMode=True,antialias=True)"""
-            """curve = gl.GLScatterPlotItem(pos=np.transpose([x,y,np.zeros_like(x)]))"""
-            
-            
-            # TODO lines
-            #self.ui.graphicsview_potential_plot.plot(x,y)
-        
-            """self.ui.graphicsview_potential_plot.plot(float(eigensystem.params["R"])*np.ones_like(eigensystem.energies), eigensystem.energies, pen=None, symbol='o')
-            """
-            #self.ui.graphicsview_potential_plot.repaint()
-        
-            #self.ui.graphicsview_potential_plot.plot(eigensystem.energies)
-            
         
         # === terminate thread ===
         
         # check if thread has finished
         if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_potential.empty():
-            
-            """c6 = 0.008750183201815791 # 40
-            c6 = 0.009304149469320561 # 39
-            c6 = 0.009104493144885473 # 38
-            c6 = -0.044880307113037206 # 46
-            c6 = -465453.7925703782
-
-            #c6 = -10.306017051622977
-            #c6 = -450153.7925703782
-            x = np.linspace(self.systemdict["minR"].magnitude,self.systemdict["maxR"].magnitude,500)
-            y = -c6/x**6
-            
-            if self.plotdict["minE"] is not None:
-                minE = self.plotdict["minE"].magnitude
-                x = x[y >= minE]
-                y = y[y >= minE]
-            if self.plotdict["maxE"] is not None:
-                maxE = self.plotdict["maxE"].magnitude
-                x = x[y <= maxE]
-                y = y[y <= maxE]
-            
-            self.ui.graphicsview_potential_plot.plot(x,y,pen={'color': (255,0,0), 'width': 1})"""
-            
-            # Enable auto range again
-            #self.ui.graphicsview_potential_plot.autoRange()
-            
             # Delete buffers
             self.buffer_basis = [{},{},{}]
             self.buffer_energies = [{},{},{}]
@@ -1841,7 +1833,6 @@ class MainWindow(QtGui.QMainWindow):
             self.buffer_energiesMap_potential = {}
             self.buffer_positionsMap_potential = {}
             self.buffer_overlapMap_potential = {}
-            
             
             self.lines_buffer_minIdx = {}
             self.colormap_buffer_minIdx_potential = 0
@@ -1878,22 +1869,6 @@ class MainWindow(QtGui.QMainWindow):
 
             # Reset status bar
             self.ui.statusbar.showMessage('')
-    
-    # https://groups.google.com/forum/#!msg/pyqtgraph/srQqVW9bqPg/CuCgyxzWo14J
-    # TODO
-    
-    """@QtCore.pyqtSlot()
-    def checkState(self):
-        sender = self.sender()
-        validator = sender.validator()
-        state = validator.validate(sender.text(), 0)[0]
-        if state == QtGui.QValidator.Acceptable:
-            color = '#ffffff'
-        elif state == QtGui.QValidator.Intermediate:
-            color = '#fff79a'
-        else:
-            color = '#f6989d'
-        sender.setStyleSheet('QLineEdit { background-color: %s }' % color)"""
     
     @QtCore.pyqtSlot(float)
     def adjustPairlimits(self, value):
@@ -2028,25 +2003,12 @@ class MainWindow(QtGui.QMainWindow):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
                 
             else:
-                # Save last settings
-                with open(self.path_system_last, 'w') as f:
-                    params = self.systemdict.paramsInOriginalunits()
-                    json.dump(params, f, indent=4, sort_keys=True)
-                    
-                with open(self.path_plot_last, 'w') as f:
-                    params = self.plotdict.paramsInOriginalunits()
-                    params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-                    json.dump(params, f, indent=4, sort_keys=True)
-                    
-                with open(self.path_view_last, 'w') as f:
-                    params = dict()
-                    params["config"] = self.ui.tabwidget_config.currentIndex()
-                    params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
-                    params["system"] = self.ui.toolbox_system.currentIndex()
-                    if self.filepath != self.userpath: params["filepath"] = self.filepath
-                    json.dump(params, f, indent=4, sort_keys=True)
+                # save last settings
+                self.saveSettingsSystem(self.path_system_last)
+                self.saveSettingsPlotter(self.path_plot_last)
+                self.saveSettingsView(self.path_view_last)
             
-                # Change buttons
+                # change buttons
                 self.senderbutton = self.sender()
                 if self.senderbutton != self.ui.pushbutton_field1_calc:
                     self.ui.pushbutton_field1_calc.setEnabled(False)
@@ -2056,251 +2018,125 @@ class MainWindow(QtGui.QMainWindow):
                     self.ui.pushbutton_potential_calc.setEnabled(False)
                 self.senderbutton.setText("Abort calculation")
                 
-                # Store, whether the same basis should be used for both atoms
+                # store, whether the same basis should be used for both atoms
                 self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
                 
+                # store configuration
+                self.minE = [self.plotdict["minE_field1"].magnitude, self.plotdict["minE_field2"].magnitude, self.plotdict["minE_potential"].magnitude]
+                self.maxE = [self.plotdict["maxE_field1"].magnitude, self.plotdict["maxE_field2"].magnitude, self.plotdict["maxE_potential"].magnitude]
                 
-                # Get limits # TODO !!!!!!!! zusammen bringen mit set limits
-                self.minE_field1 = self.plotdict["minE_field1"]
-                if self.minE_field1 is not None: self.minE_field1 = self.minE_field1.magnitude
-                    
-                self.minE_field2 = self.plotdict["minE_field2"]
-                if self.minE_field2 is not None: self.minE_field2 = self.minE_field2.magnitude
+                self.steps = self.systemdict['steps'].magnitude
                 
-                self.minE_potential = self.plotdict["minE_potential"]
-                if self.minE_potential is not None: self.minE_potential = self.minE_potential.magnitude
+                self.unperturbedstate = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
+                                                  self.systemdict['n2'].magnitude,self.systemdict['l2'].magnitude,self.systemdict['j2'].magnitude,self.systemdict['m2'].magnitude])
                 
-                self.maxE_field1 = self.plotdict["maxE_field1"]
-                if self.maxE_field1 is not None: self.maxE_field1 = self.maxE_field1.magnitude
-                    
-                self.maxE_field2 = self.plotdict["maxE_field2"]
-                if self.maxE_field2 is not None: self.maxE_field2 = self.maxE_field2.magnitude
+                if self.ui.radiobutton_plot_overlapUnperturbed.isChecked():
+                    self.overlapstate = self.unperturbedstate
+                else:
+                    self.overlapstate = np.array([self.plotdict['n1'].magnitude,self.plotdict['l1'].magnitude,self.plotdict['j1'].magnitude,self.plotdict['m1'].magnitude,
+                                                  self.plotdict['n2'].magnitude,self.plotdict['l2'].magnitude,self.plotdict['j2'].magnitude,self.plotdict['m2'].magnitude])
                 
-                self.maxE_potential = self.plotdict["maxE_potential"]
-                if self.maxE_potential is not None: self.maxE_potential = self.maxE_potential.magnitude
-                
-            
-                # Clear plots and set them up
-                self.constDistance = self.getConstDistance()
-                self.constEField = self.getConstEField()
-                self.constBField = self.getConstBField()
-                #self.sameSpecies = self.getSameSpecies()
-            
-                if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
-                    self.storage_data[0] = []
-                    self.storage_states[0] = None
-                    self.storage_configuration[0] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
-                    self.storage_configuration[0][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-                    
-                    # clear plot (with a hack)
-                    autorangestate = self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"]
-                    if autorangestate[0]:
-                        self.ui.graphicsview_field1_plot.disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_field1_plot.disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
-                    self.ui.graphicsview_field1_plot.clear()
-                    if autorangestate[0]:
-                        self.ui.graphicsview_field1_plot.enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_field1_plot.enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
-                        
-                    self.ui.graphicsview_field1_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constEField and not self.constBField:
-                        self.ui.graphicsview_field1_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                        self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
-                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
-                    else:
-                        self.ui.graphicsview_field1_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                        self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
-                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
-                    self.leftSmallerRight = posMin < posMax
-                    
-                    if self.ui.checkbox_plot_autorange.isChecked():
-                        self.ui.graphicsview_field1_plot.enableAutoRange()
-                    else:
-                        if self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"][0]:
-                            self.ui.graphicsview_field1_plot.setXRange(posMin, posMax)
-                        if self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"][1] and self.minE_field1 is not None and self.maxE_field1 is not None:
-                            self.ui.graphicsview_field1_plot.setYRange(self.minE_field1, self.maxE_field1)
-  
-                if self.senderbutton in [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc] or self.samebasis:
-                    self.storage_data[1] = []
-                    self.storage_states[1] = None
-                    self.storage_configuration[1] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
-                    self.storage_configuration[1][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-                    
-                    # clear plot (with a hack)
-                    autorangestate = self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"]
-                    if autorangestate[0]:
-                        self.ui.graphicsview_field2_plot.disableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_field2_plot.disableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().YAxis)
-                    self.ui.graphicsview_field2_plot.clear()
-                    if autorangestate[0]:
-                        self.ui.graphicsview_field2_plot.enableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_field2_plot.enableAutoRange(axis=self.ui.graphicsview_field2_plot.getViewBox().YAxis)
-                        
-                    self.ui.graphicsview_field2_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constEField and not self.constBField:
-                        self.ui.graphicsview_field2_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                        self.converter_x_field = Converter.fromAU(1,Units.bfield).magnitude
-                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
-                    else:
-                        self.ui.graphicsview_field2_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                        self.converter_x_field = Converter.fromAU(1,Units.efield).magnitude
-                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
-                    self.leftSmallerRight = posMin < posMax
-                    
-                    if self.ui.checkbox_plot_autorange.isChecked():
-                        self.ui.graphicsview_field2_plot.enableAutoRange()
-                    else:
-                        if self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"][0]:
-                            self.ui.graphicsview_field2_plot.setXRange(posMin, posMax)
-                        if self.ui.graphicsview_field2_plot.getViewBox().getState()["autoRange"][1] and self.minE_field2 is not None and self.maxE_field2 is not None:
-                            self.ui.graphicsview_field2_plot.setYRange(self.minE_field2, self.maxE_field2)
-                    
-                if self.senderbutton == self.ui.pushbutton_potential_calc:
-                    self.storage_data[2] = []
-                    self.storage_states[2] = None
-                    self.storage_configuration[2] = [self.systemdict.paramsInOriginalunits(),self.plotdict.paramsInOriginalunits()]
-                    self.storage_configuration[2][1]["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-                    
-                    # clear plot (with a hack)
-                    autorangestate = self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"]
-                    if autorangestate[0]:
-                        self.ui.graphicsview_potential_plot.disableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_potential_plot.disableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().YAxis)
-                    self.ui.graphicsview_potential_plot.clear()
-                    if autorangestate[0]:
-                        self.ui.graphicsview_potential_plot.enableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.ui.graphicsview_potential_plot.enableAutoRange(axis=self.ui.graphicsview_potential_plot.getViewBox().YAxis)
-                        
-                    self.ui.graphicsview_potential_plot.setLabel('left', 'Energy ('+str(Units.energy)+')')
-                    if self.constDistance and not self.constEField:
-                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
-                        self.converter_x_potential = Converter.fromAU(1,Units.efield).magnitude
-                        posMin_potential = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
-                        posMax_potential = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
-                    elif self.constDistance and not self.constBField:
-                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-                        self.converter_x_potential = Converter.fromAU(1,Units.bfield).magnitude
-                        posMin_potential = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
-                        posMax_potential = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
-                    else:
-                        self.ui.graphicsview_potential_plot.setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
-                        self.converter_x_potential = Converter.fromAU(1,Units.length).magnitude
-                        posMin_potential = self.systemdict['minR'].magnitude
-                        posMax_potential = self.systemdict['maxR'].magnitude
-                    self.leftSmallerRight_potential = posMin_potential < posMax_potential
-                    
-                    if self.ui.checkbox_plot_autorange.isChecked():
-                        self.ui.graphicsview_potential_plot.enableAutoRange()
-                    else:
-                        if self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"][0]:
-                            self.ui.graphicsview_potential_plot.setXRange(posMin_potential, posMax_potential)
-                        if self.ui.graphicsview_potential_plot.getViewBox().getState()["autoRange"][1] and self.minE_potential is not None and self.maxE_potential is not None:
-                            self.ui.graphicsview_potential_plot.setYRange(self.minE_potential, self.maxE_potential)
-                        
-                self.converter_y = Converter.fromAU(1,Units.energy).magnitude
-                
-                
-                self.steps = self.systemdict['steps']
-                
-                
-                
-                n1 = self.systemdict['n1']
-                l1 = self.systemdict['l1']
-                j1 = self.systemdict['j1']
-                m1 = self.systemdict['m1']
-                n2 = self.systemdict['n2']
-                l2 = self.systemdict['l2']
-                j2 = self.systemdict['j2']
-                m2 = self.systemdict['m2']
-                self.unperturbedstate = np.array([n1,l1,j1,m1,n2,l2,j2,m2])
-                
-                if self.ui.groupbox_plot_overlap.isChecked():
-                    if self.plotdict["overlapUnperturbed"]:
-                        self.overlapstate = self.unperturbedstate
-                    else:
-                        n1 = self.plotdict['n1']
-                        l1 = self.plotdict['l1']
-                        j1 = self.plotdict['j1']
-                        m1 = self.plotdict['m1']
-                        n2 = self.plotdict['n2']
-                        l2 = self.plotdict['l2']
-                        j2 = self.plotdict['j2']
-                        m2 = self.plotdict['m2']
-                        self.overlapstate = np.array([n1,l1,j1,m1,n2,l2,j2,m2])
-                    
                 self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)
-                self.lut[0] = [255,255,255]
+                
+                # clear plots and set them up
+                validsenders = [[self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc],
+                    [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc],
+                    [self.ui.pushbutton_potential_calc]]
+                
+                constDistance = self.getConstDistance()
+                constEField = self.getConstEField()
+                constBField = self.getConstBField()
+                
+                self.xAxis = [None]*3
+                self.converter_x = [None]*3
+                self.leftSmallerRight = [None]*3
+                
+                for idx in range(3):
+                    if (self.senderbutton not in validsenders[idx]) and not (idx == 0 and self.samebasis): continue
                     
-                # Set limits
-                self.minE_field1 = self.plotdict["minE_field1"]
-                if self.minE_field1 is not None:
-                    self.minE_field1 = Converter.toAU(self.minE_field1).magnitude
-                    self.ui.graphicsview_field1_plot.setLimits(yMin = self.minE_field1 * self.converter_y)
-                else:
-                    self.ui.graphicsview_field1_plot.setLimits(yMin = None)
+                    # setup storage variables to save the results
+                    filelike_system=StringIO()
+                    filelike_plotter=StringIO()
+                    self.saveSettingsSystem(filelike_system)
+                    self.saveSettingsPlotter(filelike_plotter)
+            
+                    self.storage_data[idx] = []
+                    self.storage_states[idx] = None
+                    self.storage_configuration[idx] = [filelike_system.getvalue(), filelike_plotter.getvalue()]
                     
-                self.minE_field2 = self.plotdict["minE_field2"]
-                if self.minE_field2 is not None:
-                    self.minE_field2 = Converter.toAU(self.minE_field2).magnitude
-                    self.ui.graphicsview_field2_plot.setLimits(yMin = self.minE_field2 * self.converter_y)
-                else:
-                    self.ui.graphicsview_field2_plot.setLimits(yMin = None)
-                
-                self.minE_potential = self.plotdict["minE_potential"]
-                if self.minE_potential is not None:
-                    self.minE_potential = Converter.toAU(self.minE_potential).magnitude
-                    self.ui.graphicsview_potential_plot.setLimits(yMin = self.minE_potential * self.converter_y)
-                else:
-                    self.ui.graphicsview_potential_plot.setLimits(yMin = None)
-                
-                self.maxE_field1 = self.plotdict["maxE_field1"]
-                if self.maxE_field1 is not None:
-                    self.maxE_field1 = Converter.toAU(self.maxE_field1).magnitude
-                    self.ui.graphicsview_field1_plot.setLimits(yMax = self.maxE_field1 * self.converter_y)
-                else:
-                    self.ui.graphicsview_field1_plot.setLimits(yMax = None)
+                    # clear plot
+                    autorangestate = self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"] # HACK to avoid performance issues during clearing
+                    if autorangestate[0]:
+                        self.graphicviews_plot[idx].disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.graphicviews_plot[idx].disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
+                    self.graphicviews_plot[idx].clear()
+                    if autorangestate[0]:
+                        self.graphicviews_plot[idx].enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                    if autorangestate[1]:
+                        self.graphicviews_plot[idx].enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
                     
-                self.maxE_field2 = self.plotdict["maxE_field2"]
-                if self.maxE_field2 is not None:
-                    self.maxE_field2 = Converter.toAU(self.maxE_field2).magnitude
-                    self.ui.graphicsview_field2_plot.setLimits(yMax = self.maxE_field2 * self.converter_y)
-                else:
-                    self.ui.graphicsview_field2_plot.setLimits(yMax = None)
+                    # set up energy axis
+                    self.graphicviews_plot[idx].setLabel('left', 'Energy ('+str(Units.energy)+')')
+                    self.graphicviews_plot[idx].setLimits(yMin = self.minE[idx])
+                    self.graphicviews_plot[idx].setLimits(yMax = self.maxE[idx])
+                    
+                    # set up step axis
+                    if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constEField):
+                        self.xAxis[idx] = 'B'
+                        self.graphicviews_plot[idx].setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
+                        self.converter_x[idx] = Quantity(1, Units.au_bfield).toUU().magnitude
+                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
+                    elif (idx in [0,1]) or (idx == 2 and constDistance and not constBField):
+                        self.xAxis[idx] = 'E'
+                        self.graphicviews_plot[idx].setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
+                        self.converter_x[idx] = Quantity(1, Units.au_efield).toUU().magnitude
+                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
+                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
+                    elif (idx == 2):
+                        self.xAxis[idx] = 'R'
+                        self.graphicviews_plot[idx].setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
+                        self.converter_x[idx] = Quantity(1, Units.au_length).toUU().magnitude
+                        posMin = self.systemdict['minR'].magnitude
+                        posMax = self.systemdict['maxR'].magnitude
+                    
+                    self.leftSmallerRight[idx] = posMin < posMax
+                                        
+                    # enable / disable auto range
+                    if self.ui.checkbox_plot_autorange.isChecked():
+                        self.graphicviews_plot[idx].enableAutoRange()
+                    else:
+                        if self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][0]:
+                            self.graphicviews_plot[idx].setXRange(posMin, posMax)
+                        if self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1] and self.minE[idx] is not None and self.maxE[idx] is not None:
+                            self.graphicviews_plot[idx].setYRange(self.minE[idx], self.maxE[idx])
                 
-                self.maxE_potential = self.plotdict["maxE_potential"]
-                if self.maxE_potential is not None:
-                    self.maxE_potential = Converter.toAU(self.maxE_potential).magnitude
-                    self.ui.graphicsview_potential_plot.setLimits(yMax = self.maxE_potential * self.converter_y)
-                else:
-                    self.ui.graphicsview_potential_plot.setLimits(yMax = None)
+                self.converter_y = Quantity(1, Units.au_energy).toUU().magnitude
                 
-                # Save configuration to json file
+                # save configuration to json file
                 with open(self.path_config, 'w') as f:
-                    if self.senderbutton == self.ui.pushbutton_field1_calc:
-                        if self.samebasis:
-                            self.systemdict.saveInAU_field12(f)
-                        else:
-                            self.systemdict.saveInAU_field1(f)
-                    elif self.senderbutton == self.ui.pushbutton_field2_calc:
-                        if self.samebasis:
-                            self.systemdict.saveInAU_field12(f)
-                        else:
-                            self.systemdict.saveInAU_field2(f)
-                    elif self.senderbutton == self.ui.pushbutton_potential_calc:
-                        self.systemdict.saveInAU_potential(f)
+                    if self.senderbutton == self.ui.pushbutton_potential_calc: keys = self.systemdict.keys_for_cprogram_potential
+                    elif self.samebasis: keys = self.systemdict.keys_for_cprogram_field12
+                    elif self.senderbutton == self.ui.pushbutton_field1_calc: keys = self.systemdict.keys_for_cprogram_field1
+                    elif self.senderbutton == self.ui.pushbutton_field2_calc: keys = self.systemdict.keys_for_cprogram_field2
                     
-                # Start c++ process
+                    params = {k : self.systemdict[k].toAU().magnitude for k in keys}
+                    
+                    if params["deltaNSingle"] < 0: params["deltaNSingle"] = -1
+                    if params["deltaLSingle"] < 0: params["deltaLSingle"] = -1
+                    if params["deltaJSingle"] < 0: params["deltaJSingle"] = -1
+                    if params["deltaMSingle"] < 0: params["deltaMSingle"] = -1
+                    
+                    if self.senderbutton == self.ui.pushbutton_potential_calc and self.ui.radiobutton_system_pairbasisSame.isChecked():
+                        params["deltaNPair"] = -1
+                        params["deltaLPair"] = -1
+                        params["deltaJPair"] = -1
+                        params["deltaMPair"] = -1
+            
+                    json.dump(params, f, indent=4, sort_keys=True)
+                    
+                # start c++ process
                 if self.systemdict["minEx"].magnitude != 0 or self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0 or \
                         self.systemdict["minBx"].magnitude != 0 or self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0:
                     path_cpp = self.path_cpp_complex
@@ -2312,10 +2148,10 @@ class MainWindow(QtGui.QMainWindow):
                 
                 self.starttime = time()
         
-                # Start thread that collects the output
+                # start thread that collects the output
                 self.thread.execute(self.proc.stdout)
             
-                # Start timer used for processing the results
+                # start timer used for processing the results
                 self.timer.start(0)
             
         else:
@@ -2365,13 +2201,8 @@ class MainWindow(QtGui.QMainWindow):
             ziparchive.writestr('plot.png', buffer.data())
             
             # save configuration
-            filelike = StringIO()
-            json.dump(self.storage_configuration[idx][0], filelike, indent=4, sort_keys=True)
-            ziparchive.writestr('settings.sconf', filelike.getvalue())
-            
-            filelike = StringIO()
-            json.dump(self.storage_configuration[idx][1], filelike, indent=4, sort_keys=True)
-            ziparchive.writestr('settings.pconf', filelike.getvalue())
+            ziparchive.writestr('settings.sconf', self.storage_configuration[idx][0])
+            ziparchive.writestr('settings.pconf', self.storage_configuration[idx][1])
             
             # create data dictionary
             data = {}
@@ -2436,7 +2267,7 @@ class MainWindow(QtGui.QMainWindow):
             ziparchive.close()
         
         
-        """ symmetry = eigensystem.params["symmetry"] # TODO ausgelesene Symmetrie auch beim Plotten verwenden
+        """ symmetry = eigensystem.params["symmetry"] # TODO ausgelesene Symmetrie auch beim Plotten verwenden !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 
                 # save configuration
                 if firstround:
@@ -2462,10 +2293,9 @@ class MainWindow(QtGui.QMainWindow):
         filename,_ = QtGui.QFileDialog.getSaveFileName(self, \
             "Save system configuration",path, "sconf (*.sconf)")
         
+        
         if filename:
-            with open(filename, 'w') as f:
-                params = self.systemdict.paramsInOriginalunits()
-                json.dump(params, f, indent=4, sort_keys=True)
+            self.saveSettingsSystem(filename)
             self.systemfile = filename
             self.filepath = os.path.dirname(filename)
     
@@ -2476,10 +2306,7 @@ class MainWindow(QtGui.QMainWindow):
             "Save plot configuration",path, "pconf (*.pconf)")
         
         if filename:
-            with open(filename, 'w') as f:
-                params = self.plotdict.paramsInOriginalunits()
-                params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-                json.dump(params, f, indent=4, sort_keys=True)
+            self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
     
@@ -2489,9 +2316,7 @@ class MainWindow(QtGui.QMainWindow):
             "Open system configuration",self.filepath, "sconf (*.sconf)")
         
         if filename:
-            with open(filename, 'r') as f:
-                params = json.load(f)
-                self.systemdict.load(params)
+            self.loadSettingsSystem(filename)
             self.systemfile = filename
             self.filepath = os.path.dirname(filename)
     
@@ -2500,12 +2325,8 @@ class MainWindow(QtGui.QMainWindow):
         filename,_ = QtGui.QFileDialog.getOpenFileName(self, \
             "Open plot configuration",self.filepath, "pconf (*.pconf)")
         
-        if not (filename == ""):
-            with open(filename, 'r') as f:
-                params = json.load(f)
-                self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
-                del params["gradientwidget"]
-                self.plotdict.load(params)
+        if filename:
+            self.loadSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
             
@@ -2514,23 +2335,10 @@ class MainWindow(QtGui.QMainWindow):
         self.abortCalculation()
         
         # Save last settings
-        with open(self.path_system_last, 'w') as f:
-            params = self.systemdict.paramsInOriginalunits()
-            json.dump(params, f, indent=4, sort_keys=True)
-        
-        with open(self.path_plot_last, 'w') as f:
-            params = self.plotdict.paramsInOriginalunits()
-            params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
-            json.dump(params, f, indent=4, sort_keys=True)
-        
-        with open(self.path_view_last, 'w') as f:
-            params = dict()
-            params["config"] = self.ui.tabwidget_config.currentIndex()
-            params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
-            params["system"] = self.ui.toolbox_system.currentIndex()
-            if self.filepath != self.userpath: params["filepath"] = self.filepath
-            json.dump(params, f, indent=4, sort_keys=True)
-        
+        self.saveSettingsSystem(self.path_system_last)
+        self.saveSettingsPlotter(self.path_plot_last)
+        self.saveSettingsView(self.path_view_last)
+
         # Close everything
         super().closeEvent(event)
 
