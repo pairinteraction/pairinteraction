@@ -1343,6 +1343,9 @@ class MainWindow(QtGui.QMainWindow):
                 self.buffer_energies = {}
                 self.buffer_positions = {}
                 self.buffer_boolarr = {}
+                
+                self.labelprob = None
+                self.labelprob_energy = None
             
                 # indicate that the basis file is already processed
                 if idx == 0: self.thread.basisfile_field1 = ""
