@@ -1149,9 +1149,9 @@ class MainWindow(QtGui.QMainWindow):
             self.graphicviews_plot[idx].getAxis("bottom").setZValue(1000) # HACK to bring axis into the foreground
             self.graphicviews_plot[idx].getAxis("left").setZValue(1000) # HACK to bring axis into the foreground
     
-            if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constEField):
+            if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constBField):
                 self.graphicviews_plot[idx].setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
-            elif (idx in [0,1]) or (idx == 2 and constDistance and not constBField):
+            elif (idx in [0,1]) or (idx == 2 and constDistance and not constEField):
                 self.graphicviews_plot[idx].setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
             elif (idx == 2):
                 self.graphicviews_plot[idx].setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
@@ -2085,13 +2085,13 @@ class MainWindow(QtGui.QMainWindow):
                     self.graphicviews_plot[idx].setLimits(yMax = self.maxE[idx])
                     
                     # set up step axis
-                    if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constEField):
+                    if (idx in [0,1] and constEField and not constBField) or (idx == 2 and constDistance and not constBField):
                         self.xAxis[idx] = 'B'
                         self.graphicviews_plot[idx].setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
                         self.converter_x[idx] = Quantity(1, Units.au_bfield).toUU().magnitude
                         posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
                         posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
-                    elif (idx in [0,1]) or (idx == 2 and constDistance and not constBField):
+                    elif (idx in [0,1]) or (idx == 2 and constDistance and not constEField):
                         self.xAxis[idx] = 'E'
                         self.graphicviews_plot[idx].setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                         self.converter_x[idx] = Quantity(1, Units.au_efield).toUU().magnitude
