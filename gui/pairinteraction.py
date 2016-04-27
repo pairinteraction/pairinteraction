@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 2
-version_cache = 2
+version_settings = 3
+version_cache = 3
 
 import sys
 from pint import UnitRegistry
@@ -43,6 +43,59 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 # global configurations of pyqtgraph
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
+
+
+
+
+## wignerd.py
+from sympy.physics.quantum.spin import Rotation
+from sympy import Rational, re
+
+class Wignerd:
+    def __init__(self):
+        self.wignerdict = dict()
+    
+    def calc(self, j, m_final, m_initial, beta):
+        j = Rational(j)
+        m2 = m_final
+        m1 = m_initial
+        sgn = 1
+        
+        if m1+m2 < 0:
+            m1 *= -1
+            m2 *= -1
+            sgn *= (-1)**(m2-m1)
+    
+        if m1 < m2:
+            tmp = m1
+            m1 = m2
+            m2 = tmp
+            sgn *= (-1)**(m2-m1)
+
+        mstring = "{}_{}_{}".format(m1,m2,beta)
+        if mstring not in self.wignerdict.keys():
+            self.wignerdict[mstring] = float(re(Rotation.d(j,m2,m1,beta).doit()))
+
+        return sgn*self.wignerdict[mstring]
+
+
+'''wignerd = Wignerd()
+
+j = 2.5
+m_final = 1.5
+beta = np.pi/2
+
+for m_initial in np.arange(-2.5,2.5):
+    print(wignerd.calc(j, m_final, m_initial, beta))
+
+for m_initial in np.arange(-2.5,2.5):
+    print(wignerd.calc(j, -m_final, -m_initial, beta))
+
+
+
+
+
+asdfghfj'''
 
 
 
@@ -811,6 +864,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_plotwindow()
         self.ui.setupUi(self)
         
+        self.wignerd = Wignerd()
+        
         self.invalidQuantumnumbers = [False, False, False, False]
         
         self.samebasis = False
@@ -839,7 +894,8 @@ class MainWindow(QtGui.QMainWindow):
         
         self.path_system_last = os.path.join(self.path_lastsettings,"lastsettings.sconf")
         self.path_plot_last = os.path.join(self.path_lastsettings,"lastsettings.pconf")
-        self.path_view_last = os.path.join(self.path_lastsettings,"lastsettings.json")
+        self.path_view_last = os.path.join(self.path_lastsettings,"lastview.json")
+        self.path_cache_last = os.path.join(self.path_lastsettings,"lastcache.json")
         
         self.path_config = os.path.join(self.path_out,"conf.json")
         self.path_version = os.path.join(self.path_out,"version.json")
@@ -895,9 +951,12 @@ class MainWindow(QtGui.QMainWindow):
         self.storage_data = [[],[],[]]
         self.storage_states = [None, None, None]
         self.storage_configuration = [[None, None], [None, None], [None, None]]
+        
+        self.manualRangeX = [False, False, False]
+        self.manualRangeY = [False, False, False]
 
         # TODOs
-        self.ui.lineedit_system_theta.setEnabled(False)
+        #self.ui.lineedit_system_theta.setEnabled(False)
         self.ui.lineedit_system_precision.setEnabled(False)
         self.ui.checkbox_system_dq.setEnabled(False)
         self.ui.checkbox_system_qq.setEnabled(False)
@@ -989,6 +1048,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_plot_save.triggered.connect(self.savePlotConf)
         self.ui.action_quit.triggered.connect(self.close)
         self.ui.action_whatsthis.triggered.connect(QtGui.QWhatsThis.enterWhatsThisMode)
+        self.ui.action_cache_directory.triggered.connect(self.changeCacheDirectory)
+        self.ui.action_cache_clear.triggered.connect(self.clearCache)
         
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
@@ -1000,7 +1061,20 @@ class MainWindow(QtGui.QMainWindow):
         
         self.timer.timeout.connect(self.checkForData)
         
+        self.ui.graphicsview_field1_plot.sigRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_field2_plot.sigRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_potential_plot.sigRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_field1_plot.sigYRangeChanged.connect(self.detectManualRangeY)
+        self.ui.graphicsview_field2_plot.sigYRangeChanged.connect(self.detectManualRangeY)
+        self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(self.detectManualRangeY)
         
+        
+        # Load cache directory
+        if os.path.isfile(self.path_cache_last):
+            with open(self.path_cache_last, 'r') as f:
+                params = json.load(f)
+                self.path_cache = params["cachedir"]
+            
         # Check version
         
         # Load version
@@ -1013,7 +1087,7 @@ class MainWindow(QtGui.QMainWindow):
                 version_cache_saved =  params["version_cache"]
         
         # Compare version
-        if os.path.exists(self.path_out) and version_settings_saved != version_settings and version_cache_saved != version_cache:
+        '''if os.path.exists(self.path_out) and version_settings_saved != version_settings and version_cache_saved != version_cache: # Poblem: Cachedirectory muss nicht mehr in self.path_out liegen
             msg = QtGui.QMessageBox()
             msg.setText('A new program version has been installed. Due to major changes, cache and settings have to be cleared. This deletes the directory {}.'.format(self.path_out))
             msg.setIcon(QtGui.QMessageBox.Information);
@@ -1026,9 +1100,9 @@ class MainWindow(QtGui.QMainWindow):
             if answer == QtGui.QMessageBox.Ok:
                 shutil.rmtree(self.path_out)
             else:
-                sys.exit()
+                sys.exit()'''
         
-        elif os.path.exists(self.path_lastsettings) and version_settings_saved != version_settings:
+        if os.path.exists(self.path_lastsettings) and version_settings_saved != version_settings:
             msg = QtGui.QMessageBox()
             msg.setText('A new program version has been installed. Due to configuration changes, settings have to be cleared. This deletes the directory {}.'.format(self.path_lastsettings))
             msg.setIcon(QtGui.QMessageBox.Information);
@@ -1043,7 +1117,7 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 sys.exit()
         
-        elif os.path.exists(self.path_cache) and version_cache_saved != version_cache:
+        if os.path.exists(self.path_cache) and version_cache_saved != version_cache:
             msg = QtGui.QMessageBox()
             msg.setText('A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory {}.'.format(self.path_cache))
             msg.setIcon(QtGui.QMessageBox.Information);
@@ -1076,6 +1150,9 @@ class MainWindow(QtGui.QMainWindow):
             
             with open(self.path_version, 'w') as f:
                 json.dump({'version_settings': version_settings, 'version_cache': version_cache_saved}, f, indent=4, sort_keys=True)
+            
+            with open(self.path_cache_last, 'w') as f:
+                json.dump({"cachedir": self.path_cache}, f, indent=4, sort_keys=True)
             
         if not os.path.exists(self.path_cache):
             os.makedirs(self.path_cache)
@@ -1217,8 +1294,8 @@ class MainWindow(QtGui.QMainWindow):
         else:
             save(path)
     
-    def get1DPosition(self, x, y, z):
-        vec = np.array([x,y,z])
+    def get1DPosition(self, vec):
+        vec = np.array(vec)
         return np.sign(np.vdot(vec,[1,1,1]))*np.linalg.norm(vec)
         
     def getConstEField(self):
@@ -1285,19 +1362,72 @@ class MainWindow(QtGui.QMainWindow):
                 
                 # determine which state to highlite
                 if self.ui.groupbox_plot_overlap.isChecked():
-                    if idx == 0:
-                        try: self.stateidx_field[0] = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[0,1,2,3]],axis=-1))[0][0]
-                        except: self.stateidx_field[0] = -1
-                    if  idx == 1 or (idx == 0 and self.thread.samebasis):
-                        try: self.stateidx_field[1] = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[4,5,6,7]],axis=-1))[0][0]
-                        except: self.stateidx_field[1] = -1
-                    elif idx == 2:
-                        try: self.stateidx_field[2] = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]] == self.overlapstate[None,:],axis=-1))[0][0]
-                        except: self.stateidx_field[2] = -1
-                
-                    self.yMin_field[idx] = None
-                    self.yMax_field[idx] = None
-            
+                    nState = len(basis)
+                    
+                    if self.angle != 0:
+                        if idx == 0:
+                            stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[0,1,2]],axis=-1))[0]
+                            statecoeff = []
+                            j = self.overlapstate[2]
+                            for state in basis[stateidx]:
+                                m2 = state[4]
+                                m1 = self.overlapstate[3]
+                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)
+                            if self.thread.samebasis and np.any(self.overlapstate[[0,1,2,3]] != self.overlapstate[[4,5,6,7]]):
+                                stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[4,5,6]],axis=-1))[0]
+                                j = self.overlapstate[6]
+                                for state in basis[stateidx_second]:
+                                    m2 = state[4]
+                                    m1 = self.overlapstate[7]
+                                    coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                    statecoeff.append(coeff)
+                                stateidx = np.append(stateidx, stateidx_second)
+                                stateamount = np.append(stateamount,np.ones_like(stateidx_second))
+                        elif idx == 1:
+                            stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[4,5,6]],axis=-1))[0]
+                            statecoeff = []
+                            j = self.overlapstate[2]
+                            for state in basis[stateidx]:
+                                m2 = state[4]
+                                m1 = self.overlapstate[7]
+                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)
+                        elif idx == 2:
+                            stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[None,[0,1,2,4,5,6]],axis=-1))[0]
+                            statecoeff = []
+                            j = self.overlapstate[[2,6]]
+                            for state in basis[stateidx]:
+                                m_final = state[[4,8]]
+                                m_initial = self.overlapstate[[3,7]]
+                                coeff = 1
+                                for m2, m1, jj in zip(m_final, m_initial, j):
+                                    coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)
+                            
+                        print(self.angle, np.sum(np.abs(statecoeff)**2))
+                                                
+                    else:
+                        if idx == 0:
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[0,1,2,3]],axis=-1))[0]
+                            if self.thread.samebasis and np.any(self.overlapstate[[0,1,2,3]] != self.overlapstate[[4,5,6,7]]):
+                                stateidx = np.append(stateidx, np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[4,5,6,7]],axis=-1))[0])
+                        elif idx == 1:
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[4,5,6,7]],axis=-1))[0]
+                        elif idx == 2:
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]] == self.overlapstate[None,:],axis=-1))[0]
+                        
+                        statecoeff = np.ones_like(stateidx)
+                        stateamount = np.arange(len(stateidx))
+                    
+                    self.stateidx_field[idx] = sparse.csc_matrix((statecoeff,(stateamount,stateidx)), shape=(stateamount[-1]+1,nState))
+                        
+                else:
+                    self.stateidx_field[idx] = None
+                                
                 # calculate a matrix that can be used to determine the momenta inside a basis element 
                 if idx == 0 or idx == 1:
                     momentum = basis[:,2]
@@ -1346,6 +1476,9 @@ class MainWindow(QtGui.QMainWindow):
                 
                 self.labelprob = None
                 self.labelprob_energy = None
+                
+                self.yMin_field[idx] = None
+                self.yMax_field[idx] = None
             
                 # indicate that the basis file is already processed
                 if idx == 0: self.thread.basisfile_field1 = ""
@@ -1420,11 +1553,17 @@ class MainWindow(QtGui.QMainWindow):
                         momentum[momentum_probabilty.row] = momentum_probabilty.col
                 
                     # --- calculate the position (x value) ---
+                    if self.xAxis[idx] in ['B', 'E']:
+                        rotator = np.array([[np.cos(-self.angle),0,np.sin(-self.angle)],[0,1,0],[-np.sin(-self.angle),0,np.cos(-self.angle)]])
                     
                     if self.xAxis[idx] == 'B':
-                        position = self.get1DPosition(float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"]))*self.converter_x[idx]
+                        fields = [[float(eigensystem.params["Bx"])],[float(eigensystem.params["By"])],[float(eigensystem.params["Bz"])]]
+                        fields = np.dot(rotator,fields).flatten()
+                        position = self.get1DPosition(fields)*self.converter_x[idx]
                     elif self.xAxis[idx] == 'E':
-                        position = self.get1DPosition(float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"]))*self.converter_x[idx]
+                        fields = [[float(eigensystem.params["Ex"])],[float(eigensystem.params["Ey"])],[float(eigensystem.params["Ez"])]]
+                        fields = np.dot(rotator,fields).flatten()
+                        position = self.get1DPosition(fields)*self.converter_x[idx]
                     elif self.xAxis[idx] == 'R':
                         position = float(eigensystem.params["R"])*self.converter_x[idx]
 
@@ -1550,13 +1689,12 @@ class MainWindow(QtGui.QMainWindow):
                             self.buffer_energiesMap[idx][filestep].append(energies)
                             
                             # append the overlaps to the arrays 
-                            if self.stateidx_field[idx] >= 0:
-                                self.buffer_overlapMap[idx][filestep].append(probs[self.stateidx_field[idx]].toarray().flatten())
+                            if self.stateidx_field[idx] is not None:
+                                overlap = np.abs(self.stateidx_field[idx]*basis)
+                                overlap.data **= 2
+                                self.buffer_overlapMap[idx][filestep].append(overlap.sum(axis=0).getA1())
                             else:
                                 self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies))
-                                
-                            if self.thread.samebasis and self.stateidx_field[1] >= 0 and self.stateidx_field[1] != self.stateidx_field[0]:
-                                self.buffer_overlapMap[idx][filestep][-1] += probs[self.stateidx_field[1]].toarray().flatten()
                                 
                             # check if all data of the zeroth position is collected
                             if 0 in self.buffer_overlapMap[idx].keys() and len(self.buffer_overlapMap[idx][0]) == numBlocks:
@@ -1580,13 +1718,12 @@ class MainWindow(QtGui.QMainWindow):
                             self.buffer_energiesMap[idx][filestep].append(bytescale(energies[boolarr], low=0, high=height_pixelunits-1, cmin=self.yMin_field[idx], cmax=self.yMax_field[idx]))
                             
                             # append the overlaps to the arrays
-                            if self.stateidx_field[idx] >= 0:
-                                self.buffer_overlapMap[idx][filestep].append(probs[self.stateidx_field[idx]].toarray().flatten()[boolarr])
+                            if self.stateidx_field[idx] is not None:
+                                overlap = np.abs(self.stateidx_field[idx]*basis)
+                                overlap.data **= 2
+                                self.buffer_overlapMap[idx][filestep].append(np.array(overlap.sum(axis=0)).flatten()[boolarr])
                             else:
                                 self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies[boolarr]))
-                            
-                            if self.thread.samebasis and self.stateidx_field[1] >= 0 and self.stateidx_field[1] != self.stateidx_field[0]:
-                                self.buffer_overlapMap[idx][filestep][-1] += probs[self.stateidx_field[1]].toarray().flatten()[boolarr]
                         
                         # --- build color maps starting at the lowest position---                    
                         # loop over positions ("filestep") as long as three subsequent positions ("self.colormap_buffer_minIdx_field[idx]+0,1,2") are within the buffers
@@ -1873,6 +2010,36 @@ class MainWindow(QtGui.QMainWindow):
             # Reset status bar
             self.ui.statusbar.showMessage('')
     
+    @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
+    def detectManualRangeX(self):
+        sender = self.sender()
+        
+        idx = -1
+        if sender == self.ui.graphicsview_field1_plot:
+            idx = 0
+        elif sender == self.ui.graphicsview_field2_plot:
+            idx = 1
+        elif sender == self.ui.graphicsview_potential_plot:
+            idx = 2
+        
+        if idx > -1:
+            self.manualRangeX[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][0]
+    
+    @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
+    def detectManualRangeY(self):
+        sender = self.sender()
+        
+        idx = -1
+        if sender == self.ui.graphicsview_field1_plot.getPlotItem():
+            idx = 0
+        elif sender == self.ui.graphicsview_field2_plot.getPlotItem():
+            idx = 1
+        elif sender == self.ui.graphicsview_potential_plot.getPlotItem():
+            idx = 2
+
+        if idx > -1:
+            self.manualRangeY[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1]
+    
     @QtCore.pyqtSlot(float)
     def adjustPairlimits(self, value):
         sender = self.sender()
@@ -2025,6 +2192,8 @@ class MainWindow(QtGui.QMainWindow):
                 self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
                 
                 # store configuration
+                self.angle = self.systemdict["theta"].toAU().magnitude # toAU converts the angle from deg to rad
+                
                 self.minE = [self.plotdict["minE_field1"].magnitude, self.plotdict["minE_field2"].magnitude, self.plotdict["minE_potential"].magnitude]
                 self.maxE = [self.plotdict["maxE_field1"].magnitude, self.plotdict["maxE_field2"].magnitude, self.plotdict["maxE_potential"].magnitude]
                 
@@ -2068,16 +2237,16 @@ class MainWindow(QtGui.QMainWindow):
                     self.storage_configuration[idx] = [filelike_system.getvalue(), filelike_plotter.getvalue()]
                     
                     # clear plot
-                    autorangestate = self.ui.graphicsview_field1_plot.getViewBox().getState()["autoRange"] # HACK to avoid performance issues during clearing
+                    autorangestate = self.graphicviews_plot[idx].getViewBox().getState()["autoRange"] # HACK to avoid performance issues during clearing
                     if autorangestate[0]:
-                        self.graphicviews_plot[idx].disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                        self.graphicviews_plot[idx].disableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().XAxis)
                     if autorangestate[1]:
-                        self.graphicviews_plot[idx].disableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
+                        self.graphicviews_plot[idx].disableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().YAxis)
                     self.graphicviews_plot[idx].clear()
                     if autorangestate[0]:
-                        self.graphicviews_plot[idx].enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().XAxis)
+                        self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().XAxis)
                     if autorangestate[1]:
-                        self.graphicviews_plot[idx].enableAutoRange(axis=self.ui.graphicsview_field1_plot.getViewBox().YAxis)
+                        self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().YAxis)
                     
                     # set up energy axis
                     self.graphicviews_plot[idx].setLabel('left', 'Energy ('+str(Units.energy)+')')
@@ -2089,14 +2258,14 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'B'
                         self.graphicviews_plot[idx].setLabel('bottom', 'Magnetic field ('+str(Units.bfield)+')')
                         self.converter_x[idx] = Quantity(1, Units.au_bfield).toUU().magnitude
-                        posMin = self.get1DPosition(self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude)
+                        posMin = self.get1DPosition([self.systemdict['minBx'].magnitude,self.systemdict['minBy'].magnitude,self.systemdict['minBz'].magnitude])
+                        posMax = self.get1DPosition([self.systemdict['maxBx'].magnitude,self.systemdict['maxBy'].magnitude,self.systemdict['maxBz'].magnitude])
                     elif (idx in [0,1]) or (idx == 2 and constDistance and not constEField):
                         self.xAxis[idx] = 'E'
                         self.graphicviews_plot[idx].setLabel('bottom', 'Electric field ('+str(Units.efield)+')')
                         self.converter_x[idx] = Quantity(1, Units.au_efield).toUU().magnitude
-                        posMin = self.get1DPosition(self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude)
-                        posMax = self.get1DPosition(self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude)
+                        posMin = self.get1DPosition([self.systemdict['minEx'].magnitude,self.systemdict['minEy'].magnitude,self.systemdict['minEz'].magnitude])
+                        posMax = self.get1DPosition([self.systemdict['maxEx'].magnitude,self.systemdict['maxEy'].magnitude,self.systemdict['maxEz'].magnitude])
                     elif (idx == 2):
                         self.xAxis[idx] = 'R'
                         self.graphicviews_plot[idx].setLabel('bottom', 'Interatomic distance ('+str(Units.length)+')')
@@ -2110,9 +2279,9 @@ class MainWindow(QtGui.QMainWindow):
                     if self.ui.checkbox_plot_autorange.isChecked():
                         self.graphicviews_plot[idx].enableAutoRange()
                     else:
-                        if self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][0]:
+                        if not self.manualRangeX[idx]:
                             self.graphicviews_plot[idx].setXRange(posMin, posMax)
-                        if self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1] and self.minE[idx] is not None and self.maxE[idx] is not None:
+                        if not self.manualRangeY[idx] and self.minE[idx] is not None and self.maxE[idx] is not None:
                             self.graphicviews_plot[idx].setYRange(self.minE[idx], self.maxE[idx])
                 
                 self.converter_y = Quantity(1, Units.au_energy).toUU().magnitude
@@ -2126,6 +2295,9 @@ class MainWindow(QtGui.QMainWindow):
                     
                     params = {k : self.systemdict[k].toAU().magnitude for k in keys}
                     
+                    if self.senderbutton == self.ui.pushbutton_potential_calc:
+                        del params["theta"]
+                    
                     if params["deltaNSingle"] < 0: params["deltaNSingle"] = -1
                     if params["deltaLSingle"] < 0: params["deltaLSingle"] = -1
                     if params["deltaJSingle"] < 0: params["deltaJSingle"] = -1
@@ -2136,17 +2308,30 @@ class MainWindow(QtGui.QMainWindow):
                         params["deltaLPair"] = -1
                         params["deltaJPair"] = -1
                         params["deltaMPair"] = -1
-            
+                    
+                    if self.angle != 0:
+                        arrlabels = [["minEx","minEy","minEz"],["maxEx","maxEy","maxEz"],["minBx","minBy","minBz"],["maxBx","maxBy","maxBz"]]
+                        rotator = np.array([[np.cos(self.angle),0,np.sin(self.angle)],[0,1,0],[-np.sin(self.angle),0,np.cos(self.angle)]])
+                        
+                        for labels in arrlabels:
+                            fields = np.array([[params[label]] for label in labels])
+                            fields = np.dot(rotator,fields).flatten()
+                            for field, label in zip(fields, labels): params[label] = field
+                        
+                        # Hack# TODO !!!!!!!!!!!!!!!
+                        params["minEx"] = 1e-32
+                        params["maxEx"] = 1e-32
+
                     json.dump(params, f, indent=4, sort_keys=True)
                     
                 # start c++ process
-                if self.systemdict["minEx"].magnitude != 0 or self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0 or \
-                        self.systemdict["minBx"].magnitude != 0 or self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0:
+                if params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or \
+                        params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
                     path_cpp = self.path_cpp_complex
                 else:
                     path_cpp = self.path_cpp_real
                     
-                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",self.path_config, "-o", self.path_out],
+                self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",self.path_config, "-o", self.path_cache],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
                 
                 self.starttime = time()
@@ -2312,6 +2497,28 @@ class MainWindow(QtGui.QMainWindow):
             self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
+    
+    @QtCore.pyqtSlot()
+    def changeCacheDirectory(self):
+        text, ok = QtGui.QInputDialog.getText(self, 'Input Dialog', 
+            'Enter new cache directory (the original directory is not deleted):', QtGui.QLineEdit.Normal, self.path_cache)
+        
+        if ok:
+            self.path_cache = text
+            if not os.path.exists(self.path_cache):
+                os.makedirs(self.path_cache)
+            
+            # Save cache directory
+            with open(self.path_cache_last, 'w') as f:
+                json.dump({"cachedir": self.path_cache}, f, indent=4, sort_keys=True)
+    
+    @QtCore.pyqtSlot()
+    def clearCache(self):
+        files = ['cache_elements.db','cache_matrix_complex.db','cache_matrix_real.db','cache_matrix_complex','cache_matrix_real'] # TODO: sicherstellen, dass gleiche Namen wie im C++ Programm
+        for file in files:
+            path = os.path.join(self.path_cache,file)
+            if os.path.isfile(path): os.remove(path)
+            elif os.path.isdir(path): shutil.rmtree(path) 
     
     @QtCore.pyqtSlot()
     def openSystemConf(self):

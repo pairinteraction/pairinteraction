@@ -999,7 +999,7 @@ protected:
 
 class HamiltonianOne : public Hamiltonian{
 public:
-    HamiltonianOne(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<BasisnamesOne> basis_one) : Hamiltonian(mpi), basis_one(basis_one) {
+    HamiltonianOne(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<BasisnamesOne> basis_one) : Hamiltonian(mpi), basis_one(basis_one), path_cache(path_cache) {
         configure(config);
         build();
     }
@@ -1030,16 +1030,6 @@ protected:
     }
 
     void configure(const Configuration &config) {
-        path_out = boost::filesystem::absolute(config["out"].str());
-        if (utils::is_complex<scalar_t>::value) {
-            path_cache = path_out / "cache/cache_matrix_complex";
-        } else {
-            path_cache = path_out / "cache/cache_matrix_real";
-        }
-        if(!boost::filesystem::exists(path_cache)){
-            boost::filesystem::create_directory(path_cache);
-        }
-
         conf = basis_one->getConf();
         conf["deltaESingle"] = config["deltaESingle"];
 
@@ -1072,6 +1062,16 @@ protected:
     }
 
     void build() {
+        boost::filesystem::path path_cache_mat;
+        if (utils::is_complex<scalar_t>::value) {
+            path_cache_mat = path_cache / "cache_matrix_complex";
+        } else {
+            path_cache_mat = path_cache / "cache_matrix_real";
+        }
+        if(!boost::filesystem::exists(path_cache_mat)){
+            boost::filesystem::create_directory(path_cache_mat);
+        }
+
         if (mpi->rank() == 0) {
             real_t tol = 1e-32;
 
@@ -1155,7 +1155,7 @@ protected:
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements(species, 1, (path_out / "cache/cache_elements.db").string());
+            MatrixElements matrix_elements(species, 1, (path_cache / "cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
@@ -1277,9 +1277,9 @@ protected:
             boost::filesystem::path path_db;
 
             if (utils::is_complex<scalar_t>::value) {
-                path_db = path_out / "cache/cache_matrix_complex.db";
+                path_db = path_cache / "cache_matrix_complex.db";
             } else {
-                path_db = path_out / "cache/cache_matrix_real.db";
+                path_db = path_cache / "cache_matrix_real.db";
             }
             SQLite3 db(path_db.string());
 
@@ -1356,7 +1356,7 @@ protected:
                 // check whether .mat and .json file exists and compare settings in program with settings in .json file
                 boost::filesystem::path path, path_mat, path_json;
 
-                path = path_cache/ ("one_" + uuid);
+                path = path_cache_mat / ("one_" + uuid);
                 path_mat = path;
                 path_mat.replace_extension(".mat");
                 path_json = path;
@@ -1428,16 +1428,16 @@ private:
     real_t min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
     size_t nSteps;
     std::string species;
-    boost::filesystem::path path_out;
     boost::filesystem::path path_cache;
 };
 
 class HamiltonianTwo : public Hamiltonian {
 public:
-    HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one)  :
-        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one->names())) { // TODO
+    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one)  :
+        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one->names())), path_cache(path_cache) { // TODO
 
         samebasis = true;
+
 
         /*size_t nSteps_one = hamiltonian_one1->size(); // TODO
 
@@ -1465,8 +1465,8 @@ public:
         calculate(config);
     }
 
-    HamiltonianTwo(const Configuration &config, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one1, std::shared_ptr<const HamiltonianOne> hamiltonian_one2) :
-        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names())) {
+    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<MpiEnvironment> mpi, std::shared_ptr<const HamiltonianOne> hamiltonian_one1, std::shared_ptr<const HamiltonianOne> hamiltonian_one2) :
+        Hamiltonian(mpi), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), basis_two(std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names())), path_cache(path_cache) {
 
         samebasis = false;
 
@@ -1497,14 +1497,14 @@ public:
     }
 
     void calculate(const Configuration &conf_tot) {
-        path_out = boost::filesystem::absolute(conf_tot["out"].str());
+        boost::filesystem::path path_cache_mat;
         if (utils::is_complex<scalar_t>::value) {
-            path_cache = path_out / "cache/cache_matrix_complex";
+            path_cache_mat = path_cache / "cache_matrix_complex";
         } else {
-            path_cache = path_out / "cache/cache_matrix_real";
+            path_cache_mat = path_cache / "cache_matrix_real";
         }
-        if(!boost::filesystem::exists(path_cache)){
-            boost::filesystem::create_directory(path_cache);
+        if(!boost::filesystem::exists(path_cache_mat)){
+            boost::filesystem::create_directory(path_cache_mat);
         }
 
         if (mpi->rank() == 0) {
@@ -1738,10 +1738,10 @@ public:
             std::cout << 0.3 << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_out / "cache/cache_elements.db").string());
-            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_out / "cache/cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_out / "cache/cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_out / "cache/cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_cache / "cache_elements.db").string());
 
             basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
             basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
@@ -1965,9 +1965,9 @@ public:
             boost::filesystem::path path_db;
 
             if (utils::is_complex<scalar_t>::value) {
-                path_db = path_out / "cache/cache_matrix_complex.db";
+                path_db = path_cache / "cache_matrix_complex.db";
             } else {
-                path_db = path_out / "cache/cache_matrix_real.db";
+                path_db = path_cache / "cache_matrix_real.db";
             }
             SQLite3 db(path_db.string());
 
@@ -2127,7 +2127,7 @@ public:
                         // check whether .mat and .json file exists and compare settings in program with settings in .json file
                         boost::filesystem::path path, path_mat, path_json;
 
-                        path = path_cache / ("two_" + uuid);
+                        path = path_cache_mat / ("two_" + uuid);
                         path_mat = path;
                         path_mat.replace_extension(".mat");
                         path_json = path;
@@ -2194,7 +2194,6 @@ private:
     bool dipolequadrupole;
     bool quadrupolequadrupole;
     bool samebasis;
-    boost::filesystem::path path_out;
     boost::filesystem::path path_cache;
 };
 
@@ -2208,7 +2207,7 @@ int main(int argc, char **argv) {
 
     // === Parse command line ===
     boost::filesystem::path path_config;
-    boost::filesystem::path path_out;
+    boost::filesystem::path path_cache;
     int c;
     opterr = 0;
     while((c = getopt (argc, argv, "c:o:")) != -1) {
@@ -2217,7 +2216,7 @@ int main(int argc, char **argv) {
             path_config = boost::filesystem::absolute(optarg);
             break;
         case 'o':
-            path_out = boost::filesystem::absolute(optarg);
+            path_cache = boost::filesystem::absolute(optarg);
             break;
         case '?':
             if (optopt == 'c') {
@@ -2241,25 +2240,19 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    if (not path_out.string().size()) {
-        std::cout << "Required option \"-c filename.json\"." << std::endl;
+    if (not path_cache.string().size()) {
+        std::cout << "Required option \"-o filename.json\"." << std::endl;
         return 1;
     }
 
-    if (not boost::filesystem::exists(path_out)) {
-        std::cout << "Path " << path_out << " does not exist." << std::endl;
-        return 1;
-    }
-
-    if (not boost::filesystem::exists(path_out / "cache/")) {
-        std::cout << "Path " << path_out / "cache/" << " does not exist." << std::endl;
+    if (not boost::filesystem::exists(path_cache)) {
+        std::cout << "Path " << path_cache << " does not exist." << std::endl;
         return 1;
     }
 
     // === Load configuration ===
     Configuration config;
     config.load_from_json(path_config.string());
-    config["out"] << path_out.string();
 
     bool existAtom1 = config.count("species1") && config.count("n1") && config.count("l1") && config.count("j1") && config.count("m1");
     bool existAtom2 = config.count("species2") && config.count("n2") && config.count("l2") && config.count("j2") && config.count("m2");
@@ -2278,30 +2271,30 @@ int main(int argc, char **argv) {
         if (existAtom1 && existAtom2) {
             if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 3 << std::endl;
             auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
-            hamiltonian_one = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one);
+            hamiltonian_one = std::make_shared<HamiltonianOne>(config, path_cache, mpi, basisnames_one);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && config.count("minR")) {
             if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, mpi, hamiltonian_one);
+            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, mpi, hamiltonian_one);
         }
     } else {
         std::shared_ptr<HamiltonianOne> hamiltonian_one1;
         if (existAtom1) {
             if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 0 << std::endl;
             auto basisnames_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
-            hamiltonian_one1 = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one1);
+            hamiltonian_one1 = std::make_shared<HamiltonianOne>(config, path_cache, mpi, basisnames_one1);
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one2;
         if (existAtom2) {
             if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 1 << std::endl;
             auto basisnames_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
-            hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, mpi, basisnames_one2);
+            hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, path_cache, mpi, basisnames_one2);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && config.count("minR")) {
             if (mpi->rank() == 0) std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, mpi, hamiltonian_one1, hamiltonian_one2);
+            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, mpi, hamiltonian_one1, hamiltonian_one2);
         }
     }
 

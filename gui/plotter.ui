@@ -1565,7 +1565,7 @@
             <item>
              <widget class="QLabel" name="label_83">
               <property name="text">
-               <string>Note: the angle is measured between the interatomic axis (lies in the xy-plane) and quantization axis (z-axis).</string>
+               <string>Note: the angle is measured between the interatomic axis (lies in the xz-plane) and quantization axis (z-axis).</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -1782,7 +1782,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
+             <width>281</width>
              <height>873</height>
             </rect>
            </property>
@@ -3787,7 +3787,15 @@
     </property>
     <addaction name="action_whatsthis"/>
    </widget>
+   <widget class="QMenu" name="menuCache">
+    <property name="title">
+     <string>Cache</string>
+    </property>
+    <addaction name="action_cache_directory"/>
+    <addaction name="action_cache_clear"/>
+   </widget>
    <addaction name="menu_File"/>
+   <addaction name="menuCache"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -3838,7 +3846,7 @@
   </action>
   <action name="action_system_open">
    <property name="text">
-    <string>Open system configuration</string>
+    <string>Open system configuration ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -3846,7 +3854,7 @@
   </action>
   <action name="action_plot_open">
    <property name="text">
-    <string>Open plot configuration</string>
+    <string>Open plot configuration ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
@@ -3854,7 +3862,7 @@
   </action>
   <action name="action_system_save">
    <property name="text">
-    <string>Save system configuration</string>
+    <string>Save system configuration ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -3862,7 +3870,7 @@
   </action>
   <action name="action_plot_save">
    <property name="text">
-    <string>Save plot configuration</string>
+    <string>Save plot configuration ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -3882,6 +3890,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F1</string>
+   </property>
+  </action>
+  <action name="action_cache_directory">
+   <property name="text">
+    <string>Change cache directory ...</string>
+   </property>
+  </action>
+  <action name="action_cache_clear">
+   <property name="text">
+    <string>Clear cache</string>
    </property>
   </action>
  </widget>
