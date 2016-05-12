@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>238</width>
+             <width>285</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>170</width>
-             <height>291</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1431,8 +1431,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>196</width>
-             <height>383</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1519,7 +1519,7 @@
                </font>
               </property>
               <property name="text">
-               <string>Interatomic angle</string>
+               <string>Interaction angle</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -1654,8 +1654,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>242</width>
-             <height>83</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1709,7 +1709,7 @@
                </widget>
               </item>
               <item row="1" column="0">
-               <widget class="QLabel" name="label_38">
+               <widget class="QLabel" name="label_system_precision">
                 <property name="text">
                  <string>numerical precision (au)</string>
                 </property>
@@ -1782,8 +1782,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>281</width>
-             <height>873</height>
+             <width>285</width>
+             <height>830</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -2342,7 +2342,7 @@
                <bool>true</bool>
               </property>
               <property name="title">
-               <string>Overlap/&quot;transition&quot; matrix element</string>
+               <string>Overlap matrix element</string>
               </property>
               <property name="flat">
                <bool>false</bool>
@@ -2532,44 +2532,6 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="QRadioButton" name="radiobutton_plot_overlapTransition">
-                   <property name="text">
-                    <string/>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="2" column="1">
-                  <widget class="QComboBox" name="combobox_plot_overlapTransition">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>50</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                   <item>
-                    <property name="text">
-                     <string>π transition to state below</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>σ+ transition to state below</string>
-                    </property>
-                   </item>
-                   <item>
-                    <property name="text">
-                     <string>σ- transition to state below</string>
-                    </property>
-                   </item>
-                  </widget>
-                 </item>
                 </layout>
                </item>
                <item>
@@ -2619,8 +2581,11 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
                       <property name="minimum">
-                       <number>1</number>
+                       <number>-1</number>
                       </property>
                       <property name="maximum">
                        <number>999</number>
@@ -2651,6 +2616,12 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
+                      <property name="minimum">
+                       <number>-1</number>
+                      </property>
                       <property name="maximum">
                        <number>100</number>
                       </property>
@@ -2677,11 +2648,14 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
                       <property name="decimals">
                        <number>1</number>
                       </property>
                       <property name="minimum">
-                       <double>0.500000000000000</double>
+                       <double>-1.000000000000000</double>
                       </property>
                       <property name="maximum">
                        <double>99.500000000000000</double>
@@ -2708,6 +2682,9 @@
                         <width>0</width>
                         <height>0</height>
                        </size>
+                      </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
                       </property>
                       <property name="decimals">
                        <number>1</number>
@@ -2763,8 +2740,11 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
                       <property name="minimum">
-                       <number>1</number>
+                       <number>-1</number>
                       </property>
                       <property name="maximum">
                        <number>999</number>
@@ -2795,6 +2775,12 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
+                      <property name="minimum">
+                       <number>-1</number>
+                      </property>
                       <property name="maximum">
                        <number>100</number>
                       </property>
@@ -2821,11 +2807,14 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
                       <property name="decimals">
                        <number>1</number>
                       </property>
                       <property name="minimum">
-                       <double>0.500000000000000</double>
+                       <double>-1.000000000000000</double>
                       </property>
                       <property name="maximum">
                        <double>99.500000000000000</double>
@@ -2853,6 +2842,9 @@
                         <height>0</height>
                        </size>
                       </property>
+                      <property name="statusTip">
+                       <string>A value of -1 means that the quantum number can be of any value.</string>
+                      </property>
                       <property name="decimals">
                        <number>1</number>
                       </property>
@@ -2870,13 +2862,6 @@
                    </layout>
                   </item>
                  </layout>
-                </widget>
-               </item>
-               <item>
-                <widget class="Line" name="line">
-                 <property name="orientation">
-                  <enum>Qt::Horizontal</enum>
-                 </property>
                 </widget>
                </item>
                <item>
@@ -3322,7 +3307,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Calculate field map of atom 1</string>
+             <string>Calculate field map</string>
             </property>
            </widget>
           </item>
@@ -3333,6 +3318,12 @@
               <horstretch>1</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>70</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="text">
              <string>Save</string>
@@ -3527,7 +3518,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Calculate field map of atom 2</string>
+             <string>Calculate field map</string>
             </property>
            </widget>
           </item>
@@ -3538,6 +3529,12 @@
               <horstretch>1</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>70</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="text">
              <string>Save</string>
@@ -3737,12 +3734,74 @@
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="pushbutton_potential_c3">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>60</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Fit C3</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushbutton_potential_c6">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>60</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Fit C6</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushbutton_potential_save">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
               <horstretch>1</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>70</width>
+              <height>16777215</height>
+             </size>
             </property>
             <property name="text">
              <string>Save</string>
@@ -3780,6 +3839,8 @@
     <addaction name="action_plot_save"/>
     <addaction name="separator"/>
     <addaction name="action_quit"/>
+    <addaction name="separator"/>
+    <addaction name="action_print"/>
    </widget>
    <widget class="QMenu" name="menu_help">
     <property name="title">
@@ -3900,6 +3961,24 @@
   <action name="action_cache_clear">
    <property name="text">
     <string>Clear cache</string>
+   </property>
+  </action>
+  <action name="action_print">
+   <property name="text">
+    <string>Print ...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit ...</string>
+   </property>
+  </action>
+  <action name="actionTest_2">
+   <property name="text">
+    <string>TestTest</string>
    </property>
   </action>
  </widget>

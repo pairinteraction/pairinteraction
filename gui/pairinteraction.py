@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 
-version_settings = 3
-version_cache = 3
+version_settings = 4
+version_cache = 4
 
 import sys
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
 from PyQt5 import QtCore, QtGui
+from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from plotter import Ui_plotwindow
 import pyqtgraph as pg
 import pyqtgraph.exporters
 import numpy as np
 import collections
 from abc import ABCMeta, abstractmethod
-from time import sleep, time
-from datetime import timedelta
+from time import sleep, time, strftime
+from datetime import timedelta, datetime
 import locale
 import json
 import os
@@ -50,11 +51,25 @@ pg.setConfigOption('foreground', 'k')
 ## wignerd.py
 from sympy.physics.quantum.spin import Rotation
 from sympy import Rational, re
+import os, pickle
 
 class Wignerd:
-    def __init__(self):
+    def __init__(self, cachedir):
+        self.cachedir = cachedir
         self.wignerdict = dict()
-    
+        self.cachupdatedict = dict()
+        
+    def __del__(self):
+        self.save()
+        
+    def save(self):
+        for k, v in self.wignerdict.items():
+            if not self.cachupdatedict[k]: continue
+            path = os.path.join(self.cachedir, k)
+            with open(path, 'wb') as f:
+                pickle.dump(v, f, pickle.HIGHEST_PROTOCOL)
+                self.cachupdatedict[k] = False
+                
     def calc(self, j, m_final, m_initial, beta):
         j = Rational(j)
         m2 = m_final
@@ -72,12 +87,23 @@ class Wignerd:
             m2 = tmp
             sgn *= (-1)**(m2-m1)
 
-        mstring = "{}_{}_{}".format(m1,m2,beta)
-        if mstring not in self.wignerdict.keys():
-            self.wignerdict[mstring] = float(re(Rotation.d(j,m2,m1,beta).doit()))
+        bstring = "{:+013d}.pkl".format(int(np.round(beta*1e9)))
+        if bstring not in self.wignerdict.keys():
+            path = os.path.join(self.cachedir, bstring)
+            if os.path.exists(path):
+                 with open(path, 'rb') as f:
+                    self.wignerdict[bstring] = pickle.load(f)
+            else:
+                self.wignerdict[bstring] = dict()
+            self.cachupdatedict[bstring] = False
+            
+        mstring = "{}_{}_{}".format(j,m1,m2)
+        if mstring not in self.wignerdict[bstring].keys():
+            self.wignerdict[bstring][mstring] = float(re(Rotation.d(j,m2,m1,beta).doit()))
+            self.cachupdatedict[bstring] = True
 
-        return sgn*self.wignerdict[mstring]
-
+        return sgn*self.wignerdict[bstring][mstring]
+            
 
 '''wignerd = Wignerd()
 
@@ -200,7 +226,7 @@ class Quantity:
     @property
     def magnitude(self):
         return self._magnitude
-    
+
     @property
     def units(self):
         return self._units
@@ -716,8 +742,6 @@ class PlotDict(GuiDict):
         store["transpOverlap"] =        {'widget': ui.spinbox_plot_transpOverlap,           'unit': None}
         store["overlapUnperturbed"] =   {'widget': ui.radiobutton_plot_overlapUnperturbed,  'unit': None}
         store["overlapDefined"] =       {'widget': ui.radiobutton_plot_overlapDefined,      'unit': None}
-        store["overlapTransition"] =    {'widget': ui.radiobutton_plot_overlapTransition,   'unit': None}
-        store["transition"] =           {'widget': ui.combobox_plot_overlapTransition,      'unit': None}
         store["connectionthreshold"] =  {'widget': ui.spinbox_plot_connectionthreshold,     'unit': None}
         store["lin"] =                  {'widget': ui.radiobutton_plot_lin,                 'unit': None}
         store["log"] =                  {'widget': ui.radiobutton_plot_log,                 'unit': None}
@@ -782,7 +806,7 @@ class SystemDict(GuiDict):
     
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
-        "deltaNSingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
+        "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
         "samebasis", "steps","precision",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
@@ -864,7 +888,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_plotwindow()
         self.ui.setupUi(self)
         
-        self.wignerd = Wignerd()
+        
         
         self.invalidQuantumnumbers = [False, False, False, False]
         
@@ -890,6 +914,7 @@ class MainWindow(QtGui.QMainWindow):
         if os.name == 'nt': self.path_out = os.path.join(self.userpath, "pairinteraction/")
         else: self.path_out = os.path.join(self.userpath, ".pairinteraction/")
         self.path_cache = os.path.join(self.path_out, "cache/")
+        self.path_cache_wignerd = os.path.join(self.path_cache, "wignerd/")
         self.path_lastsettings = os.path.join(self.path_out, "lastsettings/")
         
         self.path_system_last = os.path.join(self.path_lastsettings,"lastsettings.sconf")
@@ -954,15 +979,23 @@ class MainWindow(QtGui.QMainWindow):
         
         self.manualRangeX = [False, False, False]
         self.manualRangeY = [False, False, False]
+        
+        
+        self.printer = QPrinter(QPrinter.HighResolution)
+        self.printer.setPageMargins(20,15,20,20,QPrinter.Millimeter)
+        
+        self.momentslabels = ['S','P','D','F']
+        
+        self.unperturbedstate = [None, None, None]
+        self.overlapstate = [None, None, None]
 
         # TODOs
         #self.ui.lineedit_system_theta.setEnabled(False)
-        self.ui.lineedit_system_precision.setEnabled(False)
         self.ui.checkbox_system_dq.setEnabled(False)
         self.ui.checkbox_system_qq.setEnabled(False)
         self.ui.checkbox_system_qq.setEnabled(False)
-        self.ui.combobox_plot_overlapTransition.setEnabled(False)
-        self.ui.radiobutton_plot_overlapTransition.setEnabled(False)
+        self.ui.lineedit_system_precision.hide()
+        self.ui.label_system_precision.hide()
         
         
         
@@ -1022,10 +1055,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_system_j2.editingFinished.connect(self.validateHalfinteger)
         self.ui.spinbox_system_m1.editingFinished.connect(self.validateHalfinteger)
         self.ui.spinbox_system_m2.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_plot_j1.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_plot_j2.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_plot_m1.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfinteger)
+        self.ui.spinbox_plot_j1.editingFinished.connect(self.validateHalfintegerpositiveOrMinusone)
+        self.ui.spinbox_plot_j2.editingFinished.connect(self.validateHalfintegerpositiveOrMinusone)
+        self.ui.spinbox_plot_m1.editingFinished.connect(self.validateHalfintegerOrMinusone)
+        self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfintegerOrMinusone)
+        self.ui.spinbox_plot_n1.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
+        self.ui.spinbox_plot_n2.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
         
         self.ui.combobox_system_species1.currentIndexChanged.connect(self.forbidSamebasis)
         self.ui.combobox_system_species2.currentIndexChanged.connect(self.forbidSamebasis)
@@ -1050,6 +1085,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_whatsthis.triggered.connect(QtGui.QWhatsThis.enterWhatsThisMode)
         self.ui.action_cache_directory.triggered.connect(self.changeCacheDirectory)
         self.ui.action_cache_clear.triggered.connect(self.clearCache)
+        self.ui.action_print.triggered.connect(self.print)
         
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
@@ -1162,6 +1198,12 @@ class MainWindow(QtGui.QMainWindow):
             
             with open(self.path_version, 'w') as f:
                 json.dump({'version_settings': version_settings_saved, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
+        
+        if not os.path.exists(self.path_cache_wignerd):
+            os.makedirs(self.path_cache_wignerd)
+        
+        # create object to calculate wigner d matrix
+        self.wignerd = Wignerd(self.path_cache_wignerd)
         
         # Load last settings
         if not os.path.isfile(self.path_system_last):
@@ -1362,68 +1404,204 @@ class MainWindow(QtGui.QMainWindow):
                 
                 # determine which state to highlite
                 if self.ui.groupbox_plot_overlap.isChecked():
+                    # update status bar
+                    message_old = self.ui.statusbar.currentMessage()
+                    if idx == 0 and self.thread.samebasis:
+                        idxtype = 3
+                    else:
+                        idxtype = idx
+                    status_type = ["Field map of first atom: ", "Field map of second atom: ", "Pair potential: ", "Field maps: "][idxtype]
+                    self.ui.statusbar.showMessage(status_type+"calculate overlap states")
+                    QtGui.QApplication.processEvents()
+                    
+                    # calculate overlap states
                     nState = len(basis)
                     
-                    if self.angle != 0:
+                    if self.angle != 0: # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
                         if idx == 0:
-                            stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[0,1,2]],axis=-1))[0]
+                            boolarr = self.overlapstate[idx][[0,1,2]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3]][:,boolarr] == self.overlapstate[idx][None,[0,1,2]][:,boolarr],axis=-1))[0]
+                            relevantBasis = basis[stateidx]
+                            
+                            statecoeff = np.ones_like(stateidx, dtype=np.float)
+                            m1 = self.overlapstate[idx][3]
+                            if m1 != -1: 
+                                for j in np.unique(relevantBasis[:,3]):
+                                    boolarr = np.all(relevantBasis[:,[3]] == [j],axis=-1)
+                                    if np.abs(m1) > j:
+                                        statecoeff[boolarr] *= 0
+                                    else:
+                                        withjBasis = relevantBasis[boolarr]
+                                        for m2 in np.unique(withjBasis[:,4]):
+                                            boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                            
+                            boolarr = self.overlapstate[idx][[0,1,2,3]] == -1
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:,[1,2,3,4]][:,boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append([False],np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                            else:
+                                stateamount = np.zeros_like(stateidx)
+                            
+                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                boolarr = self.overlapstate[idx][[4,5,6]] != -1
+                                stateidx2 = np.where(np.all(basis[:,[1,2,3]][:,boolarr] == self.overlapstate[idx][None,[4,5,6]][:,boolarr],axis=-1))[0]
+                                relevantBasis = basis[stateidx2]
+                            
+                                statecoeff2 = np.ones_like(stateidx2, dtype=np.float)
+                                m1 = self.overlapstate[idx][7]
+                                if m1 != -1: 
+                                    for j in np.unique(relevantBasis[:,3]):
+                                        boolarr = np.all(relevantBasis[:,[3]] == [j],axis=-1)
+                                        if np.abs(m1) > j:
+                                            statecoeff2[boolarr] *= 0
+                                        else:
+                                            withjBasis = relevantBasis[boolarr]
+                                            for m2 in np.unique(withjBasis[:,4]):
+                                                boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
+                                                statecoeff2[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                            
+                                boolarr = self.overlapstate[idx][[4,5,6,7]] == -1
+                                if sum(boolarr) > 0:
+                                    undeterminedQuantumNumbers = relevantBasis[:,[1,2,3,4]][:,boolarr]
+                                    sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                    diff = np.append([False],np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                    stateamount2 = np.cumsum(diff)[np.argsort(sorter)]
+                                else:
+                                    stateamount2 = np.zeros_like(stateidx2)
+                                
+                                statecoeff = np.append(statecoeff, statecoeff2)
+                                stateidx = np.append(stateidx, stateidx2)
+                                stateamount = np.append(stateamount,stateamount2)
+                            
+                            """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1))[0]
                             statecoeff = []
-                            j = self.overlapstate[2]
+                            j = self.overlapstate[idx][2]
                             for state in basis[stateidx]:
                                 m2 = state[4]
-                                m1 = self.overlapstate[3]
+                                m1 = self.overlapstate[idx][3]
                                 coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                 statecoeff.append(coeff)
                             stateamount = np.zeros_like(stateidx)
-                            if self.thread.samebasis and np.any(self.overlapstate[[0,1,2,3]] != self.overlapstate[[4,5,6,7]]):
-                                stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[4,5,6]],axis=-1))[0]
-                                j = self.overlapstate[6]
+                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
+                                j = self.overlapstate[idx][6]
                                 for state in basis[stateidx_second]:
                                     m2 = state[4]
-                                    m1 = self.overlapstate[7]
+                                    m1 = self.overlapstate[idx][7]
                                     coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                     statecoeff.append(coeff)
                                 stateidx = np.append(stateidx, stateidx_second)
-                                stateamount = np.append(stateamount,np.ones_like(stateidx_second))
+                                stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
                         elif idx == 1:
-                            stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[None,[4,5,6]],axis=-1))[0]
+                            boolarr = self.overlapstate[idx][[4,5,6]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3]][:,boolarr] == self.overlapstate[idx][None,[4,5,6]][:,boolarr],axis=-1))[0]
+                            relevantBasis = basis[stateidx]
+                            
+                            statecoeff = np.ones_like(stateidx, dtype=np.float)
+                            m1 = self.overlapstate[idx][7]
+                            if m1 != -1: 
+                                for j in np.unique(relevantBasis[:,3]):
+                                    boolarr = np.all(relevantBasis[:,[3]] == [j],axis=-1)
+                                    if np.abs(m1) > j:
+                                        statecoeff[boolarr] *= 0
+                                    else:
+                                        withjBasis = relevantBasis[boolarr]
+                                        for m2 in np.unique(withjBasis[:,4]):
+                                            boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                            
+                            boolarr = self.overlapstate[idx][[4,5,6,7]] == -1
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:,[1,2,3,4]][:,boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append([False],np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                            else:
+                                stateamount = np.zeros_like(stateidx)
+                            
+                            """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
                             statecoeff = []
-                            j = self.overlapstate[2]
+                            j = self.overlapstate[idx][2]
                             for state in basis[stateidx]:
                                 m2 = state[4]
-                                m1 = self.overlapstate[7]
+                                m1 = self.overlapstate[idx][7]
                                 coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                 statecoeff.append(coeff)
-                            stateamount = np.zeros_like(stateidx)
+                            stateamount = np.zeros_like(stateidx)"""
                         elif idx == 2:
-                            stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[None,[0,1,2,4,5,6]],axis=-1))[0]
+                            boolarr = self.overlapstate[idx][[0,1,2,4,5,6]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]][:,boolarr] == self.overlapstate[idx][None,[0,1,2,4,5,6]][:,boolarr],axis=-1))[0]
+                            relevantBasis = basis[stateidx]
+                            
+                            statecoeff = np.ones_like(stateidx, dtype=np.float)
+                            for selector in [0,4]:
+                                m1 = self.overlapstate[idx][3+selector]
+                                if m1 != -1:
+                                    for j in np.unique(relevantBasis[:,3+selector]):
+                                        boolarr = np.all(relevantBasis[:,[3+selector]] == [j],axis=-1)
+                                        if np.abs(m1) > j:
+                                            statecoeff[boolarr] *= 0
+                                        else:
+                                            withjBasis = relevantBasis[boolarr]
+                                            for m2 in np.unique(withjBasis[:,4+selector]):
+                                                boolarr = np.all(relevantBasis[:,[3+selector,4+selector]] == [j,m2],axis=-1)
+                                                statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                            
+                            boolarr = self.overlapstate[idx][[0,1,2,3,4,5,6,7]] == -1
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:,[1,2,3,4,5,6,7,8]][:,boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append([False],np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                            else:
+                                stateamount = np.zeros_like(stateidx)
+
+                            """stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1))[0]
                             statecoeff = []
-                            j = self.overlapstate[[2,6]]
+                            j = self.overlapstate[idx][[2,6]]
                             for state in basis[stateidx]:
                                 m_final = state[[4,8]]
-                                m_initial = self.overlapstate[[3,7]]
+                                m_initial = self.overlapstate[idx][[3,7]]
                                 coeff = 1
                                 for m2, m1, jj in zip(m_final, m_initial, j):
                                     coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
                                 statecoeff.append(coeff)
-                            stateamount = np.zeros_like(stateidx)
+                            stateamount = np.zeros_like(stateidx)"""
+                        
+                        # write calculated wigner d matrix elements into the cache
+                        self.wignerd.save()
                             
+                        print(basis.shape,self.overlapstate[idx])
                         print(self.angle, np.sum(np.abs(statecoeff)**2))
                                                 
                     else:
                         if idx == 0:
-                            stateidx = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[0,1,2,3]],axis=-1))[0]
-                            if self.thread.samebasis and np.any(self.overlapstate[[0,1,2,3]] != self.overlapstate[[4,5,6,7]]):
-                                stateidx = np.append(stateidx, np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[4,5,6,7]],axis=-1))[0])
+                            boolarr = self.overlapstate[idx][[0,1,2,3]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4]][:,boolarr] == self.overlapstate[idx][None,[0,1,2,3]][:,boolarr],axis=-1))[0]
+                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                boolarr = self.overlapstate[idx][[4,5,6,7]] != -1
+                                stateidx = np.append(stateidx, np.where(np.all(basis[:,[1,2,3,4]][:,boolarr] == self.overlapstate[idx][None,[4,5,6,7]][:,boolarr],axis=-1))[0])
                         elif idx == 1:
-                            stateidx = np.where(np.all(basis[:,[1,2,3,4]] == self.overlapstate[None,[4,5,6,7]],axis=-1))[0]
+                            boolarr = self.overlapstate[idx][[4,5,6,7]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4]][:,boolarr] == self.overlapstate[idx][None,[4,5,6,7]][:,boolarr],axis=-1))[0]
                         elif idx == 2:
-                            stateidx = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]] == self.overlapstate[None,:],axis=-1))[0]
+                            boolarr = self.overlapstate[idx][[0,1,2,3,4,5,6,7]] != -1
+                            stateidx = np.where(np.all(basis[:,[1,2,3,4,5,6,7,8]][:,boolarr] == self.overlapstate[idx][None,[0,1,2,3,4,5,6,7]][:,boolarr],axis=-1))[0]
                         
                         statecoeff = np.ones_like(stateidx)
                         stateamount = np.arange(len(stateidx))
+                                            
+                    if len(stateidx) < 1:
+                        self.stateidx_field[idx] = None
+                    else:
+                        self.stateidx_field[idx] = sparse.csc_matrix((statecoeff,(stateamount,stateidx)), shape=(np.max(stateamount)+1,nState))
                     
-                    self.stateidx_field[idx] = sparse.csc_matrix((statecoeff,(stateamount,stateidx)), shape=(stateamount[-1]+1,nState))
+                    # update status bar
+                    self.ui.statusbar.showMessage(message_old)
+                    QtGui.QApplication.processEvents()
                         
                 else:
                     self.stateidx_field[idx] = None
@@ -1462,7 +1640,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(np.max(self.labelstates[idx][:,1])+1).astype(np.int)]
                 elif idx == 2:
                     self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(np.max(self.labelstates[idx][:,[1,4]])+1).astype(np.int)]
-                self.momentumstrings[idx][:4] = ['S','P','D','F']
+                self.momentumstrings[idx][:4] = self.momentslabels
             
                 # remove basis file from hard disk
                 os.remove(basisfile)
@@ -1609,10 +1787,10 @@ class MainWindow(QtGui.QMainWindow):
                                 else:
                                     anchorX = 1
                                 
-                                if (idx == 0 and np.all(labelstate == self.unperturbedstate[[0,1,2]])) \
-                                        or ((idx == 1 or self.thread.samebasis) and np.all(labelstate == self.unperturbedstate[[4,5,6]])) \
-                                        or (idx == 2 and np.all(labelstate == self.unperturbedstate[[0,1,2,4,5,6]])) \
-                                        or ((idx == 2 and self.thread.samebasis) and np.all(labelstate == self.unperturbedstate[[4,5,6,0,1,2]])):
+                                if (idx == 0 and np.all(labelstate == self.unperturbedstate[idx][[0,1,2]])) \
+                                        or ((idx == 1 or self.thread.samebasis) and np.all(labelstate == self.unperturbedstate[idx][[4,5,6]])) \
+                                        or (idx == 2 and np.all(labelstate == self.unperturbedstate[idx][[0,1,2,4,5,6]])) \
+                                        or ((idx == 2 and self.thread.samebasis) and np.all(labelstate == self.unperturbedstate[idx][[4,5,6,0,1,2]])):
                                     color_fill = (255,192,203,alpha)
                                     color_border = (255,182,193,255)
                                     zvalue = 16
@@ -1840,7 +2018,7 @@ class MainWindow(QtGui.QMainWindow):
                                 self.buffer_boolarr[blocknumber][filestep].append(boolarr)
                         elif idx == 2:
                             self.buffer_boolarr[blocknumber][filestep].append(np.ones_like(self.buffer_energies[blocknumber][filestep], dtype = np.bool))
-                                             
+                          
                         # get size and alpha value of points
                         size = self.ui.spinbox_plot_szLine.value()
                         alpha = self.ui.spinbox_plot_transpLine.value()*255
@@ -1894,6 +2072,11 @@ class MainWindow(QtGui.QMainWindow):
                             del self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
                             del self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
                             del self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                            
+                            # if lines are drawn the c3/c6 buttons should be enabled
+                            if self.lines_buffer_minIdx_field[blocknumber] == 0 and idx == 2:
+                                self.ui.pushbutton_potential_c6.setEnabled(True)
+                                self.ui.pushbutton_potential_c3.setEnabled(True)
                             
                             # increase the buffer index
                             self.lines_buffer_minIdx_field[blocknumber] += 1
@@ -1995,9 +2178,9 @@ class MainWindow(QtGui.QMainWindow):
             if self.ui.pushbutton_potential_calc != self.senderbutton:
                 self.ui.pushbutton_potential_calc.setEnabled(True)
             if self.ui.pushbutton_field1_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate field map of atom 1")
+                self.senderbutton.setText("Calculate field map")
             if self.ui.pushbutton_field2_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate field map of atom 2")
+                self.senderbutton.setText("Calculate field map")
             if self.ui.pushbutton_potential_calc == self.senderbutton:
                 self.senderbutton.setText("Calculate pair potential")
             
@@ -2138,17 +2321,30 @@ class MainWindow(QtGui.QMainWindow):
                 l_err = False
                 j_err = False
                 m_err = False
+                
+                nn = n.value()
+                ll = l.value()
+                jj = j.value()
+                mm = m.value()
             
-                if n.value()-1 < l.value():
+                if (nn != -1 and ll != -1) and (nn-1 < ll):
                     n_err |= True
                     l_err |= True
-            
-                if abs(l.value() - j.value()) != 0.5:
+                if (ll != -1 and jj != -1) and (abs(ll - jj) != 0.5):
                     l_err |= True
                     j_err |= True
-            
-                if j.value() < abs(m.value()):
+                if (jj != -1 and mm != -1) and (jj < abs(mm)):
                     j_err |= True
+                    m_err |= True
+                    
+                if (nn != -1 and jj != -1) and (nn-0.5 < jj):
+                    n_err |= True
+                    j_err |= True
+                if (nn != -1 and mm != -1) and (nn-0.5 < abs(mm)):
+                    n_err |= True
+                    m_err |= True
+                if (ll != -1 and mm != -1) and (ll+0.5 < abs(mm)):
+                    l_err |= True
                     m_err |= True
                 
                 if n_err or l_err or j_err or m_err:
@@ -2165,10 +2361,39 @@ class MainWindow(QtGui.QMainWindow):
     def validateHalfinteger(self):
         value = self.sender().value()
         self.sender().setValue(np.floor(value)+0.5)
+    
+    @QtCore.pyqtSlot()
+    def validateHalfintegerpositiveOrMinusone(self):
+        value = self.sender().value()
+        if value <= 0: self.sender().setValue(-1)
+        else: self.sender().setValue(np.floor(value)+0.5)
+    
+    @QtCore.pyqtSlot()
+    def validateHalfintegerOrMinusone(self):
+        value = self.sender().value()
+        if value == -1: pass
+        else: self.sender().setValue(np.floor(value)+0.5)
+    
+    @QtCore.pyqtSlot()
+    def validateIntegerpositiveOrMinusone(self):
+        value = self.sender().value()
+        if value <= 0: self.sender().setValue(-1)
             
     @QtCore.pyqtSlot()
     def startCalc(self):         
         if self.proc is None:
+            # ensure that quantum numbers are validated
+            self.ui.spinbox_system_j1.editingFinished.emit()
+            self.ui.spinbox_system_j2.editingFinished.emit()
+            self.ui.spinbox_system_m1.editingFinished.emit()
+            self.ui.spinbox_system_m2.editingFinished.emit()
+            self.ui.spinbox_plot_j1.editingFinished.emit()
+            self.ui.spinbox_plot_j2.editingFinished.emit()
+            self.ui.spinbox_plot_m1.editingFinished.emit()
+            self.ui.spinbox_plot_m2.editingFinished.emit()
+            self.ui.spinbox_plot_n1.editingFinished.emit()
+            self.ui.spinbox_plot_n2.editingFinished.emit()
+                
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
                 
@@ -2186,6 +2411,9 @@ class MainWindow(QtGui.QMainWindow):
                     self.ui.pushbutton_field2_calc.setEnabled(False)
                 if self.senderbutton != self.ui.pushbutton_potential_calc:
                     self.ui.pushbutton_potential_calc.setEnabled(False)
+                if self.senderbutton == self.ui.pushbutton_potential_calc:
+                    self.ui.pushbutton_potential_c6.setEnabled(False)
+                    self.ui.pushbutton_potential_c3.setEnabled(False)
                 self.senderbutton.setText("Abort calculation")
                 
                 # store, whether the same basis should be used for both atoms
@@ -2199,13 +2427,13 @@ class MainWindow(QtGui.QMainWindow):
                 
                 self.steps = self.systemdict['steps'].magnitude
                 
-                self.unperturbedstate = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
+                unperturbedstate = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
                                                   self.systemdict['n2'].magnitude,self.systemdict['l2'].magnitude,self.systemdict['j2'].magnitude,self.systemdict['m2'].magnitude])
                 
                 if self.ui.radiobutton_plot_overlapUnperturbed.isChecked():
-                    self.overlapstate = self.unperturbedstate
+                    overlapstate = unperturbedstate
                 else:
-                    self.overlapstate = np.array([self.plotdict['n1'].magnitude,self.plotdict['l1'].magnitude,self.plotdict['j1'].magnitude,self.plotdict['m1'].magnitude,
+                    overlapstate = np.array([self.plotdict['n1'].magnitude,self.plotdict['l1'].magnitude,self.plotdict['j1'].magnitude,self.plotdict['m1'].magnitude,
                                                   self.plotdict['n2'].magnitude,self.plotdict['l2'].magnitude,self.plotdict['j2'].magnitude,self.plotdict['m2'].magnitude])
                 
                 self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)
@@ -2225,6 +2453,9 @@ class MainWindow(QtGui.QMainWindow):
                 
                 for idx in range(3):
                     if (self.senderbutton not in validsenders[idx]) and not (idx == 0 and self.samebasis): continue
+                    
+                    self.unperturbedstate[idx] = unperturbedstate
+                    self.overlapstate[idx] = overlapstate
                     
                     # setup storage variables to save the results
                     filelike_system=StringIO()
@@ -2319,8 +2550,8 @@ class MainWindow(QtGui.QMainWindow):
                             for field, label in zip(fields, labels): params[label] = field
                         
                         # Hack# TODO !!!!!!!!!!!!!!!
-                        params["minEx"] = 1e-32
-                        params["maxEx"] = 1e-32
+                        params["minEx"] += 1e-32
+                        params["maxEx"] += 1e-32
 
                     json.dump(params, f, indent=4, sort_keys=True)
                     
@@ -2370,6 +2601,9 @@ class MainWindow(QtGui.QMainWindow):
         self.resultfile = filename
         self.filepath = os.path.dirname(filename)
         
+        self.saveToZipfile(filename, idx)
+        
+    def saveToZipfile(self, filename, idx):
         # open zip file
         ziparchive = zipfile.ZipFile(filename, 'w', compression = zipfile.ZIP_STORED) # zipfile.ZIP_DEFLATED
         
@@ -2397,20 +2631,26 @@ class MainWindow(QtGui.QMainWindow):
             
             data['numStates'] = 0
             data['numSteps'] = 0
-            data['numEigenpairs'] = 0
+            data['numEigenvectors'] = 0
+            data['numOverlapvectors'] = 0
             data['states'] = []
             data['eigenvectors'] = []
             data['eigenvalues'] = []
+            data['overlapvectors'] = []
+            data['overlaps'] = []
             data['bfields'] = []
             data['efields'] = []
+            
             if idx == 2: data['distances'] = []
             
             if idx == 0 or idx == 1: data['states_description'] = 'state(idxState, {idxState, n, l, j, m})'
             elif idx == 2: data['states_description'] = 'state(idxState, {idxState, n1, l1, j1, m1, n2, l2, j2, m2})'
-            data['eigenvectors_description'] = 'eigenvectorcoordinate(0, idxStep, idxState, idxEigenpair)'
-            data['eigenvalues_description'] = 'eigenvalue(idxStep, idxEigenpair)'
-            data['bfields_description'] = 'bfieldcoordinate(idxStep, {Bx, By, Bz})'
-            data['efields_description'] = 'efieldcoordinate(idxStep, {Ex, Ey, Ez})'
+            data['eigenvectors_description'] = 'eigenvectorcoordinate(0, idxStep)(idxState, idxEigenvector)'
+            data['eigenvalues_description'] = 'eigenvalue(idxStep, idxEigenvector)'
+            data['overlapvectors_description'] = 'overlapvectorcoordinate(idxOverlapvector, idxState)'
+            data['overlaps_description'] = 'overlap(idxStep, idxEigenvector)'
+            data['bfields_description'] = 'bfield(idxStep, {Bx, By, Bz})'
+            data['efields_description'] = 'efield(idxStep, {Ex, Ey, Ez})'
             if idx == 2: data['distances_description'] = 'distance(0, idxStep)'
             
             # save states
@@ -2418,10 +2658,15 @@ class MainWindow(QtGui.QMainWindow):
                 data['states'] = self.storage_states[idx] # nState, i-n1-l1-j1-m1-n2-l2-j2-m2 # nState, i-n-l-j-m
                 data['numStates'] = len(data['states'])
             
+            # save overlaps
+            if self.stateidx_field[idx] is not None:
+                data['numOverlapvectors'] = self.stateidx_field[idx].shape[0]
+                data['overlapvectors'] = self.stateidx_field[idx]
+            
             # save data
-            self.converter_bfield = Converter.fromAU(1,Units.bfield).magnitude # TODO Variable an anderer Stelle anlegen
-            self.converter_efield = Converter.fromAU(1,Units.efield).magnitude # TODO Variable an anderer Stelle anlegen
-            self.converter_length = Converter.fromAU(1,Units.length).magnitude # TODO Variable an anderer Stelle anlegen
+            self.converter_bfield = Quantity(1, Units.au_bfield).toUU().magnitude # TODO Variable an anderer Stelle anlegen
+            self.converter_efield = Quantity(1, Units.au_efield).toUU().magnitude # TODO Variable an anderer Stelle anlegen
+            self.converter_length = Quantity(1, Units.au_length).toUU().magnitude # TODO Variable an anderer Stelle anlegen
             
             filestep_last = None
             
@@ -2429,22 +2674,29 @@ class MainWindow(QtGui.QMainWindow):
                 eigensystem = Eigensystem(filename)
                 energies = eigensystem.energies*self.converter_y # nBasis
                 basis = eigensystem.basis  # nState, nBasis (stored in Compressed Sparse Column format, CSC)
+                
+                if self.stateidx_field[idx] is not None:
+                    overlaps = np.abs(self.stateidx_field[idx]*basis)
+                    overlaps.data **= 2
+                    overlaps = overlaps.sum(axis=0).getA1()
                     
                 if filestep != filestep_last: # new step
                     data['bfields'].append(np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])*self.converter_efield)
                     data['efields'].append(np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])*self.converter_bfield)
                     if idx == 2: data['distances'].append(float(eigensystem.params["R"])*self.converter_length)
-                    data['eigenvalues'].append(energies)
                     data['eigenvectors'].append(basis)
+                    data['eigenvalues'].append(energies)
+                    if self.stateidx_field[idx] is not None: data['overlaps'].append(overlaps)
                 else: # new block
-                    data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1],energies)
                     csc_happend(data['eigenvectors'][-1],basis)
+                    data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1],energies)
+                    if self.stateidx_field[idx] is not None: data['overlaps'][-1] = np.append(data['overlaps'][-1],overlaps)
                     
-                filestep_last = filestep  
+                filestep_last = filestep
             
             if len(data['eigenvalues']) > 0:
                 data['numSteps'] = len(data['eigenvalues'])
-                data['numEigenpairs'] = len(data['eigenvalues'][0])
+                data['numEigenvectors'] = len(data['eigenvalues'][0])
             
             filelike=BytesIO()
             io.savemat(filelike,data,do_compression=False,format='5',oned_as='row')
@@ -2539,6 +2791,533 @@ class MainWindow(QtGui.QMainWindow):
             self.loadSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
+    
+    @QtCore.pyqtSlot()
+    def print(self):
+
+        dialog = QPrintDialog(self.printer, self)
+        if dialog.exec_() == QPrintDialog.Accepted:
+            idx = self.ui.tabwidget_plotter.currentIndex()
+            tabname = self.ui.tabwidget_plotter.tabText(idx)
+            if idx == 1 and self.ui.tabwidget_plotter.count() == 2: idx = 2
+            
+            # TODO check if results exist !!!!!!!!!!!!!!!!!!
+            # TODO reihenfolge plot settings umdrehen  !!!!!!!!!!!!!!!!!!
+            
+            '''if idx == 2: pairpotential = 1
+            else: pairpotential = 0'''
+            
+            painter = QtGui.QPainter(self.printer)
+            
+            
+                        
+            # printer settings
+            spacer = QtCore.QRectF(painter.viewport()).height()/40
+            print(spacer)
+            font = QtGui.QFont("Helvetica", 10)
+            margin = 30
+            penwidth = 30
+            
+            # load configuration
+            sconf = json.loads(self.storage_configuration[idx][0])
+            pconf = json.loads(self.storage_configuration[idx][1])
+
+            su = [""]*8
+            st = self.unperturbedstate[idx]
+            for k in [0,4]:
+                su[k] = "{}".format(int(st[k]))
+            for k in [1,5]:
+                if int(st[k]) >= 0 and int(st[k]) < len(self.momentslabels): su[k] = self.momentslabels[int(st[k])]
+                else: su[k] = "{}".format(int(st[k]))
+            for k in [2,3,6,7]:
+                if float(st[k]).is_integer(): ssuo[k] = "{}".format(int(st[k]))
+                else: su[k] = "{}/2".format(int(2*float(st[k])))
+            
+            so = [""]*8
+            st = self.overlapstate[idx]
+            for k in [0,4]:
+                so[k] = "{}".format(int(st[k]))
+            for k in [1,5]:
+                if int(st[k]) >= 0 and int(st[k]) < len(self.momentslabels): so[k] = self.momentslabels[int(st[k])]
+                else: so[k] = "{}".format(int(st[k]))
+            for k in [2,3,6,7]:
+                if float(st[k]).is_integer(): so[k] = "{}".format(int(st[k]))
+                else: so[k] = "{}/2".format(int(2*float(st[k])))
+                
+            if sconf["pairbasisSame"][0]:
+                sconf["deltaNPair"][0] = -1
+                sconf["deltaLPair"][0] = -1
+                sconf["deltaJPair"][0] = -1
+                sconf["deltaMPair"][0] = -1
+            
+            interaction = []
+            if sconf["dd"][0]: interaction.append("dipole-dipole")
+            if sconf["dq"][0]: interaction.append("dipole-quadrupole")
+            if sconf["qq"][0]: interaction.append("quadrupole-quadrupole")
+            interaction = ",".join(interaction)+" interaction"
+            
+            # text formating
+            '''if idx in [0,2] or sconf["pairbasisSame"][0]:
+                u1l = "<b>"
+                u1r = "</b>"
+            else:
+                u1l = ""
+                u1r = ""
+                
+            if idx in [1,2] or sconf["pairbasisSame"][0]:
+                u2l = "<b>"
+                u2r = "</b>"
+            else:
+                u2l = ""
+                u2r = ""'''
+            
+            u1l = ""
+            u1r = ""
+            u2l = ""
+            u2r = ""
+            
+            # image
+            plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot][idx].getPlotItem()
+            exporter = pg.exporters.ImageExporter(plotitem)
+            exporter.parameters()['antialias'] = True
+            
+            # colormap
+            arr = self.ui.gradientwidget_plot_gradient.getLookupTable(501,alpha=False)
+            arr[0] = 0
+            arr[250] = 0
+            arr[-1] = 0
+            bgra = np.empty((1, 501, 4), np.uint8, 'C')
+            bgra[...,0] = arr[...,2]
+            bgra[...,1] = arr[...,1]
+            bgra[...,2] = arr[...,0]
+            image_colormap = QtGui.QImage(bgra.data,501,1,QtGui.QImage.Format_RGB32)
+            image_colormap.ndarray = bgra
+            
+        
+            
+            # --- generate description ---
+            rect = QtCore.QRectF(painter.viewport())
+            doc = QtGui.QTextDocument()
+            doc.documentLayout().setPaintDevice(self.printer)
+            doc.setDefaultFont(font)
+            doc.setPageSize(rect.size())
+            
+            text = ""
+            
+            #text += "<h3>System configuration</h3>"
+            
+            # state
+            text += "<h4>Unperturbed state</h4>"
+            text += "<table cellspacing=5><tr>"
+            text += "<td>| "+u1l+"{} {} {}<sub>{}</sub>, m={}".format(sconf["species1"][0],su[0],su[1],su[2],su[3])+u1r+"; "+\
+                u2l+"{} {} {}<sub>{}</sub>, m={}".format(sconf["species2"][0],su[4],su[5],su[6],su[7])+u2r+" &gt;</td>"
+            text += "</tr></table>"
+            
+            '''text += "unperturbed state "
+            text += "| "+u1l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species1"][0],sconf["n2"][0],sconf["l1"][0],int(sconf["j1"][0]*2),int(sconf["m1"][0]*2))+u1r+"; "+\
+                u2l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species2"][0],sconf["n2"][0],sconf["l2"][0],int(sconf["j2"][0]*2),int(sconf["m2"][0]*2))+u2r+" >"'''
+            
+            # basis
+            text += "<h4>Basis (use same basis for both atoms: {})</h4>".format({True:"yes",False:"no"}[sconf["samebasis"][0]])
+            text += "<table cellspacing=5 width=100%><tr>"
+            text += "<td>single atom state:</td>"
+            text += "<td>&Delta;E = {} {}</td>".format(sconf["deltaESingle"][0], sconf["deltaESingle"][1])
+            text += "<td>&Delta;n = {}</td>".format(sconf["deltaNSingle"][0])
+            text += "<td>&Delta;l = {}</td>".format(sconf["deltaLSingle"][0])
+            text += "<td>&Delta;j = {}</td>".format(sconf["deltaJSingle"][0])
+            text += "<td>&Delta;m = {}</td>".format(sconf["deltaMSingle"][0])
+            if idx == 2: text += "</tr><tr>"
+            if idx == 2: text += "<td>pair state:</td>"
+            if idx == 2: text += "<td>&Delta;E = {} {}</td>".format(sconf["deltaEPair"][0], sconf["deltaEPair"][1])
+            if idx == 2: text += "<td>&Delta;n = {}</td>".format(sconf["deltaNPair"][0])
+            if idx == 2: text += "<td>&Delta;l = {}</td>".format(sconf["deltaLPair"][0])
+            if idx == 2: text += "<td>&Delta;j = {}</td>".format(sconf["deltaJPair"][0])
+            if idx == 2: text += "<td>&Delta;m = {}</td>".format(sconf["deltaMPair"][0])
+            text += "</tr></table>"
+            
+            # interaction
+            text += "<h4>Interaction (resolution: {} steps)</h4>".format(sconf["steps"][0])
+            text += "<table cellspacing=5 width=100%><tr>"
+            text += "<td>at start:</td>"
+            text += "<td>E = ({}, {}, {}) {}</td>".format(sconf["minEx"][0], sconf["minEy"][0], sconf["minEz"][0], sconf["minEz"][1])
+            text += "<td>B = ({}, {}, {}) {}</td>".format(sconf["minBx"][0], sconf["minBy"][0], sconf["minBz"][0], sconf["minBz"][1])
+            if idx == 2: text += "<td>R = {} {}</td>".format(sconf["minR"][0], sconf["minR"][1])
+            text += "</tr><tr>"
+            text += "<td>at end:</td>"
+            text += "<td>E = ({}, {}, {}) {}</td>".format(sconf["maxEx"][0], sconf["maxEy"][0], sconf["maxEz"][0], sconf["maxEz"][1])
+            text += "<td>B = ({}, {}, {}) {}</td>".format(sconf["maxBx"][0], sconf["maxBy"][0], sconf["maxBz"][0], sconf["maxBz"][1])
+            if idx == 2: text += "<td>R = {} {}</td>".format(sconf["maxR"][0], sconf["maxR"][1])
+            text += "</tr></table>"
+            
+            if idx == 2: text += "<table cellspacing=5><tr>"
+            if idx == 2: text += "<td>{}; interaction angle {} {}</td>".format(interaction, sconf["theta"][0], sconf["theta"][1])
+            if idx == 2: text += "</tr></table>"
+            
+            #text += "<h3>{}</h3>".format(["Field map","Pair potential"][1])
+ 
+            doc.setHtml(text)
+            height_doc = doc.documentLayout().documentSize().height()
+            
+            
+            # --- paint header ---
+            painter.save()
+            rect = QtCore.QRectF(painter.viewport())
+            doc_header = QtGui.QTextDocument()
+            doc_header.documentLayout().setPaintDevice(self.printer)
+            doc_header.setDefaultFont(font)
+            doc_header.setPageSize(rect.size())
+            
+            text = ""
+            
+            # header
+            #text += "<table cellspacing=5 width='100%' bgcolor='#f0f0f0'><tr>"
+            #text += "<td><h1>{}</h1></td>".format(["Field map of atom 1","Field map of atom 2","Pair potential","Field map of atom 1 and 2"][idx])
+            #text += "</tr></table>"
+            
+            text += "<table width=100%><tr>"
+            text += "<td align=left>Rydberg interaction calculator</td>"
+            text += "<td align=center></td>"
+            text += "<td align=right>{}</td>".format(datetime.today().strftime("%x"))
+            text += "</tr></table>"
+            text += "<h2>{}</h2>".format(tabname)
+            
+            
+            doc_header.setHtml(text)
+            height_header = doc_header.documentLayout().documentSize().height()
+            doc_header.drawContents(painter)
+            painter.restore()
+            
+            # --- paint image ---
+            
+            #pen = QtGui.QPen(QtGui.QColor(220, 220, 220), penwidth)
+            #pen.setJoinStyle(QtCore.Qt.RoundJoin);
+            #painter.setPen(pen)
+            #painter.drawRect(rect)
+            
+            painter.save()
+            rect = painter.viewport()
+            rect = QtCore.QRect(rect.x(),rect.y()+height_header+300,rect.width(),rect.height()-height_doc-height_header-300-400-spacer*0.7-520)
+            exporter.parameters()['width'] = int(rect.width()/4)
+            exporter.parameters()['height'] = int(rect.height()/4)
+            image = exporter.export(toBytes=True)
+            size = image.size()
+            size.scale(rect.size(), QtCore.Qt.KeepAspectRatio)
+            
+            border = QtCore.QRect(rect.x()-15,rect.y()-15,size.width()+30,size.height()+30+spacer*0.7+520)
+            pen = QtGui.QPen(QtGui.QColor(220, 220, 220), 70)
+            painter.setPen(pen)
+            painter.drawRect(border)
+            pen = QtGui.QPen(QtGui.QColor(0, 0, 0), 10)
+            painter.setPen(pen)
+            painter.drawRect(border)
+            pen = QtGui.QPen(QtGui.QColor(0, 0, 0), 0)
+            painter.setPen(pen)
+            brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+            painter.setBrush(brush)
+            painter.drawRect(border)
+            
+            painter.setViewport(rect.x(),rect.y(),size.width(),size.height())
+            painter.setWindow(image.rect())
+            painter.drawImage(0, 0, image)
+            height_image = size.height()
+            width_image = size.width()
+            height_box = size.height()+30+spacer*0.7+520
+            painter.restore()
+            
+           
+            
+            # --- paint colormap ---
+            
+            painter.save()
+            rect = painter.viewport()
+            rect = QtCore.QRect(rect.x()+70,rect.y()+height_image+height_header+300+spacer*0.7+220,width_image-140,100)
+            size = image_colormap.size()
+            size.scale(rect.size(), QtCore.Qt.IgnoreAspectRatio)
+            
+            painter.save()
+            painter.setViewport(rect.x(),rect.y(),size.width(),size.height())
+            painter.setWindow(image_colormap.rect())
+            painter.drawImage(0, 0, image_colormap)
+            painter.restore()
+            
+            border = QtCore.QRect(rect.x(),rect.y(),size.width(),size.height())
+            pen = QtGui.QPen(QtGui.QColor(100, 100, 100), 5)
+            painter.setPen(pen)
+            painter.drawRect(border)
+            painter.restore()
+            
+            
+            painter.save()
+            doc_label = QtGui.QTextDocument()
+            doc_label.documentLayout().setPaintDevice(self.printer)
+            doc_label.setDefaultFont(font)
+            rect = QtCore.QRectF(rect.x(),rect.y()-220,rect.width(),999)
+            doc_label.setPageSize(rect.size())
+            
+            text = ""
+            text += "Overlap with | {} {} {}<sub>{}</sub>, m={}; {} {} {}<sub>{}</sub>, m={} &gt;".\
+                    format(sconf["species1"][0],so[0],so[1],so[2],so[3],sconf["species2"][0],so[4],so[5],so[6],so[7])
+            text += "<br>"
+            text += "<table cellspacing=0 width=100%><tr>"
+            if pconf["log"][0]: text += "<td align=left>&lt; 0.01</td><td align=center>0.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td align=right>1</td>"
+            else: text += "<td align=left>0</td><td align=center>0.5</td><td align=right>1</td>"
+            text += "</tr></table>"
+            
+            #text += "<h3>{}</h3>".format(["Field map","Pair potential"][1])
+            
+            doc_label.setHtml(text)
+            painter.translate(rect.x(), rect.y());
+            doc_label.drawContents(painter)
+            painter.restore()
+            
+            # --- paint description ---
+            painter.save()
+            painter.translate(0, height_box+300+height_header+400);
+            doc.drawContents(painter)
+            painter.restore()
+            
+
+
+            """
+            
+            painter.save()
+            rect = painter.viewport()
+            rect = QtCore.QRect(rect.x(),rect.y()+height_doc+spacer*0.8,rect.width(),height_image+spacer*0.4)
+            pen = QtGui.QPen(QtGui.QColor(0, 0, 0), 10)
+            painter.setPen(pen)
+            painter.drawLine(rect.topLeft(),rect.topRight())
+            painter.drawLine(rect.bottomLeft(),rect.bottomRight())
+            painter.restore()"""
+            
+            
+            
+            """rect = painter.viewport().size()
+            size = image.size()
+            
+            size.scale(QtCore.QSize(rect.width()-2*margin,rect.height()-2*margin), QtCore.Qt.KeepAspectRatio)
+            painter.setViewport(margin, height_doc+spacer+margin, size.width(), size.height())
+            painter.setWindow(image.rect())
+            painter.drawImage(0, 0, image)
+            
+            painter.restore()
+            
+            
+            painter.save()
+            
+            
+            pen = QtGui.QPen(QtGui.QColor(220, 220, 220), penwidth)
+            #pen = QtGui.QPen(QtGui.QColor(0, 0, 0), penwidth)
+            pen.setJoinStyle(QtCore.Qt.RoundJoin);
+            painter.setPen(pen)
+            
+            
+            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5, size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
+            
+            #bound = QtCore.QRectF(5, height_doc+spacer+5, size.width()+2*margin-5, size.height()+2*margin-5-penwidth/2)
+            #painter.drawLine(bound.bottomLeft(),bound.bottomRight())
+            #painter.drawLine(bound.topLeft(),bound.topRight())
+            
+            #print(bound.bottomLeft(),bound.bottomRight())
+            #print(bound.bottomLeft(),bound.bottomRight())
+            
+            plotheight = size.height()+2*margin"""
+            
+            
+            
+            
+            
+            """# --- paint settings ---
+            
+            painter.save()
+            
+            doc = QtGui.QTextDocument()
+            
+            rect_doc = QtCore.QRectF(painter.viewport())
+            rect_doc = QtCore.QRectF(0,plotheight+height_doc+2*spacer,rect_doc.width(),rect_doc.height()-plotheight-height_doc-2*spacer)
+            #painter.drawRect(rect_doc)
+            
+            
+            
+            doc.documentLayout().setPaintDevice(self.printer)
+            doc.setDefaultFont(font)
+            doc.setPageSize(rect_doc.size())
+            
+            
+            #ziparchive.writestr('settings.sconf', self.storage_configuration[idx][0])
+            #ziparchive.writestr('settings.pconf', self.storage_configuration[idx][1])
+            
+            sconf = json.loads(self.storage_configuration[idx][0])
+            pconf = json.loads(self.storage_configuration[idx][1])
+            
+            s1 = sconf["species1"][0]
+            n1 = sconf["n1"][0]
+            l1 = sconf["l1"][0]
+            j1 = sconf["j1"][0]
+            m1 = sconf["m1"][0]
+            s2 = sconf["species2"][0]
+            n2 = sconf["n2"][0]
+            l2 = sconf["l2"][0]
+            j2 = sconf["j2"][0]
+            m2 = sconf["m2"][0]
+            minEx = sconf["minEx"]
+            minEy = sconf["minEy"]
+            minEz = sconf["minEz"]
+            maxEx = sconf["maxEx"]
+            maxEy = sconf["maxEy"]
+            maxEz = sconf["maxEz"]
+            minBx = sconf["minBx"]
+            minBy = sconf["minBy"]
+            minBz = sconf["minBz"]
+            maxBx = sconf["maxBx"]
+            maxBy = sconf["maxBy"]
+            maxBz = sconf["maxBz"]
+            minR = sconf["minR"]
+            maxR = sconf["maxR"]
+            theta = sconf["theta"]
+            steps = sconf["steps"][0]
+            
+            if l1 < len(self.momentslabels): l1 = self.momentslabels[l1]
+            if l2 < len(self.momentslabels): l2 = self.momentslabels[l2]
+            
+            text = ""
+            
+            text += "<h4>Unperturbed state</h4>"
+            text += "<table cellspacing=5 style='width:100%'><tr>"
+            text += "<td>| {} {} {}<sub>{}/2</sub>, m={}/2; {} {} {}<sub>{}/2</sub>, m={}/2 ></td>".format(s1,n1,l1,int(j1*2),int(m1*2),s2,n2,l2,int(j2*2),int(m2*2))
+            text += "</tr></table>"
+            
+            text += "<h4>Basis</h4>"
+            text += "<table cellspacing=5 style='width:100%'><tr>"
+            text += "<td>&Delta;E<sub>single</sub> = {} {}</td>".format(minEz[0], minEz[1])
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;n<sub>single</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;l<sub>single</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;j<sub>single</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;m<sub>single</sub> = {}</td>".format(0)
+            text += "</tr><tr>"
+            text += "<td>&Delta;E<sub>pair</sub> = {} {}</td>".format(maxEz[0], maxEz[1])
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;n<sub>pair</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;l<sub>pair</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;j<sub>pair</sub> = {}</td>".format(0)
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>&Delta;m<sub>pair</sub> = {}</td>".format(0)
+            text += "</tr></table>"
+            
+            text += "<h4>Fields and interaction</h4>"
+            text += "<table cellspacing=5 style='width:100%'><tr>"
+            text += "<td>E<sub>start</sub> = ({}, {}, {}) {}</td>".format(minEx[0], minEy[0], minEz[0], minEz[1])
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>E<sub>end</sub> = ({}, {}, {}) {}</td>".format(maxEx[0], maxEy[0], maxEz[0], maxEz[1])
+            text += "</tr><tr>"
+            text += "<td>B<sub>start</sub> = ({}, {}, {}) {}</td>".format(minBx[0], minBy[0], minBz[0], minBz[1])
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>B<sub>end</sub> = ({}, {}, {}) {}</td>".format(maxBx[0], maxBy[0], maxBz[0], maxBz[1])
+            text += "</tr><tr>"
+            text += "<td>R<sub>start</sub> = {} {}</td>".format(minR[0], minR[1])
+            text += "<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>"
+            text += "<td>R<sub>end</sub> = {} {}</td>".format(maxR[0], maxR[1])
+            text += "</tr></table>"
+            
+            text += "<table cellspacing=5 style='width:100%'><tr>"
+            text += "<td>interaction angle: {} {}</td>".format(theta[0], theta[1])
+            text += "</tr><tr>"
+            text += "<td>interaction order: dipole-dipole, dipole-quadrupole, quadrupole-quadrupole</td>".format(theta[0], theta[1])
+            text += "</tr><tr>"
+            text += "<td>steps: {}</td>".format(steps)
+            text += "</tr></table>"
+            
+            
+            
+            
+            doc.setHtml(text)
+            painter.translate(rect_doc.left(), rect_doc.top());
+            doc.drawContents(painter)
+            
+            painter.restore()"""
+            
+            
+            """rect = painter.viewport()
+            size = self.image.size()
+            size.scale(rect.size(), Qt.KeepAspectRatio)
+            painter.setViewport(rect.x(), rect.y(), size.width(), size.height())
+            painter.setWindow(self.image.rect())
+            painter.drawImage(0, 0, self.image)"""
+            """rect = painter.viewport()
+            size = self.imageLabel.pixmap().size()
+            size.scale(rect.size(), Qt.KeepAspectRatio)
+            painter.setViewport(rect.x(), rect.y(), size.width(), size.height())
+            painter.setWindow(self.imageLabel.pixmap().rect())
+            painter.drawPixmap(0, 0, self.imageLabel.pixmap())
+            painter.end()
+            
+            # --- paint image ---
+            
+            painter.save()
+            
+            plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot][idx].getPlotItem()
+            exporter = pg.exporters.ImageExporter(plotitem)
+            exporter.parameters()['width'] = 2000
+            exporter.parameters()['height'] = 2000
+            exporter.parameters()['antialias'] = True
+            image = exporter.export(toBytes=True)
+            
+            margin = 30
+            rect = painter.viewport().size()
+            size = image.size()
+            
+            size.scale(QtCore.QSize(rect.width()-2*margin,rect.height()-2*margin), QtCore.Qt.KeepAspectRatio)
+            painter.setViewport(margin, height_doc+spacer+margin, size.width(), size.height())
+            painter.setWindow(image.rect())
+            painter.drawImage(0, 0, image)
+            
+            painter.restore()
+            
+            
+            painter.save()
+            
+            penwidth = 30
+            pen = QtGui.QPen(QtGui.QColor(220, 220, 220), penwidth)
+            #pen = QtGui.QPen(QtGui.QColor(0, 0, 0), penwidth)
+            pen.setJoinStyle(QtCore.Qt.RoundJoin);
+            painter.setPen(pen)
+            
+            
+            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5, size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
+            
+            #bound = QtCore.QRectF(5, height_doc+spacer+5, size.width()+2*margin-5, size.height()+2*margin-5-penwidth/2)
+            #painter.drawLine(bound.bottomLeft(),bound.bottomRight())
+            #painter.drawLine(bound.topLeft(),bound.topRight())
+            
+            #print(bound.bottomLeft(),bound.bottomRight())
+            #print(bound.bottomLeft(),bound.bottomRight())
+            
+            plotheight = size.height()+2*margin
+            
+            painter.restore()"""
+        
+        """dialog = QPrintDialog(self.printer, self)
+        if dialog.exec_():
+            painter = QPainter(self.printer)
+            rect = painter.viewport()
+            size = self.imageLabel.pixmap().size()
+            size.scale(rect.size(), Qt.KeepAspectRatio)
+            painter.setViewport(rect.x(), rect.y(), size.width(), size.height())
+            painter.setWindow(self.imageLabel.pixmap().rect())
+            painter.drawPixmap(0, 0, self.imageLabel.pixmap())"""
+        
+        
+        """if(dialog.exec_() != QtGui.QDialog.Accepted): 
+            return 
+        printLabel = QtGui.QLabel("Hello my printer.") 
+        painter = QtGui.QPainter(printer) 
+        printLabel.render(painter) 
+        painter.end()"""
             
     def closeEvent(self, event):
         # Kill c++ program if necessary
@@ -2551,6 +3330,8 @@ class MainWindow(QtGui.QMainWindow):
 
         # Close everything
         super().closeEvent(event)
+
+
 
 def main():
     app = QtGui.QApplication(sys.argv)

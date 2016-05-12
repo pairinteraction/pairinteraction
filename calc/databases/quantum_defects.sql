@@ -44,8 +44,8 @@ INSERT INTO `rydberg_ritz` VALUES('H',0,'0.5','0.0','0.0','0.0','0.0','0.0','109
 
 -- T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1
 INSERT INTO `rydberg_ritz` VALUES('Li',0,'0.5','0.399468','0.030233','-0.0028','0.0115','0.0','109728.64');
-INSERT INTO `rydberg_ritz` VALUES('Li',1,'0.5','0.47263','-0.02613','0.0221','-0.0683','0.0','109728.64');
-INSERT INTO `rydberg_ritz` VALUES('Li',1,'1.5','0.47263','-0.02613','0.0221','-0.0683','0.0','109728.64');
+INSERT INTO `rydberg_ritz` VALUES('Li',1,'0.5','0.047263','-0.02618','0.0221','-0.0683','0.0','109728.64'); -- mistake in Gallagher: 0.47263 -> 0.047263, -0.02613 -> -0.02618
+INSERT INTO `rydberg_ritz` VALUES('Li',1,'1.5','0.047263','-0.02618','0.0221','-0.0683','0.0','109728.64'); -- mistake in Gallagher: 0.47263 -> 0.047263, -0.02613 -> -0.02618
 INSERT INTO `rydberg_ritz` VALUES('Li',2,'1.5','0.002129','-0.01491','0.1759','-0.8507','0.0','109728.64');
 INSERT INTO `rydberg_ritz` VALUES('Li',2,'2.5','0.002129','-0.01491','0.1759','-0.8507','0.0','109728.64');
 INSERT INTO `rydberg_ritz` VALUES('Li',3,'2.5','0.000305','-0.00126','0.0','0.0','0.0','109728.64');

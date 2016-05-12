@@ -1859,6 +1859,45 @@ public:
                         }
                     }
 
+                    /*if (dipoledipole) {
+                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
+                            real_t val = 1*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            real_t val = 0.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            real_t val = 0.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
+                            real_t val = -1.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
+                            real_t val = -1.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
+                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
+                            if (std::abs(val) > tol) {
+                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
+                            }
+                        }
+                    }*/
+
                     if (dipolequadrupole) {
                         if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
                             real_t val = 3/sqrt(5.)*sqrt(3.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
