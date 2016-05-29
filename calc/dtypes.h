@@ -13,10 +13,10 @@
 #define BYTE_T MPI_UNSIGNED_CHAR
 #define ORDER Eigen::ColMajor
 
-typedef float real_t; // TODO
+typedef double real_t; // TODO we should always use double otherwise the diagonalization results are very noisy
 typedef std::complex<real_t> complex_t;
 typedef uint32_t idx_t;
-typedef float storage_real_t;
+typedef real_t storage_real_t; // TODO has always to be the same as real_t
 typedef int32_t storage_idx_t;
 typedef int32_t eigen_idx_t;
 

@@ -21,9 +21,9 @@ add_custom_command(TARGET gui
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.py ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction.py
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/example.sconf ${CMAKE_CURRENT_BINARY_DIR}/example.sconf
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/example.pconf ${CMAKE_CURRENT_BINARY_DIR}/example.pconf
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pyqtgraph
   COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction.py ${CMAKE_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E create_symlink ../share/pairinteraction/gui/pairinteraction.py ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pyqtgraph
 )
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/example.sconf DESTINATION share/pairinteraction/gui)

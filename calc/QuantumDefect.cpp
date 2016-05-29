@@ -23,7 +23,9 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   std::stringstream ss;
   SQLite3 db("quantum_defects.db");
   int pot_max_l, ryd_max_l;
+  int pot_l, ryd_l;
   real_t ryd_max_j;
+  real_t ryd_j;
 
   // Determine maximal L for model potentials
   ss.str(std::string());
@@ -34,6 +36,9 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     *res1.first() >> pot_max_l;
   else throw no_defect();
 
+  // The l to be used is the minimum of the two below
+  pot_l = std::min(l, pot_max_l);
+
   // Determine maximal L for Rydberg-Ritz coefficients
   ss.str(std::string());
   ss << "select MAX(L) from rydberg_ritz where (element = '" << species << "');";
@@ -43,15 +48,14 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     *res2.first() >> ryd_max_l;
   else throw no_defect();
 
-  // The l to be used is the minimum of the three below
-  l = std::min({l, pot_max_l, ryd_max_l});
-
+  // The l to be used is the minimum of the two below
+  ryd_l = std::min(l, ryd_max_l);
 
   // Determine maximal J for Rydberg-Ritz coefficients
   ss.str(std::string());
   ss << "select MAX(J) from rydberg_ritz where  ("
      << "(element = '" << species << "') "
-     << "and (L = " << l << ") "
+     << "and (L = " << ryd_l << ") "
      << ");";
   SQLite3Result res3 = db.query(ss.str().c_str());
   ss.str(std::string());
@@ -60,13 +64,13 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   else throw no_defect();
 
   // The j to be used is the minimum of the two below
-  j = std::min({j, ryd_max_j});
+  ryd_j = std::min(j, ryd_max_j);
 
 
   // Load model potentials from database
   ss << "select ac,Z,a1,a2,a3,a4,rc from model_potential where ("
      << "(element = '" << species << "') "
-     << "and (L = " << l << ") "
+     << "and (L = " << pot_l << ") "
      << ");";
   SQLite3Result res4 = db.query(ss.str().c_str());
   ss.str(std::string());
@@ -79,13 +83,13 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   ss.str(std::string());
   ss << "select d0,d2,d4,d6,d8,Ry from rydberg_ritz where ("
      << "(element = '" << species << "') "
-     << "and (L = " << l << ") "
-     << "and (J = " << j << ") "
+     << "and (L = " << ryd_l << ") "
+     << "and (J = " << ryd_j << ") "
      << ");";
   SQLite3Result res = db.query(ss.str().c_str());
   ss.str(std::string());
   real_t nstar = n;
-  real_t Ry_inf = 109737.31568525;
+  real_t Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
   real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
   if (res.size() > 0)
   {

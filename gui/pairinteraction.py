@@ -36,6 +36,8 @@ from io import StringIO, BytesIO
 from shutil import copyfile
 import shutil
 
+# TODO !!!!!!!!! make button "Reset settings"
+
 # make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -931,7 +933,7 @@ class MainWindow(QtGui.QMainWindow):
         self.timer = QtCore.QTimer()
         
         self.momentumcolors = [(55,126,184),(77,175,74),(228,26,28),(152,78,163),(0,0,0),(255//5,255//5,255//5)] # s, p, d, f, other, undetermined
-        self.symmetrycolors = [(0,0,0),(140,81,10),(1,102,94)] # all, sym, asym
+        self.symmetrycolors = [(40,40,40),(140,81,10),(1,102,94)] # all, sym, asym
         
         self.momentummat = [None]*3
         self.labelmat = [None]*3
@@ -941,9 +943,10 @@ class MainWindow(QtGui.QMainWindow):
         self.yMin_field = [None]*3
         self.yMax_field = [None]*3
         
+        # TODO !!!!!! numBlocks kann auch hoeher als 3 sein!
         self.buffer_basis = [{},{},{}]
         self.buffer_energies = [{},{},{}]
-        self.buffer_positions = [{},{},{}]
+        self.buffer_positions = [{},{},{}] 
         self.buffer_boolarr = [{},{},{}]
         self.buffer_basis_potential = {}
         self.buffer_energies_potential = {}
@@ -960,7 +963,12 @@ class MainWindow(QtGui.QMainWindow):
         self.colormap_buffer_minIdx_potential = 0
         self.colormap_buffer_minIdx_field = [0]*3
         self.lines_buffer_minIdx_field = [0]*3
+        self.iSelected = {}
         
+        
+        self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
+        self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
+        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])
 
         
         
@@ -988,6 +996,15 @@ class MainWindow(QtGui.QMainWindow):
         
         self.unperturbedstate = [None, None, None]
         self.overlapstate = [None, None, None]
+        
+        
+        self.linesX = [None,None,None]
+        self.linesY = [None,None,None]
+        self.linesO = [None,None,None]
+        self.linesSelected = [0,0,0] # [None,None,None] waere auch ok
+        self.linesData = [[],[],[]] # [None,None,None] waere auch ok
+        self.linesSender = [None,None,None]
+                    
 
         # TODOs
         #self.ui.lineedit_system_theta.setEnabled(False)
@@ -1095,6 +1112,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pushbutton_field2_save.clicked.connect(self.saveResult)
         self.ui.pushbutton_potential_save.clicked.connect(self.saveResult)
         
+        self.ui.pushbutton_potential_c3.clicked.connect(self.fitC3C6)
+        self.ui.pushbutton_potential_c6.clicked.connect(self.fitC3C6)
+        
         self.timer.timeout.connect(self.checkForData)
         
         self.ui.graphicsview_field1_plot.sigRangeChanged.connect(self.detectManualRangeX)
@@ -1103,6 +1123,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.graphicsview_field1_plot.sigYRangeChanged.connect(self.detectManualRangeY)
         self.ui.graphicsview_field2_plot.sigYRangeChanged.connect(self.detectManualRangeY)
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(self.detectManualRangeY)
+        
+        self.ui.colorbutton_plot_nosym.sigColorChanged.connect(self.changeLineColor)
+        self.ui.colorbutton_plot_sym.sigColorChanged.connect(self.changeLineColor)
+        self.ui.colorbutton_plot_asym.sigColorChanged.connect(self.changeLineColor)
+        
+        
         
         
         # Load cache directory
@@ -1860,6 +1886,12 @@ class MainWindow(QtGui.QMainWindow):
                             self.yMax_field[idx]  = maxE
                         if self.yMin_field[idx] is None and minE is not None:
                             self.yMin_field[idx] = minE
+                        
+                        # calculate overlap
+                        if self.stateidx_field[idx] is not None:
+                            overlap = np.abs(self.stateidx_field[idx].conjugate()*basis)
+                            overlap.data **= 2
+                            overlap = overlap.sum(axis=0).getA1()
                                                                     
                         # check if limits do not exists
                         if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
@@ -1868,9 +1900,7 @@ class MainWindow(QtGui.QMainWindow):
                             
                             # append the overlaps to the arrays 
                             if self.stateidx_field[idx] is not None:
-                                overlap = np.abs(self.stateidx_field[idx]*basis)
-                                overlap.data **= 2
-                                self.buffer_overlapMap[idx][filestep].append(overlap.sum(axis=0).getA1())
+                                self.buffer_overlapMap[idx][filestep].append(overlap)
                             else:
                                 self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies))
                                 
@@ -1897,11 +1927,28 @@ class MainWindow(QtGui.QMainWindow):
                             
                             # append the overlaps to the arrays
                             if self.stateidx_field[idx] is not None:
-                                overlap = np.abs(self.stateidx_field[idx]*basis)
-                                overlap.data **= 2
-                                self.buffer_overlapMap[idx][filestep].append(np.array(overlap.sum(axis=0)).flatten()[boolarr])
+                                self.buffer_overlapMap[idx][filestep].append(overlap[boolarr])
                             else:
                                 self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies[boolarr]))
+                        
+                        
+                        # extract line to fit C3 or C6
+                        if self.stateidx_field[idx] is not None and len(overlap) > 0 and (blocknumber not in self.linesO[idx].keys() or np.max(overlap) > 0.5 * np.max(self.linesO[idx][blocknumber])):
+                            idxSelected = np.argmax(overlap)
+                            xSelected = position
+                            eSelected = energies[idxSelected]
+                            oSelected = overlap[idxSelected]
+                            if blocknumber not in self.linesX[idx].keys(): self.linesX[idx][blocknumber] = []
+                            if blocknumber not in self.linesY[idx].keys(): self.linesY[idx][blocknumber] = []
+                            if blocknumber not in self.linesO[idx].keys(): self.linesO[idx][blocknumber] = []
+                            self.linesX[idx][blocknumber].append(xSelected)
+                            self.linesY[idx][blocknumber].append(eSelected)
+                            self.linesO[idx][blocknumber].append(oSelected)
+                            
+                            # the c3 and c6 buttons should be enabled
+                            if filestep == 0 and idx == 2:
+                                self.ui.pushbutton_potential_c6.setEnabled(True)
+                                self.ui.pushbutton_potential_c3.setEnabled(True)
                         
                         # --- build color maps starting at the lowest position---                    
                         # loop over positions ("filestep") as long as three subsequent positions ("self.colormap_buffer_minIdx_field[idx]+0,1,2") are within the buffers
@@ -2000,6 +2047,9 @@ class MainWindow(QtGui.QMainWindow):
                             self.buffer_positions[blocknumber] = {}
                             self.buffer_boolarr[blocknumber] = {}
                             self.lines_buffer_minIdx_field[blocknumber] = 0
+                            """self.iSelected[blocknumber] = None
+                            self.linesX[idx][blocknumber] = []
+                            self.linesY[idx][blocknumber] = []"""
                     
                         self.buffer_basis[blocknumber][filestep] = basis
                         self.buffer_energies[blocknumber][filestep] = energies
@@ -2030,6 +2080,8 @@ class MainWindow(QtGui.QMainWindow):
                             graphicsview_plot[idx].plotItem.legend.addItem(style, "sym")
                             style = pg.PlotDataItem(pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
                             graphicsview_plot[idx].plotItem.legend.addItem(style, "asym")"""
+                        
+
                                                                                                 
                         while self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys() and self.lines_buffer_minIdx_field[blocknumber]+1 in self.buffer_basis[blocknumber].keys():
                             # determine the data to plot
@@ -2049,6 +2101,31 @@ class MainWindow(QtGui.QMainWindow):
                             xdata = np.ones_like(ydata)
                             xdata[:,0] *= self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
                             xdata[:,1] *= self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]+1]
+                            
+                            """# track lines with the largest probability to find the overlapstate
+                            if self.lines_buffer_minIdx_field[blocknumber] == 0:
+                                overlapWithOverlapstate = np.abs(self.stateidx_field[idx].conjugate()*self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
+                                overlapWithOverlapstate.data **= 2
+                                overlapWithOverlapstate = overlapWithOverlapstate.sum(axis=0).getA1()
+                                
+                                if len(overlapWithOverlapstate) > 0:
+                                    self.iSelected[blocknumber] = np.argmax(overlapWithOverlapstate)
+                                    xSelected = self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                                    eSelected = self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][self.iSelected[blocknumber]]
+                                    self.linesX[idx][blocknumber].append(xSelected)
+                                    self.linesY[idx][blocknumber].append(eSelected)
+                                else:
+                                    self.iSelected[blocknumber] = -1
+                            
+                            boolarr = iFirst == self.iSelected[blocknumber]
+                            if np.sum(boolarr) == 1:
+                                self.iSelected[blocknumber] = iSecond[boolarr]
+                                xSelected = self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]+1]
+                                eSelected, = self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]+1][self.iSelected[blocknumber]]
+                                self.linesX[idx][blocknumber].append(xSelected)
+                                self.linesY[idx][blocknumber].append(eSelected)
+                            else:
+                                self.iSelected[blocknumber] = -1"""
                         
                             # loop over momenta
                             numMomenta = len(self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
@@ -2072,11 +2149,6 @@ class MainWindow(QtGui.QMainWindow):
                             del self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
                             del self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
                             del self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                            
-                            # if lines are drawn the c3/c6 buttons should be enabled
-                            if self.lines_buffer_minIdx_field[blocknumber] == 0 and idx == 2:
-                                self.ui.pushbutton_potential_c6.setEnabled(True)
-                                self.ui.pushbutton_potential_c3.setEnabled(True)
                             
                             # increase the buffer index
                             self.lines_buffer_minIdx_field[blocknumber] += 1
@@ -2189,9 +2261,88 @@ class MainWindow(QtGui.QMainWindow):
                 for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
                     plotarea.setAntialiasing(False)
                     plotarea.setAntialiasing(True)
-
+            
             # Reset status bar
             self.ui.statusbar.showMessage('')
+
+    @QtCore.pyqtSlot()
+    def fitC3C6(self):
+        C6notC3 = self.sender() == self.ui.pushbutton_potential_c6
+        idx = 2
+        arrk = list(self.linesX[idx].keys())
+        
+        if self.linesSelected[idx] == 0 or self.linesSender[idx] is None or self.linesSender[idx] == C6notC3:
+            self.linesSelected[idx] = (self.linesSelected[idx]+1)%(len(arrk)+1)
+        self.linesSender[idx] = C6notC3
+        
+        # --- Remove old data from the plot ---
+        if len(self.linesData[idx]) > 0:
+            for item in self.linesData[idx]:
+                self.graphicviews_plot[idx].removeItem(item)
+                self.linesData[idx] = []
+        
+        # --- Add new data to the plot ---
+        if self.linesSelected[idx] > 0:
+            k = arrk[self.linesSelected[idx]-1]
+            
+            x = np.array(self.linesX[2][k])
+            y = np.array(self.linesY[2][k])
+                
+            # HACK: otherwise plot(x,y,...) would not properly work
+            sorter = np.argsort(x)
+            x = x[sorter]
+            y = y[sorter]
+            
+            if len(x) >= 2:
+                # Get line size
+                size = self.ui.spinbox_plot_szLine.value()
+                
+                # Plot selected line
+                self.linesData[idx].append(self.graphicviews_plot[idx].plot(x,y,\
+                    pen=pg.mkPen((100,200,255,155),width=size*2,cosmetic=True)))
+                self.linesData[idx][-1].setZValue(13)
+                
+                # Plot fitted line
+                from scipy import optimize
+                if C6notC3:
+                    coefftype = '6'
+                    y0 = y[np.argmax(x)]
+                    x0 = np.max(x)**6
+                    fitfct = lambda x, c6: c6/x**6 - c6/x0 + y0
+                else:
+                    coefftype = '3'
+                    y0 = y[np.argmax(x)]
+                    x0 = np.max(x)**3
+                    fitfct = lambda x, c3: c3/x**3 - c3/x0 + y0
+                par, cov = optimize.curve_fit(fitfct, x, y,p0=[0])
+                coeff = par[0]
+                
+                xfit = np.linspace(np.min(x),np.max(x),300)
+                yfit = fitfct(xfit, coeff)
+                                
+                self.linesData[idx].append(self.graphicviews_plot[idx].plot(xfit,yfit,\
+                    pen=pg.mkPen((0,200,200,255),width=size*2,style=QtCore.Qt.DotLine,cosmetic=True)))
+                self.linesData[idx][-1].setZValue(14)
+                
+                # Plot coefficient
+                size = '{}'.format(max(int(round(self.ui.spinbox_plot_szLabel.value()*11)),1))
+                alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
+                color_fill = (200,255,255,alpha)
+                color_border = (0,200,200,255)
+                            
+                self.linesData[idx].append(pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);"><b>'\
+                    +'{:.4g} GHz &mu;m<sup style="font-size: '.format(coeff) \
+                    +size+'pt;">{}</sup>'.format(coefftype)\
+                    +'</b></span></div>',fill=color_fill,border=color_border,anchor=(0.5,0.5)))
+            
+                self.linesData[idx][-1].setPos(np.mean(xfit),yfit[np.argmin(np.abs(xfit-np.mean(xfit)))])
+                self.linesData[idx][-1].setZValue(20)
+                self.graphicviews_plot[idx].addItem(self.linesData[idx][-1])
+        
+        # Toggle antialiasing # HACK
+        if self.ui.checkbox_plot_antialiasing.isChecked():
+            self.graphicviews_plot[idx].setAntialiasing(False)
+            self.graphicviews_plot[idx].setAntialiasing(True)
     
     @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
     def detectManualRangeX(self):
@@ -2219,7 +2370,7 @@ class MainWindow(QtGui.QMainWindow):
             idx = 1
         elif sender == self.ui.graphicsview_potential_plot.getPlotItem():
             idx = 2
-
+            
         if idx > -1:
             self.manualRangeY[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1]
     
@@ -2514,8 +2665,18 @@ class MainWindow(QtGui.QMainWindow):
                             self.graphicviews_plot[idx].setXRange(posMin, posMax)
                         if not self.manualRangeY[idx] and self.minE[idx] is not None and self.maxE[idx] is not None:
                             self.graphicviews_plot[idx].setYRange(self.minE[idx], self.maxE[idx])
+                    
+                    # clear variables
+                    self.linesSelected[idx] = 0
+                    self.linesData[idx] = []
+                    self.linesX[idx] = {}
+                    self.linesY[idx] = {}
+                    self.linesO[idx] = {}
+                    self.linesSender[idx] = None
                 
                 self.converter_y = Quantity(1, Units.au_energy).toUU().magnitude
+                
+                
                 
                 # save configuration to json file
                 with open(self.path_config, 'w') as f:
@@ -2676,13 +2837,13 @@ class MainWindow(QtGui.QMainWindow):
                 basis = eigensystem.basis  # nState, nBasis (stored in Compressed Sparse Column format, CSC)
                 
                 if self.stateidx_field[idx] is not None:
-                    overlaps = np.abs(self.stateidx_field[idx]*basis)
+                    overlaps = np.abs(self.stateidx_field[idx].conjugate()*basis)
                     overlaps.data **= 2
                     overlaps = overlaps.sum(axis=0).getA1()
                     
                 if filestep != filestep_last: # new step
-                    data['bfields'].append(np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])*self.converter_efield)
-                    data['efields'].append(np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])*self.converter_bfield)
+                    data['bfields'].append(np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])*self.converter_bfield)
+                    data['efields'].append(np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])*self.converter_efield)
                     if idx == 2: data['distances'].append(float(eigensystem.params["R"])*self.converter_length)
                     data['eigenvectors'].append(basis)
                     data['eigenvalues'].append(energies)
@@ -2749,6 +2910,18 @@ class MainWindow(QtGui.QMainWindow):
             self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
+    
+    @QtCore.pyqtSlot()
+    def changeLineColor(self):
+        senderbutton = self.sender()
+        if senderbutton == self.ui.colorbutton_plot_nosym:
+            idx = 0
+        elif senderbutton == self.ui.colorbutton_plot_sym:
+            idx = 1
+        elif senderbutton == self.ui.colorbutton_plot_asym:
+            idx = 2
+        
+        self.symmetrycolors[idx] = senderbutton.color().getRgb()[:-1]
     
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):
