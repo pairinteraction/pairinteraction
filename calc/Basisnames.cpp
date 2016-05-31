@@ -2,6 +2,12 @@
 
 BasisnamesOne::BasisnamesOne() {
 }
+BasisnamesOne BasisnamesOne::fromStates(std::vector<StateOne> names) {
+   BasisnamesOne basisnames;
+   basisnames.names_ = names;
+   basisnames.dim_ = names.size();
+   return basisnames;
+}
 BasisnamesOne BasisnamesOne::fromFirst(const Configuration &config) {
    StateOne startstate;
    config["n1"] >> startstate.n;

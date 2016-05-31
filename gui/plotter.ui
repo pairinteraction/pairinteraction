@@ -522,7 +522,7 @@
             <item>
              <widget class="QLabel" name="label_39">
               <property name="text">
-               <string>Note: the quantization axis is the z-axis.</string>
+               <string>The quantization axis is the z-axis.</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
+             <width>238</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>356</height>
+             <width>170</width>
+             <height>291</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1431,8 +1431,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>356</height>
+             <width>285</width>
+             <height>391</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1565,7 +1565,23 @@
             <item>
              <widget class="QLabel" name="label_83">
               <property name="text">
-               <string>Note: the angle is measured between the interatomic axis (lies in the xz-plane) and quantization axis (z-axis).</string>
+               <string>Measured between interatomic axis (lies in xz-plane) and quantization axis (z-axis).</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_87">
+              <property name="text">
+               <string>Note: The program stores eigenvectors in the rotated basis where the quantization axis equals the interatomic axis.</string>
               </property>
               <property name="textFormat">
                <enum>Qt::AutoText</enum>
@@ -1654,8 +1670,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>356</height>
+             <width>242</width>
+             <height>83</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1782,7 +1798,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>270</width>
              <height>864</height>
             </rect>
            </property>

@@ -67,6 +67,7 @@ class BasisnamesOne : public Basisnames<StateOne>{
 public:
     /*BasisnamesOne(const Configuration &config, const StateOne &startstate);
     BasisnamesOne(const Configuration &config, const StateTwo &startstate);*/
+    static BasisnamesOne fromStates(std::vector<StateOne> names); // TODO
     static BasisnamesOne fromFirst(const Configuration &config);
     static BasisnamesOne fromFirst(std::shared_ptr<const BasisnamesTwo> basis_two);
     static BasisnamesOne fromSecond(const Configuration &config);

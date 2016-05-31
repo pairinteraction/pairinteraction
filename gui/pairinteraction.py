@@ -1200,9 +1200,11 @@ class MainWindow(QtGui.QMainWindow):
             if os.name == 'nt':
                 ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
                 if not ret: raise ctypes.WinError()
-            
-            with open(self.path_version, 'w') as f:
+
+        if not os.path.isfile(self.path_version):
+             with open(self.path_version, 'w') as f:
                 json.dump({'version_settings': version_settings, 'version_cache': version_cache}, f, indent=4, sort_keys=True)
+        
         
         if not os.path.exists(self.path_lastsettings):
             os.makedirs(self.path_lastsettings)
@@ -1213,8 +1215,10 @@ class MainWindow(QtGui.QMainWindow):
             with open(self.path_version, 'w') as f:
                 json.dump({'version_settings': version_settings, 'version_cache': version_cache_saved}, f, indent=4, sort_keys=True)
             
-            with open(self.path_cache_last, 'w') as f:
+        if not os.path.isfile(self.path_cache_last):
+             with open(self.path_cache_last, 'w') as f:
                 json.dump({"cachedir": self.path_cache}, f, indent=4, sort_keys=True)
+            
             
         if not os.path.exists(self.path_cache):
             os.makedirs(self.path_cache)

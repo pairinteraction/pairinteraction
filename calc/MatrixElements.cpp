@@ -62,7 +62,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         abort();
     }
 
-
     SQLite3 db(dbname);
 
     // create cache tables if necessary

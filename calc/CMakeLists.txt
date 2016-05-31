@@ -15,8 +15,13 @@ endif(CMAKE_BUILD_TYPE MATCHES Release)
 
 # add the executables
 file(GLOB pairinteraction_SRCS *.cpp)
+set(pairinteraction_matrixelement_SRCS ${pairinteraction_SRCS})
+list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/mainMatrixelement.cpp)
+list(REMOVE_ITEM pairinteraction_matrixelement_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+
 add_executable(pairinteraction-real ${pairinteraction_SRCS})
 add_executable(pairinteraction-complex ${pairinteraction_SRCS})
+add_executable(matrixelements ${pairinteraction_matrixelement_SRCS})
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 # add external libraries
@@ -34,6 +39,7 @@ if(SQLITE3_FOUND)
   include_directories(${SQLITE3_INCLUDE_DIR})
   target_link_libraries(pairinteraction-real ${SQLITE3_LIBRARY})
   target_link_libraries(pairinteraction-complex ${SQLITE3_LIBRARY})
+  target_link_libraries(matrixelements ${SQLITE3_LIBRARY})
 else(SQLITE3_FOUND)
   message(FATAL_ERROR "==================\n"
                       "Sqlite3 not found!\n"
@@ -49,6 +55,7 @@ if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MAT
   include_directories(${MS_MPI_INCLUDE_PATH})
   target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
   target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
+  target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
 
 else()
 
@@ -57,6 +64,7 @@ else()
     include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
     target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
     target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+    target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
     set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
     set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
   else(MPI_FOUND)
@@ -72,6 +80,7 @@ if(JSONCPP_FOUND)
   include_directories(${JSONCPP_INCLUDE_DIRS})
   target_link_libraries(pairinteraction-real ${JSONCPP_LIBRARIES})
   target_link_libraries(pairinteraction-complex ${JSONCPP_LIBRARIES})
+  target_link_libraries(matrixelements ${JSONCPP_LIBRARIES})
 else(JSONCPP_FOUND)
   message(FATAL_ERROR "==================\n"
                       "JSONCPP not found!\n"
@@ -83,6 +92,7 @@ if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})
   target_link_libraries(pairinteraction-complex ${Boost_LIBRARIES})
+  target_link_libraries(matrixelements ${Boost_LIBRARIES})
 else(Boost_FOUND)
   message(FATAL_ERROR "================\n"
                       "Boost not found!\n"
@@ -106,9 +116,12 @@ add_subdirectory(wignerSymbols)
 include_directories(wignerSymbols/include)
 target_link_libraries(pairinteraction-real wignerSymbols)
 target_link_libraries(pairinteraction-complex wignerSymbols)
+target_link_libraries(matrixelements wignerSymbols)
 
 
 # CPack
 
 install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
 install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
+install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
+
