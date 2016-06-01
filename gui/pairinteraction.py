@@ -2276,13 +2276,13 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()
     def fitC3C6(self):
-        C6notC3 = self.sender() == self.ui.pushbutton_potential_fit
+        C6notC3 = self.ui.combobox_potential_fct.currentIndex() # TODO rename variable
         idx = 2
         arrk = list(self.linesX[idx].keys())
         
         if self.linesSelected[idx] == 0 or self.linesSender[idx] is None or self.linesSender[idx] == C6notC3:
             self.linesSelected[idx] = (self.linesSelected[idx]+1)%(len(arrk)+1)
-        self.linesSender[idx] = C6notC3
+        self.linesSender[idx] = C6notC3 # TODO rename variable
         
         # --- Remove old data from the plot ---
         if len(self.linesData[idx]) > 0:
@@ -2313,21 +2313,19 @@ class MainWindow(QtGui.QMainWindow):
                 
                 # Plot fitted line
                 from scipy import optimize
-                if C6notC3:
-                    coefftype = '6'
-                    y0 = y[np.argmax(x)]
-                    x0 = np.max(x)**6
-                    fitfct = lambda x, c6: c6/x**6 - c6/x0 + y0
-                else:
-                    coefftype = '3'
-                    y0 = y[np.argmax(x)]
-                    x0 = np.max(x)
+                y0 = y[np.argmax(x)]
+                x0 = np.max(x)
+                if C6notC3 == 0:
+                    coefftype = ['6']
+                    fitfct = lambda x, c6: c6/x**6 - c6/x0**6 + y0
+                elif C6notC3 == 1:
+                    coefftype = ['3']
+                    fitfct = lambda x, c3: c3/x**3 - c3/x0**3 + y0
+                elif C6notC3 == 2:
+                    coefftype = ['3','6']
                     fitfct = lambda x, c3, c6: c3/x**3 + c6/x**6 - c3/x0**3 - c6/x0**6 + y0
                 par, cov = optimize.curve_fit(fitfct, x, y)
-                coeff = par[0]
-                
-                print(par)
-                
+                                
                 xfit = np.linspace(np.min(x),np.max(x),300)
                 yfit = fitfct(xfit, *par)
                                 
@@ -2340,11 +2338,17 @@ class MainWindow(QtGui.QMainWindow):
                 alpha = int(round(self.ui.spinbox_plot_transpLabel.value()*255))
                 color_fill = (200,255,255,alpha)
                 color_border = (0,200,200,255)
+                
+                htmltext = '<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);"><b>'
+                separator = ''
+                for p, c in zip(par, coefftype):
+                    htmltext += separator
+                    htmltext += '{:.4g} GHz &mu;m<sup style="font-size: '.format(p)
+                    htmltext += size+'pt;">{}</sup>'.format(c)
+                    separator = ', '
+                htmltext += '</b></span></div>'
                             
-                self.linesData[idx].append(pg.TextItem(html='<div style="text-align: center; font-size: '+size+'pt;"><span style="color: rgba(0,0,0,255);"><b>'\
-                    +'{:.4g} GHz &mu;m<sup style="font-size: '.format(coeff) \
-                    +size+'pt;">{}</sup>'.format(coefftype)\
-                    +'</b></span></div>',fill=color_fill,border=color_border,anchor=(0.5,0.5)))
+                self.linesData[idx].append(pg.TextItem(html=htmltext,fill=color_fill,border=color_border,anchor=(0.5,0.5)))
             
                 self.linesData[idx][-1].setPos(np.mean(xfit),yfit[np.argmin(np.abs(xfit-np.mean(xfit)))])
                 self.linesData[idx][-1].setZValue(20)
