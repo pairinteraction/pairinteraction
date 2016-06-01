@@ -558,7 +558,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>238</width>
+             <width>300</width>
              <height>450</height>
             </rect>
            </property>
@@ -1175,8 +1175,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>170</width>
-             <height>291</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1670,8 +1670,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>242</width>
-             <height>83</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1798,7 +1798,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>270</width>
+             <width>285</width>
              <height>864</height>
             </rect>
            </property>
@@ -3281,7 +3281,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_field1">
        <property name="enabled">
@@ -3907,7 +3907,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushbutton_potential_c3">
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushbutton_potential_fit">
             <property name="enabled">
              <bool>false</bool>
             </property>
@@ -3917,20 +3924,14 @@
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
             <property name="maximumSize">
              <size>
-              <width>60</width>
+              <width>50</width>
               <height>16777215</height>
              </size>
             </property>
             <property name="text">
-             <string>Fit C3</string>
+             <string>Fit</string>
             </property>
             <property name="autoRepeat">
              <bool>true</bool>
@@ -3941,30 +3942,43 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pushbutton_potential_c6">
+           <widget class="QComboBox" name="combobox_potential_fct">
             <property name="enabled">
              <bool>false</bool>
             </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
             <property name="maximumSize">
              <size>
-              <width>60</width>
+              <width>90</width>
               <height>16777215</height>
              </size>
             </property>
-            <property name="text">
-             <string>Fit C6</string>
+            <property name="currentText">
+             <string>C6/r^6</string>
             </property>
-            <property name="autoRepeat">
-             <bool>true</bool>
+            <property name="currentIndex">
+             <number>0</number>
             </property>
-            <property name="flat">
-             <bool>false</bool>
+            <item>
+             <property name="text">
+              <string>C6/r^6</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>C3/r^3</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>C3/r^3+C6/r^6</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item>
+           <widget class="Line" name="line_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
             </property>
            </widget>
           </item>

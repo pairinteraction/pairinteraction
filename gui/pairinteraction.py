@@ -181,7 +181,7 @@ from pint import UnitRegistry
 # === initialize unit registry ===
 ureg = UnitRegistry()
 Q = ureg.Quantity
-U = ureg.Unit
+U = lambda u : ureg.Quantity(1, u).units
 C = lambda s : Q(constants.value(s),constants.unit(s))
 
 # === define units that are used in the python program for the gui (the c++ program uses atomic units) ===
@@ -835,7 +835,12 @@ class SystemDict(GuiDict):
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
-        locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+        
+        if os.name == 'nt':
+            locale.setlocale(locale.LC_ALL, 'English')
+        else:
+            locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+            
         QtCore.QLocale.setDefault(QtCore.QLocale(locale.getlocale()[0]))
         
         super().__init__(parent)
@@ -1112,8 +1117,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.pushbutton_field2_save.clicked.connect(self.saveResult)
         self.ui.pushbutton_potential_save.clicked.connect(self.saveResult)
         
-        self.ui.pushbutton_potential_c3.clicked.connect(self.fitC3C6)
-        self.ui.pushbutton_potential_c6.clicked.connect(self.fitC3C6)
+        self.ui.pushbutton_potential_fit.clicked.connect(self.fitC3C6)
         
         self.timer.timeout.connect(self.checkForData)
         
@@ -1198,6 +1202,7 @@ class MainWindow(QtGui.QMainWindow):
         if not os.path.exists(self.path_out):
             os.makedirs(self.path_out)	
             if os.name == 'nt':
+                FILE_ATTRIBUTE_HIDDEN = 0x02
                 ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out,FILE_ATTRIBUTE_HIDDEN)
                 if not ret: raise ctypes.WinError()
 
@@ -1951,8 +1956,8 @@ class MainWindow(QtGui.QMainWindow):
                             
                             # the c3 and c6 buttons should be enabled
                             if filestep == 0 and idx == 2:
-                                self.ui.pushbutton_potential_c6.setEnabled(True)
-                                self.ui.pushbutton_potential_c3.setEnabled(True)
+                                self.ui.pushbutton_potential_fit.setEnabled(True)
+                                self.ui.combobox_potential_fct.setEnabled(True)
                         
                         # --- build color maps starting at the lowest position---                    
                         # loop over positions ("filestep") as long as three subsequent positions ("self.colormap_buffer_minIdx_field[idx]+0,1,2") are within the buffers
@@ -2271,7 +2276,7 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()
     def fitC3C6(self):
-        C6notC3 = self.sender() == self.ui.pushbutton_potential_c6
+        C6notC3 = self.sender() == self.ui.pushbutton_potential_fit
         idx = 2
         arrk = list(self.linesX[idx].keys())
         
@@ -2316,13 +2321,15 @@ class MainWindow(QtGui.QMainWindow):
                 else:
                     coefftype = '3'
                     y0 = y[np.argmax(x)]
-                    x0 = np.max(x)**3
-                    fitfct = lambda x, c3: c3/x**3 - c3/x0 + y0
-                par, cov = optimize.curve_fit(fitfct, x, y,p0=[0])
+                    x0 = np.max(x)
+                    fitfct = lambda x, c3, c6: c3/x**3 + c6/x**6 - c3/x0**3 - c6/x0**6 + y0
+                par, cov = optimize.curve_fit(fitfct, x, y)
                 coeff = par[0]
                 
+                print(par)
+                
                 xfit = np.linspace(np.min(x),np.max(x),300)
-                yfit = fitfct(xfit, coeff)
+                yfit = fitfct(xfit, *par)
                                 
                 self.linesData[idx].append(self.graphicviews_plot[idx].plot(xfit,yfit,\
                     pen=pg.mkPen((0,200,200,255),width=size*2,style=QtCore.Qt.DotLine,cosmetic=True)))
@@ -2567,8 +2574,8 @@ class MainWindow(QtGui.QMainWindow):
                 if self.senderbutton != self.ui.pushbutton_potential_calc:
                     self.ui.pushbutton_potential_calc.setEnabled(False)
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
-                    self.ui.pushbutton_potential_c6.setEnabled(False)
-                    self.ui.pushbutton_potential_c3.setEnabled(False)
+                    self.ui.pushbutton_potential_fit.setEnabled(False)
+                    self.ui.combobox_potential_fct.setEnabled(False)
                 self.senderbutton.setText("Abort calculation")
                 
                 # store, whether the same basis should be used for both atoms
