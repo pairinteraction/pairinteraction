@@ -2733,6 +2733,9 @@ class MainWindow(QtGui.QMainWindow):
                     path_cpp = self.path_cpp_complex
                 else:
                     path_cpp = self.path_cpp_real
+                
+                if os.name == 'nt':
+                    path_cpp += '.exe'
                     
                 self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",self.path_config, "-o", self.path_cache],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
@@ -2978,12 +2981,39 @@ class MainWindow(QtGui.QMainWindow):
     
     @QtCore.pyqtSlot()
     def print(self):
+        idx = self.ui.tabwidget_plotter.currentIndex()
+        if idx == 1 and self.ui.tabwidget_plotter.count() == 2: idx = 2
+        
+        
+        # TODO initialize these variables already in the constructor
+        if self.storage_configuration[idx][0] is None:
+            filelike=StringIO()
+            self.saveSettingsSystem(filelike)
+            self.storage_configuration[idx][0] = filelike.getvalue()
+            
+        if self.storage_configuration[idx][1] is None:
+            filelike=StringIO()
+            self.saveSettingsPlotter(filelike)
+            self.storage_configuration[idx][1] = filelike.getvalue()
+            
+        if self.unperturbedstate[idx] is None:
+            self.unperturbedstate[idx] = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
+                                                  self.systemdict['n2'].magnitude,self.systemdict['l2'].magnitude,self.systemdict['j2'].magnitude,self.systemdict['m2'].magnitude])
+        
+        if self.overlapstate[idx] is None:
+            if self.ui.radiobutton_plot_overlapUnperturbed.isChecked():
+                self.overlapstate[idx] = self.unperturbedstate[idx]
+            else:
+                self.overlapstate[idx] = np.array([self.plotdict['n1'].magnitude,self.plotdict['l1'].magnitude,self.plotdict['j1'].magnitude,self.plotdict['m1'].magnitude,
+                                                  self.plotdict['n2'].magnitude,self.plotdict['l2'].magnitude,self.plotdict['j2'].magnitude,self.plotdict['m2'].magnitude])
+
+            
 
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_() == QPrintDialog.Accepted:
-            idx = self.ui.tabwidget_plotter.currentIndex()
+            
             tabname = self.ui.tabwidget_plotter.tabText(idx)
-            if idx == 1 and self.ui.tabwidget_plotter.count() == 2: idx = 2
+            
             
             # TODO check if results exist !!!!!!!!!!!!!!!!!!
             # TODO reihenfolge plot settings umdrehen  !!!!!!!!!!!!!!!!!!

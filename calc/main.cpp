@@ -1148,7 +1148,7 @@ protected:
             boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
             // save basis
-            boost::filesystem::path path_basis = "/tmp";
+            boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
             path_basis /= "basis_one_"+uuid+".csv";
             basis_one->save(path_basis.string());
 
@@ -1729,7 +1729,7 @@ public:
             boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
             // save basis
-            boost::filesystem::path path_basis = "/tmp";
+            boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
             path_basis /= "basis_two_"+uuid+".csv";
             basis_two->save(path_basis.string());
 

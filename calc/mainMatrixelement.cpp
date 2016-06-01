@@ -3,6 +3,7 @@
 #include "State.h"
 #include "Basisnames.h"
 
+#include <getopt.h>
 #include <sstream>
 #include <string>
 #include <limits>
