@@ -1084,8 +1084,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_n1.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
         self.ui.spinbox_plot_n2.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
         
-        self.ui.combobox_system_species1.currentIndexChanged.connect(self.forbidSamebasis)
-        self.ui.combobox_system_species2.currentIndexChanged.connect(self.forbidSamebasis)
+        self.ui.combobox_system_species1.currentIndexChanged[str].connect(self.forbidSamebasis)
+        self.ui.combobox_system_species2.currentIndexChanged[str].connect(self.forbidSamebasis)
         
         self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
         self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
@@ -2359,7 +2359,7 @@ class MainWindow(QtGui.QMainWindow):
             self.graphicviews_plot[idx].setAntialiasing(False)
             self.graphicviews_plot[idx].setAntialiasing(True)
     
-    @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
+    #@QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
     def detectManualRangeX(self):
         sender = self.sender()
         
@@ -2374,7 +2374,7 @@ class MainWindow(QtGui.QMainWindow):
         if idx > -1:
             self.manualRangeX[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][0]
     
-    @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
+    #@QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
     def detectManualRangeY(self):
         sender = self.sender()
         
@@ -2389,7 +2389,7 @@ class MainWindow(QtGui.QMainWindow):
         if idx > -1:
             self.manualRangeY[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1]
     
-    @QtCore.pyqtSlot(float)
+    @QtCore.pyqtSlot(int)
     def adjustPairlimits(self, value):
         sender = self.sender()
         
