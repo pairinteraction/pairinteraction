@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 4
-version_cache = 4
+version_settings = 5
+version_cache = 5
 
 import sys
 from pint import UnitRegistry
@@ -36,7 +36,12 @@ from io import StringIO, BytesIO
 from shutil import copyfile
 import shutil
 
-# TODO !!!!!!!!! make button "Reset settings"
+
+# TODO !!!!!!!!! set dm = -1 for non-zero interaction angles (in both spin boxes) --> "m must not be restricted since the interaction angle is not zero." // construct basis starting from all needed m (better solution)
+# TODO !!!!!!!!! dipole quadrupole
+# TODO !!!!!!!!! find sub blocks
+
+
 
 # make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -618,7 +623,7 @@ class Worker(QtCore.QThread):
                 break
                 
             else:
-                print (line.decode('utf-8'), end="")
+                print(line.decode('utf-8'), end="")
             
             self.message = status_type + status_progress
         
@@ -784,6 +789,8 @@ class SystemDict(GuiDict):
         store["deltaEPair"] =       {'widget': ui.lineedit_system_deltaEPair,               'unit': Units.energy}
         store["pairbasisSame"] =    {'widget': ui.radiobutton_system_pairbasisSame,         'unit': None}
         store["pairbasisDefined"] = {'widget': ui.radiobutton_system_pairbasisDefined,      'unit': None}
+        store["quantizationZ"] =    {'widget': ui.radiobutton_system_quantizationZ,         'unit': None}
+        store["quantizationInteratomic"] = {'widget': ui.radiobutton_system_quantizationInteratomic,'unit': None}
         store["samebasis"] =        {'widget': ui.checkbox_system_samebasis,                'unit': None}
         store["minEx"] =            {'widget': ui.lineedit_system_minEx,                    'unit': Units.efield}
         store["minEy"] =            {'widget': ui.lineedit_system_minEy,                    'unit': Units.efield}
@@ -1019,10 +1026,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_system_precision.hide()
         self.ui.label_system_precision.hide()
         
-        
-        
-                
-        
+        # Group up buttons
+        self.overlapgroup = QtGui.QButtonGroup()
+        self.overlapgroup.addButton(self.ui.radiobutton_plot_overlapDefined)
+        self.overlapgroup.addButton(self.ui.radiobutton_plot_overlapUnperturbed)
 
         # Set validators
         validator_double = DoubleValidator()
@@ -1108,6 +1115,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_cache_directory.triggered.connect(self.changeCacheDirectory)
         self.ui.action_cache_clear.triggered.connect(self.clearCache)
         self.ui.action_print.triggered.connect(self.print)
+        
+        self.ui.action_sconf_reset.triggered.connect(self.resetSConf)
+        self.ui.action_pconf_reset.triggered.connect(self.resetPConf)
         
         self.ui.pushbutton_field1_calc.clicked.connect(self.startCalc)
         self.ui.pushbutton_field2_calc.clicked.connect(self.startCalc)
@@ -1608,9 +1618,6 @@ class MainWindow(QtGui.QMainWindow):
                         
                         # write calculated wigner d matrix elements into the cache
                         self.wignerd.save()
-                            
-                        print(basis.shape,self.overlapstate[idx])
-                        print(self.angle, np.sum(np.abs(statecoeff)**2))
                                                 
                     else:
                         if idx == 0:
@@ -1633,7 +1640,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.stateidx_field[idx] = None
                     else:
                         self.stateidx_field[idx] = sparse.csc_matrix((statecoeff,(stateamount,stateidx)), shape=(np.max(stateamount)+1,nState))
-                    
+                                        
                     # update status bar
                     self.ui.statusbar.showMessage(message_old)
                     QtGui.QApplication.processEvents()
@@ -1795,7 +1802,7 @@ class MainWindow(QtGui.QMainWindow):
                                                                         
                         if labelprob_num_potential >= numBlocks:
                             # total probability to find a label
-                            cumprob = np.array(self.labelprob.sum(axis=0).flat)
+                            cumprob = self.labelprob.sum(axis=0).getA1()
                             boolarr = cumprob > 0.1
                                                          
                             # normalize in such a way that the total probability is always one
@@ -2016,7 +2023,7 @@ class MainWindow(QtGui.QMainWindow):
                                     overlap[overlap < 1e-2] = 1e-2
                                     overlap = (2+np.log10(overlap))/2
                                 
-                                colormap[idx_pos,:] = sparse.coo_matrix((overlap,(idx_energies,np.arange(len(idx_energies)))),shape=(height_pixelunits, len(idx_energies))).sum(axis=-1).flat
+                                colormap[idx_pos,:] = sparse.coo_matrix((overlap,(idx_energies,np.arange(len(idx_energies)))),shape=(height_pixelunits, len(idx_energies))).sum(axis=-1).getA1()
                                 
                                 dataamount += len(idx_energies)*10
     
@@ -2263,7 +2270,7 @@ class MainWindow(QtGui.QMainWindow):
             if self.ui.pushbutton_field2_calc == self.senderbutton:
                 self.senderbutton.setText("Calculate field map")
             if self.ui.pushbutton_potential_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate pair potential")
+                self.senderbutton.setText("Calculate potential")
             
             # Toggle antialiasing # HACK
             if self.ui.checkbox_plot_antialiasing.isChecked():
@@ -2564,13 +2571,19 @@ class MainWindow(QtGui.QMainWindow):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
                 
             else:
+                self.senderbutton = self.sender()
+                
+                if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_field2_calc] and self.systemdict["theta"].toAU().magnitude != 0:
+                    QtGui.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. "  +\
+                        "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " + \
+                        "axis equals the interatomic axis. This slows down calculations.")
+                
                 # save last settings
                 self.saveSettingsSystem(self.path_system_last)
                 self.saveSettingsPlotter(self.path_plot_last)
                 self.saveSettingsView(self.path_view_last)
             
                 # change buttons
-                self.senderbutton = self.sender()
                 if self.senderbutton != self.ui.pushbutton_field1_calc:
                     self.ui.pushbutton_field1_calc.setEnabled(False)
                 if self.senderbutton != self.ui.pushbutton_field2_calc:
@@ -2786,6 +2799,8 @@ class MainWindow(QtGui.QMainWindow):
         # open zip file
         ziparchive = zipfile.ZipFile(filename, 'w', compression = zipfile.ZIP_STORED) # zipfile.ZIP_DEFLATED
         
+        # TODO sicherstellen, dass die Funktion auch ohne Plot / mit leerem Plotwindow nicht abst?rzt
+        
         try:
             # save plot
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot][idx].getPlotItem()
@@ -2847,6 +2862,8 @@ class MainWindow(QtGui.QMainWindow):
             self.converter_efield = Quantity(1, Units.au_efield).toUU().magnitude # TODO Variable an anderer Stelle anlegen
             self.converter_length = Quantity(1, Units.au_length).toUU().magnitude # TODO Variable an anderer Stelle anlegen
             
+            rotator = np.array([[np.cos(-self.angle),0,np.sin(-self.angle)],[0,1,0],[-np.sin(-self.angle),0,np.cos(-self.angle)]]) # TODO !!!!!!!!! self.angle[idx] verwenden
+            
             filestep_last = None
             
             for filestep, blocknumber, filename in sorted(self.storage_data[idx],key=itemgetter(0,1)):
@@ -2860,8 +2877,10 @@ class MainWindow(QtGui.QMainWindow):
                     overlaps = overlaps.sum(axis=0).getA1()
                     
                 if filestep != filestep_last: # new step
-                    data['bfields'].append(np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])*self.converter_bfield)
-                    data['efields'].append(np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])*self.converter_efield)
+                    field = np.array([float(eigensystem.params["Bx"]),float(eigensystem.params["By"]),float(eigensystem.params["Bz"])])
+                    data['bfields'].append(np.dot(rotator,field).flatten()*self.converter_bfield)
+                    field = np.array([float(eigensystem.params["Ex"]),float(eigensystem.params["Ey"]),float(eigensystem.params["Ez"])])
+                    data['efields'].append(np.dot(rotator,field).flatten()*self.converter_efield)
                     if idx == 2: data['distances'].append(float(eigensystem.params["R"])*self.converter_length)
                     data['eigenvectors'].append(basis)
                     data['eigenvalues'].append(energies)
@@ -2876,6 +2895,61 @@ class MainWindow(QtGui.QMainWindow):
             if len(data['eigenvalues']) > 0:
                 data['numSteps'] = len(data['eigenvalues'])
                 data['numEigenvectors'] = len(data['eigenvalues'][0])
+                
+            if self.ui.radiobutton_system_quantizationZ.isChecked() and self.angle != 0:
+                
+                # find relevant states
+                statesum = np.zeros(data['numStates'],dtype=np.float)
+                for s in range(data['numSteps']):
+                    statesum += np.abs(data['eigenvectors'][s]).sum(axis=1).getA1()
+                statesum += np.abs(data['overlapvectors']).sum(axis=0).getA1()
+                    
+                boolarr = statesum>0
+                idxconverter = np.arange(data['numStates'])[boolarr]
+                relevantstates = data['states'][boolarr]
+                
+                # build transformator
+                for selector in [0,4]:
+                    idx1 = []
+                    idx2 = []
+                    val = []
+                    
+                    for j in np.unique(relevantstates[:,3+selector]):
+                        arrM = np.unique(relevantstates[:,4+selector])
+                        
+                        for m1 in arrM: # m_row
+                            if np.abs(m1) > j: continue
+                            boolarr1 = np.all(relevantstates[:,[3+selector,4+selector]] == [j,m1],axis=-1)
+                            idxconverter1 = idxconverter[boolarr1]
+                            
+                            for m2 in arrM: # m_col
+                                if np.abs(m2) > j: continue
+                                boolarr2 = np.all(relevantstates[:,[3+selector,4+selector]] == [j,m2],axis=-1)
+                                idxconverter2 = idxconverter[boolarr2]
+                                
+                                nl1 = relevantstates[boolarr1][:,[1+selector,2+selector]]
+                                nl2 = relevantstates[boolarr2][:,[1+selector,2+selector]]
+                                matches = sparse.coo_matrix(np.all(nl1[:,None,:] == nl2[None,:,:], axis=-1))
+                                
+                                wignerd = self.wignerd.calc(j, m1, m2, -self.angle)
+                                                                
+                                idx1 += idxconverter1[matches.row].tolist()
+                                idx2 += idxconverter2[matches.col].tolist()
+                                val += [wignerd]*matches.nnz
+                                                                                    
+                    if selector == 0:
+                        transformator = sparse.csc_matrix((val,(idx1,idx2)), shape=(data['numStates'],data['numStates']))
+                    else:
+                        transformator = transformator.multiply(sparse.csc_matrix((val,(idx1,idx2)), shape=(data['numStates'],data['numStates'])))
+                
+                # write calculated wigner d matrix elements into the cache
+                self.wignerd.save()
+                    
+                # apply transformator
+                for s in range(data['numSteps']):
+                    data['eigenvectors'][s] = transformator*data['eigenvectors'][s]
+                
+                #print(np.round(np.real(data['eigenvectors'][0][boolarr][:,:5].todense()),2))
             
             filelike=BytesIO()
             io.savemat(filelike,data,do_compression=False,format='5',oned_as='row')
@@ -2961,7 +3035,10 @@ class MainWindow(QtGui.QMainWindow):
         for file in files:
             path = os.path.join(self.path_cache,file)
             if os.path.isfile(path): os.remove(path)
-            elif os.path.isdir(path): shutil.rmtree(path) 
+            elif os.path.isdir(path): shutil.rmtree(path)
+            
+        if os.path.isdir(self.path_cache_wignerd): shutil.rmtree(self.path_cache_wignerd)
+        os.makedirs(self.path_cache_wignerd)
     
     @QtCore.pyqtSlot()
     def openSystemConf(self):
@@ -2982,6 +3059,26 @@ class MainWindow(QtGui.QMainWindow):
             self.loadSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
+    
+    @QtCore.pyqtSlot()
+    def resetSConf(self):
+        conf_used = self.path_system_last
+        conf_original = os.path.join(self.path_base,"example.sconf")
+        
+        if os.path.isfile(conf_used):
+            os.remove(conf_used)
+        copyfile(conf_original,conf_used)
+        self.loadSettingsSystem(conf_used)
+
+    @QtCore.pyqtSlot()
+    def resetPConf(self):
+        conf_used = self.path_plot_last
+        conf_original = os.path.join(self.path_base,"example.pconf")
+        
+        if os.path.isfile(conf_used):
+            os.remove(conf_used)
+        copyfile(conf_original,conf_used)
+        self.loadSettingsPlotter(conf_used)
     
     @QtCore.pyqtSlot()
     def print(self):
@@ -3031,7 +3128,6 @@ class MainWindow(QtGui.QMainWindow):
                         
             # printer settings
             spacer = QtCore.QRectF(painter.viewport()).height()/40
-            print(spacer)
             font = QtGui.QFont("Helvetica", 10)
             margin = 30
             penwidth = 30

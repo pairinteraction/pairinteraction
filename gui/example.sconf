@@ -151,6 +151,14 @@
         false,
         null
     ],
+    "quantizationInteratomic": [
+        true,
+        null
+    ],
+    "quantizationZ": [
+        false,
+        null
+    ],
     "samebasis": [
         true,
         null
