@@ -1752,7 +1752,7 @@ class MainWindow(QtGui.QMainWindow):
                     # cut the basis
                     idxarr, = np.nonzero(boolarr)
                     transformator = sparse.coo_matrix((np.ones_like(idxarr),(idxarr,np.arange(len(idxarr)))),shape=(basis.shape[1], len(idxarr))).tocsr()
-                    basis *= transformator
+                    basis = basis*transformator
                     
                     # probability to be in a certain state
                     probs = np.abs(basis) # nState, nBasis
@@ -2023,7 +2023,7 @@ class MainWindow(QtGui.QMainWindow):
                                     overlap[overlap < 1e-2] = 1e-2
                                     overlap = (2+np.log10(overlap))/2
                                 
-                                colormap[idx_pos,:] = sparse.coo_matrix((overlap,(idx_energies,np.arange(len(idx_energies)))),shape=(height_pixelunits, len(idx_energies))).sum(axis=-1).getA1()
+                                colormap[idx_pos,:] = sparse.coo_matrix((overlap,(idx_energies,np.arange(len(idx_energies)))),shape=(height_pixelunits, len(idx_energies))).sum(axis=1).getA1()
                                 
                                 dataamount += len(idx_energies)*10
     
@@ -2909,7 +2909,12 @@ class MainWindow(QtGui.QMainWindow):
                 relevantstates = data['states'][boolarr]
                 
                 # build transformator
-                for selector in [0,4]:
+                if len(data['states'][0]) == 5:
+                    shifts = [0]
+                else:
+                    shifts = [0,4]
+                
+                for selector in shifts:
                     idx1 = []
                     idx2 = []
                     val = []

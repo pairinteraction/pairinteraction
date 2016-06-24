@@ -280,11 +280,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                 if (k == 1) { // dipole
-                    element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
+                    element.second = pow(-1, lmax) * sqrt(lmax) *
                         calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
                 } else if (k == 2) { // quadrupole
                     //element.second = 0; // TODO !!!
-                    element.second = pow(-1, element.first.l[0]+lmax) * sqrt(lmax) *
+                    element.second = pow(-1, lmax) * sqrt(lmax) *
                         calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
                 }
 
@@ -409,7 +409,7 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
     if (k != 1) abort();
 
-    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) *
+    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
             element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
@@ -418,7 +418,7 @@ real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
 real_t MatrixElements::getQuadrupole(StateOne state_row, StateOne state_col) {
     if (k != 2) abort();
 
-    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) *
+    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] * // TODO !!!
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
             element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];

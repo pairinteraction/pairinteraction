@@ -60,9 +60,9 @@ int main(int argc, char **argv) {
     } else if (str_row != "" or str_col != "") {
         std::stringstream ss;
         if (str_row != "") { // Energy of row state
-            ss = std::stringstream(str_row);
+            ss << str_row;
         } else { // Energy of columne state
-            ss = std::stringstream(str_col);
+            ss << str_col;
         }
 
         StateOne state;
