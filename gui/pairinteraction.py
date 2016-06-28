@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 version_settings = 5
-version_cache = 5
+version_cache = 6
 
 import sys
 from pint import UnitRegistry
@@ -434,9 +434,12 @@ from PyQt5 import QtGui
 from ctypes.util import find_library
     
 # see https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/pyqtgraph/O-d2L6qfPoo/i1zedC2Oda4J
-if sys.platform == 'win32':
+if os.name == 'nt':
     qtlib = ctypes.windll.qtgui4
-    drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QEAAXPEBVQPointF@@H@Z')
+    if ctypes.sizeof(ctypes.c_voidp) == 4: # 32 bit
+        drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QAEXPBVQPointF@@H@Z')
+    else: # 64 bit
+        drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QEAAXPEBVQPointF@@H@Z')
 else:
     """
     pwd: /usr/lib/i386-linux-gnu
