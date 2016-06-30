@@ -431,22 +431,6 @@ class DoubleValidator(QtGui.QDoubleValidator):
 
 ## pyqtgraphadditions.py
 from PyQt5 import QtGui
-from ctypes.util import find_library
-    
-# see https://groups.google.com/forum/?utm_medium=email&utm_source=footer#!msg/pyqtgraph/O-d2L6qfPoo/i1zedC2Oda4J
-if os.name == 'nt':
-    qtlib = ctypes.windll.qtgui4
-    if ctypes.sizeof(ctypes.c_voidp) == 4: # 32 bit
-        drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QAEXPBVQPointF@@H@Z')
-    else: # 64 bit
-        drawPoints = getattr(qtlib, '?drawPoints@QPainter@@QEAAXPEBVQPointF@@H@Z')
-else:
-    """
-    pwd: /usr/lib/i386-linux-gnu
-    list: nm -D ./libQtGui.so.4 > ~./list.txt
-    """
-    qtlib = ctypes.cdll.LoadLibrary(find_library("QtGui"))
-    drawPoints = getattr(qtlib, '_ZN8QPainter10drawPointsEPK7QPointFi')
 
 # === points item (can be used with pyqtgraph) === # TODO !!!!!!!!!!!!!!!
 class PointsItem(QtGui.QGraphicsItem):
@@ -465,30 +449,26 @@ class PointsItem(QtGui.QGraphicsItem):
         if x is None:
             x = np.array([])
             y = np.array([])
-        self.data = np.empty((len(x), 2), dtype=np.float)
-        self.data[:,0] = x
-        self.data[:,1] = y
-        xmin = x.min()
-        xmax = x.max()
-        ymin = y.min()
-        ymax = y.max()
-        self.bounds = QtCore.QRectF(xmin, ymin, xmax-xmin, ymax-ymin)
+        npoints = len(x)
+
+        # http://stackoverflow.com/questions/20119777
+        self.qpoints = QtGui.QPolygonF(npoints)
+        vptr = self.qpoints.data()
+        vptr.setsize(np.dtype(np.float).itemsize*2*npoints)
+        data = np.ndarray(shape=(npoints,2), dtype=np.float, buffer=memoryview(vptr))
+        data.setflags(write=True)
+        data[:,0] = x
+        data[:,1] = y
+
+        self.bounds = QtCore.QRectF(x.min(), y.min(), x.max()-x.min(), y.max()-y.min())
         self.prepareGeometryChange()
-        
-        #self.qdata = [None]*len(x)
-        #for n,[a,b] in enumerate(zip(x,y)):
-        #    self.qdata[n] = QtCore.QPointF(a,b)
-        #self.qdata = QtGui.QPolygonF(self.qdata)
 
     def boundingRect(self):
         return self.bounds
 
     def paint(self, p, *args):
         p.setPen(self.pen)
-        
-        #p.drawPoints(self.qdata)
-        ptr = ctypes.c_void_p(sip.unwrapinstance(p))
-        drawPoints(ptr, self.data.ctypes, self.data.shape[0])
+        p.drawPoints(self.qpoints)
 
 # === multi line item (can be used with pyqtgraph) ===
 # https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
