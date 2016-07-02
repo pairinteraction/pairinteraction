@@ -848,29 +848,30 @@ class SystemDict(GuiDict):
         store["qq"] =               {'widget': ui.checkbox_system_qq,                       'unit': None}
         store["steps"] =            {'widget': ui.spinbox_system_steps,                     'unit': None}
         store["precision"] =        {'widget': ui.lineedit_system_precision,                'unit': None}
+        store["calcmissing"] =      {'widget': ui.checkbox_calc_missing,                    'unit': None}
     
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision",
+        "samebasis", "steps","precision","calcmissing",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
     # field map of atom 2 (samebasis == False)
     keys_for_cprogram_field2 = ["species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision",
+        "samebasis", "steps","precision","calcmissing",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle","deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
-        "samebasis", "steps","precision", "theta", "dd", "dq", "qq",
+        "samebasis", "steps","precision", "calcmissing", "theta", "dd", "dq", "qq",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "minR", "maxR"]
     
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision",
+        "samebasis", "steps","precision","calcmissing",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
 
 
@@ -1136,6 +1137,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.ui.checkbox_plot_antialiasing.toggled.connect(self.toggleAntialiasing)
         self.ui.checkbox_system_samebasis.toggled.connect(self.toggleSamebasis)
+        self.ui.checkbox_calc_missing.toggled.connect(self.toggleCalcMissing)
         
         self.ui.spinbox_system_deltaNSingle.valueChanged.connect(self.adjustPairlimits)
         self.ui.spinbox_system_deltaLSingle.valueChanged.connect(self.adjustPairlimits)
@@ -2494,6 +2496,11 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.label_plot_1st.setText("0")
             self.ui.label_plot_2nd.setText("0.5")
             self.logscale = False
+
+    @QtCore.pyqtSlot(bool) # TODO
+    def toggleCalcMissing(self):
+        checked = self.ui.checkbox_calc_missing.isChecked()
+
     
     @QtCore.pyqtSlot(str) # TODO
     def forbidSamebasis(self):
@@ -2641,6 +2648,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.maxE = [self.plotdict["maxE_field1"].magnitude, self.plotdict["maxE_field2"].magnitude, self.plotdict["maxE_potential"].magnitude]
                 
                 self.steps = self.systemdict['steps'].magnitude
+                self.calcmissing = self.ui.checkbox_calc_missing.checkState() == QtCore.Qt.Checked
                 
                 unperturbedstate = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
                                                   self.systemdict['n2'].magnitude,self.systemdict['l2'].magnitude,self.systemdict['j2'].magnitude,self.systemdict['m2'].magnitude])

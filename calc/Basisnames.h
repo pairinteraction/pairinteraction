@@ -26,6 +26,7 @@ public:
         conf["deltaLSingle"] >> delta_l;
         conf["deltaJSingle"] >> delta_j;
         conf["deltaMSingle"] >> delta_m;
+        conf["calcmissing"] = config["calcmissing"];
     }
     size_t size() const {
         return names_.size();

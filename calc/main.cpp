@@ -1155,7 +1155,7 @@ protected:
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements(species, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements(conf, species, 1, (path_cache / "cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
@@ -1738,10 +1738,10 @@ public:
             std::cout << 0.3 << std::endl;
 
             // --- precalculate matrix elements ---
-            MatrixElements matrix_elements_k1_atom1(species1, 1, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k1_atom2(species2, 1, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom1(species1, 2, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom2(species2, 2, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom1(conf_tot, species1, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k1_atom2(conf_tot, species2, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom1(conf_tot, species1, 2, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements_k2_atom2(conf_tot, species2, 2, (path_cache / "cache_elements.db").string());
 
             basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
             basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));

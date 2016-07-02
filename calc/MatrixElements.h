@@ -21,6 +21,7 @@ size_t findidx(std::vector<real_t> x, real_t d);
 class MatrixElements { // TODO ein buffer am Programmstart
 public:
     MatrixElements(std::string species, int k, std::string dbname);
+    MatrixElements(const Configuration& config, std::string species, int k, std::string dbname);
     void precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
     void precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
     void precalculate_quadrupole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m, bool exist_pp, bool exist_mm);
@@ -33,6 +34,7 @@ private:
     std::string species;
     int k;
     std::string dbname;
+    bool calc_missing;
     std::unordered_map<StateTwo,real_t> element_nlj_k;
     std::unordered_map<StateTwo,real_t> element_nlj_0;
     std::unordered_map<StateTwo,real_t> element_nlj_m;

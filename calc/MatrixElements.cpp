@@ -26,10 +26,16 @@ size_t findidx(std::vector<real_t> x, real_t d) {
  return i;
 }
 
-MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname) {
+
+MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname), calc_missing(true) {
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
+}
+
+
+MatrixElements::MatrixElements(const Configuration& config, std::string species, int k, std::string dbname) : MatrixElements(species,k,dbname) {
+    calc_missing = config["calcmissing"].str() == "true";
 }
 
 void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
@@ -272,45 +278,83 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     // calculate missing elements and write them to the database
 
-    db.exec("begin transaction;");
+    if (calc_missing) {
 
-    if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
-        for (auto &element : element_nlj_k) {
-            if (element.second == std::numeric_limits<real_t>::max()) {
-                int lmax = fmax(element.first.l[0],element.first.l[1]);
+        db.exec("begin transaction;");
 
-                if (k == 1) { // dipole
-                    element.second = pow(-1, lmax) * sqrt(lmax) *
-                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
-                } else if (k == 2) { // quadrupole
-                    //element.second = 0; // TODO !!!
-                    element.second = pow(-1, lmax) * sqrt(lmax) *
-                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+        if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
+            for (auto &element : element_nlj_k) {
+                if (element.second == std::numeric_limits<real_t>::max()) {
+                    int lmax = fmax(element.first.l[0],element.first.l[1]);
+
+                    if (k == 1) { // dipole
+                        element.second = pow(-1, lmax) * sqrt(lmax) *
+                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                    } else if (k == 2) { // quadrupole
+                        //element.second = 0; // TODO !!!
+                        element.second = pow(-1, lmax) * sqrt(lmax) *
+                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                    }
+
+                    ss.str(std::string());
+                    ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                       << "'" << species << "'" << "," << k << ","
+                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                       << element.second << ");";
+                    db.exec(ss.str());
                 }
-
-                ss.str(std::string());
-                ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
-                   << "'" << species << "'" << "," << k << ","
-                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
-                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
-                   << element.second << ");";
-                db.exec(ss.str());
             }
         }
-    }
 
-    if (exist_m_0 || exist_m_p || exist_m_m) {
-        for (auto &element : element_lj_s) { // j1 = s, j2 = l
+        if (exist_m_0 || exist_m_p || exist_m_m) {
+            for (auto &element : element_lj_s) { // j1 = s, j2 = l
+                if (element.second == std::numeric_limits<real_t>::max()) {
+
+                    //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+                    //        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
+
+                    element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+                        WignerSymbols::wigner6j(0.5, element.first.j[0], element.first.l[0], element.first.j[1], 0.5, k);
+
+                    ss.str(std::string());
+                    ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
+                       << "'" << species << "'" << "," << k << ","
+                       << element.first.l[0] << "," << element.first.j[0] << ","
+                       << element.first.l[1] << "," << element.first.j[1] << ","
+                       << element.second << ");";
+                    db.exec(ss.str());
+                }
+            }
+
+            for (auto &element : element_nlj_0) {
+                if (element.second == std::numeric_limits<real_t>::max()) {
+
+                    element.second =
+                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
+
+                    ss.str(std::string());
+                    ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
+                       << "'" << species << "'" << ","
+                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                       << element.second << ");";
+                    db.exec(ss.str());
+                }
+            }
+        }
+
+        for (auto &element : element_lj_l) { // j1 = l, j2 = s
             if (element.second == std::numeric_limits<real_t>::max()) {
 
                 //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                //        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
+                //        gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
 
                 element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                        WignerSymbols::wigner6j(0.5, element.first.j[0], element.first.l[0], element.first.j[1], 0.5, k);
+                    WignerSymbols::wigner6j(element.first.l[0], element.first.j[0], 0.5, element.first.j[1], element.first.l[1], k);
 
                 ss.str(std::string());
-                ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
+                ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
                    << "'" << species << "'" << "," << k << ","
                    << element.first.l[0] << "," << element.first.j[0] << ","
                    << element.first.l[1] << "," << element.first.j[1] << ","
@@ -319,60 +363,25 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             }
         }
 
-        for (auto &element : element_nlj_0) {
+        for (auto &element : element_jm) {
             if (element.second == std::numeric_limits<real_t>::max()) {
+                int q = element.first.m[0]-element.first.m[1];
 
-                element.second =
-                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
+                //element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
+                element.second = WignerSymbols::wigner3j(element.first.j[0], k, element.first.j[1], -element.first.m[0],q,element.first.m[1]);
 
                 ss.str(std::string());
-                ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
-                   << "'" << species << "'" << ","
-                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
-                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
+                   << "'" << species << "'" << "," << k << ","
+                   << element.first.j[0] << "," << element.first.m[0] << ","
+                   << element.first.j[1] << "," << element.first.m[1] << ","
                    << element.second << ");";
                 db.exec(ss.str());
             }
         }
+
+        db.exec("end transaction;");
     }
-
-    for (auto &element : element_lj_l) { // j1 = l, j2 = s
-        if (element.second == std::numeric_limits<real_t>::max()) {
-
-            //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-            //        gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
-
-            element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                    WignerSymbols::wigner6j(element.first.l[0], element.first.j[0], 0.5, element.first.j[1], element.first.l[1], k);
-
-            ss.str(std::string());
-            ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
-               << "'" << species << "'" << "," << k << ","
-               << element.first.l[0] << "," << element.first.j[0] << ","
-               << element.first.l[1] << "," << element.first.j[1] << ","
-               << element.second << ");";
-            db.exec(ss.str());
-        }
-    }
-
-    for (auto &element : element_jm) {
-        if (element.second == std::numeric_limits<real_t>::max()) {
-            int q = element.first.m[0]-element.first.m[1];
-
-            //element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
-            element.second = WignerSymbols::wigner3j(element.first.j[0], k, element.first.j[1], -element.first.m[0],q,element.first.m[1]);
-
-            ss.str(std::string());
-            ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
-               << "'" << species << "'" << "," << k << ","
-               << element.first.j[0] << "," << element.first.m[0] << ","
-               << element.first.j[1] << "," << element.first.m[1] << ","
-               << element.second << ");";
-            db.exec(ss.str());
-        }
-    }
-
-    db.exec("end transaction;");
 }
 
 real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, real_t j1, int power,
