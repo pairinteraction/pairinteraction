@@ -239,7 +239,7 @@ from pint import UnitRegistry
 # === initialize unit registry ===
 ureg = UnitRegistry()
 Q = ureg.Quantity
-U = lambda u : ureg.Quantity(1, u).units
+U = lambda u : ureg.Quantity(1, u)
 C = lambda s : Q(constants.value(s),constants.unit(s))
 
 # === define units that are used in the python program for the gui (the c++ program uses atomic units) ===
