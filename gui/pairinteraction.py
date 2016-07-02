@@ -947,7 +947,7 @@ class MainWindow(QtGui.QMainWindow):
         self.systemdict = SystemDict(self.ui)
         self.plotdict = PlotDict(self.ui)
         
-        if os.name == 'nt': self.userpath = os.path.expanduser('~user')
+        if os.name == 'nt': self.userpath = os.path.expanduser('~')
         else: self.userpath = os.path.expanduser('~')
         
         self.filepath = self.userpath #os.getcwd()
