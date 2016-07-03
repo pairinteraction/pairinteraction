@@ -58,7 +58,7 @@
            <enum>QFrame::NoFrame</enum>
           </property>
           <property name="currentIndex">
-           <number>4</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page_2">
            <property name="geometry">
@@ -1801,6 +1801,9 @@
             </item>
             <item>
              <widget class="QCheckBox" name="checkbox_calc_missing">
+              <property name="whatsThis">
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CAVEAT: You have to provide &lt;b&gt;all&lt;/b&gt; matrix elements on your own if you uncheck this!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+              </property>
               <property name="text">
                <string>Calculate missing matrix elements</string>
               </property>
@@ -1861,7 +1864,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>271</width>
+             <width>262</width>
              <height>751</height>
             </rect>
            </property>

@@ -3,38 +3,46 @@
 version_settings = 5
 version_cache = 6
 
+# Standard library
+from abc import ABCMeta, abstractmethod
+import collections
+import ctypes
+from datetime import timedelta, datetime
+from io import StringIO, BytesIO
+import json
+import locale
+import multiprocessing
+from operator import itemgetter
+import os
+from queue import Queue
+import shutil
+import signal
 import sys
+import subprocess
+from time import sleep, time, strftime
+import zipfile
+
+# Process information
+import psutil
+
+# Units
 from pint import UnitRegistry
 from pint.unit import UndefinedUnitError
+
+# GUI
+import sip
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from plotter import Ui_plotwindow
 import pyqtgraph as pg
 import pyqtgraph.exporters
+
+# Numerics
 import numpy as np
-import collections
-from abc import ABCMeta, abstractmethod
-from time import sleep, time, strftime
-from datetime import timedelta, datetime
-import locale
-import json
-import os
-import multiprocessing
-import subprocess
 from scipy import sparse
-import signal
-from queue import Queue
-import ctypes
-import sip
 from scipy import constants
-import psutil
 from scipy.ndimage.filters import gaussian_filter
-from operator import itemgetter
-import zipfile
 from scipy import io
-from io import StringIO, BytesIO
-from shutil import copyfile
-import shutil
 
 
 # TODO !!!!!!!!! set dm = -1 for non-zero interaction angles (in both spin boxes) --> "m must not be restricted since the interaction angle is not zero." // construct basis starting from all needed m (better solution)
@@ -54,8 +62,9 @@ pg.setConfigOption('foreground', 'k')
 
 
 ## wignerd.py
-import numpy as np
-import os, pickle
+#import numpy as np
+#import os
+import pickle
 
 class Wignerd:
     def __init__(self, cachedir):
@@ -186,7 +195,7 @@ for m_initial in np.arange(-2.5,2.5):
 
 
 ## utils.py
-import numpy as np
+#import numpy as np
 
 # === append csr matrices ===
 #see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
@@ -233,7 +242,7 @@ def bytescale(data, cmin=None, cmax=None, high=255, low=0):
 
 
 ## quantity.py
-from pint import UnitRegistry
+#from pint import UnitRegistry
 #from rydberginteraction import units
 
 # === initialize unit registry ===
@@ -338,8 +347,8 @@ class Quantity:
         return Quantity(quantity.magnitude, newunits)
 
 ## guidict.py
-from PyQt5 import QtGui
-from abc import ABCMeta, abstractmethod
+#from PyQt5 import QtGui
+#from abc import ABCMeta, abstractmethod
 #from rydberginteraction import Quantity
 
 # === dictionary to manage the elements of the gui ===
@@ -415,8 +424,8 @@ class GuiDict(collections.MutableMapping, metaclass=ABCMeta):
         return len(self.store)
 
 ## guivalidators.py
-from PyQt5 import QtGui
-import locale
+#from PyQt5 import QtGui
+#import locale
 
 class DoublenoneValidator(QtGui.QDoubleValidator):
     def __init__(self, parent=None):
@@ -483,7 +492,7 @@ class DoubleValidator(QtGui.QDoubleValidator):
         return "0"
 
 ## pyqtgraphadditions.py
-from PyQt5 import QtGui
+#from PyQt5 import QtGui
 
 # === points item (can be used with pyqtgraph) === # TODO !!!!!!!!!!!!!!!
 class PointsItem(QtGui.QGraphicsItem):
@@ -1290,11 +1299,11 @@ class MainWindow(QtGui.QMainWindow):
         
         # Load last settings
         if not os.path.isfile(self.path_system_last):
-            copyfile(os.path.join(self.path_base,"example.sconf"),self.path_system_last)
+            shutil.copyfile(os.path.join(self.path_base,"example.sconf"),self.path_system_last)
         self.loadSettingsSystem(self.path_system_last)
     
         if not os.path.isfile(self.path_plot_last):
-            copyfile(os.path.join(self.path_base,"example.pconf"),self.path_plot_last)
+            shutil.copyfile(os.path.join(self.path_base,"example.pconf"),self.path_plot_last)
         self.loadSettingsPlotter(self.path_plot_last)
     
         if os.path.isfile(self.path_view_last):
@@ -3116,7 +3125,7 @@ class MainWindow(QtGui.QMainWindow):
         
         if os.path.isfile(conf_used):
             os.remove(conf_used)
-        copyfile(conf_original,conf_used)
+        shutil.copyfile(conf_original,conf_used)
         self.loadSettingsSystem(conf_used)
 
     @QtCore.pyqtSlot()
@@ -3126,7 +3135,7 @@ class MainWindow(QtGui.QMainWindow):
         
         if os.path.isfile(conf_used):
             os.remove(conf_used)
-        copyfile(conf_original,conf_used)
+        shutil.copyfile(conf_original,conf_used)
         self.loadSettingsPlotter(conf_used)
     
     @QtCore.pyqtSlot()
