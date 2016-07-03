@@ -53,9 +53,18 @@ if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MAT
   execute_process(COMMAND curl -C - -L -o ${CMAKE_BINARY_DIR}/msmpisdk.msi ${MS_MPI_SDK_DL})
   execute_process(COMMAND 7z x -aoa -o${MS_MPI_INCLUDE_PATH} ${CMAKE_BINARY_DIR}/msmpisdk.msi)
   include_directories(${MS_MPI_INCLUDE_PATH})
-  target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
-  target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
-  target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
+
+  if ("${CMAKE_CXX_COMPILER}" MATCHES "i686" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "i686")
+    target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
+    target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
+    target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
+  elseif ("${CMAKE_CXX_COMPILER}" MATCHES "x86_64" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "x86_64")
+    target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
+    target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
+    target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
+  endif()
+
+  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
 
 else()
 
