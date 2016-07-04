@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 version_settings = 8
-version_cache = 7
+version_cache = 8
 
 # Standard library
 from abc import ABCMeta, abstractmethod

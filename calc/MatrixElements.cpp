@@ -18,12 +18,12 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
 }
 
 size_t findidx(std::vector<real_t> x, real_t d) {
- size_t i;
- for (i = 0; i < x.size(); ++i) {
-   if (x[i] == d)
-     break;
- }
- return i;
+    size_t i;
+    for (i = 0; i < x.size(); ++i) {
+        if (x[i] == d)
+            break;
+    }
+    return i;
 }
 
 
@@ -278,22 +278,24 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     // calculate missing elements and write them to the database
 
-    if (calc_missing) {
 
-        db.exec("begin transaction;");
 
-        if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
-            for (auto &element : element_nlj_k) {
-                if (element.second == std::numeric_limits<real_t>::max()) {
+    db.exec("begin transaction;");
+
+    if ((exist_d_0 || exist_d_p || exist_d_m) || (exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) {
+
+        for (auto &element : element_nlj_k) {
+            if (element.second == std::numeric_limits<real_t>::max()) {
+                if (calc_missing) {
                     int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                     if (k == 1) { // dipole
                         element.second = pow(-1, lmax) * sqrt(lmax) *
-                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                                calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
                     } else if (k == 2) { // quadrupole
                         //element.second = 0; // TODO !!!
                         element.second = pow(-1, lmax) * sqrt(lmax) *
-                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                                calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
                     }
 
                     ss.str(std::string());
@@ -303,58 +305,25 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                        << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
                        << element.second << ");";
                     db.exec(ss.str());
+                } else { // throw error
+                    throw std::runtime_error("ERROR: You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
                 }
             }
         }
+    }
 
-        if (exist_m_0 || exist_m_p || exist_m_m) {
-            for (auto &element : element_lj_s) { // j1 = s, j2 = l
-                if (element.second == std::numeric_limits<real_t>::max()) {
-
-                    //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                    //        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
-
-                    element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                        WignerSymbols::wigner6j(0.5, element.first.j[0], element.first.l[0], element.first.j[1], 0.5, k);
-
-                    ss.str(std::string());
-                    ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
-                       << "'" << species << "'" << "," << k << ","
-                       << element.first.l[0] << "," << element.first.j[0] << ","
-                       << element.first.l[1] << "," << element.first.j[1] << ","
-                       << element.second << ");";
-                    db.exec(ss.str());
-                }
-            }
-
-            for (auto &element : element_nlj_0) {
-                if (element.second == std::numeric_limits<real_t>::max()) {
-
-                    element.second =
-                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
-
-                    ss.str(std::string());
-                    ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
-                       << "'" << species << "'" << ","
-                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
-                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
-                       << element.second << ");";
-                    db.exec(ss.str());
-                }
-            }
-        }
-
-        for (auto &element : element_lj_l) { // j1 = l, j2 = s
+    if (exist_m_0 || exist_m_p || exist_m_m) {
+        for (auto &element : element_lj_s) { // j1 = s, j2 = l
             if (element.second == std::numeric_limits<real_t>::max()) {
 
                 //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                //        gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
+                //        gsl_sf_coupling_6j(2*0.5, 2*element.first.j[0], 2*element.first.l[0], 2*element.first.j[1], 2*0.5, 2*k);
 
                 element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
-                    WignerSymbols::wigner6j(element.first.l[0], element.first.j[0], 0.5, element.first.j[1], element.first.l[1], k);
+                        WignerSymbols::wigner6j(0.5, element.first.j[0], element.first.l[0], element.first.j[1], 0.5, k);
 
                 ss.str(std::string());
-                ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
+                ss << "insert into cache_lj_s (species, k, l1, j1, l2, j2, value) values ("
                    << "'" << species << "'" << "," << k << ","
                    << element.first.l[0] << "," << element.first.j[0] << ","
                    << element.first.l[1] << "," << element.first.j[1] << ","
@@ -363,56 +332,95 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             }
         }
 
-        for (auto &element : element_jm) {
+        for (auto &element : element_nlj_0) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                int q = element.first.m[0]-element.first.m[1];
+                if (calc_missing) {
+                    element.second =
+                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
 
-                //element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
-                element.second = WignerSymbols::wigner3j(element.first.j[0], k, element.first.j[1], -element.first.m[0],q,element.first.m[1]);
-
-                ss.str(std::string());
-                ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
-                   << "'" << species << "'" << "," << k << ","
-                   << element.first.j[0] << "," << element.first.m[0] << ","
-                   << element.first.j[1] << "," << element.first.m[1] << ","
-                   << element.second << ");";
-                db.exec(ss.str());
+                    ss.str(std::string());
+                    ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
+                       << "'" << species << "'" << ","
+                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                       << element.second << ");";
+                    db.exec(ss.str());
+                } else { // throw error
+                    throw std::runtime_error("ERROR: You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+                }
             }
         }
-
-        db.exec("end transaction;");
     }
+
+    for (auto &element : element_lj_l) { // j1 = l, j2 = s
+        if (element.second == std::numeric_limits<real_t>::max()) {
+
+            //element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+            //        gsl_sf_coupling_6j(2*element.first.l[0], 2*element.first.j[0], 2*0.5, 2*element.first.j[1], 2*element.first.l[1], 2*k);
+
+            element.second = pow(-1, k) * sqrt((2*element.first.j[0]+1)*(2*element.first.j[1]+1)) *
+                    WignerSymbols::wigner6j(element.first.l[0], element.first.j[0], 0.5, element.first.j[1], element.first.l[1], k);
+
+            ss.str(std::string());
+            ss << "insert into cache_lj_l (species, k, l1, j1, l2, j2, value) values ("
+               << "'" << species << "'" << "," << k << ","
+               << element.first.l[0] << "," << element.first.j[0] << ","
+               << element.first.l[1] << "," << element.first.j[1] << ","
+               << element.second << ");";
+            db.exec(ss.str());
+        }
+    }
+
+    for (auto &element : element_jm) {
+        if (element.second == std::numeric_limits<real_t>::max()) {
+            int q = element.first.m[0]-element.first.m[1];
+
+            //element.second = gsl_sf_coupling_3j(2*element.first.j[0], 2*k, 2*element.first.j[1], -2*element.first.m[0], 2*q, 2*element.first.m[1]);
+            element.second = WignerSymbols::wigner3j(element.first.j[0], k, element.first.j[1], -element.first.m[0],q,element.first.m[1]);
+
+            ss.str(std::string());
+            ss << "insert into cache_jm (species, k, j1, m1, j2, m2, value) values ("
+               << "'" << species << "'" << "," << k << ","
+               << element.first.j[0] << "," << element.first.m[0] << ","
+               << element.first.j[1] << "," << element.first.m[1] << ","
+               << element.second << ");";
+            db.exec(ss.str());
+        }
+    }
+
+    db.exec("end transaction;");
 }
 
+
 real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, real_t j1, int power,
-                      int n2, int l2, real_t j2) {
-  Numerov N1(species, n1, l1, j1);
-  Numerov N2(species, n2, l2, j2);
+                                         int n2, int l2, real_t j2) {
+    Numerov N1(species, n1, l1, j1);
+    Numerov N2(species, n2, l2, j2);
 
-  std::vector<real_t> x1 = N1.axis();
-  std::vector<real_t> y1 = N1.integrate();
-  std::vector<real_t> x2 = N2.axis();
-  std::vector<real_t> y2 = N2.integrate();
+    std::vector<real_t> x1 = N1.axis();
+    std::vector<real_t> y1 = N1.integrate();
+    std::vector<real_t> x2 = N2.axis();
+    std::vector<real_t> y2 = N2.integrate();
 
-  real_t xmin = N1.xmin >= N2.xmin ? N1.xmin : N2.xmin;
-  real_t xmax = N1.xmax <= N2.xmax ? N1.xmax : N2.xmax;
+    real_t xmin = N1.xmin >= N2.xmin ? N1.xmin : N2.xmin;
+    real_t xmax = N1.xmax <= N2.xmax ? N1.xmax : N2.xmax;
 
-  real_t mu = 0;
-  // If there is an overlap, calculate the matrix element
-  if (xmin <= xmax) {
-    int start1 = findidx(x1, xmin);
-    int end1   = findidx(x1, xmax);
-    int start2 = findidx(x2, xmin);
-    int end2   = findidx(x2, xmax);
+    real_t mu = 0;
+    // If there is an overlap, calculate the matrix element
+    if (xmin <= xmax) {
+        int start1 = findidx(x1, xmin);
+        int end1   = findidx(x1, xmax);
+        int start2 = findidx(x2, xmin);
+        int end2   = findidx(x2, xmax);
 
-    int i1, i2;
-    for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; i1++, i2++) {
-      mu += y1[i1]*y2[i2] * pow(x1[i1], 2*power+2) * N1.dx;
+        int i1, i2;
+        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; i1++, i2++) {
+            mu += y1[i1]*y2[i2] * pow(x1[i1], 2*power+2) * N1.dx;
+        }
+        mu = fabs(2*mu);
     }
-    mu = fabs(2*mu);
-  }
 
-  return mu;
+    return mu;
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
@@ -421,7 +429,7 @@ real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-            element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
 }
 
 real_t MatrixElements::getQuadrupole(StateOne state_row, StateOne state_col) {
@@ -430,15 +438,15 @@ real_t MatrixElements::getQuadrupole(StateOne state_row, StateOne state_col) {
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] * // TODO !!!
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-            element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
 }
 
 real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
     return pow(-1, state_row.j-state_row.m) * muB *
             element_nlj_0[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-            (gL*element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-            sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) * pow(-1, 0.5+state_col.l+state_row.j) +
-            gS*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-            sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)) * pow(-1, 0.5+state_col.j+state_row.l));
+(gL*element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) * pow(-1, 0.5+state_col.l+state_row.j) +
+gS*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)) * pow(-1, 0.5+state_col.j+state_row.l));
 }

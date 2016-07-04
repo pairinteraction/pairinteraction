@@ -1015,7 +1015,7 @@ public:
 protected:
     void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
         if(val_x != 0 || val_y != 0) {
-            std::cout << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
+            std::cout << "ERROR: For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
             abort();
         }
         val_p = val_x;
