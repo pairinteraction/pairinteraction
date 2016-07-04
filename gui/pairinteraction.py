@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-version_settings = 7
+version_settings = 8
 version_cache = 7
 
 # Standard library

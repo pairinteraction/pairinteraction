@@ -1,6 +1,6 @@
 {
-    "dd": [
-        true,
+    "cores": [
+        -1,
         null
     ],
     "deltaEPair": [
@@ -43,8 +43,8 @@
         3,
         null
     ],
-    "dq": [
-        false,
+    "exponent": [
+        3,
         null
     ],
     "j1": [
@@ -69,6 +69,14 @@
     ],
     "m2": [
         0.5,
+        null
+    ],
+    "matCombined": [
+        true,
+        null
+    ],
+    "matSeparate": [
+        false,
         null
     ],
     "maxBx": [
@@ -127,6 +135,14 @@
         20.0,
         "micrometer"
     ],
+    "missingCalc": [
+        true,
+        null
+    ],
+    "missingError": [
+        false,
+        null
+    ],
     "n1": [
         80,
         null
@@ -145,10 +161,6 @@
     ],
     "precision": [
         1e-12,
-        null
-    ],
-    "qq": [
-        false,
         null
     ],
     "quantizationInteratomic": [
