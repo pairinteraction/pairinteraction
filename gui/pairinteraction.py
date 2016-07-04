@@ -965,8 +965,7 @@ class MainWindow(QtGui.QMainWindow):
         self.systemfile = None
         self.plotfile = None
         self.resultfile = None
-        
-        self.numprocessors = max(2,multiprocessing.cpu_count())
+
         self.path_base = os.path.dirname(os.path.realpath(__file__))
         self.path_workingdir = os.path.join(self.path_base,"../calc/")
         self.path_cpp_real = os.path.join(self.path_base,"../calc/pairinteraction-real")
@@ -2824,6 +2823,10 @@ class MainWindow(QtGui.QMainWindow):
                 
                 if os.name == 'nt':
                     path_cpp += '.exe'
+                
+                self.numprocessors = self.systemdict["cores"].magnitude
+                if self.numprocessors == -1: self.numprocessors = multiprocessing.cpu_count()
+                self.numprocessors = max(2,self.numprocessors)
                     
                 self.proc = subprocess.Popen(["mpiexec","-n","%d"%self.numprocessors,path_cpp,"-c",self.path_config, "-o", self.path_cache],
                     stdout=subprocess.PIPE, cwd=self.path_workingdir)
