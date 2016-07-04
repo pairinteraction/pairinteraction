@@ -3030,9 +3030,40 @@ class MainWindow(QtGui.QMainWindow):
                 
                 #print(np.round(np.real(data['eigenvectors'][0][boolarr][:,:5].todense()),2))
             
-            filelike=BytesIO()
-            io.savemat(filelike,data,do_compression=False,format='5',oned_as='row')
-            ziparchive.writestr('data.mat', filelike.getvalue())
+            if self.systemdict["matCombined"].magnitude == True:
+                filelike=BytesIO()
+                io.savemat(filelike,data,do_compression=False,format='5',oned_as='row')
+                ziparchive.writestr('data.mat', filelike.getvalue())
+            else:
+                for idxStep in range(data['numSteps']):
+                    data_stepwise = {}
+                    data_stepwise['numStates'] = data['numStates']
+                    data_stepwise['numSteps'] = 1
+                    data_stepwise['numEigenvectors'] = data['numEigenvectors']
+                    data_stepwise['numOverlapvectors'] = data['numOverlapvectors']
+                    data_stepwise['states'] = data['states']
+                    data_stepwise['eigenvectors'] = [data['eigenvectors'][0]]
+                    data_stepwise['eigenvalues'] = [data['eigenvalues'][0]]
+                    data_stepwise['overlapvectors'] = data['overlapvectors']
+                    data_stepwise['overlaps'] = [data['overlaps'][0]]
+                    data_stepwise['bfields'] = [data['bfields'][0]]
+                    data_stepwise['efields'] = [data['efields'][0]]
+                    if idx == 2: data_stepwise['distances'] = [data['distances'][0]]
+            
+                    if idx == 0 or idx == 1: data_stepwise['states_description'] = 'state(idxState, {idxState, n, l, j, m})'
+                    elif idx == 2: data_stepwise['states_description'] = 'state(idxState, {idxState, n1, l1, j1, m1, n2, l2, j2, m2})'
+                    data_stepwise['eigenvectors_description'] = 'eigenvectorcoordinate(0, 0)(idxState, idxEigenvector)'
+                    data_stepwise['eigenvalues_description'] = 'eigenvalue(0, idxEigenvector)'
+                    data_stepwise['overlapvectors_description'] = 'overlapvectorcoordinate(idxOverlapvector, idxState)'
+                    data_stepwise['overlaps_description'] = 'overlap(0, idxEigenvector)'
+                    data_stepwise['bfields_description'] = 'bfield(0, {Bx, By, Bz})'
+                    data_stepwise['efields_description'] = 'efield(0, {Ex, Ey, Ez})'
+                    if idx == 2: data_stepwise['distances_description'] = 'distance(0, 0)'
+                    
+                    filelike=BytesIO()
+                    io.savemat(filelike,data_stepwise,do_compression=False,format='5',oned_as='row')
+                    ziparchive.writestr('data_{:04d}.mat'.format(idxStep), filelike.getvalue())
+                    
                             
         finally:
             # close zip file
