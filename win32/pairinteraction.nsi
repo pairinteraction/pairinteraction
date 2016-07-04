@@ -42,9 +42,9 @@ SectionGroup /e "Dependencies"
     ExecWait "${PIP_PATH} install psutil pint pyqt5"
     Goto done
 
-    fail:
+fail:
       MessageBox MB_OK "Miniconda installation could not be found!"
-    done:
+done:
 
     Delete "$INSTDIR\Miniconda3-latest-Windows-x86_64.exe"
   SectionEnd
@@ -52,6 +52,7 @@ SectionGroupEnd
 
 SectionGroup /e "${APP_NAME}"
   Section 'Backend'
+    SectionIn RO
     SetOutPath "$INSTDIR\calc"
     File "${BUILD_DIR}\calc\*.exe"
     File "${BUILD_DIR}\calc\*.dll"
@@ -59,7 +60,7 @@ SectionGroup /e "${APP_NAME}"
     File "${BUILD_DIR}\calc\databases\*.db"
   SectionEnd
 
-  Section 'GUI'
+  Section 'GUI (Recommended)'
     SetOutPath "$INSTDIR\gui"
     File "${BUILD_DIR}\gui\*.py"
     File "${BUILD_DIR}\gui\*conf"
@@ -70,15 +71,19 @@ SectionGroupEnd
 
 Section 'Desktop Icon'
   !define PYTHON_PATH "C:\Miniconda3\python.exe"
-  IfFileExists "${PYTHON_PATH}" +4 0
+  IfFileExists "${PYTHON_PATH}" success 0
   MessageBox MB_OK "Miniconda installation could not be found!  Assuming python.exe to be in PATH."
   !undef PYTHON_PATH
   !define PYTHON_PATH "python"
 
+success:
+  SetOutPath "$INSTDIR\"
+  File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
-  FileWrite $4 "@echo off"
+  FileWrite $4 "@echo off$\r$\n"
   FileWrite $4 '${PYTHON_PATH} "$INSTDIR\gui\pairinteraction.py"'
   FileClose $4
 
-  CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat"
+  CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
+    "$INSTDIR\pairinteraction.ico"
 SectionEnd
