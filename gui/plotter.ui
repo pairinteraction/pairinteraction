@@ -34,7 +34,7 @@
       </property>
       <widget class="QWidget" name="tab_system">
        <attribute name="title">
-        <string>System configuration</string>
+        <string>System settings</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_14">
         <item>
@@ -50,7 +50,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>285</width>
+            <width>290</width>
             <height>0</height>
            </size>
           </property>
@@ -65,8 +65,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
-             <height>395</height>
+             <width>290</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -570,8 +570,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
-             <height>395</height>
+             <width>275</width>
+             <height>392</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1211,8 +1211,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
-             <height>395</height>
+             <width>290</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1467,8 +1467,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
-             <height>395</height>
+             <width>290</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1615,39 +1615,6 @@
              </widget>
             </item>
             <item>
-             <widget class="QLabel" name="label_87">
-              <property name="text">
-               <string>Save eigenvectors in the basis where ...</string>
-              </property>
-              <property name="textFormat">
-               <enum>Qt::AutoText</enum>
-              </property>
-              <property name="alignment">
-               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
-              </property>
-              <property name="wordWrap">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radiobutton_system_quantizationInteratomic">
-              <property name="text">
-               <string>quantization axis is interatomic axis.</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radiobutton_system_quantizationZ">
-              <property name="text">
-               <string>quantization axis is z-axis (slower).</string>
-              </property>
-             </widget>
-            </item>
-            <item>
              <spacer name="verticalSpacer_21">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -1672,33 +1639,66 @@
                </font>
               </property>
               <property name="text">
-               <string>Order of interaction</string>
+               <string>Multipole expansion</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkbox_system_dd">
-              <property name="text">
-               <string>dipole-dipole</string>
+             <layout class="QFormLayout" name="formLayout_37">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetDefaultConstraint</enum>
               </property>
-              <property name="checked">
-               <bool>true</bool>
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::ExpandingFieldsGrow</enum>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkbox_system_dq">
-              <property name="text">
-               <string>dipole-quadrupole</string>
+              <property name="labelAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
               </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QCheckBox" name="checkbox_system_qq">
-              <property name="text">
-               <string>quadrupole-quadrupole</string>
+              <property name="formAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
               </property>
-             </widget>
+              <property name="verticalSpacing">
+               <number>2</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="spinbox_system_exponent">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>A value smaller than 3 disables the interacton between the atoms.</string>
+                </property>
+                <property name="minimum">
+                 <number>2</number>
+                </property>
+                <property name="maximum">
+                 <number>9</number>
+                </property>
+                <property name="value">
+                 <number>3</number>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_89">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>max. order</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::AutoText</enum>
+                </property>
+               </widget>
+              </item>
+             </layout>
             </item>
             <item>
              <spacer name="verticalSpacer_9">
@@ -1717,20 +1717,25 @@
              </spacer>
             </item>
            </layout>
+           <zorder>label_61</zorder>
+           <zorder>label_62</zorder>
+           <zorder>label_83</zorder>
+           <zorder>label_40</zorder>
+           <zorder>verticalSpacer_21</zorder>
           </widget>
           <widget class="QWidget" name="page_4">
            <property name="geometry">
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
-             <height>395</height>
+             <width>290</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
-            <string>Numerics</string>
+            <string>Steps</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_13">
+           <layout class="QVBoxLayout" name="verticalLayout_16">
             <item>
              <layout class="QFormLayout" name="formLayout_16">
               <property name="sizeConstraint">
@@ -1744,9 +1749,6 @@
               </property>
               <property name="formAlignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-              </property>
-              <property name="verticalSpacing">
-               <number>2</number>
               </property>
               <item row="0" column="0">
                <widget class="QLabel" name="label_37">
@@ -1777,50 +1779,20 @@
                 </property>
                </widget>
               </item>
-              <item row="1" column="0">
-               <widget class="QLabel" name="label_system_precision">
-                <property name="text">
-                 <string>numerical precision (au)</string>
-                </property>
-               </widget>
-              </item>
-              <item row="1" column="1">
-               <widget class="QLineEdit" name="lineedit_system_precision">
-                <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                  <horstretch>0</horstretch>
-                  <verstretch>0</verstretch>
-                 </sizepolicy>
-                </property>
-                <property name="inputMask">
-                 <string>1e-12</string>
-                </property>
-               </widget>
-              </item>
              </layout>
             </item>
             <item>
-             <widget class="QCheckBox" name="checkbox_calc_missing">
-              <property name="whatsThis">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;CAVEAT: You have to provide &lt;b&gt;all&lt;/b&gt; matrix elements on your own if you uncheck this!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="text">
-               <string>Calculate missing matrix elements</string>
-              </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="verticalSpacer_5">
+             <spacer name="verticalSpacer_10">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Expanding</enum>
               </property>
               <property name="sizeHint" stdset="0">
                <size>
                 <width>20</width>
-                <height>0</height>
+                <height>293</height>
                </size>
               </property>
              </spacer>
@@ -1833,7 +1805,7 @@
       </widget>
       <widget class="QWidget" name="tab_plot">
        <attribute name="title">
-        <string>Plot configuration</string>
+        <string>Plot settings</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_15">
         <item>
@@ -1846,7 +1818,7 @@
           </property>
           <property name="minimumSize">
            <size>
-            <width>285</width>
+            <width>290</width>
             <height>0</height>
            </size>
           </property>
@@ -1864,8 +1836,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>262</width>
-             <height>751</height>
+             <width>275</width>
+             <height>825</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3312,6 +3284,308 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Misc.</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_13">
+        <item>
+         <widget class="QScrollArea" name="scrollArea_2">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Ignored" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>290</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="frameShape">
+           <enum>QFrame::NoFrame</enum>
+          </property>
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents_2">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>290</width>
+             <height>526</height>
+            </rect>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <item>
+             <widget class="QLabel" name="label_86">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Storage</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_27">
+              <property name="text">
+               <string>If the &quot;Save&quot; button is pressed, create ...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_matCombined">
+              <property name="text">
+               <string>one .mat file containing all steps.</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_matSeparate">
+              <property name="text">
+               <string>one .mat file per step.</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_87">
+              <property name="text">
+               <string>Save eigenvectors in the basis where ...</string>
+              </property>
+              <property name="textFormat">
+               <enum>Qt::AutoText</enum>
+              </property>
+              <property name="alignment">
+               <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_quantizationInteratomic">
+              <property name="text">
+               <string>quantization axis is interatomic axis.</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_quantizationZ">
+              <property name="text">
+               <string>quantization axis is z-axis (slower).</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_23">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_91">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Numerics</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout_36">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetDefaultConstraint</enum>
+              </property>
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::ExpandingFieldsGrow</enum>
+              </property>
+              <property name="labelAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <property name="formAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+              <property name="verticalSpacing">
+               <number>2</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_system_precision">
+                <property name="text">
+                 <string>numerical precision (au)</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QLineEdit" name="lineedit_system_precision">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="inputMask">
+                 <string>1e-12</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>If radial matrix element is missing, ...</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_missingCalc">
+              <property name="text">
+               <string>calculate it from model potentials.</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radiobutton_system_missingError">
+              <property name="text">
+               <string>throw an error.</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_24">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Fixed</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>10</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+            <item>
+             <widget class="QLabel" name="label_90">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Performance</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <layout class="QFormLayout" name="formLayout_35">
+              <property name="sizeConstraint">
+               <enum>QLayout::SetDefaultConstraint</enum>
+              </property>
+              <property name="fieldGrowthPolicy">
+               <enum>QFormLayout::ExpandingFieldsGrow</enum>
+              </property>
+              <property name="labelAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+              </property>
+              <property name="formAlignment">
+               <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+              </property>
+              <property name="verticalSpacing">
+               <number>2</number>
+              </property>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_88">
+                <property name="text">
+                 <string>processes run in parallel</string>
+                </property>
+                <property name="textFormat">
+                 <enum>Qt::AutoText</enum>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="1">
+               <widget class="QSpinBox" name="spinbox_system_cores">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="statusTip">
+                 <string>A value of -1 means that all available CPU cores are used.</string>
+                </property>
+                <property name="minimum">
+                 <number>-1</number>
+                </property>
+                <property name="maximum">
+                 <number>9999</number>
+                </property>
+                <property name="value">
+                 <number>-1</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <spacer name="verticalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Vertical</enum>
+              </property>
+              <property name="sizeType">
+               <enum>QSizePolicy::Expanding</enum>
+              </property>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>20</width>
+                <height>0</height>
+               </size>
+              </property>
+             </spacer>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
     <item>
@@ -4122,7 +4396,7 @@
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>19</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -4145,19 +4419,20 @@
     </property>
     <addaction name="action_whatsthis"/>
    </widget>
-   <widget class="QMenu" name="menuCache">
+   <widget class="QMenu" name="menu_Configuration">
     <property name="title">
-     <string>Settings</string>
+     <string>&amp;Configuration</string>
     </property>
     <addaction name="action_cache_directory"/>
+    <addaction name="separator"/>
     <addaction name="action_cache_clear"/>
+    <addaction name="action_radial_clear"/>
     <addaction name="separator"/>
     <addaction name="action_sconf_reset"/>
-    <addaction name="separator"/>
     <addaction name="action_pconf_reset"/>
    </widget>
    <addaction name="menu_File"/>
-   <addaction name="menuCache"/>
+   <addaction name="menu_Configuration"/>
    <addaction name="menu_help"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -4208,7 +4483,7 @@
   </action>
   <action name="action_system_open">
    <property name="text">
-    <string>Open system configuration ...</string>
+    <string>Open system settings ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -4216,7 +4491,7 @@
   </action>
   <action name="action_plot_open">
    <property name="text">
-    <string>Open plot configuration ...</string>
+    <string>Open plot settings ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
@@ -4224,7 +4499,7 @@
   </action>
   <action name="action_system_save">
    <property name="text">
-    <string>Save system configuration ...</string>
+    <string>Save system settings ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -4232,7 +4507,7 @@
   </action>
   <action name="action_plot_save">
    <property name="text">
-    <string>Save plot configuration ...</string>
+    <string>Save plot settings ...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
@@ -4284,12 +4559,17 @@
   </action>
   <action name="action_sconf_reset">
    <property name="text">
-    <string>Reset system configuration</string>
+    <string>Reset system settings</string>
    </property>
   </action>
   <action name="action_pconf_reset">
    <property name="text">
-    <string>Reset plot configuration</string>
+    <string>Reset plot settings</string>
+   </property>
+  </action>
+  <action name="action_radial_clear">
+   <property name="text">
+    <string>Clear database of radial matrix elements</string>
    </property>
   </action>
  </widget>
@@ -4326,9 +4606,6 @@
   <tabstop>lineedit_system_maxBz</tabstop>
   <tabstop>lineedit_system_minR</tabstop>
   <tabstop>lineedit_system_maxR</tabstop>
-  <tabstop>checkbox_system_dd</tabstop>
-  <tabstop>checkbox_system_dq</tabstop>
-  <tabstop>checkbox_system_qq</tabstop>
   <tabstop>lineedit_system_theta</tabstop>
   <tabstop>scrollArea</tabstop>
   <tabstop>spinbox_plot_szPoint</tabstop>

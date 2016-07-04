@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 5
-version_cache = 6
+version_settings = 7
+version_cache = 7
 
 # Standard library
 from abc import ABCMeta, abstractmethod
@@ -852,35 +852,37 @@ class SystemDict(GuiDict):
         store["minR"] =             {'widget': ui.lineedit_system_minR,                     'unit': Units.length}
         store["maxR"] =             {'widget': ui.lineedit_system_maxR,                     'unit': Units.length}
         store["theta"] =            {'widget': ui.lineedit_system_theta,                    'unit': Units.angle}
-        store["dd"] =               {'widget': ui.checkbox_system_dd,                       'unit': None}
-        store["dq"] =               {'widget': ui.checkbox_system_dq,                       'unit': None}
-        store["qq"] =               {'widget': ui.checkbox_system_qq,                       'unit': None}
+        store["exponent"] =         {'widget': ui.spinbox_system_exponent,                  'unit': None}
         store["steps"] =            {'widget': ui.spinbox_system_steps,                     'unit': None}
         store["precision"] =        {'widget': ui.lineedit_system_precision,                'unit': None}
-        store["calcmissing"] =      {'widget': ui.checkbox_calc_missing,                    'unit': None}
+        store["matCombined"] =      {'widget': ui.radiobutton_system_matCombined,           'unit': None}
+        store["matSeparate"] =      {'widget': ui.radiobutton_system_matSeparate,           'unit': None}
+        store["missingCalc"] =      {'widget': ui.radiobutton_system_missingCalc,          'unit': None}
+        store["missingError"] =     {'widget': ui.radiobutton_system_missingError,          'unit': None}
+        store["cores"] =            {'widget': ui.spinbox_system_cores,                     'unit': None}
     
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision","calcmissing",
+        "samebasis", "steps","precision","missingCalc",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
     # field map of atom 2 (samebasis == False)
     keys_for_cprogram_field2 = ["species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision","calcmissing",
+        "samebasis", "steps","precision","missingCalc",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle","deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
-        "samebasis", "steps","precision", "calcmissing", "theta", "dd", "dq", "qq",
+        "samebasis", "steps","precision", "missingCalc", "theta", "exponent",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "minR", "maxR"]
     
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision","calcmissing",
+        "samebasis", "steps","precision","missingCalc",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
 
 
@@ -957,8 +959,7 @@ class MainWindow(QtGui.QMainWindow):
         self.systemdict = SystemDict(self.ui)
         self.plotdict = PlotDict(self.ui)
         
-        if os.name == 'nt': self.userpath = os.path.expanduser('~')
-        else: self.userpath = os.path.expanduser('~')
+        self.userpath = os.path.expanduser('~')
         
         self.filepath = self.userpath #os.getcwd()
         self.systemfile = None
@@ -1065,10 +1066,8 @@ class MainWindow(QtGui.QMainWindow):
                     
 
         # TODOs
-        #self.ui.lineedit_system_theta.setEnabled(False)
-        self.ui.checkbox_system_dq.setEnabled(False)
-        self.ui.checkbox_system_qq.setEnabled(False)
-        self.ui.checkbox_system_qq.setEnabled(False)
+        self.ui.action_radial_clear.setEnabled(False)
+        self.ui.spinbox_system_exponent.setMaximum(3)
         self.ui.lineedit_system_precision.hide()
         self.ui.label_system_precision.hide()
         
@@ -1076,6 +1075,19 @@ class MainWindow(QtGui.QMainWindow):
         self.overlapgroup = QtGui.QButtonGroup()
         self.overlapgroup.addButton(self.ui.radiobutton_plot_overlapDefined)
         self.overlapgroup.addButton(self.ui.radiobutton_plot_overlapUnperturbed)
+        
+        self.missinggroup = QtGui.QButtonGroup()
+        self.missinggroup.addButton(self.ui.radiobutton_system_missingCalc)
+        self.missinggroup.addButton(self.ui.radiobutton_system_missingError)
+        
+        self.matgroup = QtGui.QButtonGroup()
+        self.matgroup.addButton(self.ui.radiobutton_system_matCombined)
+        self.matgroup.addButton(self.ui.radiobutton_system_matSeparate)
+        
+        self.quantizationgroup = QtGui.QButtonGroup()
+        self.quantizationgroup.addButton(self.ui.radiobutton_system_quantizationZ)
+        self.quantizationgroup.addButton(self.ui.radiobutton_system_quantizationInteratomic)
+        
 
         # Set validators
         validator_double = DoubleValidator()
@@ -1146,7 +1158,6 @@ class MainWindow(QtGui.QMainWindow):
         
         self.ui.checkbox_plot_antialiasing.toggled.connect(self.toggleAntialiasing)
         self.ui.checkbox_system_samebasis.toggled.connect(self.toggleSamebasis)
-        self.ui.checkbox_calc_missing.toggled.connect(self.toggleCalcMissing)
         
         self.ui.spinbox_system_deltaNSingle.valueChanged.connect(self.adjustPairlimits)
         self.ui.spinbox_system_deltaLSingle.valueChanged.connect(self.adjustPairlimits)
@@ -1772,14 +1783,14 @@ class MainWindow(QtGui.QMainWindow):
                 
                     # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
                     filestep, blocknumber, filename = dataqueue.get()
-                    
+                                        
                     # save data
                     self.storage_data[idx].append([filestep, blocknumber, filename])
                     
                     eigensystem = Eigensystem(filename)
                     energies = eigensystem.energies
                     basis = eigensystem.basis
-                    
+                                        
                     if idx == 2: symmetry = blocknumber % 3
                                     
                     # --- determine which basis elements are within the energy range ---
@@ -1833,7 +1844,7 @@ class MainWindow(QtGui.QMainWindow):
                         position = self.get1DPosition(fields)*self.converter_x[idx]
                     elif self.xAxis[idx] == 'R':
                         position = float(eigensystem.params["R"])*self.converter_x[idx]
-
+                    
                     # --- draw labels at the beginning of the plotting ---
                     if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
                 
@@ -2506,10 +2517,6 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.label_plot_2nd.setText("0.5")
             self.logscale = False
 
-    @QtCore.pyqtSlot(bool) # TODO
-    def toggleCalcMissing(self):
-        checked = self.ui.checkbox_calc_missing.isChecked()
-
     
     @QtCore.pyqtSlot(str) # TODO
     def forbidSamebasis(self):
@@ -2657,7 +2664,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.maxE = [self.plotdict["maxE_field1"].magnitude, self.plotdict["maxE_field2"].magnitude, self.plotdict["maxE_potential"].magnitude]
                 
                 self.steps = self.systemdict['steps'].magnitude
-                self.calcmissing = self.ui.checkbox_calc_missing.checkState() == QtCore.Qt.Checked
+                #self.calcmissing = self.ui.checkbox_calc_missing.checkState() == QtCore.Qt.Checked
                 
                 unperturbedstate = np.array([self.systemdict['n1'].magnitude,self.systemdict['l1'].magnitude,self.systemdict['j1'].magnitude,self.systemdict['m1'].magnitude,
                                                   self.systemdict['n2'].magnitude,self.systemdict['l2'].magnitude,self.systemdict['j2'].magnitude,self.systemdict['m2'].magnitude])
@@ -2794,6 +2801,17 @@ class MainWindow(QtGui.QMainWindow):
                         # Hack# TODO !!!!!!!!!!!!!!!
                         params["minEx"] += 1e-32
                         params["maxEx"] += 1e-32
+                    
+                    # TODO make quantities of None type accessible without .magnitude
+                    
+                    if self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 3: # TODO remove this hack
+                        params["dd"] = True
+                        params["dq"] = False
+                        params["qq"] = False
+                    elif self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 2: # TODO remove this hack
+                        params["dd"] = False
+                        params["dq"] = False
+                        params["qq"] = False
 
                     json.dump(params, f, indent=4, sort_keys=True)
                     
@@ -3222,11 +3240,7 @@ class MainWindow(QtGui.QMainWindow):
                 sconf["deltaJPair"][0] = -1
                 sconf["deltaMPair"][0] = -1
             
-            interaction = []
-            if sconf["dd"][0]: interaction.append("dipole-dipole")
-            if sconf["dq"][0]: interaction.append("dipole-quadrupole")
-            if sconf["qq"][0]: interaction.append("quadrupole-quadrupole")
-            interaction = ",".join(interaction)+" interaction"
+            interaction = "multipole expansion up to order {}".format(sconf["exponent"][0])
             
             # text formating
             '''if idx in [0,2] or sconf["pairbasisSame"][0]:
@@ -3322,7 +3336,7 @@ class MainWindow(QtGui.QMainWindow):
             text += "</tr></table>"
             
             if idx == 2: text += "<table cellspacing=5><tr>"
-            if idx == 2: text += "<td>{}; interaction angle {} {}</td>".format(interaction, sconf["theta"][0], sconf["theta"][1])
+            if idx == 2: text += "<td>{}, interaction angle {} {}</td>".format(interaction, sconf["theta"][0], sconf["theta"][1])
             if idx == 2: text += "</tr></table>"
             
             #text += "<h3>{}</h3>".format(["Field map","Pair potential"][1])

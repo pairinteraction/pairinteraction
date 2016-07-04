@@ -35,7 +35,7 @@ MatrixElements::MatrixElements(std::string species, int k, std::string dbname) :
 
 
 MatrixElements::MatrixElements(const Configuration& config, std::string species, int k, std::string dbname) : MatrixElements(species,k,dbname) {
-    calc_missing = config["calcmissing"].str() == "true";
+    calc_missing = config["missingCalc"].str() == "true";
 }
 
 void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
