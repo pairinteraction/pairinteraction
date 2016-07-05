@@ -970,6 +970,7 @@ class MainWindow(QtGui.QMainWindow):
         self.path_workingdir = os.path.join(self.path_base,"../calc/")
         self.path_cpp_real = os.path.join(self.path_base,"../calc/pairinteraction-real")
         self.path_cpp_complex = os.path.join(self.path_base,"../calc/pairinteraction-complex")
+        self.path_quantumdefects = os.path.join(self.path_base,"../calc/quantum_defects.db")
         
         if os.name == 'nt': self.path_out = os.path.join(self.userpath, "pairinteraction/")
         else: self.path_out = os.path.join(self.userpath, ".pairinteraction/")
@@ -1000,6 +1001,21 @@ class MainWindow(QtGui.QMainWindow):
         self.stateidx_field = [None]*3
         self.yMin_field = [None]*3
         self.yMax_field = [None]*3
+        
+        
+        # fill comboboxes with elements from the quantum defects database
+        import sqlite3
+        conn = sqlite3.connect(self.path_quantumdefects)
+        c = conn.cursor()
+        c.execute('SELECT DISTINCT element FROM rydberg_ritz')
+        elements = [e[0] for e in c.fetchall()]
+        conn.close()
+        
+        for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
+            combobox.clear()
+            combobox.addItems(elements)
+        
+        
         
         # TODO !!!!!! numBlocks kann auch hoeher als 3 sein!
         self.buffer_basis = [{},{},{}]
@@ -3063,8 +3079,7 @@ class MainWindow(QtGui.QMainWindow):
                     filelike=BytesIO()
                     io.savemat(filelike,data_stepwise,do_compression=False,format='5',oned_as='row')
                     ziparchive.writestr('data_{:04d}.mat'.format(idxStep), filelike.getvalue())
-                    
-                            
+                         
         finally:
             # close zip file
             ziparchive.close()
