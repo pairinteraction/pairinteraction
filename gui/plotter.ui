@@ -570,7 +570,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>275</width>
+             <width>285</width>
              <height>392</height>
             </rect>
            </property>
@@ -1211,7 +1211,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>290</width>
+             <width>300</width>
              <height>356</height>
             </rect>
            </property>
@@ -1467,7 +1467,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>290</width>
+             <width>300</width>
              <height>356</height>
             </rect>
            </property>
@@ -1728,7 +1728,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>290</width>
+             <width>300</width>
              <height>356</height>
             </rect>
            </property>
@@ -3549,7 +3549,7 @@
                  </sizepolicy>
                 </property>
                 <property name="statusTip">
-                 <string>A value of -1 means that all available CPU cores are used.</string>
+                 <string>The program needs at least two processes. A value of -1 means that all available CPU cores are used.</string>
                 </property>
                 <property name="minimum">
                  <number>-1</number>

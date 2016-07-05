@@ -1135,7 +1135,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_potential_minE.setValidator(validator_doublenone)
         self.ui.lineedit_potential_maxE.setValidator(validator_doublenone)
         
-        # Connect signals and slots        
+        # Connect signals and slots
         self.ui.spinbox_system_n1.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_n2.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_l1.valueChanged.connect(self.validateQuantumnumbers)
@@ -1163,6 +1163,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfintegerOrMinusone)
         self.ui.spinbox_plot_n1.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
         self.ui.spinbox_plot_n2.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
+        
+        self.ui.spinbox_system_cores.editingFinished.connect(self.validateCores)
         
         self.ui.combobox_system_species1.currentIndexChanged[str].connect(self.forbidSamebasis)
         self.ui.combobox_system_species2.currentIndexChanged[str].connect(self.forbidSamebasis)
@@ -2546,6 +2548,12 @@ class MainWindow(QtGui.QMainWindow):
                 self.ui.checkbox_system_samebasis.setCheckState(self.samebasis_state)
     
     @QtCore.pyqtSlot()   
+    def validateCores(self):
+        sender = self.sender()
+        if sender.value() != -1 and sender.value() < 2:
+            sender.setValue(2)
+    
+    @QtCore.pyqtSlot()   
     def validateQuantumnumbers(self):
         sender = self.sender()
         
@@ -2640,6 +2648,8 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.spinbox_plot_m2.editingFinished.emit()
             self.ui.spinbox_plot_n1.editingFinished.emit()
             self.ui.spinbox_plot_n2.editingFinished.emit()
+            
+            self.ui.spinbox_system_cores.editingFinished.emit()
                 
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
