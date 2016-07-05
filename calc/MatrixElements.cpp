@@ -306,7 +306,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                        << element.second << ");";
                     db.exec(ss.str());
                 } else { // throw error
-                    throw std::runtime_error("ERROR: You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+                    std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
+                    abort();
                 }
             }
         }
@@ -346,7 +347,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                        << element.second << ");";
                     db.exec(ss.str());
                 } else { // throw error
-                    throw std::runtime_error("ERROR: You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+                    std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
+                    abort();
                 }
             }
         }

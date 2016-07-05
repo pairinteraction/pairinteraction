@@ -552,6 +552,7 @@ class MultiLine(pg.QtGui.QGraphicsPathItem):
 ## worker.py
 
 class Worker(QtCore.QThread):
+    criticalsignal = QtCore.pyqtSignal(str)
 
     def __init__(self, parent = None):
         super().__init__(parent)
@@ -662,6 +663,9 @@ class Worker(QtCore.QThread):
                     self.dataqueue_field2.put([filestep,blocknumber,filename])
                 elif type == 2:
                     self.dataqueue_potential.put([filestep,blocknumber,filename])
+            
+            elif line[:5] == b">>ERR":
+                self.criticalsignal.emit(line[5:].decode('utf-8').strip())
                     
             elif line[:5] == b">>END":
                 finishedgracefully = True
@@ -988,8 +992,11 @@ class MainWindow(QtGui.QMainWindow):
         
         self.proc = None
         
+        
         self.thread = Worker()
+
         self.timer = QtCore.QTimer()
+       
         
         self.momentumcolors = [(55,126,184),(77,175,74),(228,26,28),(152,78,163),(0,0,0),(255//5,255//5,255//5)] # s, p, d, f, other, undetermined
         self.symmetrycolors = [(40,40,40),(140,81,10),(1,102,94)] # all, sym, asym
@@ -1136,6 +1143,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_potential_maxE.setValidator(validator_doublenone)
         
         # Connect signals and slots
+        self.thread.criticalsignal.connect(self.showCriticalMessage)
+        
         self.ui.spinbox_system_n1.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_n2.valueChanged.connect(self.validateQuantumnumbers)
         self.ui.spinbox_system_l1.valueChanged.connect(self.validateQuantumnumbers)
@@ -2633,6 +2642,10 @@ class MainWindow(QtGui.QMainWindow):
     def validateIntegerpositiveOrMinusone(self):
         value = self.sender().value()
         if value <= 0: self.sender().setValue(-1)
+    
+    @QtCore.pyqtSlot(str)
+    def showCriticalMessage(self, msg):
+        QtGui.QMessageBox.critical(self, "Message", msg)
             
     @QtCore.pyqtSlot()
     def startCalc(self):         
