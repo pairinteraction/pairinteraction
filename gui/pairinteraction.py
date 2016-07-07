@@ -1088,6 +1088,7 @@ class MainWindow(QtGui.QMainWindow):
                     
 
         # TODOs
+        self.ui.checkbox_system_override.setEnabled(False)
         self.ui.action_radial_clear.setEnabled(False)
         self.ui.spinbox_system_exponent.setMaximum(3)
         self.ui.lineedit_system_precision.hide()
@@ -1215,9 +1216,9 @@ class MainWindow(QtGui.QMainWindow):
         
         self.timer.timeout.connect(self.checkForData)
         
-        self.ui.graphicsview_field1_plot.sigRangeChanged.connect(self.detectManualRangeX)
-        self.ui.graphicsview_field2_plot.sigRangeChanged.connect(self.detectManualRangeX)
-        self.ui.graphicsview_potential_plot.sigRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_field1_plot.sigXRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_field2_plot.sigXRangeChanged.connect(self.detectManualRangeX)
+        self.ui.graphicsview_potential_plot.sigXRangeChanged.connect(self.detectManualRangeX)
         self.ui.graphicsview_field1_plot.sigYRangeChanged.connect(self.detectManualRangeY)
         self.ui.graphicsview_field2_plot.sigYRangeChanged.connect(self.detectManualRangeY)
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(self.detectManualRangeY)

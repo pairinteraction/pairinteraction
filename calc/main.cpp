@@ -470,7 +470,7 @@ public:
 
         if((((entries_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value) ||
                 (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
-            std::cout << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl;
+            std::cout << ">>ERR" << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl;
             abort();
         }
 
@@ -913,7 +913,6 @@ public:
                 step++;
             }
 
-            std::cout << lines_idx_max << " " << step << std::endl;
             eigen_sparse_real_t lines_eigenenergies(lines_idx_max,step);
             lines_eigenenergies.setFromTriplets(triplets_lines_eigenenergies.begin(), triplets_lines_eigenenergies.end());
 
@@ -1015,7 +1014,7 @@ public:
 protected:
     void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
         if(val_x != 0 || val_y != 0) {
-            std::cout << "ERROR: For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
+            std::cout << ">>ERR" << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
             abort();
         }
         val_p = val_x;
@@ -1112,6 +1111,8 @@ protected:
             size_t size_energy = basis_one->size();
 
             // --- construct energy Hamiltonian part ---
+            std::cout << "One-atom Hamiltonian, construct diagonal hamiltonian" << std::endl;
+
             Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
 
             real_t energy_initial = 0;
@@ -1131,11 +1132,15 @@ protected:
                     ++idx;
                 }
             }
+            std::cout << "One-atom basis, size without restrictions in energy: " << basis_one->size() << std::endl;
+
             basis_one->removeUnnecessaryStates(is_necessary);
 
             hamiltonian_energy.compress(basis_one->dim(), basis_one->dim());
 
-            std::cout << basis_one->size() << std::endl;
+            std::cout << "One-atom basis, size with restrictions in energy: " << basis_one->size() << std::endl;
+
+
 
             std::cout << ">>BAS" << std::setw(7) << basis_one->size() << std::endl;
 
@@ -1155,6 +1160,8 @@ protected:
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
             // --- precalculate matrix elements ---
+            std::cout << "One-atom Hamiltonian, precalculate matrix elements" << std::endl;
+
             MatrixElements matrix_elements(conf, species, 1, (path_cache / "cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
@@ -1163,6 +1170,8 @@ protected:
             }
 
             // --- count entries of Hamiltonian parts ---
+            std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian" << std::endl;
+
             size_basis = basis_one->size();
             size_t size_d_0 = 0;
             size_t size_d_p = 0;
@@ -1170,8 +1179,6 @@ protected:
             size_t size_S_0 = 0;
             size_t size_S_p = 0;
             size_t size_S_m = 0;
-
-            std::cout << 8.1 << std::endl;
 
             for (const auto &state_col : *basis_one) {
                 for (const auto &state_row : *basis_one) {
@@ -1197,9 +1204,9 @@ protected:
                 }
             }
 
-            std::cout << 8.2 << std::endl;
-
             // --- construct field Hamiltonian parts ---
+            std::cout << "One-atom Hamiltonian, construct field Hamiltonian" << std::endl;
+
             Hamiltonianmatrix hamiltonian_d_0(size_basis, size_d_0);
             Hamiltonianmatrix hamiltonian_d_p(size_basis, size_d_p);
             Hamiltonianmatrix hamiltonian_d_m(size_basis, size_d_m);
@@ -1258,7 +1265,7 @@ protected:
                 }
             }
 
-            std::cout << 8.4 << std::endl;
+            std::cout << "One-atom Hamiltonian, compress field Hamiltonian" << std::endl;
 
             hamiltonian_d_0.compress(basis_one->dim(), basis_one->dim());
             hamiltonian_d_p.compress(basis_one->dim(), basis_one->dim());
@@ -1267,9 +1274,9 @@ protected:
             hamiltonian_m_p.compress(basis_one->dim(), basis_one->dim());
             hamiltonian_m_m.compress(basis_one->dim(), basis_one->dim());
 
-            std::cout << 8.5 << std::endl;
-
             // --- construct Hamiltonians ---
+            std::cout << "One-atom Hamiltonian, assemble Hamiltonians" << std::endl;
+
             matrix.reserve(nSteps);
             params.reserve(nSteps);
 
@@ -1410,11 +1417,13 @@ protected:
                 matrix_step.push_back(step);
                 matrix_block.push_back(0); // TODO
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
+
+                std::cout << "One-atom Hamiltonian, " <<  matrix.size() << ". Hamiltonian assembled" << std::endl;
             }
 
             std::cout << ">>TOT" << std::setw(7) << matrix.size()  << std::setw(7) << 1 << std::endl;
 
-            std::cout << 8.6 << std::endl;
+            std::cout << "One-atom Hamiltonian, all Hamiltonians assembled" << std::endl;
         }
 
         // === diagonalize matrices using MpiLoadbalancingSimple ===
@@ -1578,9 +1587,8 @@ public:
                 nSteps_two = 1;
             }
 
-            std::cout << 0.1 << std::endl;
-
             // --- determine necessary symmetries ---
+            std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
             enum symmetries_t {ALL, SYM, ASYM};
 
             bool symmetries_sym, symmetries_asym, symmetries_all;
@@ -1601,6 +1609,9 @@ public:
             if (symmetries_all) symmetries.push_back(ALL);
 
             // --- determine coordinates whose usage is not restricted ---
+            std::cout << "Two-atom basis, size without restrictions: " << basis_two->size() << std::endl;
+            std::cout << "Two-atom basis, determine pair states whose usage is not forbidden because of restrictions in energy or quatum numbers" << std::endl;
+
             auto basis_one1 = hamiltonian_one1->names();
             auto basis_one2 = hamiltonian_one2->names();
             std::vector<bool> notrestricted_coordinate1(basis_one1->size(), false);
@@ -1659,9 +1670,11 @@ public:
                 notrestricted_coordinate[state.idx] = true;
             }
 
-            std::cout << 0.15 << std::endl;
+
 
             // --- load one-atom Hamiltonians ---
+            std::cout << "Two-atom Hamiltonian, construct contribution of combined one-atom Hamiltonians" << std::endl;
+
             std::vector<Hamiltonianmatrix> mat_single_sym;
             std::vector<Hamiltonianmatrix> mat_single_asym;
             std::vector<Hamiltonianmatrix> mat_single_all;
@@ -1671,24 +1684,23 @@ public:
 
             // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff and the list of necessary coordinates
             for (size_t i = 0; i < nSteps_one; ++i) {
+                std::cout << "Two-atom Hamiltonian, "<< i+1 << ". Hamiltonian combined" << std::endl;
                 if (symmetries_sym) mat_single_sym.push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
                 if (symmetries_asym) mat_single_asym.push_back(combineAsym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
                 if (symmetries_all) mat_single_all.push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
-                std::cout << i+1 << std::endl;
             }
 
-            std::cout << 0.2 << std::endl;
-
             // --- remove unnecessary (i.e. more or less empty) basisvectors ---
+            std::cout << "Two-atom basis, remove unnecessary basis vectors (i.e. vectors with too small norm)" << std::endl;
+
             for (size_t i = 0; i < nSteps_one; ++i) {
                 if (symmetries_sym) mat_single_sym[i].removeUnnecessaryBasisvectors();
                 if (symmetries_asym) mat_single_asym[i].removeUnnecessaryBasisvectors();
                 if (symmetries_all) mat_single_all[i].removeUnnecessaryBasisvectors();
             }
 
-            std::cout << 0.25 << std::endl;
-
             // --- find coordinates that are used ---
+            std::cout << "Two-atom basis, remove unnecessary states (i.e. states with too unlikely occurence)" << std::endl;
             std::vector<bool> used_coordinate(basis_two->size(), false);
 
             for (size_t i = 0; i < nSteps_one; ++i) {
@@ -1718,6 +1730,8 @@ public:
             std::cout << mat_single_sym.back().num_basisvectors() << std::endl;// TODO
             std::cout << mat_single_sym[0].num_basisvectors() << std::endl;// TODO*/
 
+            std::cout << "Two-atom basis, number of necessary states: " << basis_two_used->size() << std::endl;
+
             std::cout << ">>BAS" << std::setw(7) << basis_two_used->size() << std::endl;
 
             // initialize uuid generator
@@ -1735,27 +1749,26 @@ public:
 
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
-            std::cout << 0.3 << std::endl;
-
             // --- precalculate matrix elements ---
+
             MatrixElements matrix_elements_k1_atom1(conf_tot, species1, 1, (path_cache / "cache_elements.db").string());
             MatrixElements matrix_elements_k1_atom2(conf_tot, species2, 1, (path_cache / "cache_elements.db").string());
             MatrixElements matrix_elements_k2_atom1(conf_tot, species1, 2, (path_cache / "cache_elements.db").string());
             MatrixElements matrix_elements_k2_atom2(conf_tot, species2, 2, (path_cache / "cache_elements.db").string());
 
+            std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
             basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
             basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
 
-            std::cout << 0.4 << std::endl;
-
+            std::cout << "Two-atom Hamiltonian, precalculate matrix elements" << std::endl;
             if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom1.precalculate_dipole(basis_one1, true, true, true);
             if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom2.precalculate_dipole(basis_one2, true, true, true);
             if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom1.precalculate_quadrupole(basis_one1, true, true, true, quadrupolequadrupole, quadrupolequadrupole);
             if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom2.precalculate_quadrupole(basis_one2, true, true, true, quadrupolequadrupole, quadrupolequadrupole);
 
-            std::cout << 1.1 << std::endl;
-
             // --- count entries of Hamiltonian parts ---
+            std::cout << "Two-atom Hamiltonian, count number of entries within the interaction Hamiltonians" << std::endl;
+
             size_t size_basis = basis_two->size();
             size_t size_dd = 0;
             size_t size_dq = 0;
@@ -1813,9 +1826,9 @@ public:
                 }
             }
 
-            std::cout << 1.2 << std::endl;
-
             // --- construct Hamiltonian parts ---
+            std::cout << "Two-atom Hamiltonian, construct interaction Hamiltonians" << std::endl;
+
             Hamiltonianmatrix hamiltonian_dd(size_basis, 2*size_dd);
             Hamiltonianmatrix hamiltonian_dq(size_basis, 2*size_dq);
             Hamiltonianmatrix hamiltonian_qq(size_basis, 2*size_qq);
@@ -1985,12 +1998,11 @@ public:
                 }
             }
 
+            std::cout << "Two-atom Hamiltonian, compress interaction Hamiltonians" << std::endl;
 
             hamiltonian_dd.compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
             hamiltonian_dq.compress(basis_two->dim(), basis_two->dim());
             hamiltonian_qq.compress(basis_two->dim(), basis_two->dim());
-
-            std::cout << 1.3 << std::endl;
 
 
 
@@ -1998,6 +2010,8 @@ public:
 
 
             // --- construct Hamiltonians --- // TODO Logik in eigene Klasse
+            std::cout << "Two-atom Hamiltonian, assemble Hamiltonians" << std::endl;
+
             matrix.reserve(nSteps_two);
 
             // open database
@@ -2199,14 +2213,14 @@ public:
                         matrix_dimension.push_back(mat->num_basisvectors());
                         matrix.push_back(std::move(mat));
 
-                        std::cout << matrix.size() << std::endl;
+                        std::cout << "Two-atom Hamiltonian, " <<  matrix.size() << ". Hamiltonian assembled" << std::endl;
                     }
                 }
             }
 
             std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::setw(7) << symmetries.size() << std::endl; // TODO
 
-            std::cout << 1.4 << std::endl;
+            std::cout << "Two-atom Hamiltonian, all Hamiltonians assembled" << std::endl;
         }
 
         // --- diagonalize matrices using MpiLoadbalancingSimple ---
