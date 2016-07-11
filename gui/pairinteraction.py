@@ -3082,13 +3082,13 @@ class MainWindow(QtGui.QMainWindow):
                     data_stepwise['numEigenvectors'] = data['numEigenvectors']
                     data_stepwise['numOverlapvectors'] = data['numOverlapvectors']
                     data_stepwise['states'] = data['states']
-                    data_stepwise['eigenvectors'] = [data['eigenvectors'][0]]
-                    data_stepwise['eigenvalues'] = [data['eigenvalues'][0]]
+                    data_stepwise['eigenvectors'] = [data['eigenvectors'][idxStep]]
+                    data_stepwise['eigenvalues'] = [data['eigenvalues'][idxStep]]
                     data_stepwise['overlapvectors'] = data['overlapvectors']
-                    data_stepwise['overlaps'] = [data['overlaps'][0]]
-                    data_stepwise['bfields'] = [data['bfields'][0]]
-                    data_stepwise['efields'] = [data['efields'][0]]
-                    if idx == 2: data_stepwise['distances'] = [data['distances'][0]]
+                    data_stepwise['overlaps'] = [data['overlaps'][idxStep]]
+                    data_stepwise['bfields'] = [data['bfields'][idxStep]]
+                    data_stepwise['efields'] = [data['efields'][idxStep]]
+                    if idx == 2: data_stepwise['distances'] = [data['distances'][idxStep]]
             
                     if idx == 0 or idx == 1: data_stepwise['states_description'] = 'state(idxState, {idxState, n, l, j, m})'
                     elif idx == 2: data_stepwise['states_description'] = 'state(idxState, {idxState, n1, l1, j1, m1, n2, l2, j2, m2})'
