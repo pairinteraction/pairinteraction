@@ -114,6 +114,14 @@ class Wignerd:
     # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
     # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
     # DAMAGE.
+    def _m_values(self, j):
+        size = 2*j + 1
+        if not size.is_integer() or not size > 0:
+            raise ValueError(
+            '   Only integer or half-integer values allowed for j, got: : %r' % j
+            )
+        return size, [j - i for i in range(int(2*j + 1))]
+
     def _eval_wignerd(self, j, m, mp, beta):
         from numpy import pi, sin, cos, sqrt
         from scipy.misc import factorial
@@ -136,7 +144,7 @@ class Wignerd:
             # d(j, m, mp, beta+pi) = (-1)**(j-mp) * d(j, m, -mp, beta)
             # This happens to be almost the same as in Eq.(10), Section 4.16,
             # except that we need to substitute -mp for mp.
-            size, mvals = m_values(j)
+            size, mvals = self._m_values(j)
             for mpp in mvals:
                 r += self._eval_wignerd(j, m, mpp, pi/2) * (cos(-mpp*beta) + 1j*sin(-mpp*beta)) * \
                     self._eval_wignerd(j, mpp, -mp, pi/2)
@@ -172,7 +180,7 @@ class Wignerd:
             
         mstring = "{}_{}_{}".format(j,m1,m2)
         if mstring not in self.wignerdict[bstring].keys():
-            print("float(re(Rotation.d({},{},{},{}).doit()))".format(j,m2,m1,beta))
+            #print("float(re(Rotation.d({},{},{},{}).doit()))".format(j,m2,m1,beta))
             self.wignerdict[bstring][mstring] = float(np.real(self._eval_wignerd(j, m2, m1, beta)))
             self.cachupdatedict[bstring] = True
 
@@ -1334,6 +1342,9 @@ class MainWindow(QtGui.QMainWindow):
         
         # create object to calculate wigner d matrix
         self.wignerd = Wignerd(self.path_cache_wignerd)
+        
+        #print(self.wignerd.calc(1/2, 1/2, -1/2, -np.pi/5))
+
         
         # Load last settings
         if not os.path.isfile(self.path_system_last):
@@ -2836,6 +2847,7 @@ class MainWindow(QtGui.QMainWindow):
                             fields = np.array([[params[label]] for label in labels])
                             fields = np.dot(rotator,fields).flatten()
                             for field, label in zip(fields, labels): params[label] = field
+                                                        
                         
                         # Hack# TODO !!!!!!!!!!!!!!!
                         params["minEx"] += 1e-32
