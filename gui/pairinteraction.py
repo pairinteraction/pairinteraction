@@ -2855,10 +2855,18 @@ class MainWindow(QtGui.QMainWindow):
                     
                     # TODO make quantities of None type accessible without .magnitude
                     
-                    # TODO remove this hack
-                    params["dd"] = False
-                    params["dq"] = False
-                    params["qq"] = False
+                    if self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 3: # TODO remove this hack
+                        params["dd"] = True
+                        params["dq"] = False
+                        params["qq"] = False
+                    elif self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 2: # TODO remove this hack
+                        params["dd"] = False
+                        params["dq"] = False
+                        params["qq"] = False
+                    else: # TODO remove this hack
+                        params["dd"] = True
+                        params["dq"] = True
+                        params["qq"] = True
 
                     json.dump(params, f, indent=4, sort_keys=True)
                     

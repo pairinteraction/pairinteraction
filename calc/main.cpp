@@ -1668,7 +1668,7 @@ public:
 
             for (const auto &state: *basis_two) {
                 if (!fields_change_m && state.m[0]+state.m[1] != M) continue;
-                if (!fields_change_l && (state.l[0]+state.l[1]) % 2 != parity) continue;
+                if (multipoleexponent <= 3 && !fields_change_l && (state.l[0]+state.l[1]) % 2 != parity) continue;
 
                 notrestricted_coordinate[state.idx] = true;
             }
@@ -1825,7 +1825,7 @@ public:
                                     for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
 
                                         // allowed deltaM?
-                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q)) {
+                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q, kappa1) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q, kappa2)) {
                                             coupling = true;
                                             break;
                                         }
@@ -1877,7 +1877,7 @@ public:
                                     for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
 
                                         // allowed deltaM? this can only be the case for one single value of q, thus we can break the loop
-                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q)) {
+                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q, kappa1) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q, kappa2)) {
                                             int idx_kappa1 = kappa1-kappa_min;
                                             int idx_kappa2 = kappa2-kappa_min;
 

@@ -13,7 +13,7 @@
 #include <wignerSymbols.h>
 
 bool selectionRulesMultipoleKappa(StateOne state1, StateOne state2, int kappa);
-bool selectionRulesMultipoleQ(StateOne state1, StateOne state2, int q);
+bool selectionRulesMultipoleQ(StateOne state1, StateOne state2, int q, int kappa);
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
@@ -34,6 +34,7 @@ public:
     real_t getMomentum(StateOne state_row, StateOne state_col);
 private:
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_q_0, bool exist_q_p, bool exist_q_m, bool exist_q_pp, bool exist_q_mm, bool exist_m_0, bool exist_m_p, bool exist_m_m);
+    void precalculate2(std::shared_ptr<const BasisnamesOne> basis_one);
     real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
     std::string species;
     int k;
@@ -45,6 +46,12 @@ private:
     std::unordered_map<StateTwo,real_t> element_lj_s;
     std::unordered_map<StateTwo,real_t> element_lj_l;
     std::unordered_map<StateTwo,real_t> element_jm;
+
+    std::unordered_map<StateTwo,real_t> cache_radial;
+    std::unordered_map<StateTwo,real_t> cache_angular;
+    std::unordered_map<StateTwo,real_t> cache_reduced_commutes_s;
+    std::unordered_map<StateTwo,real_t> cache_reduced_commutes_l;
+    std::unordered_map<StateTwo,real_t> cache_reduced_YxSqrtOf4Pi;
 
     real_t muB; // TODO define them in constants.h
     real_t gS;
