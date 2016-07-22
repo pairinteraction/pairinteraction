@@ -4,6 +4,16 @@
 #include <iostream>
 #include <string>
 
+bool selectionRulesMultipoleKappa(StateOne state1, StateOne state2, int kappa) {
+    bool validL = (abs(state1.l-state2.l) <= kappa) && (kappa%2 == abs(state1.l-state2.l)%2);
+    bool validJ = (fabs(state1.j-state2.j) <= kappa)  && (state1.j+state2.j >= kappa);
+    return validL && validJ;
+}
+
+bool selectionRulesMultipoleQ(StateOne state1, StateOne state2, int q) {
+    return state1.m == state2.m+q;
+}
+
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q) {
     return (abs(state1.l-state2.l) == 1) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1);
 }
@@ -44,6 +54,10 @@ void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> 
 
 void MatrixElements::precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
     precalculate(basis_one,exist_0,exist_p,exist_m,false,false,false,false,false,false,false,false);
+}
+
+void MatrixElements::precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one) {
+    precalculate(basis_one,true,true,true,false,false,false,false,false,false,false,false); // TODO !!!!!!!!!!!!!!!!!!!
 }
 
 void MatrixElements::precalculate_quadrupole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m, bool exist_pp, bool exist_mm) {
@@ -426,6 +440,15 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
 }
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
+    if (k != 1) abort();
+
+    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
+            element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+            element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
+element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+}
+
+real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col) {
     if (k != 1) abort();
 
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *

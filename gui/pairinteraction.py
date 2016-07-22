@@ -1098,7 +1098,7 @@ class MainWindow(QtGui.QMainWindow):
         # TODOs
         self.ui.checkbox_system_override.setEnabled(False)
         self.ui.action_radial_clear.setEnabled(False)
-        self.ui.spinbox_system_exponent.setMaximum(3)
+        #self.ui.spinbox_system_exponent.setMaximum(3)
         self.ui.lineedit_system_precision.hide()
         self.ui.label_system_precision.hide()
         
@@ -2855,14 +2855,10 @@ class MainWindow(QtGui.QMainWindow):
                     
                     # TODO make quantities of None type accessible without .magnitude
                     
-                    if self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 3: # TODO remove this hack
-                        params["dd"] = True
-                        params["dq"] = False
-                        params["qq"] = False
-                    elif self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 2: # TODO remove this hack
-                        params["dd"] = False
-                        params["dq"] = False
-                        params["qq"] = False
+                    # TODO remove this hack
+                    params["dd"] = False
+                    params["dq"] = False
+                    params["qq"] = False
 
                     json.dump(params, f, indent=4, sort_keys=True)
                     

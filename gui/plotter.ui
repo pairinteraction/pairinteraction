@@ -570,7 +570,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>238</width>
              <height>392</height>
             </rect>
            </property>
@@ -1467,8 +1467,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>196</width>
-             <height>312</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1672,7 +1672,7 @@
                  </sizepolicy>
                 </property>
                 <property name="statusTip">
-                 <string>A value smaller than 3 disables the interacton between the atoms.</string>
+                 <string>A value of 2 disables the interacton between the atoms.</string>
                 </property>
                 <property name="minimum">
                  <number>2</number>
@@ -1836,7 +1836,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>269</width>
              <height>825</height>
             </rect>
            </property>
@@ -3314,7 +3314,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>282</width>
              <height>473</height>
             </rect>
            </property>

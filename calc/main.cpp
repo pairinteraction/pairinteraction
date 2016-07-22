@@ -39,6 +39,7 @@
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/algorithm/hex.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/math/special_functions/binomial.hpp>
 
 /*
 ///////////////////// Sources /////////////////////
@@ -1540,6 +1541,7 @@ public:
             conf_matpair["dd"] = conf_tot["dd"];
             conf_matpair["dq"] = conf_tot["dq"];
             conf_matpair["qq"] = conf_tot["qq"];
+            conf_matpair["exponent"] = conf_tot["exponent"];
 
             for (size_t i = 0; i < nSteps_one; ++i) {
                 // old, single atom hamiltonian specific configuration
@@ -1563,6 +1565,7 @@ public:
             conf_tot["steps"] >> nSteps_two;
             conf_tot["minR"] >> min_R;
             conf_tot["maxR"] >> max_R;
+            conf_tot["exponent"] >> multipoleexponent;
 
             real_t minEx, minEy, minEz, maxEx, maxEy, maxEz, minBx, minBy, minBz, maxBx, maxBy, maxBz;
             conf_tot["minEx"] >> minEx;
@@ -1671,6 +1674,7 @@ public:
             }
 
 
+            // === construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)  ===
 
             // --- load one-atom Hamiltonians ---
             std::cout << "Two-atom Hamiltonian, construct contribution of combined one-atom Hamiltonians" << std::endl;
@@ -1749,267 +1753,160 @@ public:
 
             std::cout << ">>STA " << path_basis.string() << std::endl;
 
-            // --- precalculate matrix elements ---
+            // === construct pair Hamiltonians for all orders of the multipole expansion  ===
 
-            MatrixElements matrix_elements_k1_atom1(conf_tot, species1, 1, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k1_atom2(conf_tot, species2, 1, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom1(conf_tot, species1, 2, (path_cache / "cache_elements.db").string());
-            MatrixElements matrix_elements_k2_atom2(conf_tot, species2, 2, (path_cache / "cache_elements.db").string());
+            std::vector<int> exponent_multipole;
+            std::vector<Hamiltonianmatrix> mat_multipole;
+            std::vector<Hamiltonianmatrix> mat_multipole_transformed_sym;
+            std::vector<Hamiltonianmatrix> mat_multipole_transformed_asym;
+            std::vector<Hamiltonianmatrix> mat_multipole_transformed_all;
+            std::vector<MatrixElements> matrixelements_atom1;
+            std::vector<MatrixElements> matrixelements_atom2;
+            std::vector<idx_t> size_mat_multipole;
 
-            std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
-            basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
-            basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
+            int idx_multipole_max = -1;
 
-            std::cout << "Two-atom Hamiltonian, precalculate matrix elements" << std::endl;
-            if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom1.precalculate_dipole(basis_one1, true, true, true);
-            if (dipoledipole || dipolequadrupole) matrix_elements_k1_atom2.precalculate_dipole(basis_one2, true, true, true);
-            if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom1.precalculate_quadrupole(basis_one1, true, true, true, quadrupolequadrupole, quadrupolequadrupole);
-            if (dipolequadrupole || quadrupolequadrupole) matrix_elements_k2_atom2.precalculate_quadrupole(basis_one2, true, true, true, quadrupolequadrupole, quadrupolequadrupole);
+            if (multipoleexponent > 2) {
 
-            // --- count entries of Hamiltonian parts ---
-            std::cout << "Two-atom Hamiltonian, count number of entries within the interaction Hamiltonians" << std::endl;
+                // --- initialize two-atom interaction Hamiltonians ---
+                std::cout << "Two-atom hamiltonian, initialize interaction Hamiltonians" << std::endl;
 
-            size_t size_basis = basis_two->size();
-            size_t size_dd = 0;
-            size_t size_dq = 0;
-            size_t size_qq = 0;
+                int kappa_min = 1; // spherical dipole operators
+                int kappa_max = multipoleexponent-kappa_min-1;
+                int sumOfKappas_min = kappa_min+kappa_min;
+                int sumOfKappas_max = kappa_max+kappa_min;
+                idx_multipole_max = sumOfKappas_max-sumOfKappas_min;
 
-            for (const auto &state_col : *basis_two) {
-                if (!used_coordinate[state_col.idx]) continue;
+                exponent_multipole.reserve(idx_multipole_max+1);
+                mat_multipole.reserve(idx_multipole_max+1);
+                mat_multipole_transformed_sym.resize(idx_multipole_max+1);
+                mat_multipole_transformed_asym.resize(idx_multipole_max+1);
+                mat_multipole_transformed_all.resize(idx_multipole_max+1);
+                size_mat_multipole.resize(idx_multipole_max+1);
 
-                for (const auto &state_row : *basis_two) {
-                    if (!used_coordinate[state_row.idx]) continue;
+                // --- precalculate matrix elements ---
+                std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
 
-                    if (state_row.idx < state_col.idx) continue;
+                basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
+                basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
 
-                    if (dipoledipole) {
-                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            size_dd++;
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            size_dd++;
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            size_dd++;
-                        }
-                    }
+                for (int kappa = kappa_min; kappa<=kappa_max; ++kappa) {
+                    std::cout << "Two-atom hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
 
-                    if (dipolequadrupole) {
-                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            size_dq++;
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            size_dq++;
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            size_dq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.second(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            size_dq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.second(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            size_dq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.second(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            size_dq++;
-                        }
-                    }
+                    int idx_kappa = kappa-kappa_min;
 
-                    if (quadrupolequadrupole) {
-                        if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            size_qq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            size_qq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            size_qq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -2)) {
-                            size_qq++;
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 2)) {
-                            size_qq++;
-                        }
-                    }
-
-                    // TODO state_two soll std::array<state_one, 2> sein! Dann geht auch die Abfrage der selection rules eindeutiger
+                    matrixelements_atom1.push_back(MatrixElements(conf_tot, species1, kappa, (path_cache / "cache_elements.db").string()));
+                    matrixelements_atom2.push_back(MatrixElements(conf_tot, species2, kappa, (path_cache / "cache_elements.db").string()));
+                    matrixelements_atom1[idx_kappa].precalculate_multipole(basis_one1);
+                    matrixelements_atom2[idx_kappa].precalculate_multipole(basis_one2);
                 }
-            }
 
-            // --- construct Hamiltonian parts ---
-            std::cout << "Two-atom Hamiltonian, construct interaction Hamiltonians" << std::endl;
+                // --- count entries of two-atom interaction Hamiltonians ---
+                std::cout << "Two-atom Hamiltonian, count number of entries within the interaction Hamiltonians" << std::endl;
 
-            Hamiltonianmatrix hamiltonian_dd(size_basis, 2*size_dd);
-            Hamiltonianmatrix hamiltonian_dq(size_basis, 2*size_dq);
-            Hamiltonianmatrix hamiltonian_qq(size_basis, 2*size_qq);
+                for (int sumOfKappas = sumOfKappas_min; sumOfKappas<=sumOfKappas_max; ++sumOfKappas) {
+                    int idx_multipole = sumOfKappas-sumOfKappas_min;
 
-            for (const auto &state_col : *basis_two) {
-                if (!used_coordinate[state_col.idx]) continue;
+                    for (const auto &state_col : *basis_two) {
+                        if (!used_coordinate[state_col.idx]) continue;
 
-                for (const auto &state_row : *basis_two) {
-                    if (!used_coordinate[state_row.idx]) continue;
+                        for (const auto &state_row : *basis_two) {
+                            if (!used_coordinate[state_row.idx]) continue;
+                            if (state_row.idx < state_col.idx) continue;
 
-                    if (state_row.idx < state_col.idx) continue;
+                            // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
+                            bool coupling = false;
 
-                    if (state_row.idx == state_col.idx) {
-                        hamiltonian_dd.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_dq.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_qq.addBasis(state_row.idx,state_col.idx,1);
-                    }
+                            for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
+                                int kappa2 = sumOfKappas - kappa1;
 
-                    if (dipoledipole) {
-                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = -2*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        }
-                    }
+                                // allowed deltaL and deltaJ?
+                                if (selectionRulesMultipoleKappa(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipoleKappa(state_row.second(), state_col.second(), kappa2)) {
+                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
 
-                    /*if (dipoledipole) {
-                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = 1*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+                                        // allowed deltaM?
+                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q)) {
+                                            coupling = true;
+                                            break;
+                                        }
+                                    }
+                                    if (coupling) {
+                                        break;
+                                    }
+                                }
                             }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = 0.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = 0.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -1.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -1.5*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dd.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dd.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        }
-                    }*/
 
-                    if (dipolequadrupole) {
-                        if (selectionRulesDipole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = 3/sqrt(5.)*sqrt(3.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = 3/sqrt(5.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesDipole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = 3/sqrt(5.)*matrix_elements_k1_atom1.getDipole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 0) && selectionRulesDipole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = -3/sqrt(5.)*sqrt(3.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 1) && selectionRulesDipole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = -3/sqrt(5.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -1) && selectionRulesDipole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = -3/sqrt(5.)*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k1_atom2.getDipole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_dq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_dq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        }
-                    }
-
-                    if (quadrupolequadrupole) {
-                        if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 0) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 0)) {
-                            real_t val = 3/5.*6*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -1)) {
-                            real_t val = 3/5.*4*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -1) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 1)) {
-                            real_t val = 3/5.*4*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), 2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), -2)) {
-                            real_t val = 3/5.*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
-                            }
-                        } else if (selectionRulesQuadrupole(state_row.first(), state_col.first(), -2) && selectionRulesQuadrupole(state_row.second(), state_col.second(), 2)) {
-                            real_t val = 3/5.*matrix_elements_k2_atom1.getQuadrupole(state_row.first(), state_col.first())*
-                                    matrix_elements_k2_atom2.getQuadrupole(state_row.second(), state_col.second());
-                            if (std::abs(val) > tol) {
-                                hamiltonian_qq.addEntries(state_row.idx,state_col.idx,val);
-                                if (state_row.idx != state_col.idx) hamiltonian_qq.addEntries(state_col.idx,state_row.idx,val);
+                            if (coupling) {
+                                size_mat_multipole[idx_multipole]++;
                             }
                         }
                     }
                 }
+
+                // --- construct two-atom interaction Hamiltonians ---
+                size_t size_basis = basis_two->size();
+
+                for (int sumOfKappas = sumOfKappas_min; sumOfKappas<=sumOfKappas_max; ++sumOfKappas) {
+                    std::cout << "Two-atom Hamiltonian, construct interaction Hamiltonian that belongs to 1/R^" << sumOfKappas+1 << std::endl;
+
+                    int idx_multipole = sumOfKappas-sumOfKappas_min;
+
+                    exponent_multipole.push_back(sumOfKappas+1);
+                    mat_multipole.push_back(Hamiltonianmatrix(size_basis, 2*size_mat_multipole[idx_multipole])); // factor of 2 because triangular matrix is not sufficient
+
+                    for (const auto &state_col : *basis_two) {
+                        if (!used_coordinate[state_col.idx]) continue;
+
+                        for (const auto &state_row : *basis_two) {
+                            if (!used_coordinate[state_row.idx]) continue;
+                            if (state_row.idx < state_col.idx) continue;
+
+                            // construct basis
+                            if (state_row.idx == state_col.idx) {
+                                mat_multipole[idx_multipole].addBasis(state_row.idx,state_col.idx,1);
+                            }
+
+                            // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
+                            real_t val = 0;
+
+                            for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
+                                int kappa2 = sumOfKappas - kappa1;
+
+                                // allowed deltaL and deltaJ?
+                                if (selectionRulesMultipoleKappa(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipoleKappa(state_row.second(), state_col.second(), kappa2)) {
+                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
+
+                                        // allowed deltaM? this can only be the case for one single value of q, thus we can break the loop
+                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q)) {
+                                            int idx_kappa1 = kappa1-kappa_min;
+                                            int idx_kappa2 = kappa2-kappa_min;
+
+                                            double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2+q);
+                                            val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1[idx_kappa1].getMultipole(state_row.first(), state_col.first())*
+                                                    matrixelements_atom2[idx_kappa2].getMultipole(state_row.second(), state_col.second());
+
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (std::abs(val) > tol) {
+                                mat_multipole[idx_multipole].addEntries(state_row.idx,state_col.idx,val);
+                                if (state_row.idx != state_col.idx) mat_multipole[idx_multipole].addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+                            }
+
+                            // TODO state_two soll std::array<state_one, 2> sein! Dann geht auch die Abfrage der selection rules eindeutiger
+                        }
+                    }
+
+                    std::cout << "Two-atom Hamiltonian, compress interaction Hamiltonian that belongs to 1/R^" << sumOfKappas+1 << std::endl;
+
+                    mat_multipole[idx_multipole].compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
+                }
             }
 
-            std::cout << "Two-atom Hamiltonian, compress interaction Hamiltonians" << std::endl;
-
-            hamiltonian_dd.compress(basis_two->dim(), basis_two->dim()); // TODO substitute dim() by size()
-            hamiltonian_dq.compress(basis_two->dim(), basis_two->dim());
-            hamiltonian_qq.compress(basis_two->dim(), basis_two->dim());
-
-
-
-
-
-
-            // --- construct Hamiltonians --- // TODO Logik in eigene Klasse
+            // === construct Hamiltonians === // TODO Logik in eigene Klasse
             std::cout << "Two-atom Hamiltonian, assemble Hamiltonians" << std::endl;
 
             matrix.reserve(nSteps_two);
@@ -2030,15 +1927,6 @@ public:
             size_t step_one_sym = 0;
             size_t step_one_asym = 0;
             size_t step_one_all = 0;
-            Hamiltonianmatrix hamiltonian_dd_transformed_sym;
-            Hamiltonianmatrix hamiltonian_dd_transformed_asym;
-            Hamiltonianmatrix hamiltonian_dd_transformed_all;
-            Hamiltonianmatrix hamiltonian_dq_transformed_sym;
-            Hamiltonianmatrix hamiltonian_dq_transformed_asym;
-            Hamiltonianmatrix hamiltonian_dq_transformed_all;
-            Hamiltonianmatrix hamiltonian_qq_transformed_sym;
-            Hamiltonianmatrix hamiltonian_qq_transformed_asym;
-            Hamiltonianmatrix hamiltonian_qq_transformed_all;
 
             bool flag_perhapsmissingtable = true;
 
@@ -2058,25 +1946,24 @@ public:
                 // loop through symmetries
                 for (symmetries_t symmetry : symmetries) {
                     Hamiltonianmatrix totalmatrix;
-                    real_t position_dd = 1./std::pow(position,3);
-                    real_t position_dq = 1./std::pow(position,4);
-                    real_t position_qq = 1./std::pow(position,5);
 
+                    // TODO write it down in a nicer form
                     if (symmetry == SYM) {
                         conf["symmetry"] = "sym";
                         block = 1;
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_sym <= step_two)) {
                             step_one_sym++;
-                            if (dipoledipole) hamiltonian_dd_transformed_sym = hamiltonian_dd.changeBasis(mat_single_sym[step_one_sym-1].basis());
-                            if (dipolequadrupole) hamiltonian_dq_transformed_sym = hamiltonian_dq.changeBasis(mat_single_sym[step_one_sym-1].basis());
-                            if (quadrupolequadrupole) hamiltonian_qq_transformed_sym = hamiltonian_qq.changeBasis(mat_single_sym[step_one_sym-1].basis());
+                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                                mat_multipole_transformed_sym[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_sym[step_one_sym-1].basis());
+                            }
                         }
 
                         totalmatrix = mat_single_sym[step_one_sym-1];
-                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_sym*position_dd;
-                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_sym*position_dq;
-                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_sym*position_qq;
+                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                            totalmatrix += mat_multipole_transformed_sym[idx_multipole]*pos;
+                        }
 
                     } else if (symmetry == ASYM) {
                         conf["symmetry"] = "asym";
@@ -2084,15 +1971,16 @@ public:
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_asym <= step_two)) {
                             step_one_asym++;
-                            if (dipoledipole) hamiltonian_dd_transformed_asym = hamiltonian_dd.changeBasis(mat_single_asym[step_one_asym-1].basis());
-                            if (dipolequadrupole) hamiltonian_dq_transformed_asym = hamiltonian_dq.changeBasis(mat_single_asym[step_one_asym-1].basis());
-                            if (quadrupolequadrupole) hamiltonian_qq_transformed_asym = hamiltonian_qq.changeBasis(mat_single_asym[step_one_asym-1].basis());
+                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                                mat_multipole_transformed_asym[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_asym[step_one_asym-1].basis());
+                            }
                         }
 
                         totalmatrix = mat_single_asym[step_one_asym-1];
-                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_asym*position_dd;
-                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_asym*position_dq;
-                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_asym*position_qq;
+                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                            totalmatrix += mat_multipole_transformed_asym[idx_multipole]*pos;
+                        }
 
                     } else if (symmetry == ALL) {
                         conf["symmetry"] = "all";
@@ -2100,15 +1988,16 @@ public:
 
                         if (step_two == 0 || (nSteps_one > 1 && step_one_all <= step_two)) {
                             step_one_all++;
-                            if (dipoledipole) hamiltonian_dd_transformed_all = hamiltonian_dd.changeBasis(mat_single_all[step_one_all-1].basis());
-                            if (dipolequadrupole) hamiltonian_dq_transformed_all = hamiltonian_dq.changeBasis(mat_single_all[step_one_all-1].basis());
-                            if (quadrupolequadrupole) hamiltonian_qq_transformed_all = hamiltonian_qq.changeBasis(mat_single_all[step_one_all-1].basis());
+                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                                mat_multipole_transformed_all[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_all[step_one_all-1].basis());
+                            }
                         }
 
                         totalmatrix = mat_single_all[step_one_all-1];
-                        if (dipoledipole) totalmatrix += hamiltonian_dd_transformed_all*position_dd;
-                        if (dipolequadrupole) totalmatrix += hamiltonian_dq_transformed_all*position_dq;
-                        if (quadrupolequadrupole) totalmatrix += hamiltonian_qq_transformed_all*position_qq;
+                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                            totalmatrix += mat_multipole_transformed_all[idx_multipole]*pos;
+                        }
                     }
 
                     auto submatrices = totalmatrix.findSubs(); // TODO
@@ -2243,6 +2132,7 @@ private:
     size_t nSteps_two;
     std::string species1, species2;
     real_t min_R, max_R;
+    int multipoleexponent;
     bool dipoledipole;
     bool dipolequadrupole;
     bool quadrupolequadrupole;

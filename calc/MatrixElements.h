@@ -12,6 +12,8 @@
 #include <sstream>
 #include <wignerSymbols.h>
 
+bool selectionRulesMultipoleKappa(StateOne state1, StateOne state2, int kappa);
+bool selectionRulesMultipoleQ(StateOne state1, StateOne state2, int q);
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
@@ -25,7 +27,9 @@ public:
     void precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
     void precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
     void precalculate_quadrupole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m, bool exist_pp, bool exist_mm);
+    void precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one);
     real_t getDipole(StateOne state_row, StateOne state_col);
+    real_t getMultipole(StateOne state_row, StateOne state_col);
     real_t getQuadrupole(StateOne state_row, StateOne state_col);
     real_t getMomentum(StateOne state_row, StateOne state_col);
 private:
