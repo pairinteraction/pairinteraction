@@ -253,6 +253,12 @@ void MatrixElements::precalculate2(std::shared_ptr<const BasisnamesOne> basis_on
             cache.second = pow(-1, state.j[0]-state.m[0]) *
                     WignerSymbols::wigner3j(state.j[0], k, state.j[1], -state.m[0], q, state.m[1]);
 
+            /*if (cache.second == 0) {
+                std::cout << k << ","
+                          << state.j[0] << "," << state.m[0] << ","
+                          << state.j[1] << "," << state.m[1] << "," << WignerSymbols::wigner3j(1.5, 2, 1.5, -state.m[0], q, state.m[1]) << std::endl;
+            }*/
+
             ss.str(std::string());
             ss << "insert into cache_angular (k, j1, m1, j2, m2, value) values ("
                << k << ","
@@ -307,10 +313,20 @@ real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col) {
     std:: cout << cache_reduced_YxSqrtOf4Pi[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})] << std::endl;
     std:: cout << "------------------------" << std::endl;*/
 
-    return  cache_radial[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
+    real_t val =  cache_radial[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
             cache_angular[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             cache_reduced_YxSqrtOf4Pi[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})] / std::sqrt(2*k+1);
+
+    if (std::abs(val) < 1e-32 && false) {
+        std:: cout << cache_radial[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] << std::endl;
+            std:: cout << cache_angular[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] << std::endl;
+            std:: cout << cache_reduced_commutes_s[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] << std::endl;
+            std:: cout << cache_reduced_YxSqrtOf4Pi[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})] << std::endl;
+            std::cout << StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}) << std::endl;
+            std:: cout << "------------------------" << std::endl;
+    }
+    return val;
 }
 
 

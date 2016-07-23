@@ -1595,7 +1595,7 @@ public:
             enum symmetries_t {ALL, SYM, ASYM};
 
             bool symmetries_sym, symmetries_asym, symmetries_all;
-            if (samebasis) {
+            if (samebasis && multipoleexponent <= 3) {
                 StateTwo initialstate = basis_two->initial();
                 symmetries_sym = true;
                 symmetries_asym = initialstate.first() != initialstate.second();
@@ -1874,7 +1874,7 @@ public:
 
                                 // allowed deltaL and deltaJ?
                                 if (selectionRulesMultipoleKappa(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipoleKappa(state_row.second(), state_col.second(), kappa2)) {
-                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
+                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) { // TODO do not loop over q, include deltaM check in selectionRulesKappa
 
                                         // allowed deltaM? this can only be the case for one single value of q, thus we can break the loop
                                         if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q, kappa1) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q, kappa2)) {
