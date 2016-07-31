@@ -1,17 +1,14 @@
-#include "Numerov.hpp"
 #include "QuantumDefect.hpp"
+#include "Wavefunction.hpp"
 
 #include <string>
-#include <complex>
 #include <vector>
 #include <cmath>
+#include <gsl/gsl_sf_hyperg.h>
 
-//#include <boost/math/special_functions/spherical_harmonic.hpp>
+// --- Common interface ---
 
-
-Numerov::Numerov(std::string species, int n, int l, real_t j)
-  : species(species), n(n), l(l), j(j), qd(species,n,l,j),
-    nsteps(nsteps_), xmin(xmin_), xmax(xmax_), dx(dx_) {
+void Wavefunction::initialize() {
   dx_ = 0.001*10; // TODO
   xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
   xmin_ = floor(sqrt(( 2.08 > xmin_ ? 2.08 : xmin_ )));
@@ -22,6 +19,13 @@ Numerov::Numerov(std::string species, int n, int l, real_t j)
     x[i] = xmin_ + i*dx_;
   }
   y.assign(nsteps_,0.0);
+}
+
+// --- Numerov's method ---
+
+Numerov::Numerov(std::string species, int n, int l, real_t j)
+  : Wavefunction(species, n, l, j) {
+  initialize();
 }
 
 
@@ -86,4 +90,53 @@ real_t Numerov::step(int i) {
   real_t B = (1. - 1./12.* dx_*dx_ * g(x[i+2])) * y[i+2];
   real_t C =  1. - 1./12.* dx_*dx_ * g(x[i]);
   return (A - B)/C  ;
+}
+
+// --- Whittaker method ---
+
+real_t HypergeometricU(real_t a, real_t b, real_t z)
+{
+  if (z == 0) return NAN;
+  return gsl_sf_hyperg_U(a,b,z);
+}
+
+
+real_t WhittakerW(real_t k, real_t m, real_t z)
+{
+  return exp(-.5*z)*pow(z,m+.5)*HypergeometricU(m-k+.5, 1+2*m, z);
+}
+
+
+real_t RadialWFWhittaker(real_t r, real_t nu, int l)
+{
+  return pow(nu*nu * tgamma(nu+l+1) * tgamma(nu-l), -.5) * WhittakerW(nu, l+.5, 2*r/nu);
+}
+
+
+Whittaker::Whittaker(std::string species, int n, int l, real_t j)
+  : Wavefunction(species, n, l, j) {
+  initialize();
+}
+
+
+std::vector<real_t> Whittaker::axis() {
+  return x;
+}
+
+
+std::vector<real_t> Whittaker::integrate() {
+  for (int i = 0; i < nsteps_; ++i)
+    y[i] = RadialWFWhittaker(x[i], qd.nstar, l);
+  return y;
+}
+
+// --- Matrix element calculation ---
+
+size_t findidx(std::vector<real_t> x, real_t d) {
+    size_t i;
+    for (i = 0; i < x.size(); ++i) {
+        if (x[i] == d)
+            break;
+    }
+    return i;
 }

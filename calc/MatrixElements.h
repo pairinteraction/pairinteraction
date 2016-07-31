@@ -3,7 +3,7 @@
 
 #include "dtypes.h"
 #include "Basisnames.h"
-#include "Numerov.hpp"
+#include "Wavefunction.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -17,8 +17,6 @@ bool selectionRulesMultipoleQ(StateOne state1, StateOne state2, int q, int kappa
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
-
-size_t findidx(std::vector<real_t> x, real_t d);
 
 class MatrixElements { // TODO ein buffer am Programmstart
 public:

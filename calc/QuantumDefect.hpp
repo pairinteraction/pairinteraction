@@ -12,6 +12,7 @@ private:
   int Z_;
   real_t a1_, a2_, a3_, a4_;
   real_t rc_;
+  real_t nstar_;
   real_t energy_;
 public:
   QuantumDefect(std::string species, int n, int l, real_t j);
@@ -19,6 +20,7 @@ public:
   const int &Z;
   const real_t &a1, &a2, &a3, &a4;
   const real_t &rc;
+  const real_t &nstar;
   const real_t &energy;
 };
 
