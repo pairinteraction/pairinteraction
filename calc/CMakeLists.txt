@@ -108,6 +108,18 @@ else(Boost_FOUND)
                       "================\n")
 endif(Boost_FOUND)
 
+find_package(GSL REQUIRED)
+if(GSL_FOUND)
+  include_directories(${GSL_INCLUDE_DIRS})
+  target_link_libraries(pairinteraction-real ${GSL_LIBRARIES})
+  target_link_libraries(pairinteraction-complex ${GSL_LIBRARIES})
+  target_link_libraries(matrixelements ${GSL_LIBRARIES})
+else(GSL_FOUND)
+  message(FATAL_ERROR "==============\n"
+                      "GSL not found!\n"
+                      "==============\n")
+endif(GSL_FOUND)
+
 # set c++11
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)

@@ -570,7 +570,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>285</width>
              <height>392</height>
             </rect>
            </property>
@@ -1211,8 +1211,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>170</width>
-             <height>286</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1467,8 +1467,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>196</width>
-             <height>312</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1672,13 +1672,13 @@
                  </sizepolicy>
                 </property>
                 <property name="statusTip">
-                 <string>A value smaller than 3 disables the interacton between the atoms.</string>
+                 <string>A value of 2 disables the interacton between the atoms.</string>
                 </property>
                 <property name="minimum">
                  <number>2</number>
                 </property>
                 <property name="maximum">
-                 <number>9</number>
+                 <number>99</number>
                 </property>
                 <property name="value">
                  <number>3</number>
@@ -1728,8 +1728,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>197</width>
-             <height>60</height>
+             <width>300</width>
+             <height>356</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1836,7 +1836,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>285</width>
              <height>825</height>
             </rect>
            </property>
@@ -3315,7 +3315,7 @@
              <x>0</x>
              <y>0</y>
              <width>300</width>
-             <height>473</height>
+             <height>526</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
