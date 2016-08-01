@@ -4,7 +4,8 @@
 !define BUILD_DIR "..\build-w64"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-x86_64.exe'
+!define /date CUR_DATE "%Y%m%d"
+OutFile '${APP_NAME}-install-x86_64-${CUR_DATE}.exe'
 
 showinstdetails show
 
