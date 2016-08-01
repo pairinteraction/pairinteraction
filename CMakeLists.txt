@@ -38,13 +38,15 @@ else(WIN32)
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/postinst")
 
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc5, python3-Pint, python3-qt5, python3-psutil")
+  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc49, python3-Pint, python3-qt5, python3-psutil")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
   set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
   set(CPACK_RPM_PACKAGE_PRIORITY "optional")
+  set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/postinst.rpm")
 
   include(CPack)
 

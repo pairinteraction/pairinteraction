@@ -1,8 +1,8 @@
-\documentclass[border=2pt]{standalone}
+\documentclass{standalone}
 \usepackage{tikz}
 \begin{document}
-\begin{tikzpicture}[thick,line cap=round]
-  \useasboundingbox (0pt,-2pt) rectangle (15pt,13pt);
+\begin{tikzpicture}[thick,line cap=round,line join=round]
+  \filldraw[white,rounded corners,use as bounding box] (-2pt,-3pt) rectangle +(19pt,19pt);
   \draw (0,13pt) |- (15pt,0);
   \draw[red] (1pt,12pt) .. controls (3pt,-10pt) and (6pt,2pt) .. (15pt,1pt);
   \draw[blue] (2pt,12pt) .. controls (4pt,-6pt) and (6pt,5pt) .. (15pt,2pt);
