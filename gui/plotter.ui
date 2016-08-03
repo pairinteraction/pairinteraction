@@ -3389,6 +3389,16 @@
              </widget>
             </item>
             <item>
+             <widget class="QRadioButton" name="radiobutton_system_missingWhittaker">
+              <property name="text">
+               <string>calculate it using Whittaker functions.</string>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QRadioButton" name="radiobutton_system_missingError">
               <property name="text">
                <string>throw an error.</string>

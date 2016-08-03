@@ -15,25 +15,20 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
 }
 
-
-size_t findidx(std::vector<real_t> x, real_t d) {
-    size_t i;
-    for (i = 0; i < x.size(); ++i) {
-        if (x[i] == d)
-            break;
-    }
-    return i;
-}
-
-
-MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname), calc_missing(true) {
+MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname) {
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
 }
 
 MatrixElements::MatrixElements(const Configuration& config, std::string species, int k, std::string dbname) : MatrixElements(species,k,dbname) {
-    calc_missing = config["missingCalc"].str() == "true";
+    if (config["missingCalc"].str() == "true") {
+        method = "Modelpotentials";
+    } else if (config["missingWhittaker"].str() == "true") {
+        method = "Whittaker";
+    } else {
+        method = "Error";
+    }
 }
 
 void MatrixElements::precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one) {
@@ -55,8 +50,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     // create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial)
 
     db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
-            "species text, k integer, n1 integer, l1 integer, j1 double,"
-            "n2 integer, l2 integer, j2 double, value double, UNIQUE (species, k, n1, l1, j1, n2, l2, j2));");
+            "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+            "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
 
     db.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
             "k integer, j1 double, m1 double,"
@@ -181,7 +176,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss.str(std::string());
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.species = '" << species << "' AND c.k = " << k << ";";
+           << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << k << ";";
         SQLite3Result result_radial = db.query(ss.str());
         for (auto r : result_radial) {
             *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
@@ -246,20 +241,16 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
-                if (calc_missing) {
                     cache.second = calcRadialElement(species, state.n[0], state.l[0], state.j[0], k, state.n[1], state.l[1], state.j[1]);
 
                     ss.str(std::string());
-                    ss << "insert into cache_radial (species, k, n1, l1, j1, n2, l2, j2, value) values ("
-                       << "'" << species << "'" << "," << k << ","
+                    ss << "insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                       << "'" << method << "'" << "," << "'" << species << "'" << "," << k << ","
                        << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                        << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
                        << cache.second << ");";
                     db.exec(ss.str());
-                } else { // throw error
-                    std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
-                    abort();
-                }
+
             }
         }
     }
@@ -648,7 +639,6 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
 
         for (auto &element : element_nlj_k) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                if (calc_missing) {
                     int lmax = fmax(element.first.l[0],element.first.l[1]);
 
                     if (k == 1) { // dipole
@@ -667,10 +657,7 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
                        << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
                        << element.second << ");";
                     db.exec(ss.str());
-                } else { // throw error
-                    std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
-                    abort();
-                }
+
             }
         }
     }
@@ -697,7 +684,6 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
 
         for (auto &element : element_nlj_0) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                if (calc_missing) {
                     element.second =
                             calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
 
@@ -708,10 +694,6 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
                        << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
                        << element.second << ");";
                     db.exec(ss.str());
-                } else { // throw error
-                    std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
-                    abort();
-                }
             }
         }
     }
@@ -758,34 +740,20 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
 
 real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, real_t j1, int power,
                                          int n2, int l2, real_t j2) {
-    Numerov N1(species, n1, l1, j1);
-    Numerov N2(species, n2, l2, j2);
-
-    std::vector<real_t> x1 = N1.axis();
-    std::vector<real_t> y1 = N1.integrate();
-    std::vector<real_t> x2 = N2.axis();
-    std::vector<real_t> y2 = N2.integrate();
-
-    real_t xmin = N1.xmin >= N2.xmin ? N1.xmin : N2.xmin;
-    real_t xmax = N1.xmax <= N2.xmax ? N1.xmax : N2.xmax;
-
-    real_t mu = 0;
-    // If there is an overlap, calculate the matrix element
-    if (xmin <= xmax) {
-        int start1 = findidx(x1, xmin);
-        int end1   = findidx(x1, xmax);
-        int start2 = findidx(x2, xmin);
-        int end2   = findidx(x2, xmax);
-
-        int i1, i2;
-        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; i1++, i2++) {
-            mu += y1[i1]*y2[i2] * pow(x1[i1], 2*power+2) * N1.dx;
-        }
-        mu = fabs(2*mu);
+    if (method == "Modelpotentials") {
+        Numerov N1(species, n1, l1, j1);
+        Numerov N2(species, n2, l2, j2);
+        return IntegrateRadialElement(N1, power, N2);
+    } else if(method == "Whittaker") {
+        Whittaker N1(species, n1, l1, j1);
+        Whittaker N2(species, n2, l2, j2);
+        return IntegrateRadialElement(N1, power, N2);
+    } else {
+        std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
+        abort();
     }
-
-    return mu;
 }
+
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
     if (k != 1) abort();

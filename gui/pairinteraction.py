@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 8
-version_cache = 8
+version_settings = 9
+version_cache = 9
 
 # Standard library
 from abc import ABCMeta, abstractmethod
@@ -869,7 +869,8 @@ class SystemDict(GuiDict):
         store["precision"] =        {'widget': ui.lineedit_system_precision,                'unit': None}
         store["matCombined"] =      {'widget': ui.radiobutton_system_matCombined,           'unit': None}
         store["matSeparate"] =      {'widget': ui.radiobutton_system_matSeparate,           'unit': None}
-        store["missingCalc"] =      {'widget': ui.radiobutton_system_missingCalc,          'unit': None}
+        store["missingCalc"] =      {'widget': ui.radiobutton_system_missingCalc,           'unit': None}
+        store["missingWhittaker"] = {'widget': ui.radiobutton_system_missingWhittaker,      'unit': None}
         store["missingError"] =     {'widget': ui.radiobutton_system_missingError,          'unit': None}
         store["cores"] =            {'widget': ui.spinbox_system_cores,                     'unit': None}
     
@@ -882,23 +883,20 @@ class SystemDict(GuiDict):
     # field map of atom 2 (samebasis == False)
     keys_for_cprogram_field2 = ["species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision","missingCalc",
+        "samebasis", "steps","precision","missingCalc","missingWhittaker",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
     
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle","deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
-        "samebasis", "steps","precision", "missingCalc", "theta", "exponent",
+        "samebasis", "steps","precision", "missingCalc","missingWhittaker", "theta", "exponent",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "minR", "maxR"]
     
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-        "samebasis", "steps","precision","missingCalc",
+        "samebasis", "steps","precision","missingCalc","missingWhittaker",
         "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
-
-
-
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -1109,6 +1107,7 @@ class MainWindow(QtGui.QMainWindow):
         
         self.missinggroup = QtGui.QButtonGroup()
         self.missinggroup.addButton(self.ui.radiobutton_system_missingCalc)
+        self.missinggroup.addButton(self.ui.radiobutton_system_missingWhittaker)
         self.missinggroup.addButton(self.ui.radiobutton_system_missingError)
         
         self.matgroup = QtGui.QButtonGroup()

@@ -3,7 +3,7 @@
 
 #include "dtypes.h"
 #include "Basisnames.h"
-#include "Numerov.hpp"
+#include "Wavefunction.hpp"
 
 #include <string>
 #include <unordered_map>
@@ -16,8 +16,6 @@ bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa);
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
-
-size_t findidx(std::vector<real_t> x, real_t d);
 
 class MatrixElements { // TODO ein buffer am Programmstart
 public:
@@ -37,10 +35,10 @@ private:
     void precalculateOld(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_q_0, bool exist_q_p, bool exist_q_m, bool exist_q_pp, bool exist_q_mm, bool exist_m_0, bool exist_m_p, bool exist_m_m);
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool calcMultipole, bool calcMomentum);
     real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
+    std::string method;
     std::string species;
     int k;
     std::string dbname;
-    bool calc_missing;
     std::unordered_map<StateTwo,real_t> element_nlj_k;
     std::unordered_map<StateTwo,real_t> element_nlj_0;
     std::unordered_map<StateTwo,real_t> element_nlj_m;

@@ -27,6 +27,7 @@ public:
         conf["deltaJSingle"] >> delta_j;
         conf["deltaMSingle"] >> delta_m;
         conf["missingCalc"] = config["missingCalc"];
+        conf["missingWhittaker"] = config["missingWhittaker"];
     }
     size_t size() const {
         return names_.size();

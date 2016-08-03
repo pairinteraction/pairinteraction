@@ -18,7 +18,7 @@ struct no_defect : public std::exception {
 
 
 QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
-  : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), energy(energy_)
+  : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
 {
   std::stringstream ss;
   SQLite3 db("quantum_defects.db");
@@ -88,18 +88,18 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
      << ");";
   SQLite3Result res = db.query(ss.str().c_str());
   ss.str(std::string());
-  real_t nstar = n;
+  nstar_ = n;
   real_t Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
   real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
   if (res.size() > 0)
   {
     *res.first() >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
-    nstar -= d0 + d2/pow(n-d0,2) + d4/pow(n-d0,4)
+    nstar_ -= d0 + d2/pow(n-d0,2) + d4/pow(n-d0,4)
       + d6/pow(n-d0,6) + d8/pow(n-d0,8);
   }
   else throw no_defect();
 
-  energy_ = -.5*(Ry/Ry_inf)/(nstar*nstar);
+  energy_ = -.5*(Ry/Ry_inf)/(nstar_*nstar_);
 }
 
 
