@@ -1167,7 +1167,7 @@ protected:
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
-                matrix_elements.precalculate_momentum(basis_one, exist_B_0, exist_B_p, exist_B_m);
+                matrix_elements.precalculate_momentumOld(basis_one, exist_B_0, exist_B_p, exist_B_m);
             }
 
             // --- count entries of Hamiltonian parts ---
@@ -1248,17 +1248,17 @@ protected:
                     }
 
                     if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
-                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_0.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
-                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_p.addEntries(state_row.idx,state_col.idx,val);
                         }
                     } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
-                        real_t val = matrix_elements.getMomentum(state_row, state_col);
+                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_m.addEntries(state_row.idx,state_col.idx,val);
                         }
@@ -1590,26 +1590,7 @@ public:
                 nSteps_two = 1;
             }
 
-            // --- determine necessary symmetries ---
-            std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
-            enum symmetries_t {ALL, SYM, ASYM};
 
-            bool symmetries_sym, symmetries_asym, symmetries_all;
-            if (samebasis && multipoleexponent <= 3) {
-                StateTwo initialstate = basis_two->initial();
-                symmetries_sym = true;
-                symmetries_asym = initialstate.first() != initialstate.second();
-                symmetries_all = false;
-            } else {
-                symmetries_sym = false;
-                symmetries_asym = false;
-                symmetries_all = true;
-            }
-
-            std::vector<symmetries_t> symmetries;
-            if (symmetries_sym) symmetries.push_back(SYM);
-            if (symmetries_asym) symmetries.push_back(ASYM);
-            if (symmetries_all) symmetries.push_back(ALL);
 
             // --- determine coordinates whose usage is not restricted ---
             std::cout << "Two-atom basis, size without restrictions: " << basis_two->size() << std::endl;
@@ -1676,31 +1657,62 @@ public:
 
             // === construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)  ===
 
+
+            // --- determine necessary symmetries ---
+            std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
+            enum symmetries_t {ALL, SYM, ASYM};
+
+            std::vector<symmetries_t> symmetries;
+            if (samebasis && multipoleexponent <= 3) {
+                symmetries.push_back(SYM);
+                StateTwo initialstate = basis_two->initial();
+                if (initialstate.first() != initialstate.second()) {
+                    symmetries.push_back(ASYM);
+                }
+            } else {
+                symmetries.push_back(ALL);
+            }
+
+
+
+            bool symmetries_sym, symmetries_asym, symmetries_all;
+            if (samebasis && multipoleexponent <= 3) {
+                StateTwo initialstate = basis_two->initial();
+                symmetries_sym = true;
+                symmetries_asym = initialstate.first() != initialstate.second();
+                symmetries_all = false;
+            } else {
+                symmetries_sym = false;
+                symmetries_asym = false;
+                symmetries_all = true;
+            }
+
+
             // --- load one-atom Hamiltonians ---
             std::cout << "Two-atom Hamiltonian, construct contribution of combined one-atom Hamiltonians" << std::endl;
 
-            std::vector<Hamiltonianmatrix> mat_single_sym;
-            std::vector<Hamiltonianmatrix> mat_single_asym;
-            std::vector<Hamiltonianmatrix> mat_single_all;
-            if (symmetries_sym) mat_single_sym.reserve(nSteps_one);
-            if (symmetries_asym) mat_single_asym.reserve(nSteps_one);
-            if (symmetries_all) mat_single_all.reserve(nSteps_one);
+            std::map<symmetries_t,std::vector<Hamiltonianmatrix>> mat_single;
+            for (symmetries_t symmetry : symmetries) {
+                mat_single[symmetry].reserve(nSteps_one);
+            }
 
             // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff and the list of necessary coordinates
             for (size_t i = 0; i < nSteps_one; ++i) {
+                for (symmetries_t symmetry : symmetries) {
+                    if (symmetry == SYM) mat_single[symmetry].push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                    if (symmetry == ASYM) mat_single[symmetry].push_back(combineAsym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                    if (symmetry == ALL) mat_single[symmetry].push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                }
                 std::cout << "Two-atom Hamiltonian, "<< i+1 << ". Hamiltonian combined" << std::endl;
-                if (symmetries_sym) mat_single_sym.push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
-                if (symmetries_asym) mat_single_asym.push_back(combineAsym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
-                if (symmetries_all) mat_single_all.push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
             }
 
             // --- remove unnecessary (i.e. more or less empty) basisvectors ---
             std::cout << "Two-atom basis, remove unnecessary basis vectors (i.e. vectors with too small norm)" << std::endl;
 
             for (size_t i = 0; i < nSteps_one; ++i) {
-                if (symmetries_sym) mat_single_sym[i].removeUnnecessaryBasisvectors();
-                if (symmetries_asym) mat_single_asym[i].removeUnnecessaryBasisvectors();
-                if (symmetries_all) mat_single_all[i].removeUnnecessaryBasisvectors();
+                for (symmetries_t symmetry : symmetries) {
+                    mat_single[symmetry][i].removeUnnecessaryBasisvectors();
+                }
             }
 
             // --- find coordinates that are used ---
@@ -1708,9 +1720,9 @@ public:
             std::vector<bool> used_coordinate(basis_two->size(), false);
 
             for (size_t i = 0; i < nSteps_one; ++i) {
-                if (symmetries_sym) mat_single_sym[i].findUnnecessaryStates(used_coordinate);
-                if (symmetries_asym) mat_single_asym[i].findUnnecessaryStates(used_coordinate);
-                if (symmetries_all) mat_single_all[i].findUnnecessaryStates(used_coordinate);
+                for (symmetries_t symmetry : symmetries) {
+                    mat_single[symmetry][i].findUnnecessaryStates(used_coordinate);
+                }
             }
 
             auto basis_two_used = std::make_shared<BasisnamesTwo>(*basis_two);
@@ -1724,9 +1736,9 @@ public:
             }
 
             for (size_t i = 0; i < nSteps_one; ++i) { // TODO nicht verwenden
-                if (symmetries_sym) mat_single_sym[i].removeUnnecessaryStates(is_used_coordinate);
-                if (symmetries_asym) mat_single_asym[i].removeUnnecessaryStates(is_used_coordinate);
-                if (symmetries_all) mat_single_all[i].removeUnnecessaryStates(is_used_coordinate);
+                for (symmetries_t symmetry : symmetries) {
+                    mat_single[symmetry][i].removeUnnecessaryStates(is_used_coordinate);
+                }
             }
             basis_two->removeUnnecessaryStates(is_used_coordinate); // TODO skipUnnecessaryStates(is_used_coordinate)*/
 
@@ -1757,9 +1769,6 @@ public:
 
             std::vector<int> exponent_multipole;
             std::vector<Hamiltonianmatrix> mat_multipole;
-            std::vector<Hamiltonianmatrix> mat_multipole_transformed_sym;
-            std::vector<Hamiltonianmatrix> mat_multipole_transformed_asym;
-            std::vector<Hamiltonianmatrix> mat_multipole_transformed_all;
             std::vector<MatrixElements> matrixelements_atom1;
             std::vector<MatrixElements> matrixelements_atom2;
             std::vector<idx_t> size_mat_multipole;
@@ -1779,9 +1788,6 @@ public:
 
                 exponent_multipole.reserve(idx_multipole_max+1);
                 mat_multipole.reserve(idx_multipole_max+1);
-                mat_multipole_transformed_sym.resize(idx_multipole_max+1);
-                mat_multipole_transformed_asym.resize(idx_multipole_max+1);
-                mat_multipole_transformed_all.resize(idx_multipole_max+1);
                 size_mat_multipole.resize(idx_multipole_max+1);
 
                 // --- precalculate matrix elements ---
@@ -1815,29 +1821,20 @@ public:
                             if (state_row.idx < state_col.idx) continue;
 
                             // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
-                            bool coupling = false;
-
                             for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
                                 int kappa2 = sumOfKappas - kappa1;
 
-                                // allowed deltaL and deltaJ?
-                                if (selectionRulesMultipoleKappa(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipoleKappa(state_row.second(), state_col.second(), kappa2)) {
-                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) {
+                                // allowed deltaL, deltaJ, and deltaM?
+                                if (selectionRulesMultipole(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipole(state_row.second(), state_col.second(), kappa2)) {
+                                    int q1 = state_row.first().m-state_col.first().m;
+                                    int q2 = state_row.second().m-state_col.second().m;
 
-                                        // allowed deltaM?
-                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q, kappa1) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q, kappa2)) {
-                                            coupling = true;
-                                            break;
-                                        }
-                                    }
-                                    if (coupling) {
+                                    // total momentum preserved?
+                                    if (q1 == -q2) {
+                                        size_mat_multipole[idx_multipole]++;
                                         break;
                                     }
                                 }
-                            }
-
-                            if (coupling) {
-                                size_mat_multipole[idx_multipole]++;
                             }
                         }
                     }
@@ -1872,21 +1869,18 @@ public:
                             for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
                                 int kappa2 = sumOfKappas - kappa1;
 
-                                // allowed deltaL and deltaJ?
-                                if (selectionRulesMultipoleKappa(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipoleKappa(state_row.second(), state_col.second(), kappa2)) {
-                                    for (int q = -fmin(kappa1,kappa2); q <= fmin(kappa1,kappa2); ++q) { // TODO do not loop over q, include deltaM check in selectionRulesKappa
+                                // allowed deltaL, deltaJ, and deltaM?
+                                if (selectionRulesMultipole(state_row.first(), state_col.first(), kappa1) && selectionRulesMultipole(state_row.second(), state_col.second(), kappa2)) {
+                                    int q1 = state_row.first().m-state_col.first().m;
+                                    int q2 = state_row.second().m-state_col.second().m;
 
-                                        // allowed deltaM? this can only be the case for one single value of q, thus we can break the loop
-                                        if (selectionRulesMultipoleQ(state_row.first(), state_col.first(), q, kappa1) && selectionRulesMultipoleQ(state_row.second(), state_col.second(), -q, kappa2)) {
-                                            int idx_kappa1 = kappa1-kappa_min;
-                                            int idx_kappa2 = kappa2-kappa_min;
-
-                                            double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2+q);
-                                            val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1[idx_kappa1].getMultipole(state_row.first(), state_col.first())*
-                                                    matrixelements_atom2[idx_kappa2].getMultipole(state_row.second(), state_col.second());
-
-                                            break;
-                                        }
+                                    // total momentum preserved?
+                                    if (q1 == -q2) {
+                                        int idx_kappa1 = kappa1-kappa_min;
+                                        int idx_kappa2 = kappa2-kappa_min;
+                                        double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
+                                        val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1[idx_kappa1].getMultipole(state_row.first(), state_col.first())*
+                                                matrixelements_atom2[idx_kappa2].getMultipole(state_row.second(), state_col.second());
                                     }
                                 }
                             }
@@ -1924,13 +1918,25 @@ public:
             // initialize variables
             Configuration conf;
             size_t step_one = 0;
-            size_t step_one_sym = 0;
-            size_t step_one_asym = 0;
-            size_t step_one_all = 0;
+
+            std::map<symmetries_t,std::vector<Hamiltonianmatrix>> mat_multipole_transformed;
+            for (symmetries_t symmetry : symmetries) {
+                mat_multipole_transformed[symmetry].resize(idx_multipole_max+1);
+            }
 
             bool flag_perhapsmissingtable = true;
 
-            int block;
+            std::map<symmetries_t,std::string> symmetries_name;
+            symmetries_name[SYM] = "sym";
+            symmetries_name[ASYM] = "asym";
+            symmetries_name[ALL] = "all";
+
+            std::vector<Hamiltonianmatrix> blocks_mat_single;
+            std::vector<std::vector<Hamiltonianmatrix>> blocks_mat_multipole;
+            std::vector<std::string> blocks_symmetries_name;
+            blocks_mat_single.reserve(symmetries.size());
+            blocks_mat_multipole.reserve(symmetries.size());
+            blocks_symmetries_name.reserve(symmetries.size());
 
             // loop through steps
             for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
@@ -1938,172 +1944,146 @@ public:
                 real_t position = min_R+normalized_position*(max_R-min_R);
 
                 if (step_two == 0 || (nSteps_one > 1 && step_one <= step_two)) {
-                    conf = conf_mat[step_one++];
+                    conf = conf_mat[step_one];
+
+                    blocks_mat_multipole.clear();
+                    blocks_mat_single.clear();
+                    blocks_symmetries_name.clear();
+
+                    for (symmetries_t symmetry : symmetries) {
+                        Hamiltonianmatrix abstotalmatrix = mat_single[symmetry][step_one];
+                        std::vector<Hamiltonianmatrix> transformedmatrix;
+                        transformedmatrix.reserve(idx_multipole_max+1);
+                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                            transformedmatrix.push_back(mat_multipole[idx_multipole].changeBasis(mat_single[symmetry][step_one].basis()));
+                            abstotalmatrix += transformedmatrix.back().abs();
+                        }
+
+                        // TODO find submatrices
+                        //if (no overlap with startstate): continue // TODO
+
+                        blocks_mat_multipole.push_back(std::vector<Hamiltonianmatrix>());
+                        blocks_mat_multipole.back().reserve(idx_multipole_max+1);
+                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                            blocks_mat_multipole.back().push_back(transformedmatrix[idx_multipole]);
+                        }
+                        blocks_mat_single.push_back(mat_single[symmetry][step_one]);
+                        blocks_symmetries_name.push_back(symmetries_name[symmetry]);
+                    }
+
+                    ++step_one;
                 }
 
                 conf["R"] = position;
 
                 // loop through symmetries
-                for (symmetries_t symmetry : symmetries) {
-                    Hamiltonianmatrix totalmatrix;
+                for (size_t idx_block = 0; idx_block < blocks_mat_single.size(); ++idx_block) {
+                    conf["symmetry"] = blocks_symmetries_name[idx_block];
 
-                    // TODO write it down in a nicer form
-                    if (symmetry == SYM) {
-                        conf["symmetry"] = "sym";
-                        block = 1;
-
-                        if (step_two == 0 || (nSteps_one > 1 && step_one_sym <= step_two)) {
-                            step_one_sym++;
-                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                                mat_multipole_transformed_sym[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_sym[step_one_sym-1].basis());
-                            }
-                        }
-
-                        totalmatrix = mat_single_sym[step_one_sym-1];
-                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                            totalmatrix += mat_multipole_transformed_sym[idx_multipole]*pos;
-                        }
-
-                    } else if (symmetry == ASYM) {
-                        conf["symmetry"] = "asym";
-                        block = 2;
-
-                        if (step_two == 0 || (nSteps_one > 1 && step_one_asym <= step_two)) {
-                            step_one_asym++;
-                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                                mat_multipole_transformed_asym[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_asym[step_one_asym-1].basis());
-                            }
-                        }
-
-                        totalmatrix = mat_single_asym[step_one_asym-1];
-                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                            totalmatrix += mat_multipole_transformed_asym[idx_multipole]*pos;
-                        }
-
-                    } else if (symmetry == ALL) {
-                        conf["symmetry"] = "all";
-                        block = 0;
-
-                        if (step_two == 0 || (nSteps_one > 1 && step_one_all <= step_two)) {
-                            step_one_all++;
-                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                                mat_multipole_transformed_all[idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single_all[step_one_all-1].basis());
-                            }
-                        }
-
-                        totalmatrix = mat_single_all[step_one_all-1];
-                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                            real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                            totalmatrix += mat_multipole_transformed_all[idx_multipole]*pos;
-                        }
+                    Hamiltonianmatrix totalmatrix = blocks_mat_single[idx_block];
+                    for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                        real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                        totalmatrix += blocks_mat_multipole[idx_block][idx_multipole]*pos;
                     }
 
-                    auto submatrices = totalmatrix.findSubs(); // TODO
+                    conf["sub"] = idx_block;
 
-                    for (size_t subidx = 0; subidx < submatrices.size(); ++subidx) {
-                        // if (no overlap with startstate): continue // TODO
+                    // create table if necessary
+                    std::stringstream query;
+                    std::string spacer = "";
 
-                        conf["sub"] = subidx;
-
-                        // create table if necessary
-                        std::stringstream query;
-                        std::string spacer = "";
-
-                        if (flag_perhapsmissingtable) {
-                            query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
-                                     "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                                     "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                            for (auto p: conf) {
-                                query << ", " << p.key << " text";
-                            }
-                            query << ", UNIQUE (";
-                            for (auto p: conf) {
-                                query << spacer << p.key;
-                                spacer = ", ";
-                            }
-                            query << "));";
-                            db.exec(query.str());
-
-                            flag_perhapsmissingtable = false;
-                        }
-
-                        // get uuid as filename
-                        std::string uuid;
-
-                        query.str(std::string());
-                        spacer = "";
-                        query << "SELECT uuid FROM cache_two WHERE ";
+                    if (flag_perhapsmissingtable) {
+                        query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
+                                 "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
+                                 "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
                         for (auto p: conf) {
-                            query << spacer << p.key << "='" << p.value.str() << "'";
-                            spacer = " AND ";
+                            query << ", " << p.key << " text";
                         }
-                        query << ";";
-                        SQLite3Result result = db.query(query.str());
+                        query << ", UNIQUE (";
+                        for (auto p: conf) {
+                            query << spacer << p.key;
+                            spacer = ", ";
+                        }
+                        query << "));";
+                        db.exec(query.str());
 
-                        if (result.size() == 1) {
-                            uuid = result.first()->str();
+                        flag_perhapsmissingtable = false;
+                    }
 
-                            /*query.str(std::string());
+                    // get uuid as filename
+                    std::string uuid;
+
+                    query.str(std::string());
+                    spacer = "";
+                    query << "SELECT uuid FROM cache_two WHERE ";
+                    for (auto p: conf) {
+                        query << spacer << p.key << "='" << p.value.str() << "'";
+                        spacer = " AND ";
+                    }
+                    query << ";";
+                    SQLite3Result result = db.query(query.str());
+
+                    if (result.size() == 1) {
+                        uuid = result.first()->str();
+
+                        /*query.str(std::string());
                             query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
                             db.exec(query.str());*/ // TODO
 
-                        } else {
-                            boost::uuids::uuid u = generator();
-                            boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+                    } else {
+                        boost::uuids::uuid u = generator();
+                        boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
-                            query.str(std::string());
-                            query << "INSERT INTO cache_two (uuid";
-                            for (auto p: conf) {
-                                query << ", " << p.key;
-                            }
-                            query << ") values ( '" << uuid << "'";
-                            for (auto p: conf) {
-                                query << ", " << "'" << p.value.str() << "'";
-                            }
-                            query << ");";
-                            db.exec(query.str());
+                        query.str(std::string());
+                        query << "INSERT INTO cache_two (uuid";
+                        for (auto p: conf) {
+                            query << ", " << p.key;
                         }
-
-                        // check whether .mat and .json file exists and compare settings in program with settings in .json file
-                        boost::filesystem::path path, path_mat, path_json;
-
-                        path = path_cache_mat / ("two_" + uuid);
-                        path_mat = path;
-                        path_mat.replace_extension(".mat");
-                        path_json = path;
-                        path_json.replace_extension(".json");
-
-                        bool is_existing = false;
-                        if (boost::filesystem::exists(path_mat)) {
-                            if (boost::filesystem::exists(path_json)) {
-                                Configuration params_loaded;
-                                params_loaded.load_from_json(path_json.string());
-                                if (conf == params_loaded) {
-                                    is_existing = true;
-                                }
-                            }
+                        query << ") values ( '" << uuid << "'";
+                        for (auto p: conf) {
+                            query << ", " << "'" << p.value.str() << "'";
                         }
-
-                        // create .json file if "is_existing" is false
-                        if (!is_existing) {
-                            conf.save_to_json(path_json.string());
-                        }
-
-                        // save everything
-                        std::shared_ptr<Hamiltonianmatrix> mat = std::make_shared<Hamiltonianmatrix>(submatrices[subidx]);
-                        mat->addFilename(path_mat.string());
-                        mat->addIsExisting(is_existing);
-                        params.push_back(std::make_shared<Configuration>(conf)); // TODO
-                        matrix_path.push_back(path.string());
-                        matrix_step.push_back(step_two);
-                        matrix_block.push_back(block);
-                        matrix_dimension.push_back(mat->num_basisvectors());
-                        matrix.push_back(std::move(mat));
-
-                        std::cout << "Two-atom Hamiltonian, " <<  matrix.size() << ". Hamiltonian assembled" << std::endl;
+                        query << ");";
+                        db.exec(query.str());
                     }
+
+                    // check whether .mat and .json file exists and compare settings in program with settings in .json file
+                    boost::filesystem::path path, path_mat, path_json;
+
+                    path = path_cache_mat / ("two_" + uuid);
+                    path_mat = path;
+                    path_mat.replace_extension(".mat");
+                    path_json = path;
+                    path_json.replace_extension(".json");
+
+                    bool is_existing = false;
+                    if (boost::filesystem::exists(path_mat)) {
+                        if (boost::filesystem::exists(path_json)) {
+                            Configuration params_loaded;
+                            params_loaded.load_from_json(path_json.string());
+                            if (conf == params_loaded) {
+                                is_existing = true;
+                            }
+                        }
+                    }
+
+                    // create .json file if "is_existing" is false
+                    if (!is_existing) {
+                        conf.save_to_json(path_json.string());
+                    }
+
+                    // save everything
+                    std::shared_ptr<Hamiltonianmatrix> mat = std::make_shared<Hamiltonianmatrix>(totalmatrix);
+                    mat->addFilename(path_mat.string());
+                    mat->addIsExisting(is_existing);
+                    params.push_back(std::make_shared<Configuration>(conf)); // TODO
+                    matrix_path.push_back(path.string());
+                    matrix_step.push_back(step_two);
+                    matrix_block.push_back(idx_block);
+                    matrix_dimension.push_back(mat->num_basisvectors());
+                    matrix.push_back(std::move(mat));
+
+                    std::cout << "Two-atom Hamiltonian, " <<  matrix.size() << ". Hamiltonian assembled" << std::endl;
                 }
             }
 

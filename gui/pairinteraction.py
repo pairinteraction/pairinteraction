@@ -1829,7 +1829,7 @@ class MainWindow(QtGui.QMainWindow):
                     energies = eigensystem.energies
                     basis = eigensystem.basis
                                         
-                    if idx == 2: symmetry = blocknumber % 3
+                    if idx == 2: symmetry = {"all":0,"sym":1,"asym":2}[eigensystem.params["symmetry"]]
                                     
                     # --- determine which basis elements are within the energy range ---
                     boolarr = np.ones(len(energies),dtype=np.bool)
