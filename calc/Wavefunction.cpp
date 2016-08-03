@@ -125,9 +125,11 @@ std::vector<real_t> Whittaker::axis() {
 
 
 std::vector<real_t> Whittaker::integrate() {
-    for (int i = 0; i < nsteps_; ++i)
-        y[i] = RadialWFWhittaker(x[i], qd.nstar, l);
-    return y;
+  for (int i = 0; i < nsteps_; ++i)
+    y[i] = RadialWFWhittaker(x[i]*x[i], qd.nstar, l) / sqrt(x[i]);
+  // we calculate the wavefunction sqrt-scaled, therefore we pass
+  // x[i]*x[i] and multiply with sqrt(x[i])
+  return y;
 }
 
 // --- Matrix element calculation ---
