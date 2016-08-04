@@ -125,10 +125,18 @@ std::vector<real_t> Whittaker::axis() {
 
 
 std::vector<real_t> Whittaker::integrate() {
+  // Set the sign
+  int sign;
+  if ( (n-l) % 2 == 0 )
+    sign = -1;
+  else
+    sign = 1;
+
   for (int i = 0; i < nsteps_; ++i)
-    y[i] = RadialWFWhittaker(x[i]*x[i], qd.nstar, l) / sqrt(x[i]);
+    y[i] = sign * RadialWFWhittaker(x[i]*x[i], qd.nstar, l) / sqrt(x[i]);
   // we calculate the wavefunction sqrt-scaled, therefore we pass
   // x[i]*x[i] and multiply with sqrt(x[i])
+
   return y;
 }
 
