@@ -8,10 +8,11 @@
 
 // --- Common interface ---
 
-void Wavefunction::initialize() {
+void Wavefunction::initialize(double xmin = -1) {
     dx_ = 0.001*10; // TODO
-    xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
-    xmin_ = floor(sqrt(( 2.08 > xmin_ ? 2.08 : xmin_ )));
+    if ( xmin < 0 ) // use classical turning point
+      xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
+    xmin_ = floor(sqrt(( 2.08 > xmin ? 2.08 : xmin )));
     xmax_ = sqrt(2*n*(n+15));
     nsteps_ = ceil((xmax_ - xmin_)/dx_);
     x.resize(nsteps_);
@@ -25,7 +26,7 @@ void Wavefunction::initialize() {
 
 Numerov::Numerov(std::string species, int n, int l, real_t j)
     : Wavefunction(species, n, l, j) {
-    initialize();
+    initialize(n*n - n*sqrt(n*n-(l-1)*(l-1))); // use classical turning point
 }
 
 
@@ -115,7 +116,7 @@ real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 
 Whittaker::Whittaker(std::string species, int n, int l, real_t j)
     : Wavefunction(species, n, l, j) {
-    initialize();
+    initialize(1); // the Whittaker functions are only undefined at 0
 }
 
 

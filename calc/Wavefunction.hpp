@@ -20,7 +20,7 @@ protected:
   real_t dx_;
   std::vector<real_t> x;
   std::vector<real_t> y;
-  void initialize();
+  void initialize(double xmin);
 public:
   const int &nsteps;
   const real_t &xmin;
