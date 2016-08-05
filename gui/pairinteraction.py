@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 9
-version_cache = 9
+version_settings = 10
+version_cache = 10
 
 # Standard library
 from abc import ABCMeta, abstractmethod
@@ -570,9 +570,6 @@ class Worker(QtCore.QThread):
         self.basisfile_field1 = ""
         self.basisfile_field2 = ""
         self.basisfile_potential = ""
-        self.numBlocks_field1 = 0
-        self.numBlocks_field2 = 0
-        self.numBlocks_potential = 0
         self.dataqueue_field1 = Queue()
         self.dataqueue_field2 = Queue()
         self.dataqueue_potential = Queue()
@@ -615,8 +612,7 @@ class Worker(QtCore.QThread):
         status_progress = ""
         status_dimension = ""
         
-        for line in iter(self.stdout.readline, b""):
-            
+        for line in iter(self.stdout.readline, b""):            
             if self.exiting or not line:
                 break
                 
@@ -643,14 +639,7 @@ class Worker(QtCore.QThread):
                 
             elif line[:5] == b">>TOT":
                 total = int(line[5:12].decode('utf-8'))
-                numBlocks = int(line[12:19].decode('utf-8'))
                 current = 0
-                if type == 0 or type == 3:
-                    self.numBlocks_field1 = numBlocks
-                elif type == 1:
-                    self.numBlocks_field2 = numBlocks
-                elif type == 2:
-                    self.numBlocks_potential = numBlocks
                 
             elif line[:5] == b">>DIM":
                 dim = int(line[5:12])
@@ -662,15 +651,16 @@ class Worker(QtCore.QThread):
                 
                 filenumber = int(line[5:12].decode('utf-8'))
                 filestep = int(line[12:19].decode('utf-8'))
-                blocknumber = int(line[19:26].decode('utf-8'))
-                filename = line[27:-1].decode('utf-8')
+                blocks = int(line[19:26].decode('utf-8'))
+                blocknumber = int(line[26:33].decode('utf-8'))
+                filename = line[34:-1].decode('utf-8')
                 
                 if type == 0 or type == 3:
-                    self.dataqueue_field1.put([filestep,blocknumber,filename])
+                    self.dataqueue_field1.put([filestep,blocks,blocknumber,filename])
                 elif type == 1:
-                    self.dataqueue_field2.put([filestep,blocknumber,filename])
+                    self.dataqueue_field2.put([filestep,blocks,blocknumber,filename])
                 elif type == 2:
-                    self.dataqueue_potential.put([filestep,blocknumber,filename])
+                    self.dataqueue_potential.put([filestep,blocks,blocknumber,filename])
             
             elif line[:5] == b">>ERR":
                 self.criticalsignal.emit(line[5:].decode('utf-8').strip())
@@ -1806,7 +1796,6 @@ class MainWindow(QtGui.QMainWindow):
                 
                 graphicsview_plot = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]
                 
-                numBlocks = [self.thread.numBlocks_field1, self.thread.numBlocks_field2, self.thread.numBlocks_potential][idx]
                 minE = self.minE[idx]
                 maxE = self.maxE[idx]
                 
@@ -1819,7 +1808,7 @@ class MainWindow(QtGui.QMainWindow):
                 while not dataqueue.empty() and dataamount < 5000: # stop loop if enough data is collected
                 
                     # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
-                    filestep, blocknumber, filename = dataqueue.get()
+                    filestep, numBlocks, blocknumber, filename = dataqueue.get()
                                         
                     # save data
                     self.storage_data[idx].append([filestep, blocknumber, filename])
@@ -1869,7 +1858,7 @@ class MainWindow(QtGui.QMainWindow):
                 
                     # --- calculate the position (x value) ---
                     if self.xAxis[idx] in ['B', 'E']:
-                        rotator = np.array([[np.cos(-self.angle),0,np.sin(-self.angle)],[0,1,0],[-np.sin(-self.angle),0,np.cos(-self.angle)]])
+                        rotator = np.array([[np.cos(-self.angle),0,-np.sin(-self.angle)],[0,1,0],[np.sin(-self.angle),0,np.cos(-self.angle)]])
                     
                     if self.xAxis[idx] == 'B':
                         fields = [[float(eigensystem.params["Bx"])],[float(eigensystem.params["By"])],[float(eigensystem.params["Bz"])]]
@@ -1895,7 +1884,7 @@ class MainWindow(QtGui.QMainWindow):
                         
                         labelprob_num_potential = len(self.labelprob_energy)
                                                                         
-                        if labelprob_num_potential >= numBlocks:
+                        if labelprob_num_potential == numBlocks:
                             # total probability to find a label
                             cumprob = self.labelprob.sum(axis=0).getA1()
                             boolarr = cumprob > 0.1
@@ -2016,7 +2005,7 @@ class MainWindow(QtGui.QMainWindow):
                                 self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies))
                                 
                             # check if all data of the zeroth position is collected
-                            if 0 in self.buffer_overlapMap[idx].keys() and len(self.buffer_overlapMap[idx][0]) == numBlocks:
+                            if 0 in self.buffer_overlapMap[idx].keys() and len(self.buffer_overlapMap[idx][0]) == numBlocks:  # TODO ensure that this also works if numBlocks changes with the step 
                                 # make limits
                                 if self.yMin_field[idx] is None:
                                     self.yMin_field[idx] = np.nanmin(np.concatenate(self.buffer_energiesMap[idx][0]))
@@ -2840,17 +2829,22 @@ class MainWindow(QtGui.QMainWindow):
                     
                     if self.angle != 0:
                         arrlabels = [["minEx","minEy","minEz"],["maxEx","maxEy","maxEz"],["minBx","minBy","minBz"],["maxBx","maxBy","maxBz"]]
-                        rotator = np.array([[np.cos(self.angle),0,np.sin(self.angle)],[0,1,0],[-np.sin(self.angle),0,np.cos(self.angle)]])
+                        rotator = np.array([[np.cos(self.angle),0,-np.sin(self.angle)],[0,1,0],[np.sin(self.angle),0,np.cos(self.angle)]])
                         
                         for labels in arrlabels:
                             fields = np.array([[params[label]] for label in labels])
                             fields = np.dot(rotator,fields).flatten()
                             for field, label in zip(fields, labels): params[label] = field
-                                                        
-                        
-                        # Hack# TODO !!!!!!!!!!!!!!!
-                        params["minEx"] += 1e-32
-                        params["maxEx"] += 1e-32
+                    
+                    if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:                                   
+                        params["conserveM"] = False
+                    else:
+                        params["conserveM"] = True
+                    
+                    if (self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["maxEz"] != 0:                                   
+                        params["conserveParityL"] = False
+                    else:
+                        params["conserveParityL"] = True
                     
                     # TODO make quantities of None type accessible without .magnitude
                     
@@ -2991,7 +2985,7 @@ class MainWindow(QtGui.QMainWindow):
             self.converter_efield = Quantity(1, Units.au_efield).toUU().magnitude # TODO Variable an anderer Stelle anlegen
             self.converter_length = Quantity(1, Units.au_length).toUU().magnitude # TODO Variable an anderer Stelle anlegen
             
-            rotator = np.array([[np.cos(-self.angle),0,np.sin(-self.angle)],[0,1,0],[-np.sin(-self.angle),0,np.cos(-self.angle)]]) # TODO !!!!!!!!! self.angle[idx] verwenden
+            rotator = np.array([[np.cos(-self.angle),0,-np.sin(-self.angle)],[0,1,0],[np.sin(-self.angle),0,np.cos(-self.angle)]]) # TODO !!!!!!!!! self.angle[idx] verwenden
             
             filestep_last = None
             

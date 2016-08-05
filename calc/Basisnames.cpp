@@ -98,8 +98,8 @@ BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
     }*/ // TODO
 }
 void BasisnamesOne::build(StateTwo startstate, std::string species) {
-    states_initial.push_back(startstate.first());
-    states_initial.push_back(startstate.second());
+    states_initial.push_back(startstate.first()); // TODO correct for idx
+    states_initial.push_back(startstate.second()); // TODO correct for idx
 
     conf["species1"] << species;
     conf["n1"] << startstate.n[0];
@@ -150,7 +150,7 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
     dim_ = idx;
 }
 void BasisnamesOne::build(StateOne startstate, std::string species) {
-    states_initial.push_back(startstate);
+    states_initial.push_back(startstate); // TODO correct for idx
 
     conf["species1"] << species;
     conf["n1"] << startstate.n;
@@ -182,7 +182,7 @@ void BasisnamesOne::build(StateOne startstate, std::string species) {
     dim_ = idx;
 }
 void BasisnamesOne::build(StateOne startstate, std::string species, std::shared_ptr<const BasisnamesTwo> basis_two, int i) {
-    states_initial.push_back(startstate);
+    states_initial.push_back(startstate); // TODO correct for idx
 
     conf["species1"] << species;
     conf["n1"] << startstate.n;
@@ -221,8 +221,10 @@ void BasisnamesOne::removeUnnecessaryStates(const std::vector<bool> &is_necessar
     idx_t idx = 0;
     for (auto state : tmp) {
         if (is_necessary[state.idx]) {
-            state.idx = idx++;
+            state.idx = idx;
             names_.push_back(state);
+            // TODO update indices of states_initial
+            ++idx;
         }
     }
 
@@ -307,11 +309,19 @@ void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessar
     names_.reserve(tmp.size());
 
     // loop over all two-atom states
+    bool state_initial_found = false;
     idx_t idx = 0;
     for (auto state : tmp) {
         if (is_necessary[state.idx]) {
-            state.idx = idx++;
+            state.idx = idx;
             names_.push_back(state);
+
+            if (!state_initial_found && state == state_initial) {
+                state_initial.idx = idx;
+                state_initial_found = true;
+            }
+
+            ++idx;
         }
     }
 
@@ -339,9 +349,17 @@ void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species
     idx_t idx = 0;
 
     // loop over single atom states
+    bool state_initial_found = false;
     for (const auto &state_1 : *basis_one1) {
         for (const auto &state_2 : *basis_one2) {
-            names_.push_back(StateTwo(idx++,state_1,state_2));
+            names_.push_back(StateTwo(idx,state_1,state_2));
+
+            if (!state_initial_found && names_.back() == state_initial) {
+                state_initial.idx = idx;
+                state_initial_found = true;
+            }
+
+            ++idx;
         }
     }
 

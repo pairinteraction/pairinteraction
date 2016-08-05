@@ -291,6 +291,21 @@ public:
         basis_ = transformator*basis_;
     }
 
+    Hamiltonianmatrix getBlock(const std::vector<ptrdiff_t> &indices) {
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(indices.size());
+        for (size_t idx = 0; idx < indices.size(); ++idx) {
+            triplets_transformator.push_back(eigen_triplet_t(indices[idx],idx,1));
+        }
+        eigen_sparse_t transformator(this->num_basisvectors(),indices.size());
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+        eigen_sparse_t block_entries = transformator.transpose()*entries_*transformator;
+        eigen_sparse_t block_basis = basis_*transformator;
+
+        return Hamiltonianmatrix(block_entries,  block_basis);
+    }
+
     friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
         return lhs.duplicate(SYM, rhs, deltaE, necessary1, necessary2, necessary);
     }
@@ -985,7 +1000,7 @@ protected:
     }
 
     void doPostwork(size_t numWork) {
-        std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step[numWork] << std::setw(7) << matrix_block[numWork] << " " << matrix_path[numWork] << std::endl;
+        std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step[numWork] << std::setw(7) << matrix_blocks[numWork] << std::setw(7) << matrix_block[numWork] << " " << matrix_path[numWork] << std::endl;
     }
 
     std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix;
@@ -993,6 +1008,7 @@ protected:
     std::vector<std::shared_ptr<Configuration>> params;
     std::vector<std::string> matrix_path;
     std::vector<size_t> matrix_step;
+    std::vector<size_t> matrix_blocks;
     std::vector<size_t> matrix_block;
     std::vector<size_t> matrix_dimension;
 };
@@ -1416,13 +1432,14 @@ protected:
                 params.push_back(std::move(par));
                 matrix_path.push_back(path.string());
                 matrix_step.push_back(step);
-                matrix_block.push_back(0); // TODO
+                matrix_blocks.push_back(1); // TODO
+                matrix_block.push_back(0);
                 matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
 
                 std::cout << "One-atom Hamiltonian, " <<  matrix.size() << ". Hamiltonian assembled" << std::endl;
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size()  << std::setw(7) << 1 << std::endl;
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl;
 
             std::cout << "One-atom Hamiltonian, all Hamiltonians assembled" << std::endl;
         }
@@ -1538,9 +1555,8 @@ public:
             conf_matpair["deltaLPair"] = conf_tot["deltaLPair"];
             conf_matpair["deltaJPair"] = conf_tot["deltaJPair"];
             conf_matpair["deltaMPair"] = conf_tot["deltaMPair"];
-            conf_matpair["dd"] = conf_tot["dd"];
-            conf_matpair["dq"] = conf_tot["dq"];
-            conf_matpair["qq"] = conf_tot["qq"];
+            conf_matpair["conserveM"] = conf_tot["conserveM"];
+            conf_matpair["conserveParityL"] = conf_tot["conserveParityL"];
             conf_matpair["exponent"] = conf_tot["exponent"];
 
             for (size_t i = 0; i < nSteps_one; ++i) {
@@ -1559,9 +1575,8 @@ public:
             conf_mat.back()["deltaLPair"] >> deltaL;
             conf_mat.back()["deltaJPair"] >> deltaJ;
             conf_mat.back()["deltaMPair"] >> deltaM;
-            dipoledipole = conf_tot["dd"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
-            dipolequadrupole = conf_tot["dq"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
-            quadrupolequadrupole = conf_tot["qq"].str() == "true"; //conf_mat.back()["dd"] >> dipoledipole; // TODO
+            conserveM = conf_tot["conserveM"].str() == "true";
+            conserveParityL = conf_tot["conserveParityL"].str() == "true";
             conf_tot["steps"] >> nSteps_two;
             conf_tot["minR"] >> min_R;
             conf_tot["maxR"] >> max_R;
@@ -1580,8 +1595,8 @@ public:
             conf_tot["maxBx"] >> maxBx;
             conf_tot["maxBy"] >> maxBy;
             conf_tot["maxBz"] >> maxBz;
-            bool fields_change_m = (minEx != 0) || (minEy != 0) || (maxEx != 0) || (maxEy != 0) || (minBx != 0) || (minBy != 0) || (maxBx != 0) || (maxBy != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
-            bool fields_change_l = (minEx != 0) || (minEy != 0) || (minEz != 0) || (maxEx != 0) || (maxEy != 0) || (maxEz != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
+            //bool fields_change_m = (minEx != 0) || (minEy != 0) || (maxEx != 0) || (maxEy != 0) || (minBx != 0) || (minBy != 0) || (maxBx != 0) || (maxBy != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
+            //bool fields_change_l = (minEx != 0) || (minEy != 0) || (minEz != 0) || (maxEx != 0) || (maxEy != 0) || (maxEz != 0); // TODO wie richtig? so ist es eine variable, die von mehreren matrizen abhaengt
 
             //fields_change_m = true; // TODO
             //fields_change_l = true; // TODO
@@ -1648,8 +1663,8 @@ public:
             int parity = (initial.l[0]+initial.l[1]) % 2;
 
             for (const auto &state: *basis_two) {
-                if (!fields_change_m && state.m[0]+state.m[1] != M) continue;
-                if (multipoleexponent <= 3 && !fields_change_l && (state.l[0]+state.l[1]) % 2 != parity) continue;
+                if (conserveM && state.m[0]+state.m[1] != M) continue;
+                if (conserveParityL && (state.l[0]+state.l[1]) % 2 != parity) continue;
 
                 notrestricted_coordinate[state.idx] = true;
             }
@@ -1665,26 +1680,11 @@ public:
             std::vector<symmetries_t> symmetries;
             if (samebasis && multipoleexponent <= 3) {
                 symmetries.push_back(SYM);
-                StateTwo initialstate = basis_two->initial();
-                if (initialstate.first() != initialstate.second()) {
+                if (initial.first() != initial.second()) {
                     symmetries.push_back(ASYM);
                 }
             } else {
                 symmetries.push_back(ALL);
-            }
-
-
-
-            bool symmetries_sym, symmetries_asym, symmetries_all;
-            if (samebasis && multipoleexponent <= 3) {
-                StateTwo initialstate = basis_two->initial();
-                symmetries_sym = true;
-                symmetries_asym = initialstate.first() != initialstate.second();
-                symmetries_all = false;
-            } else {
-                symmetries_sym = false;
-                symmetries_asym = false;
-                symmetries_all = true;
             }
 
 
@@ -1725,30 +1725,24 @@ public:
                 }
             }
 
-            auto basis_two_used = std::make_shared<BasisnamesTwo>(*basis_two);
-            basis_two_used->removeUnnecessaryStates(used_coordinate);
-
-            /*// if a coordinate is not necessary it does not matter that it is used
-            for (size_t i = 0; i < basis_two->size(); ++i) {
-                if (!is_necessary_coordinate[i]) {
-                    is_used_coordinate[i] = false;
-                }
-            }
-
-            for (size_t i = 0; i < nSteps_one; ++i) { // TODO nicht verwenden
+            // --- remove coordinates that are not used --- // TODO make this not necessary by restricting the coordinates to sensible ones starting from the beginning (this remark is connected to all other remarks marked with [*])
+            for (size_t i = 0; i < nSteps_one; ++i) {
                 for (symmetries_t symmetry : symmetries) {
-                    mat_single[symmetry][i].removeUnnecessaryStates(is_used_coordinate);
+                    mat_single[symmetry][i].removeUnnecessaryStates(used_coordinate);
                 }
             }
-            basis_two->removeUnnecessaryStates(is_used_coordinate); // TODO skipUnnecessaryStates(is_used_coordinate)*/
+            basis_two->removeUnnecessaryStates(used_coordinate);
+
 
             /*std::cout << mat_single_sym[0].num_coordinates() << std::endl; // TODO
             std::cout << mat_single_sym.back().num_basisvectors() << std::endl;// TODO
             std::cout << mat_single_sym[0].num_basisvectors() << std::endl;// TODO*/
 
-            std::cout << "Two-atom basis, number of necessary states: " << basis_two_used->size() << std::endl;
+            std::cout << "Two-atom basis, number of necessary states: " << basis_two->size() << std::endl;
 
-            std::cout << ">>BAS" << std::setw(7) << basis_two_used->size() << std::endl;
+            std::cout << ">>BAS" << std::setw(7) << basis_two->size() << std::endl;
+
+            // --- find index of initial state ---
 
             // initialize uuid generator
             boost::uuids::random_generator generator;
@@ -1793,8 +1787,8 @@ public:
                 // --- precalculate matrix elements ---
                 std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
 
-                basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two_used));
-                basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two_used));
+                basis_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis_two));
+                basis_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis_two));
 
                 for (int kappa = kappa_min; kappa<=kappa_max; ++kappa) {
                     std::cout << "Two-atom hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
@@ -1814,11 +1808,14 @@ public:
                     int idx_multipole = sumOfKappas-sumOfKappas_min;
 
                     for (const auto &state_col : *basis_two) {
-                        if (!used_coordinate[state_col.idx]) continue;
+                        //if (!used_coordinate[state_col.idx]) continue; // TODO (this remark is connected to all other remarks marked with [*])
+                        int M_col = state_col.first().m + state_col.second().m;
 
                         for (const auto &state_row : *basis_two) {
-                            if (!used_coordinate[state_row.idx]) continue;
+                            //if (!used_coordinate[state_row.idx]) continue; // TODO (this remark is connected to all other remarks marked with [*])
                             if (state_row.idx < state_col.idx) continue;
+                            int M_row = state_row.first().m + state_row.second().m;
+                            if (M_col != M_row) continue;
 
                             // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
                             for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
@@ -1852,11 +1849,14 @@ public:
                     mat_multipole.push_back(Hamiltonianmatrix(size_basis, 2*size_mat_multipole[idx_multipole])); // factor of 2 because triangular matrix is not sufficient
 
                     for (const auto &state_col : *basis_two) {
-                        if (!used_coordinate[state_col.idx]) continue;
+                        //if (!used_coordinate[state_col.idx]) continue; // TODO (this remark is connected to all other remarks marked with [*])
+                        int M_col = state_col.first().m + state_col.second().m;
 
                         for (const auto &state_row : *basis_two) {
-                            if (!used_coordinate[state_row.idx]) continue;
+                            //if (!used_coordinate[state_row.idx]) continue; // TODO (this remark is connected to all other remarks marked with [*])
                             if (state_row.idx < state_col.idx) continue;
+                            int M_row = state_row.first().m + state_row.second().m;
+                            if (M_col != M_row) continue;
 
                             // construct basis
                             if (state_row.idx == state_col.idx) {
@@ -1934,9 +1934,18 @@ public:
             std::vector<Hamiltonianmatrix> blocks_mat_single;
             std::vector<std::vector<Hamiltonianmatrix>> blocks_mat_multipole;
             std::vector<std::string> blocks_symmetries_name;
+            std::vector<size_t> blocks_identification;
             blocks_mat_single.reserve(symmetries.size());
             blocks_mat_multipole.reserve(symmetries.size());
             blocks_symmetries_name.reserve(symmetries.size());
+            blocks_identification.reserve(symmetries.size());
+
+            // TODO make this not necessary (this remark is connected to all other remarks marked with [*])
+            std::string symmetryies_string = "";
+            for (symmetries_t symmetry : symmetries) {
+                if (symmetryies_string != "") symmetryies_string += " ";
+                symmetryies_string += symmetries_name[symmetry];
+            }
 
             // loop through steps
             for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
@@ -1949,6 +1958,7 @@ public:
                     blocks_mat_multipole.clear();
                     blocks_mat_single.clear();
                     blocks_symmetries_name.clear();
+                    blocks_identification.clear();
 
                     for (symmetries_t symmetry : symmetries) {
                         Hamiltonianmatrix abstotalmatrix = mat_single[symmetry][step_one];
@@ -1960,33 +1970,123 @@ public:
                         }
 
                         // TODO find submatrices
-                        //if (no overlap with startstate): continue // TODO
-
-                        blocks_mat_multipole.push_back(std::vector<Hamiltonianmatrix>());
-                        blocks_mat_multipole.back().reserve(idx_multipole_max+1);
-                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                            blocks_mat_multipole.back().push_back(transformedmatrix[idx_multipole]);
+                        StateTwo initial_state = basis_two->initial();
+                        std::set<ptrdiff_t> initial_indices;
+                        if (conserveM) {
+                            initial_indices.insert(initial_state.idx);
+                        } else {
+                            for (auto state : *basis_two) {
+                                if ((state.n[0] == initial_state.n[0]) && (state.l[0] == initial_state.l[0])  && (state.j[0] == initial_state.j[0])  &&
+                                    (state.n[1] == initial_state.n[1]) && (state.l[1] == initial_state.l[1])  && (state.j[1] == initial_state.j[1])) {
+                                    initial_indices.insert(state.idx);
+                                }
+                            }
                         }
-                        blocks_mat_single.push_back(mat_single[symmetry][step_one]);
-                        blocks_symmetries_name.push_back(symmetries_name[symmetry]);
+
+                        std::vector<bool> isNecessaryBasisvector(abstotalmatrix.basis().cols(),false);
+                        for (eigen_idx_t k_1=0; k_1<abstotalmatrix.basis().outerSize(); ++k_1) {
+                            for (eigen_iterator_t triple(abstotalmatrix.basis(),k_1); triple; ++triple) {
+                                ptrdiff_t col = triple.col(); // basis vector
+                                ptrdiff_t row = triple.row(); // coordinate
+                                if (initial_indices.count(row)) {
+                                    isNecessaryBasisvector[col] = true;
+                                }
+                            }
+                        }
+
+                        /*std::vector<size_t> idxNecessaryBasisvector;
+                        for (size_t i = 0; i < isNecessaryBasisvector.size(); ++i) {
+                            if (isNecessaryBasisvector[i]) {
+                                idxNecessaryBasisvector.push_back(i);
+
+                            }
+                        }*/
+
+
+
+                        /*eigen_sparse_t tmp = abstotalmatrix.entries();
+                        for (int i = 0; i < 4; ++i) {
+                            tmp = tmp*tmp;
+                        }
+
+                        std::vector<std::vector<ptrdiff_t>> blockIndices;
+                        for (auto& i: idxNecessaryBasisvector) {
+                            // TODO combine if one of the indices agree
+                            std::cout << bas.cols() << " " << i << std::endl;
+                            blockIndices.push_back(std::vector<ptrdiff_t>());
+                            for (eigen_iterator_t triple(tmp,i); triple; ++triple) {
+                                std::cout << triple.index() << " " << triple.value() << std::endl;
+                                blockIndices.back().push_back(triple.index());
+                            }
+                        }*/
+
+                        std::vector<std::set<size_t>> blockSets; // TODO do not check for blocks if no interaction
+                        for (eigen_idx_t k_1=0; k_1<abstotalmatrix.entries().outerSize(); ++k_1) {
+
+                            bool isnecessary = false;
+                            std::vector<size_t> current_indices;
+                            for (eigen_iterator_t triple(abstotalmatrix.entries(),k_1); triple; ++triple) {
+                                current_indices.push_back(triple.index());
+                                isnecessary |= isNecessaryBasisvector[triple.index()];
+                            }
+
+                            if (isnecessary) {
+                                bool breakloop = false;
+                                for (auto& set: blockSets) { // TODO make function out of it and use return
+                                    for (auto& i: current_indices) {
+                                        if (set.count(i)) {
+                                            breakloop = true;
+                                            break;
+                                        }
+                                    }
+                                    if (breakloop) {
+                                        set.insert(current_indices.begin(), current_indices.end());
+                                        break;
+                                    }
+                                }
+                                if (!breakloop) {
+                                    blockSets.push_back(std::set<size_t>(current_indices.begin(), current_indices.end()));
+                                }
+                            }
+                        }
+
+                        std::vector<std::vector<ptrdiff_t>> blockIndices;
+                        blockIndices.reserve(blockSets.size());
+                        for (auto& set: blockSets) {
+                            blockIndices.push_back(std::vector<ptrdiff_t>(set.begin(), set.end()));
+                        }
+
+                        for (auto& indices: blockIndices) {
+                            blocks_mat_multipole.push_back(std::vector<Hamiltonianmatrix>());
+                            blocks_mat_multipole.back().reserve(idx_multipole_max+1);
+                            for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                                blocks_mat_multipole.back().push_back(transformedmatrix[idx_multipole].getBlock(indices));
+                            }
+                            blocks_mat_single.push_back(mat_single[symmetry][step_one].getBlock(indices));
+                            blocks_symmetries_name.push_back(symmetries_name[symmetry]);
+
+                            size_t identification = 0;
+                            for (auto& i: indices) utils::hash_combine(identification, i);
+                            blocks_identification.push_back(identification);
+                        }
                     }
 
                     ++step_one;
                 }
 
                 conf["R"] = position;
+                conf["allsymmetries"] = symmetryies_string; // TODO make this not necessary (this remark is connected to all other remarks marked with [*])
 
                 // loop through symmetries
                 for (size_t idx_block = 0; idx_block < blocks_mat_single.size(); ++idx_block) {
                     conf["symmetry"] = blocks_symmetries_name[idx_block];
+                    conf["sub"] = blocks_identification[idx_block];
 
                     Hamiltonianmatrix totalmatrix = blocks_mat_single[idx_block];
                     for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
                         real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
                         totalmatrix += blocks_mat_multipole[idx_block][idx_multipole]*pos;
                     }
-
-                    conf["sub"] = idx_block;
 
                     // create table if necessary
                     std::stringstream query;
@@ -2079,6 +2179,7 @@ public:
                     params.push_back(std::make_shared<Configuration>(conf)); // TODO
                     matrix_path.push_back(path.string());
                     matrix_step.push_back(step_two);
+                    matrix_blocks.push_back(blocks_mat_single.size());
                     matrix_block.push_back(idx_block);
                     matrix_dimension.push_back(mat->num_basisvectors());
                     matrix.push_back(std::move(mat));
@@ -2087,7 +2188,7 @@ public:
                 }
             }
 
-            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::setw(7) << symmetries.size() << std::endl; // TODO
+            std::cout << ">>TOT" << std::setw(7) << matrix.size() << std::endl; // TODO
 
             std::cout << "Two-atom Hamiltonian, all Hamiltonians assembled" << std::endl;
         }
@@ -2113,10 +2214,9 @@ private:
     std::string species1, species2;
     real_t min_R, max_R;
     int multipoleexponent;
-    bool dipoledipole;
-    bool dipolequadrupole;
-    bool quadrupolequadrupole;
     bool samebasis;
+    bool conserveM;
+    bool conserveParityL;
     boost::filesystem::path path_cache;
 };
 
