@@ -8,7 +8,7 @@
         "gigahertz"
     ],
     "deltaESingle": [
-        -1.0,
+        40.0,
         "gigahertz"
     ],
     "deltaJPair": [
@@ -32,7 +32,7 @@
         null
     ],
     "deltaMSingle": [
-        2,
+        -1,
         null
     ],
     "deltaNPair": [
@@ -139,7 +139,7 @@
         true,
         null
     ],
-    "missingError": [
+    "missingWhittaker": [
         false,
         null
     ],

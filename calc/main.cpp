@@ -1973,7 +1973,7 @@ public:
                         } else {
                             for (auto state : *basis_two) {
                                 if ((state.n[0] == initial_state.n[0]) && (state.l[0] == initial_state.l[0])  && (state.j[0] == initial_state.j[0])  &&
-                                    (state.n[1] == initial_state.n[1]) && (state.l[1] == initial_state.l[1])  && (state.j[1] == initial_state.j[1])) {
+                                        (state.n[1] == initial_state.n[1]) && (state.l[1] == initial_state.l[1])  && (state.j[1] == initial_state.j[1])) {
                                     initial_indices.insert(state.idx);
                                 }
                             }
@@ -1990,13 +1990,12 @@ public:
                             }
                         }
 
-                        /*std::vector<size_t> idxNecessaryBasisvector;
+                        std::vector<size_t> idxNecessaryBasisvector;
                         for (size_t i = 0; i < isNecessaryBasisvector.size(); ++i) {
                             if (isNecessaryBasisvector[i]) {
                                 idxNecessaryBasisvector.push_back(i);
-
                             }
-                        }*/
+                        }
 
 
 
@@ -2019,30 +2018,26 @@ public:
                         std::vector<std::set<size_t>> blockSets; // TODO do not check for blocks if no interaction
                         for (eigen_idx_t k_1=0; k_1<abstotalmatrix.entries().outerSize(); ++k_1) {
 
-                            bool isnecessary = false;
                             std::vector<size_t> current_indices;
                             for (eigen_iterator_t triple(abstotalmatrix.entries(),k_1); triple; ++triple) {
                                 current_indices.push_back(triple.index());
-                                isnecessary |= isNecessaryBasisvector[triple.index()];
                             }
 
-                            if (isnecessary) {
-                                bool breakloop = false;
-                                for (auto& set: blockSets) { // TODO make function out of it and use return
-                                    for (auto& i: current_indices) {
-                                        if (set.count(i)) {
-                                            breakloop = true;
-                                            break;
-                                        }
-                                    }
-                                    if (breakloop) {
-                                        set.insert(current_indices.begin(), current_indices.end());
+                            bool breakloop = false;
+                            for (auto& set: blockSets) { // TODO make function out of it and use return
+                                for (auto& i: current_indices) {
+                                    if (set.count(i)) {
+                                        breakloop = true;
                                         break;
                                     }
                                 }
-                                if (!breakloop) {
-                                    blockSets.push_back(std::set<size_t>(current_indices.begin(), current_indices.end()));
+                                if (breakloop) {
+                                    set.insert(current_indices.begin(), current_indices.end());
+                                    break;
                                 }
+                            }
+                            if (!breakloop) {
+                                blockSets.push_back(std::set<size_t>(current_indices.begin(), current_indices.end()));
                             }
                         }
 
@@ -2050,8 +2045,13 @@ public:
                         blockIndices.reserve(blockSets.size());
                         bool nottrivial = false;
                         for (auto& set: blockSets) {
-                            blockIndices.push_back(std::vector<ptrdiff_t>(set.begin(), set.end()));
-                            nottrivial |= set.size() > 1;
+                            for (auto& i: idxNecessaryBasisvector) {
+                                if (set.count(i)) {
+                                    blockIndices.push_back(std::vector<ptrdiff_t>(set.begin(), set.end()));
+                                    nottrivial |= set.size() > 1;
+                                    break;
+                                }
+                            }
                         }
                         if (!nottrivial) {
                             blockIndices.clear();
