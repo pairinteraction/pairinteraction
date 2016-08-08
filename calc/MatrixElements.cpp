@@ -11,7 +11,11 @@ bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa) {
     return validL && validJ && validM;
 }
 
-bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
+bool selectionRulesMomentum(StateOne state1, StateOne state2) {
+    return (state1.l == state2.l) && (fabs(state1.m - state2.m) <= 1) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
+}
+
+bool selectionRulesMomentumOld(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
 }
 
@@ -32,14 +36,18 @@ MatrixElements::MatrixElements(const Configuration& config, std::string species,
 }
 
 void MatrixElements::precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one, int kappa) {
-    precalculate(basis_one, kappa, true, false);
+    precalculate(basis_one, kappa, kappa+1, true, false);
 }
 
-void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one) {
-    precalculate(basis_one, 1, false, true);
+void MatrixElements::precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
+    precalculate(basis_one, 1, q, true, false);
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int k, bool calcMultipole, bool calcMomentum) {
+void MatrixElements::precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
+    precalculate(basis_one, 1, q, false, true);
+}
+
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, bool calcMultipole, bool calcMomentum) {
     SQLite3 db(dbname);
 
     // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
@@ -97,12 +105,17 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     for (const auto &state_col : *basis_one) {
         for (const auto &state_row : *basis_one) {
+            if (abs(q) <= kappa && state_row.m-state_col.m != q) {
+                continue;
+            }
+
             //if (state_row.idx < state_col.idx) { // TODO
             //    continue;
             //}
 
-            if (selectionRulesMultipole(state_row, state_col, k)) {
+            if ((calcMultipole && selectionRulesMultipole(state_row, state_col, kappa)) || (calcMomentum && selectionRulesMomentum(state_row, state_col))) {
                 if (calcMultipole || calcMomentum) {
+                    int k = calcMultipole ? kappa : 0;
                     StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}); //.order(); TODO
                     auto missing_cache_radial = cache_radial[k].insert({state_nlj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_radial.second) {
@@ -116,7 +129,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcMultipole || calcMomentum) {
                     StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}); //.order(); TODO
-                    auto missing_cache_angular = cache_angular[k].insert({state_jm, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_angular = cache_angular[kappa].insert({state_jm, std::numeric_limits<real_t>::max()});
                     if (missing_cache_angular.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
@@ -128,7 +141,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcMultipole || calcMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}}); //.order(); TODO
-                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[k].insert({state_lj, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[kappa].insert({state_lj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_commutes_s.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
@@ -140,7 +153,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}}); //.order(); TODO
-                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[k].insert({state_lj, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[kappa].insert({state_lj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_commutes_l.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
@@ -152,7 +165,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcMultipole) {
                     StateTwo state_l = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}}); //.order(); TODO
-                    auto missing_cache_reduced_multipole = cache_reduced_multipole[k].insert({state_l, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_multipole = cache_reduced_multipole[kappa].insert({state_l, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_multipole.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
@@ -174,6 +187,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     double value;
 
     if (calcMultipole || calcMomentum) {
+        int k = calcMultipole ? kappa : 0;
         ss.str(std::string());
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
@@ -189,11 +203,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss.str(std::string());
         ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
-           << "WHERE c.k = " << k << ";";
+           << "WHERE c.k = " << kappa << ";";
         SQLite3Result result_angular = db.query(ss.str());
         for (auto r : result_angular) {
             *r >> j1 >> m1 >> j2 >> m2 >> value;
-            cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
+            cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
         }
     }
 
@@ -201,11 +215,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss.str(std::string());
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.k = " << k << ";";
+           << "WHERE c.k = " << kappa << ";";
         SQLite3Result result_reduced_commutes_s = db.query(ss.str());
         for (auto r : result_reduced_commutes_s) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
-            cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -213,11 +227,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss.str(std::string());
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.k = " << k << ";";
+           << "WHERE c.k = " << kappa << ";";
         SQLite3Result result_reduced_commutes_l = db.query(ss.str());
         for (auto r : result_reduced_commutes_l) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
-            cache_reduced_commutes_l[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -225,11 +239,11 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss.str(std::string());
         ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
-           << "WHERE c.k = " << k << ";";
+           << "WHERE c.k = " << kappa << ";";
         SQLite3Result result_reduced_multipole = db.query(ss.str());
         for (auto r : result_reduced_multipole) {
             *r >> l1 >> l2 >> value;
-            cache_reduced_multipole[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
+            cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
         }
     }
 
@@ -238,6 +252,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     db.exec("begin transaction;");
 
     if (calcMultipole || calcMomentum) {
+        int k = calcMultipole ? kappa : 0;
         for (auto &cache : cache_radial[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
@@ -257,17 +272,17 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMultipole || calcMomentum) {
-        for (auto &cache : cache_angular[k]) {
+        for (auto &cache : cache_angular[kappa]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
                 float q = state.m[0]-state.m[1];
 
                 cache.second = pow(-1, state.j[0]-state.m[0]) *
-                        WignerSymbols::wigner3j(state.j[0], k, state.j[1], -state.m[0], q, state.m[1]);
+                        WignerSymbols::wigner3j(state.j[0], kappa, state.j[1], -state.m[0], q, state.m[1]);
 
                 ss.str(std::string());
                 ss << "insert into cache_angular (k, j1, m1, j2, m2, value) values ("
-                   << k << ","
+                   << kappa << ","
                    << state.j[0] << "," << state.m[0] << ","
                    << state.j[1] << "," << state.m[1] << ","
                    << cache.second << ");";
@@ -277,16 +292,16 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMultipole || calcMomentum) {
-        for (auto &cache : cache_reduced_commutes_s[k]) {
+        for (auto &cache : cache_reduced_commutes_s[kappa]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + k) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
-                        WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1], k);
+                cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
+                        WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1], kappa);
 
                 ss.str(std::string());
                 ss << "insert into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values ("
-                   << k << ","
+                   << kappa << ","
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
@@ -296,16 +311,16 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMomentum) {
-        for (auto &cache : cache_reduced_commutes_l[k]) {
+        for (auto &cache : cache_reduced_commutes_l[kappa]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + k) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
-                        WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, k);
+                cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
+                        WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, kappa);
 
                 ss.str(std::string());
                 ss << "insert into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values ("
-                   << k << ","
+                   << kappa << ","
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
@@ -315,16 +330,16 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMultipole) {
-        for (auto &cache : cache_reduced_multipole[k]) {
+        for (auto &cache : cache_reduced_multipole[kappa]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
                 cache.second = pow(-1, state.l[0]) * sqrt((2*state.l[0]+1)*(2*state.l[1]+1)) *
-                        WignerSymbols::wigner3j(state.l[0], k, state.l[1], 0, 0, 0);
+                        WignerSymbols::wigner3j(state.l[0], kappa, state.l[1], 0, 0, 0);
 
                 ss.str(std::string());
                 ss << "insert into cache_reduced_multipole (k, l1, l2, value) values ("
-                   << k << ","
+                   << kappa << ","
                    << state.l[0] << ","
                    << state.l[1] << ","
                    << cache.second << ");";
@@ -345,16 +360,34 @@ cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0
 cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
 }
 
-real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
+real_t MatrixElements::getElectricMomentum(StateOne state_row, StateOne state_col) {
+    return getMultipole(state_row,state_col,1);
+}
+
+real_t MatrixElements::getMagneticMomentum(StateOne state_row, StateOne state_col) {
     //TODO .order()
 
-    return  cache_radial[1][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
+    std::cout << cache_radial[1][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] << std::endl; // TODO r^0
+
+    return  muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] * // TODO !!!!!!!!!!!
 cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
-cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-cache_reduced_multipole[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
+(gL * cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
+sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1))  +
+gS * cache_reduced_commutes_l[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
+sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)));
 }
 
 
+
+/*real_t MatrixElements::getMomentumOld(StateOne state_row, StateOne state_col) {
+    return pow(-1, state_row.j-state_row.m) * muB *
+            element_nlj_0[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+            element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
+(gL*element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) * pow(-1, 0.5+state_col.l+state_row.j) +
+gS*element_lj_s[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)) * pow(-1, 0.5+state_col.j+state_row.l));
+}*/
 
 
 
@@ -386,10 +419,6 @@ bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q) {
 
 void MatrixElements::precalculate_momentumOld(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
     precalculateOld(basis_one,false,false,false,false,false,false,false,false,exist_0,exist_p,exist_m);
-}
-
-void MatrixElements::precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m) {
-    precalculateOld(basis_one,exist_0,exist_p,exist_m,false,false,false,false,false,false,false,false);
 }
 
 
@@ -486,9 +515,9 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
                     (exist_q_m && selectionRulesQuadrupole(state_row, state_col, -1)) ||
                     (exist_q_pp && selectionRulesQuadrupole(state_row, state_col, 2)) ||
                     (exist_q_mm && selectionRulesQuadrupole(state_row, state_col, -2)) ||
-                    (exist_m_0 && selectionRulesMomentum(state_row, state_col, 0)) ||
-                    (exist_m_p && selectionRulesMomentum(state_row, state_col, 1)) ||
-                    (exist_m_m && selectionRulesMomentum(state_row, state_col, -1))) {
+                    (exist_m_0 && selectionRulesMomentumOld(state_row, state_col, 0)) ||
+                    (exist_m_p && selectionRulesMomentumOld(state_row, state_col, 1)) ||
+                    (exist_m_m && selectionRulesMomentumOld(state_row, state_col, -1))) {
 
                 StateTwo state;
 
@@ -751,15 +780,6 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
     }
 }
 
-
-real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
-    //if (k != 1) abort();
-
-    return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
-            element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
-            element_jm[StateTwo({{0,0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}).order()] *
-element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
-}
 
 
 

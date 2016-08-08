@@ -1043,8 +1043,8 @@ protected:
     }
 
     void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<real_t>& val_p, std::complex<real_t>& val_m, std::complex<real_t>& val_0) {
-        val_p = std::complex<real_t>(-val_x/std::sqrt(2),val_y/std::sqrt(2));
-        val_m = std::complex<real_t>(val_x/std::sqrt(2),val_y/std::sqrt(2));
+        val_p = std::complex<real_t>(-val_x/std::sqrt(2),-val_y/std::sqrt(2));
+        val_m = std::complex<real_t>(val_x/std::sqrt(2),-val_y/std::sqrt(2));
         val_0 = std::complex<real_t>(val_z,0);
     }
 
@@ -1183,11 +1183,12 @@ protected:
             std::cout << "One-atom Hamiltonian, precalculate matrix elements" << std::endl;
 
             MatrixElements matrix_elements(conf, species, (path_cache / "cache_elements.db").string());
-
-            if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
-                matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
-                matrix_elements.precalculate_momentumOld(basis_one, exist_B_0, exist_B_p, exist_B_m);
-            }
+            if (exist_E_0) matrix_elements.precalculateElectricMomentum(basis_one, 0);
+            if (exist_E_p) matrix_elements.precalculateElectricMomentum(basis_one, -1);
+            if (exist_E_m) matrix_elements.precalculateElectricMomentum(basis_one, 1);
+            if (exist_B_0) matrix_elements.precalculateMagneticMomentum(basis_one, 0);
+            if (exist_B_p) matrix_elements.precalculateMagneticMomentum(basis_one, -1);
+            if (exist_B_m) matrix_elements.precalculateMagneticMomentum(basis_one, 1);
 
             // --- count entries of Hamiltonian parts ---
             std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian" << std::endl;
@@ -1208,17 +1209,17 @@ protected:
 
                     if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
                         size_d_0++;
-                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, 1) ) {
+                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, 1) ) {
                         size_d_p++;
-                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, -1) ) {
+                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, -1) ) {
                         size_d_m++;
                     }
 
-                    if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
+                    if (exist_B_0 && selectionRulesMomentumOld(state_row, state_col, 0) ) {
                         size_S_0++;
-                    } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
+                    } else if (exist_B_m && selectionRulesMomentumOld(state_row, state_col, 1) ) {
                         size_S_p++;
-                    } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
+                    } else if (exist_B_p && selectionRulesMomentumOld(state_row, state_col, -1) ) {
                         size_S_m++;
                     }
                 }
@@ -1250,34 +1251,34 @@ protected:
                     }
 
                     if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
-                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                        real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_d_0.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, 1) ) {
-                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, 1) ) {
+                        real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_d_p.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, -1) ) {
-                        real_t val = matrix_elements.getDipole(state_row, state_col);
+                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, -1) ) {
+                        real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_d_m.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
 
-                    if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
-                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
+                    if (exist_B_0 && selectionRulesMomentumOld(state_row, state_col, 0) ) {
+                        real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_0.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_B_p && selectionRulesMomentum(state_row, state_col, 1) ) {
-                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
+                    } else if (exist_B_m && selectionRulesMomentumOld(state_row, state_col, 1) ) {
+                        real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_p.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_B_m && selectionRulesMomentum(state_row, state_col, -1) ) {
-                        real_t val = matrix_elements.getMomentumOld(state_row, state_col);
+                    } else if (exist_B_p && selectionRulesMomentumOld(state_row, state_col, -1) ) {
+                        real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
                             hamiltonian_m_m.addEntries(state_row.idx,state_col.idx,val);
                         }
@@ -1417,11 +1418,11 @@ protected:
 
                     mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
                                                               -hamiltonian_d_0*E_0
-                                                              -hamiltonian_d_p*E_p
-                                                              -hamiltonian_d_m*E_m
+                                                              +hamiltonian_d_p*E_m
+                                                              +hamiltonian_d_m*E_p
                                                               +hamiltonian_m_0*B_0
-                                                              +hamiltonian_m_p*B_p
-                                                              +hamiltonian_m_m*B_m
+                                                              -hamiltonian_m_p*B_m
+                                                              -hamiltonian_m_m*B_p
                                                               );
                 } else {
                     mat = std::make_shared<Hamiltonianmatrix>();
@@ -1875,8 +1876,8 @@ public:
                                     // total momentum preserved?
                                     if (q1 == -q2) {
                                         double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                        val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1.getMultipole(state_row.first(), state_col.first(),kappa1)*
-                                                matrixelements_atom2.getMultipole(state_row.second(), state_col.second(),kappa2);
+                                        val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1.getMultipole(state_row.first(), state_col.first(), kappa1)*
+                                                matrixelements_atom2.getMultipole(state_row.second(), state_col.second(), kappa2);
                                     }
                                 }
                             }

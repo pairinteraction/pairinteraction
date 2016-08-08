@@ -13,27 +13,31 @@
 #include <wignerSymbols.h>
 
 bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa);
+bool selectionRulesMomentum(StateOne state1, StateOne state2);
+
+
 bool selectionRulesDipole(StateOne state1, StateOne state2, int q);
 bool selectionRulesQuadrupole(StateOne state1, StateOne state2, int q);
-bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
+bool selectionRulesMomentumOld(StateOne state1, StateOne state2, int q);
 
 class MatrixElements { // TODO ein buffer am Programmstart
 public:
     MatrixElements(std::string species, std::string dbname);
     MatrixElements(const Configuration& config, std::string species, std::string dbname);
     void precalculate_momentumOld(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
-    void precalculate_dipole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m);
+    void precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q);
     void precalculate_quadrupole(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_0, bool exist_p, bool exist_m, bool exist_pp, bool exist_mm);
     void precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one, int kappa);
-    void precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one);
+    void precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q);
     real_t getMultipole(StateOne state_row, StateOne state_col, int k);
-    real_t getMomentum(StateOne state_row, StateOne state_col);
-    real_t getDipole(StateOne state_row, StateOne state_col);
+    real_t getMagneticMomentum(StateOne state_row, StateOne state_col);
+    real_t getElectricMomentum(StateOne state_row, StateOne state_col);
+
     real_t getQuadrupole(StateOne state_row, StateOne state_col);
     real_t getMomentumOld(StateOne state_row, StateOne state_col);
 private:
     void precalculateOld(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_q_0, bool exist_q_p, bool exist_q_m, bool exist_q_pp, bool exist_q_mm, bool exist_m_0, bool exist_m_p, bool exist_m_m);
-    void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, bool calcMultipole, bool calcMomentum);
+    void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, bool calcMultipole, bool calcMomentum);
     real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
     std::string method;
     std::string species;

@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
             MatrixElements matrixelement("Rb", "");
             std::vector<StateOne> states({{state_row, state_col}});
             auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
-            matrixelement.precalculate_dipole(basis, true, true, true);
-            dipolematrixelement = matrixelement.getDipole(state_row, state_col);
+            matrixelement.precalculate_multipole(basis, 1);
+            dipolematrixelement = matrixelement.getMultipole(state_row, state_col, 1);
         }
 
         std::cout << std::setprecision(precision) << dipolematrixelement << std::endl;
