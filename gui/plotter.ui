@@ -1836,7 +1836,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
+             <width>300</width>
              <height>825</height>
             </rect>
            </property>
@@ -3374,34 +3374,27 @@
             <item>
              <widget class="QLabel" name="label">
               <property name="text">
-               <string>If a radial matrix element is missing, ...</string>
+               <string>Calculate radial matrix elements ...</string>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="radiobutton_system_missingCalc">
               <property name="text">
-               <string>calculate it from model potentials.</string>
+               <string>from model potentials.</string>
               </property>
               <property name="checked">
-               <bool>false</bool>
+               <bool>true</bool>
               </property>
              </widget>
             </item>
             <item>
              <widget class="QRadioButton" name="radiobutton_system_missingWhittaker">
               <property name="text">
-               <string>calculate it using Whittaker functions.</string>
+               <string>using Whittaker functions.</string>
               </property>
               <property name="checked">
                <bool>false</bool>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QRadioButton" name="radiobutton_system_missingError">
-              <property name="text">
-               <string>throw an error.</string>
               </property>
              </widget>
             </item>
@@ -3483,7 +3476,7 @@
                <string>quantization axis is interatomic axis.</string>
               </property>
               <property name="checked">
-               <bool>true</bool>
+               <bool>false</bool>
               </property>
              </widget>
             </item>

@@ -41,6 +41,9 @@
 #include <boost/filesystem.hpp>
 #include <boost/math/special_functions/binomial.hpp>
 
+#include <numeric>
+
+
 /*
 ///////////////////// Sources /////////////////////
 
@@ -2052,8 +2055,15 @@ public:
 
                         std::vector<std::vector<ptrdiff_t>> blockIndices;
                         blockIndices.reserve(blockSets.size());
+                        bool nottrivial = false;
                         for (auto& set: blockSets) {
                             blockIndices.push_back(std::vector<ptrdiff_t>(set.begin(), set.end()));
+                            nottrivial |= set.size() > 1;
+                        }
+                        if (!nottrivial) {
+                            blockIndices.clear();
+                            blockIndices.push_back(std::vector<ptrdiff_t>(abstotalmatrix.num_basisvectors()));
+                            std::iota (blockIndices.back().begin(), blockIndices.back().end(), 0);
                         }
 
                         for (auto& indices: blockIndices) {

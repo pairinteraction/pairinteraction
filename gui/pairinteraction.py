@@ -861,7 +861,7 @@ class SystemDict(GuiDict):
         store["matSeparate"] =      {'widget': ui.radiobutton_system_matSeparate,           'unit': None}
         store["missingCalc"] =      {'widget': ui.radiobutton_system_missingCalc,           'unit': None}
         store["missingWhittaker"] = {'widget': ui.radiobutton_system_missingWhittaker,      'unit': None}
-        store["missingError"] =     {'widget': ui.radiobutton_system_missingError,          'unit': None}
+        #store["missingError"] =     {'widget': ui.radiobutton_system_missingError,          'unit': None}
         store["cores"] =            {'widget': ui.spinbox_system_cores,                     'unit': None}
     
     # field map of atom 1 (samebasis == False)
@@ -1098,7 +1098,7 @@ class MainWindow(QtGui.QMainWindow):
         self.missinggroup = QtGui.QButtonGroup()
         self.missinggroup.addButton(self.ui.radiobutton_system_missingCalc)
         self.missinggroup.addButton(self.ui.radiobutton_system_missingWhittaker)
-        self.missinggroup.addButton(self.ui.radiobutton_system_missingError)
+        #self.missinggroup.addButton(self.ui.radiobutton_system_missingError)
         
         self.matgroup = QtGui.QButtonGroup()
         self.matgroup.addButton(self.ui.radiobutton_system_matCombined)
@@ -2667,6 +2667,9 @@ class MainWindow(QtGui.QMainWindow):
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
                 
+            elif self.ui.radiobutton_system_missingWhittaker.isChecked() and max(self.systemdict["n1"].magnitude,self.systemdict["n1"].magnitude)+max(self.systemdict["deltaNSingle"].magnitude, self.systemdict["deltaNPair"].magnitude) > 97:
+                QtGui.QMessageBox.critical(self, "Message", "If the principal quantum number exceeds 97, radial matrix elements must be calculated from model potentials.")
+                
             else:
                 self.senderbutton = self.sender()
                 
@@ -2674,6 +2677,9 @@ class MainWindow(QtGui.QMainWindow):
                     QtGui.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. "  +\
                         "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " + \
                         "axis equals the interatomic axis. This slows down calculations.")
+                
+                if self.systemdict["theta"].magnitude != 0 and (self.systemdict["deltaMSingle"].magnitude >= 0 or (self.ui.radiobutton_system_pairbasisDefined.isChecked() and self.systemdict["deltaMPair"].magnitude >= 0)):
+                    QtGui.QMessageBox.warning(self, "Warning", "For non-zero interaction angles, it is recommended not to restrict the magnetic quantum number.")
                 
                 # save last settings
                 self.saveSettingsSystem(self.path_system_last)
