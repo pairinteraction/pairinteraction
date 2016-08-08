@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
         real_t dipolematrixelement = 0;
         if (selectionRulesDipole(state_row, state_col, state_row.m-state_col.m)) {
-            MatrixElements matrixelement("Rb", 1, "");
+            MatrixElements matrixelement("Rb", "");
             std::vector<StateOne> states({{state_row, state_col}});
             auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
             matrixelement.precalculate_dipole(basis, true, true, true);

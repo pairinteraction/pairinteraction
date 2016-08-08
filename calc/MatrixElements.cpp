@@ -15,13 +15,13 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return (state1.l == state2.l) && (state1.m == state2.m+q) && (fabs(state1.j-state2.j) <= 1); // && (state1.n == state2.n);
 }
 
-MatrixElements::MatrixElements(std::string species, int k, std::string dbname) : species(species), k(k), dbname(dbname) {
+MatrixElements::MatrixElements(std::string species, std::string dbname) : species(species), dbname(dbname) {
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
 }
 
-MatrixElements::MatrixElements(const Configuration& config, std::string species, int k, std::string dbname) : MatrixElements(species,k,dbname) {
+MatrixElements::MatrixElements(const Configuration& config, std::string species, std::string dbname) : MatrixElements(species,dbname) {
     if (config["missingCalc"].str() == "true") {
         method = "Modelpotentials";
     } else if (config["missingWhittaker"].str() == "true") {
@@ -31,65 +31,65 @@ MatrixElements::MatrixElements(const Configuration& config, std::string species,
     }
 }
 
-void MatrixElements::precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one) {
-    precalculate(basis_one, true, false);
+void MatrixElements::precalculate_multipole(std::shared_ptr<const BasisnamesOne> basis_one, int kappa) {
+    precalculate(basis_one, kappa, true, false);
 }
 
 void MatrixElements::precalculate_momentum(std::shared_ptr<const BasisnamesOne> basis_one) {
-    precalculate(basis_one, false, true);
+    precalculate(basis_one, 1, false, true);
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, bool calcMultipole, bool calcMomentum) {
-    if (calcMomentum && k != 1) {
-        std::cout << "For calculating momentum matrix elements, it must be k=1." << std::endl;
-        abort();
-    }
-
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int k, bool calcMultipole, bool calcMomentum) {
     SQLite3 db(dbname);
 
-    // create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial)
+    // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
-            "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
-            "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
+    if (calcMultipole || calcMomentum) {
+        db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
+                "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+                "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
+        db.exec("CREATE TEMPORARY TABLE tmp_radial ("
+                "n1 integer, l1 integer, j1 double,"
+                "n2 integer, l2 integer, j2 double);");
+    }
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
-            "k integer, j1 double, m1 double,"
-            "j2 double, m2 double, value double, UNIQUE (k, j1, m1, j2, m2));");
+    if (calcMultipole || calcMomentum) {
+        db.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
+                "k integer, j1 double, m1 double,"
+                "j2 double, m2 double, value double, UNIQUE (k, j1, m1, j2, m2));");
+        db.exec("CREATE TEMPORARY TABLE tmp_angular ("
+                "j1 double, m1 double,"
+                "j2 double, m2 double);");
+    }
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_s ("
-            "k integer, l1 integer, j1 double,"
-            "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
+    if (calcMultipole || calcMomentum) {
+        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_s ("
+                "k integer, l1 integer, j1 double,"
+                "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
+        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_s ("
+                "l1 integer, j1 double,"
+                "l2 integer, j2 double);");
+    }
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_l ("
-            "k integer, l1 integer, j1 double,"
-            "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
+    if (calcMomentum) {
+        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_l ("
+                "k integer, l1 integer, j1 double,"
+                "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
+        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_l ("
+                "l1 integer, j1 double,"
+                "l2 integer, j2 double);");
+    }
 
-    db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_multipole ("
-            "k integer, l1 integer,"
-            "l2 integer, value double, UNIQUE (k, l1, l2));");
+    if (calcMultipole) {
+        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_multipole ("
+                "k integer, l1 integer,"
+                "l2 integer, value double, UNIQUE (k, l1, l2));");
+        db.exec("CREATE TEMPORARY TABLE tmp_reduced_multipole ("
+                "l1 integer,"
+                "l2 integer);");
+    }
 
-    // determine elements
-
-    db.exec("CREATE TEMPORARY TABLE tmp_radial ("
-            "n1 integer, l1 integer, j1 double,"
-            "n2 integer, l2 integer, j2 double);");
-
-    db.exec("CREATE TEMPORARY TABLE tmp_angular ("
-            "j1 double, m1 double,"
-            "j2 double, m2 double);");
-
-    db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_s ("
-            "l1 integer, j1 double,"
-            "l2 integer, j2 double);");
-
-    db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_l ("
-            "l1 integer, j1 double,"
-            "l2 integer, j2 double);");
-
-    db.exec("CREATE TEMPORARY TABLE tmp_reduced_multipole ("
-            "l1 integer,"
-            "l2 integer);");
+    // --- determine elements ---
 
     std::stringstream ss;
 
@@ -102,13 +102,9 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             //}
 
             if (selectionRulesMultipole(state_row, state_col, k)) {
-                StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}); //.order(); TODO
-                StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}); //.order(); TODO
-                StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}}); //.order(); TODO
-                StateTwo state_l = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}}); //.order(); TODO
-
                 if (calcMultipole || calcMomentum) {
-                    auto missing_cache_radial = cache_radial.insert({state_nlj, std::numeric_limits<real_t>::max()});
+                    StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}); //.order(); TODO
+                    auto missing_cache_radial = cache_radial[k].insert({state_nlj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_radial.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
@@ -119,7 +115,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 }
 
                 if (calcMultipole || calcMomentum) {
-                    auto missing_cache_angular = cache_angular.insert({state_jm, std::numeric_limits<real_t>::max()});
+                    StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}}); //.order(); TODO
+                    auto missing_cache_angular = cache_angular[k].insert({state_jm, std::numeric_limits<real_t>::max()});
                     if (missing_cache_angular.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
@@ -130,7 +127,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 }
 
                 if (calcMultipole || calcMomentum) {
-                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s.insert({state_lj, std::numeric_limits<real_t>::max()});
+                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}}); //.order(); TODO
+                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[k].insert({state_lj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_commutes_s.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
@@ -141,7 +139,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 }
 
                 if (calcMomentum) {
-                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l.insert({state_lj, std::numeric_limits<real_t>::max()});
+                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}}); //.order(); TODO
+                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[k].insert({state_lj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_commutes_l.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
@@ -152,7 +151,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                 }
 
                 if (calcMultipole) {
-                    auto missing_cache_reduced_multipole = cache_reduced_multipole.insert({state_l, std::numeric_limits<real_t>::max()});
+                    StateTwo state_l = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}}); //.order(); TODO
+                    auto missing_cache_reduced_multipole = cache_reduced_multipole[k].insert({state_l, std::numeric_limits<real_t>::max()});
                     if (missing_cache_reduced_multipole.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
@@ -167,7 +167,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     db.exec("end transaction;");
 
-    // load from database
+    // --- load from database ---
+
     int n1, n2, l1, l2;
     float j1, j2, m1, m2;
     double value;
@@ -180,7 +181,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         SQLite3Result result_radial = db.query(ss.str());
         for (auto r : result_radial) {
             *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
-            cache_radial[StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            cache_radial[k][StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -192,7 +193,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         SQLite3Result result_angular = db.query(ss.str());
         for (auto r : result_angular) {
             *r >> j1 >> m1 >> j2 >> m2 >> value;
-            cache_angular[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
+            cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
         }
     }
 
@@ -204,7 +205,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         SQLite3Result result_reduced_commutes_s = db.query(ss.str());
         for (auto r : result_reduced_commutes_s) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
-            cache_reduced_commutes_s[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -216,7 +217,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         SQLite3Result result_reduced_commutes_l = db.query(ss.str());
         for (auto r : result_reduced_commutes_l) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
-            cache_reduced_commutes_l[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
+            cache_reduced_commutes_l[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
 
@@ -228,47 +229,41 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         SQLite3Result result_reduced_multipole = db.query(ss.str());
         for (auto r : result_reduced_multipole) {
             *r >> l1 >> l2 >> value;
-            cache_reduced_multipole[StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
+            cache_reduced_multipole[k][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
         }
     }
 
-    // calculate missing elements and write them to the database
+    // --- calculate missing elements and write them to the database ---
 
     db.exec("begin transaction;");
 
     if (calcMultipole || calcMomentum) {
-        for (auto &cache : cache_radial) {
+        for (auto &cache : cache_radial[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
-                    cache.second = calcRadialElement(species, state.n[0], state.l[0], state.j[0], k, state.n[1], state.l[1], state.j[1]);
+                cache.second = calcRadialElement(species, state.n[0], state.l[0], state.j[0], k, state.n[1], state.l[1], state.j[1]);
 
-                    ss.str(std::string());
-                    ss << "insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values ("
-                       << "'" << method << "'" << "," << "'" << species << "'" << "," << k << ","
-                       << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
-                       << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
-                       << cache.second << ");";
-                    db.exec(ss.str());
+                ss.str(std::string());
+                ss << "insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                   << "'" << method << "'" << "," << "'" << species << "'" << "," << k << ","
+                   << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
+                   << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
+                   << cache.second << ");";
+                db.exec(ss.str());
 
             }
         }
     }
 
     if (calcMultipole || calcMomentum) {
-        for (auto &cache : cache_angular) {
+        for (auto &cache : cache_angular[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
-
                 float q = state.m[0]-state.m[1];
+
                 cache.second = pow(-1, state.j[0]-state.m[0]) *
                         WignerSymbols::wigner3j(state.j[0], k, state.j[1], -state.m[0], q, state.m[1]);
-
-                /*if (cache.second == 0) {
-                std::cout << k << ","
-                          << state.j[0] << "," << state.m[0] << ","
-                          << state.j[1] << "," << state.m[1] << "," << WignerSymbols::wigner3j(1.5, 2, 1.5, -state.m[0], q, state.m[1]) << std::endl;
-            }*/
 
                 ss.str(std::string());
                 ss << "insert into cache_angular (k, j1, m1, j2, m2, value) values ("
@@ -282,7 +277,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMultipole || calcMomentum) {
-        for (auto &cache : cache_reduced_commutes_s) {
+        for (auto &cache : cache_reduced_commutes_s[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
@@ -301,7 +296,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMomentum) {
-        for (auto &cache : cache_reduced_commutes_l) {
+        for (auto &cache : cache_reduced_commutes_l[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
@@ -320,7 +315,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     }
 
     if (calcMultipole) {
-        for (auto &cache : cache_reduced_multipole) {
+        for (auto &cache : cache_reduced_multipole[k]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
@@ -341,22 +336,22 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     db.exec("end transaction;");
 }
 
-real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col) {
+real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col, int k) {
     //TODO .order()
 
-    return  cache_radial[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
-            cache_angular[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
-cache_reduced_commutes_s[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-cache_reduced_multipole[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
+    return  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
+            cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
+cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
+cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
 }
 
 real_t MatrixElements::getMomentum(StateOne state_row, StateOne state_col) {
     //TODO .order()
 
-    return  cache_radial[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
-            cache_angular[StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
-cache_reduced_commutes_s[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-cache_reduced_multipole[StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
+    return  cache_radial[1][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}})] *
+cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
+cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
+cache_reduced_multipole[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{0, 0}}, {{0, 0}})];
 }
 
 
@@ -404,6 +399,8 @@ void MatrixElements::precalculate_quadrupole(std::shared_ptr<const BasisnamesOne
 
 
 void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_one, bool exist_d_0, bool exist_d_p, bool exist_d_m, bool exist_q_0, bool exist_q_p, bool exist_q_m, bool exist_q_pp, bool exist_q_mm, bool exist_m_0, bool exist_m_p, bool exist_m_m) {
+    int k = 1;
+
     if (!(exist_m_0 || exist_m_p || exist_m_m || exist_d_0 || exist_d_p || exist_d_m || exist_q_0 || exist_q_p || exist_q_m || exist_q_pp || exist_q_mm)) return;
 
     if ((exist_m_0 || exist_m_p || exist_m_m) && k != 1) {
@@ -639,24 +636,24 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
 
         for (auto &element : element_nlj_k) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                    int lmax = fmax(element.first.l[0],element.first.l[1]);
+                int lmax = fmax(element.first.l[0],element.first.l[1]);
 
-                    if (k == 1) { // dipole
-                        element.second = pow(-1, lmax) * sqrt(lmax) *
-                                calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
-                    } else if (k == 2) { // quadrupole
-                        //element.second = 0; // TODO !!!
-                        element.second = pow(-1, lmax) * sqrt(lmax) *
-                                calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
-                    }
+                if (k == 1) { // dipole
+                    element.second = pow(-1, lmax) * sqrt(lmax) *
+                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                } else if (k == 2) { // quadrupole
+                    //element.second = 0; // TODO !!!
+                    element.second = pow(-1, lmax) * sqrt(lmax) *
+                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], k, element.first.n[1], element.first.l[1], element.first.j[1]);
+                }
 
-                    ss.str(std::string());
-                    ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
-                       << "'" << species << "'" << "," << k << ","
-                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
-                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
-                       << element.second << ");";
-                    db.exec(ss.str());
+                ss.str(std::string());
+                ss << "insert into cache_nlj_k (species, k, n1, l1, j1, n2, l2, j2, value) values ("
+                   << "'" << species << "'" << "," << k << ","
+                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                   << element.second << ");";
+                db.exec(ss.str());
 
             }
         }
@@ -684,16 +681,16 @@ void MatrixElements::precalculateOld(std::shared_ptr<const BasisnamesOne> basis_
 
         for (auto &element : element_nlj_0) {
             if (element.second == std::numeric_limits<real_t>::max()) {
-                    element.second =
-                            calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
+                element.second =
+                        calcRadialElement(species, element.first.n[0], element.first.l[0], element.first.j[0], 0, element.first.n[1], element.first.l[1], element.first.j[1]);
 
-                    ss.str(std::string());
-                    ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
-                       << "'" << species << "'" << ","
-                       << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
-                       << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
-                       << element.second << ");";
-                    db.exec(ss.str());
+                ss.str(std::string());
+                ss << "insert into cache_nlj_0 (species, n1, l1, j1, n2, l2, j2, value) values ("
+                   << "'" << species << "'" << ","
+                   << element.first.n[0] << "," << element.first.l[0] << "," << element.first.j[0] << ","
+                   << element.first.n[1] << "," << element.first.l[1] << "," << element.first.j[1] << ","
+                   << element.second << ");";
+                db.exec(ss.str());
             }
         }
     }
@@ -756,7 +753,7 @@ real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, re
 
 
 real_t MatrixElements::getDipole(StateOne state_row, StateOne state_col) {
-    if (k != 1) abort();
+    //if (k != 1) abort();
 
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
@@ -767,7 +764,7 @@ element_lj_l[StateTwo({{0,0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_ro
 
 
 real_t MatrixElements::getQuadrupole(StateOne state_row, StateOne state_col) {
-    if (k != 2) abort();
+    //if (k != 2) abort();
 
     return pow(-1, state_row.j-state_row.m+0.5+state_col.l+state_row.j) * pow(-1, state_row.l) *
             element_nlj_k[StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] * // TODO !!!

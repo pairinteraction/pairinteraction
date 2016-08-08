@@ -1182,7 +1182,7 @@ protected:
             // --- precalculate matrix elements ---
             std::cout << "One-atom Hamiltonian, precalculate matrix elements" << std::endl;
 
-            MatrixElements matrix_elements(conf, species, 1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrix_elements(conf, species, (path_cache / "cache_elements.db").string());
 
             if (exist_E_0 || exist_E_p || exist_E_m || exist_B_0 || exist_B_p || exist_B_m) {
                 matrix_elements.precalculate_dipole(basis_one, exist_E_0, exist_E_p, exist_E_m);
@@ -1766,8 +1766,8 @@ public:
 
             std::vector<int> exponent_multipole;
             std::vector<Hamiltonianmatrix> mat_multipole;
-            std::vector<MatrixElements> matrixelements_atom1;
-            std::vector<MatrixElements> matrixelements_atom2;
+            MatrixElements matrixelements_atom1(conf_tot, species1, (path_cache / "cache_elements.db").string());
+            MatrixElements matrixelements_atom2(conf_tot, species2, (path_cache / "cache_elements.db").string());
             std::vector<idx_t> size_mat_multipole;
 
             int idx_multipole_max = -1;
@@ -1795,13 +1795,8 @@ public:
 
                 for (int kappa = kappa_min; kappa<=kappa_max; ++kappa) {
                     std::cout << "Two-atom hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
-
-                    int idx_kappa = kappa-kappa_min;
-
-                    matrixelements_atom1.push_back(MatrixElements(conf_tot, species1, kappa, (path_cache / "cache_elements.db").string()));
-                    matrixelements_atom2.push_back(MatrixElements(conf_tot, species2, kappa, (path_cache / "cache_elements.db").string()));
-                    matrixelements_atom1[idx_kappa].precalculate_multipole(basis_one1);
-                    matrixelements_atom2[idx_kappa].precalculate_multipole(basis_one2);
+                    matrixelements_atom1.precalculate_multipole(basis_one1, kappa);
+                    matrixelements_atom2.precalculate_multipole(basis_one2, kappa);
                 }
 
                 // --- count entries of two-atom interaction Hamiltonians ---
@@ -1879,11 +1874,9 @@ public:
 
                                     // total momentum preserved?
                                     if (q1 == -q2) {
-                                        int idx_kappa1 = kappa1-kappa_min;
-                                        int idx_kappa2 = kappa2-kappa_min;
                                         double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                        val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1[idx_kappa1].getMultipole(state_row.first(), state_col.first())*
-                                                matrixelements_atom2[idx_kappa2].getMultipole(state_row.second(), state_col.second());
+                                        val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1.getMultipole(state_row.first(), state_col.first(),kappa1)*
+                                                matrixelements_atom2.getMultipole(state_row.second(), state_col.second(),kappa2);
                                     }
                                 }
                             }
