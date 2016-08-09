@@ -157,6 +157,8 @@ class Wignerd:
         return r
 
     def calc(self, j, m2, m1, beta):
+        beta *= -1 # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        
         sgn = 1
         
         if m1+m2 < 0:
@@ -2870,8 +2872,8 @@ class MainWindow(QtGui.QMainWindow):
                     json.dump(params, f, indent=4, sort_keys=True)
                     
                 # start c++ process
-                if params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or \
-                        params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
+                if params["minEy"] != 0 or params["maxEy"] != 0 or \
+                        params["minBy"] != 0 or params["maxBy"] != 0:
                     path_cpp = self.path_cpp_complex
                 else:
                     path_cpp = self.path_cpp_real

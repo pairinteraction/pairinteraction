@@ -47,11 +47,11 @@ int main(int argc, char **argv) {
         ss_col >> state_col.n >> state_col.l >> state_col.j >> state_col.m;
 
         real_t dipolematrixelement = 0;
-        if (selectionRulesDipole(state_row, state_col, state_row.m-state_col.m)) {
+        if (selectionRulesMultipole(state_row, state_col, 1, state_row.m-state_col.m)) {
             MatrixElements matrixelement("Rb", "");
             std::vector<StateOne> states({{state_row, state_col}});
             auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
-            matrixelement.precalculate_multipole(basis, 1);
+            matrixelement.precalculateMultipole(basis, 1);
             dipolematrixelement = matrixelement.getMultipole(state_row, state_col, 1);
         }
 

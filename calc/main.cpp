@@ -1033,12 +1033,12 @@ public:
 
 protected:
     void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
-        if(val_x != 0 || val_y != 0) {
-            std::cout << ">>ERR" << "For fields with non-zero x,y-coordinates, a complex data type is needed." << std::endl;
+        if(val_y != 0) {
+            std::cout << ">>ERR" << "For fields with non-zero y-coordinates, a complex data type is needed." << std::endl;
             abort();
         }
-        val_p = val_x;
-        val_m = val_y;
+        val_p = -val_x/std::sqrt(2);
+        val_m = val_x/std::sqrt(2);
         val_0 = val_z;
     }
 
@@ -1120,11 +1120,9 @@ protected:
             changeToSpherical(max_B_x, max_B_y, max_B_z, max_B_p, max_B_m, max_B_0);
 
             bool exist_E_0 = (std::abs(min_E_0) != 0 || std::abs(max_E_0) != 0);
-            bool exist_E_p = (std::abs(min_E_p) != 0 || std::abs(max_E_p) != 0);
-            bool exist_E_m = (std::abs(min_E_m) != 0 || std::abs(max_E_m) != 0);
+            bool exist_E_1 = (std::abs(min_E_p) != 0 || std::abs(max_E_p) != 0);
             bool exist_B_0 = (std::abs(min_B_0) != 0 || std::abs(max_B_0) != 0);
-            bool exist_B_p = (std::abs(min_B_p) != 0 || std::abs(max_B_p) != 0);
-            bool exist_B_m = (std::abs(min_B_m) != 0 || std::abs(max_B_m) != 0);
+            bool exist_B_1 = (std::abs(min_B_p) != 0 || std::abs(max_B_p) != 0);
 
             // --- count entries of Hamiltonian parts ---
             size_t size_basis = basis_one->size();
@@ -1183,44 +1181,75 @@ protected:
             std::cout << "One-atom Hamiltonian, precalculate matrix elements" << std::endl;
 
             MatrixElements matrix_elements(conf, species, (path_cache / "cache_elements.db").string());
+
             if (exist_E_0) matrix_elements.precalculateElectricMomentum(basis_one, 0);
-            if (exist_E_p) matrix_elements.precalculateElectricMomentum(basis_one, -1);
-            if (exist_E_m) matrix_elements.precalculateElectricMomentum(basis_one, 1);
+            if (exist_E_1) matrix_elements.precalculateElectricMomentum(basis_one, 1);
+            if (exist_E_1) matrix_elements.precalculateElectricMomentum(basis_one, -1);
+
             if (exist_B_0) matrix_elements.precalculateMagneticMomentum(basis_one, 0);
-            if (exist_B_p) matrix_elements.precalculateMagneticMomentum(basis_one, -1);
-            if (exist_B_m) matrix_elements.precalculateMagneticMomentum(basis_one, 1);
+            if (exist_B_1) matrix_elements.precalculateMagneticMomentum(basis_one, 1);
+            if (exist_B_1) matrix_elements.precalculateMagneticMomentum(basis_one, -1);
+
+            if (exist_B_0 || exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 0, 0);
+            if (exist_B_0 || exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 2, 0);
+            if (exist_B_0 && exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 2, 1);
+            if (exist_B_0 && exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 2, -1);
+            if (exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 2, 2);
+            if (exist_B_1) matrix_elements.precalculateDiamagnetism(basis_one, 2, -2);
 
             // --- count entries of Hamiltonian parts ---
             std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian" << std::endl;
 
             size_basis = basis_one->size();
-            size_t size_d_0 = 0;
-            size_t size_d_p = 0;
-            size_t size_d_m = 0;
-            size_t size_S_0 = 0;
-            size_t size_S_p = 0;
-            size_t size_S_m = 0;
+            size_t size_electricMomentum_0 = 0;
+            size_t size_electricMomentum_p = 0;
+            size_t size_electricMomentum_m = 0;
+
+            size_t size_magneticMomentum_0 = 0;
+            size_t size_magneticMomentum_p = 0;
+            size_t size_magneticMomentum_m = 0;
+
+            size_t size_diamagnetism_00 = 0;
+            size_t size_diamagnetism_20 = 0;
+            size_t size_diamagnetism_2p = 0;
+            size_t size_diamagnetism_2m = 0;
+            size_t size_diamagnetism_2pp = 0;
+            size_t size_diamagnetism_2mm = 0;
 
             for (const auto &state_col : *basis_one) {
                 for (const auto &state_row : *basis_one) {
-                    if (state_row.idx < state_col.idx) {
+                    if (state_row.idx < state_col.idx) { // lower triangle only
                         continue;
                     }
 
-                    if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
-                        size_d_0++;
-                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, 1) ) {
-                        size_d_p++;
-                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, -1) ) {
-                        size_d_m++;
+                    if (exist_E_0 && selectionRulesMultipole(state_row, state_col, 1, 0) ) {
+                        size_electricMomentum_0++;
+                    } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, 1) ) {
+                        size_electricMomentum_p++;
+                    } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, -1) ) {
+                        size_electricMomentum_m++;
                     }
 
-                    if (exist_B_0 && selectionRulesMomentumOld(state_row, state_col, 0) ) {
-                        size_S_0++;
-                    } else if (exist_B_m && selectionRulesMomentumOld(state_row, state_col, 1) ) {
-                        size_S_p++;
-                    } else if (exist_B_p && selectionRulesMomentumOld(state_row, state_col, -1) ) {
-                        size_S_m++;
+                    if (exist_B_0 &&  selectionRulesMomentum(state_row, state_col, 0) ) {
+                        size_magneticMomentum_0++;
+                    } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, 1) ) {
+                        size_magneticMomentum_p++;
+                    } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, -1) ) {
+                        size_magneticMomentum_m++;
+                    }
+
+                    if ((exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 0, 0)) {
+                        size_diamagnetism_00++;
+                    } else if ((exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 0)) {
+                        size_diamagnetism_20++;
+                    } else if ((exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 1)) {
+                        size_diamagnetism_2p++;
+                    } else if ((exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -1)) {
+                        size_diamagnetism_2m++;
+                    } else if ((exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 2)) {
+                        size_diamagnetism_2pp++;
+                    } else if ((exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -2)) {
+                        size_diamagnetism_2mm++;
                     }
                 }
             }
@@ -1228,12 +1257,20 @@ protected:
             // --- construct field Hamiltonian parts ---
             std::cout << "One-atom Hamiltonian, construct field Hamiltonian" << std::endl;
 
-            Hamiltonianmatrix hamiltonian_d_0(size_basis, size_d_0);
-            Hamiltonianmatrix hamiltonian_d_p(size_basis, size_d_p);
-            Hamiltonianmatrix hamiltonian_d_m(size_basis, size_d_m);
-            Hamiltonianmatrix hamiltonian_m_0(size_basis, size_S_0);
-            Hamiltonianmatrix hamiltonian_m_p(size_basis, size_S_p);
-            Hamiltonianmatrix hamiltonian_m_m(size_basis, size_S_m);
+            Hamiltonianmatrix hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
+            Hamiltonianmatrix hamiltonian_electricMomentum_p(size_basis, size_electricMomentum_p);
+            Hamiltonianmatrix hamiltonian_electricMomentum_m(size_basis, size_electricMomentum_m);
+
+            Hamiltonianmatrix hamiltonian_magneticMomentum_0(size_basis, size_magneticMomentum_0);
+            Hamiltonianmatrix hamiltonian_magneticMomentum_p(size_basis, size_magneticMomentum_p);
+            Hamiltonianmatrix hamiltonian_magneticMomentum_m(size_basis, size_magneticMomentum_m);
+
+            Hamiltonianmatrix hamiltonian_diamagnetism_00(size_basis, size_diamagnetism_00);
+            Hamiltonianmatrix hamiltonian_diamagnetism_20(size_basis, size_diamagnetism_20);
+            Hamiltonianmatrix hamiltonian_diamagnetism_2p(size_basis, size_diamagnetism_2p);
+            Hamiltonianmatrix hamiltonian_diamagnetism_2m(size_basis, size_diamagnetism_2m);
+            Hamiltonianmatrix hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
+            Hamiltonianmatrix hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
 
             for (const auto &state_col : *basis_one) {
                 for (const auto &state_row : *basis_one) {
@@ -1242,45 +1279,85 @@ protected:
                     }
 
                     if (state_row.idx == state_col.idx) {
-                        hamiltonian_d_0.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_d_p.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_d_m.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_m_0.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_m_p.addBasis(state_row.idx,state_col.idx,1);
-                        hamiltonian_m_m.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_electricMomentum_0.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_electricMomentum_p.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_electricMomentum_m.addBasis(state_row.idx,state_col.idx,1);
+
+                        hamiltonian_magneticMomentum_0.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_magneticMomentum_p.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_magneticMomentum_m.addBasis(state_row.idx,state_col.idx,1);
+
+                        hamiltonian_diamagnetism_00.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_diamagnetism_20.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_diamagnetism_2p.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_diamagnetism_2m.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_diamagnetism_2pp.addBasis(state_row.idx,state_col.idx,1);
+                        hamiltonian_diamagnetism_2mm.addBasis(state_row.idx,state_col.idx,1);
                     }
 
-                    if (exist_E_0 && selectionRulesDipole(state_row, state_col, 0) ) {
+                    if (exist_E_0 && selectionRulesMultipole(state_row, state_col, 1, 0) ) {
                         real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_d_0.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_electricMomentum_0.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_E_m && selectionRulesDipole(state_row, state_col, 1) ) {
+                    } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, 1) ) {
                         real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_d_p.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_electricMomentum_p.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_E_p && selectionRulesDipole(state_row, state_col, -1) ) {
+                    } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, -1) ) {
                         real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_d_m.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_electricMomentum_m.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
 
-                    if (exist_B_0 && selectionRulesMomentumOld(state_row, state_col, 0) ) {
+                    if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
                         real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_m_0.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_magneticMomentum_0.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_B_m && selectionRulesMomentumOld(state_row, state_col, 1) ) {
+                    } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, 1) ) {
                         real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_m_p.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_magneticMomentum_p.addEntries(state_row.idx,state_col.idx,val);
                         }
-                    } else if (exist_B_p && selectionRulesMomentumOld(state_row, state_col, -1) ) {
+                    } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, -1) ) {
                         real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
                         if (std::abs(val) > tol) {
-                            hamiltonian_m_m.addEntries(state_row.idx,state_col.idx,val);
+                            hamiltonian_magneticMomentum_m.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    }
+
+                    if ((exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 0, 0)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 0);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_00.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if ((exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 0)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_20.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if ((exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 1)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_2p.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if ((exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -1)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_2m.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if ((exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 2)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_2pp.addEntries(state_row.idx,state_col.idx,val);
+                        }
+                    } else if ((exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -2)) {
+                        real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                        if (std::abs(val) > tol) {
+                            hamiltonian_diamagnetism_2mm.addEntries(state_row.idx,state_col.idx,val);
                         }
                     }
                 }
@@ -1288,12 +1365,20 @@ protected:
 
             std::cout << "One-atom Hamiltonian, compress field Hamiltonian" << std::endl;
 
-            hamiltonian_d_0.compress(basis_one->dim(), basis_one->dim());
-            hamiltonian_d_p.compress(basis_one->dim(), basis_one->dim());
-            hamiltonian_d_m.compress(basis_one->dim(), basis_one->dim());
-            hamiltonian_m_0.compress(basis_one->dim(), basis_one->dim());
-            hamiltonian_m_p.compress(basis_one->dim(), basis_one->dim());
-            hamiltonian_m_m.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_electricMomentum_0.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_electricMomentum_p.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_electricMomentum_m.compress(basis_one->dim(), basis_one->dim());
+
+            hamiltonian_magneticMomentum_0.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_magneticMomentum_p.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_magneticMomentum_m.compress(basis_one->dim(), basis_one->dim());
+
+            hamiltonian_diamagnetism_00.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_diamagnetism_20.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_diamagnetism_2p.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_diamagnetism_2m.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_diamagnetism_2pp.compress(basis_one->dim(), basis_one->dim());
+            hamiltonian_diamagnetism_2mm.compress(basis_one->dim(), basis_one->dim());
 
             // --- construct Hamiltonians ---
             std::cout << "One-atom Hamiltonian, assemble Hamiltonians" << std::endl;
@@ -1417,12 +1502,18 @@ protected:
                     scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
 
                     mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
-                                                              -hamiltonian_d_0*E_0
-                                                              +hamiltonian_d_p*E_m
-                                                              +hamiltonian_d_m*E_p
-                                                              +hamiltonian_m_0*B_0
-                                                              -hamiltonian_m_p*B_m
-                                                              -hamiltonian_m_m*B_p
+                                                              -hamiltonian_electricMomentum_0*E_0
+                                                              +hamiltonian_electricMomentum_p*E_m
+                                                              +hamiltonian_electricMomentum_m*E_p
+                                                              +hamiltonian_magneticMomentum_0*B_0
+                                                              -hamiltonian_magneticMomentum_p*B_m
+                                                              -hamiltonian_magneticMomentum_m*B_p
+                                                              -2*hamiltonian_diamagnetism_00*(B_0*B_0-2.*B_p*B_m)
+                                                              -2*hamiltonian_diamagnetism_20*(B_0*B_0+B_p*B_m)
+                                                              +std::sqrt(12)*hamiltonian_diamagnetism_2p*B_0*B_m
+                                                              +std::sqrt(12)*hamiltonian_diamagnetism_2m*B_0*B_p
+                                                              -std::sqrt(6)*hamiltonian_diamagnetism_2pp*B_m*B_m
+                                                              -std::sqrt(6)*hamiltonian_diamagnetism_2mm*B_p*B_p
                                                               );
                 } else {
                     mat = std::make_shared<Hamiltonianmatrix>();
@@ -1796,8 +1887,8 @@ public:
 
                 for (int kappa = kappa_min; kappa<=kappa_max; ++kappa) {
                     std::cout << "Two-atom hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
-                    matrixelements_atom1.precalculate_multipole(basis_one1, kappa);
-                    matrixelements_atom2.precalculate_multipole(basis_one2, kappa);
+                    matrixelements_atom1.precalculateMultipole(basis_one1, kappa);
+                    matrixelements_atom2.precalculateMultipole(basis_one2, kappa);
                 }
 
                 // --- count entries of two-atom interaction Hamiltonians ---
