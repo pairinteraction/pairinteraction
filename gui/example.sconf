@@ -43,6 +43,10 @@
         3,
         null
     ],
+    "diamagnetism": [
+        true,
+        null
+    ],
     "exponent": [
         3,
         null

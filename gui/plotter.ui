@@ -1448,6 +1448,16 @@
              </layout>
             </item>
             <item>
+             <widget class="QCheckBox" name="checkbox_system_diamagnetic">
+              <property name="text">
+               <string>consider diamagnetic interaction</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer_4">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -1836,7 +1846,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>285</width>
              <height>825</height>
             </rect>
            </property>
@@ -4465,7 +4475,6 @@
     <addaction name="action_cache_directory"/>
     <addaction name="separator"/>
     <addaction name="action_cache_clear"/>
-    <addaction name="action_radial_clear"/>
     <addaction name="separator"/>
     <addaction name="action_sconf_reset"/>
     <addaction name="action_pconf_reset"/>

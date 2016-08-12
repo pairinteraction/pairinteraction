@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-version_settings = 10
-version_cache = 10
+version_settings = 12
+version_cache = 11
 
 # Standard library
 from abc import ABCMeta, abstractmethod
@@ -43,11 +43,6 @@ from scipy import sparse
 from scipy import constants
 from scipy.ndimage.filters import gaussian_filter
 from scipy import io
-
-
-# TODO !!!!!!!!! set dm = -1 for non-zero interaction angles (in both spin boxes) --> "m must not be restricted since the interaction angle is not zero." // construct basis starting from all needed m (better solution)
-# TODO !!!!!!!!! dipole quadrupole
-# TODO !!!!!!!!! find sub blocks
 
 
 
@@ -156,9 +151,7 @@ class Wignerd:
 
         return r
 
-    def calc(self, j, m2, m1, beta):
-        beta *= -1 # TODO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        
+    def calc(self, j, m2, m1, beta):        
         sgn = 1
         
         if m1+m2 < 0:
@@ -865,30 +858,32 @@ class SystemDict(GuiDict):
         store["missingWhittaker"] = {'widget': ui.radiobutton_system_missingWhittaker,      'unit': None}
         #store["missingError"] =     {'widget': ui.radiobutton_system_missingError,          'unit': None}
         store["cores"] =            {'widget': ui.spinbox_system_cores,                     'unit': None}
+        store["diamagnetism"] =     {'widget': ui.checkbox_system_diamagnetic,              'unit': None}
+        
     
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
         "samebasis", "steps","precision","missingCalc",
-        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
     
     # field map of atom 2 (samebasis == False)
     keys_for_cprogram_field2 = ["species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
         "samebasis", "steps","precision","missingCalc","missingWhittaker",
-        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
     
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle","deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
         "samebasis", "steps","precision", "missingCalc","missingWhittaker", "theta", "exponent",
-        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "minR", "maxR"]
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR"]
     
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
         "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
         "samebasis", "steps","precision","missingCalc","missingWhittaker",
-        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz"]
+        "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -1566,7 +1561,7 @@ class MainWindow(QtGui.QMainWindow):
                                         withjBasis = relevantBasis[boolarr]
                                         for m2 in np.unique(withjBasis[:,4]):
                                             boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
-                                            statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
                             
                             boolarr = self.overlapstate[idx][[0,1,2,3]] == -1
                             if sum(boolarr) > 0:
@@ -1593,7 +1588,7 @@ class MainWindow(QtGui.QMainWindow):
                                             withjBasis = relevantBasis[boolarr]
                                             for m2 in np.unique(withjBasis[:,4]):
                                                 boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
-                                                statecoeff2[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                                                statecoeff2[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
                             
                                 boolarr = self.overlapstate[idx][[4,5,6,7]] == -1
                                 if sum(boolarr) > 0:
@@ -1643,7 +1638,7 @@ class MainWindow(QtGui.QMainWindow):
                                         withjBasis = relevantBasis[boolarr]
                                         for m2 in np.unique(withjBasis[:,4]):
                                             boolarr = np.all(relevantBasis[:,[3,4]] == [j,m2],axis=-1)
-                                            statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
                             
                             boolarr = self.overlapstate[idx][[4,5,6,7]] == -1
                             if sum(boolarr) > 0:
@@ -1680,7 +1675,7 @@ class MainWindow(QtGui.QMainWindow):
                                             withjBasis = relevantBasis[boolarr]
                                             for m2 in np.unique(withjBasis[:,4+selector]):
                                                 boolarr = np.all(relevantBasis[:,[3+selector,4+selector]] == [j,m2],axis=-1)
-                                                statecoeff[boolarr] *= self.wignerd.calc(j, m2, m1, self.angle)
+                                                statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
                             
                             boolarr = self.overlapstate[idx][[0,1,2,3,4,5,6,7]] == -1
                             if sum(boolarr) > 0:
@@ -3067,7 +3062,7 @@ class MainWindow(QtGui.QMainWindow):
                                 nl2 = relevantstates[boolarr2][:,[1+selector,2+selector]]
                                 matches = sparse.coo_matrix(np.all(nl1[:,None,:] == nl2[None,:,:], axis=-1))
                                 
-                                wignerd = self.wignerd.calc(j, m1, m2, -self.angle)
+                                wignerd = self.wignerd.calc(j, m2, m1, -self.angle)
                                                                 
                                 idx1 += idxconverter1[matches.row].tolist()
                                 idx2 += idxconverter2[matches.col].tolist()

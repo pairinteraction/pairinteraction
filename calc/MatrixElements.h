@@ -16,7 +16,7 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2);
 bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa, int q);
 bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa);
 
-class MatrixElements { // TODO ein buffer am Programmstart
+class MatrixElements { // TODO use one single buffer, initialiezed at the start of the program
 public:
     MatrixElements(std::string species, std::string dbname);
     MatrixElements(const Configuration& config, std::string species, std::string dbname);
