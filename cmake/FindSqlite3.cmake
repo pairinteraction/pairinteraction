@@ -1,3 +1,9 @@
+# Find SQLite3
+#
+# SQLITE3_LIBRARY       - the sqlite3 library
+# SQLITE3_INCLUDE_DIR   - path including sqlite3.h
+# SQLITE3_BINARY        - sqlite3 executable
+
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 

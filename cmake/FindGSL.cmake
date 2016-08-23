@@ -1,3 +1,8 @@
+# Find the GNU Scientific Library
+#
+# GSL_LIBRARIES      - gsl and gslcblas libraries
+# GSL_INCLUDE_DIRS   - directory with all header files
+
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 

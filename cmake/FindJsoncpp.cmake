@@ -1,3 +1,8 @@
+# Find JsonCPP
+#
+# JSONCPP_LIBRARIES      - the jsoncpp library
+# JSONCPP_INCLUDE_DIRS   - directory with all header files
+
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 
