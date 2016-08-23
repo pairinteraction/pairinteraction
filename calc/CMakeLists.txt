@@ -8,9 +8,6 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
 
-# copy databases
-# file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/databases/quantum_defects.db DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/)
-
 # add the executables
 file(GLOB pairinteraction_SRCS *.cpp)
 set(pairinteraction_matrixelement_SRCS ${pairinteraction_SRCS})
@@ -137,10 +134,8 @@ target_link_libraries(pairinteraction-real wignerSymbols)
 target_link_libraries(pairinteraction-complex wignerSymbols)
 target_link_libraries(matrixelements wignerSymbols)
 
-
 # CPack
 
 install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
 install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
 install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
-
