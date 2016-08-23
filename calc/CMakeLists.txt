@@ -4,8 +4,6 @@ set(CMAKE_MACOSX_RPATH 0)
 
 add_subdirectory(databases)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/modules)
-
 if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)

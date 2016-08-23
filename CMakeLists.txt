@@ -11,8 +11,7 @@ IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE Release ... FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-# create output directory
-# file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/output)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 add_subdirectory(gui)
 add_subdirectory(calc)

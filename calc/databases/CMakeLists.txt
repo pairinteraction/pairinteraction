@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 set(CMAKE_MACOSX_RPATH 0)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../modules)
-
 find_package(Sqlite3 REQUIRED)
 if(SQLITE3_FOUND)
 else(SQLITE3_FOUND)
