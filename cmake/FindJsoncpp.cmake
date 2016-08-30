@@ -6,7 +6,7 @@
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 
-find_path( JSONCPP_INCLUDE_DIRS NAMES json/json.h )
+find_path( JSONCPP_INCLUDE_DIRS NAMES json/json.h PATH_SUFFIXES jsoncpp )
 
 find_library( JSONCPP_LIBRARIES NAMES jsoncpp )
 
