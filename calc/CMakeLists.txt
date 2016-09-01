@@ -41,43 +41,26 @@ else(SQLITE3_FOUND)
                       "==================\n")
 endif(SQLITE3_FOUND)
 
+# Branch for cross-platform build
 if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "mingw32")
-
-  set(MS_MPI_SDK_DL "https://download.microsoft.com/download/D/7/B/D7BBA00F-71B7-436B-80BC-4D22F2EE9862/msmpisdk.msi")
-  set(MS_MPI_INCLUDE_PATH ${CMAKE_BINARY_DIR}/MS_MPI)
-  execute_process(COMMAND curl -C - -L -o ${CMAKE_BINARY_DIR}/msmpisdk.msi ${MS_MPI_SDK_DL})
-  execute_process(COMMAND 7z x -aoa -o${MS_MPI_INCLUDE_PATH} ${CMAKE_BINARY_DIR}/msmpisdk.msi)
-  include_directories(${MS_MPI_INCLUDE_PATH})
-
-  if ("${CMAKE_CXX_COMPILER}" MATCHES "i686" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "i686")
-    target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
-    target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
-    target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi.lib")
-  elseif ("${CMAKE_CXX_COMPILER}" MATCHES "x86_64" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "x86_64")
-    target_link_libraries(pairinteraction-real "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
-    target_link_libraries(pairinteraction-complex "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
-    target_link_libraries(matrixelements "${MS_MPI_INCLUDE_PATH}/msmpi64.lib")
-  endif()
-
+  find_package(MSMPI REQUIRED)
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
-
 else()
-
   find_package(MPI REQUIRED)
-  if(MPI_FOUND)
-    include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-    target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
-    target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
-    target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
-    set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
-    set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
-  else(MPI_FOUND)
-    message(FATAL_ERROR "==============\n"
-                        "MPI not found!\n"
-                        "==============\n")
-  endif(MPI_FOUND)
-
 endif()
+
+if(MPI_FOUND)
+  include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
+  target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+  target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+  target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+  set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
+  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
+else(MPI_FOUND)
+  message(FATAL_ERROR "==============\n"
+                      "MPI not found!\n"
+                      "==============\n")
+endif(MPI_FOUND)
 
 find_package(Jsoncpp REQUIRED)
 if(JSONCPP_FOUND)
