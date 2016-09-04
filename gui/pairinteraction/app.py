@@ -1,17 +1,11 @@
-#!/usr/bin/env python3
-
 # Standard library
-from abc import ABCMeta, abstractmethod
-import collections
-import ctypes
 from datetime import timedelta, datetime
 from io import StringIO, BytesIO
-import json
 import locale
 import multiprocessing
 from operator import itemgetter
+import json
 import os
-from queue import Queue
 import shutil
 import signal
 import sys
@@ -30,21 +24,30 @@ from pint.unit import UndefinedUnitError
 import sip
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-from plotter import Ui_plotwindow
-import pyqtgraph as pg
-import pyqtgraph.exporters
+from . import pyqtgraph as pg
+from .pyqtgraph import exporters
+from .pyqtgraph import ColorButton, GradientWidget, PlotWidget
+from .plotter import Ui_plotwindow
 
 # Numerics
 import numpy as np
 from scipy import sparse
-from scipy import constants
 from scipy.ndimage.filters import gaussian_filter
 from scipy import io
+
+# Own classes
+from .utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
+from .unitmanagement import Quantity, Units
+from .guiadditions import GuiDict, DoubledeltaValidator, DoublenoneValidator, DoublepositiveValidator, DoubleValidator
+from .pyqtgraphadditions import PointsItem, MultiLine
+from .worker import Worker
+from .loader import Eigensystem
 
 
 # Versioning
 version_settings = 12
 version_cache = 11
+
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -54,795 +57,8 @@ pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
 
 
-# wignerd.py
-# import numpy as np
-# import os
-import pickle
+# === Dictionary to manage the elements of the GUI related to the plotter ===
 
-
-class Wignerd:
-
-    def __init__(self, cachedir):
-        self.cachedir = cachedir
-        self.wignerdict = dict()
-        self.cachupdatedict = dict()
-
-    def __del__(self):
-        self.save()
-
-    def save(self):
-        for k, v in self.wignerdict.items():
-            if not self.cachupdatedict[k]:
-                continue
-            path = os.path.join(self.cachedir, k)
-            with open(path, 'wb') as f:
-                pickle.dump(v, f, pickle.HIGHEST_PROTOCOL)
-                self.cachupdatedict[k] = False
-
-    def calc(self, j, m2, m1, beta):
-        sgn = 1
-
-        if m1 + m2 < 0:
-            m1 *= -1
-            m2 *= -1
-            sgn *= (-1)**(m2 - m1)
-
-        if m1 < m2:
-            m1, m2 = m2, m1
-            sgn *= (-1)**(m2 - m1)
-
-        bstring = "{:+013d}.pkl".format(int(np.round(beta * 1e9)))
-        if bstring not in self.wignerdict.keys():
-            path = os.path.join(self.cachedir, bstring)
-            if os.path.exists(path):
-                with open(path, 'rb') as f:
-                    self.wignerdict[bstring] = pickle.load(f)
-            else:
-                self.wignerdict[bstring] = dict()
-            self.cachupdatedict[bstring] = False
-
-        mstring = "{}_{}_{}".format(j, m1, m2)
-        if mstring not in self.wignerdict[bstring].keys():
-            # print("float(re(Rotation.d({},{},{},{}).doit()))".format(j,m2,m1,beta))
-            self.wignerdict[bstring][mstring] = float(
-                np.real(self._eval_wignerd(j, m2, m1, beta)))
-            self.cachupdatedict[bstring] = True
-
-        return sgn * self.wignerdict[bstring][mstring]
-
-    # This is a stripped down implementation of the WignerD symbols as
-    # found in sympy.physics.quantum.spin
-    #
-    # Copyright (c) 2006-2016 SymPy Development Team
-    #
-    # All rights reserved.
-    #
-    # Redistribution and use in source and binary forms, with or without
-    # modification, are permitted provided that the following conditions are met:
-    #
-    #   a. Redistributions of source code must retain the above copyright notice,
-    #      this list of conditions and the following disclaimer.
-    #   b. Redistributions in binary form must reproduce the above copyright
-    #      notice, this list of conditions and the following disclaimer in the
-    #      documentation and/or other materials provided with the distribution.
-    #   c. Neither the name of SymPy nor the names of its contributors
-    #      may be used to endorse or promote products derived from this software
-    #      without specific prior written permission.
-    #
-    #
-    # THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    # AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    # IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-    # ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-    # ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    # DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-    # SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-    # CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-    # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-    # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-    # DAMAGE.
-
-    def _m_values(self, j):
-        size = 2 * j + 1
-        if not size.is_integer() or not size > 0:
-            raise ValueError(
-                'Only integer or half-integer values allowed for j, got: : %r' % j
-            )
-        return size, [j - i for i in range(int(2 * j + 1))]
-
-    def _eval_wignerd(self, j, m, mp, beta):
-        from numpy import pi, sin, cos, sqrt
-        from scipy.misc import factorial
-        from scipy.special import binom as binomial
-
-        r = 0
-        if beta == pi / 2:
-            # Varshalovich Equation (5), Section 4.16, page 113, setting
-            # alpha=gamma=0.
-            for k in range(int(2 * j) + 1):
-                if k > j + mp or k > j - m or k < mp - m:
-                    continue
-                r += (-1)**k * binomial(j + mp, k) * \
-                    binomial(j - mp, k + m - mp)
-            r *= (-1)**(m - mp) / 2**j * \
-                sqrt(factorial(j + m) * factorial(j - m) /
-                     (factorial(j + mp) * factorial(j - mp)))
-        else:
-            # Varshalovich Equation(5), Section 4.7.2, page 87, where we set
-            # beta1=beta2=pi/2, and we get alpha=gamma=pi/2 and beta=phi+pi,
-            # then we use the Eq. (1), Section 4.4. page 79, to simplify:
-            # d(j, m, mp, beta+pi) = (-1)**(j-mp) * d(j, m, -mp, beta)
-            # This happens to be almost the same as in Eq.(10), Section 4.16,
-            # except that we need to substitute -mp for mp.
-            size, mvals = self._m_values(j)
-            for mpp in mvals:
-                r += self._eval_wignerd(j, m, mpp, pi / 2) * \
-                    (cos(-mpp * beta) + 1j * sin(-mpp * beta)) * \
-                    self._eval_wignerd(j, mpp, -mp, pi / 2)
-            # Empirical normalization factor so results match Varshalovich
-            # Tables 4.3-4.12
-            # Note that this exact normalization does not follow from the
-            # above equations
-            r = r * 1j**(2 * j - m - mp) * (-1)**(2 * m)
-
-        return r
-
-
-
-'''
-wignerd = Wignerd()
-
-j = 2.5
-m_final = 1.5
-beta = np.pi/2
-
-for m_initial in np.arange(-2.5,2.5):
-    print(wignerd.calc(j, m_final, m_initial, beta))
-
-for m_initial in np.arange(-2.5,2.5):
-    print(wignerd.calc(j, -m_final, -m_initial, beta))
-'''
-
-
-# utils.py
-# import numpy as np
-
-
-# === append csr matrices ===
-# see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
-
-def csr_vappend(a, b):
-    """ Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
-    Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
-    the first matrix instead of copying it. The data, indices, and indptr still get copied."""
-
-    a.data = np.hstack((a.data, b.data))
-    a.indices = np.hstack((a.indices, b.indices))
-    a.indptr = np.hstack((a.indptr, (b.indptr + a.nnz)[1:]))
-    a._shape = (a.shape[0] + b.shape[0], b.shape[1])
-
-
-# === append csc matrices ===
-# see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
-
-def csc_happend(a, b):
-    """ Takes in 2 csc_matrices and appends the second one to the right of the first one."""
-
-    a.data = np.hstack((a.data, b.data))
-    a.indices = np.hstack((a.indices, b.indices))
-    a.indptr = np.hstack((a.indptr, (b.indptr + a.nnz)[1:]))
-    a._shape = (b.shape[0], a.shape[1] + b.shape[1])
-
-
-# === keep only the values that are maximal within a row of a csr matrix ===
-# see http://stackoverflow.com/questions/15992857/efficient-way-to-get-the-max-of-each-row-for-large-sparse-matrix
-
-def csr_keepmax(a):
-    boolarr = np.diff(a.indptr) > 0
-    ret = np.maximum.reduceat(a.data, a.indptr[:-1][boolarr])
-    a.data[a.data != np.repeat(ret, np.diff(a.indptr)[boolarr])] = 0
-    a.eliminate_zeros()
-
-
-# === return a normalized image ===
-
-def normscale(data, cmin=None, cmax=None):
-    if cmin is None:
-        cmin = np.nanmin(data)
-    if cmax is None:
-        cmax = np.nanmax(data)
-    return (data - cmin) / (cmax - cmin or 1)
-
-
-# === return a byte-scaled image ===
-
-def bytescale(data, cmin=None, cmax=None, high=255, low=0):
-    return np.array(normscale(data, cmin, cmax) * (high - low + 0.9999) + low).astype(int)
-
-
-# quantity.py
-# from pint import UnitRegistry
-# from rydberginteraction import units
-
-# === initialize unit registry ===
-
-ureg = UnitRegistry()
-Q = ureg.Quantity
-
-
-def U(u):
-    return ureg.Quantity(1, u)
-
-
-def C(s):
-    return Q(constants.value(s), constants.unit(s))
-
-
-# === define units that are used in the python program for the gui (the c++ program uses atomic units) ===
-
-class Units:
-    length = 'micrometer'
-    energy = 'gigahertz'
-    efield = 'volt/centimeter'
-    bfield = 'gauss'
-    angle = 'degree'
-    au_length = 'au_length'
-    au_energy = 'au_energy'
-    au_efield = 'au_efield'
-    au_bfield = 'au_bfield'
-    au_angle = 'au_angle'
-
-
-# === handle quantities ===
-
-class Quantity:
-    au = dict()
-    au[Units.au_length] = C('atomic unit of length')
-    au[Units.au_energy] = C('atomic unit of energy') / C('Planck constant')
-    au[Units.au_efield] = C('atomic unit of electric field')
-    au[Units.au_bfield] = C('atomic unit of mag. flux density')
-    au[Units.au_angle] = Q('1')
-
-    converter_au = dict()
-    converter_au[str(U(Units.length).dimensionality)] = [
-        Units.au_length, au[Units.au_length]]
-    converter_au[str(U(Units.energy).dimensionality)] = [
-        Units.au_energy, au[Units.au_energy]]
-    converter_au[str(U(Units.efield).dimensionality)] = [
-        Units.au_efield, au[Units.au_efield]]
-    converter_au[str(U(Units.bfield).dimensionality)] = [
-        Units.au_bfield, au[Units.au_bfield]]
-    converter_au[str(U(Units.angle).dimensionality)] = [
-        Units.au_angle, au[Units.au_angle]]
-
-    converter_uu = dict()
-    converter_uu[str(U(Units.length).dimensionality)] = Units.length
-    converter_uu[str(U(Units.energy).dimensionality)] = Units.energy
-    converter_uu[str(U(Units.efield).dimensionality)] = Units.efield
-    converter_uu[str(U(Units.bfield).dimensionality)] = Units.bfield
-    converter_uu[str(U(Units.angle).dimensionality)] = Units.angle
-
-    def __init__(self, magnitude, units=None):
-        self._magnitude = magnitude
-        if units is None:
-            self._units = units
-        else:
-            self._units = str(units)
-
-    @property
-    def magnitude(self):
-        return self._magnitude
-
-    @property
-    def units(self):
-        return self._units
-
-    def toAU(self):
-        if self.units is None:
-            return self
-            # raise Exception("Quantity can not be converted to atomic units.")
-
-        if self.units[:3] == "au_":  # already in atomic units
-            return self
-
-        else:  # from other units to atomic units
-            oldunits = U(self.units)
-            newunits, converter = self.converter_au[
-                str(oldunits.dimensionality)]
-
-            if self.magnitude is None:
-                return Quantity(self.magnitude, newunits)
-
-            quantity = Q(self.magnitude, oldunits)
-
-            quantity = (quantity / converter).to('dimensionless')
-            return Quantity(quantity.magnitude, newunits)
-
-    def toUU(self):
-        if self.units is None:
-            return self
-            # raise Exception("Quantity can not be converted to user units.")
-
-        if self.units[:3] == "au_":  # from atomic units to user units
-            oldunits = self.au[self.units]
-            newunits = self.converter_uu[str(oldunits.dimensionality)]
-
-            if self.magnitude is None:
-                return Quantity(self.magnitude, newunits)
-
-            quantity = self.magnitude * oldunits
-
-        else:  # from other units to user units
-            oldunits = U(self.units)
-            newunits = self.converter_uu[str(oldunits.dimensionality)]
-
-            if self.magnitude is None:
-                return Quantity(self.magnitude, newunits)
-
-            quantity = Q(self.magnitude, oldunits)
-
-        quantity = quantity.to(newunits)
-        return Quantity(quantity.magnitude, newunits)
-
-
-# guidict.py
-# from PyQt5 import QtGui
-# from abc import ABCMeta, abstractmethod
-# from rydberginteraction import Quantity
-
-# === dictionary to manage the elements of the gui ===
-
-class GuiDict(collections.MutableMapping, metaclass=ABCMeta):
-
-    def __init__(self, ui):
-        self.store = dict()
-        self._setup(self.store, ui)
-
-    @abstractmethod
-    def _setup(self, store, ui):
-        pass
-
-    def __getattr__(self, key):
-        return self.__getitem__(key)
-
-    def __getitem__(self, key):
-        widget = self.store[key]['widget']
-        unit = self.store[key]['unit']
-
-        value = None
-        if isinstance(widget, QtGui.QComboBox):
-            value = str(widget.currentText())
-        elif isinstance(widget, QtGui.QSpinBox):
-            value = int(widget.value())
-        elif isinstance(widget, QtGui.QDoubleSpinBox):
-            value = float(widget.value())
-        elif isinstance(widget, QtGui.QLineEdit):
-            try:
-                value = locale.atof(str(widget.text()))
-            except ValueError:
-                value = None
-        elif isinstance(widget, QtGui.QCheckBox):
-            value = widget.checkState() == QtCore.Qt.Checked
-        elif isinstance(widget, QtGui.QRadioButton):
-            value = widget.isChecked()
-        elif isinstance(widget, QtGui.QGroupBox):
-            value = widget.isChecked()
-
-        return Quantity(value, unit)
-
-    def __setitem__(self, key, value):
-        if not isinstance(value, Quantity):
-            raise Exception("value has to be of type quantity")
-
-        widget = self.store[key]['widget']
-        unit = self.store[key]['unit']
-
-        value = value.toUU().magnitude
-
-        if isinstance(widget, QtGui.QComboBox):
-            index = widget.findText(value)
-            if index >= 0:
-                widget.setCurrentIndex(index)
-        elif isinstance(widget, QtGui.QSpinBox):
-            widget.setValue(value)
-        elif isinstance(widget, QtGui.QDoubleSpinBox):
-            widget.setValue(value)
-        elif isinstance(widget, QtGui.QLineEdit):
-            if value is None:
-                widget.setText("None")
-            else:
-                widget.setText(locale.str(value))
-        elif isinstance(widget, QtGui.QCheckBox):
-            if value:
-                widget.setCheckState(QtCore.Qt.Checked)
-            else:
-                widget.setCheckState(QtCore.Qt.Unchecked)
-        elif isinstance(widget, QtGui.QRadioButton):
-            widget.setChecked(value)
-        elif isinstance(widget, QtGui.QGroupBox):
-            widget.setChecked(value)
-
-    def __delitem__(self, key):
-        del self.store[key]
-
-    def __iter__(self):
-        return iter(self.store)
-
-    def __len__(self):
-        return len(self.store)
-
-# guivalidators.py
-# from PyQt5 import QtGui
-# import locale
-
-
-class DoublenoneValidator(QtGui.QDoubleValidator):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        if s == 'None':
-            return (QtGui.QValidator.Acceptable, s, pos)
-
-        lastpos = -1
-        for c in s.lower():
-            try:
-                lastpos = 'none'[lastpos + 1:].index(c)
-            except ValueError:
-                return super().validate(s, pos)
-
-        return (QtGui.QValidator.Intermediate, s, pos)
-
-    def fixup(self, s):
-        return 'None'
-
-
-class DoublepositiveValidator(QtGui.QDoubleValidator):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        status = super().validate(s, pos)
-
-        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
-            return (QtGui.QValidator.Invalid, s, pos)
-
-        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
-            return (QtGui.QValidator.Invalid, s, pos)
-
-        return status
-
-    def fixup(self, s):
-        return "0"
-
-
-class DoubledeltaValidator(QtGui.QDoubleValidator):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        status = super().validate(s, pos)
-
-        if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0 and locale.atof(s) != -1:
-            return (QtGui.QValidator.Intermediate, s, pos)
-
-        return status
-
-    def fixup(self, s):
-        if locale.atof(s) < 0:
-            return "-1"
-        return "0"
-
-
-class DoubleValidator(QtGui.QDoubleValidator):
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-    def validate(self, s, pos):
-        return super().validate(s, pos)
-
-    def fixup(self, s):
-        return "0"
-
-# pyqtgraphadditions.py
-# from PyQt5 import QtGui
-
-# === points item (can be used with pyqtgraph) === # TODO !!!!!!!!!!!!!!!
-
-
-class PointsItem(QtGui.QGraphicsItem):
-
-    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0, 0, 0)):
-        QtGui.QGraphicsItem.__init__(self)
-        self.size = size
-        self.alpha = alpha
-        # self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
-        # self.pen.setDashPattern([1, 20, 5, 4])
-        self.pen = pg.mkPen(color + (self.alpha,),
-                            width=self.size, cosmetic=True)
-        self.setData(x, y)
-        # self.ItemIgnoresTransformations = True
-        # self.setFlag(QtGui.QGraphicsItem.ItemIgnoresTransformations, True)
-
-    def setData(self, x, y):
-        if x is None:
-            x = np.array([])
-            y = np.array([])
-        npoints = len(x)
-
-        # http://stackoverflow.com/questions/20119777
-        self.qpoints = QtGui.QPolygonF(npoints)
-        vptr = self.qpoints.data()
-        vptr.setsize(np.dtype(np.float).itemsize * 2 * npoints)
-        data = np.ndarray(shape=(npoints, 2), dtype=np.float,
-                          buffer=memoryview(vptr))
-        data.setflags(write=True)
-        data[:, 0] = x
-        data[:, 1] = y
-
-        self.bounds = QtCore.QRectF(
-            x.min(), y.min(), x.max() - x.min(), y.max() - y.min())
-        self.prepareGeometryChange()
-
-    def boundingRect(self):
-        return self.bounds
-
-    def paint(self, p, *args):
-        p.setPen(self.pen)
-        p.drawPoints(self.qpoints)
-
-# === multi line item (can be used with pyqtgraph) ===
-# https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
-
-
-class MultiLine(pg.QtGui.QGraphicsPathItem):
-
-    def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)):
-        """x and y are 2D arrays of shape (Nplots, Nsamples)"""
-        connections = np.ones(x.shape, dtype=bool)
-        connections[:, -1] = 0  # don't draw the segment between each trace
-
-        self.path = pg.arrayToQPath(
-            x.flatten(), y.flatten(), connections.flatten())
-        pg.QtGui.QGraphicsPathItem.__init__(self, self.path)
-        pen = pg.mkPen(color + (alpha,), width=size, cosmetic=True)
-        self.setPen(pen)
-
-    # override because QGraphicsPathItem.shape is too expensive.
-    def shape(self):
-        return pg.QtGui.QGraphicsItem.shape(self)
-
-    def boundingRect(self):
-        return self.path.boundingRect()
-
-# worker.py
-
-
-class Worker(QtCore.QThread):
-    criticalsignal = QtCore.pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.exiting = False
-        self.samebasis = False
-        self.message = ""
-        self.basisfile_field1 = ""
-        self.basisfile_field2 = ""
-        self.basisfile_potential = ""
-        self.dataqueue_field1 = Queue()
-        self.dataqueue_field2 = Queue()
-        self.dataqueue_potential = Queue()
-
-    def __del__(self):
-        self.exiting = True
-        self.wait()
-
-    def execute(self, stdout):
-        self.stdout = stdout
-        self.start()
-
-    def clear(self):
-        with self.dataqueue_field1.mutex:
-            self.dataqueue_field1.queue.clear()
-        with self.dataqueue_field2.mutex:
-            self.dataqueue_field2.queue.clear()
-        with self.dataqueue_potential.mutex:
-            self.dataqueue_potential.queue.clear()
-
-    def run(self):
-        finishedgracefully = False
-
-        self.message = ""
-
-        # Clear filenames
-        self.basisfile_field1 = ""
-        self.basisfile_field2 = ""
-        self.basisfile_potential = ""
-
-        # Clear data queue
-        with self.dataqueue_field1.mutex:
-            self.dataqueue_field1.queue.clear()
-        with self.dataqueue_field2.mutex:
-            self.dataqueue_field2.queue.clear()
-        with self.dataqueue_potential.mutex:
-            self.dataqueue_potential.queue.clear()
-
-        # Parse stdout
-        dim = 0
-        type = 0
-        current = 0
-        total = 0
-
-        status_type = ""
-        status_progress = ""
-        status_dimension = ""
-
-        for line in iter(self.stdout.readline, b""):
-            if self.exiting or not line:
-                break
-
-            elif line[:5] == b">>TYP":
-                type = int(line[5:12].decode('utf-8'))
-                status_type = ["Field map of first atom: ",
-                               "Field map of second atom: ", "Pair potential: ", "Field maps: "][type]
-                status_progress = "construct matrices"
-
-                if type == 3:
-                    self.samebasis = True
-                elif type == 0 or type == 1:
-                    self.samebasis = False
-
-            elif line[:5] == b">>BAS":
-                basissize = int(line[5:12].decode('utf-8'))
-                status_progress = "construct matrices using {} basis vectors".format(
-                    basissize)
-
-            elif line[:5] == b">>STA":
-                filename = line[6:-1].decode('utf-8')
-                if type == 0 or type == 3:
-                    self.basisfile_field1 = filename
-                elif type == 1:
-                    self.basisfile_field2 = filename
-                elif type == 2:
-                    self.basisfile_potential = filename
-
-            elif line[:5] == b">>TOT":
-                total = int(line[5:12].decode('utf-8'))
-                current = 0
-
-            elif line[:5] == b">>DIM":
-                dim = int(line[5:12])
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total)
-
-            elif line[:5] == b">>OUT":
-                current += 1
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total)
-
-                filenumber = int(line[5:12].decode('utf-8'))
-                filestep = int(line[12:19].decode('utf-8'))
-                blocks = int(line[19:26].decode('utf-8'))
-                blocknumber = int(line[26:33].decode('utf-8'))
-                filename = line[34:-1].decode('utf-8')
-
-                if type == 0 or type == 3:
-                    self.dataqueue_field1.put(
-                        [filestep, blocks, blocknumber, filename])
-                elif type == 1:
-                    self.dataqueue_field2.put(
-                        [filestep, blocks, blocknumber, filename])
-                elif type == 2:
-                    self.dataqueue_potential.put(
-                        [filestep, blocks, blocknumber, filename])
-
-            elif line[:5] == b">>ERR":
-                self.criticalsignal.emit(line[5:].decode('utf-8').strip())
-
-            elif line[:5] == b">>END":
-                finishedgracefully = True
-                break
-
-            else:
-                print(line.decode('utf-8'), end="")
-
-            self.message = status_type + status_progress
-
-        # Clear data queue if thread has aborted
-        if not finishedgracefully:
-            self.clear()
-
-# binaryloader.py
-
-
-class BinaryLoader:
-
-    def __init__(self):
-        # types
-        self.typeIds = {1008: 'int8', 1016: 'int16', 1032: 'int32', 1064: 'int64', 1108: 'uint8', 1116: 'uint16', 1132: 'uint32',
-                        1164: 'int64', 2032: 'float32', 2064: 'float64'}
-        self.type_t = 'uint16'
-
-        # bit masks
-        self.csr_not_csc = 0x01  # xxx0: csc, xxx1: csr
-        self.complex_not_real = 0x02  # xx0x: real, xx1x: complex
-
-    def readNumber(self, f, sz=None):
-        datatype = self.typeIds[np.fromfile(
-            f, dtype=np.dtype(self.type_t), count=1)[0]]
-        if sz is None:
-            return np.fromfile(f, dtype=np.dtype(datatype), count=1)[0]
-        else:
-            return np.fromfile(f, dtype=np.dtype(datatype), count=sz)
-
-    def readVector(self, f):
-        size = self.readNumber(f)
-        return self.readNumber(f, size)
-
-    def readMatrix(self, f):
-        flags = self.readNumber(f)
-        rows = self.readNumber(f)
-        cols = self.readNumber(f)
-        if flags & self.complex_not_real:
-            data = self.readVector(f) + self.readVector(f) * 1j
-        else:
-            data = self.readVector(f)
-        indices = self.readVector(f)
-        indptr = np.append(self.readVector(f), len(data))
-        if flags & self.csr_not_csc:
-            return sparse.csr_matrix((data, indices, indptr), shape=(rows, cols))
-        else:
-            return sparse.csc_matrix((data, indices, indptr), shape=(rows, cols))
-
-# eigensystem.py
-
-
-class Eigensystem(BinaryLoader):
-
-    def __init__(self, filename):
-        super().__init__()
-
-        self._filename = filename
-        self._shift = 0
-
-        self._params = None
-        self._energies = None
-        self._basis = None
-
-    @property
-    def params(self):
-        if self._params is None:
-            with open(self._filename + '.json', 'r') as f:
-                self._params = json.load(f)
-        return self._params
-
-    @property
-    def energies(self):
-        if self._energies is None:
-            with open(self._filename + '.mat', 'rb') as f:
-                self._energies = np.real(self.readMatrix(f).diagonal())
-                self._shift = f.tell()
-        return self._energies
-
-    @property
-    def basis(self):
-        if self._basis is None:
-            with open(self._filename + '.mat', 'rb') as f:
-                if self._shift > 0:
-                    f.seek(self._shift, 0)
-                else:
-                    self._energies = np.real(self.readMatrix(f).diagonal())
-                self._basis = self.readMatrix(f)
-        return self._basis
-
-
-# from rydberginteraction import GuiDict
-
-# === dictionary to manage the elements of the gui related to the plotter ===
 class PlotDict(GuiDict):
 
     def _setup(self, store, ui):
@@ -949,8 +165,8 @@ class PlotDict(GuiDict):
             'widget': ui.checkbox_plot_autorange,
             'unit': None}
 
-# === dictionary to manage the elements of the gui related to the system ===
 
+# === dictionary to manage the elements of the gui related to the system ===
 
 class SystemDict(GuiDict):
 
@@ -1096,7 +312,6 @@ class SystemDict(GuiDict):
         store["missingWhittaker"] = {
             'widget': ui.radiobutton_system_missingWhittaker,
             'unit': None}
-        # store["missingError"] = {'widget': ui.radiobutton_system_missingError, 'unit': None}
         store["cores"] = {
             'widget': ui.spinbox_system_cores,
             'unit': None}
@@ -1143,7 +358,6 @@ class MainWindow(QtGui.QMainWindow):
         super().__init__(parent)
 
         del pg.graphicsItems.GradientEditorItem.Gradients['greyclip']
-        # del pg.graphicsItems.GradientEditorItem.Gradients['grey']
         del pg.graphicsItems.GradientEditorItem.Gradients['cyclic']
         del pg.graphicsItems.GradientEditorItem.Gradients['spectrum']
         del pg.graphicsItems.GradientEditorItem.Gradients['bipolar']
@@ -1206,13 +420,13 @@ class MainWindow(QtGui.QMainWindow):
         self.resultfile = None
 
         self.path_base = os.path.dirname(os.path.realpath(__file__))
-        self.path_workingdir = os.path.join(self.path_base, "../calc/")
+        self.path_workingdir = os.path.join(self.path_base, "../../calc/")
         self.path_cpp_real = os.path.join(
-            self.path_base, "../calc/pairinteraction-real")
+            self.path_base, "../../calc/pairinteraction-real")
         self.path_cpp_complex = os.path.join(
-            self.path_base, "../calc/pairinteraction-complex")
+            self.path_base, "../../calc/pairinteraction-complex")
         self.path_quantumdefects = os.path.join(
-            self.path_base, "../calc/quantum_defects.db")
+            self.path_base, "../../calc/databases/quantum_defects.db")
 
         if os.name == 'nt':
             self.path_out = os.path.join(self.userpath, "pairinteraction/")
@@ -1583,6 +797,7 @@ class MainWindow(QtGui.QMainWindow):
         if not os.path.exists(self.path_out):
             os.makedirs(self.path_out)
             if os.name == 'nt':
+                import ctypes
                 FILE_ATTRIBUTE_HIDDEN = 0x02
                 ret = ctypes.windll.kernel32.SetFileAttributesW(
                     self.path_out, FILE_ATTRIBUTE_HIDDEN)
@@ -1630,12 +845,12 @@ class MainWindow(QtGui.QMainWindow):
         # Load last settings
         if not os.path.isfile(self.path_system_last):
             shutil.copyfile(os.path.join(
-                self.path_base, "example.sconf"), self.path_system_last)
+                self.path_base, "../conf/example.sconf"), self.path_system_last)
         self.loadSettingsSystem(self.path_system_last)
 
         if not os.path.isfile(self.path_plot_last):
             shutil.copyfile(os.path.join(
-                self.path_base, "example.pconf"), self.path_plot_last)
+                self.path_base, "../conf/example.pconf"), self.path_plot_last)
         self.loadSettingsPlotter(self.path_plot_last)
 
         if os.path.isfile(self.path_view_last):
@@ -3523,7 +2738,7 @@ class MainWindow(QtGui.QMainWindow):
             # save plot
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot,
                         self.ui.graphicsview_potential_plot][idx].getPlotItem()
-            exporter = pg.exporters.ImageExporter(plotitem)
+            exporter = exporters.ImageExporter(plotitem)
             exporter.parameters()['width'] = 2000
             exporter.parameters()['height'] = 2000
             exporter.parameters()['antialias'] = True
@@ -3887,7 +3102,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetSConf(self):
         conf_used = self.path_system_last
-        conf_original = os.path.join(self.path_base, "example.sconf")
+        conf_original = os.path.join(self.path_base, "../conf/example.sconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)
@@ -3897,7 +3112,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetPConf(self):
         conf_used = self.path_plot_last
-        conf_original = os.path.join(self.path_base, "example.pconf")
+        conf_original = os.path.join(self.path_base, "../conf/example.pconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)
@@ -4017,7 +3232,7 @@ class MainWindow(QtGui.QMainWindow):
             # image
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot,
                         self.ui.graphicsview_potential_plot][idx].getPlotItem()
-            exporter = pg.exporters.ImageExporter(plotitem)
+            exporter = exporters.ImageExporter(plotitem)
             exporter.parameters()['antialias'] = True
 
             # colormap
@@ -4494,6 +3709,3 @@ def main():
     form = MainWindow()
     form.show()
     app.exec_()
-
-if __name__ == "__main__":
-    main()

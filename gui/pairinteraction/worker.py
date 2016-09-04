@@ -1,0 +1,137 @@
+from PyQt5 import QtCore
+from queue import Queue
+
+
+class Worker(QtCore.QThread):
+    criticalsignal = QtCore.pyqtSignal(str)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.exiting = False
+        self.samebasis = False
+        self.message = ""
+        self.basisfile_field1 = ""
+        self.basisfile_field2 = ""
+        self.basisfile_potential = ""
+        self.dataqueue_field1 = Queue()
+        self.dataqueue_field2 = Queue()
+        self.dataqueue_potential = Queue()
+
+    def __del__(self):
+        self.exiting = True
+        self.wait()
+
+    def execute(self, stdout):
+        self.stdout = stdout
+        self.start()
+
+    def clear(self):
+        with self.dataqueue_field1.mutex:
+            self.dataqueue_field1.queue.clear()
+        with self.dataqueue_field2.mutex:
+            self.dataqueue_field2.queue.clear()
+        with self.dataqueue_potential.mutex:
+            self.dataqueue_potential.queue.clear()
+
+    def run(self):
+        finishedgracefully = False
+
+        self.message = ""
+
+        # Clear filenames
+        self.basisfile_field1 = ""
+        self.basisfile_field2 = ""
+        self.basisfile_potential = ""
+
+        # Clear data queue
+        with self.dataqueue_field1.mutex:
+            self.dataqueue_field1.queue.clear()
+        with self.dataqueue_field2.mutex:
+            self.dataqueue_field2.queue.clear()
+        with self.dataqueue_potential.mutex:
+            self.dataqueue_potential.queue.clear()
+
+        # Parse stdout
+        dim = 0
+        type = 0
+        current = 0
+        total = 0
+
+        status_type = ""
+        status_progress = ""
+        status_dimension = ""
+
+        for line in iter(self.stdout.readline, b""):
+            if self.exiting or not line:
+                break
+
+            elif line[:5] == b">>TYP":
+                type = int(line[5:12].decode('utf-8'))
+                status_type = ["Field map of first atom: ",
+                               "Field map of second atom: ", "Pair potential: ", "Field maps: "][type]
+                status_progress = "construct matrices"
+
+                if type == 3:
+                    self.samebasis = True
+                elif type == 0 or type == 1:
+                    self.samebasis = False
+
+            elif line[:5] == b">>BAS":
+                basissize = int(line[5:12].decode('utf-8'))
+                status_progress = "construct matrices using {} basis vectors".format(
+                    basissize)
+
+            elif line[:5] == b">>STA":
+                filename = line[6:-1].decode('utf-8')
+                if type == 0 or type == 3:
+                    self.basisfile_field1 = filename
+                elif type == 1:
+                    self.basisfile_field2 = filename
+                elif type == 2:
+                    self.basisfile_potential = filename
+
+            elif line[:5] == b">>TOT":
+                total = int(line[5:12].decode('utf-8'))
+                current = 0
+
+            elif line[:5] == b">>DIM":
+                dim = int(line[5:12])
+                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
+                    dim, dim, current, total)
+
+            elif line[:5] == b">>OUT":
+                current += 1
+                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
+                    dim, dim, current, total)
+
+                filenumber = int(line[5:12].decode('utf-8'))
+                filestep = int(line[12:19].decode('utf-8'))
+                blocks = int(line[19:26].decode('utf-8'))
+                blocknumber = int(line[26:33].decode('utf-8'))
+                filename = line[34:-1].decode('utf-8')
+
+                if type == 0 or type == 3:
+                    self.dataqueue_field1.put(
+                        [filestep, blocks, blocknumber, filename])
+                elif type == 1:
+                    self.dataqueue_field2.put(
+                        [filestep, blocks, blocknumber, filename])
+                elif type == 2:
+                    self.dataqueue_potential.put(
+                        [filestep, blocks, blocknumber, filename])
+
+            elif line[:5] == b">>ERR":
+                self.criticalsignal.emit(line[5:].decode('utf-8').strip())
+
+            elif line[:5] == b">>END":
+                finishedgracefully = True
+                break
+
+            else:
+                print(line.decode('utf-8'), end="")
+
+            self.message = status_type + status_progress
+
+        # Clear data queue if thread has aborted
+        if not finishedgracefully:
+            self.clear()
