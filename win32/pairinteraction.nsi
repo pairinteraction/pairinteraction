@@ -72,15 +72,15 @@ SectionGroup /e "${APP_NAME}"
     File "${BUILD_DIR}\calc\*.exe"
     File "${BUILD_DIR}\calc\*.dll"
     File "${BUILD_DIR}\calc\wignerSymbols\*.dll"
+    SetOutPath "$INSTDIR\calc\databases"
     File "${BUILD_DIR}\calc\databases\*.db"
   SectionEnd
 
   Section 'GUI (Recommended)'
     SetOutPath "$INSTDIR\gui"
-    File "${BUILD_DIR}\gui\*.py"
-    File "${BUILD_DIR}\gui\*conf"
-    File /r "${BUILD_DIR}\gui\__pycache__"
-    File /r "${BUILD_DIR}\gui\pyqtgraph"
+    File "${BUILD_DIR}\gui\startgui"
+    File /r "${BUILD_DIR}\gui\conf"
+    File /r "${BUILD_DIR}\gui\pairinteraction"
   SectionEnd
 SectionGroupEnd
 
@@ -96,7 +96,7 @@ success:
   File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
   FileWrite $4 "@echo off$\r$\n"
-  FileWrite $4 '${PYTHON_PATH} "$INSTDIR\gui\pairinteraction.py"'
+  FileWrite $4 '${PYTHON_PATH} "$INSTDIR\gui\startgui"'
   FileClose $4
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
