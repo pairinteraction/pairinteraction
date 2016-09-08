@@ -1,5 +1,5 @@
 #include "MatrixElements.h"
-#include "SQLite.hpp"
+#include "SQLite.h"
 #include <sstream>
 #include <iostream>
 #include <string>

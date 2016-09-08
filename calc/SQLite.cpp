@@ -1,6 +1,6 @@
 #include <iostream>
 #include <sstream>
-#include "SQLite.hpp"
+#include "SQLite.h"
 
 SQLite3Result::iterator::iterator(const SQLite3Result* result, int pos, int nColumn) : result(result), pos(pos), nColumn(nColumn) {
 }

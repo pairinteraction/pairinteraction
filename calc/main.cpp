@@ -4,11 +4,11 @@
 #include "MpiLoadbalancingSimple.h"
 #include "Vectorizable.h"
 #include "Serializable.h"
-#include "QuantumDefect.hpp"
+#include "QuantumDefect.h"
 #include "Basisnames.h"
 #include "MatrixElements.h"
-#include "SQLite.hpp"
-#include "ConfParser.hpp"
+#include "SQLite.h"
+#include "ConfParser.h"
 #include "State.h"
 
 #include <memory>

@@ -1,5 +1,5 @@
 #include "MatrixElements.h"
-#include "QuantumDefect.hpp"
+#include "QuantumDefect.h"
 #include "State.h"
 #include "Basisnames.h"
 

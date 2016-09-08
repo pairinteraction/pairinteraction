@@ -4,7 +4,7 @@
 #include "dtypes.h"
 #include "Iter.h"
 #include "State.h"
-#include "ConfParser.hpp"
+#include "ConfParser.h"
 
 #include <vector>
 #include <set>

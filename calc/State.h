@@ -2,8 +2,8 @@
 #define STATE_H
 
 #include "dtypes.h"
-#include "utils.hpp"
-#include "ConfParser.hpp"
+#include "utils.h"
+#include "ConfParser.h"
 
 #include <array>
 #include <iostream>

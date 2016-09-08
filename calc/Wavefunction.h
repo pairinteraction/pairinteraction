@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "dtypes.h"
-#include "QuantumDefect.hpp"
+#include "QuantumDefect.h"
 
 // --- Common interface ---
 

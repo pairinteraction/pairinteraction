@@ -1,5 +1,5 @@
-#include "QuantumDefect.hpp"
-#include "SQLite.hpp"
+#include "QuantumDefect.h"
+#include "SQLite.h"
 
 #include <string>
 #include <iostream>

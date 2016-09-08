@@ -3,7 +3,7 @@
 
 #include "dtypes.h"
 #include "Basisnames.h"
-#include "Wavefunction.hpp"
+#include "Wavefunction.h"
 
 #include <string>
 #include <unordered_map>

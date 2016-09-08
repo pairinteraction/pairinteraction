@@ -1,5 +1,5 @@
-#include "QuantumDefect.hpp"
-#include "Wavefunction.hpp"
+#include "QuantumDefect.h"
+#include "Wavefunction.h"
 
 #include <string>
 #include <vector>

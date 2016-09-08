@@ -1,4 +1,4 @@
-#include "ConfParser.hpp"
+#include "ConfParser.h"
 #include <string>
 #include <fstream>
 #include <iostream>
