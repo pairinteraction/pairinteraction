@@ -1,124 +1,32 @@
-# pairinteraction
+# pairinteraction [![Gitter][gitter-svg]][gitter-room]
 
-The pairinteraction software calculates pair potential for Rydberg
-atoms in external fields.
+*A Rydberg Interaction Calculator*
 
-# Dependencies
+Visit the official website at https://pairinteraction.github.io/
 
-## calc
+## Build Status
 
-- C++11
-- Eigen3
-- MPI (OpenMPI or MSMPI)
-- Boost (`filesystem` and `system`)
-- sqlite3
-- jsoncpp
+We plan to use [Travis CI](https://travis-ci.org) as a hosted continuous integration service to build pairinteraction against various toolchains.
 
-## gui
+## Support
 
-- Python3
-- psutil
-- PyQt5
-- Pint
-- numpy
-- scipy
+Documentation for pairinteraction is located in the [Wiki][wiki].
 
-# Windows
+We use a [Gitter](https://gitter.im) chatroom for discussing things related to pairinteraction.  Please come in and say *hi!* or ask a question.  If you think your question is related to problems, bugs, or suggests an improvement, consider raising an [issue][issue-tracker].
 
-## Install
+*Our Gitter chatroom:* [![Gitter][gitter-svg]][gitter-room]
 
-So far we tackled cross-compilation from OpenSUSE 13.2 to Windows
-32-bit and 64-bit.  To install the MinGW toolchain install the
-following packages:
+## Downloads
 
-    mingw32-boost-devel
-    mingw32-cross-binutils
-    mingw32-cross-breakpad-tools
-    mingw32-cross-cpp
-    mingw32-cross-gcc
-    mingw32-cross-gcc-c++
-    mingw32-cross-gcc-fortran
-    mingw32-filesystem
-    mingw32-headers
-    mingw32-libboost_filesystem
-    mingw32-libboost_system
-    mingw32-libgcc_s_sjlj1
-    mingw32-libgfortran3
-    mingw32-libquadmath0
-    mingw32-libsqlite3-0
-    mingw32-libstdc++6
-    mingw32-libwinpthread1
-    mingw32-runtime
-    mingw32-sqlite-devel
-    mingw32-winpthreads-devel
+We plan to make binaries for various operating systems, in particular Microsoft Windows.  These will be probably made available through the [releases section](https://github.com/pairinteraction/pairinteraction/releases).
 
-    mingw64-boost-devel
-    mingw64-cross-binutils
-    mingw64-cross-breakpad-tools
-    mingw64-cross-cpp
-    mingw64-cross-gcc
-    mingw64-cross-gcc-c++
-    mingw64-cross-gcc-fortran
-    mingw64-filesystem
-    mingw64-headers
-    mingw64-libboost_filesystem
-    mingw64-libboost_system
-    mingw64-libgcc_s_seh1
-    mingw64-libgfortran3
-    mingw64-libquadmath0
-    mingw64-libsqlite3-0
-    mingw64-libstdc++6
-    mingw64-libwinpthread1
-    mingw64-runtime
-    mingw64-sqlite-devel
-    mingw64-winpthreads-devel
+## License
 
-This is not the whole story; furthermore we need
-[Eigen3](http://eigen.tuxfamily.org/) and
-[JsonCpp](https://github.com/open-source-parsers/jsoncpp), both of
-which we download the latest release version and compile from source.
+Pairinteraction is released under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  The Apache License 2.0 has been approved by the Free Software Foundation and the Open Source Initiative and is [compatible with the GNU General Public License version 3 (GPLv3)](https://www.gnu.org/licenses/license-list.html#apache2).
 
-For Eigen3, we have to comment out two lines in the file
-`cmake/EigenDetermineOSVersion.cmake`.  Otherwise CMake refuses to
-generate Makefiles.
+Note that not all files in this repository belong to the pairinteraction project.  `FindEigen3.cmake` is part of the Eigen project and the submodules link to their host repositories.  The individual licenses apply.
 
-    list(GET ver_list 0 _major)
-    list(GET ver_list 1 _minor)
-
-For JsonCpp we have to disable the testsuite, by setting the option
-`JSONCPP_WITH_TESTS` to `OFF`.  It needs extra libraries we don't want
-to install and in addition to that, I believe that the tests pass
-anyway.
-
----
-
-For the GUI you need to install a Python distribution with the
-dependencies listed above.  We have tested the installation using the
-Anaconda and Miniconda distributions; see instructions below.
-
-### Anaconda
-
-Download [Anaconda3](https://www.continuum.io/downloads)
-
-Install dependencies:
-
-    pip install pint pyqt5
-
-### Miniconda
-
-Download [Miniconda3](http://conda.pydata.org/miniconda.html)
-
-Install dependencies:
-
-    conda install numpy scipy
-    pip install psutil pint pyqt5
-
-## Known Bugs
-
-The program crashes on 32-bit Windows when the basis is chosen too
-large.  This is due to the fact that 32-bit Windows limits the user
-address space for an individual process to 2GB.  If you run
-`pairinteraction` from CMD you will see that the `std::bad_alloc`
-exception was thrown.  (This could probably be resolved by compiling
-for 64-bit, but our current cross-compilation toolchain does not
-support it.)
+[gitter-svg]: https://badges.gitter.im/Join%20Chat.svg
+[gitter-room]: https://gitter.im/pairinteraction/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[wiki]: https://github.com/pairinteraction/pairinteraction/wiki
+[issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
