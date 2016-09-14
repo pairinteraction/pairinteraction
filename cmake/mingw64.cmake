@@ -25,7 +25,9 @@ set( CMAKE_CXX_COMPILER     ${MINGW_PREFIX}-g++      )
 set( CMAKE_Fortran_COMPILER ${MINGW_PREFIX}-gfortran )
 
 # Set package search directory
-set( CMAKE_FIND_ROOT_PATH "/usr/${MINGW_PREFIX}/sys-root/mingw" )
+set( CMAKE_FIND_ROOT_PATH
+      "/usr/${MINGW_PREFIX}"
+      "/usr/${MINGW_PREFIX}/sys-root/mingw" )
 set( CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY  )
 set( CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY  )
 set( CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER )

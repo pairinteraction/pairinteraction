@@ -19,7 +19,7 @@ set(CMAKE_MACOSX_RPATH 0)
 add_subdirectory(databases)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
-  add_definitions(-Wall -Wextra -pedantic -Ofast -march=native -pipe)
+  add_definitions(-Wall -Wextra -pedantic -Ofast -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
 
 # add the executables
