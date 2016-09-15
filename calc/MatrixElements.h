@@ -20,12 +20,12 @@
 #include "dtypes.h"
 #include "Basisnames.h"
 #include "Wavefunction.h"
+#include "wignerSymbols/include/wignerSymbols/wignerSymbols-cpp.h"
 
 #include <string>
 #include <unordered_map>
 #include <memory>
 #include <sstream>
-#include <wignerSymbols.h>
 
 bool selectionRulesMomentum(StateOne state1, StateOne state2, int q);
 bool selectionRulesMomentum(StateOne state1, StateOne state2);

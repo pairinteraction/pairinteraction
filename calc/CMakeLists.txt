@@ -22,18 +22,23 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
 
-# add the executables
+# Add the executables
+
 file(GLOB pairinteraction_SRCS *.cpp)
 set(pairinteraction_matrixelement_SRCS ${pairinteraction_SRCS})
+set(wignerSymbols_SRCS wignerSymbols/src/wignerSymbols-cpp.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/mainMatrixelement.cpp)
 list(REMOVE_ITEM pairinteraction_matrixelement_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-add_executable(pairinteraction-real ${pairinteraction_SRCS})
-add_executable(pairinteraction-complex ${pairinteraction_SRCS})
-add_executable(matrixelements ${pairinteraction_matrixelement_SRCS})
+add_executable(pairinteraction-real ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+add_executable(pairinteraction-complex ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+add_executable(matrixelements ${pairinteraction_matrixelement_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
-# add external libraries
+set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+
+# Add external libraries
+
 find_package(Eigen3 REQUIRED)
 if(EIGEN3_FOUND)
   include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
@@ -112,7 +117,8 @@ else(GSL_FOUND)
                       "==============\n")
 endif(GSL_FOUND)
 
-# set c++11
+# Set c++11
+
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -123,13 +129,6 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
-
-# add library wignerSymbols
-add_subdirectory(wignerSymbols)
-include_directories(wignerSymbols/include)
-target_link_libraries(pairinteraction-real wignerSymbols)
-target_link_libraries(pairinteraction-complex wignerSymbols)
-target_link_libraries(matrixelements wignerSymbols)
 
 # CPack
 

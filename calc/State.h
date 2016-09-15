@@ -81,8 +81,6 @@ public:
 
 class StateTwo : public State {
 public:
-    StateTwo(const Configuration &config) : State(0), s({{0.5,0.5}}) {
-    }
     StateTwo() : State(0), n({{0,0}}), l({{0,0}}), s({{0.5,0.5}}), j({{0,0}}), m({{0,0}}) { }
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(idx), n(n), l(l), s(s), j(j), m(m) { }
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(0), n(n), l(l), s(s), j(j), m(m) { }
