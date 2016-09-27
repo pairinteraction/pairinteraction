@@ -14,6 +14,12 @@
 
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+set(DMG "FALSE" CACHE BOOL "indicates whether a .dmg file should be created")
+
+if(DMG)
+  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
+endif(DMG)
+
 project(pairinteraction CXX)
 
 set(CMAKE_MACOSX_RPATH 0)
@@ -35,7 +41,26 @@ if(WIN32)
 
   # TODO: build NSIS installer
 
-else(WIN32)
+elseif(APPLE AND DMG)
+
+  # http://stackoverflow.com/questions/13420117/how-to-get-a-path-of-the-app-bundle-in-a-cmake-script-to-supply-it-to-the-fixup
+  # https://github.com/mgalloy/cpack-cheatsheets/blob/master/cpack-variables.rst
+  # http://stackoverflow.com/questions/12302836/renaming-cpack-automatic-target
+  # http://stackoverflow.com/questions/24163778/howto-add-custom-target-that-depends-on-make-install
+  # https://cmake.org/pipermail/cmake/2015-September/061533.html
+  
+  set(CPACK_GENERATOR "Bundle")
+  
+  set(CPACK_PACKAGE_FILE_NAME "pairinteraction")
+  set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
+  set(CPACK_BUNDLE_NAME "pairinteraction")
+  set(CPACK_BUNDLE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
+  set(CPACK_BUNDLE_PLIST "${CMAKE_SOURCE_DIR}/apple/Info.plist")
+  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_SOURCE_DIR}/apple/launcher.sh")
+  
+  include(CPack)
+
+elseif(UNIX)
 
   set(CPACK_GENERATOR "TGZ;RPM;DEB")
 
@@ -63,4 +88,4 @@ else(WIN32)
 
   include(CPack)
 
-endif(WIN32)
+endif()

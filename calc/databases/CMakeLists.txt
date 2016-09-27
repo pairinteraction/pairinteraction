@@ -29,4 +29,12 @@ add_custom_command(TARGET database
   COMMAND ${SQLITE3_BINARY} ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION share/pairinteraction/calc)
+if(DMG)
+
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION databases)
+
+else(DMG)
+
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION share/pairinteraction/calc/databases)
+
+endif(DMG)

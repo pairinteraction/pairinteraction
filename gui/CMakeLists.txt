@@ -28,25 +28,57 @@ else( )
   message( FATAL_ERROR "Could not find python" )
 endif( )
 
-add_custom_target(gui ALL)
-add_custom_command(TARGET gui
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf/*
+)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/startgui
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/startgui
   COMMAND ${PYUIC} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/adapt.cmake
-  COMMAND ${PYTHON} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/app.py
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/adapt.cmake
+  COMMAND ${PYTHON} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
-install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/startgui DESTINATION share/pairinteraction/gui)
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction
+  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/startgui
+)
 
-if(CMAKE_HOST_UNIX)
-  install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
-  install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/gui/startgui ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/pairinteraction DESTINATION bin)
-  install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
-endif(CMAKE_HOST_UNIX)
+add_custom_target(gui ALL
+  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
+)
+
+if(DMG)
+
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui
+    COMMAND ${CMAKE_COMMAND} -DDMG=${DMG} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pyinstaller.cmake
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/startgui
+  )
+  
+  add_custom_target(pyinstaller ALL
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui
+  )
+  
+  add_dependencies(pyinstaller gui)
+
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui DESTINATION .)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
+
+else(DMG)
+
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/startgui DESTINATION share/pairinteraction/gui)
+
+  if(CMAKE_HOST_UNIX)
+    install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
+    install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/gui/startgui ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")
+    install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/pairinteraction DESTINATION bin)
+    install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
+  endif(CMAKE_HOST_UNIX)
+
+endif(DMG)

@@ -433,14 +433,32 @@ class MainWindow(QtGui.QMainWindow):
         self.plotfile = None
         self.resultfile = None
 
-        self.path_base = os.path.dirname(os.path.realpath(__file__))
-        self.path_workingdir = os.path.join(self.path_base, "../../calc/")
+        # http://stackoverflow.com/questions/404744/determining-application-path-in-a-python-exe-generated-by-pyinstaller
+        if getattr(sys, 'frozen', False):
+            self.path_base = os.path.dirname(os.path.realpath(sys.executable))
+        elif __file__:
+            self.path_base = os.path.dirname(os.path.realpath(__file__))
+
+        if os.path.exists(os.path.join(self.path_base, "conf", "example.sconf")):
+            self.path_configurationdir = os.path.join(self.path_base, "conf")
+        elif os.path.exists(os.path.join(self.path_base, "../conf", "example.sconf")):
+            self.path_configurationdir = os.path.join(self.path_base, "../conf")
+        else:
+            raise Exception('Directory containing configurations not found.')
+
+        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real")):
+            self.path_workingdir = self.path_base
+        elif os.path.exists(os.path.join(self.path_base, "../../calc", "pairinteraction-real")):
+            self.path_workingdir = os.path.join(self.path_base, "../../calc")
+        else:
+            raise Exception('Directory containing executables not found.')
+
         self.path_cpp_real = os.path.join(
-            self.path_base, "../../calc/pairinteraction-real")
+            self.path_base, self.path_workingdir, "pairinteraction-real")
         self.path_cpp_complex = os.path.join(
-            self.path_base, "../../calc/pairinteraction-complex")
+            self.path_base, self.path_workingdir, "pairinteraction-complex")
         self.path_quantumdefects = os.path.join(
-            self.path_base, "../../calc/databases/quantum_defects.db")
+            self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
         if os.name == 'nt':
             self.path_out = os.path.join(self.userpath, "pairinteraction/")
@@ -859,12 +877,12 @@ class MainWindow(QtGui.QMainWindow):
         # Load last settings
         if not os.path.isfile(self.path_system_last):
             shutil.copyfile(os.path.join(
-                self.path_base, "../conf/example.sconf"), self.path_system_last)
+                self.path_configurationdir, "example.sconf"), self.path_system_last)
         self.loadSettingsSystem(self.path_system_last)
 
         if not os.path.isfile(self.path_plot_last):
             shutil.copyfile(os.path.join(
-                self.path_base, "../conf/example.pconf"), self.path_plot_last)
+                self.path_configurationdir, "example.pconf"), self.path_plot_last)
         self.loadSettingsPlotter(self.path_plot_last)
 
         if os.path.isfile(self.path_view_last):
@@ -3116,7 +3134,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetSConf(self):
         conf_used = self.path_system_last
-        conf_original = os.path.join(self.path_base, "../conf/example.sconf")
+        conf_original = os.path.join(self.path_configurationdir, "example.sconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)
@@ -3126,7 +3144,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetPConf(self):
         conf_used = self.path_plot_last
-        conf_original = os.path.join(self.path_base, "../conf/example.pconf")
+        conf_original = os.path.join(self.path_configurationdir, "example.pconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)

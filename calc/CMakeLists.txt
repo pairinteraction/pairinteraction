@@ -61,6 +61,7 @@ else(SQLITE3_FOUND)
 endif(SQLITE3_FOUND)
 
 # Branch for cross-platform build
+
 if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "mingw32")
   find_package(MSMPI REQUIRED)
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
@@ -132,6 +133,22 @@ endif()
 
 # CPack
 
-install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
-install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
-install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
+if(DMG)
+
+  install(TARGETS pairinteraction-real RUNTIME DESTINATION .)
+  install(TARGETS pairinteraction-complex RUNTIME DESTINATION .)
+  install(TARGETS matrixelements RUNTIME DESTINATION .)
+  
+  set(bin1 \${CMAKE_INSTALL_PREFIX}/pairinteraction-real)
+  set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
+  set(bin3 \${CMAKE_INSTALL_PREFIX}/matrixelements)
+  
+  install(CODE "execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/apple/standalone.py ${bin1} ${bin2} ${bin3})")
+
+else(DMG)
+
+  install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
+  install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
+  install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
+
+endif(DMG)
