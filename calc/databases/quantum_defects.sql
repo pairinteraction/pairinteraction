@@ -59,9 +59,6 @@ INSERT INTO `rydberg_ritz` VALUES('H',0,'0.5','0.0','0.0','0.0','0.0','0.0','109
 -- [1] Phys. Rev. A 34, 2889 (1986) (Li 7)
 -- [2] T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1 
 -- [3] Johansson I 1958 Ark. Fysik 15 169
-/*INSERT INTO `rydberg_ritz` VALUES('Li',0,'0.5','0.399468','0.030233','-0.0028','0.0115','0.0','109728.64'); -- [2]
-INSERT INTO `rydberg_ritz` VALUES('Li',1,'0.5','0.047263','-0.02618','0.0221','-0.0683','0.0','109728.64'); -- [2] -- mistake in Gallagher: 0.47263 -> 0.047263, -0.02613 -> -0.02618
-INSERT INTO `rydberg_ritz` VALUES('Li',1,'1.5','0.047263','-0.02618','0.0221','-0.0683','0.0','109728.64'); -- [2] -- mistake in Gallagher: 0.47263 -> 0.047263, -0.02613 -> -0.02618 */
 INSERT INTO `rydberg_ritz` VALUES('Li',0,'0.5','0.3995101','0.029','0.0','0.0','0.0','109728.64'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Li',1,'0.5','0.0471780','-0.024','0.0','0.0','0.0','109728.64'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Li',1,'1.5','0.0471665','-0.024','0.0','0.0','0.0','109728.64'); -- [1]
@@ -87,7 +84,6 @@ INSERT INTO `rydberg_ritz` VALUES('Na',5,'4.5','0.00016114','-0.00185','0.0','0.
 INSERT INTO `rydberg_ritz` VALUES('Na',5,'5.5','0.00015796','-0.00148','0.0','0.0','0.0','109734.69'); -- [3]
 INSERT INTO `rydberg_ritz` VALUES('Na',6,'5.5','0.0','0.0','0.0','0.0','0.0','109734.69');
 
--- T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1 and : 
 -- [1] Phys. Scr. 27, 300 (1983) 
 -- [2] Opt. Commun. 39, 370 (1981)
 -- [3] Ark. Fys., 10 p.583 (1956) 
@@ -115,16 +111,6 @@ INSERT INTO `rydberg_ritz` VALUES('Rb',4,'3.5','0.004','0.0','0.0','0.0','0.0','
 INSERT INTO `rydberg_ritz` VALUES('Rb',4,'4.5','0.004','0.0','0.0','0.0','0.0','109736.605'); -- [3]
 INSERT INTO `rydberg_ritz` VALUES('Rb',5,'4.5','0.0','0.0','0.0','0.0','0.0','109736.605');
 
-/*-- T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1
-INSERT INTO `rydberg_ritz` VALUES('Rb',0,'0.5','3.13109','0.204','-1.8','0.0','0.0','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',1,'0.5','2.65456','0.388','-7.904','116.437','-405.907','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',1,'1.5','2.64145','0.33','-0.97495','14.6001','-44.7265','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',2,'1.5','1.347157','-0.59553','-1.50517','-2.4206','19.736','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',2,'2.5','1.347157','-0.59553','-1.50517','-2.4206','19.736','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',3,'2.5','0.016312','-0.064007','-0.36005','3.239','0.0','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',3,'3.5','0.016312','-0.064007','-0.36005','3.239','0.0','109736.605');
-INSERT INTO `rydberg_ritz` VALUES('Rb',4,'3.5','0.0','0.0','0.0','0.0','0.0','109736.605');*/
-
 -- [1] Phys. Rev. A 93, 013424 (2016)
 -- [2] Phys. Rev. A 26, 2733 (1982)
 INSERT INTO `rydberg_ritz` VALUES('Cs',0,'0.5','4.0493532','0.2391','0.06','11','-209','109736.8627339'); -- [1]
@@ -135,27 +121,6 @@ INSERT INTO `rydberg_ritz` VALUES('Cs',2,'2.5','2.4663144','0.01381','−0.392',
 INSERT INTO `rydberg_ritz` VALUES('Cs',3,'2.5','0.033392','-0.191','0.0','0.0','0.0','109736.85999132106'); -- [2]
 INSERT INTO `rydberg_ritz` VALUES('Cs',3,'3.5','0.033537','-0.191','0.0','0.0','0.0','109736.85999132106'); -- [2]
 INSERT INTO `rydberg_ritz` VALUES('Cs',4,'3.5','0.0','0.0','0.0','0.0','0.0','109736.85999132106');
-
-/*-- Phys. Rev. A 26, 2733 (1982)
-INSERT INTO `rydberg_ritz` VALUES('Cs',0,'0.5','4.049325','0.2462','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',1,'0.5','3.591556','0.3714','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',1,'1.5','3.559058','0.374','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',2,'1.5','2.475365','0.5554','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',2,'2.5','2.466210','0.067','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',3,'2.5','0.033392','-0.191','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',3,'3.5','0.033537','-0.191','0.0','0.0','0.0','109736.85999132106');
-INSERT INTO `rydberg_ritz` VALUES('Cs',4,'3.5','0.0','0.0','0.0','0.0','0.0','109736.85999132106');*/
-
-/*-- T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1
-INSERT INTO `rydberg_ritz` VALUES('Cs',0,'0.5','4.049325','0.246','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',1,'0.5','3.591556','0.3714','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',1,'1.5','3.559058','0.374','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',2,'1.5','2.475365','0.5554','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',2,'2.5','2.46621','0.0167','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',3,'2.5','0.033392','-0.191','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',3,'3.5','0.033537','-0.191','0.0','0.0','0.0','109736.86');
-INSERT INTO `rydberg_ritz` VALUES('Cs',4,'3.5','0.0','0.0','0.0','0.0','0.0','109736.86');*/
-
 
 COMMIT;
 
