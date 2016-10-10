@@ -325,14 +325,14 @@ public:
         return Hamiltonianmatrix(block_entries,  block_basis);
     }
 
-    friend Hamiltonianmatrix combineSym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
-        return lhs.duplicate(SYM, rhs, deltaE, necessary1, necessary2, necessary);
+    friend Hamiltonianmatrix combineUngerade(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary, const std::vector<short> &parity) {
+        return lhs.duplicate(UNGERADE, rhs, deltaE, necessary1, necessary2, necessary, parity);
     }
-    friend Hamiltonianmatrix combineAsym(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
-        return lhs.duplicate(ASYM, rhs, deltaE, necessary1, necessary2, necessary);
+    friend Hamiltonianmatrix combineGerade(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary, const std::vector<short> &parity) {
+        return lhs.duplicate(GERADE, rhs, deltaE, necessary1, necessary2, necessary, parity);
     }
-    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) {
-        return lhs.duplicate(ALL, rhs, deltaE, necessary1, necessary2, necessary);
+    friend Hamiltonianmatrix combineAll(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary, const std::vector<short> &parity) {
+        return lhs.duplicate(ALL, rhs, deltaE, necessary1, necessary2, necessary, parity);
     }
     friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs) {
         lhs.bytes.clear();
@@ -609,18 +609,18 @@ public:
     }
 
 protected:
-    enum mode_t {ALL, SYM, ASYM};
+    enum mode_t {ALL, UNGERADE, GERADE};
     void addSymmetrized(mode_t mode, std::vector<idx_t> mapping, idx_t row_1, idx_t row_2, idx_t col_1, idx_t col_2, scalar_t val, std::vector<eigen_triplet_t> &triplets_entries) const {
         idx_t row = mapping[this->num_basisvectors()*row_1 + row_2];
         idx_t col = mapping[this->num_basisvectors()*col_1 + col_2];
-        if((mode == ALL) || (mode == SYM && row_1 <= row_2 && col_1 <= col_2) || (mode == ASYM && row_1 < row_2 && col_1 < col_2)) {
+        if((mode == ALL) || (mode == UNGERADE && row_1 <= row_2 && col_1 <= col_2) || (mode == GERADE && row_1 < row_2 && col_1 < col_2)) {
             real_t factor = 1;
-            if (mode == SYM && row_1 == row_2) factor *= 1./sqrt(2.);
-            if (mode == SYM && col_1 == col_2) factor *= 1./sqrt(2.);
+            if (mode == UNGERADE && row_1 == row_2) factor *= 1./sqrt(2.);
+            if (mode == UNGERADE && col_1 == col_2) factor *= 1./sqrt(2.);
             triplets_entries.push_back(eigen_triplet_t(row, col, factor*val));
         }
     }
-    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary) const {
+    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs, const real_t &deltaE, const std::vector<bool> &necessary1, const std::vector<bool> &necessary2, const std::vector<bool> &necessary, const std::vector<short> &parity) const {
         real_t tol = 1e-32;
 
         size_t num_basisvectors = this->num_basisvectors()*rhs.num_basisvectors();
@@ -636,11 +636,11 @@ protected:
 
         for (size_t idx_1 = 0; idx_1 < this->num_basisvectors(); ++idx_1) {
             for (size_t idx_2 = 0; idx_2 < rhs.num_basisvectors(); ++idx_2) {
-                if (mode == SYM && idx_2 < idx_1) {
+                if (mode == UNGERADE && idx_2 < idx_1) {
                     continue;
                 }
 
-                if (mode == ASYM && idx_2 <= idx_1) {
+                if (mode == GERADE && idx_2 <= idx_1) {
                     continue;
                 }
 
@@ -690,7 +690,7 @@ protected:
                                 if (necessary[row]) mat.addBasis(row,col,val);
 
                                 row = rhs.num_coordinates()*triple_2.row() + triple_1.row(); // coordinate
-                                val *= (mode == ASYM) ? -1 : 1;
+                                val *= (mode == GERADE) ? -1*parity[row] : 1*parity[row];
                                 if (necessary[row]) mat.addBasis(row,col,val);
                             }
 
@@ -749,101 +749,6 @@ protected:
         }
 
         mat.compress(num_basisvectors, num_coordinates);
-
-        return mat;
-    }
-    Hamiltonianmatrix duplicate(mode_t mode, const Hamiltonianmatrix &rhs) const {
-        // --- mapping ---
-        idx_t i = 0;
-        std::vector<idx_t> mapping(this->num_basisvectors()*rhs.num_basisvectors());
-        for (idx_t idx_1 = 0; idx_1 < this->num_basisvectors(); ++idx_1) {
-            for (idx_t idx_2 = 0; idx_2 < rhs.num_basisvectors(); ++idx_2) {
-                if ((mode != ALL && idx_1 < idx_2) || (mode == ALL) || (mode == SYM && idx_1 == idx_2)) {
-                    idx_t idx = rhs.num_coordinates()*idx_1 + idx_2;
-                    mapping[idx] = i++;
-                }
-            }
-        }
-
-        Hamiltonianmatrix mat(i,this->num_coordinates()*rhs.num_coordinates());
-
-        // --- duplicate basis_ --- // TODO
-        std::vector<eigen_triplet_t> triplets_basis;
-        triplets_basis.reserve(basis_.nonZeros()*rhs.basis().nonZeros());
-
-        for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
-            for (eigen_iterator_t triple_1(basis_,k_1); triple_1; ++triple_1) {
-                for (eigen_idx_t k_2=0; k_2<rhs.basis().outerSize(); ++k_2) {
-                    for (eigen_iterator_t triple_2(rhs.basis(),k_2); triple_2; ++triple_2) {
-                        if ((mode != ALL && triple_1.col() < triple_2.col())) {
-                            idx_t idx_row1 = rhs.num_basisvectors()*triple_1.row() + triple_2.row(); // coord1
-                            idx_t idx_row2 = this->num_basisvectors()*triple_2.row() + triple_1.row(); // coord2
-                            idx_t idx_col = mapping[rhs.num_coordinates()*triple_1.col() + triple_2.col()]; // vec
-
-                            int factor = (mode == ASYM) ? -1 : 1;
-                            real_t multiplier = 1/sqrt(2.);
-                            triplets_basis.push_back(eigen_triplet_t(idx_row1, idx_col, triple_1.value()*triple_2.value()*multiplier));
-                            multiplier = 1/sqrt(2.)*factor;
-                            triplets_basis.push_back(eigen_triplet_t(idx_row2, idx_col, triple_1.value()*triple_2.value()*multiplier));
-
-                        } else if ((mode == ALL) || (mode == SYM && triple_1.col() == triple_2.col())) {
-                            idx_t idx_row = rhs.num_basisvectors()*triple_1.row() + triple_2.row(); // coord
-                            idx_t idx_col = mapping[rhs.num_coordinates()*triple_1.col() + triple_2.col()]; // vec
-                            triplets_basis.push_back(eigen_triplet_t(idx_row, idx_col, triple_1.value()*triple_2.value()));
-                        }
-                    }
-                }
-            }
-        }
-
-        mat.basis().setFromTriplets(triplets_basis.begin(), triplets_basis.end());
-
-        // --- duplicate entries_ --- // TODO
-        std::vector<eigen_triplet_t> triplets_entries;
-        triplets_entries.reserve(2*entries_.nonZeros()*this->num_basisvectors());
-
-        for (eigen_idx_t k_1=0; k_1<entries_.outerSize(); ++k_1) {
-            for (eigen_iterator_t hamiltonian_triple(entries_,k_1); hamiltonian_triple; ++hamiltonian_triple) {
-                for (size_t unitmatrix_idx = 0; unitmatrix_idx < this->num_basisvectors(); ++unitmatrix_idx) {
-                    idx_t row_1, row_2, col_1, col_2;
-                    scalar_t val = hamiltonian_triple.value();
-
-                    // --- ordered terms ---
-                    // <1a 2a|V x I|1b 2b> = <2a 1a|I x V|2b 1b>
-                    row_1 = hamiltonian_triple.row();
-                    row_2 = unitmatrix_idx;
-                    col_1 = hamiltonian_triple.col();
-                    col_2 = unitmatrix_idx;
-                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
-
-                    // <1a 2a|I x V|1b 2b> = <2a 1a|V x I|2b 1b>
-                    row_1 = unitmatrix_idx;
-                    row_2 = hamiltonian_triple.row();
-                    col_1 = unitmatrix_idx;
-                    col_2 = hamiltonian_triple.col();
-                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
-
-                    // --- mixed terms ---
-                    if (mode == ALL) continue;
-
-                    // <1a 2a|V x I|2b 1b> = <2a 1a|I x V|1b 2b>
-                    row_1 = hamiltonian_triple.row();
-                    row_2 = unitmatrix_idx;
-                    col_1 = unitmatrix_idx;
-                    col_2 = hamiltonian_triple.col();
-                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
-
-                    // <1a 2a|I x V|2b 1b> = <2a 1a|V x I|1b 2b>
-                    row_1 = unitmatrix_idx;
-                    row_2 = hamiltonian_triple.row();
-                    col_1 = hamiltonian_triple.col();
-                    col_2 = unitmatrix_idx;
-                    addSymmetrized(mode, mapping, row_1, row_2, col_1, col_2, val, triplets_entries);
-                }
-            }
-        }
-
-        mat.entries().setFromTriplets(triplets_entries.begin(), triplets_entries.end());
 
         return mat;
     }
@@ -1732,6 +1637,7 @@ public:
             std::vector<bool> notrestricted_coordinate1(basis_one1->size(), false);
             std::vector<bool> notrestricted_coordinate2(basis_one2->size(), false);
             std::vector<bool> notrestricted_coordinate(basis_two->size(), false);
+            std::vector<short> parity_coordinate(basis_two->size(), false);
             std::vector<StateOne> initial1 = basis_one1->initial();
             std::vector<StateOne> initial2 = basis_one2->initial();
             StateTwo initial = basis_two->initial();
@@ -1783,6 +1689,8 @@ public:
                 if (conserveParityL && (state.l[0]+state.l[1]) % 2 != parity) continue;
 
                 notrestricted_coordinate[state.idx] = true;
+
+                parity_coordinate[state.idx] = std::pow(-1,state.l[0]+state.l[1]);
             }
 
 
@@ -1791,13 +1699,13 @@ public:
 
             // --- determine necessary symmetries ---
             std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
-            enum symmetries_t {ALL, SYM, ASYM};
+            enum symmetries_t {ALL, UNGERADE, GERADE};
 
             std::vector<symmetries_t> symmetries;
-            if (samebasis && multipoleexponent <= 3) {
-                symmetries.push_back(SYM);
+            if (samebasis) {
+                symmetries.push_back(UNGERADE);
                 if (initial.first() != initial.second()) {
-                    symmetries.push_back(ASYM);
+                    symmetries.push_back(GERADE);
                 }
             } else {
                 symmetries.push_back(ALL);
@@ -1815,9 +1723,9 @@ public:
             // combine the Hamiltonians of the two atoms, beeing aware of the energy cutoff and the list of necessary coordinates
             for (size_t i = 0; i < nSteps_one; ++i) {
                 for (symmetries_t symmetry : symmetries) {
-                    if (symmetry == SYM) mat_single[symmetry].push_back(combineSym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
-                    if (symmetry == ASYM) mat_single[symmetry].push_back(combineAsym(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
-                    if (symmetry == ALL) mat_single[symmetry].push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate));
+                    if (symmetry == UNGERADE) mat_single[symmetry].push_back(combineUngerade(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate, parity_coordinate));
+                    if (symmetry == GERADE) mat_single[symmetry].push_back(combineGerade(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate, parity_coordinate));
+                    if (symmetry == ALL) mat_single[symmetry].push_back(combineAll(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, notrestricted_coordinate1, notrestricted_coordinate2, notrestricted_coordinate, parity_coordinate));
                 }
                 std::cout << "Two-atom Hamiltonian, "<< i+1 << ". Hamiltonian combined" << std::endl;
             }
@@ -2036,8 +1944,8 @@ public:
             bool flag_perhapsmissingtable = true;
 
             std::map<symmetries_t,std::string> symmetries_name;
-            symmetries_name[SYM] = "sym";
-            symmetries_name[ASYM] = "asym";
+            symmetries_name[UNGERADE] = "sym";
+            symmetries_name[GERADE] = "asym";
             symmetries_name[ALL] = "all";
 
             std::vector<Hamiltonianmatrix> blocks_mat_single;
