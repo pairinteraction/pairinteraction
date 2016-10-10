@@ -336,7 +336,7 @@ class SystemDict(GuiDict):
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
                                 "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
-                                "samebasis", "steps", "precision", "missingCalc",
+                                "samebasis", "steps", "precision", "missingCalc", "missingWhittaker",
                                 "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
 
     # field map of atom 2 (samebasis == False)
@@ -1107,6 +1107,9 @@ class MainWindow(QtGui.QMainWindow):
                 # load basis
                 basis = np.loadtxt(basisfile)
 
+                if len(basis.shape) == 1:
+                    basis = np.array([basis])
+
                 # save basis
                 self.storage_states[idx] = basis
 
@@ -1633,7 +1636,7 @@ class MainWindow(QtGui.QMainWindow):
                             self.labelprob_energy = None
 
                     # --- draw color map ---
-                    if self.ui.groupbox_plot_overlap.isChecked():
+                    if self.ui.groupbox_plot_overlap.isChecked() and self.steps > 1:
                         # --- get settings ---
                         # get size and alpha value
                         size = self.ui.spinbox_plot_szOverlap.value()

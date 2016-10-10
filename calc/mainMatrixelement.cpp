@@ -32,25 +32,50 @@
 int main(int argc, char **argv) {
     std::cout << std::unitbuf;
 
-    std::string str_row = "";
-    std::string str_col = "";
+    size_t precision = std::numeric_limits<real_t>::digits10 + 1;
+
+    std::string element = "";
+    StateOne state_row;
+    StateOne state_col;
+    int power = 0;
 
     int c;
     opterr = 0;
-    while((c = getopt (argc, argv, "r:c:")) != -1) {
+    while((c = getopt (argc, argv, "e:r:c:p:")) != -1) {
         switch (c) {
+        case 'e':
+            element = optarg;
+            break;
         case 'r':
-            str_row = optarg;
+            std::stringstream(optarg) >> state_row.n >> state_row.l >> state_row.j >> state_row.m;
             break;
         case 'c':
-            str_col = optarg;
+            std::stringstream(optarg) >> state_col.n >> state_col.l >> state_col.j >> state_col.m;
+            break;
+        case 'p':
+            power = atoi(optarg);
             break;
         default:
             return 1;
         }
     }
 
-    size_t precision = std::numeric_limits<real_t>::digits10 + 1;
+    std::cout << element << std::endl;
+    std::cout << state_row << std::endl;
+    std::cout << state_col << std::endl;
+    std::cout << power << std::endl;
+
+    std::vector<StateOne> states({{state_row, state_col}});
+    auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
+    MatrixElements matrixelement(element, "");
+
+    matrixelement.precalculateRadial(basis, power);
+    real_t val = matrixelement.getRadial(state_row, state_col, power);
+    std::cout << ">>RES" << std::setprecision(precision) << val << std::endl;
+
+    return 0;
+
+    /*size_t precision = std::numeric_limits<real_t>::digits10 + 1;
 
     if (str_row != "" and str_col != "") { // Dipole matrix element
         std::stringstream ss_row(str_row);
@@ -89,5 +114,5 @@ int main(int argc, char **argv) {
         std::cout << std::setprecision(precision) << energy << std::endl;
     }
 
-    return 0;
+    return 0;*/
 }

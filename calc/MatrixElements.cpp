@@ -55,6 +55,7 @@ bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa) {
 
 
 MatrixElements::MatrixElements(std::string species, std::string dbname) : species(species), dbname(dbname) {
+    method = "Modelpotentials";
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
@@ -71,20 +72,25 @@ MatrixElements::MatrixElements(const Configuration& config, std::string species,
 }
 
 void MatrixElements::precalculateMultipole(std::shared_ptr<const BasisnamesOne> basis_one, int k) {
-    int m = std::numeric_limits<int>::max();
-    precalculate(basis_one, k, m, k, true, false);
+    int q = std::numeric_limits<int>::max();
+    precalculate(basis_one, k, q, k, true, false, false);
+}
+
+void MatrixElements::precalculateRadial(std::shared_ptr<const BasisnamesOne> basis_one, int k) {
+    int q = std::numeric_limits<int>::max();
+    precalculate(basis_one, k, q, k, false, false, true);
 }
 
 void MatrixElements::precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
-    precalculate(basis_one, 1, q, 1, true, false);
+    precalculate(basis_one, 1, q, 1, true, false, false);
 }
 
 void MatrixElements::precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
-    precalculate(basis_one, 1, q, 0, false, true);
+    precalculate(basis_one, 1, q, 0, false, true, false);
 }
 
 void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> basis_one, int k, int q) {
-    precalculate(basis_one, k, q, 2, true, false);
+    precalculate(basis_one, k, q, 2, true, false, false);
 }
 
 real_t MatrixElements::getElectricMomentum(StateOne state_row, StateOne state_col) {
@@ -117,12 +123,17 @@ real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col, int 
     return val;
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum) {
+real_t MatrixElements::getRadial(StateOne state_row, StateOne state_col, int k) {
+    real_t val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+    return val;
+}
+
+void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
     SQLite3 db(dbname);
 
     // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
 
-    if (calcElectricMultipole || calcMagneticMomentum) {
+    if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
         db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
                 "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
                 "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
@@ -183,8 +194,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             //    continue;
             //}
 
-            if ((calcElectricMultipole && selectionRulesMultipole(state_row, state_col, kappa)) || (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col))) {
-                if (calcElectricMultipole || calcMagneticMomentum) {
+            if ((calcElectricMultipole && selectionRulesMultipole(state_row, state_col, kappa)) || (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col)) || calcRadial) {
+                if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
                     StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
                     auto missing_cache_radial = cache_radial[kappar].insert({state_nlj, std::numeric_limits<real_t>::max()});
                     if (missing_cache_radial.second) {
@@ -255,7 +266,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     float j1, j2, m1, m2;
     double value;
 
-    if (calcElectricMultipole || calcMagneticMomentum) {
+    if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         ss.str(std::string());
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
@@ -319,7 +330,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     db.exec("begin transaction;");
 
-    if (calcElectricMultipole || calcMagneticMomentum) {
+    if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         for (auto &cache : cache_radial[kappar]) {
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
