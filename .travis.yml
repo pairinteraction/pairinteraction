@@ -8,5 +8,5 @@ matrix:
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make"
     - os: osx
       osx_image: xcode8
-      before_script: brew install cmake eigen pyqt5 boost gsl jsoncpp openmpi sqlite
+      before_script: brew install eigen pyqt5 gsl jsoncpp openmpi
       script: mkdir build && cd build && cmake .. && make
