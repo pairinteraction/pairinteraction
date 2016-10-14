@@ -363,8 +363,10 @@ class MainWindow(QtGui.QMainWindow):
     def __init__(self, parent=None):
 
         if os.name == 'nt':
+            ext = ".exe"
             locale.setlocale(locale.LC_ALL, 'English')
         else:
+            ext = ""
             locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
 
         QtCore.QLocale.setDefault(QtCore.QLocale(locale.getlocale()[0]))
@@ -413,8 +415,7 @@ class MainWindow(QtGui.QMainWindow):
             mapticks = [(1 - p, c) for p, c in v['ticks']]
             # mappos = [1-p for p, c in v['ticks']]
             # mapticks[np.argmin(mappos)] = (mapticks[np.argmin(mappos)][0],(245,245,245,255))
-            pg.graphicsItems.GradientEditorItem.Gradients[
-                k]['ticks'] = mapticks
+            pg.graphicsItems.GradientEditorItem.Gradients[k]['ticks'] = mapticks
 
         self.ui = Ui_plotwindow()
         self.ui.setupUi(self)
@@ -446,17 +447,17 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real")):
+        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real"+ext)):
             self.path_workingdir = self.path_base
-        elif os.path.exists(os.path.join(self.path_base, "../../calc", "pairinteraction-real")):
+        elif os.path.exists(os.path.join(self.path_base, "../../calc", "pairinteraction-real"+ext)):
             self.path_workingdir = os.path.join(self.path_base, "../../calc")
         else:
             raise Exception('Directory containing executables not found.')
 
         self.path_cpp_real = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-real")
+            self.path_base, self.path_workingdir, "pairinteraction-real"+ext)
         self.path_cpp_complex = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-complex")
+            self.path_base, self.path_workingdir, "pairinteraction-complex"+ext)
         self.path_quantumdefects = os.path.join(
             self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
