@@ -1,0 +1,11 @@
+language: generic
+
+matrix:
+  include:
+    - os: linux
+      services: docker
+      script: docker run -it pairinteraction/ubuntu:16.04 /bin/bash -c "mkdir build && cd build && cmake .. && make"
+    - os: osx
+      osx_image: xcode8
+      before_script: brew install cmake eigen pyqt5 boost gsl jsoncpp openmpi sqlite3
+      script: mkdir build && cd build && cmake .. && make
