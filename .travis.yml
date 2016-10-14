@@ -4,7 +4,8 @@ matrix:
   include:
     - os: linux
       services: docker
-      script: docker run -it pairinteraction/ubuntu:16.04 /bin/bash -c "mkdir build && cd build && cmake .. && make"
+      env: image=ubuntu:16.04
+      script: docker run -it pairinteraction/$image /bin/bash -x -c "mkdir build && cd build && cmake .. && make"
     - os: osx
       osx_image: xcode8
       before_script: brew install cmake eigen pyqt5 boost gsl jsoncpp openmpi sqlite3
