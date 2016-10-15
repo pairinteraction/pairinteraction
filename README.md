@@ -1,4 +1,4 @@
-# pairinteraction [![Gitter][gitter-svg]][gitter-room]
+# pairinteraction [![Gitter][gitter-svg]][gitter-room] [![Build status][travis-svg]][travis-link]
 
 *A Rydberg Interaction Calculator*
 
@@ -6,7 +6,9 @@ Visit the official website at https://pairinteraction.github.io/
 
 ## Build Status
 
-We plan to use [Travis CI](https://travis-ci.org) as a hosted continuous integration service to build pairinteraction against various toolchains.
+We are using [Travis CI](https://travis-ci.org) as a hosted continuous integration service to build pairinteraction against various toolchains.
+
+*Current build status:* [![Build status][travis-svg]][travis-link]
 
 ## Support
 
@@ -26,6 +28,8 @@ Pairinteraction is released under the terms of the [Apache License 2.0](https://
 
 Note that not all files in this repository belong to the pairinteraction project.  `FindEigen3.cmake` is part of the Eigen project and the submodules link to their host repositories.  The individual licenses apply.
 
+[travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
+[travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [gitter-svg]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-room]: https://gitter.im/pairinteraction/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [wiki]: https://github.com/pairinteraction/pairinteraction/wiki
