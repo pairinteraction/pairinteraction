@@ -1,0 +1,12 @@
+language: generic
+
+matrix:
+  include:
+    - os: linux
+      services: docker
+      env: image=ubuntu:16.04
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make"
+    - os: osx
+      osx_image: xcode8
+      before_script: brew install eigen pyqt5 gsl jsoncpp openmpi
+      script: mkdir build && cd build && cmake .. && make
