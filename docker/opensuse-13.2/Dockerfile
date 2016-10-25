@@ -8,7 +8,7 @@ RUN zypper -n --gpg-auto-import-keys addrepo obs://build.opensuse.org/devel:tool
     git cmake \
     eigen3-devel \
     python3-qt5-devel \
-    openmpi openmpi-devel \
+    lam lam-devel openmpi openmpi-devel \
     sqlite3 sqlite3-devel \
     boost-devel libboost_filesystem1_54_0 libboost_system1_54_0 \
     jsoncpp-devel \
