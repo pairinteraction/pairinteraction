@@ -1062,7 +1062,7 @@ class MainWindow(QtGui.QMainWindow):
     def abortCalculation(self):
         # kill c++ process - this terminates the self.thread, too
         if self.proc is not None:
-            self.proc.kill()
+            self.proc.terminate()
 
         # wait until self.thread has finished
         self.thread.wait()
@@ -1111,85 +1111,153 @@ class MainWindow(QtGui.QMainWindow):
                 if len(basis.shape) == 1:
                     basis = np.array([basis])
 
-                # save basis
-                self.storage_states[idx] = basis
-
-                # determine which state to highlite
-                if self.ui.groupbox_plot_overlap.isChecked():
-                    # update status bar
-                    message_old = self.ui.statusbar.currentMessage()
-                    if idx == 0 and self.thread.samebasis:
-                        idxtype = 3
-                    else:
-                        idxtype = idx
-                    status_type = ["Field map of first atom: ", "Field map of second atom: ",
-                                   "Pair potential: ", "Field maps: "][idxtype]
-                    self.ui.statusbar.showMessage(
-                        status_type + "calculate overlap states")
-                    QtGui.QApplication.processEvents()
-
-                    # calculate overlap states
+                if basis.size == 0:
+                    nState = 0
+                else:
                     nState = len(basis)
 
-                    if self.angle != 0:  # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
-                        if idx == 0:
-                            boolarr = self.overlapstate[idx][[0, 1, 2]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
-                                                idx][None, [0, 1, 2]][:, boolarr], axis=-1))[0]
-                            relevantBasis = basis[stateidx]
+                if nState == 0:
+                    # save basis
+                    self.storage_states[idx] = None
 
-                            statecoeff = np.ones_like(stateidx, dtype=np.float)
-                            m1 = self.overlapstate[idx][3]
-                            if m1 != -1:
-                                for j in np.unique(relevantBasis[:, 3]):
-                                    boolarr = np.all(
-                                        relevantBasis[:, [3]] == [j], axis=-1)
-                                    if np.abs(m1) > j:
-                                        statecoeff[boolarr] *= 0
-                                    else:
-                                        withjBasis = relevantBasis[boolarr]
-                                        for m2 in np.unique(withjBasis[:, 4]):
-                                            boolarr = np.all(
-                                                relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                            statecoeff[
-                                                boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+                else:
+                    # save basis
+                    self.storage_states[idx] = basis
 
-                            boolarr = self.overlapstate[
-                                idx][[0, 1, 2, 3]] == -1
-                            if sum(boolarr) > 0:
-                                undeterminedQuantumNumbers = relevantBasis[
-                                    :, [1, 2, 3, 4]][:, boolarr]
-                                sorter = np.lexsort(
-                                    undeterminedQuantumNumbers.T[::-1])
-                                diff = np.append([False], np.diff(
-                                    undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
-                                stateamount = np.cumsum(
-                                    diff)[np.argsort(sorter)]
-                            else:
-                                stateamount = np.zeros_like(stateidx)
+                    # determine which state to highlite
+                    if self.ui.groupbox_plot_overlap.isChecked():
+                        # update status bar
+                        message_old = self.ui.statusbar.currentMessage()
+                        if idx == 0 and self.thread.samebasis:
+                            idxtype = 3
+                        else:
+                            idxtype = idx
+                        status_type = ["Field map of first atom: ", "Field map of second atom: ",
+                                       "Pair potential: ", "Field maps: "][idxtype]
+                        self.ui.statusbar.showMessage(
+                            status_type + "calculate overlap states")
+                        QtGui.QApplication.processEvents()
 
-                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
+                        # calculate overlap states
+                        if self.angle != 0:  # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
+                            if idx == 0:
+                                boolarr = self.overlapstate[idx][[0, 1, 2]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
+                                                    idx][None, [0, 1, 2]][:, boolarr], axis=-1))[0]
+                                relevantBasis = basis[stateidx]
+
+                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                m1 = self.overlapstate[idx][3]
+                                if m1 != -1:
+                                    for j in np.unique(relevantBasis[:, 3]):
+                                        boolarr = np.all(
+                                            relevantBasis[:, [3]] == [j], axis=-1)
+                                        if np.abs(m1) > j:
+                                            statecoeff[boolarr] *= 0
+                                        else:
+                                            withjBasis = relevantBasis[boolarr]
+                                            for m2 in np.unique(withjBasis[:, 4]):
+                                                boolarr = np.all(
+                                                    relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
+                                                statecoeff[
+                                                    boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+
                                 boolarr = self.overlapstate[
-                                    idx][[4, 5, 6]] != -1
-                                stateidx2 = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
-                                                     idx][None, [4, 5, 6]][:, boolarr], axis=-1))[0]
-                                relevantBasis = basis[stateidx2]
+                                    idx][[0, 1, 2, 3]] == -1
+                                if sum(boolarr) > 0:
+                                    undeterminedQuantumNumbers = relevantBasis[
+                                        :, [1, 2, 3, 4]][:, boolarr]
+                                    sorter = np.lexsort(
+                                        undeterminedQuantumNumbers.T[::-1])
+                                    diff = np.append([False], np.diff(
+                                        undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                    stateamount = np.cumsum(
+                                        diff)[np.argsort(sorter)]
+                                else:
+                                    stateamount = np.zeros_like(stateidx)
 
-                                statecoeff2 = np.ones_like(
-                                    stateidx2, dtype=np.float)
+                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
+                                    boolarr = self.overlapstate[
+                                        idx][[4, 5, 6]] != -1
+                                    stateidx2 = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
+                                                         idx][None, [4, 5, 6]][:, boolarr], axis=-1))[0]
+                                    relevantBasis = basis[stateidx2]
+
+                                    statecoeff2 = np.ones_like(
+                                        stateidx2, dtype=np.float)
+                                    m1 = self.overlapstate[idx][7]
+                                    if m1 != -1:
+                                        for j in np.unique(relevantBasis[:, 3]):
+                                            boolarr = np.all(
+                                                relevantBasis[:, [3]] == [j], axis=-1)
+                                            if np.abs(m1) > j:
+                                                statecoeff2[boolarr] *= 0
+                                            else:
+                                                withjBasis = relevantBasis[boolarr]
+                                                for m2 in np.unique(withjBasis[:, 4]):
+                                                    boolarr = np.all(
+                                                        relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
+                                                    statecoeff2[
+                                                        boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+
+                                    boolarr = self.overlapstate[
+                                        idx][[4, 5, 6, 7]] == -1
+                                    if sum(boolarr) > 0:
+                                        undeterminedQuantumNumbers = relevantBasis[
+                                            :, [1, 2, 3, 4]][:, boolarr]
+                                        sorter = np.lexsort(
+                                            undeterminedQuantumNumbers.T[::-1])
+                                        diff = np.append([False], np.diff(
+                                            undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                        stateamount2 = np.cumsum(
+                                            diff)[np.argsort(sorter)]
+                                    else:
+                                        stateamount2 = np.zeros_like(stateidx2)
+
+                                    statecoeff = np.append(statecoeff, statecoeff2)
+                                    stateidx = np.append(stateidx, stateidx2)
+                                    stateamount = np.append(
+                                        stateamount, stateamount2)
+
+                                """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1))[0]
+                                statecoeff = []
+                                j = self.overlapstate[idx][2]
+                                for state in basis[stateidx]:
+                                    m2 = state[4]
+                                    m1 = self.overlapstate[idx][3]
+                                    coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                    statecoeff.append(coeff)
+                                stateamount = np.zeros_like(stateidx)
+                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                    stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
+                                    j = self.overlapstate[idx][6]
+                                    for state in basis[stateidx_second]:
+                                        m2 = state[4]
+                                        m1 = self.overlapstate[idx][7]
+                                        coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                        statecoeff.append(coeff)
+                                    stateidx = np.append(stateidx, stateidx_second)
+                                    stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
+                            elif idx == 1:
+                                boolarr = self.overlapstate[idx][[4, 5, 6]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
+                                                    idx][None, [4, 5, 6]][:, boolarr], axis=-1))[0]
+                                relevantBasis = basis[stateidx]
+
+                                statecoeff = np.ones_like(stateidx, dtype=np.float)
                                 m1 = self.overlapstate[idx][7]
                                 if m1 != -1:
                                     for j in np.unique(relevantBasis[:, 3]):
                                         boolarr = np.all(
                                             relevantBasis[:, [3]] == [j], axis=-1)
                                         if np.abs(m1) > j:
-                                            statecoeff2[boolarr] *= 0
+                                            statecoeff[boolarr] *= 0
                                         else:
                                             withjBasis = relevantBasis[boolarr]
                                             for m2 in np.unique(withjBasis[:, 4]):
                                                 boolarr = np.all(
                                                     relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                                statecoeff2[
+                                                statecoeff[
                                                     boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
                                 boolarr = self.overlapstate[
@@ -1201,214 +1269,145 @@ class MainWindow(QtGui.QMainWindow):
                                         undeterminedQuantumNumbers.T[::-1])
                                     diff = np.append([False], np.diff(
                                         undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
-                                    stateamount2 = np.cumsum(
+                                    stateamount = np.cumsum(
                                         diff)[np.argsort(sorter)]
                                 else:
-                                    stateamount2 = np.zeros_like(stateidx2)
+                                    stateamount = np.zeros_like(stateidx)
 
-                                statecoeff = np.append(statecoeff, statecoeff2)
-                                stateidx = np.append(stateidx, stateidx2)
-                                stateamount = np.append(
-                                    stateamount, stateamount2)
-
-                            """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1))[0]
-                            statecoeff = []
-                            j = self.overlapstate[idx][2]
-                            for state in basis[stateidx]:
-                                m2 = state[4]
-                                m1 = self.overlapstate[idx][3]
-                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
-                                statecoeff.append(coeff)
-                            stateamount = np.zeros_like(stateidx)
-                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
-                                stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
-                                j = self.overlapstate[idx][6]
-                                for state in basis[stateidx_second]:
+                                """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
+                                statecoeff = []
+                                j = self.overlapstate[idx][2]
+                                for state in basis[stateidx]:
                                     m2 = state[4]
                                     m1 = self.overlapstate[idx][7]
                                     coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                     statecoeff.append(coeff)
-                                stateidx = np.append(stateidx, stateidx_second)
-                                stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
-                        elif idx == 1:
-                            boolarr = self.overlapstate[idx][[4, 5, 6]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
-                                                idx][None, [4, 5, 6]][:, boolarr], axis=-1))[0]
-                            relevantBasis = basis[stateidx]
+                                stateamount = np.zeros_like(stateidx)"""
+                            elif idx == 2:
+                                boolarr = self.overlapstate[idx][
+                                    [0, 1, 2, 4, 5, 6]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 5, 6, 7]][:, boolarr] == self.overlapstate[
+                                                    idx][None, [0, 1, 2, 4, 5, 6]][:, boolarr], axis=-1))[0]
+                                relevantBasis = basis[stateidx]
 
-                            statecoeff = np.ones_like(stateidx, dtype=np.float)
-                            m1 = self.overlapstate[idx][7]
-                            if m1 != -1:
-                                for j in np.unique(relevantBasis[:, 3]):
-                                    boolarr = np.all(
-                                        relevantBasis[:, [3]] == [j], axis=-1)
-                                    if np.abs(m1) > j:
-                                        statecoeff[boolarr] *= 0
-                                    else:
-                                        withjBasis = relevantBasis[boolarr]
-                                        for m2 in np.unique(withjBasis[:, 4]):
+                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                for selector in [0, 4]:
+                                    m1 = self.overlapstate[idx][3 + selector]
+                                    if m1 != -1:
+                                        for j in np.unique(relevantBasis[:, 3 + selector]):
                                             boolarr = np.all(
-                                                relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                            statecoeff[
-                                                boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+                                                relevantBasis[:, [3 + selector]] == [j], axis=-1)
+                                            if np.abs(m1) > j:
+                                                statecoeff[boolarr] *= 0
+                                            else:
+                                                withjBasis = relevantBasis[boolarr]
+                                                for m2 in np.unique(withjBasis[:, 4 + selector]):
+                                                    boolarr = np.all(
+                                                        relevantBasis[:, [3 + selector, 4 + selector]] == [j, m2], axis=-1)
+                                                    statecoeff[
+                                                        boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                            boolarr = self.overlapstate[
-                                idx][[4, 5, 6, 7]] == -1
-                            if sum(boolarr) > 0:
-                                undeterminedQuantumNumbers = relevantBasis[
-                                    :, [1, 2, 3, 4]][:, boolarr]
-                                sorter = np.lexsort(
-                                    undeterminedQuantumNumbers.T[::-1])
-                                diff = np.append([False], np.diff(
-                                    undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
-                                stateamount = np.cumsum(
-                                    diff)[np.argsort(sorter)]
-                            else:
-                                stateamount = np.zeros_like(stateidx)
+                                boolarr = self.overlapstate[idx][
+                                    [0, 1, 2, 3, 4, 5, 6, 7]] == -1
+                                if sum(boolarr) > 0:
+                                    undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
+                                    sorter = np.lexsort(
+                                        undeterminedQuantumNumbers.T[::-1])
+                                    diff = np.append([False], np.diff(
+                                        undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
+                                    stateamount = np.cumsum(
+                                        diff)[np.argsort(sorter)]
+                                else:
+                                    stateamount = np.zeros_like(stateidx)
 
-                            """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
-                            statecoeff = []
-                            j = self.overlapstate[idx][2]
-                            for state in basis[stateidx]:
-                                m2 = state[4]
-                                m1 = self.overlapstate[idx][7]
-                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
-                                statecoeff.append(coeff)
-                            stateamount = np.zeros_like(stateidx)"""
-                        elif idx == 2:
-                            boolarr = self.overlapstate[idx][
-                                [0, 1, 2, 4, 5, 6]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3, 5, 6, 7]][:, boolarr] == self.overlapstate[
-                                                idx][None, [0, 1, 2, 4, 5, 6]][:, boolarr], axis=-1))[0]
-                            relevantBasis = basis[stateidx]
+                                """stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1))[0]
+                                statecoeff = []
+                                j = self.overlapstate[idx][[2,6]]
+                                for state in basis[stateidx]:
+                                    m_final = state[[4,8]]
+                                    m_initial = self.overlapstate[idx][[3,7]]
+                                    coeff = 1
+                                    for m2, m1, jj in zip(m_final, m_initial, j):
+                                        coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
+                                    statecoeff.append(coeff)
+                                stateamount = np.zeros_like(stateidx)"""
 
-                            statecoeff = np.ones_like(stateidx, dtype=np.float)
-                            for selector in [0, 4]:
-                                m1 = self.overlapstate[idx][3 + selector]
-                                if m1 != -1:
-                                    for j in np.unique(relevantBasis[:, 3 + selector]):
-                                        boolarr = np.all(
-                                            relevantBasis[:, [3 + selector]] == [j], axis=-1)
-                                        if np.abs(m1) > j:
-                                            statecoeff[boolarr] *= 0
-                                        else:
-                                            withjBasis = relevantBasis[boolarr]
-                                            for m2 in np.unique(withjBasis[:, 4 + selector]):
-                                                boolarr = np.all(
-                                                    relevantBasis[:, [3 + selector, 4 + selector]] == [j, m2], axis=-1)
-                                                statecoeff[
-                                                    boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+                            # write calculated wigner d matrix elements into the
+                            # cache
+                            self.wignerd.save()
 
-                            boolarr = self.overlapstate[idx][
-                                [0, 1, 2, 3, 4, 5, 6, 7]] == -1
-                            if sum(boolarr) > 0:
-                                undeterminedQuantumNumbers = relevantBasis[
-                                    :, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
-                                sorter = np.lexsort(
-                                    undeterminedQuantumNumbers.T[::-1])
-                                diff = np.append([False], np.diff(
-                                    undeterminedQuantumNumbers[sorter], axis=0).any(axis=1))
-                                stateamount = np.cumsum(
-                                    diff)[np.argsort(sorter)]
-                            else:
-                                stateamount = np.zeros_like(stateidx)
+                        else:
+                            if idx == 0:
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [0, 1, 2, 3]][:, boolarr], axis=-1))[0]
+                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
+                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
+                                    stateidx = np.append(stateidx, np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0])
+                            elif idx == 1:
+                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0]
+                            elif idx == 2:
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr] == self.overlapstate[idx][None, [0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr], axis=-1))[0]
 
-                            """stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1))[0]
-                            statecoeff = []
-                            j = self.overlapstate[idx][[2,6]]
-                            for state in basis[stateidx]:
-                                m_final = state[[4,8]]
-                                m_initial = self.overlapstate[idx][[3,7]]
-                                coeff = 1
-                                for m2, m1, jj in zip(m_final, m_initial, j):
-                                    coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
-                                statecoeff.append(coeff)
-                            stateamount = np.zeros_like(stateidx)"""
+                            statecoeff = np.ones_like(stateidx)
+                            stateamount = np.arange(len(stateidx))
 
-                        # write calculated wigner d matrix elements into the
-                        # cache
-                        self.wignerd.save()
+                        if len(stateidx) < 1:
+                            self.stateidx_field[idx] = None
+                        else:
+                            self.stateidx_field[idx] = sparse.csc_matrix(
+                                (statecoeff, (stateamount, stateidx)), shape=(np.max(stateamount) + 1, nState))
+
+                        # update status bar
+                        self.ui.statusbar.showMessage(message_old)
+                        QtGui.QApplication.processEvents()
 
                     else:
-                        if idx == 0:
-                            boolarr = self.overlapstate[
-                                idx][[0, 1, 2, 3]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[
-                                                idx][None, [0, 1, 2, 3]][:, boolarr], axis=-1))[0]
-                            if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
-                                boolarr = self.overlapstate[
-                                    idx][[4, 5, 6, 7]] != -1
-                                stateidx = np.append(stateidx, np.where(np.all(basis[:, [1, 2, 3, 4]][
-                                                     :, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0])
-                        elif idx == 1:
-                            boolarr = self.overlapstate[
-                                idx][[4, 5, 6, 7]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[
-                                                idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0]
-                        elif idx == 2:
-                            boolarr = self.overlapstate[idx][
-                                [0, 1, 2, 3, 4, 5, 6, 7]] != -1
-                            stateidx = np.where(np.all(basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr] == self.overlapstate[
-                                                idx][None, [0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr], axis=-1))[0]
-
-                        statecoeff = np.ones_like(stateidx)
-                        stateamount = np.arange(len(stateidx))
-
-                    if len(stateidx) < 1:
                         self.stateidx_field[idx] = None
-                    else:
-                        self.stateidx_field[idx] = sparse.csc_matrix(
-                            (statecoeff, (stateamount, stateidx)), shape=(np.max(stateamount) + 1, nState))
 
-                    # update status bar
-                    self.ui.statusbar.showMessage(message_old)
-                    QtGui.QApplication.processEvents()
+                    # calculate a matrix that can be used to determine the momenta
+                    # inside a basis element
+                    if idx == 0 or idx == 1:
+                        momentum = basis[:, 2]
+                        self.momentummat[idx] = sparse.csc_matrix(
+                            (momentum[:, None] == np.arange(np.max(momentum) + 1)[None, :]).astype(int))
 
-                else:
-                    self.stateidx_field[idx] = None
+                    # extract labels
+                    # TODO only if necessary !!!!!
 
-                # calculate a matrix that can be used to determine the momenta
-                # inside a basis element
-                if idx == 0 or idx == 1:
-                    momentum = basis[:, 2]
-                    self.momentummat[idx] = sparse.csc_matrix(
-                        (momentum[:, None] == np.arange(np.max(momentum) + 1)[None, :]).astype(int))
+                    if idx == 0 or idx == 1:
+                        nlj = basis[:, [1, 2, 3]]
+                    elif idx == 2:
+                        nlj = basis[:, [1, 2, 3, 5, 6, 7]]
 
-                # extract labels
-                # TODO only if necessary !!!!!
+                    # sort pair state names
+                    if idx == 2 and self.thread.samebasis:
+                        firstsmaller = np.argmax(np.append(nlj[:, 0:3] < nlj[:, 3:6], np.ones(
+                            (len(nlj), 1), dtype=bool), axis=-1), axis=-1)  # TODO in Funktion auslagern
+                        firstsmaller_reverted = np.argmax(np.append(nlj[:, 3:6] < nlj[:, 0:3], np.ones(
+                            (len(nlj), 1), dtype=bool), axis=-1), axis=-1)  # TODO in Funktion auslagern
+                        namesToSwap = firstsmaller > firstsmaller_reverted
+                        nlj[namesToSwap] = nlj[namesToSwap][:, [3, 4, 5, 0, 1, 2]]
 
-                if idx == 0 or idx == 1:
-                    nlj = basis[:, [1, 2, 3]]
-                elif idx == 2:
-                    nlj = basis[:, [1, 2, 3, 5, 6, 7]]
+                    sorter = np.lexsort(nlj.T[::-1])
+                    nlj = nlj[sorter]
+                    diff = np.append([True], np.diff(nlj, axis=0).any(axis=1))
+                    cumsum = np.cumsum(diff)[np.argsort(sorter)]
 
-                # sort pair state names
-                if idx == 2 and self.thread.samebasis:
-                    firstsmaller = np.argmax(np.append(nlj[:, 0:3] < nlj[:, 3:6], np.ones(
-                        (len(nlj), 1), dtype=bool), axis=-1), axis=-1)  # TODO in Funktion auslagern
-                    firstsmaller_reverted = np.argmax(np.append(nlj[:, 3:6] < nlj[:, 0:3], np.ones(
-                        (len(nlj), 1), dtype=bool), axis=-1), axis=-1)  # TODO in Funktion auslagern
-                    namesToSwap = firstsmaller > firstsmaller_reverted
-                    nlj[namesToSwap] = nlj[namesToSwap][:, [3, 4, 5, 0, 1, 2]]
+                    # determine labels of states
+                    self.labelstates[idx] = nlj[diff]
+                    self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum), (np.arange(len(
+                        cumsum)), cumsum - 1)), shape=(len(cumsum), len(self.labelstates[idx]))).tocsr()  # nStates, nLabels
 
-                sorter = np.lexsort(nlj.T[::-1])
-                nlj = nlj[sorter]
-                diff = np.append([True], np.diff(nlj, axis=0).any(axis=1))
-                cumsum = np.cumsum(diff)[np.argsort(sorter)]
-
-                # determine labels of states
-                self.labelstates[idx] = nlj[diff]
-                self.labelmat[idx] = sparse.coo_matrix((np.ones_like(cumsum), (np.arange(len(
-                    cumsum)), cumsum - 1)), shape=(len(cumsum), len(self.labelstates[idx]))).tocsr()  # nStates, nLabels
-
-                # determine labels of momenta
-                if idx == 0 or idx == 1:  # TODO !!!
-                    self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(
-                        np.max(self.labelstates[idx][:, 1]) + 1).astype(np.int)]
-                elif idx == 2:
-                    self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(
-                        np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(np.int)]
-                self.momentumstrings[idx][:4] = self.momentslabels
+                    # determine labels of momenta
+                    if idx == 0 or idx == 1:  # TODO !!!
+                        self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(
+                            np.max(self.labelstates[idx][:, 1]) + 1).astype(np.int)]
+                    elif idx == 2:
+                        self.momentumstrings[idx] = [" {}".format(i) for i in np.arange(
+                            np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(np.int)]
+                    self.momentumstrings[idx][:4] = self.momentslabels
 
                 # remove basis file from hard disk
                 os.remove(basisfile)
@@ -1433,10 +1432,14 @@ class MainWindow(QtGui.QMainWindow):
                     self.thread.basisfile_field2 = ""
                 elif idx == 2:
                     self.thread.basisfile_potential = ""
+                    self.thread.basisfile_potential = ""
 
             # --- check if there is some new data and if yes, plot it ---
 
-            if not dataqueue.empty():
+            if not dataqueue.empty() and self.storage_states[idx] is None:
+                dataqueue.get()  # TODO make this hack unnecessary
+
+            elif not dataqueue.empty():
 
                 graphicsview_plot = [self.ui.graphicsview_field1_plot,
                                      self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]
@@ -1673,8 +1676,7 @@ class MainWindow(QtGui.QMainWindow):
 
                         # calculate overlap
                         if self.stateidx_field[idx] is not None:
-                            overlap = np.abs(self.stateidx_field[
-                                             idx].conjugate() * basis)
+                            overlap = np.abs(self.stateidx_field[idx].conjugate() * basis)
                             overlap.data **= 2
                             overlap = overlap.sum(axis=0).getA1()
 
@@ -2072,8 +2074,6 @@ class MainWindow(QtGui.QMainWindow):
 
                 # --- update the graphics view ---
                 graphicsview_plot[idx].repaint()
-
-        # === terminate thread ===
 
         # check if thread has finished
         if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_potential.empty():
@@ -3744,4 +3744,10 @@ def main():
     app = QtGui.QApplication(sys.argv)
     form = MainWindow()
     form.show()
-    app.exec_()
+    rc = app.exec_()
+
+    # Hack to avoid exit crashes
+    # http://stackoverflow.com/questions/11945183/what-are-good-practices-for-avoiding-crashes-hangs-in-pyqt
+    del form
+    del app
+    os._exit(rc)

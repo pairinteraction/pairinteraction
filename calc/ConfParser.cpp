@@ -115,23 +115,23 @@ size_t Configuration::size() const {
     return params.size();
 }
 Configuration::iterator Configuration::find (const std::string& key) {
-    return Configuration::iterator(std::move(params.find(key)));
+    return Configuration::iterator(params.find(key));
 }
 
 Configuration::const_iterator Configuration::find (const std::string& key) const {
-    return Configuration::const_iterator(std::move(params.find(key)));
+    return Configuration::const_iterator(params.find(key));
 }
 Configuration::iterator Configuration::begin() {
-    return Configuration::iterator(std::move(params.begin()));
+    return Configuration::iterator(params.begin());
 }
 Configuration::iterator Configuration::end() {
-    return Configuration::iterator(std::move(params.end()));
+    return Configuration::iterator(params.end());
 }
 Configuration::const_iterator Configuration::begin() const {
-    return Configuration::const_iterator(std::move(params.begin()));
+    return Configuration::const_iterator(params.begin());
 }
 Configuration::const_iterator Configuration::end() const {
-    return Configuration::const_iterator(std::move(params.end()));
+    return Configuration::const_iterator(params.end());
 }
 bool Configuration::operator==(const Configuration &rhs) const {
     if (this->size() != rhs.size()) {
