@@ -455,9 +455,9 @@ class MainWindow(QtGui.QMainWindow):
             raise Exception('Directory containing executables not found.')
 
         self.path_cpp_real = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-real"+ext)
+            self.path_base, self.path_workingdir, "pairinteraction-real")
         self.path_cpp_complex = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-complex"+ext)
+            self.path_base, self.path_workingdir, "pairinteraction-complex")
         self.path_quantumdefects = os.path.join(
             self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 

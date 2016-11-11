@@ -96,7 +96,7 @@ class Worker(QtCore.QThread):
                     basissize)
 
             elif line[:5] == b">>STA":
-                filename = line[6:-1].decode('utf-8')
+                filename = line[6:-1].decode('utf-8').strip()
                 if type == 0 or type == 3:
                     self.basisfile_field1 = filename
                 elif type == 1:
@@ -122,7 +122,7 @@ class Worker(QtCore.QThread):
                 filestep = int(line[12:19].decode('utf-8'))
                 blocks = int(line[19:26].decode('utf-8'))
                 blocknumber = int(line[26:33].decode('utf-8'))
-                filename = line[34:-1].decode('utf-8')
+                filename = line[34:-1].decode('utf-8').strip()
 
                 if type == 0 or type == 3:
                     self.dataqueue_field1.put(

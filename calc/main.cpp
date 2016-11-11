@@ -1061,7 +1061,7 @@ protected:
             for (const auto &state: basis_one->initial()) {
                 energy_initial += energy_level(species,state.n,state.l,state.j);
             }
-            energy_initial /= basis_one->initial().size();
+            energy_initial /= basis_one->initial().size(); // TODO save it to the json file
 
             std::vector<bool> is_necessary(basis_one->size(),false);
             idx_t idx = 0;
