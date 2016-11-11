@@ -82,18 +82,6 @@ else(MPI_FOUND)
                       "==============\n")
 endif(MPI_FOUND)
 
-find_package(Jsoncpp REQUIRED)
-if(JSONCPP_FOUND)
-  include_directories(${JSONCPP_INCLUDE_DIRS})
-  target_link_libraries(pairinteraction-real ${JSONCPP_LIBRARIES})
-  target_link_libraries(pairinteraction-complex ${JSONCPP_LIBRARIES})
-  target_link_libraries(matrixelements ${JSONCPP_LIBRARIES})
-else(JSONCPP_FOUND)
-  message(FATAL_ERROR "==================\n"
-                      "JSONCPP not found!\n"
-                      "==================\n")
-endif(JSONCPP_FOUND)
-
 find_package(Boost COMPONENTS filesystem system REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})

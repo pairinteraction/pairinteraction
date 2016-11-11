@@ -18,7 +18,8 @@
 #include <string>
 #include <fstream>
 #include <iostream>
-#include "json/json.h"
+#include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 Configuration::value::value() : val() {
 }
@@ -72,36 +73,31 @@ Configuration::const_iterator::entry Configuration::const_iterator::operator* ()
 }
 int Configuration::load_from_json(std::string filename)
 {
-    Json::Value datadict;
-    Json::Reader reader;
-    std::ifstream conffile(filename);
-    if ( !reader.parse(conffile, datadict) )
-    {
-        std::cerr << reader.getFormattedErrorMessages();
-        conffile.close();
-        return 1;
-    }
-    conffile.close();
+    using boost::property_tree::ptree;
+    using boost::property_tree::json_parser::read_json;
 
-    for(Json::Value::iterator itr = datadict.begin(); itr !=datadict.end(); ++itr) {
-        std::string s = (*itr).toStyledString();
-        s.erase(remove( s.begin(), s.end(), '\"' ), s.end()); // TODO remove hack
-         s.erase(remove( s.begin(), s.end(), '\n' ), s.end()); // TODO remove hack
-        params[itr.key().asString()] << s;
+    ptree pt;
+    read_json(filename, pt);
+
+    for (auto itr: pt)
+    {
+      params[itr.first] << itr.second.data();
     }
 
     return 0;
 }
 int Configuration::save_to_json(std::string filename)
 {
-    Json::StyledWriter styledWriter;
-    Json::Value datadict;
-    std::ofstream conffile(filename);
+    using boost::property_tree::ptree;
+    using boost::property_tree::json_parser::read_json;
+
+    ptree pt;
+
     for (auto p: *this) {
-        datadict[p.key] = p.value.str();
+        pt.put(p.key,p.value.str());
     }
-    conffile << styledWriter.write(datadict);
-    conffile.close();
+
+    write_json(filename, pt);
 
     return 0;
 }
