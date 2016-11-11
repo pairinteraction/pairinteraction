@@ -89,7 +89,7 @@ int Configuration::load_from_json(std::string filename)
 int Configuration::save_to_json(std::string filename)
 {
     using boost::property_tree::ptree;
-    using boost::property_tree::json_parser::read_json;
+    using boost::property_tree::json_parser::write_json;
 
     ptree pt;
 
