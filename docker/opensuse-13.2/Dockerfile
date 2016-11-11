@@ -1,8 +1,6 @@
 FROM opensuse:13.2
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
-# jsoncpp is only in devel:tools
-RUN zypper -n --gpg-auto-import-keys addrepo obs://build.opensuse.org/devel:tools devel:tools && \
-  zypper -n --gpg-auto-import-keys refresh && \
+RUN zypper -n --gpg-auto-import-keys refresh && \
   zypper -n --gpg-auto-import-keys install \
     patterns-openSUSE-devel_C_C++ \
     git cmake \
