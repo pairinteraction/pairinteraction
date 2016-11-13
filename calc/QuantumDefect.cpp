@@ -37,7 +37,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
   : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
 {
   std::stringstream ss;
-  SQLite3 db("databases/quantum_defects.db");
+  SQLite3 db("databases/quantum_defects.db", SQLITE_OPEN_READONLY);
   int pot_max_l, ryd_max_l;
   int pot_l, ryd_l;
   real_t ryd_max_j;

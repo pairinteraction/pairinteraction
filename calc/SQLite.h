@@ -53,6 +53,7 @@ public:
 class SQLite3 {
 public:
     SQLite3(const std::string filename);
+    SQLite3(const std::string filename, int flags);
     ~SQLite3();
     SQLite3Result query(const std::string sql);
     void exec(const std::string sql);

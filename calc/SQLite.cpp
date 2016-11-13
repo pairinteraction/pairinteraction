@@ -66,6 +66,12 @@ SQLite3::SQLite3(const std::string filename) : zErrMsg(NULL) {
         std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
     }
 }
+SQLite3::SQLite3(const std::string filename, int flags) : zErrMsg(NULL) {
+    rc = sqlite3_open_v2(filename.c_str(), &db, flags, NULL);
+    if ( rc ) {
+        std::cerr << "Can't open database: " << sqlite3_errmsg(db) << std::endl;
+    }
+}
 SQLite3::~SQLite3() {
     sqlite3_close(db);
 }
