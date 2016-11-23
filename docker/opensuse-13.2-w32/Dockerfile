@@ -12,4 +12,4 @@ RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/reposi
     mingw32-libgsl-devel \
     sqlite3 mingw32-sqlite-devel \
     mingw32-cross-nsis && \
-  ln -s /usr/include/eigen3 /usr/x86_64-w64-mingw32/sys-root/mingw/include/eigen3
+  ln -s /usr/include/eigen3 /usr/i686-w64-mingw32/sys-root/mingw/include/eigen3
