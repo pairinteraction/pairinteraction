@@ -16,6 +16,7 @@
 
 !define APP_NAME "pairinteraction"
 !define BUILD_DIR "..\build-w64"
+!define DLL_DIR "\usr\x86_64-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
 !define /date CUR_DATE "%Y%m%d"
@@ -70,8 +71,16 @@ SectionGroup /e "${APP_NAME}"
     SectionIn RO
     SetOutPath "$INSTDIR\calc"
     File "${BUILD_DIR}\calc\*.exe"
-    File "${BUILD_DIR}\calc\*.dll"
-    File "${BUILD_DIR}\calc\wignerSymbols\*.dll"
+    File "${DLL_DIR}\libboost_filesystem-mt.dll"
+    File "${DLL_DIR}\libboost_system-mt.dll"
+    File "${DLL_DIR}\libgcc_s_seh-1.dll"
+    File "${DLL_DIR}\libgsl-0.dll"
+    File "${DLL_DIR}\libgslcblas-0.dll"
+    File "${DLL_DIR}\libquadmath-0.dll"
+    File "${DLL_DIR}\libsqlite3-0.dll"
+    File "${DLL_DIR}\libstdc++-6.dll"
+    File "${DLL_DIR}\libwinpthread-1.dll"
+    File "${BUILD_DIR}\calc\wignerSymbols\libwignerSymbols.dll"
     SetOutPath "$INSTDIR\calc\databases"
     File "${BUILD_DIR}\calc\databases\*.db"
   SectionEnd
