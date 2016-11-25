@@ -48,7 +48,7 @@ public:
     real_t getRadial(StateOne state_row, StateOne state_col, int kappa);
 private:
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
-    real_t calcRadialElement(std::string species, int n1, int l1, real_t j1, int power, int n2, int l2, real_t j2);
+    real_t calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
     std::string method;
     std::string species;
     std::string dbname;

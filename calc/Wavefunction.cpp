@@ -27,9 +27,9 @@
 void Wavefunction::initialize(double xmin = -1) {
     dx_ = 0.001*10; // TODO
     if ( xmin < 0 ) // use classical turning point
-      xmin_ = n*n - n*sqrt(n*n-(l-1)*(l-1));
+      xmin_ = qd.n*qd.n - qd.n*sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
     xmin_ = floor(sqrt(( 2.08 > xmin ? 2.08 : xmin )));
-    xmax_ = sqrt(2*n*(n+15));
+    xmax_ = sqrt(2*qd.n*(qd.n+15));
     nsteps_ = ceil((xmax_ - xmin_)/dx_);
     x.resize(nsteps_);
     for (int i = 0; i < nsteps_; i++) {
@@ -40,9 +40,10 @@ void Wavefunction::initialize(double xmin = -1) {
 
 // --- Numerov's method ---
 
-Numerov::Numerov(std::string species, int n, int l, real_t j)
-    : Wavefunction(species, n, l, j) {
-    initialize(n*n - n*sqrt(n*n-(l-1)*(l-1))); // use classical turning point
+Numerov::Numerov(const QuantumDefect &qd)
+    : Wavefunction(qd) {
+    // use classical turning point
+    initialize(qd.n*qd.n - qd.n*sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1)));
 }
 
 
@@ -53,7 +54,7 @@ std::vector<real_t> Numerov::axis() {
 
 std::vector<real_t> Numerov::integrate() {
     // Set the initial condition
-    if ( (n-l) % 2 == 0 )
+    if ( (qd.n-qd.l) % 2 == 0 )
         y[nsteps_-2] = -1e-10;
     else
         y[nsteps_-2] = 1e-10;
@@ -88,9 +89,9 @@ real_t Numerov::V(real_t x) {
     real_t V_c = -Z_l / x;
     real_t V_p = -qd.ac/(2.*x*x*x*x) * (1-exp(-pow(x/qd.rc,6)));
     real_t V_so = 0.0;
-    if ( l < 4 ) {
+    if ( qd.l < 4 ) {
         real_t alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
-        V_so = alpha*alpha/(4 * x*x*x) * (j*(j+1) - l*(l+1) - 0.5*(1+0.5));
+        V_so = alpha*alpha/(4 * x*x*x) * (qd.j*(qd.j+1) - qd.l*(qd.l+1) - 0.5*(1+0.5));
     }
     return V_c + V_p + V_so;
 }
@@ -98,7 +99,7 @@ real_t Numerov::V(real_t x) {
 
 real_t Numerov::g(real_t x) {
     //return l*(l+1)/(x*x) + 2.*(V(x) - qd.energy);
-    return (2.*l+.5)*(2.*l+1.5)/(x*x) + 8.*(x*x)*(V(x*x) - qd.energy);
+    return (2.*qd.l+.5)*(2.*qd.l+1.5)/(x*x) + 8.*(x*x)*(V(x*x) - qd.energy);
 }
 
 
@@ -130,8 +131,8 @@ real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 }
 
 
-Whittaker::Whittaker(std::string species, int n, int l, real_t j)
-    : Wavefunction(species, n, l, j) {
+Whittaker::Whittaker(const QuantumDefect &qd)
+    : Wavefunction(qd) {
     initialize(1); // the Whittaker functions are only undefined at 0
 }
 
@@ -144,13 +145,13 @@ std::vector<real_t> Whittaker::axis() {
 std::vector<real_t> Whittaker::integrate() {
   // Set the sign
   int sign;
-  if ( (n-l) % 2 == 0 )
+  if ( (qd.n-qd.l) % 2 == 0 )
     sign = -1;
   else
     sign = 1;
 
   for (int i = 0; i < nsteps_; ++i)
-    y[i] = sign * RadialWFWhittaker(x[i]*x[i], qd.nstar, l) / sqrt(x[i]);
+    y[i] = sign * RadialWFWhittaker(x[i]*x[i], qd.nstar, qd.l) / sqrt(x[i]);
   // we calculate the wavefunction sqrt-scaled, therefore we pass
   // x[i]*x[i] and multiply with sqrt(x[i])
 

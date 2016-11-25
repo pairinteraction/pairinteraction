@@ -34,7 +34,10 @@ struct no_defect : public std::exception {
 
 
 QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
-  : ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
+  : species_(species), n_(n), l_(l), j_(j),
+    species(species_), n(n_), l(l_), j(j_),
+    ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_),
+    rc(rc_), nstar(nstar_), energy(energy_)
 {
   std::stringstream ss;
   SQLite3 db("databases/quantum_defects.db", SQLITE_OPEN_READONLY);

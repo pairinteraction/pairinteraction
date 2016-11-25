@@ -26,9 +26,6 @@
 
 class Wavefunction {
 protected:
-  std::string species;
-  int n, l;
-  real_t j;
   QuantumDefect qd;
   int nsteps_;
   real_t xmin_;
@@ -42,8 +39,8 @@ public:
   const real_t &xmin;
   const real_t &xmax;
   const real_t &dx;
-  Wavefunction(std::string species, int n, int l, real_t j)
-    : species(species), n(n), l(l), j(j), qd(species,n,l,j),
+  Wavefunction(const QuantumDefect &qd)
+    : qd(qd),
       nsteps(nsteps_), xmin(xmin_), xmax(xmax_), dx(dx_) {};
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
@@ -57,7 +54,7 @@ private:
   real_t g(real_t x);
   real_t step(int i);
 public:
-  Numerov(std::string species, int n, int l, real_t j);
+  Numerov(const QuantumDefect &qd);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
@@ -66,7 +63,7 @@ public:
 
 class Whittaker : public Wavefunction {
 public:
-  Whittaker(std::string species, int n, int l, real_t j);
+  Whittaker(const QuantumDefect &qd);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
