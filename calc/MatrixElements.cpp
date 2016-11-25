@@ -15,6 +15,7 @@
  */
 
 #include "MatrixElements.h"
+#include "QuantumDefect.h"
 #include "SQLite.h"
 #include <sstream>
 #include <iostream>
@@ -335,7 +336,9 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             if (cache.second == std::numeric_limits<real_t>::max()) {
                 auto state = cache.first;
 
-                cache.second = calcRadialElement(species, state.n[0], state.l[0], state.j[0], kappar, state.n[1], state.l[1], state.j[1]);
+                QuantumDefect qd1(species, state.n[0], state.l[0], state.j[0]);
+                QuantumDefect qd2(species, state.n[1], state.l[1], state.j[1]);
+                cache.second = calcRadialElement(qd1, kappar, qd2);
 
                 ss.str(std::string());
                 ss << "insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values ("
@@ -429,15 +432,15 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     db.exec("end transaction;");
 }
 
-real_t MatrixElements::calcRadialElement(std::string species, int n1, int l1, real_t j1, int power,
-                                         int n2, int l2, real_t j2) {
+real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
+                                         const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
-        Numerov N1(species, n1, l1, j1);
-        Numerov N2(species, n2, l2, j2);
+        Numerov N1(qd1);
+        Numerov N2(qd2);
         return IntegrateRadialElement(N1, power, N2);
     } else if(method == "Whittaker") {
-        Whittaker N1(species, n1, l1, j1);
-        Whittaker N2(species, n2, l2, j2);
+        Whittaker N1(qd1);
+        Whittaker N2(qd2);
         return IntegrateRadialElement(N1, power, N2);
     } else {
         std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save

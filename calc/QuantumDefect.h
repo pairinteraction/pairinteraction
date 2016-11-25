@@ -24,6 +24,9 @@
 
 class QuantumDefect {
 private:
+  std::string species_;
+  int n_, l_;
+  real_t j_;
   real_t ac_;
   int Z_;
   real_t a1_, a2_, a3_, a4_;
@@ -32,6 +35,9 @@ private:
   real_t energy_;
 public:
   QuantumDefect(std::string species, int n, int l, real_t j);
+  const std::string &species;
+  const int &n, &l;
+  const real_t &j;
   const real_t &ac;
   const int &Z;
   const real_t &a1, &a2, &a3, &a4;
