@@ -15,7 +15,7 @@
 !include "MUI.nsh"
 
 !define APP_NAME "pairinteraction"
-!define BUILD_DIR "..\build-w64"
+!define BUILD_DIR "..\build"
 !define DLL_DIR "\usr\x86_64-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
