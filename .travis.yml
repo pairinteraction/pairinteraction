@@ -5,6 +5,11 @@ matrix:
     - os: linux
       sudo: required
       services: docker
+      env: image=debian:jessie
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make"
+    - os: linux
+      sudo: required
+      services: docker
       env: image=ubuntu:14.04
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make"
     - os: linux
