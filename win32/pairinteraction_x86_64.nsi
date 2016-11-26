@@ -19,8 +19,7 @@
 !define DLL_DIR "\usr\x86_64-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-!define /date CUR_DATE "%Y%m%d"
-OutFile '${APP_NAME}-install-x86_64-${CUR_DATE}.exe'
+OutFile '${APP_NAME}-install-x86_64.exe'
 
 showinstdetails show
 
@@ -48,8 +47,8 @@ SectionGroup /e "Dependencies"
     File "Miniconda3-latest-Windows-x86_64.exe"
     ExecWait "$INSTDIR\Miniconda3-latest-Windows-x86_64.exe"
 
-    !define CONDA_PATH "C:\Miniconda3\Scripts\conda.exe"
-    !define PIP_PATH "C:\Miniconda3\Scripts\pip.exe"
+    !define CONDA_PATH "C:\$PROGRAMFILES64\Miniconda3\Scripts\conda.exe"
+    !define PIP_PATH "C:\$PROGRAMFILES64\Miniconda3\Scripts\pip.exe"
 
     IfFileExists "${CONDA_PATH}" 0 fail
     IfFileExists "${PIP_PATH}" 0 fail
