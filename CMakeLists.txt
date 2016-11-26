@@ -71,20 +71,17 @@ elseif(UNIX)
 
   # DEB
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, openmpi-bin, libjsoncpp0, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1, python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
-  # additional build dependencies: libsqlite3-dev, libeigen3-dev, libjsoncspp-dev, pyqt5-dev-tools, sqlite3, gfortran, libopenmpi-dev
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, openmpi-bin, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1, libgsl0ldbl, python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_CURRENT_SOURCE_DIR}/postinst")
 
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libjsoncpp1, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc49, python3-Pint, python3-qt5, python3-psutil")
+  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc49, libgsl0, python3-Pint, python3-qt5, python3-psutil, python3-scipy, python3-numpy")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
   set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
   set(CPACK_RPM_PACKAGE_PRIORITY "optional")
-  set(CPACK_RPM_POST_INSTALL_SCRIPT_FILE "${CMAKE_CURRENT_SOURCE_DIR}/postinst.rpm")
 
   include(CPack)
 
