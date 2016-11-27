@@ -56,5 +56,5 @@ matrix:
           tags: true
     - os: osx
       osx_image: xcode8
-      before_script: brew install eigen pyqt5 gsl openmpi
-      script: mkdir build && cd build && cmake .. && make
+      before_script: brew install eigen pyqt5 gsl openmpi node && npm install -g fileicon
+      script: mkdir build && cd build && cmake -DDMG=TRUE .. && make package
