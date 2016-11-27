@@ -19,7 +19,7 @@
 !define DLL_DIR "\usr\i686-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-i686.exe'
+OutFile '${APP_NAME}-install-windows-i686.exe'
 
 showinstdetails show
 
