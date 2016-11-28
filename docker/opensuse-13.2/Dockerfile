@@ -9,5 +9,6 @@ RUN zypper -n --gpg-auto-import-keys refresh && \
     lam lam-devel openmpi openmpi-devel \
     sqlite3 sqlite3-devel \
     boost-devel libboost_filesystem1_54_0 libboost_system1_54_0 \
-    gsl-devel && \
-  zypper clean
+    gsl-devel \
+    dpkg rpm-build \
+  && zypper clean
