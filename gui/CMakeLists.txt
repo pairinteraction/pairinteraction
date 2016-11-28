@@ -65,8 +65,21 @@ if(DMG)
   
   add_dependencies(pyinstaller gui)
 
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui DESTINATION .)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui DESTINATION . RENAME pairinteraction)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
+  
+  # brew install node
+  # npm install -g fileicon
+  find_program( FILEICON NAMES fileicon )
+  if( FILEICON )
+    message( STATUS "Found fileicon: ${FILEICON}" )
+  else( )
+    message( FATAL_ERROR "Could not find fileicon" )
+  endif( )
+  
+  set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction)
+  set(iconpath ${PROJECT_SOURCE_DIR}/apple/pairinteraction.icns)
+  install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
 else(DMG)
 

@@ -71,9 +71,9 @@ endif()
 
 if(MPI_FOUND)
   include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-  target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
-  target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
-  target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES} ${MPI_C_LIBRARIES})
+  target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES})
+  target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES})
+  target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES})
   set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
   set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
 else(MPI_FOUND)
@@ -131,7 +131,7 @@ if(DMG)
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
   set(bin3 \${CMAKE_INSTALL_PREFIX}/matrixelements)
   
-  install(CODE "execute_process(COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/apple/standalone.py ${bin1} ${bin2} ${bin3})")
+  install(CODE "execute_process(COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/apple/standalone.py ${bin1} ${bin2} ${bin3})")
 
 else(DMG)
 

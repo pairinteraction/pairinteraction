@@ -19,7 +19,7 @@
 !define DLL_DIR "\usr\x86_64-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-x86_64.exe'
+OutFile '${APP_NAME}-install-windows-x86_64.exe'
 
 showinstdetails show
 
