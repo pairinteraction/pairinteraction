@@ -22,6 +22,14 @@ endif(DMG)
 
 project(pairinteraction CXX)
 
+# get version info from git
+find_package(Git REQUIRED)
+execute_process(
+  COMMAND "${GIT_EXECUTABLE}" describe --tags --always
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  OUTPUT_VARIABLE VERSION
+  OUTPUT_STRIP_TRAILING_WHITESPACE )
+
 set(CMAKE_MACOSX_RPATH 0)
 
 set(CMAKE_COLOR_MAKEFILE ON)
@@ -65,8 +73,8 @@ elseif(UNIX)
   set(CPACK_GENERATOR "TGZ;RPM;DEB")
 
   # General
-  set(CPACK_PACKAGE_NAME "pairinteraction")
-  set(CPACK_PACKAGE_VERSION "0.0")
+  set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
+  set(CPACK_PACKAGE_VERSION "${VERSION}")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
 
   # DEB
