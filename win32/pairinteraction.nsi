@@ -12,18 +12,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+!if ${ARCH} == "x86_64"
+  !define ARCHNAME "x86_64"
+  !define PROGDIR $PROGRAMFILES64
+!else if ${ARCH} == "i686"
+  !define ARCHNAME "x86"
+  !define PROGDIR $PROGRAMFILES
+!else
+  !error "Architecture '${ARCH}' unkown"
+!endif
+
+
 !include "MUI.nsh"
 
 !define APP_NAME "pairinteraction"
 !define BUILD_DIR "..\build"
-!define DLL_DIR "\usr\x86_64-w64-mingw32\sys-root\mingw\bin\"
+!define DLL_DIR "\usr\${ARCH}-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-windows-x86_64.exe'
+OutFile '${APP_NAME}-install-windows-${ARCH}.exe'
 
 showinstdetails show
 
-InstallDir '$PROGRAMFILES64\${APP_NAME}'
+InstallDir '${PROGDIR}\${APP_NAME}'
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
@@ -44,11 +55,11 @@ SectionGroup /e "Dependencies"
 
   Section 'Miniconda'
     SetOutPath "$INSTDIR"
-    File "Miniconda3-latest-Windows-x86_64.exe"
-    ExecWait "$INSTDIR\Miniconda3-latest-Windows-x86_64.exe"
+    File "Miniconda3-latest-Windows-${ARCHNAME}.exe"
+    ExecWait "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe"
 
-    !define CONDA_PATH "C:\$PROGRAMFILES64\Miniconda3\Scripts\conda.exe"
-    !define PIP_PATH "C:\$PROGRAMFILES64\Miniconda3\Scripts\pip.exe"
+    !define CONDA_PATH "${PROGDIR}\Miniconda3\Scripts\conda.exe"
+    !define PIP_PATH "${PROGDIR}\Miniconda3\Scripts\pip.exe"
 
     IfFileExists "${CONDA_PATH}" 0 fail
     IfFileExists "${PIP_PATH}" 0 fail
@@ -61,7 +72,7 @@ fail:
       MessageBox MB_OK "Miniconda installation could not be found!"
 done:
 
-    Delete "$INSTDIR\Miniconda3-latest-Windows-x86_64.exe"
+    Delete "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe"
   SectionEnd
 SectionGroupEnd
 
@@ -72,7 +83,11 @@ SectionGroup /e "${APP_NAME}"
     File "${BUILD_DIR}\calc\*.exe"
     File "${DLL_DIR}\libboost_filesystem-mt.dll"
     File "${DLL_DIR}\libboost_system-mt.dll"
-    File "${DLL_DIR}\libgcc_s_seh-1.dll"
+    !if ${ARCH} == "x86_64"
+      File "${DLL_DIR}\libgcc_s_seh-1.dll"
+    !else if ${ARCH} == "i686"
+      File "${DLL_DIR}\libgcc_s_sjlj-1.dll"
+    !endif
     File "${DLL_DIR}\libgsl-0.dll"
     File "${DLL_DIR}\libgslcblas-0.dll"
     File "${DLL_DIR}\libsqlite3-0.dll"
