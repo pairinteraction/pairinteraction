@@ -45,6 +45,7 @@ private:
 
 
 class result {
+    friend class handle;
 public:
     class iterator {
     public:
@@ -62,7 +63,7 @@ public:
             return res->getRow(pos);
         }
 
-        const iterator& operator++ ()
+        iterator& operator++ ()
         {
             ++pos;
             return *this;
@@ -78,25 +79,11 @@ public:
         : azResult(NULL), nRow(0), nColumn(0)
     {}
 
-    result( result& r )
-    {
-        swap( r );
-        // invalidate copied result to prevent deletion
-        r.azResult = nullptr;
-    }
-
     result( result&& r )
     {
-        swap( r );
+      swap( std::move ( r ) );
         // invalidate copied result to prevent deletion
         r.azResult = nullptr;
-    }
-
-    void swap( result& r )
-    {
-        std::swap ( nRow    , r.nRow     );
-        std::swap ( nColumn , r.nColumn  );
-        std::swap ( azResult, r.azResult );
     }
 
     void swap( result&& r )
@@ -147,12 +134,13 @@ public:
         return ss;
     }
 
-    char **azResult;
-    int nRow, nColumn;
-
 private:
+    result( result const& r );
     result& operator=( result const& );
     result& operator=( result&& );
+
+    char **azResult;
+    int nRow, nColumn;
 };
 
 class handle {
@@ -186,8 +174,7 @@ public:
     {
         result res;
         if ( sqlite3_get_table(db, sql.c_str(), &res.azResult, &res.nRow, &res.nColumn, &zErrMsg) != SQLITE_OK ) {
-            std::string msg("SQL error: ");
-            msg += zErrMsg;
+            std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
             throw sqlite_error(msg);
         }
@@ -197,8 +184,7 @@ public:
     void exec(const std::string sql)
     {
         if ( sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg) != SQLITE_OK ) {
-            std::string msg("SQL error: ");
-            msg += zErrMsg;
+            std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
             throw sqlite_error(msg);
         }
