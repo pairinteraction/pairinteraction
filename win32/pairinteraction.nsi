@@ -95,6 +95,13 @@ SectionGroup /e "${APP_NAME}"
     File "${DLL_DIR}\libwinpthread-1.dll"
     SetOutPath "$INSTDIR\calc\databases"
     File "${BUILD_DIR}\calc\databases\*.db"
+
+    writeUninstaller "$INSTDIR\uninstall.exe"
+
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+                     "DisplayName" "${APP_NAME}"
+    WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}" \
+                     "UninstallString" "$\"$INSTDIR\uninstall.exe$\""
   SectionEnd
 
   Section 'GUI (Recommended)'
@@ -106,7 +113,7 @@ SectionGroup /e "${APP_NAME}"
 SectionGroupEnd
 
 Section 'Desktop Icon'
-  !define PYTHON_PATH "C:\Miniconda3\python.exe"
+  !define PYTHON_PATH "${PROGDIR}\Miniconda3\python.exe"
   IfFileExists "${PYTHON_PATH}" success 0
   MessageBox MB_OK "Miniconda installation could not be found!  Assuming python.exe to be in PATH."
   !undef PYTHON_PATH
@@ -122,4 +129,29 @@ success:
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
     "$INSTDIR\pairinteraction.ico"
+SectionEnd
+
+
+function un.onInit
+  SetShellVarContext all
+
+  MessageBox MB_OKCANCEL "Do you want to remove ${APP_NAME} and all of its components?" IDOK next
+    Abort
+  next:
+functionEnd
+
+
+Section 'uninstall'
+  RMDir /r "$INSTDIR\calc"
+  RMDir /r "$INSTDIR\gui"
+
+  delete "$INSTDIR\pairinteraction.ico"
+  delete "$INSTDIR\pairinteraction.bat"
+  delete "$DESKTOP\pairinteraction.lnk"
+
+  delete "$INSTDIR\uninstall.exe"
+
+  RMDIR "$INSTDIR"
+
+  DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_NAME}"
 SectionEnd
