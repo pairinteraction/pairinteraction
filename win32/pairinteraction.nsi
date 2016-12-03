@@ -38,6 +38,12 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.BOOST1"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.GPL3"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.LGPL3"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.MPL2"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.OMPI"
+!insertmacro MUI_PAGE_LICENSE "..\LICENSE.MIT"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -79,6 +85,8 @@ SectionGroupEnd
 SectionGroup /e "${APP_NAME}"
   Section 'Backend'
     SectionIn RO
+    SetOutPath "$INSTDIR"
+    File "..\LICENSE*"
     SetOutPath "$INSTDIR\calc"
     File "${BUILD_DIR}\calc\*.exe"
     File "${DLL_DIR}\libboost_filesystem-mt.dll"
