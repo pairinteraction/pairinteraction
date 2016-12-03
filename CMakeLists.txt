@@ -41,8 +41,9 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-add_subdirectory(gui)
 add_subdirectory(calc)
+add_subdirectory(gui)
+add_subdirectory(win32)
 
 # CPack
 if(WIN32)

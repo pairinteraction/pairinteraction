@@ -17,7 +17,8 @@
 # Usage: cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/mingw32.cmake
 
 set( CMAKE_SYSTEM_NAME "Windows" )
-set( MINGW_PREFIX "i686-w64-mingw32")
+set( MINGW_PREFIX "i686-w64-mingw32" )
+set( MINGW_ARCH "i686" )
 
 # set compilers
 set( CMAKE_C_COMPILER       ${MINGW_PREFIX}-gcc      )
