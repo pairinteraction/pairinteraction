@@ -48,14 +48,14 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 SectionGroup /e "Dependencies"
   Section 'MS-MPI'
     SetOutPath "$INSTDIR"
-    File "MSMpiSetup.exe"
+    File "${BUILD_DIR}\win32\MSMpiSetup.exe"
     ExecWait "$INSTDIR\MSMpiSetup.exe"
     Delete "$INSTDIR\MSMpiSetup.exe"
   SectionEnd
 
   Section 'Miniconda'
     SetOutPath "$INSTDIR"
-    File "Miniconda3-latest-Windows-${ARCHNAME}.exe"
+    File "${BUILD_DIR}\win32\Miniconda3-latest-Windows-${ARCHNAME}.exe"
     ExecWait "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe"
 
     !define CONDA_PATH "${PROGDIR}\Miniconda3\Scripts\conda.exe"

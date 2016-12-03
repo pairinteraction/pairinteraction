@@ -26,7 +26,7 @@ matrix:
       sudo: required
       services: docker
       env: image=opensuse:13.2-w32
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32.cmake .. && make && cd ../win32 && curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe && curl -O https://download.microsoft.com/download/E/8/A/E8A080AF-040D-43FF-97B4-065D4F220301/MSMpiSetup.exe && makensis -DARCH=i686 pairinteraction.nsi"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32.cmake .. && make win32"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
       deploy:
         provider: releases
@@ -42,7 +42,7 @@ matrix:
       sudo: required
       services: docker
       env: image=opensuse:13.2-w64
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make && cd ../win32 && curl -O https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe && curl -O https://download.microsoft.com/download/E/8/A/E8A080AF-040D-43FF-97B4-065D4F220301/MSMpiSetup.exe && makensis -DARCH=x86_64 pairinteraction.nsi"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make win32"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
       deploy:
         provider: releases
