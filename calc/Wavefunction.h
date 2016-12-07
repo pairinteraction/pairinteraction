@@ -22,48 +22,26 @@
 #include "dtypes.h"
 #include "QuantumDefect.h"
 
-// --- Common interface ---
-
-class Wavefunction {
-protected:
-  QuantumDefect qd;
-  int nsteps_;
-  real_t xmin_;
-  real_t xmax_;
-  real_t dx_;
-  std::vector<real_t> x;
-  std::vector<real_t> y;
-  void initialize(double xmin);
-public:
-  const int &nsteps;
-  const real_t &xmin;
-  const real_t &xmax;
-  const real_t &dx;
-  Wavefunction(const QuantumDefect &qd)
-    : qd(qd),
-      nsteps(nsteps_), xmin(xmin_), xmax(xmax_), dx(dx_) {};
-  std::vector<real_t> axis();
-  std::vector<real_t> integrate();
-};
-
 // --- Numerov's method ---
 
-class Numerov : public Wavefunction {
-private:
-  real_t V(real_t x);
-  real_t g(real_t x);
-  real_t step(int i);
+class Numerov {
+  QuantumDefect const& qd;
+  std::vector<real_t> x;
 public:
-  Numerov(const QuantumDefect &qd);
+  const real_t dx;
+  Numerov(QuantumDefect const& qd);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
 
 // --- Whittaker method ---
 
-class Whittaker : public Wavefunction {
+class Whittaker {
+  QuantumDefect const& qd;
+  std::vector<real_t> x;
 public:
-  Whittaker(const QuantumDefect &qd);
+  const real_t dx;
+  Whittaker(QuantumDefect const& qd);
   std::vector<real_t> axis();
   std::vector<real_t> integrate();
 };
@@ -80,8 +58,8 @@ real_t IntegrateRadialElement(T N1, int power, T N2) {
     std::vector<real_t> x2 = N2.axis();
     std::vector<real_t> y2 = N2.integrate();
 
-    real_t xmin = N1.xmin >= N2.xmin ? N1.xmin : N2.xmin;
-    real_t xmax = N1.xmax <= N2.xmax ? N1.xmax : N2.xmax;
+    const real_t xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
+    const real_t xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
 
     real_t mu = 0;
     // If there is an overlap, calculate the matrix element
@@ -92,10 +70,10 @@ real_t IntegrateRadialElement(T N1, int power, T N2) {
         int end2   = findidx(x2, xmax);
 
         int i1, i2;
-        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; i1++, i2++) {
-            mu += y1[i1]*y2[i2] * pow(x1[i1], 2*power+2) * N1.dx;
+        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2) {
+            mu += y1[i1]*y2[i2] * std::pow(x1[i1], 1.5*power) * N1.dx;
         }
-        mu = fabs(2*mu);
+        mu = std::abs(2*mu);
     }
 
     return mu;
