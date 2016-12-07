@@ -1318,7 +1318,7 @@ protected:
             } else {
                 path_db = path_cache / "cache_matrix_real.db";
             }
-            SQLite3 db(path_db.string());
+            sqlite::handle db(path_db.string());
 
             // loop through steps
             for (size_t step = 0; step < nSteps; ++step) {
@@ -1365,7 +1365,7 @@ protected:
                     spacer = " AND ";
                 }
                 query << ";";
-                SQLite3Result result = db.query(query.str());
+                sqlite::result result = db.query(query.str());
 
                 if (result.size() == 1) {
                     uuid = result.first()->str();
@@ -1930,7 +1930,7 @@ public:
             } else {
                 path_db = path_cache / "cache_matrix_real.db";
             }
-            SQLite3 db(path_db.string());
+            sqlite::handle db(path_db.string());
 
             // initialize variables
             Configuration conf;
@@ -2145,7 +2145,7 @@ public:
                         spacer = " AND ";
                     }
                     query << ";";
-                    SQLite3Result result = db.query(query.str());
+                    sqlite::result result = db.query(query.str());
 
                     if (result.size() == 1) {
                         uuid = result.first()->str();
