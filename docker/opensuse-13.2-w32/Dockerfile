@@ -8,7 +8,7 @@ RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/reposi
     eigen3-devel \
     python3-qt5-devel \
     mingw32-cross-gcc-c++ \
-    mingw32-boost-devel mingw32-libboost_filesystem mingw32-libboost_system \
+    mingw32-boost-devel mingw32-libboost_filesystem mingw32-libboost_program_options mingw32-libboost_system \
     mingw32-libgsl-devel mingw32-libgsl0 \
     sqlite3 mingw32-sqlite-devel mingw32-libsqlite3-0 \
     mingw32-cross-nsis \
