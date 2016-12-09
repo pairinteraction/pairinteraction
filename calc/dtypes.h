@@ -23,11 +23,12 @@
 #include <iomanip>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
+#include <mpi.h>
 
 #define REAL_T MPI_FLOAT
-#define IDX_T MPI_UNSIGNED
+#define IDX_T  MPI_UNSIGNED
 #define BYTE_T MPI_UNSIGNED_CHAR
-#define ORDER Eigen::ColMajor
+constexpr auto ORDER = Eigen::ColMajor;
 
 typedef double real_t; // TODO we should always use double otherwise the diagonalization results are very noisy
 typedef std::complex<real_t> complex_t;

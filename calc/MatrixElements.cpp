@@ -22,7 +22,7 @@
 #include <string>
 #include <limits>
 
-bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
+bool selectionRulesMomentum(StateOne const& state1, StateOne const& state2, int q) {
     bool validL = state1.l == state2.l;
     bool validJ = fabs(state1.j-state2.j) <= 1;
     bool validM = state1.m == state2.m+q;
@@ -30,14 +30,14 @@ bool selectionRulesMomentum(StateOne state1, StateOne state2, int q) {
     return validL && validJ && validM && validQ;
 }
 
-bool selectionRulesMomentum(StateOne state1, StateOne state2) {
+bool selectionRulesMomentum(StateOne const& state1, StateOne const& state2) {
     bool validL = state1.l == state2.l;
     bool validJ = fabs(state1.j-state2.j) <= 1;
     bool validM = (fabs(state1.m - state2.m) <= 1);
     return validL && validJ && validM;
 }
 
-bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa, int q) {
+bool selectionRulesMultipole(StateOne const& state1, StateOne const& state2, int kappa, int q) {
     bool validL = (abs(state1.l-state2.l) <= kappa) && (kappa%2 == abs(state1.l-state2.l)%2);
     bool validJ = (fabs(state1.j-state2.j) <= kappa)  && (state1.j+state2.j >= kappa);
     bool validM = state1.m == state2.m+q;
@@ -46,7 +46,7 @@ bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa, int q)
     return validL && validJ && validM && validQ && noZero;
 }
 
-bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa) {
+bool selectionRulesMultipole(StateOne const& state1, StateOne const& state2, int kappa) {
     bool validL = (abs(state1.l-state2.l) <= kappa) && (kappa%2 == abs(state1.l-state2.l)%2);
     bool validJ = (fabs(state1.j-state2.j) <= kappa)  && (state1.j+state2.j >= kappa);
     bool validM = (fabs(state1.m - state2.m) <= kappa);
@@ -55,14 +55,14 @@ bool selectionRulesMultipole(StateOne state1, StateOne state2, int kappa) {
 }
 
 
-MatrixElements::MatrixElements(std::string species, std::string dbname) : species(species), dbname(dbname) {
+MatrixElements::MatrixElements(std::string const& species, std::string const& dbname) : species(species), dbname(dbname) {
     method = "Modelpotentials";
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
 }
 
-MatrixElements::MatrixElements(const Configuration& config, std::string species, std::string dbname) : MatrixElements(species,dbname) {
+MatrixElements::MatrixElements(const Configuration& config, std::string const& species, std::string const& dbname) : MatrixElements(species,dbname) {
     if (config["missingCalc"].str() == "true") {
         method = "Modelpotentials";
     } else if (config["missingWhittaker"].str() == "true") {
@@ -94,11 +94,11 @@ void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOn
     precalculate(basis_one, k, q, 2, true, false, false);
 }
 
-real_t MatrixElements::getElectricMomentum(StateOne state_row, StateOne state_col) {
+real_t MatrixElements::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) {
     return getMultipole(state_row,state_col,1);
 }
 
-real_t MatrixElements::getMagneticMomentum(StateOne state_row, StateOne state_col) {
+real_t MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne const& state_col) {
     real_t val =  muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             (gL * cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
@@ -108,7 +108,7 @@ real_t MatrixElements::getMagneticMomentum(StateOne state_row, StateOne state_co
     return val;
 }
 
-real_t MatrixElements::getDiamagnetism(StateOne state_row, StateOne state_col, int k) {
+real_t MatrixElements::getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k) {
     real_t val =    1./12.*cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
@@ -116,7 +116,7 @@ real_t MatrixElements::getDiamagnetism(StateOne state_row, StateOne state_col, i
     return val;
 }
 
-real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col, int k) {
+real_t MatrixElements::getMultipole(StateOne const& state_row, StateOne const& state_col, int k) {
     real_t val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
@@ -124,13 +124,13 @@ real_t MatrixElements::getMultipole(StateOne state_row, StateOne state_col, int 
     return val;
 }
 
-real_t MatrixElements::getRadial(StateOne state_row, StateOne state_col, int k) {
+real_t MatrixElements::getRadial(StateOne const& state_row, StateOne const& state_col, int k) {
     real_t val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{0,0}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
     return val;
 }
 
 void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
-    SQLite3 db(dbname);
+    sqlite::handle db(dbname);
 
     // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
 
@@ -272,7 +272,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
-        SQLite3Result result_radial = db.query(ss.str());
+        sqlite::result result_radial = db.query(ss.str());
         for (auto r : result_radial) {
             *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
             cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -284,7 +284,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
            << "WHERE c.k = " << kappa << ";";
-        SQLite3Result result_angular = db.query(ss.str());
+        sqlite::result result_angular = db.query(ss.str());
         for (auto r : result_angular) {
             *r >> j1 >> m1 >> j2 >> m2 >> value;
             cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
@@ -296,7 +296,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        SQLite3Result result_reduced_commutes_s = db.query(ss.str());
+        sqlite::result result_reduced_commutes_s = db.query(ss.str());
         for (auto r : result_reduced_commutes_s) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -308,7 +308,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        SQLite3Result result_reduced_commutes_l = db.query(ss.str());
+        sqlite::result result_reduced_commutes_l = db.query(ss.str());
         for (auto r : result_reduced_commutes_l) {
             *r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -320,7 +320,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
            << "WHERE c.k = " << kappa << ";";
-        SQLite3Result result_reduced_multipole = db.query(ss.str());
+        sqlite::result result_reduced_multipole = db.query(ss.str());
         for (auto r : result_reduced_multipole) {
             *r >> l1 >> l2 >> value;
             cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
@@ -437,11 +437,9 @@ real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
     if (method == "Modelpotentials") {
         Numerov N1(qd1);
         Numerov N2(qd2);
-        return IntegrateRadialElement(N1, power, N2);
+        return IntegrateRadialElement<Numerov>(qd1, power, qd2);
     } else if(method == "Whittaker") {
-        Whittaker N1(qd1);
-        Whittaker N2(qd2);
-        return IntegrateRadialElement(N1, power, N2);
+        return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     } else {
         std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
         abort();

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef CONF_PARSER_HPP
-#define CONF_PARSER_HPP
+#ifndef CONF_PARSER_H
+#define CONF_PARSER_H
 
 #include <string>
 #include <sstream>
@@ -120,4 +120,4 @@ private:
 };
 
 
-#endif // CONF_PARSER_HPP
+#endif // CONF_PARSER_H

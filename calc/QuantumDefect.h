@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef QUANTUM_DEFECT_HPP
-#define QUANTUM_DEFECT_HPP
+#ifndef QUANTUM_DEFECT_H
+#define QUANTUM_DEFECT_H
 
 #include <string>
 #include "dtypes.h"
@@ -24,28 +24,28 @@
 
 class QuantumDefect {
 private:
-  std::string species_;
-  int n_, l_;
-  real_t j_;
-  real_t ac_;
-  int Z_;
-  real_t a1_, a2_, a3_, a4_;
-  real_t rc_;
-  real_t nstar_;
-  real_t energy_;
+    std::string species_;
+    int n_, l_;
+    real_t j_;
+    real_t ac_;
+    int Z_;
+    real_t a1_, a2_, a3_, a4_;
+    real_t rc_;
+    real_t nstar_;
+    real_t energy_;
 public:
-  QuantumDefect(std::string species, int n, int l, real_t j);
-  const std::string &species;
-  const int &n, &l;
-  const real_t &j;
-  const real_t &ac;
-  const int &Z;
-  const real_t &a1, &a2, &a3, &a4;
-  const real_t &rc;
-  const real_t &nstar;
-  const real_t &energy;
+    QuantumDefect(std::string species, int n, int l, real_t j);
+    const std::string &species;
+    const int &n, &l;
+    const real_t &j;
+    const real_t &ac;
+    const int &Z;
+    const real_t &a1, &a2, &a3, &a4;
+    const real_t &rc;
+    const real_t &nstar;
+    const real_t &energy;
 };
 
 real_t energy_level(std::string species, int n, int l, real_t j);
 
-#endif // QUANTUM_DEFECT_HPP
+#endif // QUANTUM_DEFECT_H
