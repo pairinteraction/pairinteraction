@@ -80,14 +80,14 @@ elseif(UNIX)
 
   # DEB
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, openmpi-bin, libboost-filesystem-dev, libboost-system-dev, libc6, libgcc1, libgsl0ldbl, python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS "libsqlite3-0, openmpi-bin, libboost-filesystem-dev, libboost-program-options-dev, libboost-system-dev, libc6, libgcc1, libgsl0ldbl, python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libboost_filesystem1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc49, libgsl0, python3-Pint, python3-qt5, python3-psutil, python3-scipy, python3-numpy")
+  set(CPACK_RPM_PACKAGE_REQUIRES "libsqlite3-0, openmpi, libboost_filesystem1_54_0, libboost_program_options1_54_0, libboost_system1_54_0, glibc, libgcc_s1-gcc49, libgsl0, python3-Pint, python3-qt5, python3-psutil, python3-scipy, python3-numpy")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
   set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
   set(CPACK_RPM_PACKAGE_PRIORITY "optional")

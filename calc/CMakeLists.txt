@@ -82,7 +82,7 @@ else(MPI_FOUND)
                       "==============\n")
 endif(MPI_FOUND)
 
-find_package(Boost COMPONENTS filesystem system REQUIRED)
+find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
 if(Boost_FOUND)
   include_directories(${Boost_INCLUDE_DIRS})
   target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})

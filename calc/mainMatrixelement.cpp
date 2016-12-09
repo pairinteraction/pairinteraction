@@ -19,11 +19,11 @@
 #include "State.h"
 #include "Basisnames.h"
 
-#include <getopt.h>
 #include <sstream>
 #include <string>
 #include <limits>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 // ############################################################################
 // ### MAIN LOOP ##############################################################
@@ -34,31 +34,53 @@ int main(int argc, char **argv) {
 
     size_t precision = std::numeric_limits<real_t>::digits10 + 1;
 
-    std::string element = "";
-    StateOne state_row;
-    StateOne state_col;
-    int power = 0;
+    namespace po = boost::program_options;
 
-    int c;
-    opterr = 0;
-    while((c = getopt (argc, argv, "e:r:c:p:")) != -1) {
-        switch (c) {
-        case 'e':
-            element = optarg;
-            break;
-        case 'r':
-            std::stringstream(optarg) >> state_row.n >> state_row.l >> state_row.j >> state_row.m;
-            break;
-        case 'c':
-            std::stringstream(optarg) >> state_col.n >> state_col.l >> state_col.j >> state_col.m;
-            break;
-        case 'p':
-            power = atoi(optarg);
-            break;
-        default:
-            return 1;
-        }
+    po::options_description desc("Usage");
+    desc.add_options()
+        ("help,?", "produce this help message")
+        ("element,e", po::value<std::string>()->required(),"Type of matrix element")
+        ("row,r", po::value<std::string>()->required(),"Row of matrix element")
+        ("col,c", po::value<std::string>()->required(),"Column of matrix element")
+        ("power,p", po::value<int>()->required(),"Power of radial coordinate")
+        ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+
+    if ( vm.count("help") )
+    {
+        std::cout << desc << std::endl;
+        return 0;
     }
+
+    try
+    {
+      po::notify(vm);
+    }
+    catch (po::required_option& e)
+    {
+      std::cerr << "Error: " << e.what() << std::endl;
+      return 1;
+    }
+
+    std::string element = vm["element"].as<std::string>();
+
+    StateOne state_row;
+    std::stringstream(vm["row"].as<std::string>())
+      >> state_row.n
+      >> state_row.l
+      >> state_row.j
+      >> state_row.m;
+
+    StateOne state_col;
+    std::stringstream(vm["col"].as<std::string>())
+      >> state_col.n
+      >> state_col.l
+      >> state_col.j
+      >> state_col.m;
+
+    int power = vm["power"].as<int>();
 
     std::cout << element << std::endl;
     std::cout << state_row << std::endl;

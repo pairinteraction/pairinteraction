@@ -33,7 +33,6 @@
 #include <iterator>
 #include <stdexcept>
 #include <stdio.h>
-#include <getopt.h>
 #include <inttypes.h>
 #include <sstream>
 
@@ -56,6 +55,7 @@
 #include <boost/algorithm/hex.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/math/special_functions/binomial.hpp>
+#include <boost/program_options.hpp>
 
 #include <numeric>
 
@@ -2253,49 +2253,36 @@ int main(int argc, char **argv) {
     std::cout << std::unitbuf;
 
     // === Parse command line ===
-    boost::filesystem::path path_config;
-    boost::filesystem::path path_cache;
-    int c;
-    opterr = 0;
-    while((c = getopt (argc, argv, "c:o:")) != -1) {
-        switch (c) {
-        case 'c':
-            path_config = boost::filesystem::absolute(optarg);
-            break;
-        case 'o':
-            path_cache = boost::filesystem::absolute(optarg);
-            break;
-        case '?':
-            if (optopt == 'c') {
-                std::cout << "Option \"-"<< static_cast<char>(optopt) <<"\" requires an argument." << std::endl;
-            } else {
-                std::cout << "Unknown option \"-"<< static_cast<char>(optopt) <<"\"." << std::endl;
-            }
-            return 1;
-        default:
-            abort();
-        }
+    namespace po = boost::program_options;
+
+    po::options_description desc("Usage");
+    desc.add_options()
+        ("help,?", "produce this help message")
+        ("config,c", po::value<std::string>()->required(),"Path to config JSON file")
+        ("output,o", po::value<std::string>()->required(),"Path to cache JSON file")
+        ;
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+
+    if ( vm.count("help") )
+    {
+        std::cout << desc << std::endl;
+        return 0;
     }
 
-    if (not path_config.string().size()) {
-        std::cout << "Required option \"-c filename.json\"." << std::endl;
-        return 1;
+    try
+    {
+      po::notify(vm);
+    }
+    catch (po::required_option& e)
+    {
+      std::cerr << "Error: " << e.what() << std::endl;
+      return 1;
     }
 
-    if (not boost::filesystem::exists(path_config)) {
-        std::cout << "Path " << path_config << " does not exist." << std::endl;
-        return 1;
-    }
-
-    if (not path_cache.string().size()) {
-        std::cout << "Required option \"-o filename.json\"." << std::endl;
-        return 1;
-    }
-
-    if (not boost::filesystem::exists(path_cache)) {
-        std::cout << "Path " << path_cache << " does not exist." << std::endl;
-        return 1;
-    }
+    boost::filesystem::path path_config = boost::filesystem::absolute(vm["config"].as<std::string>());
+    boost::filesystem::path path_cache  = boost::filesystem::absolute(vm["output"].as<std::string>());
 
     // === Load configuration ===
     Configuration config;
