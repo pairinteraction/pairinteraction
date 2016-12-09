@@ -25,9 +25,9 @@
 #include <Eigen/Dense>
 #include <mpi.h>
 
-constexpr auto REAL_T = MPI_FLOAT;
-constexpr auto IDX_T = MPI_UNSIGNED;
-constexpr auto BYTE_T = MPI_UNSIGNED_CHAR;
+#define REAL_T MPI_FLOAT
+#define IDX_T  MPI_UNSIGNED
+#define BYTE_T MPI_UNSIGNED_CHAR
 constexpr auto ORDER = Eigen::ColMajor;
 
 typedef double real_t; // TODO we should always use double otherwise the diagonalization results are very noisy
