@@ -52,7 +52,7 @@ Numerov::Numerov(const QuantumDefect &qd)
     : qd(qd), x(), dx(0.01)
 {
     // classical turning point
-    real_t xmin = qd.n*qd.n - qd.n*sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
+    real_t xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
     if ( xmin < 2.08 )
         xmin = std::floor( std::sqrt( 2.08 ) );
     else
@@ -64,7 +64,7 @@ Numerov::Numerov(const QuantumDefect &qd)
     x.resize(nsteps);
 
     for (int i = 0; i < nsteps; ++i) {
-        x[i] = (xmin + i*dx)*(xmin + i*dx);
+        x[i] = (xmin + i*dx);
     }
 }
 
@@ -89,31 +89,29 @@ std::vector<real_t> Numerov::integrate() {
     // Perform the integration using Numerov's scheme
     for (int i = nsteps-3; i >= 0; --i)
     {
-      real_t A = (2. + 5./6. * dx*dx * g(qd,x[i+1])) * y[i+1];
-      real_t B = (1. - 1./12.* dx*dx * g(qd,x[i+2])) * y[i+2];
-      real_t C =  1. - 1./12.* dx*dx * g(qd,x[i]);
-      y[i] = (A - B)/C;
+        real_t A = (2. + 5./6. * dx*dx * g(qd,x[i+1]*x[i+1])) * y[i+1];
+        real_t B = (1. - 1./12.* dx*dx * g(qd,x[i+2]*x[i+2])) * y[i+2];
+        real_t C =  1. - 1./12.* dx*dx * g(qd,x[i]*x[i]);
+        y[i] = (A - B)/C;
     }
 
     // Normalization
     real_t norm = 0;
     for (int i = 0; i < nsteps; ++i)
-      norm += y[i]*y[i] * x[i] * dx;
-    norm = sqrt(2*norm);
+        norm += y[i]*y[i] * x[i]*x[i] * dx;
+    norm = std::sqrt(2*norm);
 
-    if ( norm != 0.0 ) {
+    if ( norm > 0.0 ) {
         for (int i = 0; i < nsteps; ++i)
             y[i] /= norm;
     }
-
-    for (int i = 0; i < nsteps; ++i)
-        y[i] *= std::pow(x[i],.25);
 
     return y;
 }
 
 
 // --- Whittaker method ---
+
 
 real_t HypergeometricU(real_t a, real_t b, real_t z)
 {
@@ -138,7 +136,7 @@ Whittaker::Whittaker(const QuantumDefect &qd)
     : qd(qd), x(), dx(0.01)
 {
     const real_t xmin = 1;
-    const real_t xmax = sqrt(2*qd.n*(qd.n+15));
+    const real_t xmax = std::sqrt(2*qd.n*(qd.n+15));
     const real_t nsteps = std::ceil( (xmax - xmin)/dx );
 
     x.resize(nsteps);
@@ -155,25 +153,81 @@ std::vector<real_t> Whittaker::axis() {
 
 
 std::vector<real_t> Whittaker::integrate() {
-  // Set the sign
-  int sign;
-  if ( (qd.n-qd.l) % 2 == 0 )
-    sign = -1;
-  else
-    sign = 1;
+    // Set the sign
+    int sign;
+    if ( (qd.n-qd.l) % 2 == 0 )
+        sign = -1;
+    else
+        sign = 1;
 
-  const int nsteps = x.size();
-  std::vector<real_t> y(nsteps);
+    const int nsteps = x.size();
+    std::vector<real_t> y(nsteps);
 
-  for (int i = 0; i < nsteps; ++i)
-      y[i] = sign * RadialWFWhittaker(x[i], qd.nstar, qd.l);
+    for (int i = 0; i < nsteps; ++i)
+        y[i] = sign * RadialWFWhittaker(x[i], qd.nstar, qd.l);
 
-  return y;
+    return y;
 }
+
 
 // --- Matrix element calculation ---
 
-size_t findidx(std::vector<real_t> x, real_t d) {
-    auto it = std::find(std::begin(x), std::end(x), d);
-    return std::distance(std::begin(x), it);
+
+real_t IntegrateRadialElement(Numerov N1, int power, Numerov N2) {
+    auto const& x1 = N1.axis();
+    auto const& y1 = N1.integrate();
+    auto const& x2 = N2.axis();
+    auto const& y2 = N2.integrate();
+    auto const  dx = N1.dx;
+
+    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
+    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
+
+    real_t mu = 0;
+    // If there is an overlap, calculate the matrix element
+    if (xmin <= xmax) {
+        int start1 = findidx(x1, xmin);
+        int end1   = findidx(x1, xmax);
+        int start2 = findidx(x2, xmin);
+        int end2   = findidx(x2, xmax);
+
+        int i1, i2;
+        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
+        {
+            mu += y1[i1]*y2[i2] * std::pow(x1[i1], 2*power+2) * dx;
+        }
+        mu = std::abs(2*mu);
+    }
+
+    return mu;
+}
+
+
+real_t IntegrateRadialElement(Whittaker W1, int power, Whittaker W2) {
+    auto const& x1 = W1.axis();
+    auto const& y1 = W1.integrate();
+    auto const& x2 = W2.axis();
+    auto const& y2 = W2.integrate();
+    auto const  dx = W1.dx;
+
+    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
+    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
+
+    real_t mu = 0;
+    // If there is an overlap, calculate the matrix element
+    if (xmin <= xmax) {
+        int start1 = findidx(x1, xmin);
+        int end1   = findidx(x1, xmax);
+        int start2 = findidx(x2, xmin);
+        int end2   = findidx(x2, xmax);
+
+        int i1, i2;
+        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
+        {
+            mu += y1[i1]*y2[i2] * std::pow(x1[i1], 1.5*power) * dx;
+        }
+        mu = std::abs(2*mu);
+    }
+
+    return mu;
 }
