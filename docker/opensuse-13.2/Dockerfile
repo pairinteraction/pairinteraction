@@ -8,7 +8,7 @@ RUN zypper -n --gpg-auto-import-keys refresh && \
     python3-qt5-devel \
     lam lam-devel openmpi openmpi-devel \
     sqlite3 sqlite3-devel \
-    boost-devel libboost_filesystem1_54_0 libboost_system1_54_0 \
+    boost-devel libboost_filesystem1_54_0 libboost_program_options1_54_0 libboost_system1_54_0 \
     gsl-devel \
     dpkg rpm-build \
   && zypper clean
