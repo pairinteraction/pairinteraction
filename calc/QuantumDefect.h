@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef QUANTUM_DEFECT_HPP
-#define QUANTUM_DEFECT_HPP
+#ifndef QUANTUM_DEFECT_H
+#define QUANTUM_DEFECT_H
 
 #include <string>
 #include "dtypes.h"
@@ -48,4 +48,4 @@ public:
 
 real_t energy_level(std::string species, int n, int l, real_t j);
 
-#endif // QUANTUM_DEFECT_HPP
+#endif // QUANTUM_DEFECT_H

@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef WAVEFUNCTION_HPP
-#define WAVEFUNCTION_HPP
+#ifndef WAVEFUNCTION_H
+#define WAVEFUNCTION_H
 
 #include <string>
 #include <vector>
@@ -33,7 +33,7 @@ public:
     std::vector<real_t> axis() const;
     std::vector<real_t> integrate();
 
-    static inline int power_kernel(int power)
+    constexpr static inline int power_kernel(int power)
     {
         return 2*power+2;
     }
@@ -50,7 +50,7 @@ public:
     std::vector<real_t> axis() const;
     std::vector<real_t> integrate();
 
-    static inline real_t power_kernel(int power)
+    constexpr static inline real_t power_kernel(int power)
     {
         return 1.5*power;
     }
@@ -102,4 +102,4 @@ real_t IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefec
 }
 
 
-#endif // WAVEFUNCTION_HPP
+#endif // WAVEFUNCTION_H

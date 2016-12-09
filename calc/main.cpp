@@ -56,6 +56,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/program_options.hpp>
+#include <boost/functional/hash.hpp>
 
 #include <numeric>
 
@@ -2090,7 +2091,7 @@ public:
                             blocks_symmetries_name.push_back(symmetries_name[symmetry]);
 
                             size_t identification = 0;
-                            for (auto& i: indices) utils::hash_combine(identification, i);
+                            for (auto& i: indices) boost::hash_combine(identification, i);
                             blocks_identification.push_back(identification);
                         }
                     }

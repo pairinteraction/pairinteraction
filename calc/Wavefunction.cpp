@@ -28,9 +28,10 @@ namespace model_potential {
 
 
 real_t V(QuantumDefect const& qd, real_t x) {
-    real_t Z_l = 1 + (qd.Z - 1)*exp(-qd.a1*x) - x*(qd.a3 + qd.a4*x)*exp(-qd.a2*x);
+    real_t Z_l = 1 + (qd.Z - 1)*std::exp(-qd.a1*x)
+               - x*(qd.a3 + qd.a4*x)*std::exp(-qd.a2*x);
     real_t V_c = -Z_l / x;
-    real_t V_p = -qd.ac/(2.*x*x*x*x) * (1-exp(-pow(x/qd.rc,6)));
+    real_t V_p = -qd.ac/(2.*x*x*x*x) * (1-std::exp(-std::pow(x/qd.rc,6)));
     real_t V_so = 0.0;
     if ( qd.l < 4 ) {
         real_t alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014

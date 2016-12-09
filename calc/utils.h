@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef __UTILS_HPP
-#define __UTILS_HPP
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <complex>
 #include <type_traits>
@@ -39,14 +39,6 @@ inline uint64_t FNV64(uint8_t *s, size_t sz)
     return hash;
 }
 
-// from boost
-template <class T>
-inline void hash_combine(size_t & seed, const T & v)
-{
-    std::hash<T> hasher;
-    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 }
 
-}
-
-#endif
+#endif // UTILS_H

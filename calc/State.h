@@ -25,6 +25,8 @@
 #include <iostream>
 #include <iomanip>
 
+#include <boost/functional/hash.hpp>
+
 class State {
 public:
     State(idx_t idx) : idx(idx) { }
@@ -135,11 +137,11 @@ template <> struct hash<StateOne>
     size_t operator()(const StateOne & s) const
     {
         size_t seed = 0;
-        utils::hash_combine(seed, s.n);
-        utils::hash_combine(seed, s.l);
-        utils::hash_combine(seed, s.s);
-        utils::hash_combine(seed, s.j);
-        utils::hash_combine(seed, s.m);
+        boost::hash_combine(seed, s.n);
+        boost::hash_combine(seed, s.l);
+        boost::hash_combine(seed, s.s);
+        boost::hash_combine(seed, s.j);
+        boost::hash_combine(seed, s.m);
         return seed;
     }
 };
@@ -148,16 +150,16 @@ template <> struct hash<StateTwo>
     size_t operator()(const StateTwo & s) const
     {
         size_t seed = 0;
-        utils::hash_combine(seed, s.n[0]);
-        utils::hash_combine(seed, s.l[0]);
-        utils::hash_combine(seed, s.s[0]);
-        utils::hash_combine(seed, s.j[0]);
-        utils::hash_combine(seed, s.m[0]);
-        utils::hash_combine(seed, s.n[1]);
-        utils::hash_combine(seed, s.l[1]);
-        utils::hash_combine(seed, s.s[1]);
-        utils::hash_combine(seed, s.j[1]);
-        utils::hash_combine(seed, s.m[1]);
+        boost::hash_combine(seed, s.n[0]);
+        boost::hash_combine(seed, s.l[0]);
+        boost::hash_combine(seed, s.s[0]);
+        boost::hash_combine(seed, s.j[0]);
+        boost::hash_combine(seed, s.m[0]);
+        boost::hash_combine(seed, s.n[1]);
+        boost::hash_combine(seed, s.l[1]);
+        boost::hash_combine(seed, s.s[1]);
+        boost::hash_combine(seed, s.j[1]);
+        boost::hash_combine(seed, s.m[1]);
         return seed;
     }
 };
