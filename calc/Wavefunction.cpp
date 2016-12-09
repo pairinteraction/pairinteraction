@@ -48,7 +48,7 @@ real_t g(QuantumDefect const& qd, real_t x) {
 } // namespace model_potential
 
 
-Numerov::Numerov(const QuantumDefect &qd)
+Numerov::Numerov(QuantumDefect const& qd)
     : qd(qd), x(), dx(0.01)
 {
     // classical turning point
@@ -58,8 +58,8 @@ Numerov::Numerov(const QuantumDefect &qd)
     else
         xmin = std::floor( std::sqrt( xmin ) );
 
-    const real_t xmax = std::sqrt( 2*qd.n*(qd.n+15) );
-    const real_t nsteps = std::ceil( (xmax - xmin)/dx );
+    real_t const xmax = std::sqrt( 2*qd.n*(qd.n+15) );
+    real_t const nsteps = std::ceil( (xmax - xmin)/dx );
 
     x.resize(nsteps);
 
@@ -69,15 +69,17 @@ Numerov::Numerov(const QuantumDefect &qd)
 }
 
 
-std::vector<real_t> Numerov::axis() {
+std::vector<real_t> Numerov::axis() const
+{
     return x;
 }
 
 
-std::vector<real_t> Numerov::integrate() {
+std::vector<real_t> Numerov::integrate()
+{
     using model_potential::g;
 
-    const int nsteps = x.size();
+    int const nsteps = x.size();
     std::vector<real_t> y(nsteps,0.0);
 
     // Set the initial condition
@@ -132,12 +134,12 @@ real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 }
 
 
-Whittaker::Whittaker(const QuantumDefect &qd)
+Whittaker::Whittaker(QuantumDefect const& qd)
     : qd(qd), x(), dx(0.01)
 {
-    const real_t xmin = 1;
-    const real_t xmax = std::sqrt(2*qd.n*(qd.n+15));
-    const real_t nsteps = std::ceil( (xmax - xmin)/dx );
+    real_t const xmin = 1;
+    real_t const xmax = std::sqrt(2*qd.n*(qd.n+15));
+    real_t const nsteps = std::ceil( (xmax - xmin)/dx );
 
     x.resize(nsteps);
 
@@ -147,12 +149,14 @@ Whittaker::Whittaker(const QuantumDefect &qd)
 }
 
 
-std::vector<real_t> Whittaker::axis() {
+std::vector<real_t> Whittaker::axis() const
+{
     return x;
 }
 
 
-std::vector<real_t> Whittaker::integrate() {
+std::vector<real_t> Whittaker::integrate()
+{
     // Set the sign
     int sign;
     if ( (qd.n-qd.l) % 2 == 0 )
@@ -160,74 +164,11 @@ std::vector<real_t> Whittaker::integrate() {
     else
         sign = 1;
 
-    const int nsteps = x.size();
+    int const nsteps = x.size();
     std::vector<real_t> y(nsteps);
 
     for (int i = 0; i < nsteps; ++i)
         y[i] = sign * RadialWFWhittaker(x[i], qd.nstar, qd.l);
 
     return y;
-}
-
-
-// --- Matrix element calculation ---
-
-
-real_t IntegrateRadialElement(Numerov N1, int power, Numerov N2) {
-    auto const& x1 = N1.axis();
-    auto const& y1 = N1.integrate();
-    auto const& x2 = N2.axis();
-    auto const& y2 = N2.integrate();
-    auto const  dx = N1.dx;
-
-    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
-    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
-
-    real_t mu = 0;
-    // If there is an overlap, calculate the matrix element
-    if (xmin <= xmax) {
-        int start1 = findidx(x1, xmin);
-        int end1   = findidx(x1, xmax);
-        int start2 = findidx(x2, xmin);
-        int end2   = findidx(x2, xmax);
-
-        int i1, i2;
-        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
-        {
-            mu += y1[i1]*y2[i2] * std::pow(x1[i1], 2*power+2) * dx;
-        }
-        mu = std::abs(2*mu);
-    }
-
-    return mu;
-}
-
-
-real_t IntegrateRadialElement(Whittaker W1, int power, Whittaker W2) {
-    auto const& x1 = W1.axis();
-    auto const& y1 = W1.integrate();
-    auto const& x2 = W2.axis();
-    auto const& y2 = W2.integrate();
-    auto const  dx = W1.dx;
-
-    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
-    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
-
-    real_t mu = 0;
-    // If there is an overlap, calculate the matrix element
-    if (xmin <= xmax) {
-        int start1 = findidx(x1, xmin);
-        int end1   = findidx(x1, xmax);
-        int start2 = findidx(x2, xmin);
-        int end2   = findidx(x2, xmax);
-
-        int i1, i2;
-        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
-        {
-            mu += y1[i1]*y2[i2] * std::pow(x1[i1], 1.5*power) * dx;
-        }
-        mu = std::abs(2*mu);
-    }
-
-    return mu;
 }

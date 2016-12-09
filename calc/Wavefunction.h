@@ -25,28 +25,40 @@
 // --- Numerov's method ---
 
 class Numerov {
-  QuantumDefect const& qd;
-  std::vector<real_t> x;
+    QuantumDefect const& qd;
+    std::vector<real_t> x;
 public:
-  const real_t dx;
-  Numerov(QuantumDefect const& qd);
-  std::vector<real_t> axis();
-  std::vector<real_t> integrate();
+    real_t const dx;
+    Numerov(QuantumDefect const& qd);
+    std::vector<real_t> axis() const;
+    std::vector<real_t> integrate();
+
+    static inline int power_kernel(int power)
+    {
+        return 2*power+2;
+    }
 };
 
 // --- Whittaker method ---
 
 class Whittaker {
-  QuantumDefect const& qd;
-  std::vector<real_t> x;
+    QuantumDefect const& qd;
+    std::vector<real_t> x;
 public:
-  const real_t dx;
-  Whittaker(QuantumDefect const& qd);
-  std::vector<real_t> axis();
-  std::vector<real_t> integrate();
+    real_t const dx;
+    Whittaker(QuantumDefect const& qd);
+    std::vector<real_t> axis() const;
+    std::vector<real_t> integrate();
+
+    static inline real_t power_kernel(int power)
+    {
+        return 1.5*power;
+    }
 };
 
+
 // --- Matrix element calculation ---
+
 
 template < typename T >
 size_t findidx(T x, real_t d) {
@@ -54,8 +66,40 @@ size_t findidx(T x, real_t d) {
     return std::distance(std::begin(x), it);
 }
 
-real_t IntegrateRadialElement(Numerov N1, int power, Numerov N2);
 
-real_t IntegrateRadialElement(Whittaker N1, int power, Whittaker N2);
+template < typename T >
+real_t IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefect const& qd2)
+{
+    T N1(qd1);
+    T N2(qd2);
+
+    auto const& x1 = N1.axis();
+    auto const& y1 = N1.integrate();
+    auto const& x2 = N2.axis();
+    auto const& y2 = N2.integrate();
+    auto const  dx = N1.dx;
+
+    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
+    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
+
+    real_t mu = 0;
+    // If there is an overlap, calculate the matrix element
+    if (xmin <= xmax) {
+        int start1 = findidx(x1, xmin);
+        int end1   = findidx(x1, xmax);
+        int start2 = findidx(x2, xmin);
+        int end2   = findidx(x2, xmax);
+
+        int i1, i2;
+        for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
+        {
+            mu += y1[i1]*y2[i2] * std::pow(x1[i1], T::power_kernel(power)) * dx;
+        }
+        mu = std::abs(2*mu);
+    }
+
+    return mu;
+}
+
 
 #endif // WAVEFUNCTION_HPP
