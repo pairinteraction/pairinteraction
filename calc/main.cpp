@@ -1369,7 +1369,7 @@ protected:
                 sqlite::result result = db.query(query.str());
 
                 if (result.size() == 1) {
-                    uuid = result.first()->str();
+                    uuid = result.first();
 
                     /*query.str(std::string());
                     query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
@@ -2149,7 +2149,7 @@ public:
                     sqlite::result result = db.query(query.str());
 
                     if (result.size() == 1) {
-                        uuid = result.first()->str();
+                        uuid = result.first();
 
                         /*query.str(std::string());
                             query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";

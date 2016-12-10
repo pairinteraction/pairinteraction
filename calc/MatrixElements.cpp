@@ -273,8 +273,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
         sqlite::result result_radial = db.query(ss.str());
-        for (auto r : result_radial) {
-            *r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
+        for (auto const& r : result_radial) {
+            r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
             cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -285,8 +285,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
            << "WHERE c.k = " << kappa << ";";
         sqlite::result result_angular = db.query(ss.str());
-        for (auto r : result_angular) {
-            *r >> j1 >> m1 >> j2 >> m2 >> value;
+        for (auto const& r : result_angular) {
+            r >> j1 >> m1 >> j2 >> m2 >> value;
             cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
         }
     }
@@ -297,8 +297,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
         sqlite::result result_reduced_commutes_s = db.query(ss.str());
-        for (auto r : result_reduced_commutes_s) {
-            *r >> l1 >> j1 >> l2 >> j2 >> value;
+        for (auto const& r : result_reduced_commutes_s) {
+            r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -309,8 +309,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
         sqlite::result result_reduced_commutes_l = db.query(ss.str());
-        for (auto r : result_reduced_commutes_l) {
-            *r >> l1 >> j1 >> l2 >> j2 >> value;
+        for (auto const& r : result_reduced_commutes_l) {
+            r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -321,8 +321,8 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
            << "WHERE c.k = " << kappa << ";";
         sqlite::result result_reduced_multipole = db.query(ss.str());
-        for (auto r : result_reduced_multipole) {
-            *r >> l1 >> l2 >> value;
+        for (auto const& r : result_reduced_multipole) {
+            r >> l1 >> l2 >> value;
             cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
         }
     }

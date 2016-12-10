@@ -60,11 +60,11 @@ public:
     void set (size_t i, const T &v) {
         names_[i] = v;
     }
-    Iter<Basisnames, T> begin() const {
-        return Iter<Basisnames, T>( this, 0 );
+    ConstIter<Basisnames, T> begin() const {
+        return ConstIter<Basisnames, T>( this, 0 );
     }
-    Iter<Basisnames, T> end() const {
-        return Iter<Basisnames, T>( this, names_.size() );
+    ConstIter<Basisnames, T> end() const {
+        return ConstIter<Basisnames, T>( this, names_.size() );
     }
     const Configuration& getConf() const { // TODO in Configurable Klasse auslagern, von der geerbt werrden soll
         return conf;

@@ -47,6 +47,35 @@ private:
 class result {
     friend class handle;
 public:
+    class row {
+    public:
+        explicit row(std::string s)
+            : m_row( new std::stringstream(s) )
+        {}
+
+        operator std::string() const
+        {
+            return m_row->str();
+        }
+
+        template < typename T >
+        row& operator>> ( T& other )
+        {
+            *m_row >> other;
+            return *this;
+        }
+
+        template < typename T >
+        row const& operator>> ( T& other ) const
+        {
+            *m_row >> other;
+            return *this;
+        }
+
+    private:
+        std::unique_ptr<std::stringstream> m_row;
+    }; // class row
+
     class iterator {
     public:
         explicit iterator(const result* res, int pos, int nColumn)
@@ -58,7 +87,7 @@ public:
             return pos != other.pos;
         }
 
-        std::unique_ptr<std::stringstream> operator* () const
+        row operator* () const
         {
             return res->getRow(pos);
         }
@@ -73,7 +102,7 @@ public:
         const result* res;
         int pos, nColumn;
         int rc;
-    };
+    }; // class iterator
 
     explicit result()
         : azResult(NULL), nRow(0), nColumn(0)
@@ -113,25 +142,25 @@ public:
         return result::iterator(this, nRow, nColumn);
     }
 
-    std::unique_ptr<std::stringstream> first() const
+    result::row first() const
     {
         return getRow(0);
     }
 
-    std::unique_ptr<std::stringstream> header() const
+    result::row header() const
     {
         return getRow(-1);
     }
 
-    std::unique_ptr<std::stringstream> getRow(int pos) const
+    result::row getRow(int pos) const
     {
-        std::unique_ptr<std::stringstream> ss( new std::stringstream() );
+        std::string output;
         std::string spacer = "";
         for (int i = 0; i < nColumn; ++i) {
-            *ss << spacer << azResult[(pos+1)*nColumn+i];
+            output += spacer + azResult[(pos+1)*nColumn+i];
             spacer = " ";
         }
-        return ss;
+        return result::row(output);
     }
 
 private:

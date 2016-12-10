@@ -53,7 +53,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     sqlite::result res1 = db.query(ss.str().c_str());
     ss.str(std::string());
     if (res1.size() > 0)
-        *res1.first() >> pot_max_l;
+        res1.first() >> pot_max_l;
     else throw no_defect();
 
     // The l to be used is the minimum of the two below
@@ -65,7 +65,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     sqlite::result res2 = db.query(ss.str().c_str());
     ss.str(std::string());
     if (res2.size() > 0)
-        *res2.first() >> ryd_max_l;
+        res2.first() >> ryd_max_l;
     else throw no_defect();
 
     // The l to be used is the minimum of the two below
@@ -80,7 +80,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     sqlite::result res3 = db.query(ss.str().c_str());
     ss.str(std::string());
     if (res3.size() > 0)
-        *res3.first() >> ryd_max_j;
+        res3.first() >> ryd_max_j;
     else throw no_defect();
 
     // The j to be used is the minimum of the two below
@@ -95,7 +95,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     sqlite::result res4 = db.query(ss.str().c_str());
     ss.str(std::string());
     if (res4.size() > 0)
-        *res4.first() >> ac_ >> Z_ >> a1_ >> a2_ >> a3_ >> a4_ >> rc_;
+        res4.first() >> ac_ >> Z_ >> a1_ >> a2_ >> a3_ >> a4_ >> rc_;
     else throw no_defect();
 
 
@@ -113,7 +113,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
     if (res.size() > 0)
     {
-        *res.first() >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
+        res.first() >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
         nstar_ -= d0 + d2/pow(n-d0,2) + d4/pow(n-d0,4)
             + d6/pow(n-d0,6) + d8/pow(n-d0,8);
     }
