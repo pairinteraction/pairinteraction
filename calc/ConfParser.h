@@ -27,7 +27,7 @@ public:
     class value {
     public:
         value();
-        value(std::stringstream val);
+        value(std::stringstream const& val);
         value(const Configuration::value &obj) {
             *this = obj;
         }
@@ -99,8 +99,8 @@ public:
         int rc;
     };
 
-    int load_from_json(std::string filename);
-    int save_to_json(std::string filename);
+    void load_from_json(std::string filename);
+    void save_to_json(std::string filename);
     Configuration::value &operator[](const std::string& key);
     const Configuration::value &operator[](const std::string& key) const;
     size_t size() const;
