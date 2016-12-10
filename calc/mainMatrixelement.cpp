@@ -56,29 +56,29 @@ int main(int argc, char **argv) {
 
     try
     {
-      po::notify(vm);
+        po::notify(vm);
     }
     catch (po::required_option& e)
     {
-      std::cerr << "Error: " << e.what() << std::endl;
-      return 1;
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
 
     std::string element = vm["element"].as<std::string>();
 
     StateOne state_row;
     std::stringstream(vm["row"].as<std::string>())
-      >> state_row.n
-      >> state_row.l
-      >> state_row.j
-      >> state_row.m;
+        >> state_row.n
+        >> state_row.l
+        >> state_row.j
+        >> state_row.m;
 
     StateOne state_col;
     std::stringstream(vm["col"].as<std::string>())
-      >> state_col.n
-      >> state_col.l
-      >> state_col.j
-      >> state_col.m;
+        >> state_col.n
+        >> state_col.l
+        >> state_col.j
+        >> state_col.m;
 
     int power = vm["power"].as<int>();
 

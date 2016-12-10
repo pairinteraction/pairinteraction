@@ -2274,12 +2274,12 @@ int main(int argc, char **argv) {
 
     try
     {
-      po::notify(vm);
+        po::notify(vm);
     }
     catch (po::required_option& e)
     {
-      std::cerr << "Error: " << e.what() << std::endl;
-      return 1;
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
 
     boost::filesystem::path path_config = boost::filesystem::absolute(vm["config"].as<std::string>());

@@ -435,8 +435,6 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
                                          const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
-        Numerov N1(qd1);
-        Numerov N2(qd2);
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);
     } else if(method == "Whittaker") {
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
