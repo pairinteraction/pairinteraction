@@ -110,7 +110,7 @@ public:
 
     result( result&& r )
     {
-      swap( std::move ( r ) );
+        swap( std::move ( r ) );
         // invalidate copied result to prevent deletion
         r.azResult = nullptr;
     }
@@ -210,6 +210,11 @@ public:
         return res;
     }
 
+    result query(std::stringstream const& ss)
+    {
+        return query(ss.str());
+    }
+
     void exec(const std::string sql)
     {
         if ( sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg) != SQLITE_OK ) {
@@ -217,6 +222,11 @@ public:
             sqlite3_free(zErrMsg);
             throw sqlite_error(msg);
         }
+    }
+
+    void exec(std::stringstream const& ss)
+    {
+        return exec(ss.str());
     }
 
 private:

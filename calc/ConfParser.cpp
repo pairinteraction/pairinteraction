@@ -81,7 +81,7 @@ int Configuration::load_from_json(std::string filename)
 
     for (auto itr: pt)
     {
-      params[itr.first] << itr.second.data();
+        params[itr.first] << itr.second.data();
     }
 
     return 0;

@@ -1352,7 +1352,7 @@ protected:
                         spacer = ", ";
                     }
                     query << "));";
-                    db.exec(query.str());
+                    db.exec(query);
                 }
 
                 // get uuid as filename
@@ -1366,7 +1366,7 @@ protected:
                     spacer = " AND ";
                 }
                 query << ";";
-                sqlite::result result = db.query(query.str());
+                sqlite::result result = db.query(query);
 
                 if (result.size() == 1) {
                     uuid = result.first();
@@ -1388,7 +1388,7 @@ protected:
                         query << ", " << "'" << p.value.str() << "'";
                     }
                     query << ");";
-                    db.exec(query.str());
+                    db.exec(query);
                 }
 
                 // check whether .mat and .json file exists and compare settings in program with settings in .json file
@@ -2130,7 +2130,7 @@ public:
                             spacer = ", ";
                         }
                         query << "));";
-                        db.exec(query.str());
+                        db.exec(query);
 
                         flag_perhapsmissingtable = false;
                     }
@@ -2146,7 +2146,7 @@ public:
                         spacer = " AND ";
                     }
                     query << ";";
-                    sqlite::result result = db.query(query.str());
+                    sqlite::result result = db.query(query);
 
                     if (result.size() == 1) {
                         uuid = result.first();
@@ -2169,7 +2169,7 @@ public:
                             query << ", " << "'" << p.value.str() << "'";
                         }
                         query << ");";
-                        db.exec(query.str());
+                        db.exec(query);
                     }
 
                     // check whether .mat and .json file exists and compare settings in program with settings in .json file

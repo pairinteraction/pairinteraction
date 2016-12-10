@@ -204,7 +204,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
                            << state_nlj.n[0] << "," << state_nlj.l[0] << "," << state_nlj.j[0] << ","
                            << state_nlj.n[1] << "," << state_nlj.l[1] << "," << state_nlj.j[1] << ");";
-                        db.exec(ss.str());
+                        db.exec(ss);
                     }
                 }
 
@@ -216,7 +216,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
                            << state_jm.j[0] << "," << state_jm.m[0] << ","
                            << state_jm.j[1] << "," << state_jm.m[1] << ");";
-                        db.exec(ss.str());
+                        db.exec(ss);
                     }
                 }
 
@@ -228,7 +228,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
+                        db.exec(ss);
                     }
                 }
 
@@ -240,7 +240,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
+                        db.exec(ss);
                     }
                 }
 
@@ -252,7 +252,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
                            << state_l.l[0] << ","
                            << state_l.l[1] << ");";
-                        db.exec(ss.str());
+                        db.exec(ss);
                     }
                 }
             }
@@ -272,7 +272,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
-        sqlite::result result_radial = db.query(ss.str());
+        sqlite::result result_radial = db.query(ss);
         for (auto const& r : result_radial) {
             r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
             cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -284,7 +284,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_angular = db.query(ss.str());
+        sqlite::result result_angular = db.query(ss);
         for (auto const& r : result_angular) {
             r >> j1 >> m1 >> j2 >> m2 >> value;
             cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{0,0}}, {{j1, j2}}, {{m1,m2}})] = value;
@@ -296,7 +296,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_s = db.query(ss.str());
+        sqlite::result result_reduced_commutes_s = db.query(ss);
         for (auto const& r : result_reduced_commutes_s) {
             r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -308,7 +308,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_l = db.query(ss.str());
+        sqlite::result result_reduced_commutes_l = db.query(ss);
         for (auto const& r : result_reduced_commutes_l) {
             r >> l1 >> j1 >> l2 >> j2 >> value;
             cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{j1, j2}}, {{0,0}})] = value;
@@ -320,7 +320,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_multipole = db.query(ss.str());
+        sqlite::result result_reduced_multipole = db.query(ss);
         for (auto const& r : result_reduced_multipole) {
             r >> l1 >> l2 >> value;
             cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0,0}}, {{0, 0}}, {{0,0}})] = value;
@@ -346,7 +346,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                    << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                db.exec(ss);
 
             }
         }
@@ -367,7 +367,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.j[0] << "," << state.m[0] << ","
                    << state.j[1] << "," << state.m[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                db.exec(ss);
             }
         }
     }
@@ -386,7 +386,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                db.exec(ss);
             }
         }
     }
@@ -405,7 +405,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                db.exec(ss);
             }
         }
     }
@@ -424,7 +424,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << ","
                    << state.l[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                db.exec(ss);
             }
         }
     }
