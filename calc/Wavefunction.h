@@ -61,7 +61,7 @@ public:
 
 
 template < typename T >
-size_t findidx(T x, real_t d) {
+size_t findidx(T const& x, typename T::value_type const& d) {
     auto it = std::find(std::begin(x), std::end(x), d);
     return std::distance(std::begin(x), it);
 }

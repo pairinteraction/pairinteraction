@@ -1352,7 +1352,7 @@ protected:
                         spacer = ", ";
                     }
                     query << "));";
-                    db.exec(query.str());
+                    db.exec(query);
                 }
 
                 // get uuid as filename
@@ -1366,10 +1366,10 @@ protected:
                     spacer = " AND ";
                 }
                 query << ";";
-                sqlite::result result = db.query(query.str());
+                sqlite::result result = db.query(query);
 
                 if (result.size() == 1) {
-                    uuid = result.first()->str();
+                    uuid = result.first();
 
                     /*query.str(std::string());
                     query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
@@ -1388,7 +1388,7 @@ protected:
                         query << ", " << "'" << p.value.str() << "'";
                     }
                     query << ");";
-                    db.exec(query.str());
+                    db.exec(query);
                 }
 
                 // check whether .mat and .json file exists and compare settings in program with settings in .json file
@@ -2130,7 +2130,7 @@ public:
                             spacer = ", ";
                         }
                         query << "));";
-                        db.exec(query.str());
+                        db.exec(query);
 
                         flag_perhapsmissingtable = false;
                     }
@@ -2146,10 +2146,10 @@ public:
                         spacer = " AND ";
                     }
                     query << ";";
-                    sqlite::result result = db.query(query.str());
+                    sqlite::result result = db.query(query);
 
                     if (result.size() == 1) {
-                        uuid = result.first()->str();
+                        uuid = result.first();
 
                         /*query.str(std::string());
                             query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
@@ -2169,7 +2169,7 @@ public:
                             query << ", " << "'" << p.value.str() << "'";
                         }
                         query << ");";
-                        db.exec(query.str());
+                        db.exec(query);
                     }
 
                     // check whether .mat and .json file exists and compare settings in program with settings in .json file
@@ -2274,12 +2274,12 @@ int main(int argc, char **argv) {
 
     try
     {
-      po::notify(vm);
+        po::notify(vm);
     }
     catch (po::required_option& e)
     {
-      std::cerr << "Error: " << e.what() << std::endl;
-      return 1;
+        std::cerr << "Error: " << e.what() << std::endl;
+        return 1;
     }
 
     boost::filesystem::path path_config = boost::filesystem::absolute(vm["config"].as<std::string>());

@@ -17,23 +17,31 @@
 #ifndef ITER_H
 #define ITER_H
 
-template<class T, class Q> class Iter {
+template<class ContainerType, class ValueType>
+class ConstIter {
 public:
-    Iter (const T* p_vec, int pos) : _pos( pos ) , _p_vec( p_vec ) { }
-    bool operator!= (const Iter& other) const {
+    ConstIter (const ContainerType* p_vec, int pos)
+      : _pos( pos ) , _p_vec( p_vec ) { }
+
+    bool operator!= (ConstIter const& other) const
+    {
         return _pos != other._pos;
     }
-    Q operator* () const {
+
+    ValueType operator* () const
+    {
         return _p_vec->get( _pos );
     }
-    const Iter& operator++ () {
+
+    ConstIter& operator++ ()
+    {
         ++_pos;
         return *this;
     }
 
 private:
     int _pos;
-    const T* _p_vec;
+    const ContainerType* _p_vec;
 };
 
 #endif

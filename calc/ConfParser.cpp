@@ -23,7 +23,7 @@
 
 Configuration::value::value() : val() {
 }
-Configuration::value::value(std::stringstream v) {
+Configuration::value::value(std::stringstream const& v) {
     val.str(v.str());
 }
 std::string Configuration::value::str() const {
@@ -33,8 +33,7 @@ void Configuration::value::str(std::string s) {
     val.str(s);
 }
 Configuration::value& Configuration::value::operator=(const Configuration::value& rhs) {
-    val.str(std::string());
-    val << rhs.str();
+    val.str(rhs.str());
     return *this;
 }
 Configuration::iterator::entry::entry(const std::string key, Configuration::value& value) : key(key), value(value) {
@@ -71,7 +70,7 @@ const Configuration::const_iterator& Configuration::const_iterator::operator++ (
 Configuration::const_iterator::entry Configuration::const_iterator::operator* () {
     return const_iterator::entry(itr->first, itr->second);
 }
-int Configuration::load_from_json(std::string filename)
+void Configuration::load_from_json(std::string filename)
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::read_json;
@@ -81,12 +80,10 @@ int Configuration::load_from_json(std::string filename)
 
     for (auto itr: pt)
     {
-      params[itr.first] << itr.second.data();
+        params[itr.first] << itr.second.data();
     }
-
-    return 0;
 }
-int Configuration::save_to_json(std::string filename)
+void Configuration::save_to_json(std::string filename)
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::write_json;
@@ -98,8 +95,6 @@ int Configuration::save_to_json(std::string filename)
     }
 
     write_json(filename, pt);
-
-    return 0;
 }
 Configuration::value& Configuration::operator [](const std::string& key) {
     return params[key];
