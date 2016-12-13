@@ -12,8 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
 find_program( PYUIC NAMES py3uic5 pyuic5 )
 if( PYUIC )
   message( STATUS "Found pyuic: ${PYUIC}" )
