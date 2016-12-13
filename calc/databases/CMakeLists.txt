@@ -12,17 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-set(CMAKE_MACOSX_RPATH 0)
-
 find_package(Sqlite3 REQUIRED)
-if(SQLITE3_FOUND)
-else(SQLITE3_FOUND)
-  message(FATAL_ERROR "==================\n"
-                      "Sqlite3 not found!\n"
-                      "==================\n")
-endif(SQLITE3_FOUND)
 
 add_custom_target(database ALL)
 add_custom_command(TARGET database

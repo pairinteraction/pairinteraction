@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
-
-set(CMAKE_MACOSX_RPATH 0)
-
 add_subdirectory(databases)
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
@@ -40,71 +36,42 @@ set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-
 # Add external libraries
 
 find_package(Eigen3 REQUIRED)
-if(EIGEN3_FOUND)
-  include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
-else(EIGEN3_FOUND)
-  message(FATAL_ERROR "=================\n"
-                      "Eigen3 not found!\n"
-                      "=================\n")
-endif(EIGEN3_FOUND)
+include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+
 
 find_package(Sqlite3 REQUIRED)
-if(SQLITE3_FOUND)
-  include_directories(${SQLITE3_INCLUDE_DIR})
-  target_link_libraries(pairinteraction-real ${SQLITE3_LIBRARY})
-  target_link_libraries(pairinteraction-complex ${SQLITE3_LIBRARY})
-  target_link_libraries(matrixelements ${SQLITE3_LIBRARY})
-else(SQLITE3_FOUND)
-  message(FATAL_ERROR "==================\n"
-                      "Sqlite3 not found!\n"
-                      "==================\n")
-endif(SQLITE3_FOUND)
+include_directories(${SQLITE3_INCLUDE_DIR})
+target_link_libraries(pairinteraction-real ${SQLITE3_LIBRARY})
+target_link_libraries(pairinteraction-complex ${SQLITE3_LIBRARY})
+target_link_libraries(matrixelements ${SQLITE3_LIBRARY})
 
-# Branch for cross-platform build
 
-if("${CMAKE_CXX_COMPILER}" MATCHES "mingw32" OR "${CMAKE_CXX_COMPILER_ARG1}" MATCHES "mingw32")
+if( WIN32 )
   find_package(MSMPI REQUIRED)
   set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
-else()
+else( )
   find_package(MPI REQUIRED)
-endif()
+endif( )
+include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
+target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES})
+target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES})
+target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES})
+set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
+set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
 
-if(MPI_FOUND)
-  include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-  target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES})
-  target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES})
-  target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES})
-  set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
-  set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
-else(MPI_FOUND)
-  message(FATAL_ERROR "==============\n"
-                      "MPI not found!\n"
-                      "==============\n")
-endif(MPI_FOUND)
 
 find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
-if(Boost_FOUND)
-  include_directories(${Boost_INCLUDE_DIRS})
-  target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})
-  target_link_libraries(pairinteraction-complex ${Boost_LIBRARIES})
-  target_link_libraries(matrixelements ${Boost_LIBRARIES})
-else(Boost_FOUND)
-  message(FATAL_ERROR "================\n"
-                      "Boost not found!\n"
-                      "================\n")
-endif(Boost_FOUND)
+include_directories(${Boost_INCLUDE_DIRS})
+target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})
+target_link_libraries(pairinteraction-complex ${Boost_LIBRARIES})
+target_link_libraries(matrixelements ${Boost_LIBRARIES})
+
 
 find_package(GSL REQUIRED)
-if(GSL_FOUND)
-  include_directories(${GSL_INCLUDE_DIRS})
-  target_link_libraries(pairinteraction-real ${GSL_LIBRARIES})
-  target_link_libraries(pairinteraction-complex ${GSL_LIBRARIES})
-  target_link_libraries(matrixelements ${GSL_LIBRARIES})
-else(GSL_FOUND)
-  message(FATAL_ERROR "==============\n"
-                      "GSL not found!\n"
-                      "==============\n")
-endif(GSL_FOUND)
+include_directories(${GSL_INCLUDE_DIRS})
+target_link_libraries(pairinteraction-real ${GSL_LIBRARIES})
+target_link_libraries(pairinteraction-complex ${GSL_LIBRARIES})
+target_link_libraries(matrixelements ${GSL_LIBRARIES})
 
 # Set c++11
 
@@ -116,7 +83,7 @@ if(COMPILER_SUPPORTS_CXX11)
 elseif(COMPILER_SUPPORTS_CXX0X)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
 else()
-    message(STATUS "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
+    message(FATAL "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
 # CPack
