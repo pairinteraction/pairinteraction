@@ -52,7 +52,7 @@ matrix:
     - os: osx
       osx_image: xcode8
       before_script: brew tap homebrew/python && brew install eigen pyqt5 gsl openmpi && npm install -g fileicon && pip3 install --only-binary=numpy,scipy numpy scipy psutil pint git+https://github.com/pyinstaller/pyinstaller
-      script: mkdir build && cd build && cmake -DDMG=TRUE .. && make package
+      script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make package
       deploy:
         provider: releases
         prerelease: true
