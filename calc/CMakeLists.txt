@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if( WITH_DATABASE )
-  add_subdirectory(databases)
-endif( )
-
 if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -pipe)
 endif(CMAKE_BUILD_TYPE MATCHES Release)
