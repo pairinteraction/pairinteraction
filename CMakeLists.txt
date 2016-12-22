@@ -33,18 +33,26 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# Build options
+
+option(WITH_GUI      "Build with Python GUI"                ON)
+option(WITH_DATABASE "Generate the quantum defect database" ON)
+option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
+
 # Mac OS X specific build instructions
 
 set(CMAKE_MACOSX_RPATH 0)
-set(DMG "FALSE" CACHE BOOL "indicates whether a .dmg file should be created")
-if(DMG)
+if( WITH_DMG )
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
-endif(DMG)
+endif( )
 
 # Build instructions
 
 add_subdirectory(calc)
-add_subdirectory(gui)
+
+if( WITH_GUI )
+  add_subdirectory(gui)
+endif( )
 
 # Make packages for different platforms
 
@@ -53,7 +61,7 @@ if(WIN32)
   # NSIS installer is built externally
   add_subdirectory(win32)
 
-elseif(APPLE AND DMG)
+elseif(APPLE AND WITH_DMG)
 
   set(CPACK_GENERATOR "Bundle")
   

@@ -12,7 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(databases)
+if( WITH_DATABASE )
+  add_subdirectory(databases)
+endif( )
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
   add_definitions(-Wall -Wextra -pedantic -Ofast -pipe)
@@ -88,7 +90,7 @@ endif()
 
 # CPack
 
-if(DMG)
+if( WITH_DMG )
 
   install(TARGETS pairinteraction-real RUNTIME DESTINATION .)
   install(TARGETS pairinteraction-complex RUNTIME DESTINATION .)
@@ -100,10 +102,10 @@ if(DMG)
   
   install(CODE "execute_process(COMMAND ${PYTHON} ${CMAKE_CURRENT_SOURCE_DIR}/apple/standalone.py ${bin1} ${bin2} ${bin3})")
 
-else(DMG)
+else( )
 
   install(TARGETS pairinteraction-real RUNTIME DESTINATION share/pairinteraction/calc)
   install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/calc)
   install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
 
-endif(DMG)
+endif( )
