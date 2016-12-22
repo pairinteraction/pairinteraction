@@ -12,19 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_package(Sqlite3 REQUIRED)
+# Find PyQT5
+#
+# PYUIC_BINARY       - the pyuic GUI builder
+# PYTHON_BINARY      - Python executable
 
-add_custom_target(database ALL)
-add_custom_command(TARGET database
-  COMMAND ${SQLITE3_BINARY} ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
-)
+# Include these modules to handle the QUIETLY and REQUIRED arguments.
+include (FindPackageHandleStandardArgs)
 
-if( WITH_DMG )
+find_program( PYUIC_BINARY NAMES py3uic5 pyuic5 )
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION databases)
+find_program( PYTHON_BINARY NAMES python3 )
 
-else( )
+# Set the FOUND variable to TRUE if all listed variables are set.
+find_package_handle_standard_args( PyQT5 DEFAULT_MSG PYUIC_BINARY PYTHON_BINARY )
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION share/pairinteraction/calc/databases)
-
-endif( )
+mark_as_advanced( PYUIC_BINARY PYTHON_BINARY )

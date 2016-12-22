@@ -12,19 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_program( PYUIC NAMES py3uic5 pyuic5 )
-if( PYUIC )
-  message( STATUS "Found pyuic: ${PYUIC}" )
-else( )
-  message( FATAL_ERROR "Could not find pyuic" )
-endif( )
-
-find_program( PYTHON NAMES python3 )
-if( PYTHON )
-  message( STATUS "Found python: ${PYTHON}" )
-else( )
-  message( FATAL_ERROR "Could not find python" )
-endif( )
+find_package(PyQT5 REQUIRED)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
@@ -35,9 +23,9 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CU
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/startgui
-  COMMAND ${PYUIC} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
+  COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/adapt.cmake
-  COMMAND ${PYTHON} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  COMMAND ${PYTHON_BINARY} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
@@ -50,10 +38,10 @@ add_custom_target(gui ALL
   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
 )
 
-if(DMG)
+if( WITH_DMG )
 
   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui
-    COMMAND ${CMAKE_COMMAND} -DDMG=${DMG} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pyinstaller.cmake
+    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pyinstaller.cmake
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/startgui
   )
   
@@ -79,7 +67,7 @@ if(DMG)
   set(iconpath ${PROJECT_SOURCE_DIR}/apple/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
-else(DMG)
+else( )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
@@ -92,4 +80,4 @@ else(DMG)
     install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
   endif(CMAKE_HOST_UNIX)
 
-endif(DMG)
+endif( )
