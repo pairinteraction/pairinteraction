@@ -62,10 +62,10 @@ SectionGroup /e "Dependencies"
   Section 'Miniconda'
     SetOutPath "$INSTDIR"
     File "${BUILD_DIR}\win32\Miniconda3-latest-Windows-${ARCHNAME}.exe"
-    ExecWait "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe"
+    ExecWait "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=$INSTDIR\Miniconda3"
 
-    !define CONDA_PATH "${PROGDIR}\Miniconda3\Scripts\conda.exe"
-    !define PIP_PATH "${PROGDIR}\Miniconda3\Scripts\pip.exe"
+    !define CONDA_PATH "$INSTDIR\Miniconda3\Scripts\conda.exe"
+    !define PIP_PATH "$INSTDIR\Miniconda3\Scripts\pip.exe"
 
     IfFileExists "${CONDA_PATH}" 0 fail
     IfFileExists "${PIP_PATH}" 0 fail
@@ -121,19 +121,20 @@ SectionGroup /e "${APP_NAME}"
   SectionEnd
 SectionGroupEnd
 
+Var PYTHON_PATH
+
 Section 'Desktop Icon'
-  !define PYTHON_PATH "${PROGDIR}\Miniconda3\python.exe"
-  IfFileExists "${PYTHON_PATH}" success 0
+  StrCpy $PYTHON_PATH "$INSTDIR\Miniconda3\python.exe"
+  IfFileExists "$PYTHON_PATH" success 0
   MessageBox MB_OK "Miniconda installation could not be found!  Assuming python.exe to be in PATH."
-  !undef PYTHON_PATH
-  !define PYTHON_PATH "python"
+  StrCpy $PYTHON_PATH "python.exe"
 
 success:
   SetOutPath "$INSTDIR\"
   File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
   FileWrite $4 "@echo off$\r$\n"
-  FileWrite $4 '${PYTHON_PATH} "$INSTDIR\gui\startgui"'
+  FileWrite $4 '"$PYTHON_PATH" "$INSTDIR\gui\startgui"'
   FileClose $4
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
@@ -151,8 +152,11 @@ functionEnd
 
 
 Section 'uninstall'
+  RMDir /r "$INSTDIR\Miniconda3"
   RMDir /r "$INSTDIR\calc"
   RMDir /r "$INSTDIR\gui"
+
+  delete "$INSTDIR\LICENSE*"
 
   delete "$INSTDIR\pairinteraction.ico"
   delete "$INSTDIR\pairinteraction.bat"
