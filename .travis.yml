@@ -7,6 +7,16 @@ matrix:
       services: docker
       env: image=debian:jessie
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
+      deploy:
+        provider: releases
+        prerelease: true
+        api_key:
+          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
+        file_glob: true
+        file: $TRAVIS_BUILD_DIR/build/pairinteraction-install*.deb
+        skip_cleanup: true
+        on:
+          tags: true
     - os: linux
       sudo: required
       services: docker
@@ -17,6 +27,16 @@ matrix:
       services: docker
       env: image=opensuse:13.2
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
+      deploy:
+        provider: releases
+        prerelease: true
+        api_key:
+          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
+        file_glob: true
+        file: $TRAVIS_BUILD_DIR/build/pairinteraction-install*.rpm
+        skip_cleanup: true
+        on:
+          tags: true
     - os: linux
       sudo: required
       services: docker
@@ -51,7 +71,16 @@ matrix:
           tags: true
     - os: osx
       osx_image: xcode8
-      before_script: brew tap homebrew/python && brew install eigen pyqt5 gsl openmpi && npm install -g fileicon && pip3 install --only-binary=numpy,scipy numpy scipy psutil pint git+https://github.com/pyinstaller/pyinstaller
+      before_script:
+      before_install:
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+        - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && export PATH=/Users/travis/miniconda3/bin:$PATH
+        - conda update --yes conda
+      install:
+        - conda install --yes numpy scipy
+        - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
+        - brew install eigen gsl openmpi
+        - npm install -g fileicon
       script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make package && make license
       deploy:
         provider: releases
