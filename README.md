@@ -1,8 +1,16 @@
-# pairinteraction [![Gitter][gitter-svg]][gitter-room] [![Build status][travis-svg]][travis-link]
+# pairinteraction [![Gitter][gitter-svg]][gitter-room] [![Build status][travis-svg]][travis-link] [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 
 *A Rydberg Interaction Calculator*
 
 Visit the official website at https://pairinteraction.github.io/
+
+## Please Cite Us
+
+> **Tutorial: Calculation of Rydberg interaction potentials**
+>
+> *Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth*
+>
+> [arXiv:1612.08053][arXiv-link], submitted to J. Phys. B
 
 ## Build Status
 
@@ -20,7 +28,7 @@ We use a [Gitter](https://gitter.im) chatroom for discussing things related to p
 
 ## Downloads
 
-We plan to make binaries for various operating systems, in particular Microsoft Windows.  These will be probably made available through the [releases section](https://github.com/pairinteraction/pairinteraction/releases).
+Binaries are available for many systems, including several GNU/Linux distributions, Mac OS X, and Microsoft Windows.  These are made available through the [releases section](https://github.com/pairinteraction/pairinteraction/releases).
 
 ## License
 
@@ -32,5 +40,7 @@ Note that not all files in this repository belong to the pairinteraction project
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [gitter-svg]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-room]: https://gitter.im/pairinteraction/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
+[arXiv-link]: http://arxiv.org/abs/1612.08053
 [wiki]: https://github.com/pairinteraction/pairinteraction/wiki
 [issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
