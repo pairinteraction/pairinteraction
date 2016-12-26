@@ -12,19 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Find PyQT5
+# Find PyUIC
 #
 # PYUIC_BINARY       - the pyuic GUI builder
-# PYTHON_BINARY      - Python executable
 
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 
 find_program( PYUIC_BINARY NAMES py3uic5 pyuic5 )
 
-find_program( PYTHON_BINARY NAMES python3 )
-
 # Set the FOUND variable to TRUE if all listed variables are set.
-find_package_handle_standard_args( PyQT5 DEFAULT_MSG PYUIC_BINARY PYTHON_BINARY )
+find_package_handle_standard_args( PyUIC DEFAULT_MSG PYUIC_BINARY )
 
-mark_as_advanced( PYUIC_BINARY PYTHON_BINARY )
+mark_as_advanced( PYUIC_BINARY )

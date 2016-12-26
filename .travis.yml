@@ -5,75 +5,46 @@ matrix:
     - os: linux
       sudo: required
       services: docker
-      env: image=debian:jessie
+      env:
+        - image=debian:jessie
+        - package=$TRAVIS_BUILD_DIR/build/pairinteraction-install-linux.deb
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/pairinteraction-install*.deb
-      deploy:
-        provider: releases
-        prerelease: true
-        api_key:
-          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
-        file_glob: true
-        file: $TRAVIS_BUILD_DIR/build/pairinteraction-install*.deb
-        skip_cleanup: true
-        on:
-          tags: true
+      before_deploy: sudo chown travis:travis $package
     - os: linux
       sudo: required
       services: docker
-      env: image=ubuntu:16.04
+      env:
+        - image=ubuntu:16.04
+        - package=""
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
     - os: linux
       sudo: required
       services: docker
-      env: image=opensuse:13.2
+      env:
+        - image=opensuse:13.2
+        - package=$TRAVIS_BUILD_DIR/build/pairinteraction-install-linux.rpm
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/pairinteraction-install*.rpm
-      deploy:
-        provider: releases
-        prerelease: true
-        api_key:
-          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
-        file_glob: true
-        file: $TRAVIS_BUILD_DIR/build/pairinteraction-install*.rpm
-        skip_cleanup: true
-        on:
-          tags: true
+      before_deploy: sudo chown travis:travis $package
     - os: linux
       sudo: required
       services: docker
-      env: image=opensuse:13.2-w32
+      env:
+        - image=opensuse:13.2-w32
+        - package=$TRAVIS_BUILD_DIR/win32/pairinteraction-install-windows-i686.exe
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw32.cmake .. && make win32"
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
-      deploy:
-        provider: releases
-        prerelease: true
-        api_key:
-          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
-        file_glob: true
-        file: $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
-        skip_cleanup: true
-        on:
-          tags: true
+      before_deploy: sudo chown travis:travis $package
     - os: linux
       sudo: required
       services: docker
-      env: image=opensuse:13.2-w64
+      env:
+        - image=opensuse:13.2-w64
+        - package=$TRAVIS_BUILD_DIR/win32/pairinteraction-install-windows-x86_64.exe
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make win32"
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
-      deploy:
-        provider: releases
-        prerelease: true
-        api_key:
-          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
-        file_glob: true
-        file: $TRAVIS_BUILD_DIR/win32/pairinteraction-install*.exe
-        skip_cleanup: true
-        on:
-          tags: true
+      before_deploy: sudo chown travis:travis $package
     - os: osx
       osx_image: xcode8
-      before_script:
+      env:
+        - package=$TRAVIS_BUILD_DIR/build/pairinteraction-install-osx.dmg
       before_install:
         - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && export PATH=/Users/travis/miniconda3/bin:$PATH
@@ -84,13 +55,17 @@ matrix:
         - brew install eigen gsl openmpi
         - npm install -g fileicon
       script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make package && make license
-      deploy:
-        provider: releases
-        prerelease: true
-        api_key:
-          secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
-        file_glob: true
-        file: $TRAVIS_BUILD_DIR/build/pairinteraction-install*.dmg
-        skip_cleanup: true
-        on:
-          tags: true
+
+deploy:
+  provider: releases
+  prerelease: true
+  api_key:
+    secure: PviVJljiUIuP3D6y3R+I3+COatdjbuOC/tWaEQoCZ6wdbJY1UaI+zAMNw8OcGW1H0CELH4xK7tBogTYTsnwSN7OgFkciElX2Q2lt4lF7VsP8WcVyfjESSmOVLi8AVrHlY7NOpHzmOEgIlOjlLmnH6sJBUQmxzW+tNSSZPTfTvr/W+Zr8zlt3DfI+wHw4S3QBcQ2kzx6aV8sgvufmRRGWo1yEAOzhseogY65LlP42hxFqmBc0kwkFCc9mB8VVCdDlw7zaBA6P1E+Y66GWFaRmEHZkv19wNv7gO30Iz/QnrejeTqkqkd4Nasr5IzHZTZCEO3UBPZe1K8E30c7pD+1ncva3+jiZLIfI/gs7Yl35fZhlLYCM4Xf4yO2kioaGX/HIcVcva2TL5YLepmaEqm4/0nGcrE5qARE1SRDicBpRx/ftUiWnv6OUUt4l7xqc9PglTjFQUGOPJIrhe3PUwKBMR9JB7EK0hFRK3publvRTgQocePYWc7Cs2JX8qkbStwTltRBx9Rzcm1Sbm9blnAFnI6Vco8jdS5dx4+zb8L7k0Szc22t2O6LrvwIDQQ4GwQ6K72qU9jI146tWh+UBO0xBCv2VNfvRlNb9ATzAKj5xMfq//llGoATKINiGa223MZlUSnMeOvXZ/OP7IXNOhzcOc7d1gdULT/aCtakC+mU+ruQ=
+  file_glob: true
+  file: $package
+  skip_cleanup: true
+  #draft: true
+  on:
+    #all_branches: true
+    tags: true
+    condition: $package != ""
