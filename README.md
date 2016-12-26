@@ -4,6 +4,14 @@
 
 Visit the official website at https://pairinteraction.github.io/
 
+## Please Cite Us
+
+> **Tutorial: Calculation of Rydberg interaction potentials**
+>
+> *Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth*
+>
+> [arXiv:1612.08053][arXiv-link], submitted to J. Phys. B
+
 ## Build Status
 
 We are using [Travis CI](https://travis-ci.org) as a hosted continuous integration service to build pairinteraction against various toolchains.
