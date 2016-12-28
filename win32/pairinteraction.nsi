@@ -62,7 +62,7 @@ SectionGroup /e "Dependencies"
   Section 'Miniconda'
     SetOutPath "$INSTDIR"
     File "${BUILD_DIR}\win32\Miniconda3-latest-Windows-${ARCHNAME}.exe"
-    ExecWait "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=$INSTDIR\Miniconda3"
+    nsExec::ExecToLog "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=$INSTDIR\Miniconda3"
 
     !define CONDA_PATH "$INSTDIR\Miniconda3\Scripts\conda.exe"
     !define PIP_PATH "$INSTDIR\Miniconda3\Scripts\pip.exe"
@@ -70,8 +70,8 @@ SectionGroup /e "Dependencies"
     IfFileExists "${CONDA_PATH}" 0 fail
     IfFileExists "${PIP_PATH}" 0 fail
 
-    ExecWait "${CONDA_PATH} install -y numpy scipy"
-    ExecWait "${PIP_PATH} install psutil pint pyqt5"
+    nsExec::ExecToLog "${CONDA_PATH} install -y numpy scipy"
+    nsExec::ExecToLog "${PIP_PATH} install psutil pint pyqt5"
     Goto done
 
 fail:
