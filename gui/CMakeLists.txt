@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_package(PyQT5 REQUIRED)
+find_package(PyUIC REQUIRED)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
@@ -25,7 +25,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CU
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/startgui
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/adapt.cmake
-  COMMAND ${PYTHON_BINARY} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
@@ -54,8 +53,6 @@ if( WITH_DMG )
   install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui DESTINATION . RENAME pairinteraction)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
   
-  # brew install node
-  # npm install -g fileicon
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
     message( STATUS "Found fileicon: ${FILEICON}" )
@@ -68,6 +65,13 @@ if( WITH_DMG )
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
 else( )
+
+  find_package(Python REQUIRED)
+
+  add_custom_command(TARGET gui POST_BUILD
+    COMMAND ${PYTHON_BINARY} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
