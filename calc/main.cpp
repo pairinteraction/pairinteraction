@@ -62,6 +62,7 @@
 
 * parallelize construction of Hamiltonian
 * construct only one half of symmetric matrices
+* check why very small Bz fields (e.g. 1e-12) leads to a large basis -> numerical error?
 
 */
 
@@ -218,7 +219,7 @@ public:
 
         size_t idxBasis = 0;
         for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
-            if (isNecessaryBasisvector[idx] > 0.05) { // TODO
+            if (isNecessaryBasisvector[idx] > 0.05) {
                 triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
             }
         }
@@ -1769,7 +1770,7 @@ public:
 
         matrix.reserve(nSteps_two);
 
-        // Open database
+        // === Open database ===
         boost::filesystem::path path_db;
 
         if (utils::is_complex<scalar_t>::value) {
@@ -1779,15 +1780,7 @@ public:
         }
         sqlite::handle db(path_db.string());
 
-        // Initialize variables
-        Configuration conf;
-        size_t step_one = 0;
-
-        std::map<Symmetry,std::vector<Hamiltonianmatrix>> mat_multipole_transformed;
-        for (Symmetry symmetry : symmetries) {
-            mat_multipole_transformed[symmetry].resize(idx_multipole_max+1);
-        }
-
+        // === Initialize variables ===
         bool flag_perhapsmissingtable = true;
 
         std::map<parity_t,std::string> symmetries_name;
@@ -1795,9 +1788,25 @@ public:
         symmetries_name[ODD] = "asym";
         symmetries_name[NA] = "all";
 
+        // --- Determine transformed interaction matrices ---
+        std::map<Symmetry,std::vector<Hamiltonianmatrix>> mat_multipole_transformed;
+
+        // Check if one_atom Hamiltonians change with step_two
+        // It is assumed that nSteps_one = 1 if nSteps_two != nSteps_one // TODO introduce variable "is_mat_single_const" to improve readability
+        if (nSteps_two != nSteps_one) {
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) { // TODO PARALLELIZATION
+                Symmetry sym = symmetries[idx_symmetry];
+
+                mat_multipole_transformed[sym].resize(idx_multipole_max+1);
+                for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                    mat_multipole_transformed[sym][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][0].basis());
+                }
+            }
+        }
+
 
         ////////////////////////////////////////////////////////
-        ////// Loop through steps //////////////////////////////
+        ////// Loop through steps and symmetries ///////////////
         ////////////////////////////////////////////////////////
 
         std::cout << ">>TOT" << std::setw(7) << nSteps_two*symmetries.size() << std::endl;
@@ -1805,46 +1814,44 @@ public:
         size_t step = 0;
 
         // Loop through steps
-        for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
+        for (size_t step_two = 0; step_two < nSteps_two; ++step_two) { // TODO PARALLELIZATION
 
-            // Determine position
-            real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
-            real_t position = min_R+normalized_position*(max_R-min_R);
+            // Loop through symmetries
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) { // TODO PARALLELIZATION
+                Symmetry sym = symmetries[idx_symmetry];
 
-            // Check for new combined one-atom Hamiltonian
-            if (step_two == 0 || (nSteps_one > 1 && step_one <= step_two)) {
-                conf = conf_mat[step_one];
+                // === Get parameters for the current position inside the loop ===
+                int single_idx = (nSteps_two == nSteps_one) ? step_two : 0;
 
-                // Determine transformed interaction matrices
-                for (auto &sym: symmetries) {
-                    for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                        mat_multipole_transformed[sym][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_one].basis());
+                // Get interatomic distance
+                real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
+                real_t position = min_R+normalized_position*(max_R-min_R);
+
+                // Get configuration
+                Configuration conf_local = conf_mat[single_idx];
+                conf_local["R"] = position;
+                conf_local["symmetry"] = symmetries_name[sym.inversion]; // TODO adapt for other symmetries
+                conf_local["sub"] = 0; // TODO remove
+
+                // Get combined single atom matrix
+                Hamiltonianmatrix totalmatrix = mat_single[sym][single_idx];
+
+                // === Build total matrix ===
+                for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                    real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                    if (nSteps_two == nSteps_one) {
+                        totalmatrix += mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_two].basis())*pos;
+                    } else {
+                        totalmatrix += mat_multipole_transformed[sym][idx_multipole]*pos;
                     }
                 }
 
-                ++step_one;
-            }
+                // Stdout: Hamiltonian assembled
+                size_t dimension = totalmatrix.num_basisvectors();
+                std::cout << ">>DIM" << std::setw(7) << dimension << std::endl;
+                std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
 
-            conf["R"] = position;
-
-
-            ////////////////////////////////////////////////////////
-            ////// Loop through symmetries /////////////////////////
-            ////////////////////////////////////////////////////////
-
-            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
-                Symmetry sym = symmetries[idx_symmetry];
-
-                conf["symmetry"] = symmetries_name[sym.inversion]; // TODO adopt for other symmetries
-                conf["sub"] = 0; // TODO remove
-
-                Hamiltonianmatrix totalmatrix = mat_single[sym][step_one-1];
-                for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                    real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                    totalmatrix += mat_multipole_transformed[sym][idx_multipole]*pos;
-                }
-
-                // Create table if necessary
+                // === Create table if necessary ===
                 std::stringstream query;
                 std::string spacer = "";
 
@@ -1852,11 +1859,11 @@ public:
                     query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
                              "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                              "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                    for (auto p: conf) {
+                    for (auto p: conf_local) {
                         query << ", " << p.key << " text";
                     }
                     query << ", UNIQUE (";
-                    for (auto p: conf) {
+                    for (auto p: conf_local) {
                         query << spacer << p.key;
                         spacer = ", ";
                     }
@@ -1866,13 +1873,13 @@ public:
                     flag_perhapsmissingtable = false;
                 }
 
-                // Get uuid as filename
+                // === Get uuid as filename ===
                 std::string uuid;
 
                 query.str(std::string());
                 spacer = "";
                 query << "SELECT uuid FROM cache_two WHERE ";
-                for (auto p: conf) {
+                for (auto p: conf_local) {
                     query << spacer << p.key << "='" << p.value.str() << "'";
                     spacer = " AND ";
                 }
@@ -1892,16 +1899,18 @@ public:
 
                     query.str(std::string());
                     query << "INSERT INTO cache_two (uuid";
-                    for (auto p: conf) {
+                    for (auto p: conf_local) {
                         query << ", " << p.key;
                     }
                     query << ") values ( '" << uuid << "'";
-                    for (auto p: conf) {
+                    for (auto p: conf_local) {
                         query << ", " << "'" << p.value.str() << "'";
                     }
                     query << ");";
                     db.exec(query);
                 }
+
+                // === Check existence of files ===
 
                 // Check whether .mat and .json file exists and compare settings in program with settings in .json file
                 boost::filesystem::path path, path_mat, path_json;
@@ -1917,7 +1926,7 @@ public:
                     if (boost::filesystem::exists(path_json)) {
                         Configuration params_loaded;
                         params_loaded.load_from_json(path_json.string());
-                        if (conf == params_loaded) {
+                        if (conf_local == params_loaded) {
                             is_existing = true;
                         }
                     }
@@ -1925,15 +1934,10 @@ public:
 
                 // Create .json file if "is_existing" is false
                 if (!is_existing) {
-                    conf.save_to_json(path_json.string());
+                    conf_local.save_to_json(path_json.string());
                 }
 
-                // Stdout: Hamiltonian assembled
-                size_t dimension = totalmatrix.num_basisvectors();
-                std::cout << ">>DIM" << std::setw(7) << dimension << std::endl;
-                std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
-
-                // Diagonalize matrix and save diagonalized matrix
+                // === Diagonalize matrix and save diagonalized matrix ===
                 if (!is_existing || !totalmatrix.load(path_mat.string())) {
                     totalmatrix.diagonalize();
                     totalmatrix.save(path_mat.string());
@@ -1943,7 +1947,7 @@ public:
                 std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl;
                 std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
 
-                // Store path to configuration and diagonalized matrix
+                // === Store path to configuration and diagonalized matrix ===
                 matrix_path.push_back(path.string());
 
                 step++;
