@@ -21,13 +21,10 @@
 #include <array>
 #include <iostream>
 #include <iomanip>
+#include <array>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
-#include <mpi.h>
 
-#define REAL_T MPI_FLOAT
-#define IDX_T  MPI_UNSIGNED
-#define BYTE_T MPI_UNSIGNED_CHAR
 constexpr auto ORDER = Eigen::ColMajor;
 
 typedef double real_t; // TODO we should always use double otherwise the diagonalization results are very noisy
@@ -42,9 +39,9 @@ typedef std::vector<byte_t> bytes_t;
 typedef std::nullptr_t invalid_t;
 
 #ifdef USE_COMPLEX
-    typedef complex_t scalar_t;
+typedef complex_t scalar_t;
 #else
-    typedef real_t scalar_t;
+typedef real_t scalar_t;
 #endif
 
 typedef Eigen::Triplet<scalar_t> eigen_triplet_t;
@@ -65,6 +62,36 @@ public:
     idx_t row;
     idx_t col;
     scalar_t val;
+};
+
+enum parity_t {
+    NA = INT_MAX,
+    EVEN = 1,
+    ODD = -1,
+};
+
+struct Symmetry {
+    parity_t inversion;
+    parity_t reflection;
+    parity_t permutation;
+    parity_t orbitalparity;
+    int rotation;
+
+    // Comparison operator that is needed if an object of type Symmetry is used as key for std::map
+    friend bool operator< (const Symmetry& s1, const Symmetry& s2)
+    {
+        std::array<int, 5> syms1{ {s1.inversion, s1.reflection, s1.permutation, s1.orbitalparity, s1.rotation} };
+        std::array<int, 5> syms2{ {s2.inversion, s2.reflection, s2.permutation, s2.orbitalparity, s2.rotation} };
+
+        for (size_t i = 0; i < syms1.size(); ++i) {
+            if (syms1[i] < syms2[i]) {
+                return true;
+            } else if (syms1[i] > syms2[i]) {
+                return false;
+            }
+        }
+        return false;
+    }
 };
 
 #endif

@@ -36,34 +36,17 @@ set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-
 find_package(Eigen3 REQUIRED)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
-
 find_package(Sqlite3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIR})
 target_link_libraries(pairinteraction-real ${SQLITE3_LIBRARY})
 target_link_libraries(pairinteraction-complex ${SQLITE3_LIBRARY})
 target_link_libraries(matrixelements ${SQLITE3_LIBRARY})
 
-
-if( WIN32 )
-  find_package(MSMPI REQUIRED)
-  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
-else( )
-  find_package(MPI REQUIRED)
-endif( )
-include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES})
-target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES})
-target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES})
-set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
-
-
 find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})
 target_link_libraries(pairinteraction-complex ${Boost_LIBRARIES})
 target_link_libraries(matrixelements ${Boost_LIBRARIES})
-
 
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
