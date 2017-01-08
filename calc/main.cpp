@@ -124,8 +124,8 @@ public:
         return Hamiltonianmatrix(entries_.cwiseAbs().cast<scalar_t>(), basis_);
     }
     Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const{
-        auto transformator = basis_.conjugate().transpose()*basis;
-        auto entries = transformator.conjugate().transpose()*entries_*transformator;
+        auto transformator = basis_.adjoint()*basis;
+        auto entries = transformator.adjoint()*entries_*transformator;
         return Hamiltonianmatrix(entries, basis);
     }
 
@@ -150,7 +150,7 @@ public:
 
         // apply transformator
         basis_ = basis_*transformator;
-        entries_= transformator.conjugate().transpose()*entries_*transformator;
+        entries_= transformator.adjoint()*entries_*transformator;
     }
 
     void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const {
@@ -198,7 +198,7 @@ public:
 
         // apply transformator
         basis_ = basis_*transformator;
-        entries_= transformator.conjugate().transpose()*entries_*transformator;
+        entries_= transformator.adjoint()*entries_*transformator;
     }
 
     void removeUnnecessaryBasisvectors() {
@@ -228,7 +228,7 @@ public:
 
         // apply transformator
         basis_ = basis_*transformator;
-        entries_= transformator.conjugate().transpose()*entries_*transformator;
+        entries_= transformator.adjoint()*entries_*transformator;
     }
 
     void removeUnnecessaryStates(const std::vector<bool> &isNecessaryCoordinate) {
@@ -261,7 +261,7 @@ public:
         eigen_sparse_t transformator(this->num_basisvectors(),indices.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
-        eigen_sparse_t block_entries = transformator.conjugate().transpose()*entries_*transformator;
+        eigen_sparse_t block_entries = transformator.adjoint()*entries_*transformator;
         eigen_sparse_t block_basis = basis_*transformator;
 
         return Hamiltonianmatrix(block_entries,  block_basis);
@@ -1769,7 +1769,7 @@ public:
 
         matrix.reserve(nSteps_two);
 
-        // open database
+        // Open database
         boost::filesystem::path path_db;
 
         if (utils::is_complex<scalar_t>::value) {
@@ -1779,7 +1779,7 @@ public:
         }
         sqlite::handle db(path_db.string());
 
-        // initialize variables
+        // Initialize variables
         Configuration conf;
         size_t step_one = 0;
 
@@ -1794,15 +1794,6 @@ public:
         symmetries_name[EVEN] = "sym";
         symmetries_name[ODD] = "asym";
         symmetries_name[NA] = "all";
-
-        std::vector<Hamiltonianmatrix> blocks_mat_single;
-        std::vector<std::vector<Hamiltonianmatrix>> blocks_mat_multipole;
-        std::vector<std::string> blocks_symmetries_name;
-        std::vector<size_t> blocks_identification;
-        blocks_mat_single.reserve(symmetries.size());
-        blocks_mat_multipole.reserve(symmetries.size());
-        blocks_symmetries_name.reserve(symmetries.size());
-        blocks_identification.reserve(symmetries.size());
 
 
         ////////////////////////////////////////////////////////
@@ -1824,135 +1815,10 @@ public:
             if (step_two == 0 || (nSteps_one > 1 && step_one <= step_two)) {
                 conf = conf_mat[step_one];
 
-                blocks_mat_multipole.clear();
-                blocks_mat_single.clear();
-                blocks_symmetries_name.clear();
-                blocks_identification.clear();
-
-                // Loop through symmetries
-                for (Symmetry symmetry : symmetries) {
-
-                    // Determine absolute total matrix
-                    Hamiltonianmatrix abstotalmatrix = mat_single[symmetry][step_one];
-                    std::vector<Hamiltonianmatrix> transformedmatrix;
-                    transformedmatrix.reserve(idx_multipole_max+1);
+                // Determine transformed interaction matrices
+                for (auto &sym: symmetries) {
                     for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                        transformedmatrix.push_back(mat_multipole[idx_multipole].changeBasis(mat_single[symmetry][step_one].basis()));
-                        abstotalmatrix += transformedmatrix.back().abs();
-                    }
-
-                    // Determine indices of the pair basis states that are necessary for the initial state
-                    StateTwo initial_state = basis->initial();
-                    std::set<ptrdiff_t> initial_indices;
-                    if (conserveM) {
-                        initial_indices.insert(initial_state.idx);
-                    } else {
-                        for (auto state : *basis) {
-                            if ((state.n[0] == initial_state.n[0]) && (state.l[0] == initial_state.l[0])  && (state.j[0] == initial_state.j[0])  &&
-                                    (state.n[1] == initial_state.n[1]) && (state.l[1] == initial_state.l[1])  && (state.j[1] == initial_state.j[1])) {
-                                initial_indices.insert(state.idx);
-                            }
-                        }
-                    }
-
-                    // Determine indices of the basis vectors that are necessary for the initial state
-                    std::vector<bool> isNecessaryBasisvector(abstotalmatrix.basis().cols(),false);
-                    for (eigen_idx_t k_1=0; k_1<abstotalmatrix.basis().outerSize(); ++k_1) {
-                        for (eigen_iterator_t triple(abstotalmatrix.basis(),k_1); triple; ++triple) {
-                            ptrdiff_t col = triple.col(); // basis vector
-                            ptrdiff_t row = triple.row(); // coordinate
-                            if (initial_indices.count(row)) {
-                                isNecessaryBasisvector[col] = true;
-                            }
-                        }
-                    }
-
-                    std::vector<size_t> idxNecessaryBasisvector;
-                    for (size_t i = 0; i < isNecessaryBasisvector.size(); ++i) {
-                        if (isNecessaryBasisvector[i]) {
-                            idxNecessaryBasisvector.push_back(i);
-                        }
-                    }
-
-                    // Determine blocks within abstotalmatrix
-                    std::vector<std::set<size_t>> blockSets; // TODO do not check for blocks if no interaction
-                    for (eigen_idx_t k_1=0; k_1<abstotalmatrix.entries().outerSize(); ++k_1) {
-
-                        std::vector<size_t> current_indices;
-                        for (eigen_iterator_t triple(abstotalmatrix.entries(),k_1); triple; ++triple) {
-                            current_indices.push_back(triple.index());
-                        }
-
-                        bool breakloop = false;
-                        for (auto& set: blockSets) { // TODO make function out of it and use return
-                            for (auto& i: current_indices) {
-                                if (set.count(i)) {
-                                    breakloop = true;
-                                    break;
-                                }
-                            }
-                            if (breakloop) {
-                                set.insert(current_indices.begin(), current_indices.end());
-                                break;
-                            }
-                        }
-                        if (!breakloop) {
-                            blockSets.push_back(std::set<size_t>(current_indices.begin(), current_indices.end()));
-                        }
-                    }
-
-                    // Determine blocks that contain the indices of basis vectors that are necessary for the initial state
-                    std::vector<std::vector<ptrdiff_t>> blockIndices;
-                    blockIndices.reserve(blockSets.size());
-                    bool nottrivial = false;
-                    for (auto& set: blockSets) {
-                        for (auto& i: idxNecessaryBasisvector) {
-                            if (set.count(i)) {
-                                blockIndices.push_back(std::vector<ptrdiff_t>(set.begin(), set.end()));
-                                nottrivial |= set.size() > 1;
-                                break;
-                            }
-                        }
-                    }
-
-                    /*  // Alternative: determine blocks by calculating powers of abstotalmatrix
-
-                        eigen_sparse_t tmp = abstotalmatrix.entries();
-                        for (int i = 0; i < 4; ++i) {
-                            tmp = tmp*tmp;
-                        }
-
-                        std::vector<std::vector<ptrdiff_t>> blockIndices;
-                        for (auto& i: idxNecessaryBasisvector) {
-                            // TODO combine if one of the indices agree
-                            std::cout << bas.cols() << " " << i << std::endl;
-                            blockIndices.push_back(std::vector<ptrdiff_t>());
-                            for (eigen_iterator_t triple(tmp,i); triple; ++triple) {
-                                std::cout << triple.index() << " " << triple.value() << std::endl;
-                                blockIndices.back().push_back(triple.index());
-                            }
-                        }*/
-
-                    // If all blocks are 1x1, recombine blocks
-                    if (!nottrivial) {
-                        blockIndices.clear();
-                        blockIndices.push_back(std::vector<ptrdiff_t>(abstotalmatrix.num_basisvectors()));
-                        std::iota (blockIndices.back().begin(), blockIndices.back().end(), 0);
-                    }
-
-                    // Save blocks
-                    for (auto& indices: blockIndices) {
-                        blocks_mat_multipole.push_back(std::vector<Hamiltonianmatrix>());
-                        blocks_mat_multipole.back().reserve(idx_multipole_max+1);
-                        for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                            blocks_mat_multipole.back().push_back(transformedmatrix[idx_multipole].getBlock(indices));
-                        }
-                        blocks_mat_single.push_back(mat_single[symmetry][step_one].getBlock(indices));
-                        blocks_symmetries_name.push_back(symmetries_name[symmetry.inversion]); // TODO
-
-                        size_t identification = 0;
-                        for (auto& i: indices) boost::hash_combine(identification, i);
-                        blocks_identification.push_back(identification);
+                        mat_multipole_transformed[sym][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_one].basis());
                     }
                 }
 
@@ -1963,17 +1829,19 @@ public:
 
 
             ////////////////////////////////////////////////////////
-            ////// Loop through blocks /////////////////////////////
+            ////// Loop through symmetries /////////////////////////
             ////////////////////////////////////////////////////////
 
-            for (size_t idx_block = 0; idx_block < blocks_mat_single.size(); ++idx_block) {
-                conf["symmetry"] = blocks_symmetries_name[idx_block];
-                conf["sub"] = blocks_identification[idx_block];
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+                Symmetry sym = symmetries[idx_symmetry];
 
-                Hamiltonianmatrix totalmatrix = blocks_mat_single[idx_block];
+                conf["symmetry"] = symmetries_name[sym.inversion]; // TODO adopt for other symmetries
+                conf["sub"] = 0; // TODO remove
+
+                Hamiltonianmatrix totalmatrix = mat_single[sym][step_one-1];
                 for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
                     real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                    totalmatrix += blocks_mat_multipole[idx_block][idx_multipole]*pos;
+                    totalmatrix += mat_multipole_transformed[sym][idx_multipole]*pos;
                 }
 
                 // Create table if necessary
@@ -2072,7 +1940,7 @@ public:
                 }
 
                 // Stdout: Hamiltonian diagonalized
-                std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << blocks_mat_single.size() << std::setw(7) << idx_block << " " << path.string() << std::endl;
+                std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl;
                 std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
 
                 // Store path to configuration and diagonalized matrix
