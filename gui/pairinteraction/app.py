@@ -2719,7 +2719,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.numprocessors = max(2, self.numprocessors)
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, cwd=self.path_workingdir)
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir)
 
                 self.starttime = time()
 

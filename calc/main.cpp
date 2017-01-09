@@ -449,7 +449,7 @@ public:
 
         if((((entries_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value) ||
                 (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
-            std::cout << ">>ERR" << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl;
+            std::cout << ">>ERR" << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl; // TODO throw
             abort();
         }
 
@@ -503,25 +503,31 @@ public:
     }
 
     bool load(std::string fname) {
-        // open file
-        if (FILE *pFile = fopen(fname.c_str() , "rb" )) {
+        try{
+            // open file
+            if (FILE *pFile = fopen(fname.c_str() , "rb" )) {
+                // obtain file size:
+                fseek (pFile , 0 , SEEK_END);
+                size_t size_file = ftell(pFile);
+                rewind(pFile);
 
-            // obtain file size:
-            fseek (pFile , 0 , SEEK_END);
-            size_t size_file = ftell(pFile);
-            rewind(pFile);
+                // read
+                bytes.resize(size_file/sizeof(byte_t));
+                size_t size_result = fread(&bytes[0], 1 , sizeof(byte_t)*bytes.size() , pFile);
+                if (size_result != size_file) throw std::runtime_error("Matrix could not be read from file.");
 
-            // read
-            bytes.resize(size_file/sizeof(byte_t));
-            size_t size_result = fread(&bytes[0], 1 , sizeof(byte_t)*bytes.size() , pFile);
-            if (size_result != size_file) throw std::runtime_error("Matrix could not be read from file.");
+                // close file
+                fclose(pFile);
 
-            // close file
-            fclose(pFile);
+                doDeserialization();
 
-            doDeserialization();
-            return true;
-        } else {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (std::exception& e) {
+#pragma omp critical(textoutput)
+            std::cerr << e.what() << std::endl;
             return false;
         }
     }
@@ -1222,7 +1228,7 @@ protected:
 
             // calculate Hamiltonian if "is_existing" is false
             std::shared_ptr<Hamiltonianmatrix> mat;
-            if (!is_existing) {
+            if (true) { // TODO if "is_existing" is false and if it can be loaded
                 scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
                 scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
                 scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
@@ -1788,18 +1794,27 @@ public:
         symmetries_name[ODD] = "asym";
         symmetries_name[NA] = "all";
 
+        matrix_path.resize(nSteps_two*symmetries.size());
+
         // --- Determine transformed interaction matrices ---
-        std::map<Symmetry,std::vector<Hamiltonianmatrix>> mat_multipole_transformed;
+        std::vector<std::vector<Hamiltonianmatrix>> mat_multipole_transformed; // TODO linearize dimensions
 
         // Check if one_atom Hamiltonians change with step_two
         // It is assumed that nSteps_one = 1 if nSteps_two != nSteps_one // TODO introduce variable "is_mat_single_const" to improve readability
         if (nSteps_two != nSteps_one) {
-            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) { // TODO PARALLELIZATION
-                Symmetry sym = symmetries[idx_symmetry];
 
-                mat_multipole_transformed[sym].resize(idx_multipole_max+1);
+            // Resize mat_multipole_transformed
+            mat_multipole_transformed.resize(symmetries.size());
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+                mat_multipole_transformed[idx_symmetry].resize(idx_multipole_max+1);
+            }
+
+            // Fill mat_multipole_transformed
+#pragma omp parallel for collapse(2)
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
                 for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                    mat_multipole_transformed[sym][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][0].basis());
+                    Symmetry sym = symmetries[idx_symmetry];
+                    mat_multipole_transformed[idx_symmetry][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][0].basis()); // TODO use idx_symmetry for mat_single, too
                 }
             }
         }
@@ -1811,14 +1826,16 @@ public:
 
         std::cout << ">>TOT" << std::setw(7) << nSteps_two*symmetries.size() << std::endl;
 
-        size_t step = 0;
+#pragma omp parallel for collapse(2) schedule(static, 1)
 
         // Loop through steps
-        for (size_t step_two = 0; step_two < nSteps_two; ++step_two) { // TODO PARALLELIZATION
+        for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
 
             // Loop through symmetries
-            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) { // TODO PARALLELIZATION
+            for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
                 Symmetry sym = symmetries[idx_symmetry];
+
+                size_t step = step_two*symmetries.size()+idx_symmetry;
 
                 // === Get parameters for the current position inside the loop ===
                 int single_idx = (nSteps_two == nSteps_one) ? step_two : 0;
@@ -1828,30 +1845,13 @@ public:
                 real_t position = min_R+normalized_position*(max_R-min_R);
 
                 // Get configuration
-                Configuration conf_local = conf_mat[single_idx];
-                conf_local["R"] = position;
-                conf_local["symmetry"] = symmetries_name[sym.inversion]; // TODO adapt for other symmetries
-                conf_local["sub"] = 0; // TODO remove
-
-                // Get combined single atom matrix
-                Hamiltonianmatrix totalmatrix = mat_single[sym][single_idx];
-
-                // === Build total matrix ===
-                for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                    real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
-                    if (nSteps_two == nSteps_one) {
-                        totalmatrix += mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_two].basis())*pos;
-                    } else {
-                        totalmatrix += mat_multipole_transformed[sym][idx_multipole]*pos;
-                    }
-                }
-
-                // Stdout: Hamiltonian assembled
-                size_t dimension = totalmatrix.num_basisvectors();
-                std::cout << ">>DIM" << std::setw(7) << dimension << std::endl;
-                std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+                Configuration conf = conf_mat[single_idx];
+                conf["R"] = position;
+                conf["symmetry"] = symmetries_name[sym.inversion]; // TODO adapt for other symmetries
+                conf["sub"] = 0; // TODO remove
 
                 // === Create table if necessary ===
+                std::string uuid = "";
                 std::stringstream query;
                 std::string spacer = "";
 
@@ -1859,38 +1859,40 @@ public:
                     query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
                              "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                              "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                    for (auto p: conf_local) {
+                    for (auto p: conf) {
                         query << ", " << p.key << " text";
                     }
                     query << ", UNIQUE (";
-                    for (auto p: conf_local) {
+                    for (auto p: conf) {
                         query << spacer << p.key;
                         spacer = ", ";
                     }
                     query << "));";
-                    db.exec(query);
 
                     flag_perhapsmissingtable = false;
                 }
 
                 // === Get uuid as filename ===
-                std::string uuid;
-
-                query.str(std::string());
                 spacer = "";
                 query << "SELECT uuid FROM cache_two WHERE ";
-                for (auto p: conf_local) {
+                for (auto p: conf) {
                     query << spacer << p.key << "='" << p.value.str() << "'";
                     spacer = " AND ";
                 }
                 query << ";";
-                sqlite::result result = db.query(query);
 
-                if (result.size() == 1) {
-                    uuid = result.first();
+#pragma omp critical(database)
+                {
+                    sqlite::result result = db.query(query);
+                    if (result.size() == 1) {
+                        uuid = result.first();
+                    }
+                }
 
+                if (uuid != "") {
                     query.str(std::string());
                     query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
+#pragma omp critical(database)
                     db.exec(query.str()); // TODO check whether this slows down the program
 
                 } else {
@@ -1899,14 +1901,15 @@ public:
 
                     query.str(std::string());
                     query << "INSERT INTO cache_two (uuid";
-                    for (auto p: conf_local) {
+                    for (auto p: conf) {
                         query << ", " << p.key;
                     }
                     query << ") values ( '" << uuid << "'";
-                    for (auto p: conf_local) {
+                    for (auto p: conf) {
                         query << ", " << "'" << p.value.str() << "'";
                     }
                     query << ");";
+#pragma omp critical(database)
                     db.exec(query);
                 }
 
@@ -1926,7 +1929,7 @@ public:
                     if (boost::filesystem::exists(path_json)) {
                         Configuration params_loaded;
                         params_loaded.load_from_json(path_json.string());
-                        if (conf_local == params_loaded) {
+                        if (conf == params_loaded) {
                             is_existing = true;
                         }
                     }
@@ -1934,23 +1937,51 @@ public:
 
                 // Create .json file if "is_existing" is false
                 if (!is_existing) {
-                    conf_local.save_to_json(path_json.string());
+                    conf.save_to_json(path_json.string());
                 }
 
-                // === Diagonalize matrix and save diagonalized matrix ===
+                // === Build and diagonalize total matrix if not existent ===
+                Hamiltonianmatrix totalmatrix;
+
                 if (!is_existing || !totalmatrix.load(path_mat.string())) {
+
+                    // --- Get combined single atom matrix ---
+                    totalmatrix = mat_single[sym][single_idx]; // TODO if mat_single depends on step_two, do not precalculate it in order to save memory
+
+                    // --- Add interaction ---
+                    for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
+                        real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                        if (nSteps_two == nSteps_one) {
+                            totalmatrix += mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_two].basis())*pos;
+                        } else {
+                            totalmatrix += mat_multipole_transformed[idx_symmetry][idx_multipole]*pos;
+                        }
+                    }
+
+                    // Stdout: Hamiltonian assembled
+#pragma omp critical(textoutput)
+                    std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
+                              << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+
+                    // --- Diagonalize matrix and save diagonalized matrix ---
                     totalmatrix.diagonalize();
                     totalmatrix.save(path_mat.string());
+
+                    // Stdout: Hamiltonian diagonalized
+#pragma omp critical(textoutput)
+                    std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl
+                              << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
+                } else {
+
+                    // Stdout: Hamiltonian loaded
+#pragma omp critical(textoutput)
+                    std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
+                              << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl
+                              << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
                 }
 
-                // Stdout: Hamiltonian diagonalized
-                std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl;
-                std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
-
                 // === Store path to configuration and diagonalized matrix ===
-                matrix_path.push_back(path.string());
-
-                step++;
+                matrix_path[step] = path.string();
             }
         }
 
