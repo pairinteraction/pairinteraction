@@ -59,8 +59,8 @@ deploy:
   file_glob: true
   file: $TRAVIS_BUILD_DIR/build/$package
   skip_cleanup: true
-  #draft: true
+  draft: true
   on:
-    #all_branches: true
-    tags: true
+    all_branches: true
+    #tags: true
     condition: $package != ""

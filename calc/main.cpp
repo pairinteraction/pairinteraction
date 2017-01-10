@@ -56,7 +56,6 @@
 
 #include <numeric>
 
-
 /*
 ///////////////////// TODOs /////////////////////
 
@@ -532,7 +531,7 @@ public:
         }
     }
 
-    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::vector<bool> &necessary, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym) {
+    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym) {
         // TODO program a faster method for samebasis == true
 
         size_t num_basisvectors = lhs.num_basisvectors()*rhs.num_basisvectors();
@@ -641,20 +640,17 @@ public:
                                 val_basis /= std::sqrt(2);
                                 mat.addBasis(row,col,val_basis);
                                 row = mapping[row];
-                                necessary[row] = true;
                                 val_basis *= (sym.reflection == EVEN) ? 1*parityL*parityJ : -1*parityL*parityJ;
                             }
 
                             if (sym.inversion != NA && col_1 != col_2) {
                                 val_basis /= std::sqrt(2);
                                 mat.addBasis(row,col,val_basis);
-                                necessary[row] = true;
                                 row = rhs.num_coordinates()*triple_2.row() + triple_1.row();
                                 val_basis *= (sym.inversion == EVEN) ? -1*parityL : 1*parityL;
                             }
 
                             mat.addBasis(row,col,val_basis);
-                            necessary[row] = true;
                             existing = true;
                         }
                     }
@@ -674,7 +670,7 @@ public:
         return mat;
     }
 
-    friend void cutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::vector<bool> &necessary) {
+    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::vector<bool> &necessary) {
         eigen_vector_t diag1 = lhs.entries().diagonal();
         eigen_vector_t diag2 = rhs.entries().diagonal();
 
@@ -1460,7 +1456,7 @@ public:
 
 
         ////////////////////////////////////////////////////////
-        ////// Restrict states and build pair state basis //////
+        ////// Restrict single atom states /////////////////////
         ////////////////////////////////////////////////////////
 
         // === Restrict states of atom 1 ===
@@ -1517,6 +1513,11 @@ public:
             hamiltonian_one2->removeUnnecessaryStates(necessary2);
         }
 
+
+        ////////////////////////////////////////////////////////
+        ////// Build pair state basis //////////////////////////
+        ////////////////////////////////////////////////////////
+
         // === Build pair state basis ===
 
         std::cout << "Two-atom basis, build pair state basis" << std::endl;
@@ -1528,13 +1529,6 @@ public:
         }
 
         std::cout << "Two-atom basis, number of unrestricted pair states: " << basis->size() << std::endl;
-
-
-        ////////////////////////////////////////////////////////
-        ////// Combine one-atom Hamiltonians ///////////////////
-        ////////////////////////////////////////////////////////
-
-        // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)
 
         // === Determine necessary symmetries ===
         std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
@@ -1568,39 +1562,42 @@ public:
 
         // TODO make use of all the symmetries
 
-        // === Combine the Hamiltonians of the two atoms, building up the list of necessary coordinates ===
-        std::cout << "Two-atom Hamiltonian, construct contribution of combined one-atom Hamiltonians" << std::endl;
+        // === Build up the list of necessary pair states ===
+        std::cout << "Two-atom Hamiltonian, build up the list of necessary pair states" << std::endl;
 
-        std::map<Symmetry,std::vector<Hamiltonianmatrix>> mat_single;
-        for (Symmetry sym : symmetries) {
-            mat_single[sym].reserve(nSteps_one);
+        // Apply energy cutoff
+        std::vector<bool> necessary_tmp(basis->size(), false);
+
+#pragma omp parallel for
+        for (size_t i = 0; i < nSteps_one; ++i) {
+            energycutoff(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, necessary_tmp);
         }
 
+        // Apply restrictions due to symmetries
         std::vector<bool> necessary(basis->size(), false);
 
-        for (size_t i = 0; i < nSteps_one; ++i) {
-            for (Symmetry sym : symmetries) { // TODO directly give symmetry as argument to the combine function
-                mat_single[sym].push_back(combine(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, necessary, basis, sym));
-            }
-            std::cout << "Two-atom Hamiltonian, "<< i+1 << ". Hamiltonian combined" << std::endl;
-        }
+        for (const auto &state: *basis) {
+            for (Symmetry sym : symmetries) {
+                float M = state.m[0]+state.m[1];
+                int parityL = std::pow(-1, state.l[0] + state.l[1]);
 
-        // TODO improve memory management: build the variable "necessary" without calculating "mat_single" explicitely, calculate "mat_single" at the time when it is needed
+                // In case of rotation symmetry: skip pair states with wrong total magnetic momentum
+                if(sym.rotation != NA && sym.rotation != M) {
+                    continue;
+                }
+
+                // In case of inversion and permutation symmetry: skip pair states with wrong orbital parity
+                if(sym.orbitalparity != NA && sym.orbitalparity != parityL) {
+                    continue;
+                }
+
+                necessary[state.idx] = necessary_tmp[state.idx];
+            }
+        }
 
         int numNecessary = std::count(necessary.begin(), necessary.end(), true);
         std::cout << "Two-atom basis, number of restricted pair states: " << numNecessary << std::endl;
         std::cout << ">>BAS" << std::setw(7) << numNecessary << std::endl;
-
-        // === Remove more or less empty basis vectors ===
-        std::cout << "Two-atom basis, remove basis vectors with too small norm" << std::endl;
-
-        for (size_t i = 0; i < nSteps_one; ++i) {
-            for (Symmetry symmetry : symmetries) {
-                mat_single[symmetry][i].removeUnnecessaryBasisvectors();
-            }
-        }
-
-        // TODO this should affect the necessary basis states, too
 
         // === Save pair state basis ===
         std::cout << "Two-atom basis, save pair state basis" << std::endl;
@@ -1616,13 +1613,13 @@ public:
         // save pair state basis
         boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
         path_basis /= "basis_two_"+uuid+".csv";
-        basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) vontinue" unneeded)
+        basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) vontinue" unneeded) !!!!!!!!!!!!!
 
         std::cout << ">>STA " << path_basis.string() << std::endl;
 
 
         ////////////////////////////////////////////////////////
-        ////// Add interaction /////////////////////////////////
+        ////// Construct interaction ///////////////////////////
         ////////////////////////////////////////////////////////
 
         // Construct pair Hamiltonians for all orders of the multipole expansion
@@ -1670,7 +1667,7 @@ public:
             for (int sumOfKappas = sumOfKappas_min; sumOfKappas<=sumOfKappas_max; ++sumOfKappas) {
                 int idx_multipole = sumOfKappas-sumOfKappas_min;
 
-                for (const auto &state_col : *basis) {
+                for (const auto &state_col : *basis) { // TODO parallelization
                     if (!necessary[state_col.idx]) continue;
 
                     int M_col = state_col.first().m + state_col.second().m;
@@ -1713,7 +1710,7 @@ public:
                 exponent_multipole.push_back(sumOfKappas+1);
                 mat_multipole.push_back(Hamiltonianmatrix(size_basis, 2*size_mat_multipole[idx_multipole])); // factor of 2 because triangular matrix is not sufficient
 
-                for (const auto &state_col : *basis) {
+                for (const auto &state_col : *basis) { // TODO parallelization
                     if (!necessary[state_col.idx]) continue;
 
                     int M_col = state_col.first().m + state_col.second().m;
@@ -1796,25 +1793,43 @@ public:
 
         matrix_path.resize(nSteps_two*symmetries.size());
 
-        // --- Determine transformed interaction matrices ---
-        std::vector<std::vector<Hamiltonianmatrix>> mat_multipole_transformed; // TODO linearize dimensions
+        // --- Determine combined single atom matrices ---
+        // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)
+
+        std::vector<Hamiltonianmatrix> mat_single;
 
         // Check if one_atom Hamiltonians change with step_two
         // It is assumed that nSteps_one = 1 if nSteps_two != nSteps_one // TODO introduce variable "is_mat_single_const" to improve readability
         if (nSteps_two != nSteps_one) {
+            std::cout << "Two-atom Hamiltonian, construct contribution of combined one-atom Hamiltonians" << std::endl;
 
-            // Resize mat_multipole_transformed
-            mat_multipole_transformed.resize(symmetries.size());
+            mat_single.resize(symmetries.size());
+
+#pragma omp parallel for
             for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
-                mat_multipole_transformed[idx_symmetry].resize(idx_multipole_max+1);
-            }
+                Symmetry sym = symmetries[idx_symmetry];
 
-            // Fill mat_multipole_transformed
+                // Combine the Hamiltonians of the two atoms
+                mat_single[idx_symmetry] = combine(*(hamiltonian_one1->get(0)), *(hamiltonian_one2->get(0)), deltaE, basis, sym);
+
+                // Remove more or less empty basis vectors
+                mat_single[idx_symmetry].removeUnnecessaryBasisvectors();
+            }
+        }
+
+        // --- Determine transformed interaction matrices ---
+        std::vector<Hamiltonianmatrix> mat_multipole_transformed;
+
+        // Check if one_atom Hamiltonians change with step_two
+        if (nSteps_two != nSteps_one) {
+            std::cout << "Two-atom Hamiltonian, construct transformed interaction matrices" << std::endl;
+
+            mat_multipole_transformed.resize(symmetries.size()*(idx_multipole_max+1));
+
 #pragma omp parallel for collapse(2)
             for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
                 for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                    Symmetry sym = symmetries[idx_symmetry];
-                    mat_multipole_transformed[idx_symmetry][idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[sym][0].basis()); // TODO use idx_symmetry for mat_single, too
+                    mat_multipole_transformed[idx_symmetry*(idx_multipole_max+1)+idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[idx_symmetry].basis());
                 }
             }
         }
@@ -1945,16 +1960,21 @@ public:
 
                 if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
-                    // --- Get combined single atom matrix ---
-                    totalmatrix = mat_single[sym][single_idx]; // TODO if mat_single depends on step_two, do not precalculate it in order to save memory
+                    // --- Combine single atom matrices ---
+                    if (nSteps_two == nSteps_one) {
+                        totalmatrix = combine(*(hamiltonian_one1->get(step_two)), *(hamiltonian_one2->get(step_two)), deltaE, basis, sym);
+                        totalmatrix.removeUnnecessaryBasisvectors();
+                    } else {
+                        totalmatrix = mat_single[idx_symmetry];
+                    }
 
                     // --- Add interaction ---
                     for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
                         real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
                         if (nSteps_two == nSteps_one) {
-                            totalmatrix += mat_multipole[idx_multipole].changeBasis(mat_single[sym][step_two].basis())*pos;
+                            totalmatrix += mat_multipole[idx_multipole].changeBasis(totalmatrix.basis())*pos;
                         } else {
-                            totalmatrix += mat_multipole_transformed[idx_symmetry][idx_multipole]*pos;
+                            totalmatrix += mat_multipole_transformed[idx_symmetry*(idx_multipole_max+1)+idx_multipole]*pos;
                         }
                     }
 
@@ -2013,6 +2033,8 @@ private:
 
 int main(int argc, char **argv) {
     std::cout << std::unitbuf;
+
+    Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
 
     // === Parse command line ===
     namespace po = boost::program_options;
