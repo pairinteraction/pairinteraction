@@ -43,6 +43,7 @@ option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 # Mac OS X specific build instructions
 
 set(CMAKE_MACOSX_RPATH 0)
+set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/apple")
 if( WITH_DMG )
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 endif( )
@@ -81,17 +82,17 @@ elseif(APPLE AND WITH_DMG)
   set(CPACK_GENERATOR "Bundle")
   
   set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-osx")
-  set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
+  set(CPACK_PACKAGE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
   set(CPACK_BUNDLE_NAME "pairinteraction")
-  set(CPACK_BUNDLE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
-  set(CPACK_BUNDLE_PLIST "${CMAKE_SOURCE_DIR}/apple/Info.plist")
-  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_SOURCE_DIR}/apple/launcher.sh")
+  set(CPACK_BUNDLE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
+  set(CPACK_BUNDLE_PLIST "${CMAKE_MACOSX_GOODIES_PATH}/Info.plist")
+  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
   
   set(LICENSES "${PROJECT_BINARY_DIR}/LICENSE")
   add_custom_target(
     license
-    COMMAND ${PYTHON_BINARY} "${CMAKE_SOURCE_DIR}/apple/licensecollector.py" "${CMAKE_SOURCE_DIR}" "${LICENSES}" 
-    COMMAND ${PYTHON_BINARY} "${CMAKE_SOURCE_DIR}/apple/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
+    COMMAND ${PYTHON_BINARY} "${CMAKE_MACOSX_GOODIES_PATH}/licensecollector.py" "${CMAKE_SOURCE_DIR}" "${LICENSES}" 
+    COMMAND ${PYTHON_BINARY} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
   
 elseif(UNIX)

@@ -30,7 +30,7 @@
 !define DLL_DIR "\usr\${ARCH}-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-windows-${ARCH}.exe'
+OutFile '${BUILD_DIR}\${APP_NAME}-install-windows-${ARCH}.exe'
 
 showinstdetails show
 
@@ -91,6 +91,7 @@ SectionGroup /e "${APP_NAME}"
     !endif
     File "${DLL_DIR}\libgsl-0.dll"
     File "${DLL_DIR}\libgslcblas-0.dll"
+    File "${DLL_DIR}\libgomp-1.dll"
     File "${DLL_DIR}\libsqlite3-0.dll"
     File "${DLL_DIR}\libstdc++-6.dll"
     File "${DLL_DIR}\libwinpthread-1.dll"
