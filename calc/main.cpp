@@ -755,7 +755,7 @@ public:
 
 
     const Configuration& getConf() const { // TODO in Configurable Klasse auslagern, von der geerbt werrden soll
-        return conf;
+        return basicconf;
     }
 
 protected:
@@ -776,14 +776,14 @@ protected:
     }
 
     void configure(const Configuration &config) {
-        conf = basis->getConf();
-        conf["deltaESingle"] = config["deltaESingle"];
-        conf["diamagnetism"] = config["diamagnetism"];
+        basicconf = basis->getConf();
+        basicconf["deltaESingle"] = config["deltaESingle"];
+        basicconf["diamagnetism"] = config["diamagnetism"];
 
-        conf["deltaESingle"] >> deltaE;
-        conf["species1"] >> species;
+        basicconf["deltaESingle"] >> deltaE;
+        basicconf["species1"] >> species;
 
-        diamagnetism = conf["diamagnetism"].str() == "true";
+        diamagnetism = basicconf["diamagnetism"].str() == "true";
 
         config["minBx"] >> min_B_x;
         config["minBy"] >> min_B_y;
@@ -823,41 +823,18 @@ protected:
 
         real_t tol = 1e-32;
 
-        /*real_t energycutoff = 0.7e-5;
 
-            real_t theta = 0*M_PI/180.;
-            real_t theta2 = 60*M_PI/180.;
+        ////////////////////////////////////////////////////////
+        ////// Build single atom basis and Hamiltonian /////////
+        ////////////////////////////////////////////////////////
 
-            real_t min_E_x = 0;
-            real_t min_E_y = 0;
-            real_t min_E_z = 0;
-            real_t max_E_x = 0;
-            real_t max_E_y = 1e-11*std::sin(theta2);
-            real_t max_E_z = 1e-11*std::cos(theta2);
-            real_t min_B_x = 0;
-            real_t min_B_y = 50*4.254382e-10*std::sin(theta);
-            real_t min_B_z = 50*4.254382e-10*std::cos(theta);
-            real_t max_B_x = 0;
-            real_t max_B_y = 50*4.254382e-10*std::sin(theta);
-            real_t max_B_z = 50*4.254382e-10*std::cos(theta);*/
+        // === Calculate one-atom Hamiltonian ===
 
-        // === calculate one-atom Hamiltonians ===
-        scalar_t min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m, max_B_0, max_B_p, max_B_m;
-        changeToSpherical(min_E_x, min_E_y, min_E_z, min_E_p, min_E_m, min_E_0);
-        changeToSpherical(max_E_x, max_E_y, max_E_z, max_E_p, max_E_m, max_E_0);
-        changeToSpherical(min_B_x, min_B_y, min_B_z, min_B_p, min_B_m, min_B_0);
-        changeToSpherical(max_B_x, max_B_y, max_B_z, max_B_p, max_B_m, max_B_0);
-
-        bool exist_E_0 = (std::abs(min_E_0) != 0 || std::abs(max_E_0) != 0);
-        bool exist_E_1 = (std::abs(min_E_p) != 0 || std::abs(max_E_p) != 0);
-        bool exist_B_0 = (std::abs(min_B_0) != 0 || std::abs(max_B_0) != 0);
-        bool exist_B_1 = (std::abs(min_B_p) != 0 || std::abs(max_B_p) != 0);
-
-        // --- count entries of Hamiltonian parts ---
+        // --- Count entries of one-atom Hamiltonian ---
         size_t size_basis = basis->size();
         size_t size_energy = basis->size();
 
-        // --- construct energy Hamiltonian part ---
+        // --- Construct one-atom  Hamiltonian and basis ---
         std::cout << "One-atom Hamiltonian, construct diagonal hamiltonian" << std::endl;
 
         Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
@@ -886,10 +863,9 @@ protected:
         hamiltonian_energy.compress(basis->dim(), basis->dim());
 
         std::cout << "One-atom basis, size with restrictions in energy: " << basis->size() << std::endl;
-
-
-
         std::cout << ">>BAS" << std::setw(7) << basis->size() << std::endl;
+
+        // === Save single atom basis ===
 
         // initialize uuid generator
         boost::uuids::random_generator generator;
@@ -906,10 +882,27 @@ protected:
 
         std::cout << ">>STA " << path_basis.string() << std::endl;
 
-        // --- precalculate matrix elements ---
+
+        ////////////////////////////////////////////////////////
+        ////// Construct atom-field interaction ////////////////
+        ////////////////////////////////////////////////////////
+
+        // --- Obtain existence of fields ---
+        scalar_t min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m, max_B_0, max_B_p, max_B_m;
+        changeToSpherical(min_E_x, min_E_y, min_E_z, min_E_p, min_E_m, min_E_0);
+        changeToSpherical(max_E_x, max_E_y, max_E_z, max_E_p, max_E_m, max_E_0);
+        changeToSpherical(min_B_x, min_B_y, min_B_z, min_B_p, min_B_m, min_B_0);
+        changeToSpherical(max_B_x, max_B_y, max_B_z, max_B_p, max_B_m, max_B_0);
+
+        bool exist_E_0 = (std::abs(min_E_0) != 0 || std::abs(max_E_0) != 0);
+        bool exist_E_1 = (std::abs(min_E_p) != 0 || std::abs(max_E_p) != 0);
+        bool exist_B_0 = (std::abs(min_B_0) != 0 || std::abs(max_B_0) != 0);
+        bool exist_B_1 = (std::abs(min_B_p) != 0 || std::abs(max_B_p) != 0);
+
+        // --- Precalculate matrix elements --- // TODO parallelization
         std::cout << "One-atom Hamiltonian, precalculate matrix elements" << std::endl;
 
-        MatrixElements matrix_elements(conf, species, (path_cache / "cache_elements.db").string());
+        MatrixElements matrix_elements(basicconf, species, (path_cache / "cache_elements.db").string());
 
         if (exist_E_0) matrix_elements.precalculateElectricMomentum(basis, 0);
         if (exist_E_1) matrix_elements.precalculateElectricMomentum(basis, 1);
@@ -926,7 +919,7 @@ protected:
         if (diamagnetism && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, 2);
         if (diamagnetism && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, -2);
 
-        // --- count entries of Hamiltonian parts ---
+        // --- Count entries of atom-field Hamiltonian ---
         std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian" << std::endl;
 
         size_basis = basis->size();
@@ -945,7 +938,7 @@ protected:
         size_t size_diamagnetism_2pp = 0;
         size_t size_diamagnetism_2mm = 0;
 
-        for (const auto &state_col : *basis) {
+        for (const auto &state_col : *basis) { // TODO parallelization
             for (const auto &state_row : *basis) {
                 if (state_row.idx < state_col.idx) { // lower triangle only
                     continue;
@@ -983,7 +976,7 @@ protected:
             }
         }
 
-        // --- construct field Hamiltonian parts ---
+        // --- Construct atom-field Hamiltonian ---
         std::cout << "One-atom Hamiltonian, construct field Hamiltonian" << std::endl;
 
         Hamiltonianmatrix hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
@@ -1001,7 +994,7 @@ protected:
         Hamiltonianmatrix hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
         Hamiltonianmatrix hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
 
-        for (const auto &state_col : *basis) {
+        for (const auto &state_col : *basis) { // TODO parallelization
             for (const auto &state_row : *basis) {
                 if (state_row.idx < state_col.idx) {
                     continue;
@@ -1109,13 +1102,16 @@ protected:
         hamiltonian_diamagnetism_2pp.compress(basis->dim(), basis->dim());
         hamiltonian_diamagnetism_2mm.compress(basis->dim(), basis->dim());
 
-        // --- construct Hamiltonians ---
+
+        ////////////////////////////////////////////////////////
+        ////// Prepare processing of Hamiltonians //////////////
+        ////////////////////////////////////////////////////////
+
+        // TODO Put the logic in its own class
+
         std::cout << "One-atom Hamiltonian, processe Hamiltonians" << std::endl;
 
-        matrix.reserve(nSteps);
-        params.reserve(nSteps);
-
-        // open database
+        // === Open database ===
         boost::filesystem::path path_db;
 
         if (utils::is_complex<scalar_t>::value) {
@@ -1125,79 +1121,119 @@ protected:
         }
         sqlite::handle db(path_db.string());
 
+        // === Initialize variables ===
+        bool flag_perhapsmissingtable = true;
+
+        matrix_path.resize(nSteps);
+        matrix_diag.resize(nSteps); // TODO maybe remove
+        params.resize(nSteps); // TODO maybe remove
+
+
+        ////////////////////////////////////////////////////////
+        ////// Loop through steps //////////////////////////////
+        ////////////////////////////////////////////////////////
+
         std::cout << ">>TOT" << std::setw(7) << nSteps << std::endl;
 
-        // loop through steps
+#pragma omp parallel for schedule(static, 1)
+
+        // Loop through steps
         for (size_t step = 0; step < nSteps; ++step) {
+
+            // === Get parameters for the current position inside the loop ===
+
+            // Get fields
             real_t normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
 
-            std::shared_ptr<Configuration> par = std::make_shared<Configuration>(conf);
+            real_t Ex = min_E_x+normalized_position*(max_E_x-min_E_x);
+            real_t Ey = min_E_y+normalized_position*(max_E_y-min_E_y);
+            real_t Ez = min_E_z+normalized_position*(max_E_z-min_E_z);
+            real_t Bx = min_B_x+normalized_position*(max_B_x-min_B_x);
+            real_t By = min_B_y+normalized_position*(max_B_y-min_B_y);
+            real_t Bz = min_B_z+normalized_position*(max_B_z-min_B_z);
 
-            // save fields to ConfParser object
-            (*par)["Ex"] = min_E_x+normalized_position*(max_E_x-min_E_x);
-            (*par)["Ey"] = min_E_y+normalized_position*(max_E_y-min_E_y);
-            (*par)["Ez"] = min_E_z+normalized_position*(max_E_z-min_E_z);
-            (*par)["Bx"] = min_B_x+normalized_position*(max_B_x-min_B_x);
-            (*par)["By"] = min_B_y+normalized_position*(max_B_y-min_B_y);
-            (*par)["Bz"] = min_B_z+normalized_position*(max_B_z-min_B_z);
+            scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
+            scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
+            scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
+            scalar_t B_0 = min_B_0+normalized_position*(max_B_0-min_B_0);
+            scalar_t B_p = min_B_p+normalized_position*(max_B_p-min_B_p);
+            scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
 
-            // create table if necessary
+            // Get configuration and save fields
+            Configuration conf = basicconf;
+            conf["Ex"] = Ex;
+            conf["Ey"] = Ey;
+            conf["Ez"] = Ez;
+            conf["Bx"] = Bx;
+            conf["By"] = By;
+            conf["Bz"] = Bz;
+
+            // === Create table if necessary ===
             std::stringstream query;
             std::string spacer = "";
 
-            if (step == 0) {
+            if (flag_perhapsmissingtable) {
                 query << "CREATE TABLE IF NOT EXISTS cache_one (uuid text NOT NULL PRIMARY KEY, "
                          "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                          "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
-                for (auto p: *par) {
+                for (auto p: conf) {
                     query << ", " << p.key << " text";
                 }
                 query << ", UNIQUE (";
-                for (auto p: *par) {
+                for (auto p: conf) {
                     query << spacer << p.key;
                     spacer = ", ";
                 }
                 query << "));";
-                db.exec(query);
+
+                flag_perhapsmissingtable = false;
             }
 
-            // get uuid as filename
-            std::string uuid;
-
-            query.str(std::string());
+            // === Get uuid as filename === // TODO put code in its own method
+            std::string uuid = "";
             spacer = "";
             query << "SELECT uuid FROM cache_one WHERE ";
-            for (auto p: *par) {
+            for (auto p: conf) {
                 query << spacer << p.key << "='" << p.value.str() << "'";
                 spacer = " AND ";
             }
             query << ";";
-            sqlite::result result = db.query(query);
 
-            if (result.size() == 1) {
-                uuid = result.first();
+#pragma omp critical(database)
+            {
+                sqlite::result result = db.query(query);
+                if (result.size() == 1) {
+                    uuid = result.first();
+                }
+            }
 
-                /*query.str(std::string());
-                    query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
-                    db.exec(query.str());*/ // TODO This is very slow on rqo-donkey!
+            if (uuid != "") {
+                query.str(std::string());
+                query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
+#pragma omp critical(database)
+                db.exec(query.str()); // TODO check whether this slows down the program
+
             } else {
                 boost::uuids::uuid u = generator();
                 boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
                 query.str(std::string());
                 query << "INSERT INTO cache_one (uuid";
-                for (auto p: *par) {
+                for (auto p: conf) {
                     query << ", " << p.key;
                 }
                 query << ") values ( '" << uuid << "'";
-                for (auto p: *par) {
+                for (auto p: conf) {
                     query << ", " << "'" << p.value.str() << "'";
                 }
                 query << ");";
+#pragma omp critical(database)
                 db.exec(query);
             }
 
-            // check whether .mat and .json file exists and compare settings in program with settings in .json file
+            // === Check existence of files === // TODO put code in its own method
+
+            // Check whether .mat and .json file exists and compare settings in program with settings in .json file
             boost::filesystem::path path, path_mat, path_json;
 
             path = path_cache_mat / ("one_" + uuid);
@@ -1211,87 +1247,72 @@ protected:
                 if (boost::filesystem::exists(path_json)) {
                     Configuration params_loaded;
                     params_loaded.load_from_json(path_json.string());
-                    if (*par == params_loaded) {
+                    if (conf == params_loaded) {
                         is_existing = true;
                     }
                 }
             }
 
-            // create .json file if "is_existing" is false
+            // Create .json file if "is_existing" is false
             if (!is_existing) {
-                par->save_to_json(path_json.string());
+                conf.save_to_json(path_json.string());
             }
+
+            // === Build and diagonalize total matrix if not existent ===
+            Hamiltonianmatrix totalmatrix;
 
             // calculate Hamiltonian if "is_existing" is false
             std::shared_ptr<Hamiltonianmatrix> mat;
-            if (true) { // TODO if "is_existing" is false and if it can be loaded
-                scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
-                scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);
-                scalar_t E_m = min_E_m+normalized_position*(max_E_m-min_E_m);
-                scalar_t B_0 = min_B_0+normalized_position*(max_B_0-min_B_0);
-                scalar_t B_p = min_B_p+normalized_position*(max_B_p-min_B_p);
-                scalar_t B_m = min_B_m+normalized_position*(max_B_m-min_B_m);
+            if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
-                mat = std::make_shared<Hamiltonianmatrix>(hamiltonian_energy
-                                                          -hamiltonian_electricMomentum_0*E_0
-                                                          +hamiltonian_electricMomentum_p*E_m
-                                                          +hamiltonian_electricMomentum_m*E_p
-                                                          +hamiltonian_magneticMomentum_0*B_0
-                                                          -hamiltonian_magneticMomentum_p*B_m
-                                                          -hamiltonian_magneticMomentum_m*B_p
-                                                          +hamiltonian_diamagnetism_00*(B_0*B_0-2.*B_p*B_m)
-                                                          -hamiltonian_diamagnetism_20*(B_0*B_0+B_p*B_m)
-                                                          +std::sqrt(3)*hamiltonian_diamagnetism_2p*B_0*B_m
-                                                          +std::sqrt(3)*hamiltonian_diamagnetism_2m*B_0*B_p
-                                                          -std::sqrt(1.5)*hamiltonian_diamagnetism_2pp*B_m*B_m
-                                                          -std::sqrt(1.5)*hamiltonian_diamagnetism_2mm*B_p*B_p
-                                                          );
+                // --- Build matrix ---
+                totalmatrix = hamiltonian_energy
+                        -hamiltonian_electricMomentum_0*E_0
+                        +hamiltonian_electricMomentum_p*E_m
+                        +hamiltonian_electricMomentum_m*E_p
+                        +hamiltonian_magneticMomentum_0*B_0
+                        -hamiltonian_magneticMomentum_p*B_m
+                        -hamiltonian_magneticMomentum_m*B_p
+                        +hamiltonian_diamagnetism_00*(B_0*B_0-2.*B_p*B_m)
+                        -hamiltonian_diamagnetism_20*(B_0*B_0+B_p*B_m)
+                        +std::sqrt(3)*hamiltonian_diamagnetism_2p*B_0*B_m
+                        +std::sqrt(3)*hamiltonian_diamagnetism_2m*B_0*B_p
+                        -std::sqrt(1.5)*hamiltonian_diamagnetism_2pp*B_m*B_m
+                        -std::sqrt(1.5)*hamiltonian_diamagnetism_2mm*B_p*B_p;
+
+                // Stdout: Hamiltonian assembled
+#pragma omp critical(textoutput)
+                std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
+                          << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+
+                // --- Diagonalize matrix and save diagonalized matrix ---
+                totalmatrix.diagonalize();
+                totalmatrix.save(path_mat.string());
+
+                // Stdout: Hamiltonian diagonalized
+#pragma omp critical(textoutput)
+                std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step << std::setw(7) << 1 << std::setw(7) << 0 << " " << path.string() << std::endl
+                          << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
             } else {
-                mat = std::make_shared<Hamiltonianmatrix>();
-                //mat->compress(hamiltonian_energy.num_basisvectors(),hamiltonian_energy.num_coordinates());
+                // Stdout: Hamiltonian loaded
+#pragma omp critical(textoutput)
+                std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
+                          << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step << std::setw(7) << 1 << std::setw(7) << 0 << " " << path.string() << std::endl
+                          << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
             }
 
-            // save everything
-            params.push_back(std::move(par));
-            matrix_path.push_back(path.string());
-            matrix_step.push_back(step);
-            matrix_blocks.push_back(1); // TODO
-            matrix_block.push_back(0);
-            matrix_dimension.push_back(hamiltonian_energy.num_basisvectors());
-
-            size_t matrix_dimension_local = hamiltonian_energy.num_basisvectors();
-            size_t matrix_step_local = step;
-            size_t matrix_blocks_local = 1;
-            size_t matrix_block_local = 0;
-            size_t numWork = step;
-            std::string matrix_path_local = path.string();
-
-            std::cout << "One-atom Hamiltonian, " <<  numWork+1 << ". Hamiltonian assembled" << std::endl;
-
-            std::cout << ">>DIM" << std::setw(7) << matrix_dimension_local << std::endl;
-
-
-            // diagonalize matrix and save diagonalized matrix
-            if (!is_existing || !mat->load(path_mat.string())) {
-                mat->diagonalize();
-                mat->save(path_mat.string());
-            }
-
-
-            matrix_diag.push_back(std::move(mat)); // TODO reserve
-            std::cout << ">>OUT" << std::setw(7) << numWork+1 << std::setw(7) << matrix_step_local << std::setw(7) << matrix_blocks_local << std::setw(7) << matrix_block_local << " " << matrix_path_local << std::endl;
-
-            std::cout << "One-atom Hamiltonian, " <<  numWork+1 << ". Hamiltonian diagonalized" << std::endl;
+            // === Store path to configuration and diagonalized matrix ===
+            matrix_path[step] = path.string();
+            matrix_diag[step] = std::make_shared<Hamiltonianmatrix>(totalmatrix); // TODO maybe remove
+            params[step] = std::make_shared<Configuration>(conf); // TODO maybe remove
         }
-
-
 
         std::cout << "One-atom Hamiltonian, all Hamiltonians processed" << std::endl;
 
     }
 
 private:
-    Configuration conf;
+    Configuration basicconf;
     real_t deltaE;
     real_t min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
     size_t nSteps;
@@ -1308,30 +1329,6 @@ public:
 
         samebasis = true;
 
-
-        /*size_t nSteps_one = hamiltonian_one1->size(); // TODO
-
-        // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
-        conf = basis_two->getConf();
-        conf["deltaE"] = config["deltaE"];
-
-        conf["deltaE"] >> deltaE;
-        deltaE = std::fmax(deltaE,1e-24); // TODO remove hack
-        conf["species1"] >> species1;
-        conf["species2"] >> species2;
-
-        config["steps"] >> nSteps_two;
-        config["minR"] >> min_R;
-        config["maxR"] >> max_R;
-
-        dipoledipole = config["dd"].str() == "true"; // TODO
-
-        if (min_R == max_R && nSteps_one == 1){
-            nSteps_two = 1;
-        } else {
-            config["steps"] >> nSteps_two;
-        }*/
-
         calculate(config);
     }
 
@@ -1339,29 +1336,6 @@ public:
         Hamiltonian<BasisnamesTwo>(), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), path_cache(path_cache) {
 
         samebasis = false;
-
-        /*size_t nSteps_one = hamiltonian_one1->size(); // TODO
-
-        // TODO : in extra methode auslagern, hamiltonian_one2 mitberuecksichtigen (alle delta in externes Objekt auslagern)
-        conf = basis_two->getConf();
-        conf["deltaE"] = config["deltaE"];
-
-        conf["deltaE"] >> deltaE;
-        deltaE = std::fmax(deltaE,1e-24); // TODO remove hack
-        conf["species1"] >> species1;
-        conf["species2"] >> species2;
-
-        config["steps"] >> nSteps_two;
-        config["minR"] >> min_R;
-        config["maxR"] >> max_R;
-
-        dipoledipole = config["dd"].str() == "true"; // TODO
-
-        if (min_R == max_R && nSteps_one == 1){
-            nSteps_two = 1;
-        } else {
-            config["steps"] >> nSteps_two;
-        }*/
 
         calculate(config);
     }
@@ -1613,13 +1587,13 @@ public:
         // save pair state basis
         boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
         path_basis /= "basis_two_"+uuid+".csv";
-        basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) vontinue" unneeded) !!!!!!!!!!!!!
+        basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) continue" unneeded; then, "combine" has to check existence of basis element and the python script has to be adapted)
 
         std::cout << ">>STA " << path_basis.string() << std::endl;
 
 
         ////////////////////////////////////////////////////////
-        ////// Construct interaction ///////////////////////////
+        ////// Construct atom-atom interaction /////////////////
         ////////////////////////////////////////////////////////
 
         // Construct pair Hamiltonians for all orders of the multipole expansion
@@ -1634,7 +1608,7 @@ public:
 
         if (multipoleexponent > 2) {
 
-            // --- initialize two-atom interaction Hamiltonians ---
+            // --- Initialize two-atom interaction Hamiltonians ---
             std::cout << "Two-atom hamiltonian, initialize interaction Hamiltonians" << std::endl;
 
             int kappa_min = 1; // spherical dipole operators
@@ -1647,7 +1621,7 @@ public:
             mat_multipole.reserve(idx_multipole_max+1);
             size_mat_multipole.resize(idx_multipole_max+1);
 
-            // --- precalculate matrix elements ---
+            // --- Precalculate matrix elements --- // TODO parallelization
             std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
 
             auto basis_one1_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis));
@@ -1661,7 +1635,7 @@ public:
 
             // TODO if (samebasis) ...
 
-            // --- count entries of two-atom interaction Hamiltonians ---
+            // --- Count entries of two-atom interaction Hamiltonians ---
             std::cout << "Two-atom Hamiltonian, count number of entries within the interaction Hamiltonians" << std::endl;
 
             for (int sumOfKappas = sumOfKappas_min; sumOfKappas<=sumOfKappas_max; ++sumOfKappas) {
@@ -1699,7 +1673,7 @@ public:
                 }
             }
 
-            // --- construct two-atom interaction Hamiltonians ---
+            // --- Construct two-atom interaction Hamiltonians ---
             size_t size_basis = basis->size();
 
             for (int sumOfKappas = sumOfKappas_min; sumOfKappas<=sumOfKappas_max; ++sumOfKappas) {
@@ -1770,8 +1744,6 @@ public:
         // TODO Put the logic in its own class
 
         std::cout << "Two-atom Hamiltonian, process Hamiltonians" << std::endl;
-
-        matrix.reserve(nSteps_two);
 
         // === Open database ===
         boost::filesystem::path path_db;
@@ -1859,14 +1831,13 @@ public:
                 real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
                 real_t position = min_R+normalized_position*(max_R-min_R);
 
-                // Get configuration
+                // Get configuration and save postions and symmetries
                 Configuration conf = conf_mat[single_idx];
                 conf["R"] = position;
                 conf["symmetry"] = symmetries_name[sym.inversion]; // TODO adapt for other symmetries
                 conf["sub"] = 0; // TODO remove
 
                 // === Create table if necessary ===
-                std::string uuid = "";
                 std::stringstream query;
                 std::string spacer = "";
 
@@ -1888,6 +1859,7 @@ public:
                 }
 
                 // === Get uuid as filename ===
+                std::string uuid = "";
                 spacer = "";
                 query << "SELECT uuid FROM cache_two WHERE ";
                 for (auto p: conf) {
