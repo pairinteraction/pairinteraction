@@ -12,6 +12,7 @@ RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/reposi
     mingw64-boost-devel mingw64-libboost_filesystem mingw64-libboost_program_options mingw64-libboost_system \
     mingw64-libgsl-devel mingw64-libgsl0 \
     sqlite3 mingw64-sqlite-devel mingw64-libsqlite3-0 \
+    mingw64-libgomp1 \
     mingw32-cross-nsis \
     glibc-locale && \
   zypper clean && \
