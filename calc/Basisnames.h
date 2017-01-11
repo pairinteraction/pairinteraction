@@ -113,6 +113,7 @@ public:
     BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1);
     const StateTwo& initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &isNecessary);
+    void removeUnnecessaryStatesKeepIdx(const std::vector<bool> &isNecessary);
     void save(std::string path);
 protected:
     void build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2);

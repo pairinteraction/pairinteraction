@@ -345,6 +345,20 @@ void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessar
     names_.shrink_to_fit();
 }
 
+void BasisnamesTwo::removeUnnecessaryStatesKeepIdx(const std::vector<bool> &is_necessary) {
+    auto tmp = names_;
+    names_.clear();
+    names_.reserve(tmp.size());
+
+    // loop over all two-atom states
+    for (auto state : tmp) {
+        if (is_necessary[state.idx]) {
+            names_.push_back(state);
+        }
+    }
+    names_.shrink_to_fit();
+}
+
 void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
     state_initial = startstate;
 

@@ -36,34 +36,17 @@ set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-
 find_package(Eigen3 REQUIRED)
 include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
 
-
 find_package(Sqlite3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIR})
 target_link_libraries(pairinteraction-real ${SQLITE3_LIBRARY})
 target_link_libraries(pairinteraction-complex ${SQLITE3_LIBRARY})
 target_link_libraries(matrixelements ${SQLITE3_LIBRARY})
 
-
-if( WIN32 )
-  find_package(MSMPI REQUIRED)
-  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc ${CMAKE_EXE_LINKER_FLAGS}")
-else( )
-  find_package(MPI REQUIRED)
-endif( )
-include_directories(${MPI_CXX_INCLUDE_PATH} ${MPI_C_INCLUDE_PATH})
-target_link_libraries(pairinteraction-real ${MPI_CXX_LIBRARIES})
-target_link_libraries(pairinteraction-complex ${MPI_CXX_LIBRARIES})
-target_link_libraries(matrixelements ${MPI_CXX_LIBRARIES})
-set(CMAKE_CXX_FLAGS        ${CMAKE_CXX_FLAGS}        ${MPI_CXX_COMPILE_FLAGS})
-set(CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} ${MPI_CXX_LINK_FLAGS})
-
-
 find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 target_link_libraries(pairinteraction-real ${Boost_LIBRARIES})
 target_link_libraries(pairinteraction-complex ${Boost_LIBRARIES})
 target_link_libraries(matrixelements ${Boost_LIBRARIES})
-
 
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
@@ -84,6 +67,13 @@ else()
     message(FATAL "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
 
+# Use OpenMP
+
+find_package(OpenMP REQUIRED)
+if (OPENMP_FOUND)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 # CPack
 
 if( WITH_DMG )
@@ -97,7 +87,7 @@ if( WITH_DMG )
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
   set(bin3 \${CMAKE_INSTALL_PREFIX}/matrixelements)
   
-  install(CODE "execute_process(COMMAND ${PYTHON_BINARY} ${CMAKE_CURRENT_SOURCE_DIR}/apple/standalone.py ${bin1} ${bin2} ${bin3})")
+  install(CODE "execute_process(COMMAND ${PYTHON_BINARY} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
 
 else( )
 

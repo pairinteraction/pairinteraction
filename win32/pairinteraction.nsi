@@ -30,7 +30,7 @@
 !define DLL_DIR "\usr\${ARCH}-w64-mingw32\sys-root\mingw\bin\"
 name ${APP_NAME}
 
-OutFile '${APP_NAME}-install-windows-${ARCH}.exe'
+OutFile '${BUILD_DIR}\${APP_NAME}-install-windows-${ARCH}.exe'
 
 showinstdetails show
 
@@ -42,7 +42,6 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.GPL3"
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.LGPL3"
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.MPL2"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.OMPI"
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.MIT"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
@@ -52,13 +51,6 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 !insertmacro MUI_LANGUAGE "English"
 
 SectionGroup /e "Dependencies"
-  Section 'MS-MPI'
-    SetOutPath "$INSTDIR"
-    File "${BUILD_DIR}\win32\MSMpiSetup.exe"
-    ExecWait "$INSTDIR\MSMpiSetup.exe"
-    Delete "$INSTDIR\MSMpiSetup.exe"
-  SectionEnd
-
   Section 'Miniconda'
     SetOutPath "$INSTDIR"
     File "${BUILD_DIR}\win32\Miniconda3-latest-Windows-${ARCHNAME}.exe"
@@ -99,6 +91,7 @@ SectionGroup /e "${APP_NAME}"
     !endif
     File "${DLL_DIR}\libgsl-0.dll"
     File "${DLL_DIR}\libgslcblas-0.dll"
+    File "${DLL_DIR}\libgomp-1.dll"
     File "${DLL_DIR}\libsqlite3-0.dll"
     File "${DLL_DIR}\libstdc++-6.dll"
     File "${DLL_DIR}\libwinpthread-1.dll"

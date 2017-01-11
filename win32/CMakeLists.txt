@@ -19,7 +19,6 @@ else( )
   message( FATAL_ERROR "Could not find makensis" )
 endif( )
 
-set( MSMPI_SETUP_DL "https://download.microsoft.com/download/E/8/A/E8A080AF-040D-43FF-97B4-065D4F220301/MSMpiSetup.exe" )
 if( "${MINGW_ARCH}" MATCHES "i686" )
   set( MINICONDA_DL "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe" )
 elseif( "${MINGW_ARCH}" MATCHES "x86_64" )
@@ -29,6 +28,5 @@ endif( )
 add_custom_target(win32
   DEPENDS pairinteraction-real pairinteraction-complex database gui
   COMMAND curl -C - -O ${MINICONDA_DL}
-  COMMAND curl -C - -O ${MSMPI_SETUP_DL}
   COMMAND ${MAKENSIS} -DARCH=${MINGW_ARCH} ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.nsi
   )

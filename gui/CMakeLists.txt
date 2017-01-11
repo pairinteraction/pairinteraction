@@ -24,7 +24,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CU
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/startgui
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/adapt.cmake
+  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/adapt.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
@@ -40,7 +40,7 @@ add_custom_target(gui ALL
 if( WITH_DMG )
 
   add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/startgui
-    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/pyinstaller.cmake
+    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -P ${CMAKE_MODULE_PATH}/pyinstaller.cmake
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/startgui
   )
   
@@ -61,7 +61,7 @@ if( WITH_DMG )
   endif( )
   
   set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction)
-  set(iconpath ${PROJECT_SOURCE_DIR}/apple/pairinteraction.icns)
+  set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
 else( )

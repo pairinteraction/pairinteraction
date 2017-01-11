@@ -43,6 +43,7 @@ option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 # Mac OS X specific build instructions
 
 set(CMAKE_MACOSX_RPATH 0)
+set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/apple")
 if( WITH_DMG )
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 endif( )
@@ -74,24 +75,24 @@ elseif(APPLE AND WITH_DMG)
 
   install(
     FILES "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_SOURCE_DIR}/LICENSE.BOOST1" "${CMAKE_SOURCE_DIR}/LICENSE.GPL3"
-    "${CMAKE_SOURCE_DIR}/LICENSE.LGPL3" "${CMAKE_SOURCE_DIR}/LICENSE.MIT" "${CMAKE_SOURCE_DIR}/LICENSE.MPL2" "${CMAKE_SOURCE_DIR}/LICENSE.OMPI"
+    "${CMAKE_SOURCE_DIR}/LICENSE.LGPL3" "${CMAKE_SOURCE_DIR}/LICENSE.MIT" "${CMAKE_SOURCE_DIR}/LICENSE.MPL2"
     DESTINATION licenses
   )
 
   set(CPACK_GENERATOR "Bundle")
   
   set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-osx")
-  set(CPACK_PACKAGE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
+  set(CPACK_PACKAGE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
   set(CPACK_BUNDLE_NAME "pairinteraction")
-  set(CPACK_BUNDLE_ICON "${CMAKE_SOURCE_DIR}/apple/pairinteraction.icns")
-  set(CPACK_BUNDLE_PLIST "${CMAKE_SOURCE_DIR}/apple/Info.plist")
-  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_SOURCE_DIR}/apple/launcher.sh")
+  set(CPACK_BUNDLE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
+  set(CPACK_BUNDLE_PLIST "${CMAKE_MACOSX_GOODIES_PATH}/Info.plist")
+  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
   
   set(LICENSES "${PROJECT_BINARY_DIR}/LICENSE")
   add_custom_target(
     license
-    COMMAND ${PYTHON_BINARY} "${CMAKE_SOURCE_DIR}/apple/licensecollector.py" "${CMAKE_SOURCE_DIR}" "${LICENSES}" 
-    COMMAND ${PYTHON_BINARY} "${CMAKE_SOURCE_DIR}/apple/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
+    COMMAND ${PYTHON_BINARY} "${CMAKE_MACOSX_GOODIES_PATH}/licensecollector.py" "${CMAKE_SOURCE_DIR}" "${LICENSES}" 
+    COMMAND ${PYTHON_BINARY} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
   
 elseif(UNIX)
@@ -113,7 +114,7 @@ elseif(UNIX)
   # DEB
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "\
-    libsqlite3-0, openmpi-bin, libboost-filesystem-dev, libboost-program-options-dev, \
+    libsqlite3-0, libboost-filesystem-dev, libboost-program-options-dev, \
     libboost-system-dev, libc6, libgcc1, libgsl0ldbl, python3-pint, python3-pyqt5, \
     python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
@@ -123,7 +124,7 @@ elseif(UNIX)
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
   set(CPACK_RPM_PACKAGE_REQUIRES "\
-    libsqlite3-0, openmpi, libboost_filesystem1_54_0, libboost_program_options1_54_0, \
+    libsqlite3-0, libboost_filesystem1_54_0, libboost_program_options1_54_0, \
     libboost_system1_54_0, glibc, libgcc_s1-gcc49, libgsl0, python3-Pint, python3-qt5, \
     python3-psutil, python3-scipy, python3-numpy")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
