@@ -1365,7 +1365,6 @@ public:
         conf_mat.reserve(nSteps_one);
 
         // new, pair hamiltonian specific configuration
-        std::cout << "The number of single atom Hamiltonians must be the same for both atoms." << std::endl;
 
         if (samebasis) {
             basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names()); // TODO remove

@@ -3608,16 +3608,16 @@
                  </sizepolicy>
                 </property>
                 <property name="statusTip">
-                 <string>The program needs at least two processes. A value of -1 means that all available CPU cores are used.</string>
+                 <string>A value of 0 means that all available CPU cores are used.</string>
                 </property>
                 <property name="minimum">
-                 <number>-1</number>
+                 <number>0</number>
                 </property>
                 <property name="maximum">
                  <number>9999</number>
                 </property>
                 <property name="value">
-                 <number>-1</number>
+                 <number>0</number>
                 </property>
                </widget>
               </item>
@@ -3659,7 +3659,7 @@
        </sizepolicy>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>2</number>
       </property>
       <widget class="QWidget" name="tab_field1">
        <property name="enabled">

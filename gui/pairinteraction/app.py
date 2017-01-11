@@ -59,7 +59,7 @@ from .loader import Eigensystem
 
 
 # Versioning
-version_settings = 12
+version_settings = 13
 version_cache = 11
 
 
@@ -686,9 +686,6 @@ class MainWindow(QtGui.QMainWindow):
             self.validateIntegerpositiveOrMinusone)
         self.ui.spinbox_plot_n2.editingFinished.connect(
             self.validateIntegerpositiveOrMinusone)
-
-        self.ui.spinbox_system_cores.editingFinished.connect(
-            self.validateCores)
 
         self.ui.combobox_system_species1.currentIndexChanged[
             str].connect(self.forbidSamebasis)
@@ -2453,8 +2450,6 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.spinbox_plot_n1.editingFinished.emit()
             self.ui.spinbox_plot_n2.editingFinished.emit()
 
-            self.ui.spinbox_system_cores.editingFinished.emit()
-
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(
                     self, "Message", "Invalide quantum numbers specified.")
@@ -2714,12 +2709,13 @@ class MainWindow(QtGui.QMainWindow):
                     path_cpp += '.exe'
 
                 self.numprocessors = self.systemdict["cores"].magnitude
-                if self.numprocessors == -1:
-                    self.numprocessors = multiprocessing.cpu_count()
-                self.numprocessors = max(2, self.numprocessors)
+                if self.numprocessors == 0:
+                    env = {}
+                else:
+                    env = {'OMP_NUM_THREADS': str(self.numprocessors)}
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir)
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=env)
 
                 self.starttime = time()
 
