@@ -835,7 +835,7 @@ protected:
         size_t size_energy = basis->size();
 
         // --- Construct one-atom  Hamiltonian and basis ---
-        std::cout << "One-atom Hamiltonian, construct diagonal hamiltonian" << std::endl;
+        std::cout << "One-atom Hamiltonian, construct diagonal Hamiltonian" << std::endl;
 
         Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
 
@@ -856,16 +856,17 @@ protected:
                 ++idx;
             }
         }
-        std::cout << "One-atom basis, size without restrictions in energy: " << basis->size() << std::endl;
+        std::cout << "One-atom Hamiltonian, basis size without restrictions: " << basis->size() << std::endl;
 
         basis->removeUnnecessaryStates(is_necessary);
 
         hamiltonian_energy.compress(basis->dim(), basis->dim());
 
-        std::cout << "One-atom basis, size with restrictions in energy: " << basis->size() << std::endl;
+        std::cout << "One-atom Hamiltonian, basis size with restrictions: " << basis->size() << std::endl;
         std::cout << ">>BAS" << std::setw(7) << basis->size() << std::endl;
 
         // === Save single atom basis ===
+        std::cout << "One-atom Hamiltonian, save single atom basis" << std::endl;
 
         // initialize uuid generator
         boost::uuids::random_generator generator;
@@ -1493,7 +1494,7 @@ public:
 
         // === Build pair state basis ===
 
-        std::cout << "Two-atom basis, build pair state basis" << std::endl;
+        std::cout << "Two-atom Hamiltonian, build pair state basis" << std::endl;
 
         if (samebasis) {
             basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names());
@@ -1501,10 +1502,10 @@ public:
             basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names());
         }
 
-        std::cout << "Two-atom basis, number of unrestricted pair states: " << basis->size() << std::endl;
+        std::cout << "Two-atom Hamiltonian, basis size without restrictions: " << basis->size() << std::endl;
 
         // === Determine necessary symmetries ===
-        std::cout << "Two-atom basis, determine symmetrized subspaces" << std::endl;
+        std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
         StateTwo initial = basis->initial();
 
         Symmetry sym;
@@ -1569,11 +1570,11 @@ public:
         }
 
         int numNecessary = std::count(necessary.begin(), necessary.end(), true);
-        std::cout << "Two-atom basis, number of restricted pair states: " << numNecessary << std::endl;
+        std::cout << "Two-atom Hamiltonian, basis size with restrictions: " << numNecessary << std::endl;
         std::cout << ">>BAS" << std::setw(7) << numNecessary << std::endl;
 
         // === Save pair state basis ===
-        std::cout << "Two-atom basis, save pair state basis" << std::endl;
+        std::cout << "Two-atom Hamiltonian, save pair state basis" << std::endl;
 
         // initialize uuid generator
         boost::uuids::random_generator generator;
@@ -1608,7 +1609,7 @@ public:
         if (multipoleexponent > 2) {
 
             // --- Initialize two-atom interaction Hamiltonians ---
-            std::cout << "Two-atom hamiltonian, initialize interaction Hamiltonians" << std::endl;
+            std::cout << "Two-atom Hamiltonian, initialize interaction Hamiltonians" << std::endl;
 
             int kappa_min = 1; // spherical dipole operators
             int kappa_max = multipoleexponent-kappa_min-1;
@@ -1621,13 +1622,13 @@ public:
             size_mat_multipole.resize(idx_multipole_max+1);
 
             // --- Precalculate matrix elements --- // TODO parallelization
-            std::cout << "Two-atom basis, get one-atom states needed for the two-atom basis"<< std::endl;
+            std::cout << "Two-atom Hamiltonian, get one-atom states needed for the pair state basis"<< std::endl;
 
             auto basis_one1_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis));
             auto basis_one2_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis));
 
             for (int kappa = kappa_min; kappa<=kappa_max; ++kappa) {
-                std::cout << "Two-atom hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
+                std::cout << "Two-atom Hamiltonian, precalculate matrix elements for kappa = " << kappa << std::endl;
                 matrixelements_atom1.precalculateMultipole(basis_one1_needed, kappa);
                 matrixelements_atom2.precalculateMultipole(basis_one2_needed, kappa);
             }
