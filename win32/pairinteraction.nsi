@@ -62,8 +62,8 @@ SectionGroup /e "Dependencies"
     IfFileExists "${CONDA_PATH}" 0 fail
     IfFileExists "${PIP_PATH}" 0 fail
 
-    nsExec::ExecToLog "${CONDA_PATH} install -y numpy scipy"
-    nsExec::ExecToLog "${PIP_PATH} install psutil pint pyqt5"
+    nsExec::ExecToLog "${CONDA_PATH} install -y numpy scipy pyqt"
+    nsExec::ExecToLog "${PIP_PATH} install psutil pint"
     Goto done
 
 fail:
