@@ -2715,10 +2715,10 @@ class MainWindow(QtGui.QMainWindow):
                 # integers; the value specified the number of threads
                 # to use for the corresponding nested level.  If
                 # undefined one thread per CPU is used.
-                os.environ['OMP_NUM_THREADS'] = '' if self.numprocessors ==0 else str(self.numprocessors)
+                ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir)
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **ompthreads))
 
                 self.starttime = time()
 
