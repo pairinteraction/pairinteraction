@@ -332,6 +332,36 @@ class SystemDict(GuiDict):
         store["diamagnetism"] = {
             'widget': ui.checkbox_system_diamagnetic,
             'unit': None}
+        store["symAuto"] = {
+            'widget': ui.radiobutton_symAuto,
+            'unit': None}
+        store["symManual"] = {
+            'widget': ui.radiobutton_symManual,
+            'unit': None}
+        store["invE"] = {
+            'widget': ui.checkbox_system_invE,
+            'unit': None}
+        store["invO"] = {
+            'widget': ui.checkbox_system_invO,
+            'unit': None}
+        store["perE"] = {
+            'widget': ui.checkbox_system_perE,
+            'unit': None}
+        store["perO"] = {
+            'widget': ui.checkbox_system_perO,
+            'unit': None}
+        store["refE"] = {
+            'widget': ui.checkbox_system_refE,
+            'unit': None}
+        store["refO"] = {
+            'widget': ui.checkbox_system_refO,
+            'unit': None}
+        store["conserveM"] = {
+            'widget': ui.checkbox_system_conserveM,
+            'unit': None}
+        store["sametrafo"] = {
+            'widget': ui.checkbox_system_sametrafo,
+            'unit': None}
 
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
@@ -348,8 +378,9 @@ class SystemDict(GuiDict):
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
                                    "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle", "deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
-                                   "samebasis", "steps", "precision", "missingCalc", "missingWhittaker", "theta", "exponent",
-                                   "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR"]
+                                   "samebasis", "steps", "precision", "missingCalc", "missingWhittaker", "exponent",
+                                   "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR",
+                                   "invE","invO","perE","perO","refE","refO", "conserveM", "sametrafo"]
 
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
@@ -534,9 +565,16 @@ class MainWindow(QtGui.QMainWindow):
         self.lines_buffer_minIdx_field = [0] * 3
         self.iSelected = {}
 
-        self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
+        """self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
         self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
-        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])
+        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])"""
+
+        self.ui.colorbutton_plot_invE.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_invO.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_perE.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_perO.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_refE.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_refO.setColor((40, 40, 40))
 
         # clrmp = pg.ColorMap(pos,color)
         # self.lut = clrmp.getLookupTable()
@@ -751,12 +789,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(
             self.detectManualRangeY)
 
-        self.ui.colorbutton_plot_nosym.sigColorChanged.connect(
+        """self.ui.colorbutton_plot_nosym.sigColorChanged.connect(
             self.changeLineColor)
         self.ui.colorbutton_plot_sym.sigColorChanged.connect(
             self.changeLineColor)
         self.ui.colorbutton_plot_asym.sigColorChanged.connect(
-            self.changeLineColor)
+            self.changeLineColor)"""
 
         # Load cache directory
         if os.path.isfile(self.path_cache_last):
@@ -1464,8 +1502,9 @@ class MainWindow(QtGui.QMainWindow):
                     basis = eigensystem.basis
 
                     if idx == 2:
-                        symmetry = {"all": 0, "sym": 1, "asym": 2}[
-                            eigensystem.params["symmetry"]]
+                        #symmetry = {"all": 0, "sym": 1, "asym": 2}[
+                        #    eigensystem.params["symmetry"]]
+                        symmetry = 0  # TODO !!!!!!!
 
                     # --- determine which basis elements are within the energy range ---
                     boolarr = np.ones(len(energies), dtype=np.bool)
@@ -2638,7 +2677,7 @@ class MainWindow(QtGui.QMainWindow):
                         k].toAU().magnitude for k in keys}
 
                     if self.senderbutton == self.ui.pushbutton_potential_calc:
-                        del params["theta"]
+                        params["zerotheta"] = self.angle == 0
 
                     if params["deltaNSingle"] < 0:
                         params["deltaNSingle"] = -1
@@ -2668,7 +2707,7 @@ class MainWindow(QtGui.QMainWindow):
                             for field, label in zip(fields, labels):
                                 params[label] = field
 
-                    if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
+                    """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
                         params["conserveM"] = False
                     else:
                         params["conserveM"] = True
@@ -2676,7 +2715,7 @@ class MainWindow(QtGui.QMainWindow):
                     if (self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["maxEz"] != 0:
                         params["conserveParityL"] = False
                     else:
-                        params["conserveParityL"] = True
+                        params["conserveParityL"] = True"""
 
                     # TODO make quantities of None type accessible without
                     # .magnitude
@@ -2715,7 +2754,7 @@ class MainWindow(QtGui.QMainWindow):
                     env = {'OMP_NUM_THREADS': str(self.numprocessors)}
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=env)
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **env))
 
                 self.starttime = time()
 
@@ -3072,12 +3111,12 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def changeLineColor(self):
         senderbutton = self.sender()
-        if senderbutton == self.ui.colorbutton_plot_nosym:
+        """if senderbutton == self.ui.colorbutton_plot_nosym:
             idx = 0
         elif senderbutton == self.ui.colorbutton_plot_sym:
             idx = 1
         elif senderbutton == self.ui.colorbutton_plot_asym:
-            idx = 2
+            idx = 2"""
 
         self.symmetrycolors[idx] = senderbutton.color().getRgb()[:-1]
 

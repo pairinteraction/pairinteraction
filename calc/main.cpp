@@ -558,6 +558,7 @@ public:
                     continue;
                 }
                 mapping[buffer[state]] = state.idx;
+                if (sym.inversion != NA || sym.permutation != NA ) mapping[state.idx] = buffer[state];
             }
         }
 
@@ -583,11 +584,19 @@ public:
         for (eigen_idx_t col_1=0; col_1<lhs.basis().outerSize(); ++col_1) { // outerSize() == num_cols = num_basisvectors()
             for (eigen_idx_t col_2=0; col_2<rhs.basis().outerSize(); ++col_2) {
 
-                // In case of refelction symmetry: skip half of the basis vector pairs
+                // In case of inversion symmetry: skip half of the basis vector pairs
                 if ((sym.inversion == EVEN && col_1 <= col_2) || // gerade
                         (sym.inversion == ODD && col_1 < col_2)) { // ungerade
                     continue;
                 }
+
+                // In case of permutation symmetry: skip half of the basis vector pairs
+                if ((sym.permutation == EVEN && col_1 <= col_2) || // sym
+                        (sym.permutation == ODD && col_1 < col_2)) { // asym
+                    continue;
+                }
+
+                // TODO combine inversion and permutation symmetry (one variable "permuinversion"), think about further simplifications
 
                 // --- Combine diagonal elements for mat.entries() ---
                 scalar_t val_entries = diag1[col_1] + diag2[col_2]; // diag(V) x I + I x diag(V)
@@ -608,49 +617,102 @@ public:
 
                             float M = state.m[0]+state.m[1];
                             int parityL = std::pow(-1, state.l[0] + state.l[1]);
+                            int parityJ = std::pow(-1, state.j[0] + state.j[1]);
+                            int parityM = std::pow(-1, state.m[0] + state.m[1]);
 
-                            // In case of rotation symmetry: skip coordinates with wrong total magnetic momentum
-                            if(sym.rotation != NA && sym.rotation != M) {
-                                continue;
+                            // In case of inversion and reflection symmetry: check whether the inversion symmetric state is already reflection symmetric
+                            bool skip_reflection = false;
+                            if (sym.inversion != NA && col_1 != col_2 && sym.reflection != NA && mapping[row] == rhs.num_coordinates()*triple_2.row() + triple_1.row()) {
+                                if ( ((sym.inversion == EVEN) ? -parityL : parityL) != ((sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) )  {
+                                    continue; // the parity under inversion and reflection is different
+                                } else {
+                                    skip_reflection = true; // the parity under inversion and reflection is the same
+                                }
                             }
 
-                            // In case of inversion and permutation symmetry: skip coordinates with wrong orbital parity
-                            // It is assumed that sym.orbitalparity != NA iff inversion and permutation symmetry // TODO assert (inside Symmetry class)
-                            if(sym.orbitalparity != NA && sym.orbitalparity != parityL) {
+                            // In case of permutation and reflection symmetry: check whether the permutation symmetric state is already reflection symmetric
+                            if (sym.permutation != NA && col_1 != col_2 && sym.reflection != NA && mapping[row] == rhs.num_coordinates()*triple_2.row() + triple_1.row()) {
+                                if ( ((sym.permutation == EVEN) ? -1 : 1) != ((sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) ) {
+                                    continue; // the parity under permutation and reflection is different
+                                } else {
+                                    skip_reflection = true; // the parity under permutation and reflection is the same
+                                }
+                            }
+
+                            // In case of inversion and permutation symmetry: the inversion symmetric state is already permutation symmetric
+                            bool skip_permutation = false;
+                            if (sym.inversion != NA && sym.permutation != NA && col_1 != col_2) {
+                                if ( ((sym.inversion == EVEN) ? -parityL : parityL) != ((sym.permutation == EVEN) ? -1 : 1) )  {
+                                    continue; // the parity under inversion and permutation is different
+                                } else {
+                                    skip_permutation = true; // the parity under inversion and permutation is the same
+                                }
+                            }
+
+                            // In case of rotation symmetry: skip coordinates with wrong total magnetic momentum
+                            if(sym.rotation != NA && sym.rotation != M && (sym.reflection == NA || sym.rotation != -M)) {
                                 continue;
                             }
 
                             // In case of reflection symmetry: skip half of the coordinates
-                            if (sym.reflection != NA && state.m[0] < 0) { // plus or minus
+                            if (sym.reflection != NA && state.m[0] < 0 && !skip_reflection) {
                                 continue;
                             }
 
                             // Calculate coefficient that belongs to the current coordinate
                             scalar_t val_basis = triple_1.value() * triple_2.value(); // coefficient
+                            if (sym.reflection != NA && !skip_reflection) {
+                                val_basis /= std::sqrt(2);
+                            }
+                            if (sym.inversion != NA && col_1 != col_2) {
+                                val_basis /= std::sqrt(2);
+                            }
+                            if (sym.permutation != NA && col_1 != col_2 && !skip_permutation) {
+                                val_basis /= std::sqrt(2);
+                            }
 
                             // Save the coefficient taking into account the symmetrization
+                            mat.addBasis(row,col,val_basis);
 
-                            // TODO adapt code for more than one symmetry at the same time
-                            // TODO handle permutation symmetry, too
-
-                            if (sym.reflection != NA) {
-                                // This code assumes the total magnetic quantum number to be zero (thus, parityM=1) // TODO assert
-                                int parityJ = std::pow(-1, state.j[0] + state.j[1]);
-
-                                val_basis /= std::sqrt(2);
-                                mat.addBasis(row,col,val_basis);
-                                row = mapping[row];
-                                val_basis *= (sym.reflection == EVEN) ? 1*parityL*parityJ : -1*parityL*parityJ;
+                            if (sym.reflection != NA && !skip_reflection) {
+                                size_t r = mapping[row];
+                                scalar_t v = val_basis;
+                                v *= (sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                                mat.addBasis(r,col,v);
                             }
 
                             if (sym.inversion != NA && col_1 != col_2) {
-                                val_basis /= std::sqrt(2);
-                                mat.addBasis(row,col,val_basis);
-                                row = rhs.num_coordinates()*triple_2.row() + triple_1.row();
-                                val_basis *= (sym.inversion == EVEN) ? -1*parityL : 1*parityL;
+                                size_t r = rhs.num_coordinates()*triple_2.row() + triple_1.row();
+                                scalar_t v = val_basis;
+                                v *= (sym.inversion == EVEN) ? -parityL : parityL;
+                                mat.addBasis(r,col,v);
                             }
 
-                            mat.addBasis(row,col,val_basis);
+                            if (sym.inversion != NA && col_1 != col_2 && sym.reflection != NA && !skip_reflection) {
+                                size_t r = rhs.num_coordinates()*triple_2.row() + triple_1.row();
+                                r = mapping[r];
+                                scalar_t v = val_basis;
+                                v *= (sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                                v *= (sym.inversion == EVEN) ? -parityL : parityL;
+                                mat.addBasis(r,col,v);
+                            }
+
+                            if (sym.permutation != NA && col_1 != col_2 && !skip_permutation) {
+                                size_t r = rhs.num_coordinates()*triple_2.row() + triple_1.row();
+                                scalar_t v = val_basis;
+                                v *= (sym.permutation == EVEN) ? -1 : 1;
+                                mat.addBasis(r,col,v);
+                            }
+
+                            if (sym.permutation != NA && col_1 != col_2 && !skip_permutation && sym.reflection != NA && !skip_reflection) {
+                                size_t r = rhs.num_coordinates()*triple_2.row() + triple_1.row();
+                                r = mapping[r];
+                                scalar_t v = val_basis;
+                                v *= (sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                                v *= (sym.permutation == EVEN) ? -1 : 1;
+                                mat.addBasis(r,col,v);
+                            }
+
                             existing = true;
                         }
                     }
@@ -1378,8 +1440,8 @@ public:
         conf_matpair["deltaLPair"] = conf_tot["deltaLPair"];
         conf_matpair["deltaJPair"] = conf_tot["deltaJPair"];
         conf_matpair["deltaMPair"] = conf_tot["deltaMPair"];
-        conf_matpair["conserveM"] = conf_tot["conserveM"];
-        conf_matpair["conserveParityL"] = conf_tot["conserveParityL"];
+        //conf_matpair["conserveM"] = conf_tot["conserveM"];
+        //conf_matpair["conserveParityL"] = conf_tot["conserveParityL"];
         conf_matpair["exponent"] = conf_tot["exponent"];
 
         for (size_t i = 0; i < nSteps_one; ++i) {
@@ -1398,8 +1460,8 @@ public:
         conf_mat.back()["deltaLPair"] >> deltaL;
         conf_mat.back()["deltaJPair"] >> deltaJ;
         conf_mat.back()["deltaMPair"] >> deltaM;
-        conserveM = conf_tot["conserveM"].str() == "true";
-        conserveParityL = conf_tot["conserveParityL"].str() == "true";
+        //conserveM = conf_tot["conserveM"].str() == "true";
+        //conserveParityL = conf_tot["conserveParityL"].str() == "true";
         conf_tot["steps"] >> nSteps_two;
         conf_tot["minR"] >> min_R;
         conf_tot["maxR"] >> max_R;
@@ -1423,6 +1485,27 @@ public:
 
         //fields_change_m = true; // TODO
         //fields_change_l = true; // TODO
+
+        std::vector<parity_t> sym_inversion;
+        if (conf_tot["invE"].str() == "true") sym_inversion.push_back(EVEN);
+        if (conf_tot["invO"].str() == "true") sym_inversion.push_back(ODD);
+        if (!sym_inversion.size()) sym_inversion.push_back(NA);
+
+        std::vector<parity_t> sym_permutation;
+        if (conf_tot["perE"].str() == "true") sym_permutation.push_back(EVEN);
+        if (conf_tot["perO"].str() == "true") sym_permutation.push_back(ODD);
+        if (!sym_permutation.size()) sym_permutation.push_back(NA);
+
+        std::vector<parity_t> sym_reflection;
+        if (conf_tot["refE"].str() == "true") sym_reflection.push_back(EVEN);
+        if (conf_tot["refO"].str() == "true") sym_reflection.push_back(ODD);
+        if (!sym_reflection.size()) sym_reflection.push_back(NA);
+
+        bool conserveM = conf_tot["conserveM"].str() == "true";
+
+        bool sametrafo = conf_tot["sametrafo"].str() == "true";
+
+        bool zerotheta = conf_tot["zerotheta"].str() == "true";
 
         if (min_R == max_R && nSteps_one == 1){
             nSteps_two = 1;
@@ -1506,35 +1589,54 @@ public:
 
         // === Determine necessary symmetries ===
         std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
+
         StateTwo initial = basis->initial();
+        parity_t initalParityL = static_cast<parity_t>(std::pow(-1, initial.l[0] + initial.l[1]));
+        int initalM = initial.m[0] + initial.m[1];
+        int initalJ = initial.j[0] + initial.j[1];
 
-        Symmetry sym;
-        sym.inversion = NA;
-        sym.reflection = NA;
-        sym.permutation = NA;
-        sym.rotation = NA;
-        sym.orbitalparity = NA;
-
+        std::vector<int> sym_rotation;
         if (conserveM) {
-            sym.rotation = initial.m[0]+initial.m[1];
-        }
-        if (conserveParityL) {
-            sym.orbitalparity = static_cast<parity_t>(std::pow(-1, initial.l[0] + initial.l[1]));
-        }
-
-        std::vector<Symmetry> symmetries;
-        if (samebasis) {
-            sym.inversion = ODD;
-            symmetries.push_back(sym);
-            if (initial.first() != initial.second()) {
-                sym.inversion = EVEN;
-                symmetries.push_back(sym);
+            if (!sametrafo) {
+                for (const auto &state: *basis) sym_rotation.push_back(state.m[0] + state.m[1]);
+            } else if (!zerotheta) {
+                for (int M = -initalJ; M <= initalJ; ++M) sym_rotation.push_back(M);
+            } else {
+                sym_rotation.push_back(initalM);
             }
         } else {
-            symmetries.push_back(sym);
+            sym_rotation.push_back(NA);
         }
 
-        // TODO make use of all the symmetries
+        Symmetry sym;
+        std::set<Symmetry> symmetries_set;
+        for (const parity_t &inv : sym_inversion) {
+            sym.inversion = inv;
+            for (const parity_t &per : sym_permutation) {
+                sym.permutation = per;
+
+                // In case of inversion and permutation symmetry: the orbital parity is conserved and we just use the blocks with the same parity as the inital state
+                if (sym.inversion != NA && sym.permutation != NA && sametrafo) {
+                    if (sym.inversion*sym.permutation != initalParityL) continue;
+                }
+
+                for (const parity_t &ref : sym_reflection) {
+                    sym.reflection = ref;
+                    for (const int &rot : sym_rotation) {
+
+                        // In case of reflection symmetry: do just use the absolute value of rot
+                        if (sym.reflection != NA) {
+                            sym.rotation = std::abs(rot);
+                        } else {
+                            sym.rotation = rot;
+                        }
+
+                        symmetries_set.insert(sym);
+                    }
+                }
+            }
+        }
+        std::vector<Symmetry> symmetries(symmetries_set.begin(), symmetries_set.end());
 
         // === Build up the list of necessary pair states ===
         std::cout << "Two-atom Hamiltonian, build up the list of necessary pair states" << std::endl;
@@ -1556,12 +1658,12 @@ public:
                 int parityL = std::pow(-1, state.l[0] + state.l[1]);
 
                 // In case of rotation symmetry: skip pair states with wrong total magnetic momentum
-                if(sym.rotation != NA && sym.rotation != M) {
+                if(sym.rotation != NA && sym.rotation != M && (sym.reflection == NA || sym.rotation != -M)) {
                     continue;
                 }
 
                 // In case of inversion and permutation symmetry: skip pair states with wrong orbital parity
-                if(sym.orbitalparity != NA && sym.orbitalparity != parityL) {
+                if(sym.inversion != NA && sym.permutation != NA && parityL != initalParityL && sametrafo) {
                     continue;
                 }
 
@@ -1758,11 +1860,6 @@ public:
         // === Initialize variables ===
         bool flag_perhapsmissingtable = true;
 
-        std::map<parity_t,std::string> symmetries_name;
-        symmetries_name[EVEN] = "sym";
-        symmetries_name[ODD] = "asym";
-        symmetries_name[NA] = "all";
-
         matrix_path.resize(nSteps_two*symmetries.size());
 
         // --- Determine combined single atom matrices ---
@@ -1834,8 +1931,10 @@ public:
                 // Get configuration and save postions and symmetries
                 Configuration conf = conf_mat[single_idx];
                 conf["R"] = position;
-                conf["symmetry"] = symmetries_name[sym.inversion]; // TODO adapt for other symmetries
-                conf["sub"] = 0; // TODO remove
+                conf["inversion"] = (sym.inversion == NA) ? "" : std::to_string(sym.inversion);
+                conf["permutation"] = (sym.permutation == NA) ? "" : std::to_string(sym.permutation);
+                conf["reflection"] = (sym.reflection == NA) ? "" : std::to_string(sym.reflection);
+                conf["rotation"] = (sym.rotation == NA) ? "" : std::to_string(sym.rotation);
 
                 // === Create table if necessary ===
                 std::stringstream query;
@@ -1993,8 +2092,6 @@ private:
     real_t min_R, max_R;
     int multipoleexponent;
     bool samebasis;
-    bool conserveM;
-    bool conserveParityL;
     boost::filesystem::path path_cache;
 };
 
