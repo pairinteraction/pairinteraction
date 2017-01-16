@@ -567,12 +567,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
         self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])"""
 
-        self.ui.colorbutton_plot_invE.setColor((180, 120, 0))
-        self.ui.colorbutton_plot_invO.setColor((120, 0, 180))
+        self.ui.colorbutton_plot_invE.setColor((180, 0, 120))
+        self.ui.colorbutton_plot_invO.setColor((0, 120, 180))
         self.ui.colorbutton_plot_perE.setColor((180, 60, 60))
         self.ui.colorbutton_plot_perO.setColor((60, 60, 180))
-        self.ui.colorbutton_plot_refE.setColor((180, 0, 120))
-        self.ui.colorbutton_plot_refO.setColor((0, 120, 180))
+        self.ui.colorbutton_plot_refE.setColor((180, 120, 0))
+        self.ui.colorbutton_plot_refO.setColor((120, 0, 180))
 
         # clrmp = pg.ColorMap(pos,color)
         # self.lut = clrmp.getLookupTable()
@@ -632,6 +632,10 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.radiobutton_system_quantizationZ)
         self.quantizationgroup.addButton(
             self.ui.radiobutton_system_quantizationInteratomic)
+
+        self.symgroup = QtGui.QButtonGroup()
+        self.symgroup.addButton(self.ui.radiobutton_symAuto)
+        self.symgroup.addButton(self.ui.radiobutton_symManual)
 
         # Set validators
         validator_double = DoubleValidator()
@@ -728,11 +732,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.combobox_system_species2.currentIndexChanged[
             str].connect(self.forbidSamebasis)
 
-        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(
-            self.togglePairbasis)
-        self.ui.radiobutton_plot_overlapDefined.toggled.connect(
-            self.toggleOverlapstate)
+        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
+        self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
         self.ui.radiobutton_plot_log.toggled.connect(self.toggleYScale)
+        self.ui.radiobutton_symManual.toggled.connect(self.toggleSymmetrization)
 
         self.ui.checkbox_plot_antialiasing.toggled.connect(
             self.toggleAntialiasing)
@@ -787,12 +790,23 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(
             self.detectManualRangeY)
 
-        """self.ui.colorbutton_plot_nosym.sigColorChanged.connect(
-            self.changeLineColor)
-        self.ui.colorbutton_plot_sym.sigColorChanged.connect(
-            self.changeLineColor)
-        self.ui.colorbutton_plot_asym.sigColorChanged.connect(
-            self.changeLineColor)"""
+        self.ui.spinbox_system_exponent.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
+
 
         # Load cache directory
         if os.path.isfile(self.path_cache_last):
@@ -952,6 +966,8 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.radiobutton_plot_overlapDefined.isChecked())
         self.ui.radiobutton_plot_log.toggled.emit(
             self.ui.radiobutton_plot_log.isChecked())
+        self.ui.radiobutton_symManual.toggled.emit(
+            self.ui.radiobutton_symManual.isChecked())
 
         self.ui.checkbox_plot_antialiasing.toggled.emit(
             self.ui.checkbox_plot_antialiasing.isChecked())
@@ -2357,6 +2373,45 @@ class MainWindow(QtGui.QMainWindow):
     def toggleOverlapstate(self):
         checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
         self.ui.widget_plot_qn.setEnabled(checked)
+
+    @QtCore.pyqtSlot(bool)  # TODO
+    def toggleSymmetrization(self):
+        checked = self.ui.radiobutton_symManual.isChecked()
+        self.ui.checkbox_system_invE.setEnabled(checked)
+        self.ui.checkbox_system_invO.setEnabled(checked)
+        self.ui.checkbox_system_perE.setEnabled(checked)
+        self.ui.checkbox_system_perO.setEnabled(checked)
+        self.ui.checkbox_system_refE.setEnabled(checked)
+        self.ui.checkbox_system_refO.setEnabled(checked)
+        self.ui.checkbox_system_conserveM.setEnabled(checked)
+        self.autosetSymmetrization()
+
+    def autosetSymmetrization(self):
+        if self.ui.radiobutton_symManual.isChecked():
+            return
+
+        higherOrder = self.systemdict["exponent"].magnitude > 3
+        magneticX = self.systemdict["minBx"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0
+        magneticY = self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0
+        magneticZ = self.systemdict["minBz"].magnitude != 0 or self.systemdict["maxBz"].magnitude != 0
+        electricX = self.systemdict["minEx"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0
+        electricY = self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0
+        electricZ = self.systemdict["minEz"].magnitude != 0 or self.systemdict["maxEz"].magnitude != 0
+        nonzeroM = self.systemdict["m1"].magnitude + self.systemdict["m2"].magnitude != 0
+        heteronuclear = not self.systemdict["samebasis"].magnitude
+
+        sym_inversion = (not electricZ) and (not electricX) and (not electricY) and (not heteronuclear)
+        sym_permutation = (not higherOrder) and (not heteronuclear)
+        sym_reflection = (not magneticZ) and (not magneticX) and (not magneticY) and (not electricX) and (not electricY) and (not nonzeroM)
+        sym_rotation = (not magneticX) and (not magneticY) and (not electricX) and (not electricY)
+
+        self.ui.checkbox_system_invE.setChecked(sym_inversion)
+        self.ui.checkbox_system_invO.setChecked(sym_inversion)
+        self.ui.checkbox_system_perE.setChecked(sym_permutation)
+        self.ui.checkbox_system_perO.setChecked(sym_permutation)
+        self.ui.checkbox_system_refE.setChecked(sym_reflection)
+        self.ui.checkbox_system_refO.setChecked(sym_reflection)
+        self.ui.checkbox_system_conserveM.setChecked(sym_rotation)
 
     @QtCore.pyqtSlot(bool)  # TODO
     def toggleSamebasis(self):
