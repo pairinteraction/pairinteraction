@@ -1,6 +1,10 @@
 {
+    "conserveM": [
+        true,
+        null
+    ],
     "cores": [
-        -1,
+        0,
         null
     ],
     "deltaEPair": [
@@ -49,6 +53,14 @@
     ],
     "exponent": [
         3,
+        null
+    ],
+    "invE": [
+        true,
+        null
+    ],
+    "invO": [
+        true,
         null
     ],
     "j1": [
@@ -163,6 +175,14 @@
         true,
         null
     ],
+    "perE": [
+        true,
+        null
+    ],
+    "perO": [
+        true,
+        null
+    ],
     "precision": [
         1e-12,
         null
@@ -175,7 +195,19 @@
         false,
         null
     ],
+    "refE": [
+        false,
+        null
+    ],
+    "refO": [
+        false,
+        null
+    ],
     "samebasis": [
+        true,
+        null
+    ],
+    "sametrafo": [
         true,
         null
     ],
@@ -189,6 +221,14 @@
     ],
     "steps": [
         50,
+        null
+    ],
+    "symAuto": [
+        true,
+        null
+    ],
+    "symManual": [
+        false,
         null
     ],
     "theta": [

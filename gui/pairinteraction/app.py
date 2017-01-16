@@ -59,8 +59,8 @@ from .loader import Eigensystem
 
 
 # Versioning
-version_settings = 13
-version_cache = 11
+version_settings = 14
+version_cache = 12
 
 
 # Make program killable via strg-c if it is started in a terminal
@@ -332,6 +332,36 @@ class SystemDict(GuiDict):
         store["diamagnetism"] = {
             'widget': ui.checkbox_system_diamagnetic,
             'unit': None}
+        store["symAuto"] = {
+            'widget': ui.radiobutton_symAuto,
+            'unit': None}
+        store["symManual"] = {
+            'widget': ui.radiobutton_symManual,
+            'unit': None}
+        store["invE"] = {
+            'widget': ui.checkbox_system_invE,
+            'unit': None}
+        store["invO"] = {
+            'widget': ui.checkbox_system_invO,
+            'unit': None}
+        store["perE"] = {
+            'widget': ui.checkbox_system_perE,
+            'unit': None}
+        store["perO"] = {
+            'widget': ui.checkbox_system_perO,
+            'unit': None}
+        store["refE"] = {
+            'widget': ui.checkbox_system_refE,
+            'unit': None}
+        store["refO"] = {
+            'widget': ui.checkbox_system_refO,
+            'unit': None}
+        store["conserveM"] = {
+            'widget': ui.checkbox_system_conserveM,
+            'unit': None}
+        store["sametrafo"] = {
+            'widget': ui.checkbox_system_sametrafo,
+            'unit': None}
 
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = ["species1", "n1", "l1", "j1", "m1",
@@ -348,8 +378,9 @@ class SystemDict(GuiDict):
     # pair potential
     keys_for_cprogram_potential = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
                                    "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle", "deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
-                                   "samebasis", "steps", "precision", "missingCalc", "missingWhittaker", "theta", "exponent",
-                                   "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR"]
+                                   "samebasis", "steps", "precision", "missingCalc", "missingWhittaker", "exponent",
+                                   "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR",
+                                   "invE","invO","perE","perO","refE","refO", "conserveM", "sametrafo"]
 
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
@@ -489,8 +520,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.momentumcolors = [(55, 126, 184), (77, 175, 74), (228, 26, 28), (152, 78, 163), (
             0, 0, 0), (255 // 5, 255 // 5, 255 // 5)]  # s, p, d, f, other, undetermined
-        self.symmetrycolors = [(40, 40, 40), (140, 81, 10),
-                               (1, 102, 94)]  # all, sym, asym
 
         self.momentummat = [None] * 3
         self.labelmat = [None] * 3
@@ -534,9 +563,16 @@ class MainWindow(QtGui.QMainWindow):
         self.lines_buffer_minIdx_field = [0] * 3
         self.iSelected = {}
 
-        self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
+        """self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
         self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
-        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])
+        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])"""
+
+        self.ui.colorbutton_plot_invE.setColor((180, 0, 120))
+        self.ui.colorbutton_plot_invO.setColor((0, 120, 180))
+        self.ui.colorbutton_plot_perE.setColor((180, 60, 60))
+        self.ui.colorbutton_plot_perO.setColor((60, 60, 180))
+        self.ui.colorbutton_plot_refE.setColor((180, 120, 0))
+        self.ui.colorbutton_plot_refO.setColor((120, 0, 180))
 
         # clrmp = pg.ColorMap(pos,color)
         # self.lut = clrmp.getLookupTable()
@@ -596,6 +632,10 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.radiobutton_system_quantizationZ)
         self.quantizationgroup.addButton(
             self.ui.radiobutton_system_quantizationInteratomic)
+
+        self.symgroup = QtGui.QButtonGroup()
+        self.symgroup.addButton(self.ui.radiobutton_symAuto)
+        self.symgroup.addButton(self.ui.radiobutton_symManual)
 
         # Set validators
         validator_double = DoubleValidator()
@@ -692,11 +732,10 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.combobox_system_species2.currentIndexChanged[
             str].connect(self.forbidSamebasis)
 
-        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(
-            self.togglePairbasis)
-        self.ui.radiobutton_plot_overlapDefined.toggled.connect(
-            self.toggleOverlapstate)
+        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
+        self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
         self.ui.radiobutton_plot_log.toggled.connect(self.toggleYScale)
+        self.ui.radiobutton_symManual.toggled.connect(self.toggleSymmetrization)
 
         self.ui.checkbox_plot_antialiasing.toggled.connect(
             self.toggleAntialiasing)
@@ -751,12 +790,23 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(
             self.detectManualRangeY)
 
-        self.ui.colorbutton_plot_nosym.sigColorChanged.connect(
-            self.changeLineColor)
-        self.ui.colorbutton_plot_sym.sigColorChanged.connect(
-            self.changeLineColor)
-        self.ui.colorbutton_plot_asym.sigColorChanged.connect(
-            self.changeLineColor)
+        self.ui.spinbox_system_exponent.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEx.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEy.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
+        self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
+
 
         # Load cache directory
         if os.path.isfile(self.path_cache_last):
@@ -916,6 +966,8 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.radiobutton_plot_overlapDefined.isChecked())
         self.ui.radiobutton_plot_log.toggled.emit(
             self.ui.radiobutton_plot_log.isChecked())
+        self.ui.radiobutton_symManual.toggled.emit(
+            self.ui.radiobutton_symManual.isChecked())
 
         self.ui.checkbox_plot_antialiasing.toggled.emit(
             self.ui.checkbox_plot_antialiasing.isChecked())
@@ -1448,7 +1500,7 @@ class MainWindow(QtGui.QMainWindow):
                 x = np.array([])
                 y = np.array([])
                 l = np.array([])
-                s = np.array([])
+                s = []
 
                 while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
 
@@ -1464,8 +1516,27 @@ class MainWindow(QtGui.QMainWindow):
                     basis = eigensystem.basis
 
                     if idx == 2:
-                        symmetry = {"all": 0, "sym": 1, "asym": 2}[
-                            eigensystem.params["symmetry"]]
+                        symmetrycolor = []
+
+                        if eigensystem.params["inversion"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
+                        elif eigensystem.params["inversion"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
+
+                        if eigensystem.params["permutation"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
+                        elif eigensystem.params["permutation"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
+
+                        if eigensystem.params["reflection"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
+                        elif eigensystem.params["reflection"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
+
+                        if len(symmetrycolor) > 0:
+                            symmetrycolor = tuple(np.mean(symmetrycolor, axis=0).astype(int))
+                        else:
+                            symmetrycolor = (40, 40, 40)
 
                     # --- determine which basis elements are within the energy range ---
                     boolarr = np.ones(len(energies), dtype=np.bool)
@@ -1989,7 +2060,7 @@ class MainWindow(QtGui.QMainWindow):
                                 if idx == 0 or idx == 1:
                                     color = self.momentumcolors[i]
                                 elif idx == 2:
-                                    color = self.symmetrycolors[symmetry]
+                                    color = symmetrycolor
 
                                 # plot the data
                                 # TODO alpha and color der Funktion zusammen
@@ -2020,7 +2091,7 @@ class MainWindow(QtGui.QMainWindow):
                         if idx == 0 or idx == 1:
                             l = np.append(l, momentum)
                         elif idx == 2:
-                            s = np.append(s, symmetry * np.ones_like(energies))
+                            s += [symmetrycolor]*len(energies)
 
                         dataamount += len(x)
 
@@ -2037,10 +2108,13 @@ class MainWindow(QtGui.QMainWindow):
                           2] = len(self.momentumcolors) - 2
                         l[l < 0] = len(self.momentumcolors) - 1
 
+                    # find unique symmetry colors
                     if idx == 0 or idx == 1:
                         looprange = len(self.momentumcolors)
                     elif idx == 2:
-                        looprange = len(self.symmetrycolors)
+                        s = np.array(s)
+                        uniquesymmetrycolors = np.unique(s.view(np.dtype((np.void, s.dtype.itemsize*s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
+                        looprange = len(uniquesymmetrycolors)
 
                     # loop over momenta
                     for i in range(looprange):
@@ -2056,12 +2130,12 @@ class MainWindow(QtGui.QMainWindow):
                         elif idx == 2:
                             # determine which basis elements have the current
                             # symmetry
-                            boolarr = s == i
+                            boolarr = np.all(s == uniquesymmetrycolors[i], axis=1)
                             if (np.sum(boolarr) == 0):
                                 continue
 
                             # determine the associated color
-                            color = self.symmetrycolors[i]
+                            color = tuple(uniquesymmetrycolors[i])
 
                         # plot the basis elements
                         curve = PointsItem(
@@ -2299,6 +2373,45 @@ class MainWindow(QtGui.QMainWindow):
     def toggleOverlapstate(self):
         checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
         self.ui.widget_plot_qn.setEnabled(checked)
+
+    @QtCore.pyqtSlot(bool)  # TODO
+    def toggleSymmetrization(self):
+        checked = self.ui.radiobutton_symManual.isChecked()
+        self.ui.checkbox_system_invE.setEnabled(checked)
+        self.ui.checkbox_system_invO.setEnabled(checked)
+        self.ui.checkbox_system_perE.setEnabled(checked)
+        self.ui.checkbox_system_perO.setEnabled(checked)
+        self.ui.checkbox_system_refE.setEnabled(checked)
+        self.ui.checkbox_system_refO.setEnabled(checked)
+        self.ui.checkbox_system_conserveM.setEnabled(checked)
+        self.autosetSymmetrization()
+
+    def autosetSymmetrization(self):
+        if self.ui.radiobutton_symManual.isChecked():
+            return
+
+        higherOrder = self.systemdict["exponent"].magnitude > 3
+        magneticX = self.systemdict["minBx"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0
+        magneticY = self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0
+        magneticZ = self.systemdict["minBz"].magnitude != 0 or self.systemdict["maxBz"].magnitude != 0
+        electricX = self.systemdict["minEx"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0
+        electricY = self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0
+        electricZ = self.systemdict["minEz"].magnitude != 0 or self.systemdict["maxEz"].magnitude != 0
+        nonzeroM = self.systemdict["m1"].magnitude + self.systemdict["m2"].magnitude != 0
+        heteronuclear = not self.systemdict["samebasis"].magnitude
+
+        sym_inversion = (not electricZ) and (not electricX) and (not electricY) and (not heteronuclear)
+        sym_permutation = (not higherOrder) and (not heteronuclear)
+        sym_reflection = (not magneticZ) and (not magneticX) and (not magneticY) and (not electricX) and (not electricY) and (not nonzeroM)
+        sym_rotation = (not magneticX) and (not magneticY) and (not electricX) and (not electricY)
+
+        self.ui.checkbox_system_invE.setChecked(sym_inversion)
+        self.ui.checkbox_system_invO.setChecked(sym_inversion)
+        self.ui.checkbox_system_perE.setChecked(sym_permutation)
+        self.ui.checkbox_system_perO.setChecked(sym_permutation)
+        self.ui.checkbox_system_refE.setChecked(sym_reflection)
+        self.ui.checkbox_system_refO.setChecked(sym_reflection)
+        self.ui.checkbox_system_conserveM.setChecked(sym_rotation)
 
     @QtCore.pyqtSlot(bool)  # TODO
     def toggleSamebasis(self):
@@ -2638,7 +2751,7 @@ class MainWindow(QtGui.QMainWindow):
                         k].toAU().magnitude for k in keys}
 
                     if self.senderbutton == self.ui.pushbutton_potential_calc:
-                        del params["theta"]
+                        params["zerotheta"] = self.angle == 0
 
                     if params["deltaNSingle"] < 0:
                         params["deltaNSingle"] = -1
@@ -2668,7 +2781,7 @@ class MainWindow(QtGui.QMainWindow):
                             for field, label in zip(fields, labels):
                                 params[label] = field
 
-                    if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
+                    """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
                         params["conserveM"] = False
                     else:
                         params["conserveM"] = True
@@ -2676,7 +2789,7 @@ class MainWindow(QtGui.QMainWindow):
                     if (self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["maxEz"] != 0:
                         params["conserveParityL"] = False
                     else:
-                        params["conserveParityL"] = True
+                        params["conserveParityL"] = True"""
 
                     # TODO make quantities of None type accessible without
                     # .magnitude
@@ -3071,18 +3184,6 @@ class MainWindow(QtGui.QMainWindow):
             self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
-
-    @QtCore.pyqtSlot()
-    def changeLineColor(self):
-        senderbutton = self.sender()
-        if senderbutton == self.ui.colorbutton_plot_nosym:
-            idx = 0
-        elif senderbutton == self.ui.colorbutton_plot_sym:
-            idx = 1
-        elif senderbutton == self.ui.colorbutton_plot_asym:
-            idx = 2
-
-        self.symmetrycolors[idx] = senderbutton.color().getRgb()[:-1]
 
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):

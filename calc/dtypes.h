@@ -74,14 +74,13 @@ struct Symmetry {
     parity_t inversion;
     parity_t reflection;
     parity_t permutation;
-    parity_t orbitalparity;
     int rotation;
 
     // Comparison operator that is needed if an object of type Symmetry is used as key for std::map
     friend bool operator< (const Symmetry& s1, const Symmetry& s2)
     {
-        std::array<int, 5> syms1{ {s1.inversion, s1.reflection, s1.permutation, s1.orbitalparity, s1.rotation} };
-        std::array<int, 5> syms2{ {s2.inversion, s2.reflection, s2.permutation, s2.orbitalparity, s2.rotation} };
+        std::array<int, 5> syms1{ {s1.inversion, s1.reflection, s1.permutation, s1.rotation} };
+        std::array<int, 5> syms2{ {s2.inversion, s2.reflection, s2.permutation, s2.rotation} };
 
         for (size_t i = 0; i < syms1.size(); ++i) {
             if (syms1[i] < syms2[i]) {
