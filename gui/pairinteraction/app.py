@@ -2822,13 +2822,16 @@ class MainWindow(QtGui.QMainWindow):
                     path_cpp += '.exe'
 
                 self.numprocessors = self.systemdict["cores"].magnitude
-                if self.numprocessors == 0:
-                    env = {}
-                else:
-                    env = {'OMP_NUM_THREADS': str(self.numprocessors)}
+                # OMP_NUM_THREADS – Specifies the number of threads to
+                # use in parallel regions.  The value of this variable
+                # shall be a comma-separated list of positive
+                # integers; the value specified the number of threads
+                # to use for the corresponding nested level.  If
+                # undefined one thread per CPU is used.
+                ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **env))
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **ompthreads))
 
                 self.starttime = time()
 
