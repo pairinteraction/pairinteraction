@@ -59,8 +59,8 @@ from .loader import Eigensystem
 
 
 # Versioning
-version_settings = 13
-version_cache = 11
+version_settings = 14
+version_cache = 12
 
 
 # Make program killable via strg-c if it is started in a terminal
@@ -520,8 +520,6 @@ class MainWindow(QtGui.QMainWindow):
 
         self.momentumcolors = [(55, 126, 184), (77, 175, 74), (228, 26, 28), (152, 78, 163), (
             0, 0, 0), (255 // 5, 255 // 5, 255 // 5)]  # s, p, d, f, other, undetermined
-        self.symmetrycolors = [(40, 40, 40), (140, 81, 10),
-                               (1, 102, 94)]  # all, sym, asym
 
         self.momentummat = [None] * 3
         self.labelmat = [None] * 3
@@ -569,12 +567,12 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
         self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])"""
 
-        self.ui.colorbutton_plot_invE.setColor((40, 40, 40))
-        self.ui.colorbutton_plot_invO.setColor((40, 40, 40))
-        self.ui.colorbutton_plot_perE.setColor((40, 40, 40))
-        self.ui.colorbutton_plot_perO.setColor((40, 40, 40))
-        self.ui.colorbutton_plot_refE.setColor((40, 40, 40))
-        self.ui.colorbutton_plot_refO.setColor((40, 40, 40))
+        self.ui.colorbutton_plot_invE.setColor((180, 120, 0))
+        self.ui.colorbutton_plot_invO.setColor((120, 0, 180))
+        self.ui.colorbutton_plot_perE.setColor((180, 60, 60))
+        self.ui.colorbutton_plot_perO.setColor((60, 60, 180))
+        self.ui.colorbutton_plot_refE.setColor((180, 0, 120))
+        self.ui.colorbutton_plot_refO.setColor((0, 120, 180))
 
         # clrmp = pg.ColorMap(pos,color)
         # self.lut = clrmp.getLookupTable()
@@ -1486,7 +1484,7 @@ class MainWindow(QtGui.QMainWindow):
                 x = np.array([])
                 y = np.array([])
                 l = np.array([])
-                s = np.array([])
+                s = []
 
                 while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
 
@@ -1502,9 +1500,27 @@ class MainWindow(QtGui.QMainWindow):
                     basis = eigensystem.basis
 
                     if idx == 2:
-                        #symmetry = {"all": 0, "sym": 1, "asym": 2}[
-                        #    eigensystem.params["symmetry"]]
-                        symmetry = 0  # TODO !!!!!!!
+                        symmetrycolor = []
+
+                        if eigensystem.params["inversion"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
+                        elif eigensystem.params["inversion"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
+
+                        if eigensystem.params["permutation"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
+                        elif eigensystem.params["permutation"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
+
+                        if eigensystem.params["reflection"] == "1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
+                        elif eigensystem.params["reflection"] == "-1":
+                            symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
+
+                        if len(symmetrycolor) > 0:
+                            symmetrycolor = tuple(np.mean(symmetrycolor, axis=0).astype(int))
+                        else:
+                            symmetrycolor = (40, 40, 40)
 
                     # --- determine which basis elements are within the energy range ---
                     boolarr = np.ones(len(energies), dtype=np.bool)
@@ -2028,7 +2044,7 @@ class MainWindow(QtGui.QMainWindow):
                                 if idx == 0 or idx == 1:
                                     color = self.momentumcolors[i]
                                 elif idx == 2:
-                                    color = self.symmetrycolors[symmetry]
+                                    color = symmetrycolor
 
                                 # plot the data
                                 # TODO alpha and color der Funktion zusammen
@@ -2059,7 +2075,7 @@ class MainWindow(QtGui.QMainWindow):
                         if idx == 0 or idx == 1:
                             l = np.append(l, momentum)
                         elif idx == 2:
-                            s = np.append(s, symmetry * np.ones_like(energies))
+                            s += [symmetrycolor]*len(energies)
 
                         dataamount += len(x)
 
@@ -2076,10 +2092,13 @@ class MainWindow(QtGui.QMainWindow):
                           2] = len(self.momentumcolors) - 2
                         l[l < 0] = len(self.momentumcolors) - 1
 
+                    # find unique symmetry colors
                     if idx == 0 or idx == 1:
                         looprange = len(self.momentumcolors)
                     elif idx == 2:
-                        looprange = len(self.symmetrycolors)
+                        s = np.array(s)
+                        uniquesymmetrycolors = np.unique(s.view(np.dtype((np.void, s.dtype.itemsize*s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
+                        looprange = len(uniquesymmetrycolors)
 
                     # loop over momenta
                     for i in range(looprange):
@@ -2095,12 +2114,12 @@ class MainWindow(QtGui.QMainWindow):
                         elif idx == 2:
                             # determine which basis elements have the current
                             # symmetry
-                            boolarr = s == i
+                            boolarr = np.all(s == uniquesymmetrycolors[i], axis=1)
                             if (np.sum(boolarr) == 0):
                                 continue
 
                             # determine the associated color
-                            color = self.symmetrycolors[i]
+                            color = tuple(uniquesymmetrycolors[i])
 
                         # plot the basis elements
                         curve = PointsItem(
@@ -3107,18 +3126,6 @@ class MainWindow(QtGui.QMainWindow):
             self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
-
-    @QtCore.pyqtSlot()
-    def changeLineColor(self):
-        senderbutton = self.sender()
-        """if senderbutton == self.ui.colorbutton_plot_nosym:
-            idx = 0
-        elif senderbutton == self.ui.colorbutton_plot_sym:
-            idx = 1
-        elif senderbutton == self.ui.colorbutton_plot_asym:
-            idx = 2"""
-
-        self.symmetrycolors[idx] = senderbutton.color().getRgb()[:-1]
 
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):
