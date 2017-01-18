@@ -19,9 +19,6 @@
 
 #include <vector>
 #include <array>
-#include <iostream>
-#include <iomanip>
-#include <array>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 

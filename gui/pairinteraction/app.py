@@ -803,6 +803,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_system_maxEy.textChanged.connect(self.autosetSymmetrization)
         self.ui.lineedit_system_minEz.textChanged.connect(self.autosetSymmetrization)
         self.ui.lineedit_system_maxEz.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_theta.textChanged.connect(self.autosetSymmetrization)
         self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
         self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
         self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
@@ -2390,13 +2391,20 @@ class MainWindow(QtGui.QMainWindow):
         if self.ui.radiobutton_symManual.isChecked():
             return
 
+        angle = self.systemdict["theta"].magnitude
+
+        arrlabels = [["minEx", "minEy", "minEz"], ["maxEx", "maxEy", "maxEz"], ["minBx", "minBy", "minBz"], ["maxBx", "maxBy", "maxBz"]]
+        rotator = np.array([[np.cos(angle), 0, -np.sin(angle)], [0, 1, 0], [np.sin(angle), 0, np.cos(angle)]])
+        fields_unrotated = [np.array([self.systemdict[l].magnitude for l in ls]) for ls in arrlabels]
+        fields = [np.dot(rotator, f).flatten() for f in fields_unrotated]
+
         higherOrder = self.systemdict["exponent"].magnitude > 3
-        magneticX = self.systemdict["minBx"].magnitude != 0 or self.systemdict["maxBx"].magnitude != 0
-        magneticY = self.systemdict["minBy"].magnitude != 0 or self.systemdict["maxBy"].magnitude != 0
-        magneticZ = self.systemdict["minBz"].magnitude != 0 or self.systemdict["maxBz"].magnitude != 0
-        electricX = self.systemdict["minEx"].magnitude != 0 or self.systemdict["maxEx"].magnitude != 0
-        electricY = self.systemdict["minEy"].magnitude != 0 or self.systemdict["maxEy"].magnitude != 0
-        electricZ = self.systemdict["minEz"].magnitude != 0 or self.systemdict["maxEz"].magnitude != 0
+        electricX = fields[0][0] != 0 or fields[1][0] != 0
+        electricY = fields[0][1] != 0 or fields[1][1] != 0
+        electricZ = fields[0][2] != 0 or fields[1][2] != 0
+        magneticX = fields[2][0] != 0 or fields[3][0] != 0
+        magneticY = fields[2][1] != 0 or fields[3][1] != 0
+        magneticZ = fields[2][2] != 0 or fields[3][2] != 0
         nonzeroM = self.systemdict["m1"].magnitude + self.systemdict["m2"].magnitude != 0
         heteronuclear = not self.systemdict["samebasis"].magnitude
 
