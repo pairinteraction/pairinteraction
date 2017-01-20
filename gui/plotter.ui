@@ -566,7 +566,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
+             <width>235</width>
              <height>392</height>
             </rect>
            </property>
@@ -1207,8 +1207,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>322</height>
+             <width>237</width>
+             <height>309</height>
             </rect>
            </property>
            <attribute name="label">
@@ -1473,8 +1473,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>322</height>
+             <width>197</width>
+             <height>312</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2262,7 +2262,7 @@
                </font>
               </property>
               <property name="text">
-               <string>In case of both inversion and permutation symmetry, l&lt;sub&gt;1&lt;/sub&gt;+l&lt;sub&gt;2&lt;/sub&gt; is conserved.</string>
+               <string>In case of both inversion and permutation symmetry, (-1)^(l&lt;sub&gt;1&lt;/sub&gt;+l&lt;sub&gt;2&lt;/sub&gt;) is conserved.</string>
               </property>
               <property name="wordWrap">
                <bool>true</bool>
@@ -2447,8 +2447,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>322</height>
+             <width>198</width>
+             <height>60</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2555,7 +2555,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>285</width>
+             <width>270</width>
              <height>791</height>
             </rect>
            </property>
@@ -3876,8 +3876,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
-             <height>526</height>
+             <width>282</width>
+             <height>473</height>
             </rect>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_9">
