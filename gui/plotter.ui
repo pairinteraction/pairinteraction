@@ -566,7 +566,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>285</width>
              <height>392</height>
             </rect>
            </property>
@@ -1735,7 +1735,7 @@
              <x>0</x>
              <y>0</y>
              <width>285</width>
-             <height>360</height>
+             <height>403</height>
             </rect>
            </property>
            <attribute name="label">
@@ -2254,6 +2254,22 @@
              </layout>
             </item>
             <item>
+             <widget class="QLabel" name="label_97">
+              <property name="font">
+               <font>
+                <weight>50</weight>
+                <bold>false</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>In case of both inversion and permutation symmetry, l&lt;sub&gt;1&lt;/sub&gt;+l&lt;sub&gt;2&lt;/sub&gt; is conserved.</string>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
              <spacer name="verticalSpacer_32">
               <property name="orientation">
                <enum>Qt::Vertical</enum>
@@ -2280,21 +2296,34 @@
               <item row="0" column="1">
                <layout class="QHBoxLayout" name="horizontalLayout_24">
                 <property name="spacing">
-                 <number>17</number>
+                 <number>10</number>
                 </property>
                 <item>
                  <widget class="QCheckBox" name="checkbox_system_conserveM">
+                  <property name="text">
+                   <string/>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLabel" name="label_98">
                   <property name="sizePolicy">
-                   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
                   </property>
                   <property name="text">
-                   <string>Conserve total M</string>
+                   <string>Conserve m&lt;sub&gt;1&lt;/sub&gt;+m&lt;sub&gt;2&lt;/sub&gt;</string>
                   </property>
-                  <property name="checked">
-                   <bool>false</bool>
+                  <property name="alignment">
+                   <set>Qt::AlignBottom|Qt::AlignLeading|Qt::AlignLeft</set>
+                  </property>
+                  <property name="wordWrap">
+                   <bool>true</bool>
                   </property>
                  </widget>
                 </item>
@@ -2526,7 +2555,7 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>300</width>
+             <width>285</width>
              <height>791</height>
             </rect>
            </property>

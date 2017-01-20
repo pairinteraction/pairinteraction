@@ -223,6 +223,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     parity_t initalParityL = static_cast<parity_t>(std::pow(-1, initial.l[0] + initial.l[1]));
     int initalM = initial.m[0] + initial.m[1];
     int initalJ = initial.j[0] + initial.j[1];
+    bool samestates = initial.first() == initial.second();
 
     std::vector<int> sym_rotation;
     if (conserveM) {
@@ -241,8 +242,19 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::set<Symmetry> symmetries_set;
     for (const parity_t &inv : sym_inversion) {
         sym.inversion = inv;
+
+        // In case of even inversion symmetry and the same inital state for the first and second atom: the inital state ist not contained in the corresponding block
+        if (sym.inversion == EVEN && samestates && sametrafo) {
+            continue;
+        }
+
         for (const parity_t &per : sym_permutation) {
             sym.permutation = per;
+
+            // In case of even permutation symmetry and the same inital state for the first and second atom: the inital state ist not contained in the corresponding block
+            if (sym.permutation == EVEN && samestates && sametrafo) {
+                continue;
+            }
 
             // In case of inversion and permutation symmetry: the orbital parity is conserved and we just use the blocks with the same parity as the inital state
             if (sym.inversion != NA && sym.permutation != NA && sametrafo) {
