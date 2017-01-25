@@ -791,19 +791,19 @@ class MainWindow(QtGui.QMainWindow):
             self.detectManualRangeY)
 
         self.ui.spinbox_system_exponent.valueChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBx.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBx.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBy.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBy.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBz.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBz.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEx.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEx.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEy.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEy.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEz.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEz.textChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_theta.textChanged.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBx.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBx.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBy.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBy.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minBz.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBz.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEx.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEx.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEy.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEy.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_minEz.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEz.editingFinished.connect(self.autosetSymmetrization)
+        self.ui.lineedit_system_theta.editingFinished.connect(self.autosetSymmetrization)
         self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
         self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
         self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
@@ -2559,17 +2559,11 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def startCalc(self):
         if self.proc is None:
-            # ensure that quantum numbers are validated
-            self.ui.spinbox_system_j1.editingFinished.emit()
-            self.ui.spinbox_system_j2.editingFinished.emit()
-            self.ui.spinbox_system_m1.editingFinished.emit()
-            self.ui.spinbox_system_m2.editingFinished.emit()
-            self.ui.spinbox_plot_j1.editingFinished.emit()
-            self.ui.spinbox_plot_j2.editingFinished.emit()
-            self.ui.spinbox_plot_m1.editingFinished.emit()
-            self.ui.spinbox_plot_m2.editingFinished.emit()
-            self.ui.spinbox_plot_n1.editingFinished.emit()
-            self.ui.spinbox_plot_n2.editingFinished.emit()
+
+            # ensure that validators are called
+            focused_widget = QtGui.QApplication.focusWidget()
+            if focused_widget is not None:
+                focused_widget.clearFocus()
 
             if np.any(self.invalidQuantumnumbers):
                 QtGui.QMessageBox.critical(
@@ -3846,7 +3840,6 @@ class MainWindow(QtGui.QMainWindow):
 
         # Close everything
         super().closeEvent(event)
-
 
 def main():
     app = QtGui.QApplication(sys.argv)
