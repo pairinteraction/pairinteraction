@@ -21,7 +21,6 @@
 #include <iostream>
 #include <memory>
 #include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
 
 /*
 ///////////////////// TODOs /////////////////////
@@ -32,42 +31,13 @@
 
 */
 
-int main(int argc, char **argv) {
+int compute(const char* config_name, const char* output_name) {
     std::cout << std::unitbuf;
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
 
-    // === Parse command line ===
-    namespace po = boost::program_options;
-
-    po::options_description desc("Usage");
-    desc.add_options()
-            ("help,?", "produce this help message")
-            ("config,c", po::value<std::string>()->required(),"Path to config JSON file")
-            ("output,o", po::value<std::string>()->required(),"Path to cache JSON file")
-            ;
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if ( vm.count("help") )
-    {
-        std::cout << desc << std::endl;
-        return 0;
-    }
-
-    try
-    {
-        po::notify(vm);
-    }
-    catch (po::required_option& e)
-    {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
-    }
-
-    boost::filesystem::path path_config = boost::filesystem::absolute(vm["config"].as<std::string>());
-    boost::filesystem::path path_cache  = boost::filesystem::absolute(vm["output"].as<std::string>());
+    boost::filesystem::path path_config = boost::filesystem::absolute(config_name);
+    boost::filesystem::path path_cache  = boost::filesystem::absolute(output_name);
 
     // === Load configuration ===
     Configuration config;
