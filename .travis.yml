@@ -8,7 +8,7 @@ matrix:
       env:
         - image=debian:jessie
         - package=pairinteraction-install-linux.deb
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
@@ -16,14 +16,14 @@ matrix:
       env:
         - image=ubuntu:16.04
         - package=""
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
     - os: linux
       sudo: required
       services: docker
       env:
         - image=opensuse:13.2
         - package=pairinteraction-install-linux.rpm
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
@@ -44,7 +44,7 @@ matrix:
       install:
         - conda install --yes nomkl numpy scipy
         - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
-        - brew install eigen gsl openmpi llvm
+        - brew install eigen gsl openmpi llvm swig
         - npm install -g fileicon
       before_script:
         - export CXX=/usr/local/opt/llvm/bin/clang++
