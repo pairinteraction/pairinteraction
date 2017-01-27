@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libgsl0-dev \
         libopenmpi-dev openmpi-bin \
         libsqlite3-dev sqlite3 \
+        swig python3-dev \
         dpkg rpm \
 && apt-get clean \
 && rm -rf /var/lib/apt/lists/*

@@ -10,5 +10,6 @@ RUN zypper -n --gpg-auto-import-keys refresh && \
     sqlite3 sqlite3-devel \
     boost-devel libboost_filesystem1_54_0 libboost_program_options1_54_0 libboost_system1_54_0 \
     gsl-devel \
+    swig python3-devel \
     dpkg rpm-build \
   && zypper clean
