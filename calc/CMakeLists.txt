@@ -77,7 +77,7 @@ endif()
 # CPack
 
 if( WITH_DMG )
-  find_package(Python REQUIRED)
+  find_package(PythonInterp 3 REQUIRED)
 
   install(TARGETS pairinteraction-real RUNTIME DESTINATION .)
   install(TARGETS pairinteraction-complex RUNTIME DESTINATION .)

@@ -15,7 +15,7 @@ matrix:
       services: docker
       env:
         - image=ubuntu:16.04
-        - package=""
+        - package=
       script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
     - os: linux
       sudo: required
