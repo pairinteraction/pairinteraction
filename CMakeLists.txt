@@ -71,7 +71,7 @@ if(WIN32)
 
 elseif(APPLE AND WITH_DMG)
 
-  find_package(PythonInterp REQUIRED)
+  find_package(PythonInterp 3 REQUIRED)
 
   install(
     FILES "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_SOURCE_DIR}/LICENSE.BOOST1" "${CMAKE_SOURCE_DIR}/LICENSE.GPL3"

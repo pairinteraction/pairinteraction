@@ -66,7 +66,7 @@ if( WITH_DMG )
 
 else( )
 
-  find_package(PythonInterp REQUIRED)
+  find_package(PythonInterp 3 REQUIRED)
 
   add_custom_command(TARGET gui POST_BUILD
     COMMAND ${PYTHON_EXECUTABLE} -m compileall ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
