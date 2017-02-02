@@ -24,6 +24,7 @@ execute_process(
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
   OUTPUT_VARIABLE VERSION
   OUTPUT_STRIP_TRAILING_WHITESPACE )
+string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION})
 
 # default build type is "Release"
 
@@ -108,14 +109,14 @@ elseif(UNIX)
 
   # General
   set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
-  set(CPACK_PACKAGE_VERSION "${VERSION}")
+  set(CPACK_PACKAGE_VERSION "${VERSION_WITHOUT_LEADING_V}")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
 
   # DEB
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
   set(CPACK_DEBIAN_PACKAGE_DEPENDS "\
     libsqlite3-0, libboost-filesystem-dev, libboost-program-options-dev, \
-    libboost-system-dev, libc6, libgcc1, libgsl0ldbl, python3-pint, python3-pyqt5, \
+    libboost-system-dev, libc6, libgcc1, libgsl0ldbl|libgsl2, python3-pint, python3-pyqt5, \
     python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
