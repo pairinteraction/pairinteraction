@@ -15,6 +15,7 @@
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(pairinteraction CXX)
+enable_testing()
 
 # get version info from git
 
