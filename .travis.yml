@@ -16,14 +16,14 @@ matrix:
       env:
         - image=ubuntu:16.04
         - package=
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && package"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
     - os: linux
       sudo: required
       services: docker
       env:
         - image=opensuse:13.2
         - package=pairinteraction-install-linux.rpm
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && package"
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
