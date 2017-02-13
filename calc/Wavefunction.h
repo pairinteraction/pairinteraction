@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,11 @@
 
 // --- Numerov's method ---
 
+namespace model_potential {
+  real_t V(QuantumDefect const& qd, real_t x);
+  real_t g(QuantumDefect const& qd, real_t x);
+}
+
 class Numerov {
     QuantumDefect const& qd;
     std::vector<real_t> x;
@@ -40,6 +45,12 @@ public:
 };
 
 // --- Whittaker method ---
+
+namespace whittaker_functions {
+  real_t HypergeometricU(real_t a, real_t b, real_t z);
+  real_t WhittakerW(real_t k, real_t m, real_t z);
+  real_t RadialWFWhittaker(real_t r, real_t nu, int l);
+}
 
 class Whittaker {
     QuantumDefect const& qd;

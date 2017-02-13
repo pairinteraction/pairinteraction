@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ real_t g(QuantumDefect const& qd, real_t x) {
 Numerov::Numerov(QuantumDefect const& qd)
     : qd(qd), x(), dx(0.01)
 {
-    // classical turning point
+    // augmented classical turning point
     real_t xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
     if ( xmin < 2.08 )
         xmin = std::floor( std::sqrt( 2.08 ) );
@@ -115,6 +115,8 @@ std::vector<real_t> Numerov::integrate()
 
 // --- Whittaker method ---
 
+namespace whittaker_functions {
+
 
 real_t HypergeometricU(real_t a, real_t b, real_t z)
 {
@@ -133,6 +135,9 @@ real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 {
     return pow(nu*nu * tgamma(nu+l+1) * tgamma(nu-l), -.5) * WhittakerW(nu, l+.5, 2*r/nu);
 }
+
+
+} // namespace whittaker_functions
 
 
 Whittaker::Whittaker(QuantumDefect const& qd)
@@ -158,6 +163,8 @@ std::vector<real_t> Whittaker::axis() const
 
 std::vector<real_t> Whittaker::integrate()
 {
+    using whittaker_functions::RadialWFWhittaker;
+
     // Set the sign
     int sign;
     if ( (qd.n-qd.l) % 2 == 0 )
