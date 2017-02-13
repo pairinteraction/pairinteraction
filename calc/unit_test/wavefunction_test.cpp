@@ -33,8 +33,8 @@ struct Fixture
 BOOST_FIXTURE_TEST_CASE( model_potentials, Fixture )
 {
   // There could be better coverage
-  BOOST_CHECK( isnan( model_potential::V(qd, 0) ) );
-  BOOST_CHECK( isnan( model_potential::g(qd, 0) ) );
+  BOOST_CHECK( std::isnan( model_potential::V(qd, 0) ) );
+  BOOST_CHECK( std::isnan( model_potential::g(qd, 0) ) );
 }
 
 
