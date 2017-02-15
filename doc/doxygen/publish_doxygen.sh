@@ -3,6 +3,20 @@
 set -e
 
 
+if [ "${TRAVIS_PULL_REQUEST}" = "true" ]; then
+    echo "INFO: This is a PR.";
+    echo "INFO: Not building docs.";
+    exit 0;
+fi;
+
+
+if [ "${TRAVIS_BRANCH}" != "master" ]; then
+    echo "INFO: We are not on the master branch.";
+    echo "INFO: Not building docs.";
+    #exit 0;
+fi;
+
+
 function gh_pages_prepare()
 {
     mkdir -p "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
@@ -11,7 +25,7 @@ function gh_pages_prepare()
     git clone -b gh-pages https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} html;
 
     cd "html";
-    
+
     git config user.name "Travis CI";
     git config user.email "travis@travis-ci.org";
 
