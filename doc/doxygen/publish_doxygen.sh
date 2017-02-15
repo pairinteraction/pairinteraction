@@ -3,7 +3,7 @@
 set -e
 
 
-if [ "${TRAVIS_PULL_REQUEST}" = "true" ]; then
+if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "INFO: This is a PR.";
     echo "INFO: Not building docs.";
     exit 0;
