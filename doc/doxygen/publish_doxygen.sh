@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -e
+set -e;
 
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
@@ -45,9 +45,9 @@ function gh_pages_generate()
 {
     cd "${TRAVIS_BUILD_DIR}/build";
 
-    cmake -DWITH_BACKEND=No -DWITH_GUI=No -DWITH_DATABASE=No ..
+    cmake -DWITH_BACKEND=No -DWITH_GUI=No -DWITH_DATABASE=No ..;
 
-    make doc
+    make doc;
 }
 
 
@@ -59,10 +59,10 @@ function gh_pages_update()
 
     git add --all;
 
-    git commit -m "Doxygen build from Travis build ${TRAVIS_BUILD_NUMBER} for commit ${TRAVIS_COMMIT}"
+    git commit -m "Doxygen build from Travis build ${TRAVIS_BUILD_NUMBER} for commit ${TRAVIS_COMMIT}";
 
-    git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}
-    git push --quiet --force upstream gh-pages > /dev/null 2>&1
+    git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
+    git push --quiet --force upstream gh-pages > /dev/null 2>&1;
 }
 
 
