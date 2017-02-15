@@ -2,54 +2,54 @@ language: generic
 
 matrix:
   include:
-#    - os: linux
-#      sudo: required
-#      services: docker
-#      env:
-#        - image=debian:jessie
-#        - package=pairinteraction-install-linux.deb
-#      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
-#      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-#    - os: linux
-#      sudo: required
-#      services: docker
-#      env:
-#        - image=ubuntu:16.04
-#        - package=
-#      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
-#    - os: linux
-#      sudo: required
-#      services: docker
-#      env:
-#        - image=opensuse:13.2
-#        - package=pairinteraction-install-linux.rpm
-#      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
-#      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-#    - os: linux
-#      sudo: required
-#      services: docker
-#      env:
-#        - image=opensuse:13.2-w64
-#        - package=pairinteraction-install-windows-x86_64.exe
-#      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make win32"
-#      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-#    - os: osx
-#      osx_image: xcode8
-#      env:
-#        - package=pairinteraction-install-osx.dmg
-#      before_install:
-#        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
-#        - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && export PATH=/Users/travis/miniconda3/bin:$PATH
-#        - conda update --yes conda
-#      install:
-#        - conda install --yes nomkl numpy scipy
-#        - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
-#        - brew install eigen gsl openmpi llvm
-#        - npm install -g fileicon
-#      before_script:
-#        - export CXX=/usr/local/opt/llvm/bin/clang++
-#        - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
-#      script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make && make test && make package && make license
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=debian:jessie
+        - package=pairinteraction-install-linux.deb
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=ubuntu:16.04
+        - package=
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=opensuse:13.2
+        - package=pairinteraction-install-linux.rpm
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make && make test && make package"
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=opensuse:13.2-w64
+        - package=pairinteraction-install-windows-x86_64.exe
+      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make win32"
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: osx
+      osx_image: xcode8
+      env:
+        - package=pairinteraction-install-osx.dmg
+      before_install:
+        - wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh
+        - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && export PATH=/Users/travis/miniconda3/bin:$PATH
+        - conda update --yes conda
+      install:
+        - conda install --yes nomkl numpy scipy
+        - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
+        - brew install eigen gsl openmpi llvm
+        - npm install -g fileicon
+      before_script:
+        - export CXX=/usr/local/opt/llvm/bin/clang++
+        - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
+      script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make && make test && make package && make license
     - os: linux
       dist: trusty
       addons:
