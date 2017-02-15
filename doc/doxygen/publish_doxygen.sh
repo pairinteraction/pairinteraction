@@ -13,7 +13,7 @@ fi;
 if [ "${TRAVIS_BRANCH}" != "master" ]; then
     echo "INFO: We are not on the master branch.";
     echo "INFO: Not building docs.";
-    #exit 0;
+    exit 0;
 fi;
 
 
