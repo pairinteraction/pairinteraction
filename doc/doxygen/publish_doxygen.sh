@@ -2,6 +2,8 @@
 
 set -e;
 
+TRAVIS_BUILD_DIR=/travis
+
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "INFO: This is a PR.";
@@ -59,7 +61,7 @@ function gh_pages_update()
 
     git add --all;
 
-    git commit -m "Doxygen build from Travis build ${TRAVIS_BUILD_NUMBER} for commit ${TRAVIS_COMMIT}";
+    git commit -m "Doxygen build from Travis for commit ${TRAVIS_COMMIT}";
 
     git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
     git push --quiet --force upstream gh-pages > /dev/null 2>&1;
