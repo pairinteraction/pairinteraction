@@ -61,8 +61,7 @@ matrix:
           - cmake-data
           - doxygen
       env:
-        global:
-        - secure: "KYua1guESKgOVDsh7VnDOeq14Y7lZUoJzkKU45+t2RbEdIGLqMW7Y80lGikpwuFDRLSMFduWTNbOoJUs520wSyMsHDcvHmq6g5Aq8Dl22wWMSce+/7Aj1QmjFOZVlZdR6qSwsOCC3m8FVrzrBap+evwj+Xycp+diGoUyH59dhISdK9Wa5vRZqI90NIivSL17jRCSjw+QCOIdPSKiEFH5+riyJDLX5PQ1VAKvbyk6GcUQlaveIgQ98zIZm0dsRHMsANDQtW/p6BmW13tlCOeu0UgNqUq/6U+OG0Fmylm4eyTlzhzj4nYGRI5OXWVR7OpukhbywgRphtrQ13BBjWRRggL3ukNBmDlX9mxGsSuldlIdJAZsMc+1DRv4U+5DouoguV76MTojomnsBUOWF/WS9DDSRYaM6DnbKj4rEOgFIK7fK2tZhfjw24Be5vLD/NsTFsDxBiZAefENi8cCiaIO3+KwxrsDlJp+zl1FTnS6Rmz3Lt1G4vVKFTJG8x7K1y52RcwNEFlBN+WuDCHMeOiyL5ZtY1fAHP/zOxXa/NACSfyTcuP4pk0WfZsoAfRsQuNcsj1HqysFYmUqwSlyMoJYNIwrCBdp8iEf7Pi/9RSgqNxCMaN64LzRYLqMO7jbNXI+r+sMCnaokTl5cQWPCXwldOgoolLqEyiVGINcN2R092c="
+      - secure: "KYua1guESKgOVDsh7VnDOeq14Y7lZUoJzkKU45+t2RbEdIGLqMW7Y80lGikpwuFDRLSMFduWTNbOoJUs520wSyMsHDcvHmq6g5Aq8Dl22wWMSce+/7Aj1QmjFOZVlZdR6qSwsOCC3m8FVrzrBap+evwj+Xycp+diGoUyH59dhISdK9Wa5vRZqI90NIivSL17jRCSjw+QCOIdPSKiEFH5+riyJDLX5PQ1VAKvbyk6GcUQlaveIgQ98zIZm0dsRHMsANDQtW/p6BmW13tlCOeu0UgNqUq/6U+OG0Fmylm4eyTlzhzj4nYGRI5OXWVR7OpukhbywgRphtrQ13BBjWRRggL3ukNBmDlX9mxGsSuldlIdJAZsMc+1DRv4U+5DouoguV76MTojomnsBUOWF/WS9DDSRYaM6DnbKj4rEOgFIK7fK2tZhfjw24Be5vLD/NsTFsDxBiZAefENi8cCiaIO3+KwxrsDlJp+zl1FTnS6Rmz3Lt1G4vVKFTJG8x7K1y52RcwNEFlBN+WuDCHMeOiyL5ZtY1fAHP/zOxXa/NACSfyTcuP4pk0WfZsoAfRsQuNcsj1HqysFYmUqwSlyMoJYNIwrCBdp8iEf7Pi/9RSgqNxCMaN64LzRYLqMO7jbNXI+r+sMCnaokTl5cQWPCXwldOgoolLqEyiVGINcN2R092c="
       script: bash doc/doxygen/publish_doxygen.sh
 
 deploy:
