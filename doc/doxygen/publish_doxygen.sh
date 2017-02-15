@@ -13,7 +13,14 @@ fi;
 if [ "${TRAVIS_BRANCH}" != "master" ]; then
     echo "INFO: We are not on the master branch.";
     echo "INFO: Not building docs.";
-    #exit 0;
+    exit 0;
+fi;
+
+
+if [ "${TRAVIS_REPO_SLUG}" != "pairinteraction/pairinteraction" ]; then
+    echo "INFO: We are not on the main repository.";
+    echo "INFO: Not building docs.";
+    exit 0;
 fi;
 
 
@@ -22,7 +29,7 @@ function gh_pages_prepare()
     mkdir -p "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
     cd "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
 
-    git clone -b gh-pages https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG} html;
+    git clone -b gh-pages https://github.com/${TRAVIS_REPO_SLUG} html;
 
     cd "html";
 
@@ -54,7 +61,8 @@ function gh_pages_update()
 
     git commit -m "Doxygen build from Travis build ${TRAVIS_BUILD_NUMBER} for commit ${TRAVIS_COMMIT}"
 
-    git push -f origin gh-pages
+    git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}
+    git push --quiet --force upstream gh-pages > /dev/null 2>&1
 }
 
 
