@@ -64,6 +64,8 @@ if( WITH_GUI )
   add_subdirectory(gui)
 endif( )
 
+add_subdirectory(doc)
+
 # Make packages for different platforms
 
 if(WIN32)
