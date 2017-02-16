@@ -754,6 +754,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = $(SOURCE_DIR)/calc \
+                         $(SOURCE_DIR)/gui \
                          $(SOURCE_DIR)/doc/doxygen
 
 # This tag can be used to specify the character encoding of the source files
@@ -789,7 +790,8 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = $(SOURCE_DIR)/calc/wignerSymbols
+EXCLUDE                = $(SOURCE_DIR)/calc/wignerSymbols \
+                         $(SOURCE_DIR)/gui/pyqtgraph
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or
 # directories that are symbolic links (a Unix file system feature) are excluded
