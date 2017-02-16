@@ -45,9 +45,9 @@ namespace model_potential {
      */
     real_t V(QuantumDefect const& qd, real_t x);
 
-    /** \brief Helper function for Numerov's method.s
+    /** \brief Helper function for %Numerov's method.s
      *
-     * Numerov's method solves \f$ y''(x) + g(x) y(x) = 0\f$. This function
+     * %Numerov's method solves \f$ y''(x) + g(x) y(x) = 0\f$. This function
      * implements \f$ g(x) \f$.
      *
      * \f[
@@ -61,10 +61,10 @@ namespace model_potential {
     real_t g(QuantumDefect const& qd, real_t x);
 }
 
-/** \brief Numerov's method
+/** \brief %Numerov's method
  *
- * This class implements Numerov's method using a couple of helper functions.
- * Numerov's method solves a differential equation of the form
+ * This class implements %Numerov's method using a couple of helper functions.
+ * %Numerov's method solves a differential equation of the form
  * \f[
  *      y''(x) + g(x)y(x) = 0
  * \f]
@@ -106,7 +106,7 @@ public:
 
     /** \brief Perform the integration
      *
-     * This performs the integration using Numerov's method.
+     * This performs the integration using %Numerov's method.
      *
      * \returns vector with wavefunction amplitude
      */
@@ -114,7 +114,7 @@ public:
 
     /** \brief Power kernel for matrix elements
      *
-     * The power kernel accounts for the fact that in Numerov's method the
+     * The power kernel accounts for the fact that in %Numerov's method the
      * domain is square root scaled. This is important for the calculation of
      * matrix elements.
      *
@@ -144,25 +144,25 @@ namespace whittaker_functions {
      */
     real_t HypergeometricU(real_t a, real_t b, real_t z);
 
-    /** \brief Compute the Whittaker function
+    /** \brief Compute the %Whittaker function
      *
-     * The Whittaker function is defined in terms of the confluent hypergeometric
+     * The %Whittaker function is defined in terms of the confluent hypergeometric
      * function.
      * \f[
      *        W_{k,m}(z) = \mathrm{e}^{-z/2} z^{m+1/2} U\left(m-k+\frac{1}{2}, 1+2m, z\right)
      * \f]
      *
-     * \param[in] k     parameter k from Whittaker's equation
-     * \param[in] m     parameter m from Whittaker's equation
+     * \param[in] k     parameter k from %Whittaker's equation
+     * \param[in] m     parameter m from %Whittaker's equation
      * \param[in] z     radial position
      * \returns W(k,m,z)
      */
     real_t WhittakerW(real_t k, real_t m, real_t z);
 
-    /** \brief Radial wavefunctions from Whittaker's function
+    /** \brief Radial wavefunctions from %Whittaker's function
      *
      * The radial wavefunction of the Schrödinger equation with the Coulomb
-     * potential can be expressed in terms of the Whittaker function.
+     * potential can be expressed in terms of the %Whittaker function.
      * \f[
      *        R_{\nu,l}(r) = (\nu^2 \Gamma(\nu+l+1) \Gamma(\nu-l))^{-1/2} W_{\nu, l+1/2}\left(\frac{2r}{\nu}\right)
      * \f]
@@ -203,7 +203,7 @@ public:
 
     /** \brief Evaluate the radial wavefunction
      *
-     * This does not perform an integration but merely evaluates the Whittaker
+     * This does not perform an integration but merely evaluates the %Whittaker
      * functions over the domain.
      *
      * \returns vector with wavefunction amplitude
@@ -212,7 +212,7 @@ public:
 
     /** \brief Power kernel for matrix elements
      *
-     * The power kernel accounts for the fact that for the Whittaker functions
+     * The power kernel accounts for the fact that for the %Whittaker functions
      * the domain is linear scaled. This is important for the calculation of
      * matrix elements.
      *
