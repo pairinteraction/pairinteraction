@@ -4,7 +4,7 @@ set -e;
 
 
 ENV_FILE=`mktemp docker.XXXXXX.env`
-
+SOURCE_DIR="/travis"
 
 cat > file.env << EOF
 # Travis variables
@@ -17,6 +17,7 @@ TRAVIS_OS_NAME=${TRAVIS_OS_NAME}
 image=${image}
 package=${package}
 GH_TOKEN=${GH_TOKEN}
+SOURCE_DIR=${SOURCE_DIR}
 EOF
 
 
@@ -28,7 +29,7 @@ case "${TRAVIS_OS_NAME}" in
             case "${image}" in
                 "opensuse:13.2-w64")
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:/travis \
+                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            pairinteraction/$image \
                            /bin/bash /travis/docker/build_cmake.sh win32;
@@ -36,7 +37,7 @@ case "${TRAVIS_OS_NAME}" in
 
                 "debian:doxygen")
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:/travis \
+                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            pairinteraction/$image \
                            /bin/bash /travis/doc/doxygen/publish_doxygen.sh
@@ -44,7 +45,7 @@ case "${TRAVIS_OS_NAME}" in
 
                 *)
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:/travis \
+                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            pairinteraction/$image \
                            /bin/bash /travis/docker/build_cmake.sh;
@@ -55,6 +56,7 @@ case "${TRAVIS_OS_NAME}" in
     # Build on Mac OS X directly
     "osx")
 
+        SOURCE_DIR="."
         docker/build_cmake.sh osx;
         ;;
 

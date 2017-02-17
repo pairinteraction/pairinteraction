@@ -2,10 +2,7 @@
 
 set -e;
 
-elif [ "$1" != "osx" ]; then
-    cd /travis;
-fi;
-
+cd "${SOURCE_DIR)";
 mkdir build;
 cd build;
 
