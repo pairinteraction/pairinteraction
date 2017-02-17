@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex;
+set -e;
 
 cd "${SOURCE_DIR}";
 mkdir build;

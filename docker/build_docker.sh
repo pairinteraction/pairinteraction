@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex;
+set -e;
 
 
 export ENV_FILE="`mktemp docker.XXXXXX.env`";
