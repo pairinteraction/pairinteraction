@@ -14,7 +14,7 @@ else
     cmake ..;
 fi;
 
-make;
+make -j 2;
 
 if [ "$1" = "win32" ]; then
     make win32;
