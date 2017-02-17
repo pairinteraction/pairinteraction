@@ -2,7 +2,7 @@
 
 set -ex;
 
-cd "${SOURCE_DIR}";
+cd ${SOURCE_DIR};
 mkdir build;
 cd build;
 
