@@ -1,10 +1,11 @@
 #!/bin/sh
 
-set -e;
+set -ex;
 
 
-ENV_FILE="`mktemp docker.XXXXXX.env`"
-SOURCE_DIR="/travis"
+export ENV_FILE="`mktemp docker.XXXXXX.env`";
+export SOURCE_DIR="/travis";
+
 
 cat > ${ENV_FILE} <<EOF
 # Travis variables
@@ -56,7 +57,7 @@ case "${TRAVIS_OS_NAME}" in
     # Build on Mac OS X directly
     "osx")
 
-        SOURCE_DIR="."
+        export SOURCE_DIR=".";
         docker/build_cmake.sh osx;
         ;;
 
