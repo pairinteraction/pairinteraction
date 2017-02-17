@@ -3,10 +3,10 @@
 set -e;
 
 
-ENV_FILE=`mktemp docker.XXXXXX.env`
+ENV_FILE="`mktemp docker.XXXXXX.env`"
 SOURCE_DIR="/travis"
 
-cat > file.env << EOF
+cat > ${ENV_FILE} <<EOF
 # Travis variables
 TRAVIS_COMMIT="${TRAVIS_COMMIT}"
 TRAVIS_PULL_REQUEST="${TRAVIS_PULL_REQUEST}"
