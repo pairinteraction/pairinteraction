@@ -68,16 +68,16 @@ public:
     QuantumDefect(std::string const& species, int n, int l, real_t j);
 
     /** \brief Atomic species */
-    const std::string &species;
+    const std::string species;
 
     /** \brief Principal quantum number */
-    const int &n;
+    const int n;
 
     /** \brief Angular quantum number */
-    const int &l;
+    const int l;
 
     /** \brief Magnetic quantum number */
-    const real_t &j;
+    const real_t j;
 
     /** \brief Polarizability */
     const real_t &ac;

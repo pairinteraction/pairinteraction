@@ -277,16 +277,17 @@ public:
      * \returns Specified row
      * \throws sqlite_error
      */
-    result::row getRow(unsigned int pos) const
+    result::row getRow(int pos) const
     {
-        if ( pos+1 >= nRow )
+        int p = pos + 1;
+        if ( p > nRow || p < 0 )
         {
             throw sqlite_error("Position index out of range");
         }
         std::string output;
         std::string spacer = "";
         for (int i = 0; i < nColumn; ++i) {
-            output += spacer + azResult[(pos+1)*nColumn+i];
+            output += spacer + azResult[p*nColumn+i];
             spacer = " ";
         }
         return result::row(output);
