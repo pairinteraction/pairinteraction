@@ -379,8 +379,9 @@ void Hamiltonianmatrix::doDeserialization() {
 
     if((((entries_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value) ||
             (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
-        std::cout << ">>ERR" << "The data type used in the program does not fit the data type used in the serialized objects." << std::endl; // TODO throw
-        abort();
+        std::string msg("The data type used in the program does not fit the data type used in the serialized objects.");
+        std::cout << ">>ERR" << msg << std::endl;
+        throw std::runtime_error(msg);
     }
 
     // build matrix "entries_"

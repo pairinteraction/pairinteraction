@@ -34,9 +34,8 @@ struct no_defect : public std::exception
 };
 
 
-QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
-    : species_(species), n_(n), l_(l), j_(j),
-      species(species_), n(n_), l(l_), j(j_),
+QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, real_t _j)
+    : species(_species), n(_n), l(_l), j(_j),
       ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_),
       rc(rc_), nstar(nstar_), energy(energy_)
 {
@@ -51,7 +50,6 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     ss.str(std::string());
     ss << "select MAX(L) from model_potential where (element = '" << species << "');";
     sqlite::result res1 = db.query(ss);
-    ss.str(std::string());
     if (res1.size() > 0)
         res1.first() >> pot_max_l;
     else throw no_defect();
@@ -63,7 +61,6 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
     ss.str(std::string());
     ss << "select MAX(L) from rydberg_ritz where (element = '" << species << "');";
     sqlite::result res2 = db.query(ss);
-    ss.str(std::string());
     if (res2.size() > 0)
         res2.first() >> ryd_max_l;
     else throw no_defect();
@@ -78,7 +75,6 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
        << "and (L = " << ryd_l << ") "
        << ");";
     sqlite::result res3 = db.query(ss);
-    ss.str(std::string());
     if (res3.size() > 0)
         res3.first() >> ryd_max_j;
     else throw no_defect();
@@ -88,12 +84,12 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
 
 
     // Load model potentials from database
+    ss.str(std::string());
     ss << "select ac,Z,a1,a2,a3,a4,rc from model_potential where ("
        << "(element = '" << species << "') "
        << "and (L = " << pot_l << ") "
        << ");";
     sqlite::result res4 = db.query(ss);
-    ss.str(std::string());
     if (res4.size() > 0)
         res4.first() >> ac_ >> Z_ >> a1_ >> a2_ >> a3_ >> a4_ >> rc_;
     else throw no_defect();
@@ -107,7 +103,6 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
        << "and (J = " << ryd_j << ") "
        << ");";
     sqlite::result res = db.query(ss);
-    ss.str(std::string());
     nstar_ = n;
     real_t Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
     real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
@@ -123,7 +118,7 @@ QuantumDefect::QuantumDefect(std::string species, int n, int l, real_t j)
 }
 
 
-real_t energy_level(std::string species, int n, int l, real_t j) {
+real_t energy_level(std::string const& species, int n, int l, real_t j) {
     QuantumDefect qd(species, n, l, j);
     return qd.energy;
 }

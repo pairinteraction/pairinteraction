@@ -28,12 +28,34 @@
 
 namespace sqlite {
 
+/** \brief SQLite error
+ *
+ * Exception to identify SQLite errors.
+ * \code
+ * try
+ * {
+ *   // code with sqlite
+ * }
+ * catch (sqlite::sqlite_error &e)
+ * {
+ *   // handle exception
+ * }
+ * \endcode
+ */
 struct sqlite_error : public std::exception {
 public:
-    explicit sqlite_error(std::string msg)
+    /** \brief Constructor
+     *
+     * \param[in] msg   error message
+     */
+    explicit sqlite_error(std::string const& msg)
         : m_msg(std::string("SQLite error: ") + msg)
     {}
 
+    /** \brief %what() function
+     *
+     * \returns error message
+     */
     const char* what() const noexcept
     {
         return m_msg.c_str();
@@ -44,20 +66,47 @@ private:
 };
 
 
+/** \brief Result table
+ *
+ * This object wraps the result table.  It is iterable and can be used in
+ * range-based for loops.
+ */
 class result {
     friend class handle;
 public:
+    /** \brief Row of the table
+     *
+     * The rows of the table are saved as a string inside a stringstream and
+     * deserialized using the >> operator.
+     */
     class row {
     public:
-        explicit row(std::string s)
+        /** \brief Constructor
+         *
+         * Intialize a row from a string.
+         *
+         * \param[in] s   contents of the row
+         */
+        explicit row(std::string const& s)
             : m_row( new std::stringstream(s) )
         {}
 
+        /** \brief Conversion operator
+         *
+         * A row can behave like a string.
+         */
         operator std::string() const
         {
             return m_row->str();
         }
 
+        /** \brief Deserialization operator
+         *
+         * Single elements can be piped out.
+         *
+         * \param[out] other    target to write the element
+         * \returns the row itself
+         */
         template < typename T >
         row& operator>> ( T& other )
         {
@@ -65,6 +114,7 @@ public:
             return *this;
         }
 
+        /** \brief Deserialization operator */
         template < typename T >
         row const& operator>> ( T& other ) const
         {
@@ -76,22 +126,52 @@ public:
         std::unique_ptr<std::stringstream> m_row;
     }; // class row
 
+    /** \brief Table iterator
+     *
+     * The iterator gives access to the rows of the table.
+     */
     class iterator {
     public:
+        /** \brief Constructor
+         *
+         * Construct an iterator for a result table.
+         *
+         * \param[in] res       pointer to the result table
+         * \param[in] pos       position of the row
+         * \param[in] nColumn   number of columns
+         */
         explicit iterator(const result* res, int pos, int nColumn)
             : res(res), pos(pos), nColumn(nColumn)
         {}
 
+        /** \brief Comparison operator
+         *
+         * Required to find the end of the range in a range-based loop.
+         *
+         * \param[in] other   iterator to compare to
+         */
         bool operator!= (const iterator& other) const
         {
             return pos != other.pos;
         }
 
+        /** \brief Dereference operator
+         *
+         * Get the current row.
+         *
+         * \returns The current row.
+         */
         row operator* () const
         {
             return res->getRow(pos);
         }
 
+        /** \brief Increment operator
+         *
+         * Advance iterator to the next row.
+         *
+         * \returns The advanced iterator
+         */
         iterator& operator++ ()
         {
             ++pos;
@@ -104,10 +184,24 @@ public:
         int rc;
     }; // class iterator
 
+    /** \brief Constructor
+     *
+     * Construct the result table of a query.
+     */
     explicit result()
         : azResult(NULL), nRow(0), nColumn(0)
     {}
 
+    /** \brief Move constructor
+     *
+     * This facilitates statements like
+     * \code
+     * sqlite::result res = sqlite.query(...);
+     * return res;
+     * \endcode
+     *
+     * \param[in] r   old result
+     */
     result( result&& r )
     {
         swap( std::move ( r ) );
@@ -115,6 +209,10 @@ public:
         r.azResult = nullptr;
     }
 
+    /** \brief Member swap
+     *
+     * To implement the move-and-swap idiom.
+     */
     void swap( result&& r )
     {
         std::swap ( nRow    , r.nRow     );
@@ -122,38 +220,69 @@ public:
         std::swap ( azResult, r.azResult );
     }
 
+    /** \brief Destructor */
     ~result()
     {
         sqlite3_free_table(azResult);
     }
 
+    /** \brief Number of rows
+     *
+     * \returns Number of rows
+     */
     size_t size() const
     {
         return nRow;
     }
 
+    /** \brief Iterator pointing to the first row
+     *
+     * \returns Iterator pointing to the first row
+     */
     result::iterator begin() const
     {
         return result::iterator(this, 0, nColumn);
     }
 
+    /** \brief Iterator pointing to the last row
+     *
+     * \returns Iterator pointing to the last row
+     */
     result::iterator end() const
     {
         return result::iterator(this, nRow, nColumn);
     }
 
+    /** \brief First row
+     *
+     * \returns First row
+     */
     result::row first() const
     {
         return getRow(0);
     }
 
+    /** \brief Header row
+     *
+     * \returns Header row
+     */
     result::row header() const
     {
         return getRow(-1);
     }
 
-    result::row getRow(int pos) const
+    /** \brief Get a specific row
+     *
+     * \param[in] pos   position of the row
+     * \returns Specified row
+     * \throws sqlite_error
+     */
+    result::row getRow(unsigned int pos) const
     {
+        if ( pos+1 >= nRow )
+        {
+            throw sqlite_error("Position index out of range");
+        }
         std::string output;
         std::string spacer = "";
         for (int i = 0; i < nColumn; ++i) {
@@ -172,9 +301,26 @@ private:
     int nRow, nColumn;
 };
 
+
+/** \brief SQLite Database handle
+ *
+ * This object handles the connection to the underlying SQLite databse.  It
+ * provides a high-level object oriented RAII interface to the C-bindings of
+ * SQLite3.
+ *
+ * \note Database locks have to be acquired individually, which is why this
+ * object can neither be copied nor moved.
+ */
 class handle {
 public:
-    explicit handle(const std::string filename)
+    /** \brief Constructor
+     *
+     * This is the canonical constructor.  It takes a filename and opens a
+     * database connection with the default parameters.
+     *
+     * \param[in] filename    fully-qualified filename of the database
+     */
+    explicit handle(std::string const& filename)
         : zErrMsg(NULL)
     {
         if ( sqlite3_open(filename.c_str(), &db) )
@@ -184,7 +330,17 @@ public:
         }
     }
 
-    explicit handle(const std::string filename, int flags)
+    /** \brief Extended Constructor
+     *
+     * This is the alternative constructor.  It takes a filename and a bitmask
+     * of parameters to open the database connection.  This is useful if you
+     * have to open the connection, e.g., read-only.
+     *
+     * \param[in] filename    fully-qualified filename of the database
+     * \param[in] flags       options to open the database (bitmask)
+     * \throws sqlite_error
+     */
+    explicit handle(std::string const& filename, int flags)
         : zErrMsg(NULL)
     {
         if ( sqlite3_open_v2(filename.c_str(), &db, flags, NULL) )
@@ -194,12 +350,24 @@ public:
         }
     }
 
+    /** \brief Destructor */
     ~handle()
     {
         sqlite3_close(db);
     }
 
-    result query(const std::string sql)
+    /** \brief Place an SQLite query
+     *
+     * The SQL statements are passed to this function as a string (or
+     * stringstream) and are executed in-place.  The string has to be prepared
+     * before passing to this function.  The table containing the result is
+     * returned in an sqlite::result object.
+     *
+     * \param[in] sql   SQL statements
+     * \returns result of the query
+     * \throws sqlite_error
+     */
+    result query(std::string const& sql)
     {
         result res;
         if ( sqlite3_get_table(db, sql.c_str(), &res.azResult, &res.nRow, &res.nColumn, &zErrMsg) != SQLITE_OK ) {
@@ -210,12 +378,22 @@ public:
         return res;
     }
 
+    /** \brief Place an SQLite query */
     result query(std::stringstream const& ss)
     {
         return query(ss.str());
     }
 
-    void exec(const std::string sql)
+    /** \brief Execute SQLite statements
+     *
+     * The SQL statements are passed to this function as a string (or
+     * stringstream) and are executed in-place.  The string has to be prepared
+     * before passing to this function.  This function discards the result table.
+     *
+     * \param[in] sql   SQL statements
+     * \throws sqlite_error
+     */
+    void exec(std::string const& sql)
     {
         if ( sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg) != SQLITE_OK ) {
             std::string msg(zErrMsg);
@@ -224,6 +402,7 @@ public:
         }
     }
 
+    /** \brief Execute SQLite statements */
     void exec(std::stringstream const& ss)
     {
         return exec(ss.str());

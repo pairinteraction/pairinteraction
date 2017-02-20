@@ -48,8 +48,6 @@
  */
 class QuantumDefect {
 private:
-    std::string species_;
-    int n_, l_;
     real_t j_;
     real_t ac_;
     int Z_;
@@ -67,7 +65,7 @@ public:
      * \param[in] l         angular quantum number
      * \param[in] j         magnetic quantum number
      */
-    QuantumDefect(std::string species, int n, int l, real_t j);
+    QuantumDefect(std::string const& species, int n, int l, real_t j);
 
     /** \brief Atomic species */
     const std::string &species;
@@ -122,6 +120,6 @@ public:
  * \param[in] l         angular quantum number
  * \param[in] j         magnetic quantum number
  */
-real_t energy_level(std::string species, int n, int l, real_t j);
+real_t energy_level(std::string const& species, int n, int l, real_t j);
 
 #endif // QUANTUM_DEFECT_H

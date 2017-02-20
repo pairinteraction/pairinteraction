@@ -15,6 +15,7 @@
  */
 
 #include "Basisnames.h"
+#include <stdexcept>
 
 BasisnamesOne::BasisnamesOne() {
 }
@@ -90,8 +91,7 @@ BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
     config["m2"] >> startstate.m[1];
 
     if (config["species1"].str() != config["species2"].str()) {
-        std::cout << "BasisnamesOne::fromBoth can only be used if both atoms are of the same species." << std::endl;
-        abort();
+        throw std::runtime_error("BasisnamesOne::fromBoth can only be used if both atoms are of the same species.");
     }
 
     BasisnamesOne basisnames;
@@ -266,8 +266,7 @@ BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1) {
     const Configuration conf1 = basis_one1->getConf();
 
     if (conf1["n2"].str() == "") {
-        std::cout << "BasisnamesTwo can be only constructed from two BasisnamesOne::fromFirst / BasisnamesOne::fromSecond." << std::endl;
-        abort();
+        throw std::runtime_error("BasisnamesTwo can be only constructed from two BasisnamesOne::fromFirst / BasisnamesOne::fromSecond.");
     }
 
     configure(conf1);
@@ -293,8 +292,7 @@ BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, st
     const Configuration conf2 = basis_one2->getConf();
 
     if (conf1["n2"].str() != "" || conf2["n2"].str() != "") {
-        std::cout << "BasisnamesTwo can be only constructed from one single BasisnamesOne::fromBoth." << std::endl;
-        abort();
+        throw std::runtime_error("BasisnamesTwo can be only constructed from one single BasisnamesOne::fromBoth.");
     }
 
     configure(conf1);
