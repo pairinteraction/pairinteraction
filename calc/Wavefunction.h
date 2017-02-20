@@ -164,7 +164,7 @@ namespace whittaker_functions {
      * The radial wavefunction of the Schrödinger equation with the Coulomb
      * potential can be expressed in terms of the %Whittaker function.
      * \f[
-     *        R_{\nu,l}(r) = (\nu^2 \Gamma(\nu+l+1) \Gamma(\nu-l))^{-1/2} W_{\nu, l+1/2}\left(\frac{2r}{\nu}\right)
+     *        R_{\nu,l}(r) = \frac{1}{\sqrt{\nu^2 \Gamma(\nu+l+1) \Gamma(\nu-l)}} W_{\nu, l+1/2}\left(\frac{2r}{\nu}\right)
      * \f]
      *
      * \param[in] nu    effective principal quantum number \f$ \nu = n - \delta_{n,l} \f$
