@@ -123,7 +123,7 @@ public:
         }
 
     private:
-        std::unique_ptr<std::stringstream> m_row;
+        std::unique_ptr < std::stringstream > m_row;
     }; // class row
 
     /** \brief Table iterator
@@ -140,7 +140,7 @@ public:
          * \param[in] pos       position of the row
          * \param[in] nColumn   number of columns
          */
-        explicit iterator(const result* res, int pos, int nColumn)
+        explicit iterator(result const* res, int pos, int nColumn)
             : res(res), pos(pos), nColumn(nColumn)
         {}
 
@@ -179,52 +179,19 @@ public:
         }
 
     private:
-        const result* res;
+        result const* res;
         int pos, nColumn;
-        int rc;
     }; // class iterator
 
     /** \brief Constructor
      *
      * Construct the result table of a query.
      */
-    explicit result()
-        : azResult(NULL), nRow(0), nColumn(0)
+    explicit result( char **azResult, int nRow, int nColumn )
+        : azResult(azResult, sqlite3_free_table)
+        , nRow(nRow)
+        , nColumn(nColumn)
     {}
-
-    /** \brief Move constructor
-     *
-     * This facilitates statements like
-     * \code
-     * sqlite::result res = sqlite.query(...);
-     * return res;
-     * \endcode
-     *
-     * \param[in] r   old result
-     */
-    result( result&& r )
-    {
-        swap( std::move ( r ) );
-        // invalidate copied result to prevent deletion
-        r.azResult = nullptr;
-    }
-
-    /** \brief Member swap
-     *
-     * To implement the move-and-swap idiom.
-     */
-    void swap( result&& r )
-    {
-        std::swap ( nRow    , r.nRow     );
-        std::swap ( nColumn , r.nColumn  );
-        std::swap ( azResult, r.azResult );
-    }
-
-    /** \brief Destructor */
-    ~result()
-    {
-        sqlite3_free_table(azResult);
-    }
 
     /** \brief Number of rows
      *
@@ -287,18 +254,14 @@ public:
         std::string output;
         std::string spacer = "";
         for (int i = 0; i < nColumn; ++i) {
-            output += spacer + azResult[p*nColumn+i];
+            output += spacer + azResult.get()[p*nColumn+i];
             spacer = " ";
         }
         return result::row(output);
     }
 
 private:
-    result( result const& r );
-    result& operator=( result const& );
-    result& operator=( result&& );
-
-    char **azResult;
+    std::unique_ptr < char*, std::function< void(char**) > > azResult;
     int nRow, nColumn;
 };
 
@@ -308,11 +271,9 @@ private:
  * This object handles the connection to the underlying SQLite databse.  It
  * provides a high-level object oriented RAII interface to the C-bindings of
  * SQLite3.
- *
- * \note Database locks have to be acquired individually, which is why this
- * object can neither be copied nor moved.
  */
 class handle {
+    typedef std::unique_ptr < sqlite3, std::function<int(sqlite3*)> > sqlite3_ptr;
 public:
     /** \brief Constructor
      *
@@ -322,12 +283,15 @@ public:
      * \param[in] filename    fully-qualified filename of the database
      */
     explicit handle(std::string const& filename)
-        : zErrMsg(NULL)
+        : db(nullptr, sqlite3_close)
     {
-        if ( sqlite3_open(filename.c_str(), &db) )
+        sqlite3* _db;
+        auto err = sqlite3_open(filename.c_str(), &_db);
+        db = sqlite3_ptr(_db, sqlite3_close);
+
+        if ( err )
         {
-            sqlite3_close(db);
-            throw sqlite_error( sqlite3_errmsg(db) );
+            throw sqlite_error( sqlite3_errmsg( db.get() ) );
         }
     }
 
@@ -342,19 +306,16 @@ public:
      * \throws sqlite_error
      */
     explicit handle(std::string const& filename, int flags)
-        : zErrMsg(NULL)
+        : db(nullptr, sqlite3_close)
     {
-        if ( sqlite3_open_v2(filename.c_str(), &db, flags, NULL) )
-        {
-            sqlite3_close(db);
-            throw sqlite_error( sqlite3_errmsg(db) );
-        }
-    }
+        sqlite3* _db;
+        auto err = sqlite3_open_v2(filename.c_str(), &_db, flags, nullptr);
+        db = sqlite3_ptr(_db, sqlite3_close);
 
-    /** \brief Destructor */
-    ~handle()
-    {
-        sqlite3_close(db);
+        if ( err )
+        {
+            throw sqlite_error( sqlite3_errmsg( db.get() ) );
+        }
     }
 
     /** \brief Place an SQLite query
@@ -370,12 +331,25 @@ public:
      */
     result query(std::string const& sql)
     {
-        result res;
-        if ( sqlite3_get_table(db, sql.c_str(), &res.azResult, &res.nRow, &res.nColumn, &zErrMsg) != SQLITE_OK ) {
+        char *zErrMsg;
+        char **azResult;
+        int nRow, nColumn;
+        auto err = sqlite3_get_table( db.get(),    // open database handle
+                                      sql.c_str(), // sql query
+                                      &azResult,   // result table
+                                      &nRow,       // number of rows
+                                      &nColumn,    // number of columns
+                                      &zErrMsg );  // error message
+
+        result res( azResult, nRow, nColumn );
+
+        if ( err != SQLITE_OK )
+        {
             std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
             throw sqlite_error(msg);
         }
+
         return res;
     }
 
@@ -396,7 +370,15 @@ public:
      */
     void exec(std::string const& sql)
     {
-        if ( sqlite3_exec(db, sql.c_str(), NULL, NULL, &zErrMsg) != SQLITE_OK ) {
+        char *zErrMsg;
+        auto err = sqlite3_exec( db.get(),    // open database handle
+                                 sql.c_str(), // sql query
+                                 nullptr,     // callback
+                                 nullptr,     // 1st argument to callback
+                                 &zErrMsg );  // error message
+
+        if ( err != SQLITE_OK )
+        {
             std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
             throw sqlite_error(msg);
@@ -410,15 +392,7 @@ public:
     }
 
 private:
-    handle( handle const& );
-    handle& operator=( handle const& );
-
-    handle( handle&& );
-    handle& operator=( handle&& );
-
-    sqlite3 *db;
-    char *zErrMsg;
-    int rc;
+    sqlite3_ptr db;
 };
 
 } // namespace sqlite
