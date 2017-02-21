@@ -15,6 +15,7 @@
  */
 
 #include "Hamiltonianmatrix.h"
+#include <stdexcept>
 
 Hamiltonianmatrix::Hamiltonianmatrix() : Serializable() {
 }

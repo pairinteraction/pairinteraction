@@ -47,9 +47,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     real_t tol = 1e-32;
 
     if (hamiltonian_one1->size() != hamiltonian_one2->size()) {
-        std::string msg("The number of single atom Hamiltonians must be the same for both atoms.");
-        std::cout << msg << std::endl;
-        throw std::runtime_error(msg);
+        throw std::runtime_error("The number of single atom Hamiltonians must be the same for both atoms.");
     }
 
     size_t nSteps_one = hamiltonian_one1->size();
