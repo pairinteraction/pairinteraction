@@ -72,7 +72,6 @@ private:
  * range-based for loops.
  */
 class result {
-    friend class handle;
 public:
     /** \brief Row of the table
      *
