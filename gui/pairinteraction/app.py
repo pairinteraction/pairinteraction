@@ -57,6 +57,7 @@ from .pyqtgraphadditions import PointsItem, MultiLine
 from .worker import Worker
 from .loader import Eigensystem
 
+from calc import pairinteraction as pi
 
 # Versioning
 version_settings = 14
@@ -478,17 +479,7 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real"+ext)):
-            self.path_workingdir = self.path_base
-        elif os.path.exists(os.path.join(self.path_base, "../../calc", "pairinteraction-real"+ext)):
-            self.path_workingdir = os.path.join(self.path_base, "../../calc")
-        else:
-            raise Exception('Directory containing executables not found.')
-
-        self.path_cpp_real = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-real")
-        self.path_cpp_complex = os.path.join(
-            self.path_base, self.path_workingdir, "pairinteraction-complex")
+        self.path_workingdir = os.path.join(self.path_base, "../../calc")
         self.path_quantumdefects = os.path.join(
             self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
@@ -2816,12 +2807,9 @@ class MainWindow(QtGui.QMainWindow):
                 # start c++ process
                 if params["minEy"] != 0 or params["maxEy"] != 0 or \
                         params["minBy"] != 0 or params["maxBy"] != 0:
-                    path_cpp = self.path_cpp_complex
+                    print("TODO: Use complex")
                 else:
-                    path_cpp = self.path_cpp_real
-
-                if os.name == 'nt':
-                    path_cpp += '.exe'
+                    print("TODO: Use real")
 
                 self.numprocessors = self.systemdict["cores"].magnitude
                 # OMP_NUM_THREADS – Specifies the number of threads to
@@ -2832,13 +2820,11 @@ class MainWindow(QtGui.QMainWindow):
                 # undefined one thread per CPU is used.
                 ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
 
-                self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
-                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **ompthreads))
-
                 self.starttime = time()
 
                 # start thread that collects the output
-                self.thread.execute(self.proc.stdout)
+                #self.thread.execute(self.proc.stdout)
+                pi.compute(self.path_config, self.path_cache)
 
                 # start timer used for processing the results
                 self.timer.start(0)
