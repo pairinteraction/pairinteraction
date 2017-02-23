@@ -9,6 +9,6 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     sqlite3 sqlite3-devel \
     boost-devel \
     gsl-devel \
-    swig python3-devel \
+    swig python3 python3-devel \
     dpkg rpm-build \
   && zypper clean
