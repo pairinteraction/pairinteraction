@@ -30,7 +30,7 @@ function(UNIT_TEST)
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the "calc" directory
   add_test(NAME ${UT_TARGET} COMMAND ${UT_TARGET}
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/..")
+    WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endfunction(UNIT_TEST)
 
 # Add the tests

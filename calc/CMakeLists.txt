@@ -22,9 +22,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 # Add the executables
 
 file(GLOB pairinteraction_SRCS *.cpp)
-set(pairinteraction_matrixelement_SRCS ${pairinteraction_SRCS})
 set(wignerSymbols_SRCS wignerSymbols/src/wignerSymbols-cpp.cpp)
-list(REMOVE_ITEM pairinteraction_matrixelement_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pairinteraction-real SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 add_library(pairinteraction-complex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
