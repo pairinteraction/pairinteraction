@@ -31,7 +31,7 @@
 
 */
 
-int compute(const char* config_name, const char* output_name) {
+int compute(std::string const& config_name, std::string const& output_name) {
     std::cout << std::unitbuf;
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
@@ -87,6 +87,42 @@ int compute(const char* config_name, const char* output_name) {
 
     // === Communicate that everything has finished ===
     std::cout << ">>END" << std::endl;
+
+    return 0;
+}
+
+
+int mainMatrixElement(std::string const& element, std::string const& row, std::string const& col, int power) {
+    std::cout << std::unitbuf;
+
+    size_t precision = std::numeric_limits<real_t>::digits10 + 1;
+
+    StateOne state_row;
+    std::stringstream(row)
+        >> state_row.n
+        >> state_row.l
+        >> state_row.j
+        >> state_row.m;
+
+    StateOne state_col;
+    std::stringstream(col)
+        >> state_col.n
+        >> state_col.l
+        >> state_col.j
+        >> state_col.m;
+
+    std::cout << element << std::endl;
+    std::cout << state_row << std::endl;
+    std::cout << state_col << std::endl;
+    std::cout << power << std::endl;
+
+    std::vector<StateOne> states({{state_row, state_col}});
+    auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
+    MatrixElements matrixelement(element, "");
+
+    matrixelement.precalculateRadial(basis, power);
+    real_t val = matrixelement.getRadial(state_row, state_col, power);
+    std::cout << ">>RES" << std::setprecision(precision) << val << std::endl;
 
     return 0;
 }

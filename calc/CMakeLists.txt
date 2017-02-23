@@ -24,12 +24,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 file(GLOB pairinteraction_SRCS *.cpp)
 set(pairinteraction_matrixelement_SRCS ${pairinteraction_SRCS})
 set(wignerSymbols_SRCS wignerSymbols/src/wignerSymbols-cpp.cpp)
-list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/mainMatrixelement.cpp)
 list(REMOVE_ITEM pairinteraction_matrixelement_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pairinteraction-real SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 add_library(pairinteraction-complex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-add_executable(matrixelements ${pairinteraction_matrixelement_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
@@ -53,13 +51,13 @@ list(APPEND LIBRARIES ${GSL_LIBRARIES})
 
 target_link_libraries(pairinteraction-real ${LIBRARIES})
 target_link_libraries(pairinteraction-complex ${LIBRARIES})
-target_link_libraries(matrixelements ${LIBRARIES})
 
 find_package(SWIG REQUIRED)
-find_package(PythonLibs REQUIRED)
+find_package(PythonLibs 3 REQUIRED)
 include(${SWIG_USE_FILE})
 include_directories(${PYTHON_INCLUDE_PATH})
 set_source_files_properties(interface.i PROPERTIES CPLUSPLUS ON)
+set_source_files_properties(interface.i PROPERTIES SWIG_FLAGS "-py3")
 swig_add_module(pairinteraction python interface.i)
 swig_link_libraries(pairinteraction pairinteraction-complex ${PYTHON_LIBRARIES})
 
@@ -101,11 +99,9 @@ if( WITH_DMG )
 
   install(TARGETS pairinteraction-real RUNTIME DESTINATION .)
   install(TARGETS pairinteraction-complex RUNTIME DESTINATION .)
-  install(TARGETS matrixelements RUNTIME DESTINATION .)
   
   set(bin1 \${CMAKE_INSTALL_PREFIX}/pairinteraction-real)
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
-  set(bin3 \${CMAKE_INSTALL_PREFIX}/matrixelements)
   
   install(CODE "execute_process(COMMAND ${PYTHON_BINARY} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
 
@@ -115,6 +111,5 @@ else( )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction.py DESTINATION share/pairinteraction/calc)
   install(TARGETS pairinteraction-real LIBRARY DESTINATION share/pairinteraction/calc)
   install(TARGETS pairinteraction-complex LIBRARY DESTINATION share/pairinteraction/calc)
-  install(TARGETS matrixelements RUNTIME DESTINATION share/pairinteraction/calc)
 
 endif( )

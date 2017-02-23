@@ -1,6 +1,8 @@
 %module pairinteraction
+
 %{
-extern int compute(const char*, const char*);
+#include "main.hpp"
 %}
 
-extern int compute(const char*, const char*);
+%include "std_string.i"
+%include "main.hpp"
