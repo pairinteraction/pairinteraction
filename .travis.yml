@@ -8,22 +8,18 @@ matrix:
       env:
         - image=debian:jessie
         - package=pairinteraction-install-linux.deb
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
       services: docker
       env:
         - image=ubuntu:16.04
-        - package=""
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
     - os: linux
       sudo: required
       services: docker
       env:
         - image=opensuse:13.2
         - package=pairinteraction-install-linux.rpm
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it hmenke/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake .. && make package"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
@@ -31,7 +27,6 @@ matrix:
       env:
         - image=opensuse:13.2-w64
         - package=pairinteraction-install-windows-x86_64.exe
-      script: docker run -v $TRAVIS_BUILD_DIR:/travis -it pairinteraction/$image /bin/bash -x -c "cd /travis && mkdir build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/mingw64.cmake .. && make win32"
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
       osx_image: xcode8
@@ -49,7 +44,15 @@ matrix:
       before_script:
         - export CXX=/usr/local/opt/llvm/bin/clang++
         - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib"
-      script: mkdir build && cd build && cmake -DWITH_DMG=ON .. && make package && make license
+    - os: linux
+      services: docker
+      sudo: required
+      env:
+        - image=debian:doxygen
+        - secure: "aCqMPi4dfP9U0KB0SYVSS1NzbYBxcIVvl58YCvL0Xpc/6tUGCY26/8SOk4g9WQJTkA4Nh0bE5WvjL4dWv5JaUVUles1vZCyp1UO4dH9z/2Q9CInhunnc1sqwQnqSAYM+VhbiG71We6pKwPUag1x+veQSaIZPDx/dBbhaPpnUeqwBRLmfuBz9Yzlx/SmIU/yvrxDgyC+1JQnmXyh86YWDAr0Chf4hCM6FA2WIs5d0yfmAXfaQJNIdjlKmxZ+/lLIaAneYOyHjGXyEallBibejtXzC9zGHBieU9sl4Hgh/7dTiE2tVaj1DW5o71mHupBZt1YQGLMBvVWD9DhSu9uEaKLONvY2lnAP5OLsmyv74cksDOlpGSqLd/EzAjNSUKAbDqO5AL/CfB9wL/aJsxONVzUXgCZlMZJacUl+kSWIqbugWwwjlzGCjUzC8SImawDD59XiBwUqKchPUsYFtcbGRUYF4amRN9TldxONDG6sORPQpeDqXTrCrBIIW5e7hOP0MSMOZWrtzJcHw/SwcJLpF99ghdiQBA1IHbgTSc1VOC91Hs3iol3KYuGS9kWBn0BvjJ/9Y3Lptqlo1c+wUYUBDSyDHyWKbonFM4X5FXd84C/umHEHN9kcqdgw0ddewpYDYbihT7160BFVYKaFh7cDDWNGSbPLNK7AGToTftHZrcbk="
+
+script:
+  - docker/build_docker.sh
 
 deploy:
   provider: releases

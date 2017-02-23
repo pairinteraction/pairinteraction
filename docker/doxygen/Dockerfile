@@ -3,12 +3,7 @@ MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    cmake build-essential git \
-    libeigen3-dev pyqt5-dev-tools \
-    libboost-all-dev \
-    libgsl0-dev \
-    libsqlite3-dev sqlite3 \
-    swig python3-dev \
-    dpkg rpm \
+    build-essential cmake git \
+    doxygen graphviz ca-certificates \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

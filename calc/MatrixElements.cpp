@@ -21,6 +21,7 @@
 #include <iostream>
 #include <string>
 #include <limits>
+#include <stdexcept>
 
 bool selectionRulesMomentum(StateOne const& state1, StateOne const& state2, int q) {
     bool validL = state1.l == state2.l;
@@ -439,7 +440,8 @@ real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
     } else if(method == "Whittaker") {
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     } else {
-        std::cout << ">>ERR" << "You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!" << std::endl; // TODO make it thread save
-        abort();
+        std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+        std::cout << ">>ERR" << msg << std::endl; // TODO make it thread save
+        throw std::runtime_error(msg);
     }
 }

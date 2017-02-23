@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+# Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,16 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Find Python
-#
-# PYTHON_BINARY      - Python executable
+find_package(Doxygen)
 
-# Include these modules to handle the QUIETLY and REQUIRED arguments.
-include (FindPackageHandleStandardArgs)
-
-find_program( PYTHON_BINARY NAMES python3 )
-
-# Set the FOUND variable to TRUE if all listed variables are set.
-find_package_handle_standard_args( Python DEFAULT_MSG PYTHON_BINARY )
-
-mark_as_advanced( PYTHON_BINARY )
+add_custom_target(doxygen
+  COMMAND
+  SOURCE_DIR=${CMAKE_SOURCE_DIR}
+  ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
