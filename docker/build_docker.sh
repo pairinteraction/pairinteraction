@@ -32,7 +32,7 @@ case "${TRAVIS_OS_NAME}" in
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
-                           pairinteraction/$image \
+                           hmenke/$image \
                            /bin/bash /travis/docker/build_cmake.sh win32;
                     ;;
 
@@ -48,7 +48,7 @@ case "${TRAVIS_OS_NAME}" in
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
-                           pairinteraction/$image \
+                           hmenke/$image \
                            /bin/bash /travis/docker/build_cmake.sh;
                     ;;
             esac;
