@@ -1,4 +1,4 @@
-%module pairinteraction
+%module pairinteraction_@DATATYPE@
 
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions

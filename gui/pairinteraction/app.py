@@ -57,7 +57,9 @@ from .pyqtgraphadditions import PointsItem, MultiLine
 from .worker import Worker
 from .loader import Eigensystem
 
-from calc import pairinteraction as pi
+from calc import pairinteraction_real as pir
+from calc import pairinteraction_complex as pic
+pi = None
 
 # Versioning
 version_settings = 14
@@ -2807,9 +2809,9 @@ class MainWindow(QtGui.QMainWindow):
                 # start c++ process
                 if params["minEy"] != 0 or params["maxEy"] != 0 or \
                         params["minBy"] != 0 or params["maxBy"] != 0:
-                    print("TODO: Use complex")
+                    pi = pic
                 else:
-                    print("TODO: Use real")
+                    pi = pir
 
                 self.numprocessors = self.systemdict["cores"].magnitude
                 # OMP_NUM_THREADS – Specifies the number of threads to
