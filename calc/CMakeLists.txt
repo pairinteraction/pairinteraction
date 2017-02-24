@@ -81,7 +81,7 @@ endif()
 
 # Build Python frontend
 
-find_package( PythonInterp REQUIRED )
+find_package( PythonInterp 3 REQUIRED )
 set( PYTHON_FRONTEND ${PYTHON_EXECUTABLE} )
 set( PYTHON_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 configure_file( pyinteraction.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pyinteraction )
