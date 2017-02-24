@@ -56,6 +56,7 @@ set( DATATYPE "complex" )
 configure_file( interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
 
 find_package(SWIG REQUIRED)
+find_package(PythonInterp 3 REQUIRED)
 find_package(PythonLibs 3 REQUIRED)
 include(${SWIG_USE_FILE})
 include_directories(${PYTHON_INCLUDE_PATH})
