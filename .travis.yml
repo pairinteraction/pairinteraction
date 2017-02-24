@@ -39,7 +39,7 @@ matrix:
       install:
         - conda install --yes nomkl numpy scipy
         - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
-        - brew install eigen gsl openmpi llvm swig
+        - brew install eigen gsl openmpi llvm swig python3
         - npm install -g fileicon
       before_script:
         - export CXX=/usr/local/opt/llvm/bin/clang++
