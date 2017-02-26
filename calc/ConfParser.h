@@ -24,41 +24,55 @@
 
 class Configuration {
 public:
-    class value {
+    class value
+    {
+        std::string m_value;
     public:
-        value();
-        value(std::stringstream const& val);
-        value(const Configuration::value &obj) {
-            *this = obj;
+        value() : m_value() {};
+
+        std::string const str() const
+        {
+            return m_value;
         }
-        std::string str() const;
-        void str(std::string s);
-        template<typename T>
-        Configuration::value& operator<<(const T& rhs) {
-            val << rhs;
-            return *this;
+
+        template < typename T >
+        friend value& operator<<(value& v, T const& rhs)
+        {
+            std::stringstream ss;
+            ss << rhs;
+            ss >> v.m_value;
+            return v;
         }
-        template<typename T>
-        Configuration::value& operator>>(T& rhs) {
-            val >> rhs;
-            return *this;
+        
+        template < typename T >
+        friend value& operator>>(value& v, T& rhs)
+        {
+            std::stringstream ss;
+            ss << v.m_value;
+            ss >> rhs;
+            return v;
         }
-        template<typename T>
-        const Configuration::value& operator>>(T& rhs) const {
-            std::stringstream tmp;
-            tmp << val.str();
-            tmp >> rhs;
-            return *this;
+
+        template < typename T >
+        friend value const& operator>>(value const& v, T& rhs)
+        {
+            std::stringstream ss;
+            ss << v.m_value;
+            ss >> rhs;
+            return v;
         }
-        template<typename T>
-        Configuration::value& operator=(const T& rhs) {
-            val.str(std::string());
-            val << rhs;
-            return *this;
+
+        friend std::stringstream& operator<<(std::stringstream& ss, value const& rhs)
+        {
+            ss << rhs.m_value;
+            return ss;
         }
-        Configuration::value& operator=(const Configuration::value& rhs);
-    private:
-        std::stringstream val;
+
+        friend std::stringstream& operator>>(std::stringstream& ss, value& rhs)
+        {
+            ss >> rhs.m_value;
+            return ss;
+        }
     };
 
     class iterator {

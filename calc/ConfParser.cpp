@@ -21,21 +21,6 @@
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-Configuration::value::value() : val() {
-}
-Configuration::value::value(std::stringstream const& v) {
-    val.str(v.str());
-}
-std::string Configuration::value::str() const {
-    return val.str();
-}
-void Configuration::value::str(std::string s) {
-    val.str(s);
-}
-Configuration::value& Configuration::value::operator=(const Configuration::value& rhs) {
-    val.str(rhs.str());
-    return *this;
-}
 Configuration::iterator::entry::entry(const std::string key, Configuration::value& value) : key(key), value(value) {
 }
 Configuration::iterator::iterator(std::map<std::string, Configuration::value>::iterator itr) : itr(itr) {

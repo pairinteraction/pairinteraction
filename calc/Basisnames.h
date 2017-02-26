@@ -34,16 +34,16 @@ public:
     Basisnames() {
     }
     void configure(const Configuration &config) {
-        conf["deltaNSingle"] = config["deltaNSingle"];
-        conf["deltaLSingle"] = config["deltaLSingle"];
-        conf["deltaJSingle"] = config["deltaJSingle"];
-        conf["deltaMSingle"] = config["deltaMSingle"];
+        conf["deltaNSingle"] << config["deltaNSingle"];
+        conf["deltaLSingle"] << config["deltaLSingle"];
+        conf["deltaJSingle"] << config["deltaJSingle"];
+        conf["deltaMSingle"] << config["deltaMSingle"];
         conf["deltaNSingle"] >> delta_n;
         conf["deltaLSingle"] >> delta_l;
         conf["deltaJSingle"] >> delta_j;
         conf["deltaMSingle"] >> delta_m;
-        conf["missingCalc"] = config["missingCalc"];
-        conf["missingWhittaker"] = config["missingWhittaker"];
+        conf["missingCalc"] << config["missingCalc"];
+        conf["missingWhittaker"] << config["missingWhittaker"];
     }
     size_t size() const {
         return names_.size();

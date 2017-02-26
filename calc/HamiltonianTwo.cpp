@@ -571,11 +571,11 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
             // Get configuration and save postions and symmetries
             Configuration conf = conf_mat[single_idx];
-            conf["R"] = position;
-            conf["inversion"] = (sym.inversion == NA) ? "" : std::to_string(sym.inversion);
-            conf["permutation"] = (sym.permutation == NA) ? "" : std::to_string(sym.permutation);
-            conf["reflection"] = (sym.reflection == NA) ? "" : std::to_string(sym.reflection);
-            conf["rotation"] = (sym.rotation == NA) ? "" : std::to_string(sym.rotation);
+            conf["R"] << position;
+            conf["inversion"] << ((sym.inversion == NA) ? "" : std::to_string(sym.inversion));
+            conf["permutation"] << ((sym.permutation == NA) ? "" : std::to_string(sym.permutation));
+            conf["reflection"] << ((sym.reflection == NA) ? "" : std::to_string(sym.reflection));
+            conf["rotation"] << ((sym.rotation == NA) ? "" : std::to_string(sym.rotation));
 
             // === Create table if necessary ===
             std::stringstream query;

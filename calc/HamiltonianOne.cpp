@@ -46,8 +46,8 @@ void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z,
 
 void HamiltonianOne::configure(const Configuration &config) {
     basicconf = basis->getConf();
-    basicconf["deltaESingle"] = config["deltaESingle"];
-    basicconf["diamagnetism"] = config["diamagnetism"];
+    basicconf["deltaESingle"] << config["deltaESingle"];
+    basicconf["diamagnetism"] << config["diamagnetism"];
 
     basicconf["deltaESingle"] >> deltaE;
     basicconf["species1"] >> species;
@@ -430,12 +430,12 @@ void HamiltonianOne::build() {
 
         // Get configuration and save fields
         Configuration conf = basicconf;
-        conf["Ex"] = Ex;
-        conf["Ey"] = Ey;
-        conf["Ez"] = Ez;
-        conf["Bx"] = Bx;
-        conf["By"] = By;
-        conf["Bz"] = Bz;
+        conf["Ex"] << Ex;
+        conf["Ey"] << Ey;
+        conf["Ez"] << Ez;
+        conf["Bx"] << Bx;
+        conf["By"] << By;
+        conf["Bz"] << Bz;
 
         // === Create table if necessary ===
         std::stringstream query;
