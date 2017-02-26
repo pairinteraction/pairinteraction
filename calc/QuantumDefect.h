@@ -48,7 +48,6 @@
  */
 class QuantumDefect {
 private:
-    real_t j_;
     real_t ac_;
     int Z_;
     real_t a1_, a2_, a3_, a4_;
