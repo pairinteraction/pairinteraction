@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ void Configuration::load_from_json(std::string const& filename)
     ptree pt;
     read_json(filename, pt);
 
-    for (auto itr: pt)
+    for (auto const& itr: pt)
     {
         params[itr.first] << itr.second.data();
     }
@@ -42,10 +42,9 @@ void Configuration::save_to_json(std::string const& filename)
 
     ptree pt;
 
-    for (auto p: *this) {
+    for (auto const& p: *this) {
         pt.put(p.first,p.second.str());
     }
 
     write_json(filename, pt);
 }
-
