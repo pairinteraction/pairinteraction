@@ -39,3 +39,5 @@ unit_test(TARGET quantum_defect_test
   SOURCE quantum_defect_test.cpp ../QuantumDefect.cpp)
 unit_test(TARGET wavefunction_test
   SOURCE wavefunction_test.cpp ../QuantumDefect.cpp ../Wavefunction.cpp)
+unit_test(TARGET conf_parser_test
+  SOURCE conf_parser_test ../ConfParser.cpp)

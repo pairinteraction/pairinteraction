@@ -35,7 +35,7 @@ void Configuration::load_from_json(std::string const& filename)
 }
 
 
-void Configuration::save_to_json(std::string const& filename)
+void Configuration::save_to_json(std::string const& filename) const
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::write_json;

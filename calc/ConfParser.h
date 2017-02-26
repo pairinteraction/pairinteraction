@@ -21,6 +21,7 @@
 #include <sstream>
 #include <map>
 
+#include <boost/lexical_cast.hpp>
 
 /** \brief %Configuration storage
  *
@@ -43,53 +44,50 @@ private:
             return m_value;
         }
 
-        bool operator==(value const& rhs)
+        bool operator==(value const& rhs) const
         {
           return this->m_value == rhs.m_value;
         }
 
         template < typename T >
-        friend value& operator<<(value& v, T const& rhs)
+        value& operator<<(T const& rhs)
         {
-            std::stringstream ss;
-            ss << rhs;
-            ss >> v.m_value;
-            return v;
+            m_value = boost::lexical_cast<std::string>(rhs);
+            return *this;
         }
 
         template < typename T >
-        friend value& operator>>(value& v, T& rhs)
+        value& operator>>(T& rhs)
         {
-            std::stringstream ss;
-            ss << v.m_value;
-            ss >> rhs;
-            return v;
+            rhs = boost::lexical_cast<T>(m_value);
+            return *this;
         }
 
         template < typename T >
-        friend value const& operator>>(value const& v, T& rhs)
+        value const& operator>>(T& rhs) const
         {
-            std::stringstream ss;
-            ss << v.m_value;
-            ss >> rhs;
-            return v;
+            rhs = boost::lexical_cast<T>(m_value);
+            return *this;
         }
 
-        friend std::stringstream& operator<<(std::stringstream& ss, value const& rhs)
+        value& operator<<(value const& rhs)
         {
-            ss << rhs.m_value;
-            return ss;
+            m_value = rhs.m_value;
+            return *this;
         }
 
-        friend std::stringstream& operator>>(std::stringstream& ss, value& rhs)
+        value& operator>>(value& rhs)
         {
-            ss >> rhs.m_value;
-            return ss;
+            rhs.m_value = m_value;
+            return *this;  
+        }
+
+        value const& operator>>(value& rhs) const
+        {
+            rhs.m_value = m_value;
+            return *this;  
         }
     };
-
-    typedef std::map < std::string, value > ::iterator iterator;
-    typedef std::map < std::string, value > ::const_iterator const_iterator;
 
 public:
 
@@ -107,7 +105,7 @@ public:
      *
      * \param[in] filename    Path to the JSON file
      */
-    void save_to_json(std::string const& filename);
+    void save_to_json(std::string const& filename) const;
 
     /** \brief Constructor */
     Configuration() : params() {};
@@ -185,8 +183,22 @@ public:
      */
     bool operator==(Configuration const& rhs) const
     {
-        return *this == rhs;
+        return this->params == rhs.params;
     }
+
+    /** \brief Iterator type
+     *
+     * Instead of implementing an own iterator we use the existing one
+     * of the underlying `std::map`.
+     */
+    typedef std::map < std::string, value > ::iterator iterator;
+
+    /** \brief Constant iterator type
+     *
+     * Instead of implementing an own constant iterator we use the
+     * existing one of the underlying `std::map`.
+     */
+    typedef std::map < std::string, value > ::const_iterator const_iterator;
 
     /** \brief Iterator pointing to the beginning
      *
@@ -247,7 +259,7 @@ public:
     }
 
 private:
-    std::map<std::string, Configuration::value> params;
+    std::map<std::string, value> params;
 };
 
 
