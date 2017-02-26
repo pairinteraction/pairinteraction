@@ -127,13 +127,13 @@ real_t HypergeometricU(real_t a, real_t b, real_t z)
 
 real_t WhittakerW(real_t k, real_t m, real_t z)
 {
-    return exp(-.5*z)*pow(z,m+.5)*HypergeometricU(m-k+.5, 1+2*m, z);
+    return std::exp(-.5*z)*std::pow(z,m+.5)*HypergeometricU(m-k+.5, 1+2*m, z);
 }
 
 
 real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 {
-    return pow(nu*nu * tgamma(nu+l+1) * tgamma(nu-l), -.5) * WhittakerW(nu, l+.5, 2*r/nu);
+    return 1/std::sqrt(nu*nu * std::tgamma(nu+l+1) * std::tgamma(nu-l)) * WhittakerW(nu, l+.5, 2*r/nu);
 }
 
 

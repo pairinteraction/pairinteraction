@@ -15,6 +15,7 @@
  */
 
 #include "HamiltonianTwo.h"
+#include <stdexcept>
 
 HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one)  :
     Hamiltonian<BasisnamesTwo>(), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), path_cache(path_cache) { // TODO
@@ -46,8 +47,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     real_t tol = 1e-32;
 
     if (hamiltonian_one1->size() != hamiltonian_one2->size()) {
-        std::cout << "The number of single atom Hamiltonians must be the same for both atoms." << std::endl;
-        abort();
+        throw std::runtime_error("The number of single atom Hamiltonians must be the same for both atoms.");
     }
 
     size_t nSteps_one = hamiltonian_one1->size();

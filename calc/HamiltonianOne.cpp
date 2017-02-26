@@ -15,6 +15,7 @@
  */
 
 #include "HamiltonianOne.h"
+#include <stdexcept>
 
 HamiltonianOne::HamiltonianOne(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<BasisnamesOne> basis_one) : Hamiltonian<BasisnamesOne>(), path_cache(path_cache) {
     basis = basis_one;
@@ -28,8 +29,9 @@ const Configuration& HamiltonianOne::getConf() const { // TODO in Configurable K
 
 void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
     if(val_y != 0) {
-        std::cout << ">>ERR" << "For fields with non-zero y-coordinates, a complex data type is needed." << std::endl;
-        abort();
+        std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
+        std::cout << ">>ERR" << msg << std::endl;
+        throw std::runtime_error(msg);
     }
     val_p = -val_x/std::sqrt(2);
     val_m = val_x/std::sqrt(2);
