@@ -20,7 +20,6 @@
 #include <string>
 #include <sstream>
 #include <map>
-#include "dtypes.h"
 
 class Configuration {
 public:
@@ -43,7 +42,7 @@ public:
             ss >> v.m_value;
             return v;
         }
-        
+
         template < typename T >
         friend value& operator>>(value& v, T& rhs)
         {
@@ -75,59 +74,89 @@ public:
         }
     };
 
-    class iterator {
-    public:
-        class entry {
-        public:
-            entry(const std::string key, Configuration::value& value);
-            const std::string key;
-            Configuration::value& value;
-        };
-        iterator(std::map<std::string, Configuration::value>::iterator itr);
-        bool operator!= (const iterator& other) const;
-        bool operator== (const iterator& other) const;
-        const iterator& operator++ ();
-        iterator::entry operator* ();
-    private:
-        std::map<std::string, Configuration::value>::iterator itr;
-        int pos, nColumn;
-        int rc;
-    };
+    void load_from_json(std::string const& filename);
+    void save_to_json(std::string const& filename);
 
-    class const_iterator {
-    public:
-        class entry {
-        public:
-            entry(const std::string key, const Configuration::value& value);
-            const std::string key;
-            const Configuration::value& value;
-        };
-        const_iterator(std::map<std::string, Configuration::value>::const_iterator itr);
-        bool operator!= (const const_iterator& other) const;
-        bool operator== (const const_iterator& other) const;
-        const const_iterator& operator++ ();
-        const_iterator::entry operator* ();
-    private:
-        std::map<std::string, Configuration::value>::const_iterator itr;
-        int pos, nColumn;
-        int rc;
-    };
+    Configuration() {};
 
-    void load_from_json(std::string filename);
-    void save_to_json(std::string filename);
-    Configuration::value &operator[](const std::string& key);
-    const Configuration::value &operator[](const std::string& key) const;
-    size_t size() const;
-    Configuration::iterator find (const std::string& key);
-    Configuration::const_iterator find (const std::string& key) const;
-    Configuration::iterator begin();
-    Configuration::iterator end();
-    Configuration::const_iterator begin() const;
-    Configuration::const_iterator end() const;
-    bool operator==(const Configuration &rhs) const;
-    Configuration& operator+=(const Configuration& rhs);
-    size_t count(const std::string& key) const;
-    Configuration();
+    size_t count(std::string const& key) const
+    {
+        return params.count(key);
+    }
+
+    size_t size() const
+    {
+        return params.size();
+    }
+
+    Configuration& operator+=(Configuration const& rhs)
+    {
+        for (auto const& p : rhs)
+        {
+            (*this)[p.first] = p.second;
+        }
+        return *this;
+    }
+
+    value& operator[](std::string const& key)
+    {
+        return params[key];
+    }
+
+    value operator[](std::string const& key) const
+    {
+        return params.at(key);
+    }
+
+    bool operator==(Configuration const& rhs) const
+    {
+        if (this->size() != rhs.size())
+        {
+            return false;
+        }
+        for (auto const& p : *this)
+        {
+            if ( rhs.find(p.first) == rhs.end() ||
+                 rhs[p.first].str() != p.second.str() )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    typedef std::map < std::string, value > ::iterator iterator;
+    typedef std::map < std::string, value > ::const_iterator const_iterator;
+
+    iterator begin()
+    {
+        return params.begin();
+    }
+
+    iterator end()
+    {
+        return params.end();
+    }
+
+    const_iterator begin() const
+    {
+        return params.cbegin();
+    }
+
+    const_iterator end() const
+    {
+        return params.cend();
+    }
+
+    iterator find(std::string const& key)
+    {
+        return params.find(key);
+    }
+
+    const_iterator find(std::string const& key) const
+    {
+        return params.find(key);
+    }
 
 private:
     std::map<std::string, Configuration::value> params;

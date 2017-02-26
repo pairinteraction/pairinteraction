@@ -16,46 +16,11 @@
 
 #include "ConfParser.h"
 #include <string>
-#include <fstream>
-#include <iostream>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
 
-Configuration::iterator::entry::entry(const std::string key, Configuration::value& value) : key(key), value(value) {
-}
-Configuration::iterator::iterator(std::map<std::string, Configuration::value>::iterator itr) : itr(itr) {
-}
-bool Configuration::iterator::operator== (const iterator& other) const {
-    return itr == other.itr;
-}
-bool Configuration::iterator::operator!= (const iterator& other) const {
-    return itr != other.itr;
-}
-const Configuration::iterator& Configuration::iterator::operator++ () {
-    ++itr;
-    return *this;
-}
-Configuration::iterator::entry Configuration::iterator::operator* () {
-    return iterator::entry(itr->first, itr->second);
-}
-Configuration::const_iterator::entry::entry(const std::string key, const Configuration::value& value) : key(key), value(value) {
-}
-Configuration::const_iterator::const_iterator(std::map<std::string, Configuration::value>::const_iterator itr) : itr(itr) {
-}
-bool Configuration::const_iterator::operator== (const const_iterator& other) const {
-    return itr == other.itr;
-}
-bool Configuration::const_iterator::operator!= (const const_iterator& other) const {
-    return itr != other.itr;
-}
-const Configuration::const_iterator& Configuration::const_iterator::operator++ () {
-    ++itr;
-    return *this;
-}
-Configuration::const_iterator::entry Configuration::const_iterator::operator* () {
-    return const_iterator::entry(itr->first, itr->second);
-}
-void Configuration::load_from_json(std::string filename)
+
+void Configuration::load_from_json(std::string const& filename)
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::read_json;
@@ -68,7 +33,9 @@ void Configuration::load_from_json(std::string filename)
         params[itr.first] << itr.second.data();
     }
 }
-void Configuration::save_to_json(std::string filename)
+
+
+void Configuration::save_to_json(std::string const& filename)
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::write_json;
@@ -76,58 +43,9 @@ void Configuration::save_to_json(std::string filename)
     ptree pt;
 
     for (auto p: *this) {
-        pt.put(p.key,p.value.str());
+        pt.put(p.first,p.second.str());
     }
 
     write_json(filename, pt);
 }
-Configuration::value& Configuration::operator [](const std::string& key) {
-    return params[key];
-}
-const Configuration::value& Configuration::operator [](const std::string& key) const{
-    return params.at(key);
-}
-size_t Configuration::size() const {
-    return params.size();
-}
-Configuration::iterator Configuration::find (const std::string& key) {
-    return Configuration::iterator(params.find(key));
-}
 
-Configuration::const_iterator Configuration::find (const std::string& key) const {
-    return Configuration::const_iterator(params.find(key));
-}
-Configuration::iterator Configuration::begin() {
-    return Configuration::iterator(params.begin());
-}
-Configuration::iterator Configuration::end() {
-    return Configuration::iterator(params.end());
-}
-Configuration::const_iterator Configuration::begin() const {
-    return Configuration::const_iterator(params.begin());
-}
-Configuration::const_iterator Configuration::end() const {
-    return Configuration::const_iterator(params.end());
-}
-bool Configuration::operator==(const Configuration &rhs) const {
-    if (this->size() != rhs.size()) {
-        return false;
-    }
-    for (auto p: *this) {
-        if (rhs.find(p.key) == rhs.end() || rhs[p.key].str() != p.value.str()) {
-            return false;
-        }
-    }
-    return true;
-}
-Configuration& Configuration::operator+=(const Configuration& rhs) {
-    for (auto p: rhs) {
-        (*this)[p.key] = p.value;
-    }
-    return *this;
-}
-size_t Configuration::count(const std::string& key) const {
-    return params.count(key);
-}
-Configuration::Configuration() {
-}

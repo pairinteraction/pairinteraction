@@ -446,11 +446,11 @@ void HamiltonianOne::build() {
                      "created TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
                      "accessed TIMESTAMP DEFAULT CURRENT_TIMESTAMP";
             for (auto p: conf) {
-                query << ", " << p.key << " text";
+                query << ", " << p.first << " text";
             }
             query << ", UNIQUE (";
             for (auto p: conf) {
-                query << spacer << p.key;
+                query << spacer << p.first;
                 spacer = ", ";
             }
             query << "));";
@@ -463,7 +463,7 @@ void HamiltonianOne::build() {
         spacer = "";
         query << "SELECT uuid FROM cache_one WHERE ";
         for (auto p: conf) {
-            query << spacer << p.key << "='" << p.value.str() << "'";
+            query << spacer << p.first << "='" << p.second.str() << "'";
             spacer = " AND ";
         }
         query << ";";
@@ -489,11 +489,11 @@ void HamiltonianOne::build() {
             query.str(std::string());
             query << "INSERT INTO cache_one (uuid";
             for (auto p: conf) {
-                query << ", " << p.key;
+                query << ", " << p.first;
             }
             query << ") values ( '" << uuid << "'";
             for (auto p: conf) {
-                query << ", " << "'" << p.value.str() << "'";
+                query << ", " << "'" << p.second.str() << "'";
             }
             query << ");";
 #pragma omp critical(database)

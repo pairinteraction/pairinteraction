@@ -16,7 +16,9 @@
 
 %{
 #include "main.h"
+#include "ConfParser.h"
 %}
 
 %include "std_string.i"
 %include "main.h"
+%include "ConfParser.h"
