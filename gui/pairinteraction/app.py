@@ -23,7 +23,7 @@ import os
 import shutil
 import signal
 import sys
-import subprocess
+import threading
 from time import sleep, time, strftime
 import zipfile
 
@@ -2820,13 +2820,47 @@ class MainWindow(QtGui.QMainWindow):
                 # integers; the value specified the number of threads
                 # to use for the corresponding nested level.  If
                 # undefined one thread per CPU is used.
-                ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
+                pi.thread_ctrl(self.numprocessors)
 
                 self.starttime = time()
 
-                # start thread that collects the output
-                #self.thread.execute(self.proc.stdout)
+                # Save original stdout fd
+                stdout_fileno = sys.stdout.fileno()
+                stdout_save = os.dup(stdout_fileno)
+                # Open new pipe
+                stdout_pipe_read, stdout_pipe_write = os.pipe()
+                # Replace stdout by pipe
+                os.dup2(stdout_pipe_write, stdout_fileno)
+                os.close(stdout_pipe_write)
+                # Reenable Python stdout
+                sys.stdout = os.fdopen(stdout_save, 'w')
+
+                f = BytesIO()
+                def drain_pipe():
+                    while True:
+                        data = os.read(stdout_pipe_read, 1024)
+                        if not data:
+                            break
+                        f.write(data)
+
+                t = threading.Thread(target=drain_pipe)
+                t.start()
+
                 pi.compute(self.path_config, self.path_cache)
+
+                # Close write pipe to unblock os.read(stdout_pipe_read, ...)
+                os.close(stdout_fileno)
+                t.join()
+
+                # Clean up pipe and restore original stdout
+                os.close(stdout_pipe_read)
+                os.dup2(stdout_save, stdout_fileno)
+                os.close(stdout_save)
+                sys.stdout = os.fdopen(stdout_fileno, 'w')
+
+                # start thread that collects the output
+                f.seek(0)
+                self.thread.execute(f)
 
                 # start timer used for processing the results
                 self.timer.start(0)

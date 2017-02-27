@@ -22,6 +22,7 @@
 #include <iostream>
 #include <memory>
 #include <boost/filesystem.hpp>
+#include <omp.h>
 
 /*
 ///////////////////// TODOs /////////////////////
@@ -31,6 +32,19 @@
 * check why very small Bz fields (e.g. 1e-12) leads to a large basis -> numerical error?
 
 */
+
+int thread_ctrl(int num_threads /*= -1*/)
+{
+    if (num_threads != -1)
+        omp_set_num_threads(num_threads);
+
+    #pragma omp parallel
+    #pragma omp single
+    num_threads = omp_get_num_threads();
+
+    return num_threads;
+}
+
 
 int compute(std::string const& config_name, std::string const& output_name) {
     std::cout << std::unitbuf;
