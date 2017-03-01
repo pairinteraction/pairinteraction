@@ -25,6 +25,7 @@ import signal
 import sys
 import subprocess
 from time import sleep, time, strftime
+import webbrowser
 import zipfile
 
 # Process information
@@ -755,6 +756,9 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_plot_open.triggered.connect(self.openPlotConf)
         self.ui.action_plot_save.triggered.connect(self.savePlotConf)
         self.ui.action_quit.triggered.connect(self.close)
+        self.ui.action_reporterror.triggered.connect(
+            lambda: webbrowser.open(
+                "https://github.com/pairinteraction/pairinteraction/issues/new"))
         self.ui.action_whatsthis.triggered.connect(
             QtGui.QWhatsThis.enterWhatsThisMode)
         self.ui.action_cache_directory.triggered.connect(
