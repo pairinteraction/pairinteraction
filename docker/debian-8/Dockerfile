@@ -8,6 +8,7 @@ RUN apt-get update \
     libboost-all-dev \
     libgsl0-dev \
     libsqlite3-dev sqlite3 \
+    libzmq3-dev \
     swig python3 python3-dev \
     dpkg rpm \
   && apt-get clean \
