@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "communication.h"
 #include "Hamiltonianmatrix.h"
 #include <stdexcept>
 
@@ -381,7 +382,10 @@ void Hamiltonianmatrix::doDeserialization() {
     if((((entries_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value) ||
             (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
         std::string msg("The data type used in the program does not fit the data type used in the serialized objects.");
-        std::cout << ">>ERR" << msg << std::endl;
+        auto context = zmq::context();
+        auto publisher = context.socket(ZMQ_PUB);
+        publisher.connect("tcp://localhost:5556");
+        publisher.send(">>ERR%s", msg.c_str());
         throw std::runtime_error(msg);
     }
 

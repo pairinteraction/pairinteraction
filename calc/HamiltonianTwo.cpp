@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "communication.h"
 #include "HamiltonianTwo.h"
 #include <stdexcept>
 
@@ -312,9 +313,13 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         }
     }
 
+    auto context = zmq::context();
+    auto publisher = context.socket(ZMQ_PUB);
+    publisher.connect("tcp://localhost:5556");
+
     int numNecessary = std::count(necessary.begin(), necessary.end(), true);
     std::cout << "Two-atom Hamiltonian, basis size with restrictions: " << numNecessary << std::endl;
-    std::cout << ">>BAS" << std::setw(7) << numNecessary << std::endl;
+    publisher.send(">>BAS%7d", numNecessary);
 
     // === Save pair state basis ===
     std::cout << "Two-atom Hamiltonian, save pair state basis" << std::endl;
@@ -332,7 +337,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     path_basis /= "basis_two_"+uuid+".csv";
     basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) continue" unneeded; then, "combine" has to check existence of basis element and the python script has to be adapted)
 
-    std::cout << ">>STA " << path_basis.string() << std::endl;
+    publisher.send(">>STA %s", path_basis.c_str());
 
 
     ////////////////////////////////////////////////////////
@@ -549,7 +554,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     ////// Loop through steps and symmetries ///////////////
     ////////////////////////////////////////////////////////
 
-    std::cout << ">>TOT" << std::setw(7) << nSteps_two*symmetries.size() << std::endl;
+    publisher.send(">>TOT%7d", nSteps_two*symmetries.size());
 
 #pragma omp parallel for collapse(2) schedule(static, 1)
 
@@ -692,8 +697,10 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
                 // Stdout: Hamiltonian assembled
 #pragma omp critical(textoutput)
-                std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
-                          << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+                {
+                    publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
+                    std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+                }
 
                 // --- Diagonalize matrix and save diagonalized matrix ---
                 totalmatrix.diagonalize();
@@ -701,15 +708,19 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
                 // Stdout: Hamiltonian diagonalized
 #pragma omp critical(textoutput)
-                std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl
-                          << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
+                {
+                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.c_str());
+                    std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
+                }
             } else {
 
                 // Stdout: Hamiltonian loaded
 #pragma omp critical(textoutput)
-                std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
-                          << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step_two << std::setw(7) << symmetries.size() << std::setw(7) << idx_symmetry << " " << path.string() << std::endl
-                          << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
+                {
+                    publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
+                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.c_str());
+                    std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
+                }
             }
 
             // === Store path to configuration and diagonalized matrix ===

@@ -15,6 +15,7 @@
  */
 
 #include "main.h"
+#include "communication.h"
 #include "ConfParser.h"
 #include "HamiltonianOne.h"
 #include "HamiltonianTwo.h"
@@ -47,6 +48,10 @@ int thread_ctrl(int num_threads /*= -1*/)
 
 
 int compute(std::string const& config_name, std::string const& output_name) {
+    auto context = zmq::context();
+    auto publisher = context.socket(ZMQ_PUB);
+    publisher.connect("tcp://localhost:5556");
+
     std::cout << std::unitbuf;
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
@@ -71,37 +76,37 @@ int compute(std::string const& config_name, std::string const& output_name) {
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one;
         if (existAtom1 && existAtom2) {
-            std::cout << ">>TYP" << std::setw(7) << 3 << std::endl;
+            publisher.send(">>TYP%7d", 3);
             auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
             hamiltonian_one = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && config.count("minR")) {
-            std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
+            publisher.send(">>TYP%7d", 2);
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one);
         }
     } else {
         std::shared_ptr<HamiltonianOne> hamiltonian_one1;
         if (existAtom1) {
-            std::cout << ">>TYP" << std::setw(7) << 0 << std::endl;
+            publisher.send(">>TYP%7d", 0);
             auto basisnames_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
             hamiltonian_one1 = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one1);
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one2;
         if (existAtom2) {
-            std::cout << ">>TYP" << std::setw(7) << 1 << std::endl;
+            publisher.send(">>TYP%7d", 1);
             auto basisnames_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
             hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one2);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && config.count("minR")) {
-            std::cout << ">>TYP" << std::setw(7) << 2 << std::endl;
+            publisher.send(">>TYP%7d", 2);
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1, hamiltonian_one2);
         }
     }
 
     // === Communicate that everything has finished ===
-    std::cout << ">>END" << std::endl;
+    publisher.send(">>END");
 
     return 0;
 }

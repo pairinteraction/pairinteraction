@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "communication.h"
 #include "MatrixElements.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
@@ -441,7 +442,10 @@ real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     } else {
         std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
-        std::cout << ">>ERR" << msg << std::endl; // TODO make it thread save
+        auto context = zmq::context();
+        auto publisher = context.socket(ZMQ_PUB);
+        publisher.bind("tcp://localhost:5556");
+        publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
         throw std::runtime_error(msg);
     }
 }

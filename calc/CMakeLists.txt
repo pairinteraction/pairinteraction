@@ -47,6 +47,10 @@ find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${GSL_LIBRARIES})
 
+find_package(ZeroMQ REQUIRED)
+include_directories(${ZMQ_INCLUDE_DIR})
+list(APPEND LIBRARIES ${ZMQ_LIBRARY})
+
 target_link_libraries(pairinteraction-real ${LIBRARIES})
 target_link_libraries(pairinteraction-complex ${LIBRARIES})
 

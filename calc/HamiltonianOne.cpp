@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+#include "communication.h"
 #include "HamiltonianOne.h"
 #include <stdexcept>
 
@@ -30,7 +31,10 @@ const Configuration& HamiltonianOne::getConf() const { // TODO in Configurable K
 void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
     if(val_y != 0) {
         std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
-        std::cout << ">>ERR" << msg << std::endl;
+        auto context = zmq::context();
+        auto publisher = context.socket(ZMQ_PUB);
+        publisher.connect("tcp://localhost:5556");
+        publisher.send(">>ERR%s", msg.c_str());
         throw std::runtime_error(msg);
     }
     val_p = -val_x/std::sqrt(2);
@@ -130,8 +134,12 @@ void HamiltonianOne::build() {
 
     hamiltonian_energy.compress(basis->dim(), basis->dim());
 
+    auto context = zmq::context();
+    auto publisher = context.socket(ZMQ_PUB);
+    publisher.connect("tcp://localhost:5556");
+
     std::cout << "One-atom Hamiltonian, basis size with restrictions: " << basis->size() << std::endl;
-    std::cout << ">>BAS" << std::setw(7) << basis->size() << std::endl;
+    publisher.send(">>BAS%7d", basis->size());
 
     // === Save single atom basis ===
     std::cout << "One-atom Hamiltonian, save single atom basis" << std::endl;
@@ -149,7 +157,7 @@ void HamiltonianOne::build() {
     path_basis /= "basis_one_"+uuid+".csv";
     basis->save(path_basis.string());
 
-    std::cout << ">>STA " << path_basis.string() << std::endl;
+    publisher.send(">>STR %s", path_basis.c_str());
 
 
     ////////////////////////////////////////////////////////
@@ -402,7 +410,7 @@ void HamiltonianOne::build() {
     ////// Loop through steps //////////////////////////////
     ////////////////////////////////////////////////////////
 
-    std::cout << ">>TOT" << std::setw(7) << nSteps << std::endl;
+    publisher.send(">>TOT%7d", nSteps);
 
 #pragma omp parallel for schedule(static, 1)
 
@@ -551,8 +559,10 @@ void HamiltonianOne::build() {
 
             // Stdout: Hamiltonian assembled
 #pragma omp critical(textoutput)
-            std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
-                      << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+            {
+                publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
+                std::cout << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian assembled" << std::endl;
+            }
 
             // --- Diagonalize matrix and save diagonalized matrix ---
             totalmatrix.diagonalize();
@@ -560,14 +570,18 @@ void HamiltonianOne::build() {
 
             // Stdout: Hamiltonian diagonalized
 #pragma omp critical(textoutput)
-            std::cout << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step << std::setw(7) << 1 << std::setw(7) << 0 << " " << path.string() << std::endl
-                      << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
+            {
+                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.c_str());
+                std::cout << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
+            }
         } else {
             // Stdout: Hamiltonian loaded
 #pragma omp critical(textoutput)
-            std::cout << ">>DIM" << std::setw(7) << totalmatrix.num_basisvectors() << std::endl
-                      << ">>OUT" << std::setw(7) << step+1 << std::setw(7) << step << std::setw(7) << 1 << std::setw(7) << 0 << " " << path.string() << std::endl
-                      << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
+            {
+                publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
+                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.c_str());
+                std::cout << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
+            }
         }
 
         // === Store path to configuration and diagonalized matrix ===

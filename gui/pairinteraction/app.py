@@ -23,9 +23,12 @@ import os
 import shutil
 import signal
 import sys
-import threading
+import multiprocessing
 from time import sleep, time, strftime
 import zipfile
+
+# Communication
+import zmq
 
 # Process information
 import psutil
@@ -2824,43 +2827,33 @@ class MainWindow(QtGui.QMainWindow):
 
                 self.starttime = time()
 
-                # Save original stdout fd
-                stdout_fileno = sys.stdout.fileno()
-                stdout_save = os.dup(stdout_fileno)
-                # Open new pipe
-                stdout_pipe_read, stdout_pipe_write = os.pipe()
-                # Replace stdout by pipe
-                os.dup2(stdout_pipe_write, stdout_fileno)
-                os.close(stdout_pipe_write)
-                # Reenable Python stdout
-                sys.stdout = os.fdopen(stdout_save, 'w')
 
-                f = BytesIO()
-                def drain_pipe():
-                    while True:
-                        data = os.read(stdout_pipe_read, 1024)
-                        if not data:
-                            break
-                        f.write(data)
+                class Communicator:
+                    def __init__(self):
+                        self.context = zmq.Context()
+                        self.socket = self.context.socket(zmq.SUB)
+                        self.socket.bind("tcp://*:5556")
+                        self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 
-                t = threading.Thread(target=drain_pipe)
-                t.start()
+                    def __iter__(self):
+                        return self
 
-                pi.compute(self.path_config, self.path_cache)
+                    def __next__(self):
+                        string = self.socket.recv_string()
 
-                # Close write pipe to unblock os.read(stdout_pipe_read, ...)
-                os.close(stdout_fileno)
-                t.join()
-
-                # Clean up pipe and restore original stdout
-                os.close(stdout_pipe_read)
-                os.dup2(stdout_save, stdout_fileno)
-                os.close(stdout_save)
-                sys.stdout = os.fdopen(stdout_fileno, 'w')
+                        if ">>END" in string:
+                            self.socket.close()
+                            self.context.destroy()
+                            raise StopIteration
+                        else:
+                            return string
 
                 # start thread that collects the output
-                f.seek(0)
-                self.thread.execute(f)
+                t = multiprocessing.Process(target=pi.compute,
+                                            args=("/home/user/.pairinteraction/conf.json",
+                                                  "/home/user/.pairinteraction/cache/"))
+                t.start()
+                self.thread.execute(Communicator())
 
                 # start timer used for processing the results
                 self.timer.start(0)
