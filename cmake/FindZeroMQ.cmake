@@ -14,18 +14,18 @@
 
 # Find ZeroMQ
 #
-# ZMQ_LIBRARY       - the ZeroMQ library
-# ZMQ_INCLUDE_DIR   - path including ZeroMQ.h
-# ZMQ_BINARY        - ZeroMQ executable
+# ZEROMQ_LIBRARY       - the ZeroMQ library
+# ZEROMQ_INCLUDE_DIR   - path including ZeroMQ.h
+# ZEROMQ_BINARY        - ZeroMQ executable
 
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 
-find_path( ZMQ_INCLUDE_DIR NAMES zmq.h )
+find_path( ZEROMQ_INCLUDE_DIR NAMES zmq.h )
 
-find_library( ZMQ_LIBRARY NAMES zmq )
+find_library( ZEROMQ_LIBRARY NAMES zmq )
 
 # Set the FOUND variable to TRUE if all listed variables are set.
-find_package_handle_standard_args( ZMQ DEFAULT_MSG ZMQ_LIBRARY ZMQ_INCLUDE_DIR )
+find_package_handle_standard_args( ZEROMQ DEFAULT_MSG ZEROMQ_LIBRARY ZEROMQ_INCLUDE_DIR )
 
-mark_as_advanced( ZMQ_LIBRARY ZMQ_INCLUDE_DIR )
+mark_as_advanced( ZEROMQ_LIBRARY ZEROMQ_INCLUDE_DIR )

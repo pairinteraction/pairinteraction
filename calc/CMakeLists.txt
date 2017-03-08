@@ -48,8 +48,8 @@ include_directories(${GSL_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${GSL_LIBRARIES})
 
 find_package(ZeroMQ REQUIRED)
-include_directories(${ZMQ_INCLUDE_DIR})
-list(APPEND LIBRARIES ${ZMQ_LIBRARY})
+include_directories(${ZEROMQ_INCLUDE_DIR})
+list(APPEND LIBRARIES ${ZEROMQ_LIBRARY})
 
 target_link_libraries(pairinteraction-real ${LIBRARIES})
 target_link_libraries(pairinteraction-complex ${LIBRARIES})
@@ -92,13 +92,6 @@ find_package(OpenMP REQUIRED)
 if (OPENMP_FOUND)
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
-
-# Build Python frontend
-
-find_package( PythonInterp 3 REQUIRED )
-set( PYTHON_FRONTEND ${PYTHON_EXECUTABLE} )
-set( PYTHON_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-configure_file( pyinteraction.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pyinteraction )
 
 # Include test cases
 
