@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Ofast -pipe")
-endif(CMAKE_BUILD_TYPE MATCHES Release)
-
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -28,7 +24,10 @@ add_library(pairinteraction-real SHARED ${pairinteraction_SRCS} ${wignerSymbols_
 add_library(pairinteraction-complex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
-set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Ofast -pipe")
+endif(CMAKE_BUILD_TYPE MATCHES Release)
+set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # Add external libraries
 
@@ -72,6 +71,7 @@ swig_add_module(pairinteraction_real python ${CMAKE_CURRENT_BINARY_DIR}/interfac
 swig_add_module(pairinteraction_complex python ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
 swig_link_libraries(pairinteraction_real pairinteraction-real ${PYTHON_LIBRARIES})
 swig_link_libraries(pairinteraction_complex pairinteraction-complex ${PYTHON_LIBRARIES})
+set_source_files_properties(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-register")
 
 # Set c++11
 
