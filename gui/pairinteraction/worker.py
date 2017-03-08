@@ -48,7 +48,7 @@ class Worker(QtCore.QThread):
             self.dataqueue_potential.queue.clear()
 
     def run(self):
-        finishedgracefully = False
+        finishedgracefully = True
 
         self.message = ""
 
@@ -137,15 +137,10 @@ class Worker(QtCore.QThread):
             elif line[:5] == u">>ERR":
                 self.criticalsignal.emit(line[5:].strip())
 
-            elif line[:5] == u">>END":
-                finishedgracefully = True
-                break
-
             else:
                 print(line, end="")
 
             self.message = status_type + status_progress
-            print("DEBUG:",self.message)
 
         # Clear data queue if thread has aborted
         if not finishedgracefully:

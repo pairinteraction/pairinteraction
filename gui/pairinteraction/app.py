@@ -23,7 +23,6 @@ import os
 import shutil
 import signal
 import sys
-import multiprocessing
 from time import sleep, time, strftime
 import zipfile
 
@@ -1111,7 +1110,7 @@ class MainWindow(QtGui.QMainWindow):
             self.proc.terminate()
 
         # wait until self.thread has finished
-        self.thread.wait()
+        self.thread.terminate()
 
         # clear queues
         self.thread.clear()
@@ -2168,7 +2167,7 @@ class MainWindow(QtGui.QMainWindow):
 
             # Delete c++ process
             if self.proc is not None:
-                self.proc.wait()
+                self.proc.join()
                 self.proc = None
 
             # Stop this timer
@@ -2835,6 +2834,10 @@ class MainWindow(QtGui.QMainWindow):
                         self.socket.bind("tcp://*:5556")
                         self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 
+                    def __del__(self):
+                        self.socket.close()
+                        self.context.destroy()
+
                     def __iter__(self):
                         return self
 
@@ -2842,17 +2845,14 @@ class MainWindow(QtGui.QMainWindow):
                         string = self.socket.recv_string()
 
                         if ">>END" in string:
-                            self.socket.close()
-                            self.context.destroy()
                             raise StopIteration
                         else:
                             return string
 
                 # start thread that collects the output
-                t = multiprocessing.Process(target=pi.compute,
-                                            args=("/home/user/.pairinteraction/conf.json",
-                                                  "/home/user/.pairinteraction/cache/"))
-                t.start()
+                self.proc = multiprocessing.Process(
+                    target=pi.compute,args=(self.path_config, self.path_cache))
+                self.proc.start()
                 self.thread.execute(Communicator())
 
                 # start timer used for processing the results
