@@ -3849,6 +3849,10 @@ class MainWindow(QtGui.QMainWindow):
         # Kill c++ program if necessary
         self.abortCalculation()
 
+        # Clean up communication socket
+        self.socket.close()
+        self.context.destroy()
+
         # Save last settings
         self.saveSettingsSystem(self.path_system_last)
         self.saveSettingsPlotter(self.path_plot_last)
