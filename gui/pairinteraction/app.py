@@ -397,6 +397,10 @@ class SystemDict(GuiDict):
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.bind("tcp://*:5556")
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 
         if os.name == 'nt':
             ext = ".exe"
@@ -2828,15 +2832,8 @@ class MainWindow(QtGui.QMainWindow):
 
 
                 class Communicator:
-                    def __init__(self):
-                        self.context = zmq.Context()
-                        self.socket = self.context.socket(zmq.SUB)
-                        self.socket.bind("tcp://*:5556")
-                        self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
-
-                    def __del__(self):
-                        self.socket.close()
-                        self.context.destroy()
+                    def __init__(self, socket):
+                        self.socket = socket
 
                     def __iter__(self):
                         return self
@@ -2853,7 +2850,7 @@ class MainWindow(QtGui.QMainWindow):
                 self.proc = multiprocessing.Process(
                     target=pi.compute,args=(self.path_config, self.path_cache))
                 self.proc.start()
-                self.thread.execute(Communicator())
+                self.thread.execute(Communicator(self.socket))
 
                 # start timer used for processing the results
                 self.timer.start(0)

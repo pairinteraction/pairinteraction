@@ -157,7 +157,7 @@ void HamiltonianOne::build() {
     path_basis /= "basis_one_"+uuid+".csv";
     basis->save(path_basis.string());
 
-    publisher.send(">>STR %s", path_basis.c_str());
+    publisher.send(">>STA %s", path_basis.c_str());
 
 
     ////////////////////////////////////////////////////////

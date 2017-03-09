@@ -138,7 +138,7 @@ class Worker(QtCore.QThread):
                 self.criticalsignal.emit(line[5:].strip())
 
             else:
-                print(line, end="")
+                print(line)
 
             self.message = status_type + status_progress
 
