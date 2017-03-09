@@ -36,19 +36,19 @@ namespace sqlite {
  * {
  *   // code with sqlite
  * }
- * catch (sqlite::sqlite_error &e)
+ * catch (sqlite::error &e)
  * {
  *   // handle exception
  * }
  * \endcode
  */
-struct sqlite_error : public std::exception {
+struct error : public std::exception {
 public:
     /** \brief Constructor
      *
      * \param[in] msg   error message
      */
-    explicit sqlite_error(std::string const& msg)
+    explicit error(std::string const& msg)
         : m_msg(std::string("SQLite error: ") + msg)
     {}
 
@@ -241,14 +241,14 @@ public:
      *
      * \param[in] pos   position of the row
      * \returns Specified row
-     * \throws sqlite_error
+     * \throws sqlite::error
      */
     result::row getRow(int pos) const
     {
         int p = pos + 1;
         if ( p > nRow || p < 0 )
         {
-            throw sqlite_error("Position index out of range");
+            throw error("Position index out of range");
         }
         std::string output;
         std::string spacer = "";
@@ -290,7 +290,7 @@ public:
 
         if ( err )
         {
-            throw sqlite_error( sqlite3_errmsg( db.get() ) );
+            throw error( sqlite3_errmsg( db.get() ) );
         }
     }
 
@@ -302,7 +302,7 @@ public:
      *
      * \param[in] filename    fully-qualified filename of the database
      * \param[in] flags       options to open the database (bitmask)
-     * \throws sqlite_error
+     * \throws sqlite::error
      */
     explicit handle(std::string const& filename, int flags)
         : db(nullptr, sqlite3_close)
@@ -313,7 +313,7 @@ public:
 
         if ( err )
         {
-            throw sqlite_error( sqlite3_errmsg( db.get() ) );
+            throw error( sqlite3_errmsg( db.get() ) );
         }
     }
 
@@ -326,7 +326,7 @@ public:
      *
      * \param[in] sql   SQL statements
      * \returns result of the query
-     * \throws sqlite_error
+     * \throws sqlite::error
      */
     result query(std::string const& sql)
     {
@@ -346,7 +346,7 @@ public:
         {
             std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
-            throw sqlite_error(msg);
+            throw error(msg);
         }
 
         return res;
@@ -365,7 +365,7 @@ public:
      * before passing to this function.  This function discards the result table.
      *
      * \param[in] sql   SQL statements
-     * \throws sqlite_error
+     * \throws sqlite::error
      */
     void exec(std::string const& sql)
     {
@@ -380,7 +380,7 @@ public:
         {
             std::string msg(zErrMsg);
             sqlite3_free(zErrMsg);
-            throw sqlite_error(msg);
+            throw error(msg);
         }
     }
 

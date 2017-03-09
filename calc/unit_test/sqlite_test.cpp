@@ -27,9 +27,9 @@ BOOST_AUTO_TEST_CASE( sqlite_query_test )
   sqlite::handle db(":memory:");
 
   BOOST_CHECK_THROW( db.query("This is not valid SQL"),
-                     sqlite::sqlite_error );
+                     sqlite::error );
   BOOST_CHECK_THROW( db.exec("Neither is this"),
-                     sqlite::sqlite_error );
+                     sqlite::error );
 
   // Check string calling
   std::string string_query( "create table test(text);" );
