@@ -128,9 +128,10 @@ public:
    *
    * \param[in] fmt   printf-style string for argument formatting
    * \param[in] ...   variadic arguments
+   * \returns number of bytes written (without zero terminator)
    */
-  void send(char const *fmt, ...) const __attribute__((format (printf, 2, 3)));
-  void send(char const *fmt, ...)
+  int send(char const *fmt, ...) const __attribute__((format (printf, 2, 3)));
+  int send(char const *fmt, ...)
   {
     va_list args;
     va_start(args, fmt);
@@ -147,6 +148,7 @@ public:
       throw error();
     }
     std::free(tmp);
+    return len;
   }
 };
 

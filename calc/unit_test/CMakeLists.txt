@@ -34,6 +34,7 @@ function(UNIT_TEST)
 endfunction(UNIT_TEST)
 
 # Add the tests
+unit_test(TARGET communication_test SOURCE communication_test.cpp)
 unit_test(TARGET sqlite_test SOURCE sqlite_test.cpp)
 unit_test(TARGET quantum_defect_test
   SOURCE quantum_defect_test.cpp ../QuantumDefect.cpp)
