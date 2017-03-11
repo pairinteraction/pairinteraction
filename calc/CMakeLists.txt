@@ -24,10 +24,8 @@ add_library(pairinteraction-real SHARED ${pairinteraction_SRCS} ${wignerSymbols_
 add_library(pairinteraction-complex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
-if(CMAKE_BUILD_TYPE MATCHES Release)
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Ofast -pipe")
-endif(CMAKE_BUILD_TYPE MATCHES Release)
-set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic")
+set_source_files_properties(${wignerSymbols_SRCS}   PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # Add external libraries
 
