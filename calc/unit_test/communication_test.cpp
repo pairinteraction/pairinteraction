@@ -15,6 +15,7 @@
  */
 
 #include "communication.h"
+#include <omp.h>
 #include <string>
 #define BOOST_TEST_MODULE ZeroMQ interface test
 #include <boost/test/unit_test.hpp>
@@ -31,11 +32,29 @@ BOOST_AUTO_TEST_CASE( exceptions_test )
 
 BOOST_AUTO_TEST_CASE( send_test )
 {
-  auto context    = zmq::context();
-  auto publisher  = context.socket(ZMQ_PUB);
-  publisher.bind("tcp://*:5555");
+  auto context = zmq::context();
+  constexpr char msg[] = "Into the void...";
+  constexpr size_t len = sizeof(msg);
 
-  std::string msg("Into the void...");
-  
-  BOOST_CHECK_EQUAL( publisher.send(msg.c_str()), msg.size() );
+  #pragma omp parallel private(context)
+  {
+    if ( omp_get_thread_num() == 0 )
+    {
+      auto publisher = context.socket(ZMQ_PUB);
+      publisher.bind("tcp://*:5555");
+
+      sleep(1); // wait for the others to receive
+      BOOST_CHECK_EQUAL( publisher.send(msg), len-1 );
+    }
+    else
+    {
+      auto subscriber = context.socket(ZMQ_SUB);
+      subscriber.connect("tcp://localhost:5555");
+      BOOST_CHECK_EQUAL( zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, nullptr, 0), 0);
+
+      char buf[len];
+      BOOST_CHECK_EQUAL( zmq_recv(subscriber, buf, len, 0), len );
+      BOOST_CHECK_EQUAL( msg, buf );
+    }
+  }
 }
