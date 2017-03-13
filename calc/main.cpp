@@ -15,7 +15,7 @@
  */
 
 #include "main.h"
-#include "communication.h"
+#include "Communication.h"
 #include "ConfParser.h"
 #include "HamiltonianOne.h"
 #include "HamiltonianTwo.h"

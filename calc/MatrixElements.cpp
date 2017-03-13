@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "communication.h"
+#include "Communication.h"
 #include "MatrixElements.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"

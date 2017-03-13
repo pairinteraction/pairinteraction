@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-#include "communication.h"
+#include "Communication.h"
 #include <omp.h>
 #include <string>
 #define BOOST_TEST_MODULE ZeroMQ interface test
