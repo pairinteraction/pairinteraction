@@ -78,7 +78,7 @@ public:
    * \param[in] new_socket    pre-allocated ZeroMQ socket
    * \throws zmq::error
    */
-  explicit socket(void * new_socket) throw(zmq::error)
+  explicit socket(void * new_socket)
     : m_socket( new_socket, zmq_close )
   {
     if ( !new_socket )
@@ -101,7 +101,7 @@ public:
    * \param[in] endpoint   string with transport protocal and address
    * \throws zmq::error
    */
-  void bind(char const *endpoint) const throw(zmq::error)
+  void bind(char const *endpoint) const
   {
     if ( zmq_bind(*this, endpoint) == -1 )
       throw error();
@@ -115,7 +115,7 @@ public:
    * \param[in] endpoint   string with transport protocal and address
    * \throws zmq::error
    */
-  void connect(char const *endpoint) const throw(zmq::error)
+  void connect(char const *endpoint) const
   {
     if ( zmq_connect(*this, endpoint) == -1 )
       throw error();
