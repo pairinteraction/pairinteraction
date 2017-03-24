@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-#include "main.h"
 #include "Communication.h"
 #include "ConfParser.h"
 #include "HamiltonianOne.h"
