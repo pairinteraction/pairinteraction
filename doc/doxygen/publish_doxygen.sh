@@ -26,6 +26,13 @@ if [ -z "$GH_TOKEN" ]; then
 fi;
 
 
+if [ -z "$(git ls-remote --heads https://github.com/${TRAVIS_REPO_SLUG} gh-pages)" ]; then
+    echo "INFO: The branch gh-pages does not exist.";
+    echo "INFO: Not building docs.";
+    exit 0;
+fi;
+
+
 function gh_pages_prepare()
 {
     mkdir -p "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
