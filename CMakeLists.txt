@@ -72,10 +72,11 @@ set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES.txt")
 
 file(READ "${CMAKE_SOURCE_DIR}/LICENSE.txt" LICENSESTXT)
 file(READ "${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt" 3RDPARTYTXT)
-string(CONCAT LICENSESTXT "${LICENSESTXT}" "-----------------------------------------------------------------------------\n\n")
-string(REGEX MATCH "(^.*)\n\n-*\nLICENSE TEXTS" 3RDPARTYTXT "${3RDPARTYTXT}")
-set(3RDPARTYTXT "${CMAKE_MATCH_1}")
-string(CONCAT LICENSESTXT "${LICENSESTXT}" "${3RDPARTYTXT}")
+
+if("${3RDPARTYTXT}" MATCHES "(^.*)\n\n#*\nLICENSE TEXTS")
+  string(CONCAT LICENSESTXT "${LICENSESTXT}" "-----------------------------------------------------------------------------\n\n" "${CMAKE_MATCH_1}")
+endif()
+
 file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
