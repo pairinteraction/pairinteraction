@@ -19,8 +19,15 @@ if [ "${TRAVIS_BRANCH}" != "master" ]; then
 fi;
 
 
-if [ "${TRAVIS_REPO_SLUG}" != "pairinteraction/pairinteraction" ]; then
-    echo "INFO: We are not on the main repository.";
+if [ -z "$GH_TOKEN" ]; then
+    echo "INFO: The GitHub access token is not set.";
+    echo "INFO: Not building docs.";
+    exit 0;
+fi;
+
+
+if [ -z "$(git ls-remote --heads https://github.com/${TRAVIS_REPO_SLUG} gh-pages)" ]; then
+    echo "INFO: The branch gh-pages does not exist.";
     echo "INFO: Not building docs.";
     exit 0;
 fi;
