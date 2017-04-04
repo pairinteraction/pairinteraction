@@ -37,12 +37,7 @@ showinstdetails show
 InstallDir '${PROGDIR}\${APP_NAME}'
 
 !insertmacro MUI_PAGE_WELCOME
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.BOOST1"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.GPL3"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.LGPL3"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.MPL2"
-!insertmacro MUI_PAGE_LICENSE "..\LICENSE.MIT"
+!insertmacro MUI_PAGE_LICENSE "${BUILD_DIR}\LICENSES.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !define MUI_FINISHPAGE_NOAUTOCLOSE

@@ -113,7 +113,7 @@ if( WITH_DMG )
   set(bin1 \${CMAKE_INSTALL_PREFIX}/pairinteraction-real)
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
   
-  install(CODE "execute_process(COMMAND ${PYTHON_BINARY} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
 
 else( )
 

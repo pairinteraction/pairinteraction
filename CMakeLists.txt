@@ -66,6 +66,19 @@ endif( )
 
 add_subdirectory(doc)
 
+# Concatenate licenses
+
+set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES.txt")
+
+file(READ "${CMAKE_SOURCE_DIR}/LICENSE.txt" LICENSESTXT)
+file(READ "${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt" 3RDPARTYTXT)
+
+if("${3RDPARTYTXT}" MATCHES "(^.*)\n\n#*\nLICENSE TEXTS")
+  string(CONCAT LICENSESTXT "${LICENSESTXT}" "-----------------------------------------------------------------------------\n\n" "${CMAKE_MATCH_1}")
+endif()
+
+file(WRITE "${LICENSES}" "${LICENSESTXT}")
+
 # Make packages for different platforms
 
 if(WIN32)
@@ -78,8 +91,7 @@ elseif(APPLE AND WITH_DMG)
   find_package(PythonInterp 3 REQUIRED)
 
   install(
-    FILES "${CMAKE_SOURCE_DIR}/LICENSE" "${CMAKE_SOURCE_DIR}/LICENSE.BOOST1" "${CMAKE_SOURCE_DIR}/LICENSE.GPL3"
-    "${CMAKE_SOURCE_DIR}/LICENSE.LGPL3" "${CMAKE_SOURCE_DIR}/LICENSE.MIT" "${CMAKE_SOURCE_DIR}/LICENSE.MPL2"
+    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt
     DESTINATION licenses
   )
 
@@ -92,17 +104,15 @@ elseif(APPLE AND WITH_DMG)
   set(CPACK_BUNDLE_PLIST "${CMAKE_MACOSX_GOODIES_PATH}/Info.plist")
   set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
   
-  set(LICENSES "${PROJECT_BINARY_DIR}/LICENSE")
   add_custom_target(
     license
-    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licensecollector.py" "${CMAKE_SOURCE_DIR}" "${LICENSES}"
     COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
   
 elseif(UNIX)
 
   install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSE
+    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
     COMPONENT applications
     RENAME copyright
