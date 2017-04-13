@@ -15,3 +15,8 @@
 file(READ "${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py" TMPTXT)
 string(REPLACE "from pyqtgraph import" "from .pyqtgraph import" TMPTXT "${TMPTXT}")
 file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py" "${TMPTXT}")
+
+# See https://github.com/pyqtgraph/pyqtgraph/issues/454
+file(READ "${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph/exporters/ImageExporter.py" TMPTXT)
+string(REPLACE "np.empty((self.params['width'], self.params['height']," "np.empty((int(self.params['width']), int(self.params['height'])," TMPTXT "${TMPTXT}")
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph/exporters/ImageExporter.py" "${TMPTXT}")

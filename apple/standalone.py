@@ -33,6 +33,7 @@ def standalone(file):
         if l[0] == '\t':
             libpath = l.strip().split(' (', 1)[0]
             libpath = libpath.replace("@loader_path", os.path.dirname(file))
+            libpath = libpath.replace("@rpath", "/usr/local/opt/llvm/lib")
             if not libpath.startswith("/usr/lib") or "libsqlite" in libpath:
 
                 # Update paths

@@ -92,7 +92,7 @@ if( WITH_DMG )
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction-complex)
   set(bin3 \${CMAKE_INSTALL_PREFIX}/matrixelements)
   
-  install(CODE "execute_process(COMMAND ${PYTHON_BINARY} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3})")
 
 else( )
 
