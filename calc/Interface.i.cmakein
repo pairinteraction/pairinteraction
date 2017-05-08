@@ -5,7 +5,6 @@
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions
 %include "exception.i"
-
 %exception {
   try {
     $action
@@ -16,9 +15,104 @@
 
 %{
 #include "Interface.h"
+#include "State.h"
+#include "Basis.h"
 %}
 
 %include "std_string.i"
+
+%include "std_array.i"
 %include "std_vector.i"
+namespace std {
+  %template(ArrayStringTwo) array<string,2>;
+  %template(ArrayIntTwo) array<int,2>;
+  %template(ArrayFloatTwo) array<float,2>;
+  %template(VectorInt) vector<int>;
+  %template(VectorFloat) vector<float>;
+  %template(VectorDouble) vector<double>;
+  %template(VectorStateOne) vector<StateOne>;
+  %template(VectorStateTwo) vector<StateTwo>;
+};
 
 %include "Interface.h"
+
+%feature("python:slot", "tp_str", functype="reprfunc") StateOne::as_string; // TODO make this work
+class StateOne {
+public:
+    StateOne(std::string element, int n, int l, float j, float m);
+    double getEnergy() const;
+    std::string getElement() const;
+    int getN() const;
+    int getL() const;
+    int getJ() const;
+    int getM() const;
+    void setElement(std::string input);
+    void setN(int input);
+    void setL(int input);
+    void setJ(float input);
+    void setM(float input);
+    std::string as_string() const; // TODO maybe, make inline
+};
+
+%naturalvar StateTwo::element;
+%naturalvar StateTwo::n;
+%naturalvar StateTwo::l;
+%naturalvar StateTwo::j;
+%naturalvar StateTwo::m;
+class StateTwo {
+public:
+    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(const StateOne &s1, const StateOne &s2);
+    StateOne getFirstState() const;
+    StateOne getSecondState() const;
+    void setFirstState(const StateOne &s);
+    void setSecondState(const StateOne &s);
+    double getEnergy() const;
+    std::array<std::string, 2> getElement() const;
+    std::array<int, 2> getN() const;
+    std::array<int, 2> getL() const;
+    std::array<float, 2> getJ() const;
+    std::array<float, 2> getM() const;
+    void setElement(std::array<std::string, 2> input);
+    void setN(std::array<int, 2> input);
+    void setL(std::array<int, 2> input);
+    void setJ(std::array<float, 2> input);
+    void setM(std::array<float, 2> input);
+};
+
+class BasisOne {
+public:
+  BasisOne(std::string element);
+  void restrictEnergy(double e_min, double e_max);
+  void restrictN(int n_min, int n_max);
+  void restrictN(std::vector<int> n);
+  void restrictL(int l_min, int l_max);
+  void restrictL(std::vector<int> l);
+  void restrictJ(float j_min, float j_max);
+  void restrictJ(std::vector<float> j);
+  void restrictM(float n_min, float n_max);
+  void restrictM(std::vector<float> n);
+  std::vector<double> getEnergies();
+  const std::vector<StateOne>& getStates();
+};
+
+class BasisTwo {
+public:
+  BasisTwo(const BasisOne &b1, const BasisOne &b2);
+  BasisOne getFirstBasis() const;
+  BasisOne getSecondBasis() const;
+  void setFirstBasis(const BasisOne &b);
+  void setSecondBasis(const BasisOne &b);
+  void restrictEnergy(double e_min, double e_max);
+  void restrictN(int n_min, int n_max);
+  void restrictN(std::vector<int> n);
+  void restrictL(int l_min, int l_max);
+  void restrictL(std::vector<int> l);
+  void restrictJ(float j_min, float j_max);
+  void restrictJ(std::vector<float> j);
+  void restrictM(float n_min, float n_max);
+  void restrictM(std::vector<float> n);
+  const std::vector<double>& getEnergies();
+  const std::vector<StateTwo>& getStates();
+};
+
