@@ -30,7 +30,7 @@ std::string __str__() {
 #include "Basis.h"
 %}
 
-
+%include "std_complex.i"
 %include "std_array.i"
 %include "std_vector.i"
 namespace std {
@@ -42,6 +42,8 @@ namespace std {
   %template(VectorDouble) vector<double>;
   %template(VectorStateOne) vector<StateOne>;
   %template(VectorStateTwo) vector<StateTwo>;
+  %template(VectorSizet) vector<size_t>;
+  %template(VectorComplexdouble) vector<std::complex<double>>;
 };
 
 %include "Interface.h"
@@ -110,6 +112,42 @@ public:
   const std::vector<StateOne>& getStates();
 };
 
+// TODO make conversion "eigen_sparse_t to csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
+%extend BasisOne {
+  size_t _getCoefficientsNumrows() {
+    return $self->getCoefficients().rows();
+  }
+  size_t _getCoefficientsNumcols() {
+    return $self->getCoefficients().cols();
+  }
+  std::vector<size_t> _getCoefficientsIndptr() {
+    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
+    data.push_back($self->getCoefficients().nonZeros());
+    return data;
+  }
+  std::vector<size_t> _getCoefficientsIndices() {
+    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
+    return data;
+  }
+  std::vector<std::complex<double>> _getCoefficientsData() {
+    std::vector<std::complex<double>> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
+    return data;
+  }
+};
+
+%pythoncode %{
+from scipy.sparse import csc_matrix
+import numpy as np
+def getCoefficients (self):
+  num_rows = self._getCoefficientsNumrows()
+  num_cols = self._getCoefficientsNumcols()
+  indptr = self._getCoefficientsIndptr()
+  indices = self._getCoefficientsIndices()
+  data = self._getCoefficientsData()
+  return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
+BasisOne.getCoefficients = getCoefficients
+%}
+
 class BasisTwo {
 public:
   BasisTwo(const BasisOne &b1, const BasisOne &b2);
@@ -130,3 +168,38 @@ public:
   const std::vector<StateTwo>& getStates();
 };
 
+// TODO make conversion "eigen_sparse_t to csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
+%extend BasisTwo {
+  size_t _getCoefficientsNumrows() {
+    return $self->getCoefficients().rows();
+  }
+  size_t _getCoefficientsNumcols() {
+    return $self->getCoefficients().cols();
+  }
+  std::vector<size_t> _getCoefficientsIndptr() {
+    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
+    data.push_back($self->getCoefficients().nonZeros());
+    return data;
+  }
+  std::vector<size_t> _getCoefficientsIndices() {
+    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
+    return data;
+  }
+  std::vector<std::complex<double>> _getCoefficientsData() {
+    std::vector<std::complex<double>> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
+    return data;
+  }
+};
+
+%pythoncode %{
+from scipy.sparse import csc_matrix
+import numpy as np
+def getCoefficients (self):
+  num_rows = self._getCoefficientsNumrows()
+  num_cols = self._getCoefficientsNumcols()
+  indptr = self._getCoefficientsIndptr()
+  indices = self._getCoefficientsIndices()
+  data = self._getCoefficientsData()
+  return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
+BasisTwo.getCoefficients = getCoefficients
+%}
