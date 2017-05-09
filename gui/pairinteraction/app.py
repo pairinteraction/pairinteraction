@@ -32,7 +32,6 @@ import zipfile
 import psutil
 
 # GUI
-import sip
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from . import pyqtgraph as pg
