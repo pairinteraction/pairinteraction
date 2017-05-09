@@ -31,10 +31,6 @@ import zipfile
 # Process information
 import psutil
 
-# Units
-from pint import UnitRegistry
-from pint.unit import UndefinedUnitError
-
 # GUI
 import sip
 from PyQt5 import QtCore, QtGui
