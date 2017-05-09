@@ -53,12 +53,10 @@ public:
 
     StateOne(int n, int l, float s, float j, float m) : State(0), n(n), l(l), s(s), j(j), m(m) { }
     friend std::ostream& operator<< (std::ostream &out, const StateOne &state) {
-        out << "i  =" << std::setw(5) << state.idx << ",   ";
         out << "n  =" << std::setw(3) << state.n << ",   ";
-        out << "l  =" << std::setw(2) << state.l << ",   ";
-        out << "s  =" << std::setprecision(2) << std::setw(4) << state.s << ",   ";
-        out << "j  =" << std::setprecision(2) << std::setw(4) << state.j << ",   ";
-        out << "m  =" << std::setprecision(2) << std::setw(4) << state.m;
+        out << "l  =" << std::setw(3) << state.l << ",   ";
+        out << "j  =" << std::setprecision(2) << std::setw(5) << state.j << ",   ";
+        out << "m  =" << std::setprecision(2) << std::setw(5) << state.m;
         return out;
     }
 
@@ -116,8 +114,6 @@ public:
         m = input;
     }
 
-    std::string as_string() const { return "Hello world"; } // TODO maybe, make inline
-
     std::string element;
     int n, l;
     float s, j, m;
@@ -161,13 +157,11 @@ public:
         return StateOne(element[1], n[1], l[1], j[1], m[1]);
     }
     friend std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
-        out << "i  =" << std::setw(5) << state.idx << ",   ";
         for (size_t i = 0; i < 2; ++i) {
             out << "n" << i << " =" << std::setw(3) << state.n[i] << ",   ";
-            out << "l" << i << " =" << std::setw(2) << state.l[i] << ",   ";
-            out << "s" << i << " =" << std::setprecision(2) << std::setw(4) << state.s[i] << ",   ";
-            out << "j" << i << " =" << std::setprecision(2) << std::setw(4) << state.j[i] << ",   ";
-            out << "m" << i << " =" << std::setprecision(2) << std::setw(4) << state.m[i];
+            out << "l" << i << " =" << std::setw(3) << state.l[i] << ",   ";
+            out << "j" << i << " =" << std::setprecision(2) << std::setw(5) << state.j[i] << ",   ";
+            out << "m" << i << " =" << std::setprecision(2) << std::setw(5) << state.m[i];
             if (i == 0) out << ",   ";
         }
         return out;

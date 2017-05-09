@@ -13,13 +13,23 @@
   }
 }
 
+// Wrap the << operator
+// http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
+%include "std_string.i"
+%define __STR__()
+std::string __str__() {
+  std::ostringstream out;
+  out << *$self;
+  return out.str();
+}
+%enddef
+
 %{
 #include "Interface.h"
 #include "State.h"
 #include "Basis.h"
 %}
 
-%include "std_string.i"
 
 %include "std_array.i"
 %include "std_vector.i"
@@ -36,7 +46,6 @@ namespace std {
 
 %include "Interface.h"
 
-%feature("python:slot", "tp_str", functype="reprfunc") StateOne::as_string; // TODO make this work
 class StateOne {
 public:
     StateOne(std::string element, int n, int l, float j, float m);
@@ -44,14 +53,16 @@ public:
     std::string getElement() const;
     int getN() const;
     int getL() const;
-    int getJ() const;
-    int getM() const;
+    float getJ() const;
+    float getM() const;
     void setElement(std::string input);
     void setN(int input);
     void setL(int input);
     void setJ(float input);
     void setM(float input);
-    std::string as_string() const; // TODO maybe, make inline
+};
+%extend StateOne {
+  __STR__()
 };
 
 %naturalvar StateTwo::element;
@@ -78,6 +89,9 @@ public:
     void setL(std::array<int, 2> input);
     void setJ(std::array<float, 2> input);
     void setM(std::array<float, 2> input);
+};
+%extend StateTwo {
+  __STR__()
 };
 
 class BasisOne {
