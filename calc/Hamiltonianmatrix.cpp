@@ -88,7 +88,7 @@ Hamiltonianmatrix Hamiltonianmatrix::changeBasis(eigen_sparse_t basis) const{
     return Hamiltonianmatrix(entries, basis);
 }
 
-void Hamiltonianmatrix::applyCutoff(real_t cutoff) {
+void Hamiltonianmatrix::applyCutoff(double cutoff) {
     bytes.clear();
 
     // build transformator
@@ -113,7 +113,7 @@ void Hamiltonianmatrix::applyCutoff(real_t cutoff) {
 }
 
 void Hamiltonianmatrix::findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const {
-    std::vector<real_t> isNecessaryCoordinate_real(num_coordinates(),0);
+    std::vector<double> isNecessaryCoordinate_real(num_coordinates(),0);
     for (eigen_idx_t k=0; k<basis_.outerSize(); ++k) {
         for (eigen_iterator_t triple(basis_,k); triple; ++triple) {
             isNecessaryCoordinate_real[triple.row()] += std::pow(std::abs(triple.value()),2);
@@ -131,7 +131,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors(const std::vector<bool> &i
     bytes.clear();
 
     // build transformator
-    std::vector<real_t> isNecessaryBasisvector(num_basisvectors(),0);
+    std::vector<double> isNecessaryBasisvector(num_basisvectors(),0);
     for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
         for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
@@ -164,7 +164,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors() {
     bytes.clear();
 
     // build transformator
-    std::vector<real_t> isNecessaryBasisvector(num_basisvectors(),0);
+    std::vector<double> isNecessaryBasisvector(num_basisvectors(),0);
     for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
         for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
@@ -232,7 +232,7 @@ void Hamiltonianmatrix::diagonalize() {
         Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(this->entries()));
 
         // eigenvalues and eigenvectors
-        eigen_vector_real_t evals = eigensolver.eigenvalues();
+        eigen_vector_double evals = eigensolver.eigenvalues();
         eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView(1e-4,0.5);
 
         this->entries().setZero();
@@ -303,7 +303,7 @@ void Hamiltonianmatrix::doSerialization() {
         storage_idx_t entries_rows = entries_.rows();
         storage_idx_t entries_cols = entries_.cols();
         std::vector<scalar_t> entries_data(entries_.valuePtr(), entries_.valuePtr()+entries_.nonZeros());
-        std::vector<storage_real_t> entries_data_real, entries_data_imag;
+        std::vector<storage_double> entries_data_real, entries_data_imag;
         splitComplex(entries_data_real,entries_data_imag,entries_data);
         std::vector<storage_idx_t> entries_indices(entries_.innerIndexPtr(), entries_.innerIndexPtr()+entries_.nonZeros());
         std::vector<storage_idx_t> entries_indptr(entries_.outerIndexPtr(), entries_.outerIndexPtr()+entries_.outerSize());
@@ -319,7 +319,7 @@ void Hamiltonianmatrix::doSerialization() {
         storage_idx_t basis_rows = basis_.rows();
         storage_idx_t basis_cols = basis_.cols();
         std::vector<scalar_t> basis_data(basis_.valuePtr(), basis_.valuePtr()+basis_.nonZeros());
-        std::vector<storage_real_t> basis_data_real, basis_data_imag;
+        std::vector<storage_double> basis_data_real, basis_data_imag;
         splitComplex(basis_data_real,basis_data_imag,basis_data);
         std::vector<storage_idx_t> basis_indices(basis_.innerIndexPtr(), basis_.innerIndexPtr()+basis_.nonZeros());
         std::vector<storage_idx_t> basis_indptr(basis_.outerIndexPtr(), basis_.outerIndexPtr()+basis_.outerSize());
@@ -353,12 +353,12 @@ void Hamiltonianmatrix::doDeserialization() {
     // deserialize vectors of primitive data types
     byte_t entries_flags;
     storage_idx_t entries_rows, entries_cols;
-    std::vector<storage_real_t> entries_data_real, entries_data_imag;
+    std::vector<storage_double> entries_data_real, entries_data_imag;
     std::vector<idx_t> entries_indices;
     std::vector<idx_t> entries_indptr;
     byte_t basis_flags;
     storage_idx_t basis_rows, basis_cols;
-    std::vector<storage_real_t> basis_data_real, basis_data_imag;
+    std::vector<storage_double> basis_data_real, basis_data_imag;
     std::vector<idx_t> basis_indices;
     std::vector<idx_t> basis_indptr;
 
@@ -468,7 +468,7 @@ bool Hamiltonianmatrix::load(std::string fname) {
     }
 }
 
-Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym) {
+Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym) {
     // TODO program a faster method for samebasis == true
 
     size_t num_basisvectors = lhs.num_basisvectors()*rhs.num_basisvectors();
@@ -669,7 +669,7 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
     return mat;
 }
 
-void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::vector<bool> &necessary) {
+void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::vector<bool> &necessary) {
     eigen_vector_t diag1 = lhs.entries().diagonal();
     eigen_vector_t diag2 = rhs.entries().diagonal();
 

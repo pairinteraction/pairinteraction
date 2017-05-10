@@ -27,21 +27,21 @@
 namespace model_potential {
 
 
-real_t V(QuantumDefect const& qd, real_t x) {
-    real_t Z_l = 1 + (qd.Z - 1)*std::exp(-qd.a1*x)
+double V(QuantumDefect const& qd, double x) {
+    double Z_l = 1 + (qd.Z - 1)*std::exp(-qd.a1*x)
                - x*(qd.a3 + qd.a4*x)*std::exp(-qd.a2*x);
-    real_t V_c = -Z_l / x;
-    real_t V_p = -qd.ac/(2.*x*x*x*x) * (1-std::exp(-std::pow(x/qd.rc,6)));
-    real_t V_so = 0.0;
+    double V_c = -Z_l / x;
+    double V_p = -qd.ac/(2.*x*x*x*x) * (1-std::exp(-std::pow(x/qd.rc,6)));
+    double V_so = 0.0;
     if ( qd.l < 4 ) {
-        real_t alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
+        double alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
         V_so = alpha*alpha/(4 * x*x*x) * (qd.j*(qd.j+1) - qd.l*(qd.l+1) - 0.5*(1+0.5));
     }
     return V_c + V_p + V_so;
 }
 
 
-real_t g(QuantumDefect const& qd, real_t x) {
+double g(QuantumDefect const& qd, double x) {
     return (2.*qd.l+.5)*(2.*qd.l+1.5)/x + 8*x*(V(qd,x) - qd.energy);
 }
 
@@ -53,14 +53,14 @@ Numerov::Numerov(QuantumDefect const& qd)
     : qd(qd), x(), dx(0.01)
 {
     // augmented classical turning point
-    real_t xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
+    double xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
     if ( xmin < 2.08 )
         xmin = std::floor( std::sqrt( 2.08 ) );
     else
         xmin = std::floor( std::sqrt( xmin ) );
 
-    real_t const xmax = std::sqrt( 2*qd.n*(qd.n+15) );
-    real_t const nsteps = std::ceil( (xmax - xmin)/dx );
+    double const xmax = std::sqrt( 2*qd.n*(qd.n+15) );
+    double const nsteps = std::ceil( (xmax - xmin)/dx );
 
     x.resize(nsteps);
 
@@ -70,18 +70,18 @@ Numerov::Numerov(QuantumDefect const& qd)
 }
 
 
-std::vector<real_t> Numerov::axis() const
+std::vector<double> Numerov::axis() const
 {
     return x;
 }
 
 
-std::vector<real_t> Numerov::integrate()
+std::vector<double> Numerov::integrate()
 {
     using model_potential::g;
 
     int const nsteps = x.size();
-    std::vector<real_t> y(nsteps,0.0);
+    std::vector<double> y(nsteps,0.0);
 
     // Set the initial condition
     if ( (qd.n-qd.l) % 2 == 0 )
@@ -92,14 +92,14 @@ std::vector<real_t> Numerov::integrate()
     // Perform the integration using Numerov's scheme
     for (int i = nsteps-3; i >= 0; --i)
     {
-        real_t A = (2. + 5./6. * dx*dx * g(qd,x[i+1]*x[i+1])) * y[i+1];
-        real_t B = (1. - 1./12.* dx*dx * g(qd,x[i+2]*x[i+2])) * y[i+2];
-        real_t C =  1. - 1./12.* dx*dx * g(qd,x[i]*x[i]);
+        double A = (2. + 5./6. * dx*dx * g(qd,x[i+1]*x[i+1])) * y[i+1];
+        double B = (1. - 1./12.* dx*dx * g(qd,x[i+2]*x[i+2])) * y[i+2];
+        double C =  1. - 1./12.* dx*dx * g(qd,x[i]*x[i]);
         y[i] = (A - B)/C;
     }
 
     // Normalization
-    real_t norm = 0;
+    double norm = 0;
     for (int i = 0; i < nsteps; ++i)
         norm += y[i]*y[i] * x[i]*x[i] * dx;
     norm = std::sqrt(2*norm);
@@ -118,20 +118,20 @@ std::vector<real_t> Numerov::integrate()
 namespace whittaker_functions {
 
 
-real_t HypergeometricU(real_t a, real_t b, real_t z)
+double HypergeometricU(double a, double b, double z)
 {
     if (z == 0) return NAN;
     return gsl_sf_hyperg_U(a,b,z);
 }
 
 
-real_t WhittakerW(real_t k, real_t m, real_t z)
+double WhittakerW(double k, double m, double z)
 {
     return std::exp(-.5*z)*std::pow(z,m+.5)*HypergeometricU(m-k+.5, 1+2*m, z);
 }
 
 
-real_t RadialWFWhittaker(real_t r, real_t nu, int l)
+double RadialWFWhittaker(double r, double nu, int l)
 {
     return 1/std::sqrt(nu*nu * std::tgamma(nu+l+1) * std::tgamma(nu-l)) * WhittakerW(nu, l+.5, 2*r/nu);
 }
@@ -143,9 +143,9 @@ real_t RadialWFWhittaker(real_t r, real_t nu, int l)
 Whittaker::Whittaker(QuantumDefect const& qd)
     : qd(qd), x(), dx(0.01)
 {
-    real_t const xmin = 1;
-    real_t const xmax = std::sqrt(2*qd.n*(qd.n+15));
-    real_t const nsteps = std::ceil( (xmax - xmin)/dx );
+    double const xmin = 1;
+    double const xmax = std::sqrt(2*qd.n*(qd.n+15));
+    double const nsteps = std::ceil( (xmax - xmin)/dx );
 
     x.resize(nsteps);
 
@@ -155,13 +155,13 @@ Whittaker::Whittaker(QuantumDefect const& qd)
 }
 
 
-std::vector<real_t> Whittaker::axis() const
+std::vector<double> Whittaker::axis() const
 {
     return x;
 }
 
 
-std::vector<real_t> Whittaker::integrate()
+std::vector<double> Whittaker::integrate()
 {
     using whittaker_functions::RadialWFWhittaker;
 
@@ -173,7 +173,7 @@ std::vector<real_t> Whittaker::integrate()
         sign = 1;
 
     int const nsteps = x.size();
-    std::vector<real_t> y(nsteps);
+    std::vector<double> y(nsteps);
 
     for (int i = 0; i < nsteps; ++i)
         y[i] = sign * RadialWFWhittaker(x[i], qd.nstar, qd.l);

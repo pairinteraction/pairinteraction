@@ -28,7 +28,7 @@ const Configuration& HamiltonianOne::getConf() const { // TODO in Configurable K
     return basicconf;
 }
 
-void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0) {
+void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z, double& val_p, double& val_m, double& val_0) {
     if(val_y != 0) {
         std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
         auto context = zmq::context();
@@ -42,10 +42,10 @@ void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z,
     val_0 = val_z;
 }
 
-void HamiltonianOne::changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<real_t>& val_p, std::complex<real_t>& val_m, std::complex<real_t>& val_0) {
-    val_p = std::complex<real_t>(-val_x/std::sqrt(2),-val_y/std::sqrt(2));
-    val_m = std::complex<real_t>(val_x/std::sqrt(2),-val_y/std::sqrt(2));
-    val_0 = std::complex<real_t>(val_z,0);
+void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z, std::complex<double>& val_p, std::complex<double>& val_m, std::complex<double>& val_0) {
+    val_p = std::complex<double>(-val_x/std::sqrt(2),-val_y/std::sqrt(2));
+    val_m = std::complex<double>(val_x/std::sqrt(2),-val_y/std::sqrt(2));
+    val_0 = std::complex<double>(val_z,0);
 }
 
 void HamiltonianOne::configure(const Configuration &config) {
@@ -94,7 +94,7 @@ void HamiltonianOne::build() {
         boost::filesystem::create_directory(path_cache_mat);
     }
 
-    real_t tol = 1e-32;
+    double tol = 1e-32;
 
     ////////////////////////////////////////////////////////
     ////// Build single atom basis and Hamiltonian /////////
@@ -111,7 +111,7 @@ void HamiltonianOne::build() {
 
     Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
 
-    real_t energy_initial = 0;
+    double energy_initial = 0;
     for (const auto &state: basis->initial()) {
         energy_initial += energy_level(species,state.n,state.l,state.j);
     }
@@ -120,7 +120,7 @@ void HamiltonianOne::build() {
     std::vector<bool> is_necessary(basis->size(),false);
     idx_t idx = 0;
     for (const auto &state : *basis) {
-        real_t val = energy_level(species,state.n,state.l,state.j)-energy_initial;
+        double val = energy_level(species,state.n,state.l,state.j)-energy_initial;
         if (std::abs(val) < deltaE+1e-11 || deltaE < 0) { // TODO
             is_necessary[state.idx] = true;
             hamiltonian_energy.addEntries(idx,idx,val);
@@ -295,66 +295,66 @@ void HamiltonianOne::build() {
             }
 
             if (exist_E_0 && selectionRulesMultipole(state_row, state_col, 1, 0) ) {
-                real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
+                double val = matrix_elements.getElectricMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_electricMomentum_0.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, 1) ) {
-                real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
+                double val = matrix_elements.getElectricMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_electricMomentum_p.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (exist_E_1 && selectionRulesMultipole(state_row, state_col, 1, -1) ) {
-                real_t val = matrix_elements.getElectricMomentum(state_row, state_col);
+                double val = matrix_elements.getElectricMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_electricMomentum_m.addEntries(state_row.idx,state_col.idx,val);
                 }
             }
 
             if (exist_B_0 && selectionRulesMomentum(state_row, state_col, 0) ) {
-                real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
+                double val = matrix_elements.getMagneticMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_magneticMomentum_0.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, 1) ) {
-                real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
+                double val = matrix_elements.getMagneticMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_magneticMomentum_p.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (exist_B_1 && selectionRulesMomentum(state_row, state_col, -1) ) {
-                real_t val = matrix_elements.getMagneticMomentum(state_row, state_col);
+                double val = matrix_elements.getMagneticMomentum(state_row, state_col);
                 if (std::abs(val) > tol) {
                     hamiltonian_magneticMomentum_m.addEntries(state_row.idx,state_col.idx,val);
                 }
             }
 
             if (diamagnetism && (exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 0, 0)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 0);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 0);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_00.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (diamagnetism && (exist_B_0 || exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 0)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_20.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (diamagnetism && (exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 1)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_2p.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (diamagnetism && (exist_B_0 && exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -1)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_2m.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (diamagnetism && (exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, 2)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_2pp.addEntries(state_row.idx,state_col.idx,val);
                 }
             } else if (diamagnetism && (exist_B_1) && selectionRulesMultipole(state_row, state_col, 2, -2)) {
-                real_t val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
+                double val = matrix_elements.getDiamagnetism(state_row, state_col, 2);
                 if (std::abs(val) > tol) {
                     hamiltonian_diamagnetism_2mm.addEntries(state_row.idx,state_col.idx,val);
                 }
@@ -420,14 +420,14 @@ void HamiltonianOne::build() {
         // === Get parameters for the current position inside the loop ===
 
         // Get fields
-        real_t normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
+        double normalized_position = (nSteps > 1) ? step/(nSteps-1.) : 0;
 
-        real_t Ex = min_E_x+normalized_position*(max_E_x-min_E_x);
-        real_t Ey = min_E_y+normalized_position*(max_E_y-min_E_y);
-        real_t Ez = min_E_z+normalized_position*(max_E_z-min_E_z);
-        real_t Bx = min_B_x+normalized_position*(max_B_x-min_B_x);
-        real_t By = min_B_y+normalized_position*(max_B_y-min_B_y);
-        real_t Bz = min_B_z+normalized_position*(max_B_z-min_B_z);
+        double Ex = min_E_x+normalized_position*(max_E_x-min_E_x);
+        double Ey = min_E_y+normalized_position*(max_E_y-min_E_y);
+        double Ez = min_E_z+normalized_position*(max_E_z-min_E_z);
+        double Bx = min_B_x+normalized_position*(max_B_x-min_B_x);
+        double By = min_B_y+normalized_position*(max_B_y-min_B_y);
+        double Bz = min_B_z+normalized_position*(max_B_z-min_B_z);
 
         scalar_t E_0 = min_E_0+normalized_position*(max_E_0-min_E_0);
         scalar_t E_p = min_E_p+normalized_position*(max_E_p-min_E_p);

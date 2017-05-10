@@ -41,25 +41,25 @@ public:
     void precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> basis_one, int k, int q);
     void precalculateMultipole(std::shared_ptr<const BasisnamesOne> basis_one, int k);
     void precalculateRadial(std::shared_ptr<const BasisnamesOne> basis_one, int k);
-    real_t getElectricMomentum(StateOne const& state_row, StateOne const& state_col);
-    real_t getMagneticMomentum(StateOne const& state_row, StateOne const& state_col);
-    real_t getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa);
-    real_t getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa);
-    real_t getRadial(StateOne const& state_row, StateOne const& state_col, int kappa);
+    double getElectricMomentum(StateOne const& state_row, StateOne const& state_col);
+    double getMagneticMomentum(StateOne const& state_row, StateOne const& state_col);
+    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa);
+    double getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa);
+    double getRadial(StateOne const& state_row, StateOne const& state_col, int kappa);
 private:
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
-    real_t calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
+    double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
     std::string method;
     std::string species;
     std::string dbname;
-    std::unordered_map<int,std::unordered_map<StateTwo,real_t>> cache_radial;
-    std::unordered_map<int,std::unordered_map<StateTwo,real_t>> cache_angular;
-    std::unordered_map<int,std::unordered_map<StateTwo,real_t>> cache_reduced_commutes_s;
-    std::unordered_map<int,std::unordered_map<StateTwo,real_t>> cache_reduced_commutes_l;
-    std::unordered_map<int,std::unordered_map<StateTwo,real_t>> cache_reduced_multipole;
-    real_t muB; // TODO define them in constants.h
-    real_t gS;
-    real_t gL;
+    std::unordered_map<int,std::unordered_map<StateTwo,double>> cache_radial;
+    std::unordered_map<int,std::unordered_map<StateTwo,double>> cache_angular;
+    std::unordered_map<int,std::unordered_map<StateTwo,double>> cache_reduced_commutes_s;
+    std::unordered_map<int,std::unordered_map<StateTwo,double>> cache_reduced_commutes_l;
+    std::unordered_map<int,std::unordered_map<StateTwo,double>> cache_reduced_multipole;
+    double muB; // TODO define them in constants.h
+    double gS;
+    double gL;
 };
 
 #endif

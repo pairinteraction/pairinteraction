@@ -51,7 +51,7 @@ public:
     std::vector<Hamiltonianmatrix> findSubs() const;
     Hamiltonianmatrix abs() const;
     Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const;
-    void applyCutoff(real_t cutoff);
+    void applyCutoff(double cutoff);
     void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const;
     void removeUnnecessaryBasisvectors(const std::vector<bool> &isNecessaryCoordinate);
     void removeUnnecessaryBasisvectors();
@@ -72,12 +72,12 @@ public:
     uint64_t hashBasis();
     void save(std::string fname);
     bool load(std::string fname);
-    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym);
-    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const real_t &deltaE, std::vector<bool> &necessary);
+    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym);
+    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::vector<bool> &necessary);
 
     template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
-    void mergeComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
-        std::vector<storage_real_t>::iterator real_it, imag_it;
+    void mergeComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
+        std::vector<storage_double>::iterator real_it, imag_it;
         complex.reserve(real.size());
         for (real_it = real.begin(), imag_it = imag.begin(); real_it != real.end(); ++real_it, ++imag_it) {
             complex.push_back(T(*real_it,*imag_it));
@@ -85,13 +85,13 @@ public:
     }
 
     template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
-    void mergeComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+    void mergeComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
         (void) imag;
         complex = real;
     }
 
     template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
-    void splitComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
+    void splitComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
         real.reserve(complex.size());
         imag.reserve(imag.size());
         for (auto complex_it = complex.begin(); complex_it != complex.end(); ++complex_it) {
@@ -101,9 +101,9 @@ public:
     }
 
     template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
-    void splitComplex(std::vector<storage_real_t>& real, std::vector<storage_real_t>& imag, std::vector<T>& complex) {
-        imag = std::vector<storage_real_t>();
-        real = complex; //std::vector<storage_real_t>(complex.begin(),complex.end());
+    void splitComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
+        imag = std::vector<storage_double>();
+        real = complex; //std::vector<storage_double>(complex.begin(),complex.end());
     }
 
 protected:

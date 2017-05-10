@@ -46,7 +46,7 @@ public:
 };
 
 
-QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, real_t _j)
+QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, double _j)
     : species(_species), n(_n), l(_l), j(_j),
       ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_),
       rc(rc_), nstar(nstar_), energy(energy_)
@@ -55,8 +55,8 @@ QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, real_t
     sqlite::handle db("calc/databases/quantum_defects.db", SQLITE_OPEN_READONLY);
     int pot_max_l, ryd_max_l;
     int pot_l, ryd_l;
-    real_t ryd_max_j;
-    real_t ryd_j;
+    double ryd_max_j;
+    double ryd_j;
 
     // Determine maximal L for model potentials
     ss.str(std::string());
@@ -116,8 +116,8 @@ QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, real_t
        << ");";
     sqlite::result res = db.query(ss);
     nstar_ = n;
-    real_t Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
-    real_t d0, d2, d4, d6, d8, Ry = Ry_inf;
+    double Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
+    double d0, d2, d4, d6, d8, Ry = Ry_inf;
     if (res.size() > 0)
     {
         res.first() >> d0 >> d2 >> d4 >> d6 >> d8 >> Ry;
@@ -130,7 +130,7 @@ QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, real_t
 }
 
 
-real_t energy_level(std::string const& species, int n, int l, real_t j) {
+double energy_level(std::string const& species, int n, int l, double j) {
     QuantumDefect qd(species, n, l, j);
     return qd.energy;
 }

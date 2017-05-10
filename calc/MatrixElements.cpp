@@ -96,12 +96,12 @@ void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOn
     precalculate(basis_one, k, q, 2, true, false, false);
 }
 
-real_t MatrixElements::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) {
+double MatrixElements::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) {
     return getMultipole(state_row,state_col,1);
 }
 
-real_t MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne const& state_col) {
-    real_t val =  muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+double MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne const& state_col) {
+    double val =  muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             (gL * cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1))  +
@@ -110,24 +110,24 @@ real_t MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne c
     return val;
 }
 
-real_t MatrixElements::getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k) {
-    real_t val =    1./12.*cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+double MatrixElements::getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k) {
+    double val =    1./12.*cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}})];
     return val;
 }
 
-real_t MatrixElements::getMultipole(StateOne const& state_row, StateOne const& state_col, int k) {
-    real_t val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+double MatrixElements::getMultipole(StateOne const& state_row, StateOne const& state_col, int k) {
+    double val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}})];
     return val;
 }
 
-real_t MatrixElements::getRadial(StateOne const& state_row, StateOne const& state_col, int k) {
-    real_t val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
+double MatrixElements::getRadial(StateOne const& state_row, StateOne const& state_col, int k) {
+    double val =  cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()];
     return val;
 }
 
@@ -200,7 +200,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
             if ((calcElectricMultipole && selectionRulesMultipole(state_row, state_col, kappa)) || (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col)) || calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
                     StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
-                    auto missing_cache_radial = cache_radial[kappar].insert({state_nlj, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_radial = cache_radial[kappar].insert({state_nlj, std::numeric_limits<double>::max()});
                     if (missing_cache_radial.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
@@ -212,7 +212,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
                     StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}});
-                    auto missing_cache_angular = cache_angular[kappa].insert({state_jm, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_angular = cache_angular[kappa].insert({state_jm, std::numeric_limits<double>::max()});
                     if (missing_cache_angular.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
@@ -224,7 +224,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}});
-                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[kappa].insert({state_lj, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[kappa].insert({state_lj, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_commutes_s.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
@@ -236,7 +236,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcMagneticMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}});
-                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[kappa].insert({state_lj, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[kappa].insert({state_lj, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_commutes_l.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
@@ -248,7 +248,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
                 if (calcElectricMultipole) {
                     StateTwo state_l = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
-                    auto missing_cache_reduced_multipole = cache_reduced_multipole[kappa].insert({state_l, std::numeric_limits<real_t>::max()});
+                    auto missing_cache_reduced_multipole = cache_reduced_multipole[kappa].insert({state_l, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_multipole.second) {
                         ss.str(std::string());
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
@@ -335,7 +335,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         for (auto &cache : cache_radial[kappar]) {
-            if (cache.second == std::numeric_limits<real_t>::max()) {
+            if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
                 QuantumDefect qd1(species, state.n[0], state.l[0], state.j[0]);
@@ -356,7 +356,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (calcElectricMultipole || calcMagneticMomentum) {
         for (auto &cache : cache_angular[kappa]) {
-            if (cache.second == std::numeric_limits<real_t>::max()) {
+            if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
                 float q = state.m[0]-state.m[1];
 
@@ -376,7 +376,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (calcElectricMultipole || calcMagneticMomentum) {
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
-            if (cache.second == std::numeric_limits<real_t>::max()) {
+            if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
@@ -395,7 +395,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (calcMagneticMomentum) {
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
-            if (cache.second == std::numeric_limits<real_t>::max()) {
+            if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
@@ -414,7 +414,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     if (calcElectricMultipole) {
         for (auto &cache : cache_reduced_multipole[kappa]) {
-            if (cache.second == std::numeric_limits<real_t>::max()) {
+            if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
                 cache.second = pow(-1, state.l[0]) * sqrt((2*state.l[0]+1)*(2*state.l[1]+1)) *
@@ -434,7 +434,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     db.exec("end transaction;");
 }
 
-real_t MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
+double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
                                          const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);

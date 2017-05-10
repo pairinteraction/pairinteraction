@@ -22,10 +22,9 @@
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 
-typedef double real_t; // TODO we should always use double otherwise the diagonalization results are very noisy
-typedef std::complex<real_t> complex_t;
+typedef std::complex<double> complex_t;
 typedef uint32_t idx_t;
-typedef real_t storage_real_t; // TODO has always to be the same as real_t
+typedef double storage_double; // TODO has always to be the same as double
 typedef int32_t storage_idx_t;
 typedef int32_t eigen_idx_t;
 
@@ -36,18 +35,18 @@ typedef std::nullptr_t invalid_t;
 #ifdef USE_COMPLEX
 typedef complex_t scalar_t;
 #else
-typedef real_t scalar_t;
+typedef double scalar_t;
 #endif
 
 typedef Eigen::Triplet<scalar_t> eigen_triplet_t;
-typedef Eigen::Triplet<real_t> eigen_triplet_real_t;
+typedef Eigen::Triplet<double> eigen_triplet_double;
 typedef Eigen::SparseMatrix<scalar_t, Eigen::ColMajor, eigen_idx_t> eigen_sparse_t;
-typedef Eigen::SparseMatrix<real_t, Eigen::ColMajor, eigen_idx_t> eigen_sparse_real_t;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, eigen_idx_t> eigen_sparse_double;
 typedef Eigen::SparseMatrix<scalar_t, Eigen::ColMajor, eigen_idx_t>::InnerIterator eigen_iterator_t;
-typedef Eigen::SparseMatrix<real_t, Eigen::ColMajor, eigen_idx_t>::InnerIterator eigen_iterator_real_t;
+typedef Eigen::SparseMatrix<double, Eigen::ColMajor, eigen_idx_t>::InnerIterator eigen_iterator_double;
 typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic,Eigen::ColMajor> eigen_dense_t;
 typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1,Eigen::ColMajor> eigen_vector_t;
-typedef Eigen::Matrix<real_t,Eigen::Dynamic,1,Eigen::ColMajor> eigen_vector_real_t;
+typedef Eigen::Matrix<double,Eigen::Dynamic,1,Eigen::ColMajor> eigen_vector_double;
 
 
 class Triple {

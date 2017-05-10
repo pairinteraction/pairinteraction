@@ -62,8 +62,8 @@ void BasisOne::initialize()
             for (auto j : range_adapted_j) {
                 if (std::fabs(j-l) != 0.5) continue;
 
-                real_t energy = StateOne(element,n,l,j,0.5).getEnergy();
-                if ((energy < energy_min && energy_min != std::numeric_limits<real_t>::lowest()) || (energy > energy_max  && energy_max != std::numeric_limits<real_t>::max())) continue; // TODO take into account numerical errors
+                double energy = StateOne(element,n,l,j,0.5).getEnergy();
+                if ((energy < energy_min && energy_min != std::numeric_limits<double>::lowest()) || (energy > energy_max  && energy_max != std::numeric_limits<double>::max())) continue; // TODO take into account numerical errors
 
                 if (range_m.empty()) {
                     range_adapted_m.resize(2*j+1);

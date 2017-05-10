@@ -38,15 +38,15 @@ public:
     const Configuration& getConf() const;
 
 protected:
-    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, real_t& val_p, real_t& val_m, real_t& val_0);
-    void changeToSpherical(real_t val_x, real_t val_y, real_t val_z, std::complex<real_t>& val_p, std::complex<real_t>& val_m, std::complex<real_t>& val_0);
+    void changeToSpherical(double val_x, double val_y, double val_z, double& val_p, double& val_m, double& val_0);
+    void changeToSpherical(double val_x, double val_y, double val_z, std::complex<double>& val_p, std::complex<double>& val_m, std::complex<double>& val_0);
     void configure(const Configuration &config);
     void build();
 
 private:
     Configuration basicconf;
-    real_t deltaE;
-    real_t min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
+    double deltaE;
+    double min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
     size_t nSteps;
     bool diamagnetism;
     std::string species;

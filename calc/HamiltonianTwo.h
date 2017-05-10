@@ -43,14 +43,14 @@ public:
 private:
     std::shared_ptr<HamiltonianOne> hamiltonian_one1; // TODO const HamiltonianOne
     std::shared_ptr<HamiltonianOne> hamiltonian_one2;
-    real_t deltaE;
+    double deltaE;
     int deltaN;
     int deltaL;
     int deltaJ;
     int deltaM;
     size_t nSteps_two;
     std::string species1, species2;
-    real_t min_R, max_R;
+    double min_R, max_R;
     int multipoleexponent;
     bool samebasis;
     boost::filesystem::path path_cache;

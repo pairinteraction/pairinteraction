@@ -114,7 +114,7 @@ int compute(std::string const& config_name, std::string const& output_name) {
 int mainMatrixElement(std::string const& element, std::string const& row, std::string const& col, int power) {
     std::cout << std::unitbuf;
 
-    size_t precision = std::numeric_limits<real_t>::digits10 + 1;
+    size_t precision = std::numeric_limits<double>::digits10 + 1;
 
     StateOne state_row;
     std::stringstream(row)
@@ -140,7 +140,7 @@ int mainMatrixElement(std::string const& element, std::string const& row, std::s
     MatrixElements matrixelement(element, "");
 
     matrixelement.precalculateRadial(basis, power);
-    real_t val = matrixelement.getRadial(state_row, state_col, power);
+    double val = matrixelement.getRadial(state_row, state_col, power);
     std::cout << ">>RES" << std::setprecision(precision) << val << std::endl;
 
     return 0;

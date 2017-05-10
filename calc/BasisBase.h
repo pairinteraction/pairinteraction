@@ -15,7 +15,7 @@
 
 template<class T> class Basis {
 public:
-    Basis() : energy_min(std::numeric_limits<real_t>::lowest()), energy_max(std::numeric_limits<real_t>::max()), range_n({}), range_l({}), range_j({}), range_m({}), hash_restrictions_old(0) {
+    Basis() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), hash_restrictions_old(0) {
     }
     void restrictEnergy(double e_min, double e_max) {
         energy_min = e_min;
@@ -62,7 +62,7 @@ public:
         range_m = m;
         range_m_hash_new = boost::hash_value(range_m);
     }
-    const std::vector<double>& getEnergies() { // TODO use real_t and make SWIG work with real_t, too
+    const std::vector<double>& getEnergies() { // TODO use double and make SWIG work with double, too
         this->build();
         return energies;
     }
@@ -74,7 +74,7 @@ public:
         this->build();
         return coefficients;
     }
-    void updateEnergiesAndCoefficients(const std::vector<real_t> &e, eigen_sparse_t &c) {
+    void updateEnergiesAndCoefficients(const std::vector<double> &e, eigen_sparse_t &c) {
         // TODO check whether dimensions fit between e and c and are compatible with states as well
         energies = e;
         coefficients = c;
@@ -84,14 +84,14 @@ public:
 protected:
     virtual void initialize() = 0;
 
-    real_t energy_min, energy_max;
+    double energy_min, energy_max;
     std::vector<int> range_n, range_l;
     std::vector<double> range_j, range_m;
 
     size_t range_energy_hash, range_n_hash, range_l_hash, range_j_hash, range_m_hash;
     size_t range_energy_hash_new, range_n_hash_new, range_l_hash_new, range_j_hash_new, range_m_hash_new;
 
-    std::vector<real_t> energies;
+    std::vector<double> energies;
     std::vector<T> states;
     eigen_sparse_t coefficients;
 
@@ -125,7 +125,7 @@ private:
 
             std::vector<T> states_new;
             states_new.reserve(states.size());
-            std::vector<eigen_triplet_real_t> triplets_transformator;
+            std::vector<eigen_triplet_double> triplets_transformator;
             triplets_transformator.reserve(states.size());
 
             for (size_t idx = 0; idx < states.size(); ++idx) {
@@ -136,7 +136,7 @@ private:
                         checkIsQuantumnumberContained(state.m, range_set_m)) {
 
                     states_new.push_back(state);
-                    triplets_transformator.push_back(eigen_triplet_real_t(idx_new++,idx,1));
+                    triplets_transformator.push_back(eigen_triplet_double(idx_new++,idx,1));
                 }
             }
 
