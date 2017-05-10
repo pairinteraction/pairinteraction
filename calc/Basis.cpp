@@ -14,8 +14,14 @@
  * limitations under the License.
  */
 
+#include "dtypes.h"
 #include "Basis.h"
 
+#include <cmath>
+#include <limits>
+#include <numeric>
+#include <string>
+#include <vector>
 
 // Implementation of BasisOne
 

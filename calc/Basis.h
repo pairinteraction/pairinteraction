@@ -17,20 +17,8 @@
 #ifndef BASIS_H
 #define BASIS_H
 
-#include "dtypes.h"
-#include "Iter.h"
 #include "State.h"
 #include "BasisBase.h"
-
-#include <vector>
-#include <numeric>
-#include <string>
-#include <set>
-#include <limits>
-#include <unordered_set>
-#include <memory>
-#include <string>
-#include <fstream>
 
 class BasisOne : public Basis<StateOne> {
 public:

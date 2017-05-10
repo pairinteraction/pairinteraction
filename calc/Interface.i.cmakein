@@ -10,6 +10,7 @@
 %feature("autodoc", "3");
 
 
+%include "attribute.i"
 %include "exception.i"
 %include "std_array.i"
 %include "std_complex.i"
@@ -43,6 +44,7 @@ std::string __str__() {
 namespace std {
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
+  %template(ArrayDoubleTwo) array<double,2>;
   %template(VectorInt) vector<int>;
   %template(VectorDouble) vector<double>;
   %template(VectorStateOne) vector<StateOne>;
@@ -60,47 +62,16 @@ namespace std {
 %ignore operator<<;
 %include "State.h"
 
+
+%attribute(StateOne, double, energy, getEnergy);
 %extend StateOne {
   __STR__();
-  %pythoncode %{
-      __swig_getmethods__["element"] = getElement
-      __swig_setmethods__["element"] = setElement
-      __swig_getmethods__["n"] = getN
-      __swig_setmethods__["n"] = setN
-      __swig_getmethods__["l"] = getL
-      __swig_setmethods__["l"] = setL
-      __swig_getmethods__["j"] = getJ
-      __swig_setmethods__["j"] = setJ
-      __swig_getmethods__["m"] = getM
-      __swig_setmethods__["m"] = setM
-      if _newclass:
-          element = property(getElement, setElement)
-          n = property(getN, setN)
-          l = property(getL, setL)
-          j = property(getJ, setJ)
-          m = property(getM, setM)
-  %}
 };
+
+
+%attribute(StateTwo, double, energy, getEnergy);
 %extend StateTwo {
   __STR__();
-  %pythoncode %{
-      __swig_getmethods__["element"] = getElement
-      __swig_setmethods__["element"] = setElement
-      __swig_getmethods__["n"] = getN
-      __swig_setmethods__["n"] = setN
-      __swig_getmethods__["l"] = getL
-      __swig_setmethods__["l"] = setL
-      __swig_getmethods__["j"] = getJ
-      __swig_setmethods__["j"] = setJ
-      __swig_getmethods__["m"] = getM
-      __swig_setmethods__["m"] = setM
-      if _newclass:
-          element = property(getElement, setElement)
-          n = property(getN, setN)
-          l = property(getL, setL)
-          j = property(getJ, setJ)
-          m = property(getM, setM)
-  %}
 };
 
 

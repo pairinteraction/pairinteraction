@@ -130,10 +130,10 @@ private:
 
             for (size_t idx = 0; idx < states.size(); ++idx) {
                 const T &state = states[idx];
-                if (checkIsQuantumnumberContained(state.getN(), range_set_n) &&
-                        checkIsQuantumnumberContained(state.getL(), range_set_l) &&
-                        checkIsQuantumnumberContained(state.getJ(), range_set_j) &&
-                        checkIsQuantumnumberContained(state.getM(), range_set_m)) {
+                if (checkIsQuantumnumberContained(state.n, range_set_n) &&
+                        checkIsQuantumnumberContained(state.l, range_set_l) &&
+                        checkIsQuantumnumberContained(state.j, range_set_j) &&
+                        checkIsQuantumnumberContained(state.m, range_set_m)) {
 
                     states_new.push_back(state);
                     triplets_transformator.push_back(eigen_triplet_real_t(idx_new++,idx,1));

@@ -14,9 +14,14 @@
  * limitations under the License.
  */
 
+#include "dtypes.h"
 #include "State.h"
+#include "QuantumDefect.h"
 
-
+#include <array>
+#include <string>
+#include <iostream>
+#include <iomanip>
 
 // Implementation of StateOne
 
@@ -74,21 +79,6 @@ bool StateOne::operator>(StateOne const& rhs) const
 }
 
 double StateOne::getEnergy() const { return energy_level(element, n, l, j); }
-
-std::string StateOne::getElement() const { return element; }
-void StateOne::setElement(std::string const& input) { element = input; }
-
-int StateOne::getN() const { return n; }
-void StateOne::setN(int input) { n = input; }
-
-int StateOne::getL() const { return l; }
-void StateOne::setL(int input) { l = input; }
-
-double StateOne::getJ() const { return j; }
-void StateOne::setJ(double input){ j = input; }
-
-double StateOne::getM() const { return m; }
-void StateOne::setM(double input) { m = input; }
 
 
 // Implementation of StateTwo
@@ -190,18 +180,3 @@ StateTwo StateTwo::order() {
 }
 
 double StateTwo::getEnergy() const { return this->first().getEnergy()+this->second().getEnergy(); }
-
-std::array<std::string, 2> StateTwo::getElement() const { return element; }
-void StateTwo::setElement(std::array<std::string, 2> input) { element = input; }
-
-std::array<int, 2> StateTwo::getN() const { return n; }
-void StateTwo::setN(std::array<int, 2> input) { n = input; }
-
-std::array<int, 2> StateTwo::getL() const { return l; }
-void StateTwo::setL(std::array<int, 2> input) { l = input; }
-
-std::array<double, 2> StateTwo::getJ() const { return j; }
-void StateTwo::setJ(std::array<double, 2> input) { j = input; }
-
-std::array<double, 2> StateTwo::getM() const { return m; }
-void StateTwo::setM(std::array<double, 2> input) { m = input; }

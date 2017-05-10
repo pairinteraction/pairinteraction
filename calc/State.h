@@ -18,14 +18,10 @@
 #define STATE_H
 
 #include "dtypes.h"
-#include "ConfParser.h"
-#include "QuantumDefect.h"
 
 #include <array>
 #include <string>
 #include <iostream>
-#include <iomanip>
-
 #include <boost/functional/hash.hpp>
 
 class State {
@@ -58,21 +54,6 @@ public:
     bool operator> (StateOne const&) const;
 
     double getEnergy() const;
-
-    std::string getElement() const;
-    void setElement(std::string const& input);
-
-    int getN() const;
-    void setN(int);
-
-    int getL() const;
-    void setL(int);
-
-    double getJ() const;
-    void setJ(double);
-
-    double getM() const;
-    void setM(double);
 };
 
 
@@ -129,21 +110,6 @@ public:
     StateTwo order();
 
     double getEnergy() const;
-
-    std::array<std::string, 2> getElement() const;
-    void setElement(std::array<std::string, 2> input);
-
-    std::array<int, 2> getN() const;
-    void setN(std::array<int, 2> input);
-
-    std::array<int, 2> getL() const;
-    void setL(std::array<int, 2> input);
-
-    std::array<double, 2> getJ() const;
-    void setJ(std::array<double, 2> input);
-
-    std::array<double, 2> getM() const;
-    void setM(std::array<double, 2> input);
 };
 
 
