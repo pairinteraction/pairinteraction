@@ -122,7 +122,7 @@ success:
   File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
   FileWrite $4 "@echo off$\r$\n"
-  FileWrite $4 '"$PYTHON_PATH" "$INSTDIR\gui\startgui"'
+  FileWrite $4 'cmd /k ""$PYTHON_PATH" "$INSTDIR\gui\startgui""'
   FileClose $4
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
