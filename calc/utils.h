@@ -17,6 +17,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include "State.h"
 #include <complex>
 #include <type_traits>
 #include <functional>
@@ -40,5 +41,6 @@ inline uint64_t FNV64(uint8_t *s, size_t sz)
 }
 
 }
+
 
 #endif // UTILS_H

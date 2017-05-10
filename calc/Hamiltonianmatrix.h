@@ -21,6 +21,7 @@
 #include "Serializable.h"
 #include "Basisnames.h"
 #include "State.h"
+#include "utils.h"
 
 #include <cmath>
 #include <cstdint>
