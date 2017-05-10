@@ -1,10 +1,26 @@
 %module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
 
+%{
+#include "dtypes.h"
+#include "Interface.h"
+#include "State.h"
+#include "Basis.h"
+%}
+
+
 %feature("autodoc", "3");
+
+
+%include "attribute.i"
+%include "exception.i"
+%include "std_array.i"
+%include "std_complex.i"
+%include "std_string.i"
+%include "std_vector.i"
+
 
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions
-%include "exception.i"
 %exception {
   try {
     $action
@@ -13,9 +29,9 @@
   }
 }
 
+
 // Wrap the << operator
 // http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
-%include "std_string.i"
 %define __STR__()
 std::string __str__() {
   std::ostringstream out;
@@ -24,182 +40,68 @@ std::string __str__() {
 }
 %enddef
 
-%{
-#include "Interface.h"
-#include "State.h"
-#include "Basis.h"
-%}
 
-%include "std_complex.i"
-%include "std_array.i"
-%include "std_vector.i"
+// Instantiate often used STL templates
 namespace std {
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
   %template(ArrayFloatTwo) array<float,2>;
   %template(VectorInt) vector<int>;
-  %template(VectorFloat) vector<float>;
   %template(VectorDouble) vector<double>;
+  %template(VectorFloat) vector<float>;
   %template(VectorStateOne) vector<StateOne>;
   %template(VectorStateTwo) vector<StateTwo>;
-  %template(VectorSizet) vector<size_t>;
-  %template(VectorComplexdouble) vector<std::complex<double>>;
+  %template(VectorSizeT) vector<size_t>;
+  %template(VectorComplexDouble) vector<std::complex<double>>;
 };
+
+%rename(__lt__) operator<;
+%include "dtypes.h"
+
 
 %include "Interface.h"
 
-class StateOne {
-public:
-    StateOne(std::string element, int n, int l, float j, float m);
-    double getEnergy() const;
-    std::string getElement() const;
-    int getN() const;
-    int getL() const;
-    float getJ() const;
-    float getM() const;
-    void setElement(std::string input);
-    void setN(int input);
-    void setL(int input);
-    void setJ(float input);
-    void setM(float input);
-};
+
+// Wrap State.h
+%ignore hash;
+%rename(__ostream__) operator<<;
+%include "State.h"
+
+
+%attribute(StateOne, double, energy, getEnergy);
 %extend StateOne {
-  __STR__()
+  __STR__();
 };
 
-%naturalvar StateTwo::element;
-%naturalvar StateTwo::n;
-%naturalvar StateTwo::l;
-%naturalvar StateTwo::j;
-%naturalvar StateTwo::m;
-class StateTwo {
-public:
-    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
-    StateTwo(const StateOne &s1, const StateOne &s2);
-    StateOne getFirstState() const;
-    StateOne getSecondState() const;
-    void setFirstState(const StateOne &s);
-    void setSecondState(const StateOne &s);
-    double getEnergy() const;
-    std::array<std::string, 2> getElement() const;
-    std::array<int, 2> getN() const;
-    std::array<int, 2> getL() const;
-    std::array<float, 2> getJ() const;
-    std::array<float, 2> getM() const;
-    void setElement(std::array<std::string, 2> input);
-    void setN(std::array<int, 2> input);
-    void setL(std::array<int, 2> input);
-    void setJ(std::array<float, 2> input);
-    void setM(std::array<float, 2> input);
-};
+
+%attribute(StateTwo, double, energy, getEnergy);
 %extend StateTwo {
-  __STR__()
+  __STR__();
 };
 
-class BasisOne {
-public:
-  BasisOne(std::string element);
-  void restrictEnergy(double e_min, double e_max);
-  void restrictN(int n_min, int n_max);
-  void restrictN(std::vector<int> n);
-  void restrictL(int l_min, int l_max);
-  void restrictL(std::vector<int> l);
-  void restrictJ(float j_min, float j_max);
-  void restrictJ(std::vector<float> j);
-  void restrictM(float n_min, float n_max);
-  void restrictM(std::vector<float> n);
-  std::vector<double> getEnergies();
-  const std::vector<StateOne>& getStates();
-};
 
-// TODO make conversion "eigen_sparse_t to csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
-%extend BasisOne {
-  size_t _getCoefficientsNumrows() {
-    return $self->getCoefficients().rows();
-  }
-  size_t _getCoefficientsNumcols() {
-    return $self->getCoefficients().cols();
-  }
-  std::vector<size_t> _getCoefficientsIndptr() {
-    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
-    data.push_back($self->getCoefficients().nonZeros());
-    return data;
-  }
-  std::vector<size_t> _getCoefficientsIndices() {
-    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
-    return data;
-  }
-  std::vector<std::complex<double>> _getCoefficientsData() {
-    std::vector<std::complex<double>> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
-    return data;
-  }
-};
+// Wrap Basis.h
+%include "BasisBase.h"
+%template(BasisStateOne) Basis<StateOne>;
+%template(BasisStateTwo) Basis<StateTwo>;
+%include "Basis.h"
+
 
 %pythoncode %{
+
+# TODO make conversion of "eigen_sparse_t" to "csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
+
 from scipy.sparse import csc_matrix
 import numpy as np
 def getCoefficients (self):
-  num_rows = self._getCoefficientsNumrows()
-  num_cols = self._getCoefficientsNumcols()
-  indptr = self._getCoefficientsIndptr()
-  indices = self._getCoefficientsIndices()
-  data = self._getCoefficientsData()
-  return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
+    num_rows = self._getCoefficientsNumrows()
+    num_cols = self._getCoefficientsNumcols()
+    indptr = self._getCoefficientsIndptr()
+    indices = self._getCoefficientsIndices()
+    data = self._getCoefficientsData()
+    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
+
 BasisOne.getCoefficients = getCoefficients
-%}
-
-class BasisTwo {
-public:
-  BasisTwo(const BasisOne &b1, const BasisOne &b2);
-  BasisOne getFirstBasis() const;
-  BasisOne getSecondBasis() const;
-  void setFirstBasis(const BasisOne &b);
-  void setSecondBasis(const BasisOne &b);
-  void restrictEnergy(double e_min, double e_max);
-  void restrictN(int n_min, int n_max);
-  void restrictN(std::vector<int> n);
-  void restrictL(int l_min, int l_max);
-  void restrictL(std::vector<int> l);
-  void restrictJ(float j_min, float j_max);
-  void restrictJ(std::vector<float> j);
-  void restrictM(float n_min, float n_max);
-  void restrictM(std::vector<float> n);
-  const std::vector<double>& getEnergies();
-  const std::vector<StateTwo>& getStates();
-};
-
-// TODO make conversion "eigen_sparse_t to csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
-%extend BasisTwo {
-  size_t _getCoefficientsNumrows() {
-    return $self->getCoefficients().rows();
-  }
-  size_t _getCoefficientsNumcols() {
-    return $self->getCoefficients().cols();
-  }
-  std::vector<size_t> _getCoefficientsIndptr() {
-    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
-    data.push_back($self->getCoefficients().nonZeros());
-    return data;
-  }
-  std::vector<size_t> _getCoefficientsIndices() {
-    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
-    return data;
-  }
-  std::vector<std::complex<double>> _getCoefficientsData() {
-    std::vector<std::complex<double>> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
-    return data;
-  }
-};
-
-%pythoncode %{
-from scipy.sparse import csc_matrix
-import numpy as np
-def getCoefficients (self):
-  num_rows = self._getCoefficientsNumrows()
-  num_cols = self._getCoefficientsNumcols()
-  indptr = self._getCoefficientsIndptr()
-  indices = self._getCoefficientsIndices()
-  data = self._getCoefficientsData()
-  return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
 BasisTwo.getCoefficients = getCoefficients
+
 %}

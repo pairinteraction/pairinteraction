@@ -45,7 +45,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         boost::filesystem::create_directory(path_cache_mat);
     }
 
-    real_t tol = 1e-32;
+    double tol = 1e-32;
 
     if (hamiltonian_one1->size() != hamiltonian_one2->size()) {
         throw std::runtime_error("The number of single atom Hamiltonians must be the same for both atoms.");
@@ -97,7 +97,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     conf_tot["maxR"] >> max_R;
     conf_tot["exponent"] >> multipoleexponent;
 
-    real_t minEx, minEy, minEz, maxEx, maxEy, maxEz, minBx, minBy, minBz, maxBx, maxBy, maxBz;
+    double minEx, minEy, minEz, maxEx, maxEy, maxEz, minBx, minBy, minBz, maxBx, maxBy, maxBz;
     conf_tot["minEx"] >> minEx;
     conf_tot["minEy"] >> minEy;
     conf_tot["minEz"] >> minEz;
@@ -450,7 +450,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                     }
 
                     // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
-                    real_t val = 0;
+                    double val = 0;
 
                     for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
                         int kappa2 = sumOfKappas - kappa1;
@@ -571,8 +571,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             int single_idx = (nSteps_two == nSteps_one) ? step_two : 0;
 
             // Get interatomic distance
-            real_t normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
-            real_t position = min_R+normalized_position*(max_R-min_R);
+            double normalized_position = (nSteps_two > 1) ? step_two/(nSteps_two-1.) : 0;
+            double position = min_R+normalized_position*(max_R-min_R);
 
             // Get configuration and save postions and symmetries
             Configuration conf = conf_mat[single_idx];
@@ -687,7 +687,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
                 // --- Add interaction ---
                 for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
-                    real_t pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
+                    double pos = 1./std::pow(position,exponent_multipole[idx_multipole]);
                     if (nSteps_two == nSteps_one) {
                         totalmatrix += mat_multipole[idx_multipole].changeBasis(totalmatrix.basis())*pos;
                     } else {

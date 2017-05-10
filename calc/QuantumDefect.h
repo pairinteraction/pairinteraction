@@ -20,7 +20,7 @@
 #include <string>
 #include "dtypes.h"
 
-//typedef double real_t;
+//typedef double double;
 
 /** \brief Quantum defect storage
  *
@@ -48,12 +48,12 @@
  */
 class QuantumDefect {
 private:
-    real_t ac_;
+    double ac_;
     int Z_;
-    real_t a1_, a2_, a3_, a4_;
-    real_t rc_;
-    real_t nstar_;
-    real_t energy_;
+    double a1_, a2_, a3_, a4_;
+    double rc_;
+    double nstar_;
+    double energy_;
 public:
     /** \brief Constructor
      *
@@ -64,7 +64,7 @@ public:
      * \param[in] l         angular quantum number
      * \param[in] j         magnetic quantum number
      */
-    QuantumDefect(std::string const& species, int n, int l, real_t j);
+    QuantumDefect(std::string const& species, int n, int l, double j);
 
     /** \brief Atomic species */
     const std::string species;
@@ -76,34 +76,34 @@ public:
     const int l;
 
     /** \brief Magnetic quantum number */
-    const real_t j;
+    const double j;
 
     /** \brief Polarizability */
-    const real_t &ac;
+    const double &ac;
 
     /** \brief Core charge */
     const int &Z;
 
     /** \brief Parameter of effective Coulomb potential */
-    const real_t &a1;
+    const double &a1;
 
     /** \brief Parameter of effective Coulomb potential */
-    const real_t &a2;
+    const double &a2;
 
     /** \brief Parameter of effective Coulomb potential */
-    const real_t &a3;
+    const double &a3;
 
     /** \brief Parameter of effective Coulomb potential */
-    const real_t &a4;
+    const double &a4;
 
     /** \brief Effective core size */
-    const real_t &rc;
+    const double &rc;
 
     /** \brief Effective principal quantum number */
-    const real_t &nstar;
+    const double &nstar;
 
     /** \brief State energy */
-    const real_t &energy;
+    const double &energy;
 };
 
 
@@ -119,6 +119,6 @@ public:
  * \param[in] l         angular quantum number
  * \param[in] j         magnetic quantum number
  */
-real_t energy_level(std::string const& species, int n, int l, real_t j);
+double energy_level(std::string const& species, int n, int l, double j);
 
 #endif // QUANTUM_DEFECT_H

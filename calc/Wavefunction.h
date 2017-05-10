@@ -43,7 +43,7 @@ namespace model_potential {
      * \param[in] x     Radial position
      * \returns Model potentials evaluted at position \p x with parameters \p qd
      */
-    real_t V(QuantumDefect const& qd, real_t x);
+    double V(QuantumDefect const& qd, double x);
 
     /** \brief Helper function for %Numerov's method.s
      *
@@ -58,7 +58,7 @@ namespace model_potential {
      * \param[in] x     Radial position
      * \returns Scaling coefficient evaluted at position \p x with parameters \p qd
      */
-    real_t g(QuantumDefect const& qd, real_t x);
+    double g(QuantumDefect const& qd, double x);
 }
 
 /** \brief %Numerov's method
@@ -81,10 +81,10 @@ namespace model_potential {
  */
 class Numerov {
     QuantumDefect const& qd;
-    std::vector<real_t> x;
+    std::vector<double> x;
 public:
     /** \brief Integration step size */
-    real_t const dx;
+    double const dx;
 
     /** \brief Constructor
      *
@@ -102,7 +102,7 @@ public:
      *
      * \returns vector with radial points
      */
-    std::vector<real_t> axis() const;
+    std::vector<double> axis() const;
 
     /** \brief Perform the integration
      *
@@ -110,7 +110,7 @@ public:
      *
      * \returns vector with wavefunction amplitude
      */
-    std::vector<real_t> integrate();
+    std::vector<double> integrate();
 
     /** \brief Power kernel for matrix elements
      *
@@ -142,7 +142,7 @@ namespace whittaker_functions {
      * \param[in] z     see documentation for <tt>gsl_sf_hyperg_U</tt>
      * \returns U(a,b,z)
      */
-    real_t HypergeometricU(real_t a, real_t b, real_t z);
+    double HypergeometricU(double a, double b, double z);
 
     /** \brief Compute the %Whittaker function
      *
@@ -157,7 +157,7 @@ namespace whittaker_functions {
      * \param[in] z     radial position
      * \returns W(k,m,z)
      */
-    real_t WhittakerW(real_t k, real_t m, real_t z);
+    double WhittakerW(double k, double m, double z);
 
     /** \brief Radial wavefunctions from %Whittaker's function
      *
@@ -172,15 +172,15 @@ namespace whittaker_functions {
      * \param[in] r     radial position
      * \returns R(nu,l,r)
      */
-    real_t RadialWFWhittaker(real_t r, real_t nu, int l);
+    double RadialWFWhittaker(double r, double nu, int l);
 }
 
 class Whittaker {
     QuantumDefect const& qd;
-    std::vector<real_t> x;
+    std::vector<double> x;
 public:
     /** \brief Integration step size */
-    real_t const dx;
+    double const dx;
 
     /** \brief Constructor
      *
@@ -199,7 +199,7 @@ public:
      *
      * \returns vector with radial points
      */
-    std::vector<real_t> axis() const;
+    std::vector<double> axis() const;
 
     /** \brief Evaluate the radial wavefunction
      *
@@ -208,7 +208,7 @@ public:
      *
      * \returns vector with wavefunction amplitude
      */
-    std::vector<real_t> integrate();
+    std::vector<double> integrate();
 
     /** \brief Power kernel for matrix elements
      *
@@ -219,7 +219,7 @@ public:
      * \param[in] power     exponent of r
      * \returns power kernel
      */
-    constexpr static inline real_t power_kernel(int power)
+    constexpr static inline double power_kernel(int power)
     {
         return 1.5*power;
     }
@@ -262,7 +262,7 @@ size_t findidx(T const& x, typename T::value_type const& d) {
  * \returns Radial matrix element
  */
 template < typename T >
-real_t IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefect const& qd2)
+double IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefect const& qd2)
 {
     T N1(qd1);
     T N2(qd2);
@@ -276,7 +276,7 @@ real_t IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefec
     auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
     auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
 
-    real_t mu = 0;
+    double mu = 0;
     // If there is an overlap, calculate the matrix element
     if (xmin <= xmax) {
         int start1 = findidx(x1, xmin);

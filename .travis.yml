@@ -6,26 +6,26 @@ matrix:
       sudo: required
       services: docker
       env:
-        - image=debian:jessie
+        - image=debian
         - package=pairinteraction-install-linux.deb
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
       services: docker
       env:
-        - image=ubuntu:16.04
+        - image=ubuntu
     - os: linux
       sudo: required
       services: docker
       env:
-        - image=opensuse:13.2
+        - image=opensuse
         - package=pairinteraction-install-linux.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
    #- os: linux
    #  sudo: required
    #  services: docker
    #  env:
-   #    - image=opensuse:13.2-w64
+   #    - image=opensuse:w64
    #    - package=pairinteraction-install-windows-x86_64.exe
    #  before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
