@@ -1,6 +1,7 @@
 %module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
 
 %{
+#include "dtypes.h"
 #include "Interface.h"
 #include "State.h"
 #include "Basis.h"
@@ -53,13 +54,16 @@ namespace std {
   %template(VectorComplexDouble) vector<std::complex<double>>;
 };
 
+%rename(__lt__) operator<;
+%include "dtypes.h"
+
 
 %include "Interface.h"
 
 
 // Wrap State.h
 %ignore hash;
-%ignore operator<<;
+%rename(__ostream__) operator<<;
 %include "State.h"
 
 
