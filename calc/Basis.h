@@ -24,7 +24,7 @@ class BasisOne : public Basis<StateOne> {
 public:
     BasisOne(std::string const& element);
 protected:
-    void initialize();
+    void initialize() override;
 private:
     std::string element;
 };
@@ -39,7 +39,7 @@ public:
     BasisOne getSecondBasis() const;
     void setSecondBasis(const BasisOne &b);
 protected:
-    void initialize();
+    void initialize() override;
 private:
     bool checkNewBasisOne();
     BasisOne basis1; // TODO maybe, make const, pass by reference

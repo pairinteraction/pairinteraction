@@ -17,6 +17,7 @@ template<class T> class Basis {
 public:
     Basis() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), hash_restrictions_old(0) {
     }
+    virtual ~Basis() = default;
     void restrictEnergy(double e_min, double e_max) {
         energy_min = e_min;
         energy_max = e_max;
