@@ -28,7 +28,7 @@ case "${TRAVIS_OS_NAME}" in
     "linux")
 
             case "${image}" in
-                "opensuse:13.2-w64")
+                "opensuse:w64")
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \

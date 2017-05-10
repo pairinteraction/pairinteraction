@@ -1,7 +1,7 @@
-FROM opensuse:13.2
+FROM opensuse:42.2
 MAINTAINER Pairinteraction https://pairinteraction.github.io
-RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_13.2/ windows_mingw_win64 \
-  && zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_13.2/ windows_mingw_win32 \
+RUN zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win64/openSUSE_42.2/ windows_mingw_win64 \
+  && zypper -n --gpg-auto-import-keys addrepo http://download.opensuse.org/repositories/windows:/mingw:/win32/openSUSE_42.2/ windows_mingw_win32 \
   && zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     patterns-openSUSE-devel_C_C++ \
