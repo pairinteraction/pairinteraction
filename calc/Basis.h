@@ -118,21 +118,27 @@ protected:
 
 private:
     void build() {
+        // Generate the basis from scratch or update the basis
         if (energies.empty() && states.empty() && coefficients.size() == 0) {
             initialize();
-            range_energy_hash = range_energy_hash_new;
-            range_n_hash = range_n_hash_new;
-            range_l_hash = range_l_hash_new;
-            range_j_hash = range_j_hash_new;
-            range_m_hash = range_m_hash_new;
         } else if (!energies.empty() && !states.empty() && coefficients.size() != 0) {
             update();
         }
+
+        // Update hash
+        range_energy_hash = range_energy_hash_new;
+        range_n_hash = range_n_hash_new;
+        range_l_hash = range_l_hash_new;
+        range_j_hash = range_j_hash_new;
+        range_m_hash = range_m_hash_new;
     }
     void update() {
         if (range_n_hash_new != range_n_hash || range_l_hash_new != range_l_hash ||
                 range_j_hash_new != range_j_hash || range_m_hash_new != range_m_hash) {
 
+            // TODO check states.size() == coefficients.innerSize() == coefficients.rows()
+
+            // Transform the vectors of valid quantum numbers into sets
             std::unordered_set<int> range_set_n;
             if (range_n_hash_new != range_n_hash) range_set_n.insert(range_n.begin(), range_n.end());
             std::unordered_set<int> range_set_l;
@@ -142,13 +148,13 @@ private:
             std::unordered_set<float> range_set_m;
             if (range_m_hash_new != range_m_hash) range_set_m.insert(range_m.begin(), range_m.end());
 
-            size_t idx_new = 0;
-
+            // Build transformator and remove states (if the quantum numbers are not allowed)
             std::vector<T> states_new;
             states_new.reserve(states.size());
             std::vector<eigen_triplet_real_t> triplets_transformator;
             triplets_transformator.reserve(states.size());
 
+            size_t idx_new = 0;
             for (size_t idx = 0; idx < states.size(); ++idx) {
                 const T &state = states[idx];
                 if (checkIsQuantumnumberContained(state.getN(), range_set_n) &&
@@ -162,25 +168,83 @@ private:
             }
 
             states_new.shrink_to_fit();
-            eigen_sparse_t transformator(idx_new,states.size());
+            eigen_sparse_real_t transformator(idx_new,states.size());
             transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
             states = states_new;
-            coefficients = transformator*coefficients;
 
-            range_n_hash = range_n_hash_new;
-            range_l_hash = range_l_hash_new;
-            range_j_hash = range_j_hash_new;
-            range_m_hash = range_m_hash_new;
+            // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
+            coefficients = transformator*coefficients;
         }
 
         if (range_energy_hash_new != range_energy_hash ||
                 range_n_hash_new != range_n_hash || range_l_hash_new != range_l_hash ||
                 range_j_hash_new != range_j_hash || range_m_hash_new != range_m_hash) {
-            // Remove cols, and energies based on energy / normalization threshold
-            // TODO
 
-            range_energy_hash = range_energy_hash_new;
+            // TODO check energies.size() == coefficients.outerSize() == coefficients.cols(),
+
+            // Build transformator and remove energies (if the qenergy is not allowed or the squared norm to small)
+            std::vector<double> energies_new;
+            energies_new.reserve(energies.size());
+            std::vector<eigen_triplet_real_t> triplets_transformator;
+            triplets_transformator.reserve(energies.size());
+
+            size_t idx_new = 0;
+            for (size_t idx=0; idx<coefficients.outerSize(); ++idx) { // idx = col = num basis vector
+
+                if ((energies[idx] > energy_min || energy_min == std::numeric_limits<real_t>::lowest()) && (energies[idx] < energy_max  || energy_max == std::numeric_limits<real_t>::max())) {
+                    real_t sqnorm = 0;
+                    for (eigen_iterator_t triple(coefficients,idx); triple; ++triple) {
+                        sqnorm += std::pow(std::abs(triple.value()),2);
+                    }
+                    if (sqnorm > 0.05) { // TODO setThresholdForSQNorm
+                        triplets_transformator.push_back(eigen_triplet_real_t(idx,idx_new++,1));
+                        energies_new.push_back(energies[idx]);
+                    }
+                }
+            }
+
+            energies_new.shrink_to_fit();
+            eigen_sparse_real_t transformator(energies.size(),idx_new);
+            transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+            energies = energies_new;
+
+            // Apply transformator in order to remove columns from the coefficient matrix (i.e. basis vectors)
+            coefficients = coefficients*transformator;
+
+            // TODO check states.size() == coefficients.innerSize() == coefficients.rows()
+
+            // Build transformator and remove states (if the squared norm is to small)
+
+            std::vector<double> sqnorm_list(states.size(),0);
+            for (eigen_idx_t k=0; k<coefficients.outerSize(); ++k) {
+                for (eigen_iterator_t triple(coefficients,k); triple; ++triple) {
+                    sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()),2);
+                }
+            }
+
+            std::vector<T> states_new;
+            states_new.reserve(states.size());
+            triplets_transformator.clear();
+            triplets_transformator.reserve(states.size());
+
+            idx_new = 0;
+            for (size_t idx = 0; idx < states.size(); ++idx) {
+                if (sqnorm_list[idx] > 0.05) {
+                    states_new.push_back(states[idx]);
+                    triplets_transformator.push_back(eigen_triplet_real_t(idx_new++,idx,1));
+                }
+            }
+
+            states_new.shrink_to_fit();
+            transformator = eigen_sparse_real_t(idx_new,states.size());
+            transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+            states = states_new;
+
+            // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
+            coefficients = transformator*coefficients;
         }
     }
     template<class V>
