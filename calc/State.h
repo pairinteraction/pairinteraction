@@ -20,8 +20,10 @@
 #include "dtypes.h"
 #include "utils.h"
 #include "ConfParser.h"
+#include "QuantumDefect.h"
 
 #include <array>
+#include <string>
 #include <iostream>
 #include <iomanip>
 
@@ -35,7 +37,10 @@ public:
 
 class StateOne : public State {
 public:
-    StateOne() : State(0), n(0), l(0), s(0.5), j(0), m(0) { }
+    StateOne(std::string element, int n, int l, float j, float m) : State(0), element(element), n(n), l(l), j(j), m(m) {
+    }
+    StateOne() : State(0), n(0), l(0), j(0), m(0) { }
+
     StateOne(idx_t idx, int n, int l, float s, float j, float m) : State(idx), n(n), l(l), s(s), j(j), m(m) {
 
     }
@@ -48,18 +53,16 @@ public:
 
     StateOne(int n, int l, float s, float j, float m) : State(0), n(n), l(l), s(s), j(j), m(m) { }
     friend std::ostream& operator<< (std::ostream &out, const StateOne &state) {
-        out << "i  =" << std::setw(5) << state.idx << ",   ";
         out << "n  =" << std::setw(3) << state.n << ",   ";
-        out << "l  =" << std::setw(2) << state.l << ",   ";
-        out << "s  =" << std::setprecision(2) << std::setw(4) << state.s << ",   ";
-        out << "j  =" << std::setprecision(2) << std::setw(4) << state.j << ",   ";
-        out << "m  =" << std::setprecision(2) << std::setw(4) << state.m;
+        out << "l  =" << std::setw(3) << state.l << ",   ";
+        out << "j  =" << std::setprecision(2) << std::setw(5) << state.j << ",   ";
+        out << "m  =" << std::setprecision(2) << std::setw(5) << state.m;
         return out;
     }
 
     friend bool operator== (const StateOne& s1, const StateOne& s2)
     {
-        return ((s1.n == s2.n) && (s1.l == s2.l)  && (s1.s == s2.s)  && (s1.j == s2.j)  && (s1.m == s2.m));
+        return ((s1.n == s2.n) && (s1.l == s2.l)  && (s1.s == s2.s)  && (s1.j == s2.j)  && (s1.m == s2.m)); // TODO compare element in addition
     }
 
     friend bool operator!= (const StateOne& s1, const StateOne& s2)
@@ -77,25 +80,88 @@ public:
         return (s1.idx > s2.idx);
     }
 
+    double getEnergy() const {
+        return energy_level(element, n, l, j);
+    }
+    std::string getElement() const {
+        return element;
+    }
+    int getN() const {
+        return n;
+    }
+    int getL() const {
+        return l;
+    }
+    float getJ() const {
+        return j;
+    }
+    float getM() const {
+        return m;
+    }
+    void setElement(std::string input){
+        element = input;
+    }
+    void setN(int input){
+        n = input;
+    }
+    void setL(int input){
+        l = input;
+    }
+    void setJ(float input){
+        j = input;
+    }
+    void setM(float input){
+        m = input;
+    }
+
+    std::string element;
     int n, l;
     float s, j, m;
 };
 
 class StateTwo : public State {
 public:
+    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m) : State(0), element(element), n(n), l(l), j(j), m(m) {
+    }
+    StateTwo(const StateOne &s1, const StateOne &s2) : State(0), element({{s1.element, s2.element}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}), m({{s1.m, s2.m}}) {
+    }
+    StateOne getFirstState() const {
+        return StateOne(element[0], n[0], l[0], j[0], m[0]);
+    }
+    StateOne getSecondState() const {
+        return StateOne(element[1], n[1], l[1], j[1], m[1]);
+    }
+    void setFirstState(const StateOne &s) {
+        element[0] = s.element;
+        n[0] = s.n;
+        l[0] = s.l;
+        j[0] = s.j;
+        m[0] = s.m;
+    }
+    void setSecondState(const StateOne &s) {
+        element[1] = s.element;
+        n[1] = s.n;
+        l[1] = s.l;
+        j[1] = s.j;
+        m[1] = s.m;
+    }
+
     StateTwo() : State(0), n({{0,0}}), l({{0,0}}), s({{0.5,0.5}}), j({{0,0}}), m({{0,0}}) { }
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(idx), n(n), l(l), s(s), j(j), m(m) { }
-    StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m) : State(0), n(n), l(l), s(s), j(j), m(m) { }
+    StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m) : State(0), n(n), l(l), j(j), m(m) { }
     StateTwo(idx_t idx, const StateOne &a, const StateOne &b) : State(idx), n({{a.n,b.n}}), l({{a.l,b.l}}), s({{a.s,b.s}}), j({{a.j,b.j}}), m({{a.m,b.m}}) { }
-    StateTwo(const StateOne &a, const StateOne &b) : State(0), n({{a.n,b.n}}), l({{a.l,b.l}}), s({{a.s,b.s}}), j({{a.j,b.j}}), m({{a.m,b.m}}) { }
+    StateOne first() const {
+        return StateOne(element[0], n[0], l[0], j[0], m[0]);
+    }
+    StateOne second() const {
+        return StateOne(element[1], n[1], l[1], j[1], m[1]);
+    }
     friend std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
-        out << "i  =" << std::setw(5) << state.idx << ",   ";
         for (size_t i = 0; i < 2; ++i) {
             out << "n" << i << " =" << std::setw(3) << state.n[i] << ",   ";
-            out << "l" << i << " =" << std::setw(2) << state.l[i] << ",   ";
-            out << "s" << i << " =" << std::setprecision(2) << std::setw(4) << state.s[i] << ",   ";
-            out << "j" << i << " =" << std::setprecision(2) << std::setw(4) << state.j[i] << ",   ";
-            out << "m" << i << " =" << std::setprecision(2) << std::setw(4) << state.m[i];
+            out << "l" << i << " =" << std::setw(3) << state.l[i] << ",   ";
+            out << "j" << i << " =" << std::setprecision(2) << std::setw(5) << state.j[i] << ",   ";
+            out << "m" << i << " =" << std::setprecision(2) << std::setw(5) << state.m[i];
             if (i == 0) out << ",   ";
         }
         return out;
@@ -110,23 +176,58 @@ public:
         return ((s1.n[0] != s2.n[0]) || (s1.l[0] != s2.l[0])  || (s1.s[0] != s2.s[0])  || (s1.j[0] != s2.j[0])  || (s1.m[0] != s2.m[0]) ||
                 (s1.n[1] != s2.n[1]) || (s1.l[1] != s2.l[1])  || (s1.s[1] != s2.s[1])  || (s1.j[1] != s2.j[1])  || (s1.m[1] != s2.m[1]));
     }
-    StateOne first() const {
+    /*StateOne first() const {
         return StateOne(idx, n[0], l[0], s[0], j[0], m[0]);
     }
     StateOne second() const {
         return StateOne(idx, n[1], l[1], s[1], j[1], m[1]);
-    }
+    }*/
     StateTwo order() {
         if ((n[0] < n[1]) || ((n[0] == n[1]) &&
-           ((l[0] < l[1]) || ((l[0] == l[1]) &&
-           ((s[0] < s[1]) || ((s[0] == s[1]) &&
-           ((j[0] < j[1]) || ((j[0] == j[1]) &&
-           (m[0] <= m[1]))))))))) {
+                              ((l[0] < l[1]) || ((l[0] == l[1]) &&
+                                                 ((s[0] < s[1]) || ((s[0] == s[1]) &&
+                                                                    ((j[0] < j[1]) || ((j[0] == j[1]) &&
+                                                                                       (m[0] <= m[1]))))))))) {
             return *this;
         } else {
             return StateTwo(this->second(),this->first());
         }
     }
+    double getEnergy() const {
+        return this->first().getEnergy()+this->second().getEnergy();
+    }
+    std::array<std::string, 2> getElement() const {
+        return element;
+    }
+    std::array<int, 2> getN() const {
+        return n;
+    }
+    std::array<int, 2> getL() const {
+        return l;
+    }
+    std::array<float, 2> getJ() const {
+        return j;
+    }
+    std::array<float, 2> getM() const {
+        return m;
+    }
+    void setElement(std::array<std::string, 2> input) {
+        element = input;
+    }
+    void setN(std::array<int, 2> input) {
+        n = input;
+    }
+    void setL(std::array<int, 2> input) {
+        l = input;
+    }
+    void setJ(std::array<float, 2> input) {
+        j = input;
+    }
+    void setM(std::array<float, 2> input) {
+        m = input;
+    }
+
+    std::array<std::string, 2> element;
     std::array<int, 2> n, l;
     std::array<float, 2> s, j, m;
 };
