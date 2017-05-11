@@ -106,7 +106,7 @@ double MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne c
             (gL * cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1))  +
             gS * cache_reduced_commutes_l[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-            sqrt(state_row.s*(state_row.s+1)*(2*state_row.s+1)));
+            sqrt(0.5*(0.5+1)*(2*0.5+1)));
     return val;
 }
 

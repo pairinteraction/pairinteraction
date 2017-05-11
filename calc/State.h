@@ -36,15 +36,13 @@ public:
     // open/closed principle and is a sign of code smell.
     std::string element;
     int n, l;
-    float s, j, m;
+    float j, m;
 
 
     StateOne();
     StateOne(std::string element, int n, int l, float j, float m);
-    StateOne(idx_t idx, int n, int l, float s, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
-    StateOne(int n, int l, float s, float j, float m);
 
     friend std::ostream& operator<<(std::ostream &out, const StateOne &state);
 
@@ -68,7 +66,6 @@ namespace std {
             size_t seed = 0;
             boost::hash_combine(seed, s.n);
             boost::hash_combine(seed, s.l);
-            boost::hash_combine(seed, s.s);
             boost::hash_combine(seed, s.j);
             boost::hash_combine(seed, s.m);
             return seed;
@@ -85,12 +82,12 @@ public:
     // open/closed principle and is a sign of code smell.
     std::array<std::string, 2> element;
     std::array<int, 2> n, l;
-    std::array<float, 2> s, j, m;
+    std::array<float, 2> j, m;
 
     StateTwo();
     StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
-    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(idx_t idx, const StateOne &a, const StateOne &b);
 
@@ -124,12 +121,10 @@ namespace std {
             size_t seed = 0;
             boost::hash_combine(seed, s.n[0]);
             boost::hash_combine(seed, s.l[0]);
-            boost::hash_combine(seed, s.s[0]);
             boost::hash_combine(seed, s.j[0]);
             boost::hash_combine(seed, s.m[0]);
             boost::hash_combine(seed, s.n[1]);
             boost::hash_combine(seed, s.l[1]);
-            boost::hash_combine(seed, s.s[1]);
             boost::hash_combine(seed, s.j[1]);
             boost::hash_combine(seed, s.m[1]);
             return seed;

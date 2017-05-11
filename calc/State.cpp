@@ -33,20 +33,12 @@ StateOne::StateOne()
     : State(0), n(0), l(0), j(0), m(0)
 {}
 
-StateOne::StateOne(idx_t idx, int n, int l, float s, float j, float m)
-    : State(idx), n(n), l(l), s(s), j(j), m(m)
-{}
-
 StateOne::StateOne(idx_t idx, int n, int l, float j, float m)
-    : State(idx), n(n), l(l), s(0.5), j(j), m(m)
+    : State(idx), n(n), l(l), j(j), m(m)
 {}
 
 StateOne::StateOne(int n, int l, float j, float m)
-    : State(0), n(n), l(l), s(0.5), j(j), m(m)
-{}
-
-StateOne::StateOne(int n, int l, float s, float j, float m)
-    : State(0), n(n), l(l), s(s), j(j), m(m)
+    : State(0), n(n), l(l), j(j), m(m)
 {}
 
 std::ostream& operator<< (std::ostream &out, const StateOne &state)
@@ -85,7 +77,7 @@ double StateOne::getEnergy() const { return energy_level(element, n, l, j); }
 
 
 StateTwo::StateTwo()
-    : State(0), n({{0,0}}), l({{0,0}}), s({{0.5,0.5}}), j({{0,0}}), m({{0,0}})
+    : State(0), n({{0,0}}), l({{0,0}}), j({{0,0}}), m({{0,0}})
 {}
 
 StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
@@ -96,16 +88,16 @@ StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
     : State(0), element({{s1.element, s2.element}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}), m({{s1.m, s2.m}})
 {}
 
-StateTwo::StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> s, std::array<float, 2> j, std::array<float, 2> m)
-    : State(idx), n(n), l(l), s(s), j(j), m(m)
+StateTwo::StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
+    : State(idx), n(n), l(l), j(j), m(m)
 {}
 
 StateTwo::StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
-    : State(0), n(n), l(l), s({{0, 0}}), j(j), m(m)
+    : State(0), n(n), l(l), j(j), m(m)
 {}
 
 StateTwo::StateTwo(idx_t idx, const StateOne &a, const StateOne &b)
-    : State(idx), n({{a.n,b.n}}), l({{a.l,b.l}}), s({{a.s,b.s}}), j({{a.j,b.j}}), m({{a.m,b.m}})
+    : State(idx), n({{a.n,b.n}}), l({{a.l,b.l}}), j({{a.j,b.j}}), m({{a.m,b.m}})
 {}
 
 

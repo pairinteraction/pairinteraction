@@ -117,6 +117,9 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
     states_initial.push_back(startstate.first()); // TODO correct for idx
     states_initial.push_back(startstate.second()); // TODO correct for idx
 
+    std::cout << startstate.first() << std::endl;
+    std::cout << startstate.second() << std::endl;
+
     conf["species1"] << species;
     conf["n1"] << startstate.n[0];
     conf["l1"] << startstate.l[0];
@@ -139,9 +142,9 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
     // loop over quantum numbers of startstate1
     for (int n = std::fmax(0, startstate.n[0] - delta_n); n <= startstate.n[0] + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l[0] - delta_l); l <= fmin(n-1,startstate.l[0] + delta_l); ++l) {
-            for (float j = std::fmax(fabs(l - startstate.s[0]), startstate.j[0] - delta_j); j <= fmin(l + startstate.s[0], startstate.j[0] + delta_j); ++j) {
+            for (float j = std::fmax(fabs(l - 0.5), startstate.j[0] - delta_j); j <= fmin(l + 0.5, startstate.j[0] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[0] - delta_m); m <= fmin(j, startstate.m[0] + delta_m); ++m) {
-                    auto result = names_set.insert(StateOne(idx,n,l,startstate.s[0],j,m));
+                    auto result = names_set.insert(StateOne(idx,n,l,j,m));
                     if (result.second) idx++;
                 }
             }
@@ -151,9 +154,9 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
     // loop over quantum numbers of startstate2
     for (int n = std::fmax(0, startstate.n[1] - delta_n); n <= startstate.n[1] + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l[1] - delta_l); l <= fmin(n-1,startstate.l[1] + delta_l); ++l) {
-            for (float j = std::fmax(fabs(l - startstate.s[1]), startstate.j[1] - delta_j); j <= fmin(l + startstate.s[1], startstate.j[1] + delta_j); ++j) {
+            for (float j = std::fmax(fabs(l - 0.5), startstate.j[1] - delta_j); j <= fmin(l + 0.5, startstate.j[1] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[1] - delta_m); m <= fmin(j, startstate.m[1] + delta_m); ++m) {
-                    auto result = names_set.insert(StateOne(idx,n,l,startstate.s[1],j,m));
+                    auto result = names_set.insert(StateOne(idx,n,l,j,m));
                     if (result.second) idx++;
                 }
             }
@@ -187,9 +190,9 @@ void BasisnamesOne::build(StateOne startstate, std::string species) {
     // loop over quantum numbers
     for (int n = std::fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
-            for (float j = std::fmax(fabs(l - startstate.s), startstate.j - delta_j); j <= fmin(l + startstate.s, startstate.j + delta_j); ++j) {
+            for (float j = std::fmax(fabs(l - 0.5), startstate.j - delta_j); j <= fmin(l + 0.5, startstate.j + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) { // TODO
-                    names_.push_back(StateOne(idx++,n,l,startstate.s,j,m));
+                    names_.push_back(StateOne(idx++,n,l,j,m));
                 }
             }
         }
@@ -216,7 +219,7 @@ void BasisnamesOne::build(StateOne startstate, std::string species, std::shared_
 
     // loop over quantum numbers
     for (auto state : *basis_two) {
-        auto result = names_set.insert(StateOne(idx,state.n[i],state.l[i],0.5,state.j[i],state.m[i]));
+        auto result = names_set.insert(StateOne(idx,state.n[i],state.l[i],state.j[i],state.m[i]));
         if (result.second) idx++;
     }
 
