@@ -84,22 +84,24 @@ public:
     // SWIG extensions for SciPy interoperability
 //#ifdef SWIG // ERROR "#ifdef SWIG" does not work for me, here. Definitions seems to be ignored if something is included with %template. In addition, it seems as these methods need to be public (I know, this is not nice ...). I would prefer to write swig related functions within an extra file included by Interfaces.i.cmakein. There, the additional python definitions could be written down, too.
     size_t _getCoefficientsNumrows() {
-        return getCoefficients().rows();
+        return coefficients.rows();
     }
     size_t _getCoefficientsNumcols() {
-        return getCoefficients().cols();
+        return coefficients.cols();
     }
     std::vector<size_t> _getCoefficientsIndptr() {
-        std::vector<size_t> data(getCoefficients().outerIndexPtr(), getCoefficients().outerIndexPtr()+getCoefficients().outerSize());
+        std::vector<size_t> data(coefficients.outerIndexPtr(), coefficients.outerIndexPtr()+coefficients.outerSize());
         data.push_back(getCoefficients().nonZeros());
         return data;
     }
     std::vector<size_t> _getCoefficientsIndices() {
-        std::vector<size_t> data(getCoefficients().innerIndexPtr(), getCoefficients().innerIndexPtr()+getCoefficients().nonZeros());
+        std::vector<size_t> data(coefficients.innerIndexPtr(), coefficients.innerIndexPtr()+coefficients.nonZeros());
         return data;
     }
     std::vector<scalar_t> _getCoefficientsData() {
-        std::vector<scalar_t> data(getCoefficients().valuePtr(), getCoefficients().valuePtr()+getCoefficients().nonZeros());
+        std::vector<scalar_t> data(coefficients.valuePtr(), coefficients.valuePtr()+coefficients.nonZeros());
+
+        std::cout << coefficients.coeffRef(0,0) << std::endl;
 
         scalar_t test = 10;
         std::complex<double> test2 = 10;

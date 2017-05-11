@@ -117,7 +117,7 @@ def getCoefficients (self):
     indptr = self._getCoefficientsIndptr()
     indices = self._getCoefficientsIndices()
     data = self._getCoefficientsData()
-    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
+    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
 
 class vector_to_numpy:
     def __init__(self, method):
