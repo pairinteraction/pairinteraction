@@ -1,6 +1,10 @@
 %module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
 
+
+@DEFCOMPLEX@ // TODO think of a nicer solution ...
+
 %{
+@DEFCOMPLEX@ // TODO think of a nicer solution ...
 #include "dtypes.h"
 #include "Interface.h"
 #include "State.h"

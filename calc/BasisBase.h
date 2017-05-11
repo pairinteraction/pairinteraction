@@ -100,12 +100,6 @@ public:
     }
     std::vector<scalar_t> _getCoefficientsData() {
         std::vector<scalar_t> data(coefficients.valuePtr(), coefficients.valuePtr()+coefficients.nonZeros());
-
-        std::cout << coefficients.coeffRef(0,0) << std::endl;
-
-        scalar_t test = 10;
-        std::complex<double> test2 = 10;
-        std::cout << "Data type check "<< test<< " =? " << test2 <<std::endl; // ERROR in case of pairinteraction_complex, the two variables are not of the same type! Definitions seems to be ignored if something is included with %template
         return data;
     }
 //#endif
@@ -161,7 +155,7 @@ private:
             // Build transformator and remove states (if the quantum numbers are not allowed)
             std::vector<T> states_new;
             states_new.reserve(states.size());
-            std::vector<eigen_triplet_double_t> triplets_transformator; // TODO use eigen_triplet_int_t
+            std::vector<eigen_triplet_t> triplets_transformator; // TODO use eigen_triplet_int_t
             triplets_transformator.reserve(states.size());
 
             size_t idx_new = 0;
@@ -173,12 +167,12 @@ private:
                         checkIsQuantumnumberContained(state.m, range_set_m)) {
 
                     states_new.push_back(state);
-                    triplets_transformator.push_back(eigen_triplet_double_t(idx_new++,idx,1));
+                    triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
                 }
             }
 
             states_new.shrink_to_fit();
-            eigen_sparse_double_t transformator(idx_new,states.size()); // TODO use eigen_sparse_int_t
+            eigen_sparse_t transformator(idx_new,states.size()); // TODO use eigen_sparse_int_t
             transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
             states = states_new;
@@ -196,7 +190,7 @@ private:
             // Build transformator and remove energies (if the qenergy is not allowed or the squared norm to small)
             std::vector<double> energies_new;
             energies_new.reserve(energies.size());
-            std::vector<eigen_triplet_double_t> triplets_transformator;
+            std::vector<eigen_triplet_t> triplets_transformator;
             triplets_transformator.reserve(energies.size());
 
             size_t idx_new = 0;
@@ -208,14 +202,14 @@ private:
                         sqnorm += std::pow(std::abs(triple.value()),2);
                     }
                     if (sqnorm > 0.05) { // TODO setThresholdForSQNorm
-                        triplets_transformator.push_back(eigen_triplet_double_t(idx,idx_new++,1));
+                        triplets_transformator.push_back(eigen_triplet_t(idx,idx_new++,1));
                         energies_new.push_back(energies[idx]);
                     }
                 }
             }
 
             energies_new.shrink_to_fit();
-            eigen_sparse_double_t transformator(energies.size(),idx_new);
+            eigen_sparse_t transformator(energies.size(),idx_new);
             transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
             energies = energies_new;
@@ -243,12 +237,12 @@ private:
             for (size_t idx = 0; idx < states.size(); ++idx) {
                 if (sqnorm_list[idx] > 0.05) {
                     states_new.push_back(states[idx]);
-                    triplets_transformator.push_back(eigen_triplet_double_t(idx_new++,idx,1));
+                    triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
                 }
             }
 
             states_new.shrink_to_fit();
-            transformator = eigen_sparse_double_t(idx_new,states.size());
+            transformator = eigen_sparse_t(idx_new,states.size());
             transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
             states = states_new;

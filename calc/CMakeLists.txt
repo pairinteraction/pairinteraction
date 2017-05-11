@@ -54,8 +54,10 @@ target_link_libraries(pairinteraction-complex ${LIBRARIES})
 # Generate interface with SWIG
 
 set( DATATYPE "real" )
+set( DEFCOMPLEX "" )
 configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i )
 set( DATATYPE "complex" )
+set( DEFCOMPLEX "#define USE_COMPLEX 1" )
 configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
 
 find_package(SWIG REQUIRED)
@@ -73,6 +75,7 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROP
 swig_add_module(pairinteraction_complex python ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
 swig_link_libraries(pairinteraction_complex pairinteraction-complex ${PYTHON_LIBRARIES})
 set_source_files_properties(${swig_generated_file_fullname} PROPERTIES COMPILE_FLAGS "-Wno-deprecated-register")
+
 
 # Set c++11
 
