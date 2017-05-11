@@ -23,6 +23,7 @@
 class BasisOne : public Basis<StateOne> {
 public:
     BasisOne(std::string const& element);
+    const std::string& getElement() const;
 protected:
     void initialize() override;
 private:
@@ -32,18 +33,13 @@ private:
 class BasisTwo : public Basis<StateTwo> {
 public:
     BasisTwo(const BasisOne &b1, const BasisOne &b2);
-
     BasisOne getFirstBasis() const;
-    void setFirstBasis(const BasisOne &b);
-
     BasisOne getSecondBasis() const;
-    void setSecondBasis(const BasisOne &b);
 protected:
     void initialize() override;
 private:
-    bool checkNewBasisOne();
-    BasisOne basis1; // TODO maybe, make const, pass by reference
-    BasisOne basis2; // TODO maybe, make const, pass by reference
+    BasisOne basis1; // is needed in the initialize method and afterwards deleted
+    BasisOne basis2; // is needed in the initialize method and afterwards deleted
 };
 
 #endif
