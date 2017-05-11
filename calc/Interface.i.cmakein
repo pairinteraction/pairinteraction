@@ -99,7 +99,6 @@ namespace std {
 %attribute(BasisOne, std::vector<double>&  , energies, getEnergies);
 %attribute(BasisTwo, std::vector<double>&  , energies, getEnergies);
 
-
 // Python specific extensions
 
 // This block has to be the last in the Interface.i file, because it
@@ -153,8 +152,8 @@ class numpy_to_vector:
         # Hand over to method
         self.method(v,*self.args)
 
-BasisOne.getCoefficients = getCoefficients
-BasisTwo.getCoefficients = getCoefficients
+BasisOne.coefficients = property(getCoefficients)
+BasisTwo.coefficients = property(getCoefficients)
 BasisOne.energies = property(vector_to_numpy(BasisOne.getEnergies))
 BasisTwo.energies = property(vector_to_numpy(BasisTwo.getEnergies))
 
