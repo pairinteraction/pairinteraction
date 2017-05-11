@@ -226,7 +226,7 @@ private:
             // Build transformator and remove states (if the squared norm is to small)
 
             std::vector<double> sqnorm_list(states.size(),0);
-            for (eigen_idx_t k=0; k<coefficients.outerSize(); ++k) {
+            for (int k=0; k<coefficients.outerSize(); ++k) {
                 for (eigen_iterator_t triple(coefficients,k); triple; ++triple) {
                     sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()),2);
                 }

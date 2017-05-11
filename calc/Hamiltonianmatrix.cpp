@@ -114,7 +114,7 @@ void Hamiltonianmatrix::applyCutoff(double cutoff) {
 
 void Hamiltonianmatrix::findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const {
     std::vector<double> isNecessaryCoordinate_real(num_coordinates(),0);
-    for (eigen_idx_t k=0; k<basis_.outerSize(); ++k) {
+    for (int k=0; k<basis_.outerSize(); ++k) {
         for (eigen_iterator_t triple(basis_,k); triple; ++triple) {
             isNecessaryCoordinate_real[triple.row()] += std::pow(std::abs(triple.value()),2);
         }
@@ -132,7 +132,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors(const std::vector<bool> &i
 
     // build transformator
     std::vector<double> isNecessaryBasisvector(num_basisvectors(),0);
-    for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+    for (int k_1=0; k_1<basis_.outerSize(); ++k_1) {
         for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
             ptrdiff_t row = triple.row(); // coordinate
@@ -165,7 +165,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors() {
 
     // build transformator
     std::vector<double> isNecessaryBasisvector(num_basisvectors(),0);
-    for (eigen_idx_t k_1=0; k_1<basis_.outerSize(); ++k_1) {
+    for (int k_1=0; k_1<basis_.outerSize(); ++k_1) {
         for (eigen_iterator_t triple(basis_,k_1); triple; ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
             isNecessaryBasisvector[col] += std::pow(std::abs(triple.value()),2);
@@ -237,7 +237,7 @@ void Hamiltonianmatrix::diagonalize() {
 
         this->entries().setZero();
         this->entries().reserve(evals.size());
-        for (eigen_idx_t idx = 0; idx < evals.size(); ++idx) {
+        for (int idx = 0; idx < evals.size(); ++idx) {
             this->entries().insert(idx, idx) = evals.coeffRef(idx);
         }
         this->entries().makeCompressed();
@@ -518,8 +518,8 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
 
     // === Combine basis and entries ===
     size_t col = 0; // basis vector
-    for (eigen_idx_t col_1=0; col_1<lhs.basis().outerSize(); ++col_1) { // outerSize() == num_cols = num_basisvectors()
-        for (eigen_idx_t col_2=0; col_2<rhs.basis().outerSize(); ++col_2) {
+    for (int col_1=0; col_1<lhs.basis().outerSize(); ++col_1) { // outerSize() == num_cols = num_basisvectors()
+        for (int col_2=0; col_2<rhs.basis().outerSize(); ++col_2) {
 
             // In case of inversion symmetry: skip half of the basis vector pairs
             if ((sym.inversion == EVEN && col_1 <= col_2) || // gerade
@@ -673,8 +673,8 @@ void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, co
     eigen_vector_t diag1 = lhs.entries().diagonal();
     eigen_vector_t diag2 = rhs.entries().diagonal();
 
-    for (eigen_idx_t col_1=0; col_1<lhs.basis().outerSize(); ++col_1) { // outerSize() == num_cols = num_basisvectors()
-        for (eigen_idx_t col_2=0; col_2<rhs.basis().outerSize(); ++col_2) {
+    for (int col_1=0; col_1<lhs.basis().outerSize(); ++col_1) { // outerSize() == num_cols = num_basisvectors()
+        for (int col_2=0; col_2<rhs.basis().outerSize(); ++col_2) {
             scalar_t val_entries = diag1[col_1] + diag2[col_2]; // diag(V) x I + I x diag(V)
             if (std::abs(val_entries) < deltaE+1e-11 || deltaE < 0) { // TODO make +1e-11 unnecessary
                 for (eigen_iterator_t triple_1(lhs.basis(),col_1); triple_1; ++triple_1) {

@@ -26,7 +26,6 @@ typedef std::complex<double> complex_t;
 typedef uint32_t idx_t;
 typedef double storage_double; // TODO has always to be the same as double
 typedef int32_t storage_idx_t;
-typedef int32_t eigen_idx_t;
 
 typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
@@ -40,13 +39,13 @@ typedef double scalar_t;
 
 typedef Eigen::Triplet<scalar_t> eigen_triplet_t;
 typedef Eigen::Triplet<double> eigen_triplet_double_t;
-typedef Eigen::SparseMatrix<scalar_t, Eigen::ColMajor, eigen_idx_t> eigen_sparse_t;
-typedef Eigen::SparseMatrix<double, Eigen::ColMajor, eigen_idx_t> eigen_sparse_double_t;
-typedef Eigen::SparseMatrix<scalar_t, Eigen::ColMajor, eigen_idx_t>::InnerIterator eigen_iterator_t;
-typedef Eigen::SparseMatrix<double, Eigen::ColMajor, eigen_idx_t>::InnerIterator eigen_iterator_double_t;
-typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic,Eigen::ColMajor> eigen_dense_t;
-typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1,Eigen::ColMajor> eigen_vector_t;
-typedef Eigen::Matrix<double,Eigen::Dynamic,1,Eigen::ColMajor> eigen_vector_double_t;
+typedef Eigen::SparseMatrix<scalar_t> eigen_sparse_t;
+typedef Eigen::SparseMatrix<double> eigen_sparse_double_t;
+typedef Eigen::SparseMatrix<scalar_t>::InnerIterator eigen_iterator_t;
+typedef Eigen::SparseMatrix<double>::InnerIterator eigen_iterator_double_t;
+typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_t;
+typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1> eigen_vector_t;
+typedef Eigen::Matrix<double,Eigen::Dynamic,1> eigen_vector_double_t;
 
 
 class Triple {
