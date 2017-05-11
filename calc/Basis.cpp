@@ -22,6 +22,7 @@
 #include <numeric>
 #include <string>
 #include <vector>
+#include <unordered_set>
 
 // Implementation of BasisOne
 
@@ -102,14 +103,22 @@ BasisTwo::BasisTwo(const BasisOne &b1, const BasisOne &b2)
     : basis1(b1), basis2(b2)
 {}
 
-BasisOne BasisTwo::getFirstBasis() const {
-    // TODO extract basis
-    return basis1;
+std::vector<StateOne> BasisTwo::getStatesFirst() {
+    this->build();
+    std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
+    for (const auto &state : states) {
+        states_one.insert(StateOne(state.getFirstState()));
+    }
+    return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-BasisOne BasisTwo::getSecondBasis() const {
-    // TODO extract basis
-    return basis2;
+std::vector<StateOne> BasisTwo::getStatesSecond() {
+    this->build();
+    std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
+    for (const auto &state : states) {
+        states_one.insert(StateOne(state.getSecondState()));
+    }
+    return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
 void BasisTwo::initialize()

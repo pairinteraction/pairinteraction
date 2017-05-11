@@ -33,8 +33,8 @@ private:
 class BasisTwo : public Basis<StateTwo> {
 public:
     BasisTwo(const BasisOne &b1, const BasisOne &b2);
-    BasisOne getFirstBasis() const;
-    BasisOne getSecondBasis() const;
+    std::vector<StateOne> getStatesFirst();
+    std::vector<StateOne> getStatesSecond();
 protected:
     void initialize() override;
 private:

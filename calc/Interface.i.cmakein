@@ -96,8 +96,6 @@ namespace std {
 
 %attribute(BasisOne, std::vector<StateOne>&, states  , getStates  );
 %attribute(BasisTwo, std::vector<StateTwo>&, states  , getStates  );
-%attribute(BasisOne, std::vector<double>&  , energies, getEnergies);
-%attribute(BasisTwo, std::vector<double>&  , energies, getEnergies);
 
 // Python specific extensions
 

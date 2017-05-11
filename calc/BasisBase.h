@@ -15,7 +15,8 @@
 
 template<class T> class Basis {
 public:
-    Basis() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0) {
+    Basis(std::vector<T> states) : // TODO
+        energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0), states(states) {
     }
     virtual ~Basis() = default;
     void restrictEnergy(double e_min, double e_max) {
@@ -87,10 +88,12 @@ public:
     }
     void build() {
         // Generate the basis from scratch or update the basis
-        if (energies.empty() && states.empty() && coefficients.size() == 0) {
+        if (energies.empty() && states.empty() && coefficients.size() == 0) { // TODO implement a method that also works if !states.empty()
             initialize();
         } else if (!energies.empty() && !states.empty() && coefficients.size() != 0) {
             update();
+        } else {
+            // TODO rise error
         }
 
         // Update hash
@@ -131,6 +134,8 @@ public:
 
     // TODO void removeUnnecessaryStates(); setThreshold
 protected:
+    Basis() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0) {
+    }
     virtual void initialize() = 0;
 
     double energy_min, energy_max;
@@ -258,6 +263,8 @@ private:
             // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
             coefficients = transformator*coefficients;
         }
+
+        // TODO range_quantumnumber after it was used for restrictions, hash is than also not necessary
     }
 
     template<class V>

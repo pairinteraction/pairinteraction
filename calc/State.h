@@ -63,7 +63,7 @@ namespace std {
     {
         size_t operator()(const StateOne & s) const
         {
-            size_t seed = 0;
+            size_t seed = 0; // TODO use element, too
             boost::hash_combine(seed, s.n);
             boost::hash_combine(seed, s.l);
             boost::hash_combine(seed, s.j);
@@ -118,8 +118,8 @@ namespace std {
     {
         size_t operator()(const StateTwo & s) const
         {
-            size_t seed = 0;
-            boost::hash_combine(seed, s.n[0]);
+            size_t seed = 0;  // TODO use element, too
+            boost::hash_combine(seed, s.n[0]);  // TODO do hash s.n etc. at once --> template for StateOne and StateTwo will work
             boost::hash_combine(seed, s.l[0]);
             boost::hash_combine(seed, s.j[0]);
             boost::hash_combine(seed, s.m[0]);
