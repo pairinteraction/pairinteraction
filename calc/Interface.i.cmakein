@@ -86,13 +86,27 @@ namespace std {
 %template(BasisStateTwo) Basis<StateTwo>;
 %include "Basis.h"
 
+%attribute(BasisOne, std::vector<StateOne>&, states  , getStates  );
+%attribute(BasisTwo, std::vector<StateOne>&, states  , getStates  );
+%attribute(BasisOne, std::vector<double>&  , energies, getEnergies);
+%attribute(BasisTwo, std::vector<double>&  , energies, getEnergies);
+
+
+// Python specific extensions
+
+// This block has to be the last in the Interface.i file, because it
+// will be copied literally into the Python module and we want to
+// overwrite specific methods, defined before.
 
 %pythoncode %{
 
-# TODO make conversion of "eigen_sparse_t" to "csc_matrix" with less copying and less overhead (work with pointern, PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
-
 from scipy.sparse import csc_matrix
 import numpy as np
+
+# TODO make conversion of "eigen_sparse_t" to "csc_matrix" with less
+# copying and less overhead (work with pointern,
+# PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
+
 def getCoefficients (self):
     num_rows = self._getCoefficientsNumrows()
     num_cols = self._getCoefficientsNumcols()
@@ -101,7 +115,39 @@ def getCoefficients (self):
     data = self._getCoefficientsData()
     return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols)) # TODO copy=False
 
+class vector_to_numpy:
+    def __init__(self, method):
+        self.method = method
+
+    def __call__(self, *args):
+        return np.array( self.method(*args) )
+
+class numpy_to_vector:
+    def __init__(self, method, *args):
+        self.method = method
+        self.args   = args
+
+    def __call__(self, ndarray):
+        dtype = ndarray.dtype
+        size = len(ndarray)
+
+        # Decide datatype
+        if np.issubdtype(dtype, np.float):
+            v = VectorDouble(size)
+        elif np.issubdtype(dtype, np.complex):
+            v = VectorComplexDouble(size)
+        else:
+            raise TypeError("Unhandled type {}".format(dtype))
+
+        # Copy over data
+        v[:] = ndarray[:]
+
+        # Hand over to method
+        self.method(v,*self.args)
+
 BasisOne.getCoefficients = getCoefficients
 BasisTwo.getCoefficients = getCoefficients
+BasisOne.energies = property(vector_to_numpy(BasisOne.getEnergies))
+BasisTwo.energies = property(vector_to_numpy(BasisTwo.getEnergies))
 
 %}
