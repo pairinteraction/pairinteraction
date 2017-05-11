@@ -55,6 +55,10 @@ namespace std {
   %template(VectorComplexDouble) vector<std::complex<double>>;
 };
 
+
+%include "eigen.i"
+
+
 %rename(__lt__) operator<;
 %include "dtypes.h"
 
@@ -82,8 +86,8 @@ namespace std {
 
 // Wrap Basis.h
 %include "BasisBase.h"
-%template(BasisStateOne) Basis<StateOne>;
-%template(BasisStateTwo) Basis<StateTwo>;
+%template(_BasisStateOne) Basis<StateOne>;
+%template(_BasisStateTwo) Basis<StateTwo>;
 %include "Basis.h"
 
 %attribute(BasisOne, std::vector<StateOne>&, states  , getStates  );
