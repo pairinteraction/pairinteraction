@@ -15,7 +15,7 @@
  */
 
 #include "dtypes.h"
-#include "Basis.h"
+#include "SystemTwo.h"
 
 #include <cmath>
 #include <limits>
@@ -24,86 +24,11 @@
 #include <vector>
 #include <unordered_set>
 
-// Implementation of BasisOne
-
-BasisOne::BasisOne(std::string const& element)
-    : element(element)
-{}
-
-const std::string& BasisOne::getElement() const {
-    return element;
-}
-
-void BasisOne::initialize()
-{
-    // TODO check whether specified basis is finite
-
-    // TODO consider symmetries
-
-    size_t idx = 0;
-    std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve states, energies, basis_triplets
-    std::vector<int> range_adapted_n, range_adapted_l;
-    std::vector<float> range_adapted_j, range_adapted_m;
-
-    if (range_n.empty()) {
-        range_adapted_n = std::vector<int>({}); // TODO if empty, calculate the range via the energies
-    } else {
-        range_adapted_n = range_n;
-    }
-    for (auto n : range_adapted_n) {
-
-        if (range_l.empty()) {
-            range_adapted_l.resize(n);
-            std::iota(range_adapted_l.begin(), range_adapted_l.end(), 0);
-        } else {
-            range_adapted_l = range_l;
-        }
-        for (auto l : range_adapted_l) {
-            if (l > n-1) continue;
-
-            if (range_j.empty()) {
-                range_adapted_j = (l == 0) ? std::vector<float>({l+0.5f}) : std::vector<float>({std::fabs(l-0.5f), l+0.5f});
-            } else {
-                range_adapted_j = range_j;
-            }
-            for (auto j : range_adapted_j) {
-                if (std::fabs(j-l) != 0.5) continue;
-
-                double energy = StateOne(element,n,l,j,0.5).getEnergy();
-                if ((energy < energy_min && energy_min != std::numeric_limits<double>::lowest()) || (energy > energy_max  && energy_max != std::numeric_limits<double>::max())) continue; // TODO take into account numerical errors
-
-                if (range_m.empty()) {
-                    range_adapted_m.resize(2*j+1);
-                    std::iota(range_adapted_m.begin(), range_adapted_m.end(), -j);
-                } else {
-                    range_adapted_m = range_m;
-                }
-                for (auto m : range_adapted_m) {
-                    if (std::fabs(m) > j) continue;
-
-                    states.push_back(StateOne(element,n,l,j,m));
-                    energies.push_back(energy);
-                    coefficients_triplets.push_back(eigen_triplet_t(idx,idx,1)); // TODO take into account symmetries
-
-                    ++idx;
-                }
-            }
-        }
-    }
-
-    coefficients.resize(idx,idx);
-    coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
-    coefficients_triplets.clear();
-}
-
-
-// Implementation of BasisTwo
-
-BasisTwo::BasisTwo(const BasisOne &b1, const BasisOne &b2)
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
     : basis1(b1), basis2(b2)
 {}
 
-std::vector<StateOne> BasisTwo::getStatesFirst() {
+std::vector<StateOne> SystemTwo::getStatesFirst() {
     this->build();
     std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
     for (const auto &state : states) {
@@ -112,7 +37,7 @@ std::vector<StateOne> BasisTwo::getStatesFirst() {
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-std::vector<StateOne> BasisTwo::getStatesSecond() {
+std::vector<StateOne> SystemTwo::getStatesSecond() {
     this->build();
     std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
     for (const auto &state : states) {
@@ -121,7 +46,7 @@ std::vector<StateOne> BasisTwo::getStatesSecond() {
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-void BasisTwo::initialize()
+void SystemTwo::initialize()
 {
     // Restrict one atom states to the allowed quantum numbers
     basis1.build();

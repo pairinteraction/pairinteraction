@@ -8,7 +8,8 @@
 #include "dtypes.h"
 #include "Interface.h"
 #include "State.h"
-#include "Basis.h"
+#include "SystemOne.h"
+#include "SystemTwo.h"
 %}
 
 
@@ -88,14 +89,15 @@ namespace std {
 };
 
 
-// Wrap Basis.h
-%include "BasisBase.h"
-%template(_BasisStateOne) Basis<StateOne>;
-%template(_BasisStateTwo) Basis<StateTwo>;
-%include "Basis.h"
+// Wrap System
+%include "SystemBase.h"
+%template(_SystemStateOne) SystemBase<StateOne>;
+%template(_SystemStateTwo) SystemBase<StateTwo>;
+%include "SystemOne.h"
+%include "SystemTwo.h"
 
-%attribute(BasisOne, std::vector<StateOne>&, states  , getStates  );
-%attribute(BasisTwo, std::vector<StateTwo>&, states  , getStates  );
+%attribute(SystemOne, std::vector<StateOne>&, states  , getStates  );
+%attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  );
 
 // Python specific extensions
 
@@ -150,9 +152,9 @@ class numpy_to_vector:
         # Hand over to method
         self.method(v,*self.args)
 
-BasisOne.coefficients = property(getCoefficients)
-BasisTwo.coefficients = property(getCoefficients)
-BasisOne.energies = property(vector_to_numpy(BasisOne.getEnergies))
-BasisTwo.energies = property(vector_to_numpy(BasisTwo.getEnergies))
+SystemOne.coefficients = property(getCoefficients)
+SystemTwo.coefficients = property(getCoefficients)
+SystemOne.energies = property(vector_to_numpy(SystemOne.getEnergies))
+SystemTwo.energies = property(vector_to_numpy(SystemTwo.getEnergies))
 
 %}

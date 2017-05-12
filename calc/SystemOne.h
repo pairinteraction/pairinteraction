@@ -14,32 +14,20 @@
  * limitations under the License.
  */
 
-#ifndef BASIS_H
-#define BASIS_H
+#ifndef SYSTEMONE_H
+#define SYSTEMONE_H
 
 #include "State.h"
-#include "BasisBase.h"
+#include "SystemBase.h"
 
-class BasisOne : public Basis<StateOne> {
+class SystemOne : public SystemBase<StateOne> {
 public:
-    BasisOne(std::string const& element);
+    SystemOne(std::string const& element);
     const std::string& getElement() const;
 protected:
     void initialize() override;
 private:
     std::string element;
-};
-
-class BasisTwo : public Basis<StateTwo> {
-public:
-    BasisTwo(const BasisOne &b1, const BasisOne &b2);
-    std::vector<StateOne> getStatesFirst();
-    std::vector<StateOne> getStatesSecond();
-protected:
-    void initialize() override;
-private:
-    BasisOne basis1; // is needed in the initialize method and afterwards deleted
-    BasisOne basis2; // is needed in the initialize method and afterwards deleted
 };
 
 #endif

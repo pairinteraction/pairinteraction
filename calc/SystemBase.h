@@ -1,5 +1,5 @@
-#ifndef BASIS_BASE_H
-#define BASIS_BASE_H
+#ifndef SYSTEMBASE_H
+#define SYSTEMBASE_H
 
 #include "dtypes.h"
 #include "State.h"
@@ -13,12 +13,12 @@
 #include <memory>
 #include <string>
 
-template<class T> class Basis {
+template<class T> class SystemBase {
 public:
-    Basis(std::vector<T> states) : // TODO
+    SystemBase(std::vector<T> states) : // TODO
         energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0), states(states) {
     }
-    virtual ~Basis() = default;
+    virtual ~SystemBase() = default;
     void restrictEnergy(double e_min, double e_max) {
         energy_min = e_min;
         energy_max = e_max;
@@ -84,7 +84,7 @@ public:
         coefficients = c;
 
         // Reset hash so that the basis is updated accordingly to the energy restrictions in case of access
-        range_energy_hash = 0;
+        range_energy_hash = 0; // TODO maybe, it is a better behavior to forget all restrictions until they are newly set
     }
     void build() {
         // Generate the basis from scratch or update the basis
@@ -134,7 +134,7 @@ public:
 
     // TODO void removeUnnecessaryStates(); setThreshold
 protected:
-    Basis() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0) {
+    SystemBase() : energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), range_n({}), range_l({}), range_j({}), range_m({}), range_energy_hash(0), range_n_hash(0), range_l_hash(0), range_j_hash(0), range_m_hash(0) {
     }
     virtual void initialize() = 0;
 
