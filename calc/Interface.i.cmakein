@@ -22,6 +22,7 @@
 %include "std_complex.i"
 %include "std_string.i"
 %include "std_vector.i"
+%include "std_set.i"
 
 
 // Convert C++ exceptions to Python exceptions
@@ -58,6 +59,7 @@ namespace std {
   %template(VectorStateTwo) vector<StateTwo>;
   %template(VectorSizeT) vector<size_t>;
   %template(VectorComplexDouble) vector<std::complex<double>>;
+  %template(SetInt) set<int>;
 };
 
 
@@ -89,8 +91,53 @@ namespace std {
 };
 
 
-// Wrap System
+// Wrap SystemBase.h
 %include "SystemBase.h"
+
+// SWIG extensions for SciPy interoperability // TODO avoide code duplication for getCoefficients and getHamiltonianmatrix ~~> define a macro?
+%extend SystemBase {
+size_t _getCoefficientsNumrows() {
+    return $self->getCoefficients().rows();
+}
+size_t _getCoefficientsNumcols() {
+    return $self->getCoefficients().cols();
+}
+std::vector<size_t> _getCoefficientsIndptr() {
+    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
+    data.push_back($self->getCoefficients().nonZeros());
+    return data;
+}
+std::vector<size_t> _getCoefficientsIndices() {
+    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
+    return data;
+}
+std::vector<scalar_t> _getCoefficientsData() {
+    std::vector<scalar_t> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
+    return data;
+}
+size_t _getHamiltonianmatrixNumrows() {
+    return $self->getHamiltonianmatrix().rows();
+}
+size_t _getHamiltonianmatrixNumcols() {
+    return $self->getHamiltonianmatrix().cols();
+}
+std::vector<size_t> _getHamiltonianmatrixIndptr() {
+    std::vector<size_t> data($self->getHamiltonianmatrix().outerIndexPtr(), $self->getHamiltonianmatrix().outerIndexPtr()+$self->getHamiltonianmatrix().outerSize());
+    data.push_back($self->getHamiltonianmatrix().nonZeros());
+    return data;
+}
+std::vector<size_t> _getHamiltonianmatrixIndices() {
+    std::vector<size_t> data($self->getHamiltonianmatrix().innerIndexPtr(), $self->getHamiltonianmatrix().innerIndexPtr()+$self->getHamiltonianmatrix().nonZeros());
+    return data;
+}
+std::vector<scalar_t> _getHamiltonianmatrixData() {
+    std::vector<scalar_t> data($self->getHamiltonianmatrix().valuePtr(), $self->getHamiltonianmatrix().valuePtr()+$self->getHamiltonianmatrix().nonZeros());
+    return data;
+}
+}
+
+
+// Wrap SystemOne.h and SystemTwo.h
 %template(_SystemStateOne) SystemBase<StateOne>;
 %template(_SystemStateTwo) SystemBase<StateTwo>;
 %include "SystemOne.h"
@@ -98,6 +145,7 @@ namespace std {
 
 %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  );
 %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  );
+
 
 // Python specific extensions
 
@@ -120,6 +168,14 @@ def getCoefficients (self):
     indptr = self._getCoefficientsIndptr()
     indices = self._getCoefficientsIndices()
     data = self._getCoefficientsData()
+    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
+
+def getHamiltonianmatrix (self):
+    num_rows = self._getHamiltonianmatrixNumrows()
+    num_cols = self._getHamiltonianmatrixNumcols()
+    indptr = self._getHamiltonianmatrixIndptr()
+    indices = self._getHamiltonianmatrixIndices()
+    data = self._getHamiltonianmatrixData()
     return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
 
 class vector_to_numpy:
@@ -154,6 +210,8 @@ class numpy_to_vector:
 
 SystemOne.coefficients = property(getCoefficients)
 SystemTwo.coefficients = property(getCoefficients)
+SystemOne.hamiltonianmatrix = property(getHamiltonianmatrix)
+SystemTwo.hamiltonianmatrix = property(getHamiltonianmatrix)
 SystemOne.energies = property(vector_to_numpy(SystemOne.getEnergies))
 SystemTwo.energies = property(vector_to_numpy(SystemTwo.getEnergies))
 
