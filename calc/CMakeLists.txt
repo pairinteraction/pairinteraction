@@ -54,8 +54,10 @@ target_link_libraries(pairinteraction-complex ${LIBRARIES})
 # Generate interface with SWIG
 
 set( DATATYPE "real" )
+set( DEFCOMPLEX "" )
 configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i )
 set( DATATYPE "complex" )
+set( DEFCOMPLEX "#define USE_COMPLEX 1" )
 configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
 
 find_package(SWIG REQUIRED)
@@ -64,16 +66,13 @@ find_package(PythonLibs 3 REQUIRED)
 include(${SWIG_USE_FILE})
 include_directories(${PYTHON_INCLUDE_PATH})
 
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_real.i
-  PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
 swig_add_module(pairinteraction_real python ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)
 swig_link_libraries(pairinteraction_real pairinteraction-real ${PYTHON_LIBRARIES})
 
-set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i
-  PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3" COMPILE_DEFINITIONS "USE_COMPLEX")
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
 swig_add_module(pairinteraction_complex python ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
 swig_link_libraries(pairinteraction_complex pairinteraction-complex ${PYTHON_LIBRARIES})
-
 
 # Set c++11
 
