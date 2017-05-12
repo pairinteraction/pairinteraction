@@ -309,7 +309,7 @@ private:
         coefficients = coefficients*transformator;
 
         // Apply transformator in order to remove rows and columns from the current Hamiltonianmatrix
-        if (!checkIsDiagonal()) hamiltonianmatrix = transformator.conjugate().transpose()*hamiltonianmatrix*transformator;
+        if (!checkIsDiagonal()) hamiltonianmatrix = transformator.adjoint()*hamiltonianmatrix*transformator;
 
         // Apply transformator in order to remove rows and columns from the matrices that help constructing the total Hamiltonianmatrix
         // TODO
