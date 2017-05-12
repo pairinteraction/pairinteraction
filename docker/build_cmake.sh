@@ -19,10 +19,10 @@ make -j 2;
 if [ "$1" = "win32" ]; then
     make win32;
 elif [ "$1" = "osx" ]; then
-    make test;
+    make check;
     make package;
     make license;
 else
-    make test;
+    make check;
     make package;
 fi;

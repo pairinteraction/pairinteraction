@@ -12,6 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Build tests only when testing
+set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
+
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -31,6 +34,7 @@ function(UNIT_TEST)
   # Tests are executed in the "calc" directory
   add_test(NAME ${UT_TARGET} COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+  add_dependencies(check ${UT_TARGET})
 endfunction(UNIT_TEST)
 
 # Add the tests

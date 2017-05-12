@@ -50,10 +50,14 @@ if( WITH_DMG )
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 endif( )
 
+# Target for the unit tests
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
+
 # Build instructions
 
 if( WITH_BACKEND )
   add_subdirectory(calc)
+  add_subdirectory(testsuite)
 endif( )
 
 if( WITH_DATABASE )
