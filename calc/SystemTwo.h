@@ -23,14 +23,22 @@
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
-    SystemTwo(const SystemOne &b1, const SystemOne &b2);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir);
+    // TODO SystemTwo(const SystemOne &b1, const SystemOne &b2);
+    // TODO getElement
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
+
 protected:
-    void initialize() override;
+    void initializeBasis() override;
+    void initializeHamiltonianhelpers() override;
+    void initializeHamiltonian() override;
+    void transformHamiltonianhelpers(const eigen_sparse_t &transformator) override;
+
 private:
-    SystemOne basis1; // is needed in the initialize method and afterwards deleted
-    SystemOne basis2; // is needed in the initialize method and afterwards deleted
+    // TODO element
+    SystemOne basis1; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne basis2; // is needed in the initializeBasis method and afterwards deleted
 };
 
 #endif

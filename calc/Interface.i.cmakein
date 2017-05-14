@@ -52,6 +52,7 @@ namespace std {
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
   %template(ArrayFloatTwo) array<float,2>;
+  %template(ArrayDoubleTwo) array<double,3>;
   %template(VectorInt) vector<int>;
   %template(VectorDouble) vector<double>;
   %template(VectorFloat) vector<float>;
@@ -212,7 +213,7 @@ SystemOne.coefficients = property(getCoefficients)
 SystemTwo.coefficients = property(getCoefficients)
 SystemOne.hamiltonianmatrix = property(getHamiltonianmatrix)
 SystemTwo.hamiltonianmatrix = property(getHamiltonianmatrix)
-SystemOne.energies = property(vector_to_numpy(SystemOne.getEnergies))
-SystemTwo.energies = property(vector_to_numpy(SystemTwo.getEnergies))
+SystemOne.diagonal = property(vector_to_numpy(SystemOne.getDiagonal))
+SystemTwo.diagonal = property(vector_to_numpy(SystemTwo.getDiagonal))
 
 %}

@@ -46,6 +46,12 @@ public:
     double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa);
     double getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa);
     double getRadial(StateOne const& state_row, StateOne const& state_col, int kappa);
+
+    void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
+    void precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q);
+    void precalculateDiamagnetism(const std::vector<StateOne> &basis_one, int k, int q);
+    void precalculateMultipole(const std::vector<StateOne> &basis_one, int k);
+    void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 private:
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
     double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
@@ -60,6 +66,8 @@ private:
     double muB; // TODO define them in constants.h
     double gS;
     double gL;
+
+    void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
 };
 
 #endif

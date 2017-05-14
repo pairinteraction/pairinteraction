@@ -20,14 +20,49 @@
 #include "State.h"
 #include "SystemBase.h"
 
+#include <array>
+#include <unordered_map>
+#include <boost/functional/hash.hpp>
+
+#ifndef SWIG
+namespace std {
+    template <>
+    struct hash<std::array<int, 2>>
+    {
+        size_t operator()(const std::array<int, 2>& a) const
+        {
+            return boost::hash_value(a);
+        }
+    };
+}
+#endif
+
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::string const& element);
+    SystemOne(std::string const& element, std::string cachedir);
+    // TODO SystemOne(std::string const& element);
     const std::string& getElement() const;
+    void setEfield(std::array<double, 3> field);
+    void setBfield(std::array<double, 3> field);
+    void setDiamagnetism(bool enable);
+
 protected:
-    void initialize() override;
+    void initializeBasis() override;
+    void initializeHamiltonianhelpers() override;
+    void initializeHamiltonian() override;
+    void transformHamiltonianhelpers(const eigen_sparse_t &transformator) override;
+
 private:
+    std::array<double, 3> efield, bfield;
+    bool diamagnetism;
     std::string element;
+
+    std::unordered_map<int, eigen_sparse_t> hamiltonianhelper_efield;
+    std::unordered_map<int, eigen_sparse_t> hamiltonianhelper_bfield;
+    std::unordered_map<std::array<int, 2>, eigen_sparse_t> hamiltonianhelper_diamagnetism;
+
+    void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
+    void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
 };
 
 #endif
