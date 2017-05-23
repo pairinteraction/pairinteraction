@@ -1,11 +1,18 @@
 %module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
 
 %{
+#define SWIG_FILE_WITH_INIT
+#include "pyutils.h"
 #include "dtypes.h"
 #include "Interface.h"
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
+%}
+
+
+%init %{
+import_array();
 %}
 
 
@@ -58,6 +65,10 @@ namespace std {
   %template(VectorComplexDouble) vector<std::complex<double>>;
   %template(SetInt) set<int>;
 };
+
+
+// Load numpy wrappers
+%include "pyutils.h"
 
 
 %include "eigen.i"

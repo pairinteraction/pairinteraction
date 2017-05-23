@@ -61,8 +61,11 @@ configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_comple
 find_package(SWIG REQUIRED)
 find_package(PythonInterp 3 REQUIRED)
 find_package(PythonLibs 3 REQUIRED)
+find_package(Numpy REQUIRED)
+
 include(${SWIG_USE_FILE})
 include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(SYSTEM ${NUMPY_INCLUDE_DIR})
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
 swig_add_module(pairinteraction_real python ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)

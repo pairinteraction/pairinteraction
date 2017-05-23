@@ -11,6 +11,6 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     gsl-devel \
     zeromq-devel \
     swig python3 python3-devel \
-    python3-numpy python3-scipy \
+    python3-numpy python3-numpy-devel python3-scipy \
     dpkg rpm-build \
   && zypper clean
