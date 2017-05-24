@@ -37,6 +37,22 @@ namespace numpy {
 
     namespace internal {
 
+        /** \brief Check if something points to const
+         *
+         * This struct has a member variable indicating whether a type
+         * points to const
+         */
+        template < typename T >
+        struct is_pointer_to_const : std::false_type {};
+
+        /** \brief Specialization of is_pointer_to_const for T const * */
+        template < typename T >
+        struct is_pointer_to_const < T const * > : std::true_type {};
+
+        /** \brief Specialization of is_pointer_to_const for T const * const */
+        template < typename T >
+        struct is_pointer_to_const < T const * const > : std::true_type {};
+
         /** \brief Remove const qualifiers from pointer
          *
          * This struct has a member typedef which holds the pointer
@@ -131,10 +147,17 @@ namespace numpy {
             npy_intp dim[2] = { rows, stride };
             if ( nd == 1 ) dim[0] = { stride };
             auto dtype = internal::py_type<value_type>::type;
-            void * data  = &(*begin);
+            void * data = const_cast <
+                typename pointer_remove_const<decltype(&(*begin))>::type
+                > ( &(*begin) );
 
-            return PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
-                               data, 0, NPY_ARRAY_FARRAY, nullptr);
+            PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
+                                             data, 0, NPY_ARRAY_FARRAY, nullptr);
+
+            if ( is_pointer_to_const < decltype(&(*begin)) >::value)
+                PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
+                                   NPY_ARRAY_WRITEABLE);
+            return ndarray;
         }
 
         /** \brief Create a Numpy copy of an iterator (implementation)
@@ -240,6 +263,12 @@ namespace numpy {
     {
         return numpy::view(begin, end, std::distance(begin,end));
     }
+    /** \brief Const version of view(T * begin, T * end) */
+    template < typename T >
+    PyObject * view(T const * begin, T const * end)
+    {
+        return numpy::view(begin, end, std::distance(begin,end));
+    }
 
     /** \brief Create a Numpy copy of a raw pointer
      *
@@ -269,6 +298,12 @@ namespace numpy {
     {
         return numpy::view(v.begin(), v.end(), v.size());
     }
+    /** \brief Const version of view(std::vector<T>&) */
+    template < typename T >
+    PyObject * view(std::vector<T> const& v)
+    {
+        return numpy::view(v.begin(), v.end(), v.size());
+    }
 
     /** \brief Create a Numpy copy of a std::vector
      *
@@ -279,7 +314,7 @@ namespace numpy {
      * \return PyObject* containing a Numpy array
      */
     template < typename T >
-    PyObject * copy(std::vector<T>& v)
+    PyObject * copy(std::vector<T> const& v)
     {
         return numpy::copy(v.begin(), v.end(), v.size());
     }
@@ -297,6 +332,12 @@ namespace numpy {
     {
         return numpy::view(m.data(), m.data()+m.size(), m.cols());
     }
+    /** \brief Const version of view(Eigen::Matrix<T,...>&) */
+    template < typename T >
+    PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const& m)
+    {
+        return numpy::view(m.data(), m.data()+m.size(), m.cols());
+    }
 
     /** \brief Create a Numpy copy of an Eigen::Matrix
      *
@@ -307,7 +348,7 @@ namespace numpy {
      * \return PyObject* containing a Numpy array
      */
     template < typename T >
-    PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>& m)
+    PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const& m)
     {
         return numpy::copy(m.data(), m.data()+m.size(), m.cols());
     }
@@ -325,6 +366,12 @@ namespace numpy {
     {
         return numpy::view(v.data(), v.data()+v.size(), v.size());
     }
+    /** \brief Const version of view(Eigen::Vector<T,...>&) */
+    template < typename T >
+    PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,1> const& v)
+    {
+        return numpy::view(v.data(), v.data()+v.size(), v.size());
+    }
 
     /** \brief Create a Numpy copy of an Eigen::Vector
      *
@@ -335,7 +382,7 @@ namespace numpy {
      * \return PyObject* containing a Numpy array
      */
     template < typename T >
-    PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,1>& v)
+    PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,1> const& v)
     {
         return numpy::copy(v.data(), v.data()+v.size(), v.size());
     }
