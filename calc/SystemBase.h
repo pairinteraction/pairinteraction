@@ -1,6 +1,7 @@
 #ifndef SYSTEMBASE_H
 #define SYSTEMBASE_H
 
+#include "pyutils.h"
 #include "dtypes.h"
 #include "State.h"
 
@@ -93,18 +94,18 @@ public:
         return states;
     }
 
-    const eigen_sparse_t& getCoefficients() {
+    eigen_sparse_t& getCoefficients() {
         this->buildBasis();
         return coefficients;
     }
 
-    const std::vector<double> getDiagonal() {
+    numpy::array getDiagonal() {
         this->buildHamiltonian();
         eigen_vector_double_t diagonal = hamiltonianmatrix.diagonal().real();
-        return std::vector<double>(diagonal.data(), diagonal.data()+diagonal.size());
+        return numpy::copy(diagonal);
     }
 
-    const eigen_sparse_t& getHamiltonianmatrix() {
+    eigen_sparse_t& getHamiltonianmatrix() {
         this->buildHamiltonian();
         return hamiltonianmatrix;
     }
