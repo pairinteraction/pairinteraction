@@ -289,7 +289,7 @@ real_t IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefec
         {
             mu += y1[i1]*y2[i2] * std::pow(x1[i1], T::power_kernel(power)) * dx;
         }
-        mu = std::abs(2*mu);
+        mu = 2*mu;
     }
 
     return mu;
