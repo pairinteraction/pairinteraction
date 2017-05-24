@@ -94,10 +94,9 @@ public:
         return coefficients;
     }
 
-    numpy::array getDiagonal() {
+    eigen_vector_double_t getDiagonal() {
         this->buildHamiltonian();
-        eigen_vector_double_t diagonal = hamiltonianmatrix.diagonal().real();
-        return numpy::copy(diagonal);
+        return hamiltonianmatrix.diagonal().real();
     }
 
     eigen_sparse_t& getHamiltonianmatrix() {

@@ -35,6 +35,20 @@ namespace Eigen {
 %enddef
 
 
+%template(VectorXd) Eigen::Matrix<double,Eigen::Dynamic,1>;
+%extend Eigen::Matrix<double,Eigen::Dynamic,1> {
+    DECLARE_COMMON_METHODS();
+    double _get(Index i) const { return (*self)(i); }
+    void _set(Index i, double x) { (*self)(i) = x; }
+}
+
+%template(VectorXcd) Eigen::Matrix<std::complex<double>,Eigen::Dynamic,1>;
+%extend Eigen::Matrix<std::complex<double>,Eigen::Dynamic,1> {
+    DECLARE_COMMON_METHODS();
+    std::complex<double> _get(Index i) const { return (*self)(i); }
+    void _set(Index i, std::complex<double> const& x) { (*self)(i) = x; }
+}
+
 %template(MatrixXd) Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic>;
 %extend Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> {
     DECLARE_COMMON_METHODS();
@@ -81,6 +95,10 @@ def setitem_from_tuple(this,a,x):
         raise IndexError("index out of range")
     this._set(a[0],a[1],x)
 
+VectorXd .__getitem__ = VectorXd ._get
+VectorXd .__setitem__ = VectorXd ._set
+VectorXcd.__getitem__ = VectorXcd._get
+VectorXcd.__setitem__ = VectorXcd._set
 MatrixXd .__getitem__ = getitem_from_tuple
 MatrixXd .__setitem__ = setitem_from_tuple
 MatrixXcd.__getitem__ = getitem_from_tuple

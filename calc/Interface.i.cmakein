@@ -71,8 +71,21 @@ namespace std {
 // Load numpy wrappers
 %include "pyutils.h"
 
+// Load Eigen wrappers
+//%include "eigen.i"
 
-%include "eigen.i"
+
+%typemap(out) eigen_dense_t        { $result = numpy::copy($1); }
+%typemap(out) eigen_dense_t&       { $result = numpy::view($1); }
+%typemap(out) eigen_dense_t const& { $result = numpy::view($1); }
+
+%typemap(out) eigen_vector_t        { $result = numpy::copy($1); }
+%typemap(out) eigen_vector_t&       { $result = numpy::view($1); }
+%typemap(out) eigen_vector_t const& { $result = numpy::view($1); }
+
+%typemap(out) eigen_vector_double_t        { $result = numpy::copy($1); }
+%typemap(out) eigen_vector_double_t&       { $result = numpy::view($1); }
+%typemap(out) eigen_vector_double_t const& { $result = numpy::view($1); }
 
 
 %rename(__lt__) operator<;
