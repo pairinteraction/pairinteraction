@@ -47,6 +47,12 @@ typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_t;
 typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1> eigen_vector_t;
 typedef Eigen::Matrix<double,Eigen::Dynamic,1> eigen_vector_double_t;
 
+const double au2GHz = 6579683.920757349;
+const double au2Vcm = 5142206707.0;
+const double au2G = 2350517550.0;
+const double au2um = 5.2917721067e-05;
+const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
+const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
 class Triple {
 public:

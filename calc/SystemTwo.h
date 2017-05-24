@@ -24,21 +24,39 @@
 class SystemTwo : public SystemBase<StateTwo> {
 public:
     SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir);
-    // TODO SystemTwo(const SystemOne &b1, const SystemOne &b2);
-    // TODO getElement
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving);
+
+    const std::array<std::string, 2>& getElement();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
+    void setDistance(double d);
+    void setAngle(double a);
+
+    void setConservedParityUnderPermutation(parity_t parity);
 
 protected:
     void initializeBasis() override;
-    void initializeHamiltonianhelpers() override;
-    void initializeHamiltonian() override;
-    void transformHamiltonianhelpers(const eigen_sparse_t &transformator) override;
+    void initializeInteraction() override;
+    void addInteraction() override;
+    void transformInteraction(const eigen_sparse_t &transformator) override;
+    void deleteInteraction() override;
 
 private:
-    // TODO element
-    SystemOne basis1; // is needed in the initializeBasis method and afterwards deleted
-    SystemOne basis2; // is needed in the initializeBasis method and afterwards deleted
+    void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<size_t> &stateidentifier2row, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
+
+    std::array<std::string, 2> element;
+    SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
+
+    std::unordered_map<int, eigen_sparse_t> interaction;
+
+    double distance;
+    double angle;
+    int kappa_max;
+
+    parity_t sym_permutation;
 };
 
 #endif

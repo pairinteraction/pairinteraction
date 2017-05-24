@@ -116,7 +116,7 @@ QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, double
        << ");";
     sqlite::result res = db.query(ss);
     nstar_ = n;
-    double Ry_inf = 109737.31568525; // TODO kann man hier wirklich immer den selben Wert verwenden?
+    double Ry_inf = 109737.31568525;
     double d0, d2, d4, d6, d8, Ry = Ry_inf;
     if (res.size() > 0)
     {
@@ -126,7 +126,7 @@ QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, double
     }
     else throw no_defect(*this);
 
-    energy_ = -.5*(Ry/Ry_inf)/(nstar_*nstar_);
+    energy_ = -.5*(Ry/Ry_inf)/(nstar_*nstar_)*au2GHz;
 }
 
 

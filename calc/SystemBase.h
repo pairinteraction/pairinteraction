@@ -16,17 +16,24 @@
 #include <complex>
 #include <functional>
 #include <boost/filesystem.hpp>
+#include <iterator>
+#include <algorithm>
+#include <string>
 
 template<class T> class SystemBase {
 public:
     SystemBase(std::vector<T> states, std::string cachedir) : // TODO
-        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), hamiltonianhelpers_missing(true), hamiltonian_missing(true) {
+        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
         throw std::runtime_error( "Method yet not implemented." );
     }
 
     virtual ~SystemBase() = default;
 
     // TODO setThresholdForSqnorm()
+
+    void setArtificialstates(const std::vector<T> &s) { // TODO [dummystates]
+        states_artifical = s;
+    }
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to restrict the number of states inside the basis //////
@@ -39,10 +46,7 @@ public:
 
     void restrictN(int n_min, int n_max) {
         n_min = std::max(n_min, 1);
-        range_n.clear();
-        for (int n = n_min; n <= n_max; ++n) {
-            range_n.insert(n);
-        }
+        this->range(range_n, n_min, n_max);
     }
 
     void restrictN(std::set<int> n) {
@@ -51,10 +55,7 @@ public:
 
     void restrictL(int l_min, int l_max) {
         l_min = std::max(l_min, 0);
-        range_l.clear();
-        for (int l = l_min; l <= l_max; ++l) {
-            range_l.insert(l);
-        }
+        this->range(range_l, l_min, l_max);
     }
 
     void restrictL(std::set<int> l) {
@@ -63,10 +64,7 @@ public:
 
     void restrictJ(float j_min, float j_max) {
         j_min = std::fmax(j_min, 0.5);
-        range_j.clear();
-        for (float j = j_min; j <= j_max; ++j) {
-            range_j.insert(j);
-        }
+        this->range(range_j, j_min, j_max);
     }
 
     void restrictJ(std::set<float> j) {
@@ -74,10 +72,7 @@ public:
     }
 
     void restrictM(float m_min, float m_max) {
-        range_m.clear();
-        for (float m = m_min; m <= m_max; ++m) {
-            range_m.insert(m);
-        }
+        this->range(range_m, m_min, m_max);
     }
 
     void restrictM(std::set<float> m) {
@@ -110,15 +105,26 @@ public:
     }
 
     size_t getNumVectors() {
-        // coefficients.outerSize() == coefficients.cols() == hamiltonianmatrix.rows() == hamiltonianmatrix.cols()
-        // TODO check for new restrictions and not yet build coefficients, while keeping getNumVectors work in the buildBasis method --> use coefficients cols in the buildBasis method?
+        // Build basis
+        this->buildBasis();
+
+        // Check variables for consistency
+        if ( (coefficients.outerSize() != coefficients.cols()) || (coefficients.outerSize() != hamiltonianmatrix.rows()) || (coefficients.outerSize() != hamiltonianmatrix.cols()) ) {
+            throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        }
+
         return coefficients.cols();
     }
 
     size_t getNumStates() {
-        // coefficients.innerSize() == coefficients.rows() == states.size()
-        // TODO checkIsNewRestrictions
-        // TODO check for new restrictions and not yet build coefficients, while keeping getNumStates work in the buildBasis method --> use coefficients rows in the buildBasis method?
+        // Build basis
+        this->buildBasis();
+
+        // Check variables for consistency
+        if ( (coefficients.innerSize() != coefficients.rows()) || (static_cast<size_t>(coefficients.innerSize()) != states.size()) ) {
+            throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        }
+
         return coefficients.rows();
     }
 
@@ -127,48 +133,100 @@ public:
     ////////////////////////////////////////////////////////////////////
 
     void buildHamiltonian() {
-        // After executing this method, the interaction strength is fixed // TODO throw error if a change is done nevertheless
-        // This method overrides the variable "hamiltonianmatrix" with the total hamiltonian
-        if (hamiltonian_missing) {
-            this->buildHamiltonianhelpers();
-            this->initializeHamiltonian();
-            hamiltonian_missing = false;
-        } else {
-            this->updateEverything();
-        }
+        // Build basis, also constructs the Hamiltonian matrix without interaction
+        this->buildBasis();
 
-        // Forget basis restrictions as they were applied now
-        this->forgetRestrictions();
+        // Initialize Hamiltonian matrix with interaction if required
+        if (is_new_hamiltonianmatrix_required) {
+            if (is_interaction_already_contained) {
+
+                // Check variables for consistency
+                if (memory_saving || coefficients_unperturbed_cache.size() == 0 || hamiltonianmatrix_unperturbed_cache.size() == 0) {
+                    throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+                }
+
+                // Reset the Hamiltonian if it already contains the interaction
+                coefficients = coefficients_unperturbed_cache;
+                hamiltonianmatrix = hamiltonianmatrix_unperturbed_cache;
+            } else if (!memory_saving) {
+
+                // Store the Hamiltonian without interaction
+                coefficients_unperturbed_cache = coefficients;
+                hamiltonianmatrix_unperturbed_cache = hamiltonianmatrix;
+            }
+
+            // Build interaction
+            this->initializeInteraction();
+
+            // Add interaction to the Hamiltonian
+            this->addInteraction();
+
+            if (memory_saving){
+                // Delete the variables used to add the interaction to the Hamiltonian
+                this->deleteInteraction();
+            }
+
+            is_interaction_already_contained = true;
+            is_new_hamiltonianmatrix_required = false;
+        }
     }
 
-    void buildHamiltonianhelpers() {
-        // After executing this method, the interaction form is fixed // TODO throw error if a change is done nevertheless
-        if (hamiltonianhelpers_missing) {
-            this->buildBasis();
-            this->initializeHamiltonianhelpers();
-            hamiltonianhelpers_missing = false;
-        } else {
-            this->updateEverything();
-        }
+    void buildInteraction() {
+        // Build basis
+        this->buildBasis();
+
+        // Initialize interaction
+        this->initializeInteraction(); // this method checks by itself whether a new initialization is required
     }
 
     void buildBasis() {
-        // Handle the case of no basis restrictions
-        if (range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() &&
-                energy_min == std::numeric_limits<double>::lowest() && energy_max == std::numeric_limits<double>::max()) {
-            // TODO if basis not initialized, throw error infinite basis; else return
+        // Check variables for consistency
+        if ( ((hamiltonianmatrix.size() == 0) != states.empty()) || ((hamiltonianmatrix.size() == 0) != (coefficients.size() == 0)) ) {
+            throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        }
+
+        // In case of no new basis restrictions and already initialized basis, there is nothing to do
+        if (states.size() != 0 && range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() &&
+                energy_min == std::numeric_limits<double>::lowest() && energy_max == std::numeric_limits<double>::max()) { // TODO check for new threshold, too
             return;
         }
 
-        // After executing this method, the element fixed // TODO throw error if a change is done nevertheless
-        if (hamiltonianmatrix.size() == 0 && states.empty() && coefficients.size() == 0) {
+        // Check whether the basis does not exist
+        if (states.size() == 0) {
+
+            // Initialize the basis
             this->initializeBasis();
+
             // Forget basis restrictions as they were applied now
             this->forgetRestrictions();
-        } else if (hamiltonianmatrix.size() != 0 && !states.empty() && coefficients.size() != 0) {
-            this->updateEverything();
+
         } else {
-            throw std::runtime_error( "Method yet not implemented." ); // TODO implement a method that also works if !states.empty()
+            this->updateEverything();
+        }
+
+        // Add dummy states
+        if (states_artifical.size() > 0) { // TODO [dummystates]
+            size_t row = coefficients.rows();
+            size_t col = coefficients.cols();
+            hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows()+states_artifical.size(), hamiltonianmatrix.cols()+states_artifical.size());
+            coefficients.conservativeResize(coefficients.rows()+states_artifical.size(), coefficients.cols()+states_artifical.size());
+
+            states.reserve(states.size()+states_artifical.size());
+            coefficients.reserve(coefficients.size()+states_artifical.size());
+            for (const auto &state : states_artifical) {
+                states.push_back(state);
+                coefficients.insert(row++, col++) = 1;
+            }
+            coefficients.makeCompressed();
+            states_artifical.clear();
+        }
+
+        // Check whether the basis is empty
+        if (coefficients.rows() == 0) {
+            throw std::runtime_error( "The basis is contains no states." );
+        }
+        if (coefficients.cols() == 0) {
+            throw std::runtime_error( "The basis is contains no vectors." );
         }
     }
 
@@ -211,24 +269,75 @@ public:
 
     // TODO rotate()
 
-    // void addCoupling(T state_row, T state_col, scalar_t, strength)
+    ////////////////////////////////////////////////////////////////////
+    /// Methods to manipulate individual entries of the Hamiltonian ////
+    ////////////////////////////////////////////////////////////////////
 
-    void clear() {
-        states.clear();
-        hamiltonianmatrix.resize(0,0);
-        coefficients.resize(0,0);
-        this->forgetRestrictions();
+    size_t getStateindex(const T &state) {
+        this->buildBasis();
+
+        return std::distance(states.begin(), std::find(states.begin(), states.end(), state));
+    }
+
+    scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
+        this->buildHamiltonian();
+
+        size_t idx_row = getStateindex(state_row);
+        size_t idx_col = getStateindex(state_col);
+
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) TODO [dummystates]
+
+        return tmp.coeff(idx_row, idx_col);
+
+    }
+
+    void setHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
+        this->buildHamiltonian();
+
+        size_t idx_row = getStateindex(state_row);
+        size_t idx_col = getStateindex(state_col);
+
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) TODO [dummystates]
+        tmp.coeffRef(idx_row, idx_col) = value; // TODO check whether this also works if the element does not exist TODO [dummystates]
+        if (idx_row != idx_col) tmp.coeffRef(idx_col, idx_row) = this->conjugate(value);
+
+        hamiltonianmatrix = coefficients.adjoint()*tmp*coefficients;
+    }
+
+    void addHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
+        this->buildHamiltonian();
+
+        size_t idx_row = getStateindex(state_row);
+        size_t idx_col = getStateindex(state_col);
+
+        eigen_sparse_t tmp(states.size(), states.size());
+        tmp.reserve(2);
+        tmp.insert(idx_row, idx_col) = value;
+        if (idx_row != idx_col) tmp.insert(idx_col, idx_row) = this->conjugate(value);
+        tmp.makeCompressed();
+
+        hamiltonianmatrix += coefficients.adjoint()*tmp*coefficients;
     }
 
 protected:
-    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), hamiltonianhelpers_missing(true), hamiltonian_missing(true) {
+    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    }
+
+    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    }
+
+    SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    }
+
+    SystemBase(bool memory_saving) : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
 
     virtual void initializeBasis() = 0;
-    virtual void initializeHamiltonianhelpers() = 0;
-    virtual void initializeHamiltonian() = 0; // this method should also delete the hamiltonian helpers as afterwards, they won't be needed anymore
+    virtual void initializeInteraction() = 0;
 
-    virtual void transformHamiltonianhelpers(const eigen_sparse_t &transformator) = 0;
+    virtual void transformInteraction(const eigen_sparse_t &transformator) = 0;
+    virtual void addInteraction() = 0;
+    virtual void deleteInteraction() = 0;
 
     boost::filesystem::path cachedir;
 
@@ -236,9 +345,40 @@ protected:
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
 
-    eigen_sparse_t hamiltonianmatrix;
+    bool memory_saving;
+    bool is_interaction_already_contained;
+    bool is_new_hamiltonianmatrix_required;
+
     std::vector<T> states;
     eigen_sparse_t coefficients;
+    eigen_sparse_t hamiltonianmatrix;
+    eigen_sparse_t coefficients_unperturbed_cache;
+    eigen_sparse_t hamiltonianmatrix_unperturbed_cache;
+
+    ////////////////////////////////////////////////////////////////////
+    /// Helper method that shoul be called by the derived classes //////
+    ////////////////////////////////////////////////////////////////////
+
+    void onParameterChange () {
+        // Check variables for consistency
+        if ((coefficients_unperturbed_cache.size() == 0) != (hamiltonianmatrix_unperturbed_cache.size() == 0)) {
+            throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        }
+
+        // Throw error if the Hamiltonian cannot be changed anymore
+        if (is_interaction_already_contained && coefficients_unperturbed_cache.size() == 0) {
+            throw std::runtime_error( "If memory saving is activated, one cannot change parameters after interaction was added to the Hamiltonian." );
+        }
+
+        is_new_hamiltonianmatrix_required = true;
+    }
+
+    void onSymmetryChange () {
+        // Throw error if the Symmetry cannot be changed anymore
+        if (!states.empty()) {
+            throw std::runtime_error( "One cannot change symmetries after the basis was built." );
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////
     /// Helper method to check diagonality of a matrix /////////////////
@@ -285,6 +425,7 @@ protected:
 
         // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
         coefficients = transformator*coefficients;
+        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
     }
 
     void applyRightsideTransformator(std::vector<eigen_triplet_t> triplets_transformator) {
@@ -293,23 +434,25 @@ protected:
 
         // Apply transformator in order to remove columns from the coefficient matrix (i.e. basis vectors)
         coefficients = coefficients*transformator;
-
-        // Apply transformator in order to remove rows and columns from the current Hamiltonianmatrix
-        hamiltonianmatrix = transformator.adjoint()*hamiltonianmatrix*transformator;
+        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = coefficients_unperturbed_cache*transformator;
 
         // Apply transformator in order to remove rows and columns from the matrices that help constructing the total Hamiltonianmatrix
-        if (!hamiltonianhelpers_missing && hamiltonian_missing) this->transformHamiltonianhelpers(transformator); // if the hamiltonian is not missing anymore, the helpers are not needed
+        this->transformInteraction(transformator);
+
+        // Apply transformator in order to remove rows and columns from the total Hamiltonianmatrix
+        hamiltonianmatrix = transformator.adjoint()*hamiltonianmatrix*transformator;
+        if (hamiltonianmatrix_unperturbed_cache.size() != 0) hamiltonianmatrix_unperturbed_cache = transformator.adjoint()*hamiltonianmatrix_unperturbed_cache*transformator;
     }
 
     void removeRestrictedStates(std::function<bool(size_t)> checkIsValidIndex) {
         // Build transformator and remove states
         std::vector<T> states_new;
-        states_new.reserve(this->getNumStates());
+        states_new.reserve(states.size());
         std::vector<eigen_triplet_t> triplets_transformator;
-        triplets_transformator.reserve(this->getNumStates());
+        triplets_transformator.reserve(states.size());
 
         size_t idx_new = 0;
-        for (size_t idx = 0; idx < this->getNumStates(); ++idx) {
+        for (size_t idx = 0; idx < states.size(); ++idx) {
             if (checkIsValidIndex(idx)) {
                 states_new.push_back(states[idx]);
                 triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
@@ -321,9 +464,36 @@ protected:
         this->applyLeftsideTransformator(triplets_transformator);
     }
 
+    ////////////////////////////////////////////////////////////////////
+    /// Utility methods ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    std::complex<double> conjugate(const std::complex<double> &val) {
+        return std::conj(val);
+    }
+
+    double conjugate(const double &val) {
+        return val;
+    }
+
+    double real(const double &val) {
+        return val;
+    }
+
+    double real(const std::complex<double> &val) {
+        return val.real();
+    }
+
+    template<class V>
+    void range(std::set<V> &rset, V rmin, V rmax) {
+        rset.clear();
+        for (V r = rmin; r <= rmax; ++r) {
+            rset.insert(r);
+        }
+    }
+
 private:
-    bool hamiltonianhelpers_missing;
-    bool hamiltonian_missing;
+    std::vector<T> states_artifical; // TODO think about whether one can use here real states, too TODO [dummystates]
 
     void forgetRestrictions() {
         energy_min = std::numeric_limits<double>::lowest();
@@ -360,12 +530,12 @@ private:
 
             // Build transformator and remove vectors (if their energy is not allowed or the squared norm to small)
             std::vector<eigen_triplet_t> triplets_transformator;
-            triplets_transformator.reserve(this->getNumVectors());
+            triplets_transformator.reserve(coefficients.cols());
 
             size_t idx_new = 0;
-            for (size_t idx=0; idx<this->getNumVectors(); ++idx) { // idx = col = num basis vector
+            for (int idx=0; idx<coefficients.cols(); ++idx) { // idx = col = num basis vector
 
-                if (checkIsEnergyValid(std::complex<double>(hamiltonianmatrix.coeff(idx, idx)).real())) { // std::complex... makes this code work in case of a real hamiltonianmatrix, too
+                if (checkIsEnergyValid(this->real(hamiltonianmatrix.coeff(idx, idx)))) {
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the coefficient matrix
@@ -385,8 +555,8 @@ private:
             ////////////////////////////////////////////////////////////////////
 
             // Calculate the square norm of the rows of the coefficient matrix
-            std::vector<double> sqnorm_list(this->getNumStates(),0);
-            for (size_t k=0; k<this->getNumVectors(); ++k) {
+            std::vector<double> sqnorm_list(coefficients.rows(),0);
+            for (int k=0; k<this->coefficients.cols(); ++k) {
                 for (eigen_iterator_t triple(coefficients,k); triple; ++triple) {
                     sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()),2);
                 }

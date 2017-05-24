@@ -289,10 +289,13 @@ double IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefec
         {
             mu += y1[i1]*y2[i2] * std::pow(x1[i1], T::power_kernel(power)) * dx;
         }
-        mu = std::abs(2*mu);
+        mu = 2*mu;
     }
 
-    return mu;
+    // If the power is non-zero, the radial matrix element has a unit that needs to be converted (if the power is zero, unit-free overlap matrix element is returned)
+    double converter = (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power-1);
+
+    return mu * converter;
 }
 
 

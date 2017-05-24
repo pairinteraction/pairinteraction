@@ -463,7 +463,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                             // total momentum preserved?
                             if (q1 == -q2) {
                                 double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1.getMultipole(state_row.first(), state_col.first(), kappa1)*
+                                val += inverse_electric_constant * std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements_atom1.getMultipole(state_row.first(), state_col.first(), kappa1)*
                                         matrixelements_atom2.getMultipole(state_row.second(), state_col.second(), kappa2);
                             }
                         }

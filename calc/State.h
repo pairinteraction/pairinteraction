@@ -24,12 +24,21 @@
 #include <iostream>
 #include <boost/functional/hash.hpp>
 
+/** \brief %Base class for states
+ *
+ * This class is the base class for states specified in the fine structure basis.
+ */ // TODO [dummystate]
 class State {
 public:
     State(idx_t idx) : idx(idx) { }
     idx_t idx;
 };
 
+
+/** \brief %One-atom Rydberg state
+ *
+ * This class implements a one-atom Rydberg state.
+ */ // TODO [dummystate]
 class StateOne : public State {
 public:
     // These are public to allow direct access.  This violates the
@@ -75,7 +84,10 @@ namespace std {
 }
 #endif
 
-
+/** \brief %Two-atom Rydberg state
+ *
+ * This class implements a two-atom Rydberg state.
+ */ // TODO [dummystate]
 class StateTwo : public State {
 public:
     // These are public to allow direct access.  This violates the

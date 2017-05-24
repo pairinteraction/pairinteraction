@@ -42,7 +42,7 @@ double V(QuantumDefect const& qd, double x) {
 
 
 double g(QuantumDefect const& qd, double x) {
-    return (2.*qd.l+.5)*(2.*qd.l+1.5)/x + 8*x*(V(qd,x) - qd.energy);
+    return (2.*qd.l+.5)*(2.*qd.l+1.5)/x + 8*x*(V(qd,x) - qd.energy/au2GHz);
 }
 
 

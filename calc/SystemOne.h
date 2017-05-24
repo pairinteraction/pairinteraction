@@ -40,7 +40,10 @@ namespace std {
 class SystemOne : public SystemBase<StateOne> {
 public:
     SystemOne(std::string const& element, std::string cachedir);
-    // TODO SystemOne(std::string const& element);
+    SystemOne(std::string const& element, std::string cachedir, bool memory_saving);
+    SystemOne(std::string const& element);
+    SystemOne(std::string const& element, bool memory_saving);
+
     const std::string& getElement() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
@@ -48,18 +51,19 @@ public:
 
 protected:
     void initializeBasis() override;
-    void initializeHamiltonianhelpers() override;
-    void initializeHamiltonian() override;
-    void transformHamiltonianhelpers(const eigen_sparse_t &transformator) override;
+    void initializeInteraction() override;
+    void addInteraction() override;
+    void transformInteraction(const eigen_sparse_t &transformator) override;
+    void deleteInteraction() override;
 
 private:
     std::array<double, 3> efield, bfield;
     bool diamagnetism;
     std::string element;
 
-    std::unordered_map<int, eigen_sparse_t> hamiltonianhelper_efield;
-    std::unordered_map<int, eigen_sparse_t> hamiltonianhelper_bfield;
-    std::unordered_map<std::array<int, 2>, eigen_sparse_t> hamiltonianhelper_diamagnetism;
+    std::unordered_map<int, eigen_sparse_t> interaction_efield;
+    std::unordered_map<int, eigen_sparse_t> interaction_bfield;
+    std::unordered_map<std::array<int, 2>, eigen_sparse_t> interaction_diamagnetism;
 
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);

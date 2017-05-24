@@ -96,25 +96,25 @@ void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOn
     precalculate(basis_one, k, q, 2, true, false, false);
 }
 
-double MatrixElements::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) {
+double MatrixElements::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) { // TODO remove this method and use directly getMultipole(state_row,state_col,1)
     return getMultipole(state_row,state_col,1);
 }
 
 double MatrixElements::getMagneticMomentum(StateOne const& state_row, StateOne const& state_col) {
-    double val =  muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+    double val = au2GHz / au2G * muB * cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             (gL * cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
             sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1))  +
             gS * cache_reduced_commutes_l[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-            sqrt(0.5*(0.5+1)*(2*0.5+1)));
+            sqrt(0.5*(0.5+1)*(2*0.5+1))); // TODO give the radial matrix element the unit au2GHz / au2G * muB (for the electric momentum, the radial matrix element already carries the unit)
     return val;
 }
 
 double MatrixElements::getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k) {
-    double val =    1./12.*cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
+    double val = inverse_electron_rest_mass * 1./12.*cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order()] *
             cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}})] *
             cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}})] *
-            cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}})];
+            cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}})]; // TODO do the multiplication with inverse_electron_rest_mass outside this class // TODO remove this method and use directly getMultipole(state_row,state_col,kappa_angular = ..., kappa_radial = 2)
     return val;
 }
 
@@ -549,6 +549,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             if (q != std::numeric_limits<int>::max() && state_row.m-state_col.m != q) {
                 continue;
             }
+
+            if (state_row.element.empty() || state_col.element.empty()  ) continue; // TODO artifical states !!!
 
             //if (state_row.idx < state_col.idx) { // TODO
             //    continue;

@@ -61,6 +61,7 @@ namespace std {
   %template(VectorSizeT) vector<size_t>;
   %template(VectorComplexDouble) vector<std::complex<double>>;
   %template(SetInt) set<int>;
+  %template(SetFloat) set<float>;
 };
 
 
@@ -141,6 +142,10 @@ std::vector<scalar_t> _getHamiltonianmatrixData() {
 // Wrap SystemOne.h and SystemTwo.h
 %template(_SystemStateOne) SystemBase<StateOne>;
 %template(_SystemStateTwo) SystemBase<StateTwo>;
+
+%copyctor SystemOne;
+%copyctor SystemTwo;
+
 %include "SystemOne.h"
 %include "SystemTwo.h"
 

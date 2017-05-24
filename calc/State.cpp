@@ -45,8 +45,8 @@ std::ostream& operator<< (std::ostream &out, const StateOne &state)
 {
     out << "n  =" << std::setw(3) << state.n << ",   ";
     out << "l  =" << std::setw(3) << state.l << ",   ";
-    out << "j  =" << std::setprecision(2) << std::setw(5) << state.j << ",   ";
-    out << "m  =" << std::setprecision(2) << std::setw(5) << state.m;
+    out << "j  =" << std::setprecision(4) << std::setw(5) << state.j << ",   ";
+    out << "m  =" << std::setprecision(4) << std::setw(5) << state.m;
     return out;
 }
 
@@ -140,8 +140,8 @@ std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
     for (size_t i = 0; i < 2; ++i) {
         out << "n" << i << " =" << std::setw(3) << state.n[i] << ",   ";
         out << "l" << i << " =" << std::setw(3) << state.l[i] << ",   ";
-        out << "j" << i << " =" << std::setprecision(2) << std::setw(5) << state.j[i] << ",   ";
-        out << "m" << i << " =" << std::setprecision(2) << std::setw(5) << state.m[i];
+        out << "j" << i << " =" << std::setprecision(4) << std::setw(5) << state.j[i] << ",   ";
+        out << "m" << i << " =" << std::setprecision(4) << std::setw(5) << state.m[i];
         if (i == 0) out << ",   ";
     }
     return out;
