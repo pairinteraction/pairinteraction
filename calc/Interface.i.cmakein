@@ -1,15 +1,18 @@
 %module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
 
-
-@DEFCOMPLEX@ // TODO think of a nicer solution ...
-
 %{
-@DEFCOMPLEX@ // TODO think of a nicer solution ...
+#define SWIG_FILE_WITH_INIT
+#include "pyutils.h"
 #include "dtypes.h"
 #include "Interface.h"
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
+%}
+
+
+%init %{
+import_array();
 %}
 
 
@@ -65,6 +68,10 @@ namespace std {
 };
 
 
+// Load numpy wrappers
+%include "pyutils.h"
+
+
 %include "eigen.i"
 
 
@@ -98,24 +105,33 @@ namespace std {
 
 // SWIG extensions for SciPy interoperability // TODO avoide code duplication for getCoefficients and getHamiltonianmatrix ~~> define a macro?
 %extend SystemBase {
+void _compressCoefficients()
+{
+    if ( ! $self->getCoefficients().isCompressed() )
+        $self->getCoefficients().makeCompressed();
+}
 size_t _getCoefficientsNumrows() {
     return $self->getCoefficients().rows();
 }
 size_t _getCoefficientsNumcols() {
     return $self->getCoefficients().cols();
 }
-std::vector<size_t> _getCoefficientsIndptr() {
-    std::vector<size_t> data($self->getCoefficients().outerIndexPtr(), $self->getCoefficients().outerIndexPtr()+$self->getCoefficients().outerSize());
-    data.push_back($self->getCoefficients().nonZeros());
-    return data;
+numpy::array _getCoefficientsIndptr() {
+    return numpy::view($self->getCoefficients().outerIndexPtr(),
+                       $self->getCoefficients().outerIndexPtr() + $self->getCoefficients().outerSize() + 1);
 }
-std::vector<size_t> _getCoefficientsIndices() {
-    std::vector<size_t> data($self->getCoefficients().innerIndexPtr(), $self->getCoefficients().innerIndexPtr()+$self->getCoefficients().nonZeros());
-    return data;
+numpy::array _getCoefficientsIndices() {
+    return numpy::view($self->getCoefficients().innerIndexPtr(),
+                       $self->getCoefficients().innerIndexPtr() + $self->getCoefficients().nonZeros());
 }
-std::vector<scalar_t> _getCoefficientsData() {
-    std::vector<scalar_t> data($self->getCoefficients().valuePtr(), $self->getCoefficients().valuePtr()+$self->getCoefficients().nonZeros());
-    return data;
+numpy::array _getCoefficientsData() {
+    return numpy::view($self->getCoefficients().valuePtr(),
+                       $self->getCoefficients().valuePtr() + $self->getCoefficients().nonZeros());
+}
+void _compressHamiltonianmatrix()
+{
+    if ( ! $self->getHamiltonianmatrix().isCompressed() )
+        $self->getHamiltonianmatrix().makeCompressed();
 }
 size_t _getHamiltonianmatrixNumrows() {
     return $self->getHamiltonianmatrix().rows();
@@ -123,18 +139,17 @@ size_t _getHamiltonianmatrixNumrows() {
 size_t _getHamiltonianmatrixNumcols() {
     return $self->getHamiltonianmatrix().cols();
 }
-std::vector<size_t> _getHamiltonianmatrixIndptr() {
-    std::vector<size_t> data($self->getHamiltonianmatrix().outerIndexPtr(), $self->getHamiltonianmatrix().outerIndexPtr()+$self->getHamiltonianmatrix().outerSize());
-    data.push_back($self->getHamiltonianmatrix().nonZeros());
-    return data;
+numpy::array _getHamiltonianmatrixIndptr() {
+    return numpy::view($self->getHamiltonianmatrix().outerIndexPtr(),
+                       $self->getHamiltonianmatrix().outerIndexPtr() + $self->getHamiltonianmatrix().outerSize() + 1);
 }
-std::vector<size_t> _getHamiltonianmatrixIndices() {
-    std::vector<size_t> data($self->getHamiltonianmatrix().innerIndexPtr(), $self->getHamiltonianmatrix().innerIndexPtr()+$self->getHamiltonianmatrix().nonZeros());
-    return data;
+numpy::array _getHamiltonianmatrixIndices() {
+    return numpy::view($self->getHamiltonianmatrix().innerIndexPtr(),
+                       $self->getHamiltonianmatrix().innerIndexPtr() + $self->getHamiltonianmatrix().nonZeros());
 }
-std::vector<scalar_t> _getHamiltonianmatrixData() {
-    std::vector<scalar_t> data($self->getHamiltonianmatrix().valuePtr(), $self->getHamiltonianmatrix().valuePtr()+$self->getHamiltonianmatrix().nonZeros());
-    return data;
+numpy::array _getHamiltonianmatrixData() {
+    return numpy::view($self->getHamiltonianmatrix().valuePtr(),
+                       $self->getHamiltonianmatrix().valuePtr() + $self->getHamiltonianmatrix().nonZeros());
 }
 }
 
@@ -161,14 +176,15 @@ std::vector<scalar_t> _getHamiltonianmatrixData() {
 
 %pythoncode %{
 
+# TODO use GHz in the C++ backend so that the conversion is not
+# necessary
+au2GHz = 6579683.920711
+
 from scipy.sparse import csc_matrix
 import numpy as np
 
-# TODO make conversion of "eigen_sparse_t" to "csc_matrix" with less
-# copying and less overhead (work with pointern,
-# PyArray_SimpleNewFromData, access internal arrays of csc_matrix)
-
 def getCoefficients (self):
+    self._compressCoefficients()
     num_rows = self._getCoefficientsNumrows()
     num_cols = self._getCoefficientsNumcols()
     indptr = self._getCoefficientsIndptr()
@@ -177,6 +193,7 @@ def getCoefficients (self):
     return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
 
 def getHamiltonianmatrix (self):
+    self._compressHamiltonianmatrix()
     num_rows = self._getHamiltonianmatrixNumrows()
     num_cols = self._getHamiltonianmatrixNumcols()
     indptr = self._getHamiltonianmatrixIndptr()
@@ -218,7 +235,7 @@ SystemOne.coefficients = property(getCoefficients)
 SystemTwo.coefficients = property(getCoefficients)
 SystemOne.hamiltonianmatrix = property(getHamiltonianmatrix)
 SystemTwo.hamiltonianmatrix = property(getHamiltonianmatrix)
-SystemOne.diagonal = property(vector_to_numpy(SystemOne.getDiagonal))
-SystemTwo.diagonal = property(vector_to_numpy(SystemTwo.getDiagonal))
+SystemOne.diagonal = property(SystemOne.getDiagonal)
+SystemTwo.diagonal = property(SystemTwo.getDiagonal)
 
 %}
