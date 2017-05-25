@@ -20,9 +20,13 @@
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
 #include <numpy/ndarrayobject.h>
+
 #include <iterator>
 #include <stdexcept>
 #include <cstring>
+#include <numeric>
+
+#include <array>
 #include <vector>
 #include <Eigen/Core>
 
@@ -100,6 +104,13 @@ namespace numpy {
             static constexpr int type = NPY_INT;
         };
 
+        /** \brief Specialization of py_type for float */
+        template < > struct py_type < float >
+        {
+            /** \brief Numpy type identifier */
+            static constexpr int type = NPY_FLOAT;
+        };
+
         /** \brief Specialization of py_type for double */
         template < > struct py_type < double >
         {
@@ -117,35 +128,42 @@ namespace numpy {
         /** \brief Create a Numpy view of an iterator (implementation)
          *
          * This is the implementation for the conversion of an
-         * arbitrary pointer between \p begin and \p end with the
-         * stride \p stride .  This creates a view of the data,
-         * i.e. the data still belongs to the C++ end.  When the data
-         * is deallocated on the C++ end trying to access it in Python
-         * will probably cause a segfault.  In any case it is
-         * undefined behavior.
+         * arbitrary pointer between \p begin and \p end .  This
+         * creates a view of the data, i.e. the data still belongs to
+         * the C++ end.  When the data is deallocated on the C++ end
+         * trying to access it in Python will probably cause a
+         * segfault.  In any case it is undefined behavior.
          *
          * \param[in] begin    Random access iterator pointing to the start
          * \param[in] end      Random access iterator pointing to the end
-         * \param[in] stride   Stride between rows of the data
+         * \param[in] nd       Number of dimensions
+         * \param[in] dims     Initializer list with lengths of dimensions
          *
          * \return PyObject* containing a Numpy array
          */
         template < typename RAIter >
-        PyObject * view_impl(RAIter begin, RAIter end, unsigned stride,
+        PyObject * view_impl(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
                              std::random_access_iterator_tag)
         {
             using value_type = typename std::iterator_traits<RAIter>::value_type;
 
             int const len  = std::distance(begin, end);
+
             if ( len < 1 )
               throw std::out_of_range(
-                "Trying to create a numpy array with zero or negative element count");
+                "Trying to create a numpy array with zero or negative element count!");
 
-            int const rows = len / stride;
-            int const nd   = ( rows == 1 ? 1 : 2 );
+            if ( nd != static_cast<int>(dims.size()) )
+              throw std::out_of_range(
+                "Dimension mismatch!");
 
-            npy_intp dim[2] = { rows, stride };
-            if ( nd == 1 ) dim[0] = { stride };
+            if ( len > std::accumulate( dims.begin(), dims.end(), int{1}, [](int a, int b) { return a*b; } ) )
+              throw std::out_of_range(
+                "Requested dimension is larger than data!");
+
+            npy_intp * dim = const_cast <
+                typename pointer_remove_const<decltype(&(*dims.begin()))>::type
+                > ( &(*dims.begin()) );
             auto dtype = internal::py_type<value_type>::type;
             void * data = const_cast <
                 typename pointer_remove_const<decltype(&(*begin))>::type
@@ -163,34 +181,41 @@ namespace numpy {
         /** \brief Create a Numpy copy of an iterator (implementation)
          *
          * This is the implementation for the conversion of an
-         * arbitrary pointer between \p begin and \p end with the
-         * stride \p stride .  This creates a copy of the data,
-         * i.e. the data belongs to the Python end.  The array is
-         * marked with NPY_OWNDATA which should tell the garbage
-         * collector to release this memory.
+         * arbitrary pointer between \p begin and \p end .  This
+         * creates a copy of the data, i.e. the data belongs to the
+         * Python end.  The array is marked with NPY_OWNDATA which
+         * should tell the garbage collector to release this memory.
          *
          * \param[in] begin    Random access iterator pointing to the start
          * \param[in] end      Random access iterator pointing to the end
-         * \param[in] stride   Stride between rows of the data
+         * \param[in] nd       Number of dimensions
+         * \param[in] dims     Initializer list with lengths of dimensions
          *
          * \return PyObject* containing a Numpy array
          */
         template < typename RAIter >
-        PyObject * copy_impl(RAIter begin, RAIter end, unsigned stride,
+        PyObject * copy_impl(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
                              std::random_access_iterator_tag)
         {
             using value_type = typename std::iterator_traits<RAIter>::value_type;
 
             int const len  = std::distance(begin, end);
+
             if ( len < 1 )
               throw std::out_of_range(
-                "Trying to create a numpy array with zero or negative element count");
+                "Trying to create a numpy array with zero or negative element count!");
 
-            int const rows = len / stride;
-            int const nd   = ( rows == 1 ? 1 : 2 );
+            if ( nd != static_cast<int>(dims.size()) )
+              throw std::out_of_range(
+                "Dimension mismatch!");
 
-            npy_intp dim[2] = { rows, stride };
-            if ( nd == 1 ) dim[0] = { stride };
+            if ( len > std::accumulate( dims.begin(), dims.end(), int{1}, [](int a, int b) { return a*b; }) )
+              throw std::out_of_range(
+                "Requested dimension is larger than data!");
+
+            npy_intp * dim = const_cast <
+                typename pointer_remove_const<decltype(&(*dims.begin()))>::type
+                > ( &(*dims.begin()) );
             auto dtype = internal::py_type<value_type>::type;
             void * data = const_cast <
                 typename pointer_remove_const<decltype(&(*begin))>::type
@@ -216,15 +241,16 @@ namespace numpy {
      *
      * \param[in] begin    Iterator pointing to the start
      * \param[in] end      Iterator pointing to the end
-     * \param[in] stride   Stride between rows of the data
+     * \param[in] nd       Number of dimensions
+     * \param[in] dims     Initializer list with lengths of dimensions
      *
      * \return PyObject* containing a Numpy array
      */
     template < typename Iter >
-    PyObject * view(Iter begin, Iter end, unsigned stride)
+    PyObject * view(Iter begin, Iter end, int nd, std::initializer_list<long> dims)
     {
         return internal::view_impl(
-          begin, end, stride,
+          begin, end, nd, dims,
           typename std::iterator_traits<Iter>::iterator_category());
     }
 
@@ -235,15 +261,16 @@ namespace numpy {
      *
      * \param[in] begin    Iterator pointing to the start
      * \param[in] end      Iterator pointing to the end
-     * \param[in] stride   Stride between rows of the data
+     * \param[in] nd       Number of dimensions
+     * \param[in] dims     Initializer list with lengths of dimensions
      *
      * \return PyObject* containing a Numpy array
      */
     template < typename Iter >
-    PyObject * copy(Iter begin, Iter end, unsigned stride)
+    PyObject * copy(Iter begin, Iter end, int nd, std::initializer_list<long> dims)
     {
         return internal::copy_impl(
-          begin, end, stride,
+          begin, end, nd, dims,
           typename std::iterator_traits<Iter>::iterator_category());
     }
 
@@ -261,13 +288,13 @@ namespace numpy {
     template < typename T >
     PyObject * view(T * begin, T * end)
     {
-        return numpy::view(begin, end, std::distance(begin,end));
+        return numpy::view(begin, end, 1, {std::distance(begin,end)});
     }
     /** \brief Const version of view(T * begin, T * end) */
     template < typename T >
     PyObject * view(T const * begin, T const * end)
     {
-        return numpy::view(begin, end, std::distance(begin,end));
+        return numpy::view(begin, end, 1, {std::distance(begin,end)});
     }
 
     /** \brief Create a Numpy copy of a raw pointer
@@ -282,7 +309,41 @@ namespace numpy {
     template < typename T >
     PyObject * copy(T * begin, T * end)
     {
-        return numpy::copy(begin, end, std::distance(begin,end));
+        return numpy::copy(begin, end, 1, {std::distance(begin,end)});
+    }
+
+    /** \brief Create a Numpy view of a std::array
+     *
+     * Specialization of numpy::view for std::array.
+     *
+     * \param[in] v    std::array&
+     *
+     * \return PyObject* containing a Numpy array
+     */
+    template < typename T, size_t N >
+    PyObject * view(std::array<T,N>& v)
+    {
+        return numpy::view(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
+    }
+    /** \brief Const version of view(std::array<T>&) */
+    template < typename T, size_t N >
+    PyObject * view(std::array<T,N> const& v)
+    {
+        return numpy::view(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
+    }
+
+    /** \brief Create a Numpy copy of a std::array
+     *
+     * Specialization of numpy::view for std::array.
+     *
+     * \param[in] v    std::array&
+     *
+     * \return PyObject* containing a Numpy array
+     */
+    template < typename T, size_t N >
+    PyObject * copy(std::array<T,N> const& v)
+    {
+        return numpy::copy(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
     }
 
     /** \brief Create a Numpy view of a std::vector
@@ -296,13 +357,13 @@ namespace numpy {
     template < typename T >
     PyObject * view(std::vector<T>& v)
     {
-        return numpy::view(v.begin(), v.end(), v.size());
+        return numpy::view(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
     }
     /** \brief Const version of view(std::vector<T>&) */
     template < typename T >
     PyObject * view(std::vector<T> const& v)
     {
-        return numpy::view(v.begin(), v.end(), v.size());
+        return numpy::view(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
     }
 
     /** \brief Create a Numpy copy of a std::vector
@@ -316,7 +377,7 @@ namespace numpy {
     template < typename T >
     PyObject * copy(std::vector<T> const& v)
     {
-        return numpy::copy(v.begin(), v.end(), v.size());
+        return numpy::copy(v.begin(), v.end(), 1, {static_cast<long>(v.size())});
     }
 
     /** \brief Create a Numpy view of a Eigen::Matrix
@@ -330,13 +391,13 @@ namespace numpy {
     template < typename T >
     PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>& m)
     {
-        return numpy::view(m.data(), m.data()+m.size(), m.cols());
+        return numpy::view(m.data(), m.data()+m.size(), 2, {m.rows(), m.cols()});
     }
     /** \brief Const version of view(Eigen::Matrix<T,...>&) */
     template < typename T >
     PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const& m)
     {
-        return numpy::view(m.data(), m.data()+m.size(), m.cols());
+        return numpy::view(m.data(), m.data()+m.size(), 2, {m.rows(), m.cols()});
     }
 
     /** \brief Create a Numpy copy of an Eigen::Matrix
@@ -350,7 +411,7 @@ namespace numpy {
     template < typename T >
     PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic> const& m)
     {
-        return numpy::copy(m.data(), m.data()+m.size(), m.cols());
+        return numpy::copy(m.data(), m.data()+m.size(), 2, {m.rows(), m.cols()});
     }
 
     /** \brief Create a Numpy view of an Eigen::Vector
@@ -364,13 +425,13 @@ namespace numpy {
     template < typename T >
     PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,1>& v)
     {
-        return numpy::view(v.data(), v.data()+v.size(), v.size());
+        return numpy::view(v.data(), v.data()+v.size(), 1, {v.size()});
     }
     /** \brief Const version of view(Eigen::Vector<T,...>&) */
     template < typename T >
     PyObject * view(Eigen::Matrix<T,Eigen::Dynamic,1> const& v)
     {
-        return numpy::view(v.data(), v.data()+v.size(), v.size());
+        return numpy::view(v.data(), v.data()+v.size(), 1, {v.size()});
     }
 
     /** \brief Create a Numpy copy of an Eigen::Vector
@@ -384,7 +445,7 @@ namespace numpy {
     template < typename T >
     PyObject * copy(Eigen::Matrix<T,Eigen::Dynamic,1> const& v)
     {
-        return numpy::copy(v.data(), v.data()+v.size(), v.size());
+        return numpy::copy(v.data(), v.data()+v.size(), 1, {v.size()});
     }
 }
 

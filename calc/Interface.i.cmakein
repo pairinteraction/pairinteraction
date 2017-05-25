@@ -50,6 +50,19 @@ std::string __str__() {
 %enddef
 
 
+// Load numpy wrappers
+%include "pyutils.h"
+
+%define MAKE_NUMPY_TYPEMAP(TYPE...)
+  %typemap(out) TYPE   { $result = numpy::copy( $1); }
+  %typemap(out) TYPE & { $result = numpy::view(*$1); }
+%enddef
+
+MAKE_NUMPY_TYPEMAP(eigen_dense_t)
+MAKE_NUMPY_TYPEMAP(eigen_vector_t)
+MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
+
+
 // Instantiate often used STL templates
 namespace std {
   %template(ArrayStringTwo) array<string,2>;
@@ -66,26 +79,6 @@ namespace std {
   %template(SetInt) set<int>;
   %template(SetFloat) set<float>;
 };
-
-
-// Load numpy wrappers
-%include "pyutils.h"
-
-// Load Eigen wrappers
-//%include "eigen.i"
-
-
-%typemap(out) eigen_dense_t        { $result = numpy::copy($1); }
-%typemap(out) eigen_dense_t&       { $result = numpy::view($1); }
-%typemap(out) eigen_dense_t const& { $result = numpy::view($1); }
-
-%typemap(out) eigen_vector_t        { $result = numpy::copy($1); }
-%typemap(out) eigen_vector_t&       { $result = numpy::view($1); }
-%typemap(out) eigen_vector_t const& { $result = numpy::view($1); }
-
-%typemap(out) eigen_vector_double_t        { $result = numpy::copy($1); }
-%typemap(out) eigen_vector_double_t&       { $result = numpy::view($1); }
-%typemap(out) eigen_vector_double_t const& { $result = numpy::view($1); }
 
 
 %rename(__lt__) operator<;

@@ -1,7 +1,6 @@
 #ifndef SYSTEMBASE_H
 #define SYSTEMBASE_H
 
-#include "pyutils.h"
 #include "dtypes.h"
 #include "State.h"
 
