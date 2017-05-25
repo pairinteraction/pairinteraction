@@ -56,6 +56,13 @@ std::string __str__() {
 %define MAKE_NUMPY_TYPEMAP(TYPE...)
   %typemap(out) TYPE   { $result = numpy::copy( $1); }
   %typemap(out) TYPE & { $result = numpy::view(*$1); }
+  %typemap(out) TYPE const&
+  {
+    $result = numpy::view(
+      *const_cast<
+      numpy::internal::pointer_add_const< decltype($1) >::type
+      >($1));
+  }
 %enddef
 
 MAKE_NUMPY_TYPEMAP(eigen_dense_t)

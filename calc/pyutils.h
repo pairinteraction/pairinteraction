@@ -89,6 +89,38 @@ namespace numpy {
             typedef T* type;
         };
 
+        /** \brief Add const qualifiers to pointer
+         *
+         * This struct has a member typedef which holds the pointer
+         * type with additional const qualifiers.
+         */
+        template < typename T >
+        struct pointer_add_const;
+
+        /** \brief Specialization of pointer_add_const for T* */
+        template < typename T >
+        struct pointer_add_const < T * >
+        {
+            /** \brief Pointer type without const */
+            typedef T const * const type;
+        };
+
+        /** \brief Specialization of pointer_add_const for T const * */
+        template<typename T>
+        struct pointer_add_const < T const * >
+        {
+            /** \brief Pointer type without const */
+            typedef T const * const type;
+        };
+
+        /** \brief Specialization of pointer_add_const for T const * const */
+        template<typename T>
+        struct pointer_add_const < T const * const >
+        {
+            /** \brief Pointer type without const */
+            typedef T const * const type;
+        };
+
         /** \brief Map C++ types to Numpy types
          *
          * This struct has specializations for common C++ types and
