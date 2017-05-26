@@ -29,6 +29,7 @@
 #include <array>
 #include <vector>
 #include <Eigen/Core>
+#include <Eigen/SparseCore>
 
 #include "Traits.h"
 
@@ -489,6 +490,82 @@ namespace numpy {
 
 #endif
 
+    // Experimental support for Sparse matrix return types
+
+    template < typename T >
+    PyObject * copy(Eigen::SparseMatrix<T> sm)
+    {
+        if ( ! sm.isCompressed() )
+            throw std::runtime_error("Sparse matrix is not compressed!");
+
+        numpy::array indptr = numpy::copy(
+            sm.outerIndexPtr(), sm.outerIndexPtr() + sm.outerSize() + 1);
+
+        numpy::array indices = numpy::copy(
+            sm.innerIndexPtr(), sm.innerIndexPtr() + sm.nonZeros());
+
+        numpy::array data = numpy::copy(
+            sm.valuePtr(), sm.valuePtr() + sm.nonZeros());
+
+        int num_rows = sm.rows();
+        int num_cols = sm.cols();
+
+        char object[] = "csc_matrix";
+        char arglist[] = "(OOO)(ii)";
+        PyObject * scipy = PyImport_ImportModule("scipy.sparse");
+        return PyObject_CallMethod(scipy, object, arglist,
+                                   data, indices, indptr, num_rows, num_cols);
+    }
+
+    template < typename T >
+    PyObject * view(Eigen::SparseMatrix<T>& sm)
+    {
+        if ( ! sm.isCompressed() )
+            throw std::runtime_error("Sparse matrix is not compressed!");
+
+        numpy::array indptr = numpy::view(
+            sm.outerIndexPtr(), sm.outerIndexPtr() + sm.outerSize() + 1);
+
+        numpy::array indices = numpy::view(
+            sm.innerIndexPtr(), sm.innerIndexPtr() + sm.nonZeros());
+
+        numpy::array data = numpy::view(
+            sm.valuePtr(), sm.valuePtr() + sm.nonZeros());
+
+        int num_rows = sm.rows();
+        int num_cols = sm.cols();
+
+        char object[] = "csc_matrix";
+        char arglist[] = "(OOO)(ii)";
+        PyObject * scipy = PyImport_ImportModule("scipy.sparse");
+        return PyObject_CallMethod(scipy, object, arglist,
+                                   data, indices, indptr, num_rows, num_cols);
+    }
+
+    template < typename T >
+    PyObject * view(Eigen::SparseMatrix<T> const& sm)
+    {
+        if ( ! sm.isCompressed() )
+            throw std::runtime_error("Sparse matrix is not compressed!");
+
+        numpy::array indptr = numpy::view(
+            sm.outerIndexPtr(), sm.outerIndexPtr() + sm.outerSize() + 1);
+
+        numpy::array indices = numpy::view(
+            sm.innerIndexPtr(), sm.innerIndexPtr() + sm.nonZeros());
+
+        numpy::array data = numpy::view(
+            sm.valuePtr(), sm.valuePtr() + sm.nonZeros());
+
+        int num_rows = sm.rows();
+        int num_cols = sm.cols();
+
+        char object[] = "csc_matrix";
+        char arglist[] = "(OOO)(ii)";
+        PyObject * scipy = PyImport_ImportModule("scipy.sparse");
+        return PyObject_CallMethod(scipy, object, arglist,
+                                   data, indices, indptr, num_rows, num_cols);
+    }
 }
 
 #endif // NUMPYUTILS_H
