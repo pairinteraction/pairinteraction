@@ -479,6 +479,94 @@ namespace numpy {
     {
         return numpy::copy(v.data(), v.data()+v.size(), 1, {v.size()});
     }
+
+    // Experimental support for Numpy arguments
+
+    // SWIG does not like SFINAE but it doesn't have to see that part
+    // anyway.
+#ifndef SWIG
+
+    /** \brief Convert a Numpy array to an Eigen::Matrix
+     *
+     * \warning Experimental!
+     *
+     * \param[in] ndarray_    Numpy array
+     *
+     * \return An Eigen::Map of the Numpy array memory
+     */
+    template < typename U, typename T = typename std::remove_reference<U>::type >
+    typename std::enable_if<
+        std::is_same<
+            T,
+            Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic>
+            >::value,
+        typename std::conditional<
+            std::is_lvalue_reference<U>::value,
+            Eigen::Map < T >, T
+            >::type
+        >::type
+    to(numpy::array ndarray_)
+    {
+        if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
+            throw std::invalid_argument(
+                "The argument is not a valid Numpy array!");
+
+        PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
+        int const nd = PyArray_NDIM(ndarray);
+        npy_intp * dims = PyArray_SHAPE(ndarray);
+        typename T::Scalar * data = reinterpret_cast<typename T::Scalar *>(PyArray_DATA(ndarray));
+
+        if ( PyArray_TYPE(ndarray) != internal::py_type<typename T::Scalar>::type )
+            throw std::invalid_argument("Type mismatch.");
+
+        if ( nd != 2 )
+            throw std::range_error("Dimension mismatch.");
+
+        return Eigen::Map < T > (data, dims[0], dims[1]);
+    }
+
+
+    /** \brief Convert a Numpy array to an Eigen::Vector
+     *
+     * \warning Experimental!
+     *
+     * \param[in] ndarray_    Numpy array
+     *
+     * \return An Eigen::Map of the Numpy array memory
+     */
+    template < typename U, typename T = typename std::remove_reference<U>::type >
+    typename std::enable_if<
+        std::is_same<
+            T,
+            Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, 1>
+            >::value,
+        typename std::conditional<
+            std::is_lvalue_reference<U>::value,
+            Eigen::Map < T >, T
+            >::type
+        >::type
+    to(numpy::array ndarray_)
+    {
+        if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
+            throw std::invalid_argument(
+                "The argument is not a valid Numpy array!");
+
+        PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
+        int const nd = PyArray_NDIM(ndarray);
+        npy_intp * dims = PyArray_SHAPE(ndarray);
+        typename T::Scalar * data = reinterpret_cast<typename T::Scalar *>(PyArray_DATA(ndarray));
+
+        if ( PyArray_TYPE(ndarray) != internal::py_type<typename T::Scalar>::type )
+            throw std::invalid_argument("Type mismatch.");
+
+        if ( nd != 1 )
+            throw std::range_error("Dimension mismatch.");
+
+        return Eigen::Map < T > (data, dims[0]);
+    }
+
+#endif
+
 }
 
 #endif // PYUTILS_H

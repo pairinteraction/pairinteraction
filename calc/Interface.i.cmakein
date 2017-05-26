@@ -63,12 +63,14 @@ std::string __str__() {
       numpy::internal::pointer_add_const< decltype($1) >::type
       >($1));
   }
+
+  %typemap(in) TYPE   { $1 = numpy::to < TYPE   >($input); }
+//%typemap(in) TYPE & { $1 = numpy::to < TYPE & >($input); }
 %enddef
 
 MAKE_NUMPY_TYPEMAP(eigen_dense_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
-
 
 // Instantiate often used STL templates
 namespace std {
