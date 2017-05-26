@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef PYUTILS_H
-#define PYUTILS_H
+#ifndef NUMPYUTILS_H
+#define NUMPYUTILS_H
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include <Python.h>
@@ -30,6 +30,8 @@
 #include <vector>
 #include <Eigen/Core>
 
+#include "Traits.h"
+
 namespace numpy {
 
     /** \brief Numpy array type
@@ -40,86 +42,6 @@ namespace numpy {
     typedef PyObject* array;
 
     namespace internal {
-
-        /** \brief Check if something points to const
-         *
-         * This struct has a member variable indicating whether a type
-         * points to const
-         */
-        template < typename T >
-        struct is_pointer_to_const : std::false_type {};
-
-        /** \brief Specialization of is_pointer_to_const for T const * */
-        template < typename T >
-        struct is_pointer_to_const < T const * > : std::true_type {};
-
-        /** \brief Specialization of is_pointer_to_const for T const * const */
-        template < typename T >
-        struct is_pointer_to_const < T const * const > : std::true_type {};
-
-        /** \brief Remove const qualifiers from pointer
-         *
-         * This struct has a member typedef which holds the pointer
-         * type without const qualifiers.
-         */
-        template < typename T >
-        struct pointer_remove_const;
-
-        /** \brief Specialization of pointer_remove_const for T* */
-        template < typename T >
-        struct pointer_remove_const < T * >
-        {
-            /** \brief Pointer type without const */
-            typedef T* type;
-        };
-
-        /** \brief Specialization of pointer_remove_const for T const * */
-        template<typename T>
-        struct pointer_remove_const < T const * >
-        {
-            /** \brief Pointer type without const */
-            typedef T* type;
-        };
-
-        /** \brief Specialization of pointer_remove_const for T const * const */
-        template<typename T>
-        struct pointer_remove_const < T const * const >
-        {
-            /** \brief Pointer type without const */
-            typedef T* type;
-        };
-
-        /** \brief Add const qualifiers to pointer
-         *
-         * This struct has a member typedef which holds the pointer
-         * type with additional const qualifiers.
-         */
-        template < typename T >
-        struct pointer_add_const;
-
-        /** \brief Specialization of pointer_add_const for T* */
-        template < typename T >
-        struct pointer_add_const < T * >
-        {
-            /** \brief Pointer type without const */
-            typedef T const * const type;
-        };
-
-        /** \brief Specialization of pointer_add_const for T const * */
-        template<typename T>
-        struct pointer_add_const < T const * >
-        {
-            /** \brief Pointer type without const */
-            typedef T const * const type;
-        };
-
-        /** \brief Specialization of pointer_add_const for T const * const */
-        template<typename T>
-        struct pointer_add_const < T const * const >
-        {
-            /** \brief Pointer type without const */
-            typedef T const * const type;
-        };
 
         /** \brief Map C++ types to Numpy types
          *
@@ -194,17 +116,17 @@ namespace numpy {
                 "Requested dimension is larger than data!");
 
             npy_intp * dim = const_cast <
-                typename pointer_remove_const<decltype(&(*dims.begin()))>::type
+                typename traits::pointer_remove_const<decltype(&(*dims.begin()))>::type
                 > ( &(*dims.begin()) );
-            auto dtype = internal::py_type<value_type>::type;
+            auto dtype = py_type<value_type>::type;
             void * data = const_cast <
-                typename pointer_remove_const<decltype(&(*begin))>::type
+                typename traits::pointer_remove_const<decltype(&(*begin))>::type
                 > ( &(*begin) );
 
             PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
                                              data, 0, NPY_ARRAY_FARRAY, nullptr);
 
-            if ( is_pointer_to_const < decltype(&(*begin)) >::value)
+            if ( traits::is_pointer_to_const < decltype(&(*begin)) >::value)
                 PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
                                    NPY_ARRAY_WRITEABLE);
             return ndarray;
@@ -246,11 +168,11 @@ namespace numpy {
                 "Requested dimension is larger than data!");
 
             npy_intp * dim = const_cast <
-                typename pointer_remove_const<decltype(&(*dims.begin()))>::type
+                typename traits::pointer_remove_const<decltype(&(*dims.begin()))>::type
                 > ( &(*dims.begin()) );
             auto dtype = internal::py_type<value_type>::type;
             void * data = const_cast <
-                typename pointer_remove_const<decltype(&(*begin))>::type
+                typename traits::pointer_remove_const<decltype(&(*begin))>::type
                 > ( &(*begin) );
 
             PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
@@ -569,4 +491,4 @@ namespace numpy {
 
 }
 
-#endif // PYUTILS_H
+#endif // NUMPYUTILS_H
