@@ -51,21 +51,19 @@ std::string __str__() {
 %enddef
 
 
-// Load numpy wrappers
-%include "NumpyUtils.h"
-
+// Make numpy wrappers
 %define MAKE_NUMPY_TYPEMAP(TYPE...)
-  %typemap(out) TYPE   { $result = numpy::copy( $1); }
-  %typemap(out) TYPE & { $result = numpy::view(*$1); }
+  %typemap(out) TYPE        { $result = numpy::convert<numpy::copy>( $1); }
+  %typemap(out) TYPE &      { $result = numpy::convert<numpy::view>(*$1); }
   %typemap(out) TYPE const&
   {
-    $result = numpy::view(
+    $result = numpy::convert<numpy::view>(
       *const_cast<
       traits::pointer_add_const< decltype($1) >::type
       >($1));
   }
 
-  %typemap(in) TYPE   { $1 = numpy::to < TYPE   >($input); }
+//%typemap(in) TYPE   { $1 = numpy::to < TYPE   >($input); }
 //%typemap(in) TYPE & { $1 = numpy::to < TYPE & >($input); }
 %enddef
 
@@ -121,57 +119,6 @@ namespace std {
 // Wrap SystemBase.h
 %include "SystemBase.h"
 
-// SWIG extensions for SciPy interoperability // TODO avoide code duplication for getCoefficients and getHamiltonianmatrix ~~> define a macro?
-%extend SystemBase {
-void _compressCoefficients()
-{
-    if ( ! $self->getCoefficients().isCompressed() )
-        $self->getCoefficients().makeCompressed();
-}
-size_t _getCoefficientsNumrows() {
-    return $self->getCoefficients().rows();
-}
-size_t _getCoefficientsNumcols() {
-    return $self->getCoefficients().cols();
-}
-numpy::array _getCoefficientsIndptr() {
-    return numpy::view($self->getCoefficients().outerIndexPtr(),
-                       $self->getCoefficients().outerIndexPtr() + $self->getCoefficients().outerSize() + 1);
-}
-numpy::array _getCoefficientsIndices() {
-    return numpy::view($self->getCoefficients().innerIndexPtr(),
-                       $self->getCoefficients().innerIndexPtr() + $self->getCoefficients().nonZeros());
-}
-numpy::array _getCoefficientsData() {
-    return numpy::view($self->getCoefficients().valuePtr(),
-                       $self->getCoefficients().valuePtr() + $self->getCoefficients().nonZeros());
-}
-void _compressHamiltonianmatrix()
-{
-    if ( ! $self->getHamiltonianmatrix().isCompressed() )
-        $self->getHamiltonianmatrix().makeCompressed();
-}
-size_t _getHamiltonianmatrixNumrows() {
-    return $self->getHamiltonianmatrix().rows();
-}
-size_t _getHamiltonianmatrixNumcols() {
-    return $self->getHamiltonianmatrix().cols();
-}
-numpy::array _getHamiltonianmatrixIndptr() {
-    return numpy::view($self->getHamiltonianmatrix().outerIndexPtr(),
-                       $self->getHamiltonianmatrix().outerIndexPtr() + $self->getHamiltonianmatrix().outerSize() + 1);
-}
-numpy::array _getHamiltonianmatrixIndices() {
-    return numpy::view($self->getHamiltonianmatrix().innerIndexPtr(),
-                       $self->getHamiltonianmatrix().innerIndexPtr() + $self->getHamiltonianmatrix().nonZeros());
-}
-numpy::array _getHamiltonianmatrixData() {
-    return numpy::view($self->getHamiltonianmatrix().valuePtr(),
-                       $self->getHamiltonianmatrix().valuePtr() + $self->getHamiltonianmatrix().nonZeros());
-}
-}
-
-
 // Wrap SystemOne.h and SystemTwo.h
 %template(_SystemStateOne) SystemBase<StateOne>;
 %template(_SystemStateTwo) SystemBase<StateTwo>;
@@ -198,61 +145,10 @@ numpy::array _getHamiltonianmatrixData() {
 # necessary
 au2GHz = 6579683.920711
 
-from scipy.sparse import csc_matrix
-import numpy as np
-
-def getCoefficients (self):
-    self._compressCoefficients()
-    num_rows = self._getCoefficientsNumrows()
-    num_cols = self._getCoefficientsNumcols()
-    indptr = self._getCoefficientsIndptr()
-    indices = self._getCoefficientsIndices()
-    data = self._getCoefficientsData()
-    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
-
-def getHamiltonianmatrix (self):
-    self._compressHamiltonianmatrix()
-    num_rows = self._getHamiltonianmatrixNumrows()
-    num_cols = self._getHamiltonianmatrixNumcols()
-    indptr = self._getHamiltonianmatrixIndptr()
-    indices = self._getHamiltonianmatrixIndices()
-    data = self._getHamiltonianmatrixData()
-    return csc_matrix((data, indices, indptr), shape=(num_rows, num_cols))
-
-class vector_to_numpy:
-    def __init__(self, method):
-        self.method = method
-
-    def __call__(self, *args):
-        return np.array( self.method(*args) )
-
-class numpy_to_vector:
-    def __init__(self, method, *args):
-        self.method = method
-        self.args   = args
-
-    def __call__(self, ndarray):
-        dtype = ndarray.dtype
-        size = len(ndarray)
-
-        # Decide datatype
-        if np.issubdtype(dtype, np.float):
-            v = VectorDouble(size)
-        elif np.issubdtype(dtype, np.complex):
-            v = VectorComplexDouble(size)
-        else:
-            raise TypeError("Unhandled type {}".format(dtype))
-
-        # Copy over data
-        v[:] = ndarray[:]
-
-        # Hand over to method
-        self.method(v,*self.args)
-
-SystemOne.coefficients = property(getCoefficients)
-SystemTwo.coefficients = property(getCoefficients)
-SystemOne.hamiltonianmatrix = property(getHamiltonianmatrix)
-SystemTwo.hamiltonianmatrix = property(getHamiltonianmatrix)
+SystemOne.coefficients = property(SystemOne.getCoefficients)
+SystemTwo.coefficients = property(SystemTwo.getCoefficients)
+SystemOne.hamiltonianmatrix = property(SystemOne.getHamiltonianmatrix)
+SystemTwo.hamiltonianmatrix = property(SystemTwo.getHamiltonianmatrix)
 SystemOne.diagonal = property(SystemOne.getDiagonal)
 SystemTwo.diagonal = property(SystemTwo.getDiagonal)
 
