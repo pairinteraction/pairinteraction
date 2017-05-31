@@ -321,8 +321,10 @@ namespace numpy {
             char object[] = "csc_matrix";
             char arglist[] = "(OOO)(ii)";
             PyObject * scipy = PyImport_ImportModule("scipy.sparse");
-            return PyObject_CallMethod(scipy, object, arglist,
-                                       data, indices, indptr, num_rows, num_cols);
+            PyObject * mat = PyObject_CallMethod(
+                scipy, object, arglist, data, indices, indptr, num_rows, num_cols);
+            Py_DECREF(scipy);
+            return mat;
         }
 
     } // namespace internal
@@ -350,24 +352,41 @@ namespace numpy {
 
     namespace internal {
 
-        /** \brief Convert a Numpy array to an Eigen::Matrix
+        /** \brief Check if a Numpy has given storage order and alignment
          *
-         * \warning Experimental!
+         * To be convertible to an Eigen matrix type the memory of a
+         * Numpy array has to be FORTRAN style contiguous and has to
+         * be aligned.
+         *
+         * \param[in] ndarray    Numpy array
+         */
+        void check_order_and_alignment(PyArrayObject * ndarray)
+        {
+            int const flags = PyArray_FLAGS(ndarray);
+            if ( (flags & NPY_ARRAY_F_CONTIGUOUS) == 0 )
+                throw std::invalid_argument(
+                    "The argument is not contiguous or has wrong storage order!");
+            if ( (flags & NPY_ARRAY_ALIGNED) == 0 )
+                throw std::invalid_argument(
+                    "The argument is not not aligned!");
+        }
+
+        /** \brief Deconstruct a numpy array for conversion to dense Eigen type
          *
          * \param[in] ndarray_    Numpy array
          *
-         * \return An Eigen::Map of the Numpy array memory
+         * \return A tuple of the number of dimensions, an array of
+         * dimensions, and a pointer to the data.
          */
-        template < typename T >
-        std::tuple<int, npy_intp *, typename T::Scalar *> as_dense_impl(numpy::array ndarray_)
+        template < typename T, typename Scalar = typename T::Scalar >
+        std::tuple<int, npy_intp *, Scalar *> as_dense_impl(numpy::array ndarray_)
         {
-            using Scalar = typename T::Scalar;
-
             if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
                 throw std::invalid_argument(
                     "The argument is not a valid Numpy array!");
 
             PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
+            internal::check_order_and_alignment(ndarray);
             int const nd = PyArray_NDIM(ndarray);
             npy_intp * dims = PyArray_SHAPE(ndarray);
             Scalar * data = reinterpret_cast<Scalar *>(PyArray_DATA(ndarray));
@@ -382,20 +401,22 @@ namespace numpy {
 
     /** \brief Convert a Numpy array to an Eigen::Matrix
      *
-     * \warning Experimental!
+     * \warning Experimental!  For now the returned Eigen::Map is
+     * read-only.
      *
      * \param[in] ndarray    Numpy array
      *
      * \return An Eigen::Map of the Numpy array memory
      */
 #ifndef SCANNED_BY_DOXYGEN
-    template < typename T >
+    template < typename T, typename Scalar = typename T::Scalar >
     typename std::enable_if<
         std::is_same<
             T,
-            Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic>
+            Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, T::Options,
+                          T::MaxRowsAtCompileTime, T::MaxColsAtCompileTime>
             >::value,
-        Eigen::Map < T >
+        Eigen::Map < T const >
         >::type
 #else
     template < typename MatrixType >
@@ -403,34 +424,34 @@ namespace numpy {
 #endif
     as(numpy::array ndarray)
     {
-        using Scalar = typename T::Scalar;
-
         int nd; npy_intp * dims; Scalar * data;
         std::tie(nd, dims, data) = internal::as_dense_impl<T>(ndarray);
 
-        if ( nd != 2 )
+        if ( nd > 2 )
             throw std::range_error("Dimension mismatch.");
 
-        return Eigen::Map < T > (data, dims[0], dims[1]);
+        return Eigen::Map < T const > (data, dims[0], ( nd == 1 ? 1 : dims[1] ));
     }
 
 
     /** \brief Convert a Numpy array to an Eigen::Vector
      *
-     * \warning Experimental!
+     * \warning Experimental!  For now the returned Eigen::Map is
+     * read-only.
      *
      * \param[in] ndarray    Numpy array
      *
      * \return An Eigen::Map of the Numpy array memory
      */
 #ifndef SCANNED_BY_DOXYGEN
-    template < typename T >
+    template < typename T, typename Scalar = typename T::Scalar >
     typename std::enable_if<
         std::is_same<
             T,
-            Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, 1>
+            Eigen::Matrix<Scalar, Eigen::Dynamic, 1, T::Options,
+                          T::MaxRowsAtCompileTime, T::MaxColsAtCompileTime>
             >::value,
-        Eigen::Map < T >
+        Eigen::Map < T const >
         >::type
 #else
     template < typename VectorType >
@@ -438,33 +459,33 @@ namespace numpy {
 #endif
     as(numpy::array ndarray)
     {
-        using Scalar = typename T::Scalar;
-
         int nd; npy_intp * dims; Scalar * data;
         std::tie(nd, dims, data) = internal::as_dense_impl<T>(ndarray);
 
-        if ( nd != 1 )
+        if ( nd > 1 )
             throw std::range_error("Dimension mismatch.");
 
-        return Eigen::Map < T > (data, dims[0]);
+        return Eigen::Map < T const > (data, dims[0]);
     }
 
     /** \brief Convert a Numpy array to an Eigen::SparseMatrix
      *
-     * \warning Experimental!
+     * \warning Experimental!  For now the returned Eigen::Map is
+     * read-only.
      *
      * \param[in] ndarray    Numpy array
      *
      * \return An Eigen::Map of the Numpy array memory
      */
 #ifndef SCANNED_BY_DOXYGEN
-    template < typename T >
+    template < typename T, typename Scalar = typename T::Scalar,
+               typename StorageIndex = typename T::StorageIndex >
     typename std::enable_if<
         std::is_same<
             T,
-            Eigen::SparseMatrix<typename T::Scalar, 0, int>
+            Eigen::SparseMatrix<Scalar, T::Options, StorageIndex>
             >::value,
-        Eigen::Map < T >
+        Eigen::Map < T const >
         >::type
 #else
     template < typename SparseMatrixType >
@@ -472,22 +493,30 @@ namespace numpy {
 #endif
     as(numpy::array ndarray)
     {
-        using Scalar = typename T::Scalar;
-        using StorageIndex = typename T::StorageIndex;
-
         PyObject * scipy = PyImport_ImportModule("scipy.sparse");
         PyObject * csc_matrix = PyObject_GetAttrString(scipy, "csc_matrix");
         if ( ! ndarray || ! PyObject_IsInstance(ndarray, csc_matrix) )
             throw std::invalid_argument(
                 "The argument is not a valid csc_matrix!");
         Py_DECREF(csc_matrix);
+        Py_DECREF(scipy);
 
-        PyArrayObject* data_    = reinterpret_cast<PyArrayObject*>(
-            PyObject_GetAttrString(ndarray, "data"));
-        PyArrayObject* indices_ = reinterpret_cast<PyArrayObject*>(
-            PyObject_GetAttrString(ndarray, "indices"));
-        PyArrayObject* indptr_  = reinterpret_cast<PyArrayObject*>(
-            PyObject_GetAttrString(ndarray, "indptr"));
+        PyObject * tmp;
+
+        tmp = PyObject_GetAttrString(ndarray, "data");
+        PyArrayObject * data_ = reinterpret_cast<PyArrayObject*>(tmp);
+        Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never be garbage collected
+        internal::check_order_and_alignment(data_);
+
+        tmp = PyObject_GetAttrString(ndarray, "indices");
+        PyArrayObject * indices_ = reinterpret_cast<PyArrayObject*>(tmp);
+        Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never be garbage collected
+        internal::check_order_and_alignment(indices_);
+
+        tmp = PyObject_GetAttrString(ndarray, "indptr");
+        PyArrayObject * indptr_  = reinterpret_cast<PyArrayObject*>(tmp);
+        Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never be garbage collected
+        internal::check_order_and_alignment(indptr_);
 
         PyObject * shape = PyObject_GetAttrString(ndarray, "shape");
         int rows, cols;
@@ -503,7 +532,7 @@ namespace numpy {
         if ( PyArray_TYPE(data_) != internal::py_type<Scalar>::type )
             throw std::invalid_argument("Type mismatch.");
 
-        return Eigen::Map < T > (rows, cols, *nnz, indptr, indices, data);
+        return Eigen::Map < T const > (rows, cols, *nnz, indptr, indices, data);
     }
 
 }
