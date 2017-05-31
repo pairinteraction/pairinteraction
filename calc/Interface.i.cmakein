@@ -57,14 +57,17 @@ std::string __str__() {
   %typemap(out) TYPE &      { $result = numpy::convert<numpy::view>(*$1); }
   %typemap(out) TYPE const&
   {
-    $result = numpy::convert<numpy::view>(
-      *const_cast<
-      traits::pointer_add_const< decltype($1) >::type
-      >($1));
+    $result = numpy::convert<numpy::view>(*const_cast<
+      traits::pointer_add_const< decltype($1) >::type >($1));
   }
-
-//%typemap(in) TYPE   { $1 = numpy::to < TYPE   >($input); }
-//%typemap(in) TYPE & { $1 = numpy::to < TYPE & >($input); }
+  %typemap(in) TYPE // SWIG omits the exception handler here
+  {
+    try {
+      $1 = numpy::as<TYPE>($input);
+    } catch(std::exception &e) {
+      SWIG_exception(SWIG_RuntimeError, e.what());
+    }
+  }
 %enddef
 
 MAKE_NUMPY_TYPEMAP(eigen_dense_t)

@@ -25,9 +25,8 @@
 #include <stdexcept>
 #include <cstring>
 #include <numeric>
+#include <tuple>
 
-#include <array>
-#include <vector>
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
@@ -87,7 +86,7 @@ namespace numpy {
             static constexpr int type = NPY_CDOUBLE;
         };
 
-        /** \brief Perform sanity checks for view_impl and copy_impl
+        /** \brief Perform sanity checks for convert
          *
          * To ensure that dimensions and types are consistent we
          * introduce this check function.
@@ -115,12 +114,63 @@ namespace numpy {
 
         /** \brief Create a Numpy view of an iterator (implementation)
          *
+         * This creates a view of the data, i.e. the data still
+         * belongs to the C++ end.  When the data is deallocated on
+         * the C++ end trying to access it in Python will probably
+         * cause a segfault.  In any case it is undefined behavior.
+         *
+         * \param[in] nd       Number of dimensions
+         * \param[in] dim      Dimensions of the array
+         * \param[in] dtype    Value type of array elements
+         * \param[in] data     Pointer to array data
+         *
+         * \return PyObject* containing a Numpy array
+         */
+        template < view_or_copy v, bool const_tag, typename value_type >
+        typename std::enable_if < v == numpy::view, PyObject * >::type
+        convert_impl(int nd, npy_intp * dim, int dtype, void * data, int)
+        {
+            PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
+                                             data, 0, NPY_ARRAY_FARRAY, nullptr);
+
+            if ( const_tag )
+                PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
+                                   NPY_ARRAY_WRITEABLE);
+            return ndarray;
+        }
+
+        /** \brief Create a Numpy copy of an iterator (implementation)
+         *
+         * This creates a copy of the data, i.e. the data belongs to
+         * the Python end.  The array is marked with NPY_OWNDATA which
+         * should tell the garbage collector to release this memory.
+         *
+         * \param[in] nd       Number of dimensions
+         * \param[in] dim      Dimensions of the array
+         * \param[in] dtype    Value type of array elements
+         * \param[in] data     Pointer to array data
+         * \param[in] len      Length of data
+         *
+         * \return PyObject* containing a Numpy array
+         */
+        template < view_or_copy v, bool const_tag, typename value_type >
+        typename std::enable_if < v == numpy::copy, PyObject * >::type
+        convert_impl(int nd, npy_intp * dim, int dtype, void * data, int len)
+        {
+            PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
+                                             nullptr, 0, NPY_ARRAY_FARRAY, nullptr);
+
+            std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ndarray)),
+                        data, len*sizeof(value_type));
+            PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
+                                NPY_ARRAY_OWNDATA);
+            return ndarray;
+        }
+
+        /** \brief Create a Numpy array from an iterator (implementation)
+         *
          * This is the implementation for the conversion of an
-         * arbitrary pointer between \p begin and \p end .  This
-         * creates a view of the data, i.e. the data still belongs to
-         * the C++ end.  When the data is deallocated on the C++ end
-         * trying to access it in Python will probably cause a
-         * segfault.  In any case it is undefined behavior.
+         * arbitrary pointer between \p begin and \p end .
          *
          * \param[in] begin    Random access iterator pointing to the start
          * \param[in] end      Random access iterator pointing to the end
@@ -130,11 +180,11 @@ namespace numpy {
          * \return PyObject* containing a Numpy array
          */
         template < view_or_copy v, typename RAIter >
-        typename std::enable_if < v == numpy::view, PyObject * >::type
-        convert_impl(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
+        PyObject * convert(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
                              std::random_access_iterator_tag)
         {
             using value_type = typename std::iterator_traits<RAIter>::value_type;
+            constexpr auto const_tag = traits::is_pointer_to_const < decltype(&(*begin)) >::value;
 
             int const len = std::distance(begin, end);
 
@@ -148,57 +198,7 @@ namespace numpy {
                 typename traits::pointer_remove_const<decltype(&(*begin))>::type
                 > ( &(*begin) );
 
-            PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
-                                             data, 0, NPY_ARRAY_FARRAY, nullptr);
-
-            if ( traits::is_pointer_to_const < decltype(&(*begin)) >::value)
-                PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
-                                   NPY_ARRAY_WRITEABLE);
-            return ndarray;
-        }
-
-        /** \brief Create a Numpy copy of an iterator (implementation)
-         *
-         * This is the implementation for the conversion of an
-         * arbitrary pointer between \p begin and \p end .  This
-         * creates a copy of the data, i.e. the data belongs to the
-         * Python end.  The array is marked with NPY_OWNDATA which
-         * should tell the garbage collector to release this memory.
-         *
-         * \param[in] begin    Random access iterator pointing to the start
-         * \param[in] end      Random access iterator pointing to the end
-         * \param[in] nd       Number of dimensions
-         * \param[in] dims     Initializer list with lengths of dimensions
-         *
-         * \return PyObject* containing a Numpy array
-         */
-        template < view_or_copy v, typename RAIter >
-        typename std::enable_if < v == numpy::copy, PyObject * >::type
-        convert_impl(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
-                             std::random_access_iterator_tag)
-        {
-            using value_type = typename std::iterator_traits<RAIter>::value_type;
-
-            int const len = std::distance(begin, end);
-
-            check_array_sanity(len, nd, dims);
-
-            npy_intp * dim = const_cast <
-                typename traits::pointer_remove_const<decltype(&(*dims.begin()))>::type
-                > ( &(*dims.begin()) );
-            auto dtype = internal::py_type<value_type>::type;
-            void * data = const_cast <
-                typename traits::pointer_remove_const<decltype(&(*begin))>::type
-                > ( &(*begin) );
-
-            PyObject * ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
-                                             nullptr, 0, NPY_ARRAY_FARRAY, nullptr);
-
-            std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject*>(ndarray)),
-                        data, len*sizeof(value_type));
-            PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject*>(ndarray),
-                                NPY_ARRAY_OWNDATA);
-            return ndarray;
+            return convert_impl<v, const_tag, value_type>(nd, dim, dtype, data, len);
         }
     }
 
@@ -219,7 +219,7 @@ namespace numpy {
     template < view_or_copy v, typename Iter >
     PyObject * convert(Iter begin, Iter end, int nd, std::initializer_list<long> dims)
     {
-        return internal::convert_impl<v>(
+        return internal::convert<v>(
           begin, end, nd, dims,
           typename std::iterator_traits<Iter>::iterator_category());
     }
@@ -303,6 +303,7 @@ namespace numpy {
         PyObject * sparse_impl(T&& sm)
         {
             if ( ! sm.isCompressed() )
+                // we cannot call makeCompressed here because sm might be const
                 throw std::runtime_error("Sparse matrix is not compressed!");
 
             numpy::array indptr = numpy::convert<v>(
@@ -347,38 +348,65 @@ namespace numpy {
 
     // Experimental support for Numpy arguments
 
+    namespace internal {
+
+        /** \brief Convert a Numpy array to an Eigen::Matrix
+         *
+         * \warning Experimental!
+         *
+         * \param[in] ndarray_    Numpy array
+         *
+         * \return An Eigen::Map of the Numpy array memory
+         */
+        template < typename T >
+        std::tuple<int, npy_intp *, typename T::Scalar *> as_dense_impl(numpy::array ndarray_)
+        {
+            using Scalar = typename T::Scalar;
+
+            if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
+                throw std::invalid_argument(
+                    "The argument is not a valid Numpy array!");
+
+            PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
+            int const nd = PyArray_NDIM(ndarray);
+            npy_intp * dims = PyArray_SHAPE(ndarray);
+            Scalar * data = reinterpret_cast<Scalar *>(PyArray_DATA(ndarray));
+
+            if ( PyArray_TYPE(ndarray) != internal::py_type<Scalar>::type )
+                throw std::invalid_argument("Type mismatch.");
+
+            return std::make_tuple(nd, dims, data);
+        }
+
+    } // namespace internal
+
     /** \brief Convert a Numpy array to an Eigen::Matrix
      *
      * \warning Experimental!
      *
-     * \param[in] ndarray_    Numpy array
+     * \param[in] ndarray    Numpy array
      *
      * \return An Eigen::Map of the Numpy array memory
      */
-    template < typename U, typename T = typename std::remove_reference<U>::type >
+#ifndef SCANNED_BY_DOXYGEN
+    template < typename T >
     typename std::enable_if<
         std::is_same<
             T,
             Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, Eigen::Dynamic>
             >::value,
-        typename std::conditional<
-            std::is_lvalue_reference<U>::value,
-            Eigen::Map < T >, T
-            >::type
+        Eigen::Map < T >
         >::type
-    to(numpy::array ndarray_)
+#else
+    template < typename MatrixType >
+    Eigen::Map < MatrixType >
+#endif
+    as(numpy::array ndarray)
     {
-        if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
-            throw std::invalid_argument(
-                "The argument is not a valid Numpy array!");
+        using Scalar = typename T::Scalar;
 
-        PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
-        int const nd = PyArray_NDIM(ndarray);
-        npy_intp * dims = PyArray_SHAPE(ndarray);
-        typename T::Scalar * data = reinterpret_cast<typename T::Scalar *>(PyArray_DATA(ndarray));
-
-        if ( PyArray_TYPE(ndarray) != internal::py_type<typename T::Scalar>::type )
-            throw std::invalid_argument("Type mismatch.");
+        int nd; npy_intp * dims; Scalar * data;
+        std::tie(nd, dims, data) = internal::as_dense_impl<T>(ndarray);
 
         if ( nd != 2 )
             throw std::range_error("Dimension mismatch.");
@@ -391,39 +419,91 @@ namespace numpy {
      *
      * \warning Experimental!
      *
-     * \param[in] ndarray_    Numpy array
+     * \param[in] ndarray    Numpy array
      *
      * \return An Eigen::Map of the Numpy array memory
      */
-    template < typename U, typename T = typename std::remove_reference<U>::type >
+#ifndef SCANNED_BY_DOXYGEN
+    template < typename T >
     typename std::enable_if<
         std::is_same<
             T,
             Eigen::Matrix<typename T::Scalar, Eigen::Dynamic, 1>
             >::value,
-        typename std::conditional<
-            std::is_lvalue_reference<U>::value,
-            Eigen::Map < T >, T
-            >::type
+        Eigen::Map < T >
         >::type
-    to(numpy::array ndarray_)
+#else
+    template < typename VectorType >
+    Eigen::Map < VectorType >
+#endif
+    as(numpy::array ndarray)
     {
-        if ( ! ndarray_ || ! PyArray_Check(ndarray_) )
-            throw std::invalid_argument(
-                "The argument is not a valid Numpy array!");
+        using Scalar = typename T::Scalar;
 
-        PyArrayObject* ndarray = reinterpret_cast<PyArrayObject*>(ndarray_);
-        int const nd = PyArray_NDIM(ndarray);
-        npy_intp * dims = PyArray_SHAPE(ndarray);
-        typename T::Scalar * data = reinterpret_cast<typename T::Scalar *>(PyArray_DATA(ndarray));
-
-        if ( PyArray_TYPE(ndarray) != internal::py_type<typename T::Scalar>::type )
-            throw std::invalid_argument("Type mismatch.");
+        int nd; npy_intp * dims; Scalar * data;
+        std::tie(nd, dims, data) = internal::as_dense_impl<T>(ndarray);
 
         if ( nd != 1 )
             throw std::range_error("Dimension mismatch.");
 
         return Eigen::Map < T > (data, dims[0]);
+    }
+
+    /** \brief Convert a Numpy array to an Eigen::SparseMatrix
+     *
+     * \warning Experimental!
+     *
+     * \param[in] ndarray    Numpy array
+     *
+     * \return An Eigen::Map of the Numpy array memory
+     */
+#ifndef SCANNED_BY_DOXYGEN
+    template < typename T >
+    typename std::enable_if<
+        std::is_same<
+            T,
+            Eigen::SparseMatrix<typename T::Scalar, 0, int>
+            >::value,
+        Eigen::Map < T >
+        >::type
+#else
+    template < typename SparseMatrixType >
+    Eigen::Map < SparseMatrixType >
+#endif
+    as(numpy::array ndarray)
+    {
+        using Scalar = typename T::Scalar;
+        using StorageIndex = typename T::StorageIndex;
+
+        PyObject * scipy = PyImport_ImportModule("scipy.sparse");
+        PyObject * csc_matrix = PyObject_GetAttrString(scipy, "csc_matrix");
+        if ( ! ndarray || ! PyObject_IsInstance(ndarray, csc_matrix) )
+            throw std::invalid_argument(
+                "The argument is not a valid csc_matrix!");
+        Py_DECREF(csc_matrix);
+
+        PyArrayObject* data_    = reinterpret_cast<PyArrayObject*>(
+            PyObject_GetAttrString(ndarray, "data"));
+        PyArrayObject* indices_ = reinterpret_cast<PyArrayObject*>(
+            PyObject_GetAttrString(ndarray, "indices"));
+        PyArrayObject* indptr_  = reinterpret_cast<PyArrayObject*>(
+            PyObject_GetAttrString(ndarray, "indptr"));
+
+        PyObject * shape = PyObject_GetAttrString(ndarray, "shape");
+        int rows, cols;
+        PyArg_ParseTuple(shape, "ii", &rows, &cols);
+        Py_DECREF(shape);
+
+        npy_intp * nnz = PyArray_SHAPE(data_);
+
+        Scalar       * data    = reinterpret_cast<Scalar       *>(PyArray_DATA(data_   ));
+        StorageIndex * indices = reinterpret_cast<StorageIndex *>(PyArray_DATA(indices_));
+        StorageIndex * indptr  = reinterpret_cast<StorageIndex *>(PyArray_DATA(indptr_ ));
+
+        if ( PyArray_TYPE(data_) != internal::py_type<Scalar>::type )
+            throw std::invalid_argument("Type mismatch.");
+
+        return Eigen::Map < T > (rows, cols, *nnz, indptr, indices, data);
     }
 
 }
