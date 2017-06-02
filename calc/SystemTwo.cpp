@@ -180,11 +180,66 @@ void SystemTwo::initializeBasis()
     hamiltonianmatrix_triplets.clear();
 
     ////////////////////////////////////////////////////////////////////
+    /// Remove vectors with too small norm /////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    // TODO too small norm can perhaps only happen if range_states was used !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    // Build transformator and remove vectors (if the squared norm is too small)
+    std::vector<eigen_triplet_t> triplets_transformator;
+    triplets_transformator.reserve(coefficients.cols());
+
+    size_t idx_new = 0;
+    for (int idx=0; idx<coefficients.cols(); ++idx) { // idx = col = num basis vector
+        double_t sqnorm = 0;
+
+        // Calculate the square norm of the columns of the coefficient matrix
+        for (eigen_iterator_t triple(coefficients,idx); triple; ++triple) {
+            sqnorm += std::pow(std::abs(triple.value()),2);
+        }
+        if (sqnorm > 0.05) {
+            triplets_transformator.push_back(eigen_triplet_t(idx,idx_new++,1));
+        }
+    }
+
+    this->applyRightsideTransformator(triplets_transformator);
+
+    ////////////////////////////////////////////////////////////////////
     /// Remove states that barely occur ////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
     // Build transformator and remove states if the squared norm is to small
     removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
+
+    ////////////////////////////////////////////////////////////////////
+    /// Sort states ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    // TODO combine this here with the removement of states that barely occur
+    // TODO use set in order to save the states
+
+    // Initialize original index locations
+    std::vector<size_t> idx_sorted(states.size());
+    iota(idx_sorted.begin(), idx_sorted.end(), 0);
+
+    // Sort indexes based on comparing values in v
+    std::sort(idx_sorted.begin(), idx_sorted.end(), [=](size_t i1, size_t i2) {return this->states[i1] < this->states[i2];});
+
+    // Make use of the sorted indexes in order to sort the states and transform the coefficients accordingly
+    std::vector<StateTwo> states_new;
+    states_new.reserve(states.size());
+    triplets_transformator.clear();
+    triplets_transformator.reserve(states.size());
+
+    idx_new = 0;
+    for (size_t idx : idx_sorted) {
+        states_new.push_back(states[idx]);
+        triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
+    }
+
+    states_new.shrink_to_fit();
+    states = states_new;
+    this->applyLeftsideTransformator(triplets_transformator);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -238,7 +293,7 @@ void SystemTwo::initializeInteraction() {
 
     for (int kappa = 1; kappa <= kappa_max; ++kappa) {
         matrixelements1.precalculateMultipole(states1, kappa);
-        matrixelements2.precalculateMultipole(states2, kappa);
+        matrixelements2.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -248,13 +303,14 @@ void SystemTwo::initializeInteraction() {
     std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_triplets; // TODO reserve
 
     for (size_t col=0; col<states.size(); ++col) { // TODO parallelization
+        const StateTwo &state_col = states[col];
+        if (state_col.element.empty()) continue; // TODO artifical states TODO [dummystates]
+
         for (size_t row=0; row<states.size(); ++row) {
-            //if (row < col) continue; // TODO use this restriction and construct the total matrix (that is needed in order to be transformable) from the diagonal matrix afterwards
-
             const StateTwo &state_row = states[row];
-            const StateTwo &state_col = states[col];
+            if (state_row.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-            if (state_row.element.empty() || state_col.element.empty()  ) continue; // TODO artifical states TODO [dummystates]
+            if (row < col) continue;
 
             if (selectionRulesMultipole(state_row.first(), state_col.first(), 1) && selectionRulesMultipole(state_row.second(), state_col.second(), 1)) {
                 int q1 = state_row.first().m-state_col.first().m;
@@ -264,20 +320,28 @@ void SystemTwo::initializeInteraction() {
                     scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
                             matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
                     interaction_triplets[1].push_back(eigen_triplet_t(row, col, val));
+                    if (row != col) interaction_triplets[1].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+
                 } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
                     scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
                             matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
                     if (calculation_required[0]) interaction_triplets[0].push_back(eigen_triplet_t(row, col, val));
                     if (calculation_required[2]) interaction_triplets[2].push_back(eigen_triplet_t(row, col, -val));
+                    if (calculation_required[0] && row != col) interaction_triplets[0].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+                    if (calculation_required[2] && row != col) interaction_triplets[2].push_back(eigen_triplet_t(col, row, -this->conjugate(val)));
+
                 } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
                     scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
                             matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
                     if (q1 == 1 || q2 == 1) val *= -1;// TODO think of a better way
                     interaction_triplets[3].push_back(eigen_triplet_t(row, col, val));
+                    if (row != col) interaction_triplets[3].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+
                 } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
                     scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
                             matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
                     interaction_triplets[2].push_back(eigen_triplet_t(row, col, val));
+                    if (row != col) interaction_triplets[2].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
                 } // TODO simplify code
 
                 // TODO add operators for higer order interaction !!!
@@ -349,6 +413,10 @@ void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const s
         states.push_back(StateTwo(system1.getStates()[row_1], system2.getStates()[row_2]));
     }
 
-    coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
-    sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
+    if (range_states.empty() || (range_states.find(StateTwo(system1.getStates()[row_1], system2.getStates()[row_2])) != range_states.end())) {
+        coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
+        sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
+    } else {
+        coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, 0));
+    }
 }

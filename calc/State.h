@@ -115,6 +115,7 @@ public:
 
     bool operator==(StateTwo const&) const;
     bool operator!=(StateTwo const&) const;
+    bool operator< (StateTwo const&) const;
 
     StateTwo order();
 

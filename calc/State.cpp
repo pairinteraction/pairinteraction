@@ -52,7 +52,8 @@ std::ostream& operator<< (std::ostream &out, const StateOne &state)
 
 bool StateOne::operator==(StateOne const& rhs) const
 {
-    return ((n == rhs.n) && (l == rhs.l) && (j == rhs.j)  && (m == rhs.m)); // TODO compare element in addition
+    // TODO use elements, too?
+    return ((n == rhs.n) && (l == rhs.l) && (j == rhs.j)  && (m == rhs.m));
 }
 
 bool StateOne::operator!=(StateOne const& rhs) const
@@ -60,12 +61,16 @@ bool StateOne::operator!=(StateOne const& rhs) const
     return ((n != rhs.n) || (l != rhs.l)  || (j != rhs.j)  || (m != rhs.m));
 }
 
-bool StateOne::operator<(StateOne const& rhs) const
+bool StateOne::operator<(const StateOne& rhs) const
 {
-    return (idx  < rhs.idx);
+    // TODO use elements, too?
+    return ((n < rhs.n) || ((n == rhs.n) &&
+            ((l < rhs.l) || ((l == rhs.l) &&
+            ((j < rhs.j) || ((j == rhs.j) &&
+            (m < rhs.m)))))));
 }
 
-bool StateOne::operator>(StateOne const& rhs) const
+bool StateOne::operator>(StateOne const& rhs) const // TODO remove this operator
 {
     return (idx > rhs.idx);
 }
@@ -158,6 +163,11 @@ bool StateTwo::operator!=(const StateTwo& rhs) const
             (n[1] != rhs.n[1]) || (l[1] != rhs.l[1]) || (j[1] != rhs.j[1])  || (m[1] != rhs.m[1]));
 }
 
+bool StateTwo::operator<(const StateTwo& rhs) const
+{
+    return ((this->first() < rhs.first()) || ((this->first() == rhs.first()) &&
+                                             (this->second() < rhs.second())));
+}
 
 StateTwo StateTwo::order() { // TODO use element, too?
     if ((n[0] < n[1]) || ((n[0] == n[1]) &&

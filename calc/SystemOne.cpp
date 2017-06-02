@@ -127,6 +127,8 @@ void SystemOne::initializeBasis()
         }
     }
 
+    // TODO (range_states.empty() || (range_states.find(state) != range_states.end())) !!!!!!!!!
+
     // Build data
     states.shrink_to_fit();
 
@@ -190,24 +192,29 @@ void SystemOne::initializeInteraction() {
     std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>> interaction_diamagnetism_triplets; // TODO reserve
 
     for (size_t col=0; col<states.size(); ++col) { // TODO parallelization
+        const StateOne &state_col = states[col];
+        if (state_col.element.empty()) continue; // TODO artifical states TODO [dummystates]
+
         for (size_t row=0; row<states.size(); ++row) {
-            //if (row < col) continue; // TODO use this restriction and construct the total matrix (that is needed in order to be transformable) from the diagonal matrix afterwards
-
             const StateOne &state_row = states[row];
-            const StateOne &state_col = states[col];
+            if (state_row.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-            if (state_row.element.empty() || state_col.element.empty()  ) continue; // TODO artifical states TODO [dummystates]
+            if (row < col) continue;
 
             for (int i : erange) {
                 if (selectionRulesMultipole(state_row, state_col, 1, i)) {
-                    interaction_efield_triplets[i].push_back(eigen_triplet_t(row, col, matrixelements.getElectricMomentum(state_row, state_col)));
+                    scalar_t value = matrixelements.getElectricMomentum(state_row, state_col);
+                    interaction_efield_triplets[i].push_back(eigen_triplet_t(row, col, value));
+                    if (row != col) interaction_efield_triplets[i].push_back(eigen_triplet_t(col, row, this->conjugate(value)));
                     break;
                 }
             }
 
             for (int i : brange) {
                 if (selectionRulesMomentum(state_row, state_col, i)) {
-                    interaction_bfield_triplets[i].push_back(eigen_triplet_t(row, col, matrixelements.getMagneticMomentum(state_row, state_col)));
+                    scalar_t value = matrixelements.getMagneticMomentum(state_row, state_col);
+                    interaction_bfield_triplets[i].push_back(eigen_triplet_t(row, col, value));
+                    if (row != col) interaction_bfield_triplets[i].push_back(eigen_triplet_t(col, row, this->conjugate(value)));
                     break;
                 }
             }
