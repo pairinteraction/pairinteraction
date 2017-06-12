@@ -47,7 +47,8 @@ public:
 
 
 QuantumDefect::QuantumDefect(std::string const& _species, int _n, int _l, double _j)
-    : species(_species), n(_n), l(_l), j(_j),
+    : ac_(), Z_(), a1_(), a2_(), a3_(), a4_(), rc_(), nstar_(), energy_(),
+      species(_species), n(_n), l(_l), j(_j),
       ac(ac_), Z(Z_), a1(a1_), a2(a2_), a3(a3_), a4(a4_),
       rc(rc_), nstar(nstar_), energy(energy_)
 {
