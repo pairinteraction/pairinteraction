@@ -10,7 +10,7 @@ Visit the official website at https://pairinteraction.github.io/
 >
 > *Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth*
 >
-> [arXiv:1612.08053][arXiv-link], submitted to J. Phys. B
+> [arXiv:1612.08053][arXiv-link], J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017), DOI: [10.1088/1361-6455/aa743a][journal-link]
 
 ## Build Status
 
@@ -41,6 +41,7 @@ Note that not all files in this repository belong to the pairinteraction project
 [gitter-svg]: https://badges.gitter.im/Join%20Chat.svg
 [gitter-room]: https://gitter.im/pairinteraction/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
-[arXiv-link]: http://arxiv.org/abs/1612.08053
+[arXiv-link]: https://arxiv.org/abs/1612.08053
+[journal-link]: https://doi.org/10.1088/1361-6455/aa743a
 [wiki]: https://github.com/pairinteraction/pairinteraction/wiki
 [issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
