@@ -54,14 +54,11 @@ from .guiadditions import GuiDict, DoubledeltaValidator, DoublenoneValidator, Do
 from .pyqtgraphadditions import PointsItem, MultiLine
 from .worker import Worker
 from .loader import Eigensystem
+from .version import *
 
 from calc import pairinteraction_real as pir
 from calc import pairinteraction_complex as pic
 pi = None
-
-# Versioning
-version_settings = 15
-version_cache = 13
 
 
 # Make program killable via strg-c if it is started in a terminal
@@ -389,6 +386,30 @@ class SystemDict(GuiDict):
                                  "samebasis", "steps", "precision", "missingCalc", "missingWhittaker",
                                  "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
 
+class AboutDialog(QtGui.QDialog):
+    def __init__(self, parent=None):
+        super(AboutDialog, self).__init__(parent)
+
+        self.setWindowTitle("About")
+
+        self.okButton = QtGui.QDialogButtonBox(self)
+        self.okButton.setStandardButtons(QtGui.QDialogButtonBox.Ok)
+        self.okButton.clicked.connect(self.close)
+
+        self.versionLabel = QtGui.QLabel(self)
+        self.versionLabel.setText((
+            "<h1>pairinteraction</h1>" +
+            "<p>Program version: {}</p>" +
+            "<p>Settings version: {}</p>" +
+            "<p>Cache version: {}</p>"
+        ).format(version_program,version_settings,version_cache))
+        self.versionLabel.setAlignment(QtCore.Qt.AlignHCenter)
+
+        self.vLayout = QtGui.QVBoxLayout(self)
+        self.vLayout.addWidget(self.versionLabel,
+                               alignment=QtCore.Qt.AlignCenter)
+        self.vLayout.addWidget(self.okButton,
+                               alignment=QtCore.Qt.AlignCenter)
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -408,6 +429,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QLocale.setDefault(QtCore.QLocale(locale.getlocale()[0]))
 
         super().__init__(parent)
+        self.AboutDialog = AboutDialog(self)
 
         del pg.graphicsItems.GradientEditorItem.Gradients['greyclip']
         del pg.graphicsItems.GradientEditorItem.Gradients['cyclic']
@@ -753,6 +775,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.action_reporterror.triggered.connect(
             lambda: webbrowser.open(
                 "https://github.com/pairinteraction/pairinteraction/issues/new"))
+        self.ui.action_about.triggered.connect(self.spawnAboutDialog)
         self.ui.action_whatsthis.triggered.connect(
             QtGui.QWhatsThis.enterWhatsThisMode)
         self.ui.action_cache_directory.triggered.connect(
@@ -3197,6 +3220,10 @@ class MainWindow(QtGui.QMainWindow):
             self.saveSettingsPlotter(filename)
             self.plotfile = filename
             self.filepath = os.path.dirname(filename)
+
+    @QtCore.pyqtSlot()
+    def spawnAboutDialog(self):
+        self.AboutDialog.exec_()
 
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):

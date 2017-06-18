@@ -14,22 +14,24 @@
 
 find_package(PyUIC REQUIRED)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/conf
+configure_file( version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py )
+
+add_custom_target(gui ALL)
+
+add_custom_command(
+  TARGET gui
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf/*
 )
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_BINARY_DIR}/pairinteraction
+add_custom_command(
+  TARGET gui
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/pairinteraction
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/adapt.cmake
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
-)
-
-add_custom_target(gui ALL
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/conf ${CMAKE_BINARY_DIR}/pairinteraction
 )
 
 if( WITH_DMG )

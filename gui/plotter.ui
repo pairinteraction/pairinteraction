@@ -5020,6 +5020,7 @@
     </property>
     <addaction name="action_reporterror"/>
     <addaction name="action_whatsthis"/>
+    <addaction name="action_about"/>
    </widget>
    <widget class="QMenu" name="menu_Configuration">
     <property name="title">
@@ -5176,6 +5177,11 @@
   <action name="action_reporterror">
    <property name="text">
     <string>Report an error</string>
+   </property>
+  </action>
+  <action name="action_about">
+   <property name="text">
+    <string>About</string>
    </property>
   </action>
  </widget>
