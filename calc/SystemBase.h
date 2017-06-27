@@ -134,7 +134,29 @@ public:
         return coefficients.rows();
     }
 
+    eigen_vector_double_t getOverlap(const T &state) {
+        // Build basis
+        this->buildBasis();
+
+        // Get index of the state
+        size_t idx = this->getStateindex(state);
+
+        // Calculate overlap with the state (eigen_vector_t overlap = coefficients.row(idx) causes segementation faults!)
+        eigen_vector_double_t overlap(coefficients.cols());
+        for (int k=0; k<coefficients.outerSize(); ++k) { // col
+            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+                if (triple.row() == idx) overlap[k] = std::pow(std::abs(triple.value()),2);
+                if (triple.row() >= idx) break;
+            }
+        }
+
+        return overlap;
+    }
+
     std::array<std::vector<size_t>,2> getConnections(SystemBase<T> &system_to, double threshold) {
+        // Build basis
+        this->buildBasis();
+
         double threshold_sqrt = std::sqrt(threshold);
 
         // Calculate transformator between the set of states
