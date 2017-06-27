@@ -20,10 +20,13 @@
 #include <algorithm>
 #include <string>
 
+#include <unordered_map>
+
+
 template<class T> class SystemBase {
 public:
     SystemBase(std::vector<T> states, std::string cachedir) : // TODO
-        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false), keep_states(false) {
+        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
         throw std::runtime_error( "Method yet not implemented." );
     }
     
@@ -82,10 +85,6 @@ public:
     void restrictStates(const std::vector<T> &s) {
         range_states = std::unordered_set<T>(s.begin(), s.end());
     }
-
-    void keepStates(bool enable) { // TODO integrate this functionality into restrictEnergy
-        keep_states = enable;
-    }
     
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
@@ -133,6 +132,79 @@ public:
         }
         
         return coefficients.rows();
+    }
+
+    std::array<std::vector<size_t>,2> getConnections(SystemBase<T> &system_to, double threshold) {
+        double threshold_sqrt = std::sqrt(threshold);
+
+        // Calculate transformator between the set of states
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(std::min(this->getNumStates(),system_to.getNumStates()));
+
+        std::unordered_map<T, size_t> states2idx; // TODO use multiindex from boost
+        for (size_t idx = 0; idx < states.size(); ++idx) {
+            states2idx[states[idx]] = idx;
+        }
+
+        for (size_t idx_to = 0; idx_to < system_to.getNumStates(); ++idx_to) {
+            const T &state = system_to.getStates()[idx_to];
+            size_t idx_from = states2idx[state];
+            triplets_transformator.push_back(eigen_triplet_t(idx_from,idx_to,1));
+        }
+
+        eigen_sparse_t transformator(this->getNumStates(),system_to.getNumStates());
+        transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
+
+        // Calculate overlap
+        eigen_sparse_double_t overlap_sqrt = (coefficients.adjoint()*transformator*system_to.getCoefficients()).cwiseAbs();
+
+        // Determine the indices of the maximal values within the rows
+        std::vector<size_t> rows_with_maxval;
+        rows_with_maxval.reserve(overlap_sqrt.cols());
+
+        for (int k=0; k<overlap_sqrt.outerSize(); ++k) {
+            double maxval = -1;
+            size_t row_with_maxval;
+
+            for (eigen_iterator_double_t triple(overlap_sqrt, k); triple; ++triple) {
+                if (triple.value() > maxval) {
+                    row_with_maxval = triple.row();
+                    maxval = triple.value();
+                }
+            }
+
+            rows_with_maxval.push_back(row_with_maxval);
+        }
+
+        // Determine the maximal values within the columns and construct connections
+        eigen_sparse_double_t overlap_sqrt_transposed = overlap_sqrt.transpose();
+        std::array<std::vector<size_t>,2> connections;
+        connections[0].reserve(std::max(overlap_sqrt.rows(), overlap_sqrt.cols()));
+        connections[1].reserve(std::max(overlap_sqrt.rows(), overlap_sqrt.cols()));
+
+        for (int k=0; k<overlap_sqrt_transposed.outerSize(); ++k) { // cols
+            double maxval = threshold_sqrt;
+            size_t idx_from;
+            size_t idx_to;
+
+            for (eigen_iterator_double_t triple(overlap_sqrt_transposed,k); triple; ++triple) {
+                if (triple.value() > maxval) {
+                    idx_from = triple.col();
+                    idx_to = triple.row();
+                    maxval = triple.value();
+                }
+            }
+
+            if (maxval > threshold_sqrt && rows_with_maxval[idx_to] == idx_from) {
+                connections[0].push_back(idx_from);
+                connections[1].push_back(idx_to);
+            }
+        }
+
+        connections[0].shrink_to_fit();
+        connections[1].shrink_to_fit();
+
+        return connections;
     }
     
     ////////////////////////////////////////////////////////////////////
@@ -327,16 +399,16 @@ public:
     }
     
 protected:
-    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false), keep_states(false) {
+    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false), keep_states(false) {
+    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false), keep_states(false) {
+    SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase(bool memory_saving) : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false), keep_states(false) {
+    SystemBase(bool memory_saving) : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
     virtual void initializeBasis() = 0;
@@ -503,8 +575,6 @@ protected:
 private:
     std::vector<T> states_artifical; // TODO think about whether one can use here real states, too TODO [dummystates]
 
-    bool keep_states;
-
     void forgetRestrictions() {
         energy_min = std::numeric_limits<double>::lowest();
         energy_max = std::numeric_limits<double>::max();
@@ -565,18 +635,16 @@ private:
             /// Remove states that barely occur within the vectors /////////////
             ////////////////////////////////////////////////////////////////////
 
-            if (!keep_states) { // TODO
-                // Calculate the square norm of the rows of the coefficient matrix
-                std::vector<double> sqnorm_list(coefficients.rows(),0);
-                for (int k=0; k<this->coefficients.cols(); ++k) {
-                    for (eigen_iterator_t triple(coefficients,k); triple; ++triple) {
-                        sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()),2);
-                    }
+            // Calculate the square norm of the rows of the coefficient matrix
+            std::vector<double> sqnorm_list(coefficients.rows(),0);
+            for (int k=0; k<this->coefficients.cols(); ++k) {
+                for (eigen_iterator_t triple(coefficients,k); triple; ++triple) {
+                    sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()),2);
                 }
-                
-                // Remove states if the squared norm is to small
-                removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
             }
+
+            // Remove states if the squared norm is to small
+            removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
         }
         
         // Forget basis restrictions as they were applied now

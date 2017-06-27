@@ -91,6 +91,7 @@ namespace std {
   %template(VectorComplexDouble) vector<std::complex<double>>;
   %template(SetInt) set<int>;
   %template(SetFloat) set<float>;
+  %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
 };
 
 
@@ -143,10 +144,6 @@ namespace std {
 // overwrite specific methods, defined before.
 
 %pythoncode %{
-
-# TODO use GHz in the C++ backend so that the conversion is not
-# necessary
-au2GHz = 6579683.920711
 
 SystemOne.coefficients = property(SystemOne.getCoefficients)
 SystemTwo.coefficients = property(SystemTwo.getCoefficients)
