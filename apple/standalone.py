@@ -36,11 +36,7 @@ def standalone(file):
     # Get rpaths
     out = subprocess.check_output(['otool', '-l', file]).decode('utf-8')
     p = re.compile("LC_RPATH\n.*\n.+path (.*?) \(")
-    m = p.search(out)
-    if m is not None:
-        rpaths = m.group(1).split()
-    else:
-        rpaths = []
+    rpaths = [m.group(1) for m in p.finditer(out)]
 
     # Get dependencies
     o = subprocess.Popen(['otool', '-L', file], stdout=subprocess.PIPE)
@@ -51,7 +47,6 @@ def standalone(file):
 
             # Get path of dependeny
             libpath = l.strip().split(' (', 1)[0]
-            libpath = libpath.replace("@loader_path", os.path.dirname(file))
 
             if "@rpath" in libpath:
                 if not rpaths: raise
@@ -60,7 +55,10 @@ def standalone(file):
                     if os.path.isfile(testpath):
                         libpath = testpath
                         break
-                if not os.path.isfile(libpath): raise
+
+            libpath = libpath.replace("@loader_path", os.path.dirname(file))
+
+            if not os.path.isfile(libpath): raise
 
             libpath = os.path.abspath(libpath)
 
