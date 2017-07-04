@@ -22,7 +22,6 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
-#include <codecvt>
 
 // Implementation of StateOne
 
@@ -76,7 +75,11 @@ bool StateOne::operator>(StateOne const& rhs) const // TODO remove this operator
     return (idx > rhs.idx);
 }
 
-double StateOne::getEnergy() const { return energy_level(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element), n, l, j); }
+double StateOne::getEnergy() const
+{
+    std::string tmp(element.begin(), element.end()); // TODO think of a better solution
+    return energy_level(tmp, n, l, j);
+}
 
 
 // Implementation of StateTwo

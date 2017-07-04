@@ -254,8 +254,10 @@ void SystemTwo::initializeInteraction() {
     std::string matrixelementsdir = "";
     if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
 
-    MatrixElements matrixelements1(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element[0]), matrixelementsdir);
-    MatrixElements matrixelements2(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element[1]), matrixelementsdir);
+    std::string tmp(element[0].begin(), element[0].end()); // TODO think of a better solution
+    MatrixElements matrixelements1(tmp, matrixelementsdir);
+    tmp = std::string(element[1].begin(), element[1].end());
+    MatrixElements matrixelements2(tmp, matrixelementsdir);
 
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();

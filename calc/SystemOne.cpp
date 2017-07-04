@@ -175,7 +175,8 @@ void SystemOne::initializeInteraction() {
     std::string matrixelementsdir = "";
     if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
 
-    MatrixElements matrixelements(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element), matrixelementsdir);
+    std::string tmp(element.begin(), element.end()); // TODO think of a better solution
+    MatrixElements matrixelements(tmp, matrixelementsdir);
     for (int i : erange) matrixelements.precalculateElectricMomentum(states, i);
     for (int i : brange) matrixelements.precalculateMagneticMomentum(states, i);
 

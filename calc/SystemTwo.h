@@ -21,7 +21,6 @@
 #include "SystemBase.h"
 #include "SystemOne.h"
 
-#include <codecvt>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
 

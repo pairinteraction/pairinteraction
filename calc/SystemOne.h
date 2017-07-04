@@ -23,7 +23,6 @@
 #include <array>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
-#include <codecvt>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
 
