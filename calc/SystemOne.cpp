@@ -127,8 +127,6 @@ void SystemOne::initializeBasis()
         }
     }
 
-    // TODO (range_states.empty() || (range_states.find(state) != range_states.end())) !!!!!!!!!
-
     // Build data
     states.shrink_to_fit();
 

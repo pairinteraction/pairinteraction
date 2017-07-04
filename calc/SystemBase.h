@@ -86,10 +86,6 @@ public:
     void restrictM(std::set<float> m) {
         range_m = m;
     }
-
-    void restrictStates(const std::vector<T> &s) {
-        range_states = std::unordered_set<T>(s.begin(), s.end());
-    }
     
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
@@ -318,7 +314,7 @@ public:
         }
         
         // In case of no new basis restrictions and already initialized basis, there is nothing to do
-        if (states.size() != 0 && range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() && range_states.empty() &&
+        if (states.size() != 0 && range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() &&
                 energy_min == std::numeric_limits<double>::lowest() && energy_max == std::numeric_limits<double>::max()) { // TODO check for new threshold, too
             return;
         }
@@ -476,7 +472,6 @@ protected:
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
-    std::unordered_set<T> range_states; // TODO remove !!!!
     
     bool memory_saving;
     bool is_interaction_already_contained;
@@ -541,7 +536,7 @@ protected:
     }
     
     bool checkIsQuantumstateValid(T state) { // TODO (T &state)
-        return (range_states.empty() || (range_states.find(state) != range_states.end())) && checkIsQuantumnumberValid(state.n, range_n) && checkIsQuantumnumberValid(state.l, range_l) && checkIsQuantumnumberValid(state.j, range_j) && checkIsQuantumnumberValid(state.m, range_m);
+        return checkIsQuantumnumberValid(state.n, range_n) && checkIsQuantumnumberValid(state.l, range_l) && checkIsQuantumnumberValid(state.j, range_j) && checkIsQuantumnumberValid(state.m, range_m);
     }
     
     bool checkIsEnergyValid(double e) {
@@ -635,7 +630,6 @@ private:
         range_l.clear();
         range_j.clear();
         range_m.clear();
-        range_states.clear();
     }
     
     ////////////////////////////////////////////////////////////////////
@@ -644,7 +638,7 @@ private:
     
     void updateEverything() {
         
-        if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() || !range_states.empty()) {
+        if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty()) {
             
             ////////////////////////////////////////////////////////////////////
             /// Remove restricted states ///////////////////////////////////////
@@ -654,7 +648,7 @@ private:
             removeRestrictedStates([=](size_t idx) -> bool { return this->checkIsQuantumstateValid(states[idx]); } );
         }
         
-        if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() || !range_states.empty() ||
+        if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() ||
                 energy_min != std::numeric_limits<double>::lowest() ||
                 energy_max != std::numeric_limits<double>::max()) { // TODO also check for a new value of threshold_for_sqnorm
             

@@ -413,10 +413,6 @@ void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const s
         states.push_back(StateTwo(system1.getStates()[row_1], system2.getStates()[row_2]));
     }
 
-    if (range_states.empty() || (range_states.find(StateTwo(system1.getStates()[row_1], system2.getStates()[row_2])) != range_states.end())) {
-        coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
-        sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
-    } else {
-        coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, 0));
-    }
+    coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
+    sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
 }
