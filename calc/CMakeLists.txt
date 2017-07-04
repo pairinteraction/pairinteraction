@@ -36,7 +36,7 @@ find_package(Sqlite3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIR})
 list(APPEND LIBRARIES ${SQLITE3_LIBRARY})
 
-find_package(Boost COMPONENTS filesystem system program_options REQUIRED)
+find_package(Boost COMPONENTS filesystem system program_options serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${Boost_LIBRARIES})
 

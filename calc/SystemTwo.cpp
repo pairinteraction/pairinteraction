@@ -25,11 +25,11 @@
 #include <vector>
 #include <unordered_set>
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir)
     : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
 }
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir, bool memory_saving)
     : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
 }
 
@@ -59,7 +59,7 @@ std::vector<StateOne> SystemTwo::getStatesSecond() {
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-const std::array<std::string, 2>& SystemTwo::getElement() {
+const std::array<std::wstring, 2>& SystemTwo::getElement() {
     return element;
 }
 
@@ -165,8 +165,8 @@ void SystemTwo::initializeBasis()
     }
 
     // Delete unecessary storage
-    system1 = SystemOne(element[0], cachedir.string());
-    system2 = SystemOne(element[1], cachedir.string());
+    system1 = SystemOne(element[0]);
+    system2 = SystemOne(element[1]);
 
     // Build data
     states.shrink_to_fit();
@@ -285,8 +285,8 @@ void SystemTwo::initializeInteraction() {
     std::string matrixelementsdir = "";
     if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
 
-    MatrixElements matrixelements1(element[0], matrixelementsdir);
-    MatrixElements matrixelements2(element[1], matrixelementsdir);
+    MatrixElements matrixelements1(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element[0]), matrixelementsdir);
+    MatrixElements matrixelements2(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element[1]), matrixelementsdir);
 
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();

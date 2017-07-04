@@ -22,15 +22,16 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <codecvt>
 
 // Implementation of StateOne
 
-StateOne::StateOne(std::string element, int n, int l, float j, float m)
+StateOne::StateOne(std::wstring element, int n, int l, float j, float m)
     : State(0), element(element), n(n), l(l), j(j), m(m)
 {}
 
 StateOne::StateOne()
-    : State(0), n(0), l(0), j(0), m(0)
+    : State(0), element(L""), n(0), l(0), j(0), m(0)
 {}
 
 StateOne::StateOne(idx_t idx, int n, int l, float j, float m)
@@ -75,17 +76,17 @@ bool StateOne::operator>(StateOne const& rhs) const // TODO remove this operator
     return (idx > rhs.idx);
 }
 
-double StateOne::getEnergy() const { return energy_level(element, n, l, j); }
+double StateOne::getEnergy() const { return energy_level(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element), n, l, j); }
 
 
 // Implementation of StateTwo
 
 
 StateTwo::StateTwo()
-    : State(0), n({{0,0}}), l({{0,0}}), j({{0,0}}), m({{0,0}})
+    : State(0), element({{L"",L""}}), n({{0,0}}), l({{0,0}}), j({{0,0}}), m({{0,0}})
 {}
 
-StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
+StateTwo::StateTwo(std::array<std::wstring, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
     : State(0), element(element), n(n), l(l), j(j), m(m)
 {}
 

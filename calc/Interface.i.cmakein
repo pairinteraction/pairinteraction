@@ -2,6 +2,9 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
+#define SWIG_PYTHON_STRICT_BYTE_CHAR
+#define SWIG_PYTHON_STRICT_UNICODE_WCHAR
+
 #include "NumpyUtils.h"
 #include "Traits.h"
 #include "dtypes.h"
@@ -9,6 +12,13 @@
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
+
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream.hpp>
+#include <sstream>
+#include <string.h>
 %}
 
 
@@ -24,7 +34,10 @@ import_array();
 %include "exception.i"
 %include "std_array.i"
 %include "std_complex.i"
+%include "std_sstream.i"
 %include "std_string.i"
+%include "std_wstring.i"
+%include "cstring.i"
 %include "std_vector.i"
 %include "std_set.i"
 
@@ -39,6 +52,26 @@ import_array();
   }
 }
 
+// Make pickle work
+// https://stackoverflow.com/questions/9310053/how-to-make-my-swig-extension-module-work-with-pickle
+// remark: passing as std::stringstream does not work because swig calls the implicitly-deleted copy constructor of std::stringstream instead of the move constructor
+%define %boost_picklable(cls...)
+  %extend cls {
+    std::string __getstate__() {
+      std::stringstream ss;
+      boost::archive::binary_oarchive ar(ss);
+      ar << *($self);
+      return ss.str();
+    }
+
+    void __setstate_internal(std::string const& sState) {
+      boost::iostreams::array_source asource(sState.c_str(), sState.size()); // prevents from copying
+      boost::iostreams::stream<boost::iostreams::array_source> ss(asource);
+      boost::archive::binary_iarchive ar(ss);
+      ar >> *($self);
+    }
+  }
+%enddef
 
 // Wrap the << operator
 // http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
@@ -106,38 +139,73 @@ namespace std {
 // Wrap State.h
 %ignore hash;
 %rename(__ostream__) operator<<;
+
 %include "State.h"
 
-
 %attribute(StateOne, double, energy, getEnergy);
+%attribute(StateTwo, double, energy, getEnergy);
+
+%boost_picklable(StateOne);
+%boost_picklable(StateTwo);
+
 %extend StateOne {
   __STR__();
-};
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
 
-
-%attribute(StateTwo, double, energy, getEnergy);
 %extend StateTwo {
   __STR__();
-};
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
 
 
 // Wrap SystemBase.h
 %include "SystemBase.h"
 
+
 // Wrap SystemOne.h and SystemTwo.h
 %template(_SystemStateOne) SystemBase<StateOne>;
 %template(_SystemStateTwo) SystemBase<StateTwo>;
 
-%copyctor SystemOne;
-%copyctor SystemTwo;
-
 %include "SystemOne.h"
 %include "SystemTwo.h"
+
+%copyctor SystemOne;
+%copyctor SystemTwo;
 
 %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  );
 %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  );
 
+%boost_picklable(SystemOne);
+%boost_picklable(SystemTwo);
 
+%extend SystemOne {
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__("")
+      self.__setstate_internal(sState)
+  %}
+}
+
+%extend SystemTwo {
+  %pythoncode %{
+    def __setstate__(self, sState):
+      s1 = SystemOne("")
+      s2 = SystemOne("")
+      self.__init__(s1, s2)
+      self.__setstate_internal(sState)
+  %}
+}
+
+  
 // Python specific extensions
 
 // This block has to be the last in the Interface.i file, because it
@@ -154,3 +222,6 @@ SystemOne.diagonal = property(SystemOne.getDiagonal)
 SystemTwo.diagonal = property(SystemTwo.getDiagonal)
 
 %}
+
+
+

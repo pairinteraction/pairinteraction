@@ -23,6 +23,9 @@
 #include <array>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
+#include <codecvt>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/unordered_map.hpp>
 
 #ifndef SWIG
 namespace std {
@@ -39,12 +42,12 @@ namespace std {
 
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::string const& element, std::string cachedir);
-    SystemOne(std::string const& element, std::string cachedir, bool memory_saving);
-    SystemOne(std::string const& element);
-    SystemOne(std::string const& element, bool memory_saving);
+    SystemOne(std::wstring const& element, std::wstring cachedir);
+    SystemOne(std::wstring const& element, std::wstring cachedir, bool memory_saving);
+    SystemOne(std::wstring const& element);
+    SystemOne(std::wstring const& element, bool memory_saving);
 
-    const std::string& getElement() const;
+    const std::wstring& getElement() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
     void setDiamagnetism(bool enable);
@@ -59,7 +62,7 @@ protected:
 private:
     std::array<double, 3> efield, bfield;
     bool diamagnetism;
-    std::string element;
+    std::wstring element;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
@@ -67,6 +70,22 @@ private:
 
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
+
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & boost::serialization::base_object<SystemBase<StateOne>>(*this);
+        ar & element;
+        ar & efield & bfield & diamagnetism;
+        ar & interaction_efield & interaction_bfield & interaction_diamagnetism;
+    }
 };
 
 #endif

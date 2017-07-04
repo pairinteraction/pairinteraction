@@ -3,6 +3,8 @@
 
 #include "dtypes.h"
 #include "State.h"
+#include "serialization_eigen.h"
+#include "serialization_path.h"
 
 #include <vector>
 #include <numeric>
@@ -19,13 +21,16 @@
 #include <iterator>
 #include <algorithm>
 #include <string>
-
 #include <unordered_map>
+#include <boost/serialization/vector.hpp>
+#include <boost/serialization/set.hpp>
+#include <boost/serialization/complex.hpp>
 
+// https://stackoverflow.com/questions/23175180/boost-serialization-segfault // TODO, fix possibility of segfaults
 
 template<class T> class SystemBase {
 public:
-    SystemBase(std::vector<T> states, std::string cachedir) : // TODO
+    SystemBase(std::vector<T> states, std::wstring cachedir) : // TODO
         cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
         throw std::runtime_error( "Method yet not implemented." );
     }
@@ -139,9 +144,10 @@ public:
         this->buildBasis();
 
         // Get index of the state
-        size_t idx = this->getStateindex(state);
+        int idx = this->getStateindex(state);
 
-        // Calculate overlap with the state (eigen_vector_t overlap = coefficients.row(idx) causes segementation faults!)
+        // Calculate overlap with the state
+        // remark: eigen_vector_t overlap = coefficients.row(idx) causes segementation faults, perhaps a bug in eigen
         eigen_vector_double_t overlap(coefficients.cols());
         for (int k=0; k<coefficients.outerSize(); ++k) { // col
             for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
@@ -151,6 +157,31 @@ public:
         }
 
         return overlap;
+    }
+
+    std::vector<T> getMainStates() {
+        // Build basis
+        this->buildBasis();
+
+        // Get states with the main contribution
+        std::vector<T> states_with_maxval;
+        states_with_maxval.reserve(coefficients.cols());
+
+        for (int k=0; k<coefficients.outerSize(); ++k) { // col == idx_vector
+            double maxval = -1;
+            size_t row_with_maxval;
+
+            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+                if (std::abs(triple.value()) > maxval) {
+                    row_with_maxval = triple.row();
+                    maxval = std::abs(triple.value());
+                }
+            }
+
+            states_with_maxval.push_back(states[row_with_maxval]);
+        }
+
+        return states_with_maxval;
     }
 
     std::array<std::vector<size_t>,2> getConnections(SystemBase<T> &system_to, double threshold) {
@@ -324,7 +355,7 @@ public:
         
         // Check whether the basis is empty
         if (coefficients.rows() == 0) {
-            throw std::runtime_error( "The basis is contains no states." );
+            throw std::runtime_error( "The basis contains no states." );
         }
         if (coefficients.cols() == 0) {
             throw std::runtime_error( "The basis is contains no vectors." );
@@ -421,10 +452,10 @@ public:
     }
     
 protected:
-    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(std::wstring cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(std::wstring cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
     SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
@@ -445,7 +476,7 @@ protected:
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
-    std::unordered_set<T> range_states;
+    std::unordered_set<T> range_states; // TODO remove !!!!
     
     bool memory_saving;
     bool is_interaction_already_contained;
@@ -671,6 +702,23 @@ private:
         
         // Forget basis restrictions as they were applied now
         this->forgetRestrictions();
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & cachedir;
+        ar & energy_min & energy_max & range_n & range_l & range_j & range_m;
+        ar & memory_saving & is_interaction_already_contained & is_new_hamiltonianmatrix_required;
+        ar & states & coefficients & hamiltonianmatrix;
+        ar & coefficients_unperturbed_cache & hamiltonianmatrix_unperturbed_cache;
     }
 };
 

@@ -21,14 +21,19 @@
 #include "SystemBase.h"
 #include "SystemOne.h"
 
+#include <codecvt>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/unordered_map.hpp>
+
+
 class SystemTwo : public SystemBase<StateTwo> {
 public:
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir);
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir, bool memory_saving);
     SystemTwo(const SystemOne &b1, const SystemOne &b2);
     SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving);
 
-    const std::array<std::string, 2>& getElement();
+    const std::array<std::wstring, 2>& getElement();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
@@ -46,7 +51,7 @@ protected:
 private:
     void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<size_t> &stateidentifier2row, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
 
-    std::array<std::string, 2> element;
+    std::array<std::wstring, 2> element;
     SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
     SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
 
@@ -57,6 +62,22 @@ private:
     int kappa_max;
 
     parity_t sym_permutation;
+
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
+        ar & element & system1 & system2;
+        ar & distance & angle & kappa_max & sym_permutation;
+        ar & interaction;
+    }
 };
 
 #endif

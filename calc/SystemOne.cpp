@@ -25,23 +25,23 @@
 #include <vector>
 #include <unordered_set>
 
-SystemOne::SystemOne(std::string const& element, std::string cachedir)
+SystemOne::SystemOne(std::wstring const& element, std::wstring cachedir)
     : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::string const& element, std::string cachedir, bool memory_saving)
+SystemOne::SystemOne(std::wstring const& element, std::wstring cachedir, bool memory_saving)
     : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::string const& element)
+SystemOne::SystemOne(std::wstring const& element)
     : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::string const& element, bool memory_saving)
+SystemOne::SystemOne(std::wstring const& element, bool memory_saving)
     : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-const std::string& SystemOne::getElement() const {
+const std::wstring& SystemOne::getElement() const {
     return element;
 }
 
@@ -84,7 +84,7 @@ void SystemOne::initializeBasis()
     std::set<float> range_adapted_j, range_adapted_m;
 
     if (range_n.empty()) {
-        throw std::runtime_error( "The calculation of range_n via an energy restriction is not yet implemented." ); // TODO
+        throw std::runtime_error( "The calculation of range_n via energy restrictions is not yet implemented." ); // TODO
     } else {
         range_adapted_n = range_n;
     }
@@ -177,7 +177,7 @@ void SystemOne::initializeInteraction() {
     std::string matrixelementsdir = "";
     if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
 
-    MatrixElements matrixelements(element, matrixelementsdir);
+    MatrixElements matrixelements(std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(element), matrixelementsdir);
     for (int i : erange) matrixelements.precalculateElectricMomentum(states, i);
     for (int i : brange) matrixelements.precalculateMagneticMomentum(states, i);
 
@@ -310,4 +310,3 @@ void SystemOne::changeToSphericalbasis(std::array<double, 3> field, std::unorder
     field_spherical[-1] = std::complex<double>(field[0]/std::sqrt(2),-field[1]/std::sqrt(2));
     field_spherical[0] = std::complex<double>(field[2],0);
 }
-

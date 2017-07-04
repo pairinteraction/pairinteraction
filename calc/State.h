@@ -24,6 +24,9 @@
 #include <iostream>
 #include <boost/functional/hash.hpp>
 
+#include <boost/serialization/array.hpp>
+#include <boost/serialization/string.hpp>
+
 /** \brief %Base class for states
  *
  * This class is the base class for states specified in the fine structure basis.
@@ -43,13 +46,13 @@ class StateOne : public State {
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::string element;
+    std::wstring element;
     int n, l;
     float j, m;
 
 
     StateOne();
-    StateOne(std::string element, int n, int l, float j, float m);
+    StateOne(std::wstring element, int n, int l, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
 
@@ -61,6 +64,19 @@ public:
     bool operator> (StateOne const&) const;
 
     double getEnergy() const;
+private:
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & element & n & l & j & m;
+    }
 };
 
 
@@ -92,12 +108,12 @@ class StateTwo : public State {
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::array<std::string, 2> element;
+    std::array<std::wstring, 2> element;
     std::array<int, 2> n, l;
     std::array<float, 2> j, m;
 
     StateTwo();
-    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(std::array<std::wstring, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
@@ -120,6 +136,19 @@ public:
     StateTwo order();
 
     double getEnergy() const;
+private:
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & element & n & l & j & m;
+    }
 };
 
 
