@@ -36,18 +36,18 @@ add_custom_command(
 
 if( WITH_DMG )
 
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction
-    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -P ${CMAKE_MODULE_PATH}/pyinstaller.cmake
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_BINARY_DIR}/pairinteraction
+  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction
+    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -DSCRIPT=${CMAKE_BINARY_DIR}/pairinteraction -P ${CMAKE_MODULE_PATH}/pyinstaller.cmake
+    DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction
   )
   
   add_custom_target(pyinstaller ALL
-    DEPENDS ${CMAKE_BINARY_DIR}/dist/pairinteraction
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction
   )
   
   add_dependencies(pyinstaller gui)
 
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction DESTINATION . RENAME pairinteraction)
+  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction DESTINATION .)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
   
   find_program( FILEICON NAMES fileicon )

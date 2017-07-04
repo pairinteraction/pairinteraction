@@ -46,7 +46,7 @@ int thread_ctrl(int num_threads /*= -1*/)
 }
 
 
-int compute(std::string const& config_name, std::string const& output_name) {
+int compute(const std::wstring &config_name, const std::wstring &output_name) {
     auto context = zmq::context();
     auto publisher = context.socket(ZMQ_PUB);
     publisher.connect("tcp://localhost:5556");

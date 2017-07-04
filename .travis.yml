@@ -50,7 +50,7 @@ matrix:
       env:
         - image=debian:doxygen
   allow_failures:
-  - os: osx
+  - env: image=opensuse
 
 script:
   - docker/build_docker.sh

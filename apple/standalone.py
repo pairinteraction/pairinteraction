@@ -4,6 +4,7 @@ import sys
 import subprocess
 import os
 from shutil import copyfile
+import re
 
 # Literature
 # https://github.com/Kitware/CMake/blob/master/Modules/BundleUtilities.cmake
@@ -11,30 +12,60 @@ from shutil import copyfile
 # http://thecourtsofchaos.com/2013/09/16/how-to-copy-and-relink-binaries-on-osx/
 # https://cmake.org/Wiki/CMake_RPATH_handling
 
+print("-- Make standalone")
+
 executables = sys.argv[1:]
 installpath = os.path.dirname(sys.argv[1])
 librarypath = os.path.join(installpath, "libraries")
+
+os.chdir(installpath)
 
 FNULL = open(os.devnull, 'w')
 
 
 def standalone(file):
-    # Copy library
+
+    # Copy dependency
     if file not in executables:
         file_new = os.path.join(librarypath, os.path.basename(file))
         copyfile(file, file_new)
+        print("Dependency {} installed.".format(os.path.basename(file)))
     else:
         file_new = file
+
+    # Get rpaths
+    out = subprocess.check_output(['otool', '-l', file]).decode('utf-8')
+    p = re.compile("LC_RPATH\n.*\n.+path (.*?) \(")
+    m = p.search(out)
+    if m is not None:
+        rpaths = m.group(1).split()
+    else:
+        rpaths = []
 
     # Get dependencies
     o = subprocess.Popen(['otool', '-L', file], stdout=subprocess.PIPE)
     for l in o.stdout:
         l = l.decode('utf-8')
+
         if l[0] == '\t':
+
+            # Get path of dependeny
             libpath = l.strip().split(' (', 1)[0]
             libpath = libpath.replace("@loader_path", os.path.dirname(file))
-            libpath = libpath.replace("@rpath", "/usr/local/opt/llvm/lib")
-            if not libpath.startswith("/usr/lib") or "libsqlite" in libpath:
+
+            if "@rpath" in libpath:
+                if not rpaths: raise
+                for r in rpaths:
+                    testpath = libpath.replace("@rpath", r)
+                    if os.path.isfile(testpath):
+                        libpath = testpath
+                        break
+                if not os.path.isfile(libpath): raise
+
+            libpath = os.path.abspath(libpath)
+
+            # If no standard library and no installed library, update path to dependency
+            if (not libpath in executables) and (not libpath.startswith("/System/Library") and not libpath.startswith("/usr/lib") or "libsqlite" in libpath):
 
                 # Update paths
                 if file not in executables:
@@ -48,8 +79,6 @@ def standalone(file):
 
                 yield libpath
 
-
-print("-- Make standalone")
 
 if not os.path.exists(librarypath):
     os.makedirs(librarypath)

@@ -505,9 +505,14 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        self.path_workingdir = os.path.join(self.path_base, "../../calc")
-        self.path_quantumdefects = os.path.join(
-            self.path_base, self.path_workingdir, "databases/quantum_defects.db")
+        if os.path.exists(os.path.join(self.path_base, "calc/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "calc")
+        elif os.path.exists(os.path.join(self.path_base, "../../calc/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "../../calc")
+        else:
+            raise Exception('Directory containing database not found.')
+
+        self.path_quantumdefects = os.path.join(self.path_workingdir, "databases/quantum_defects.db")
 
         if os.name == 'nt':
             self.path_out = os.path.join(self.userpath, "pairinteraction/")

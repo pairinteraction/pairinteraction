@@ -20,4 +20,4 @@ else( )
   message( FATAL_ERROR "Could not find pyinstaller" )
 endif( )
 
-execute_process(COMMAND "${PYINSTALLER}" "--onefile" "--exclude-module" "matplotlib" "--exclude-module" "OpenGL" "--exclude-module" "PyQt5.QtOpenGL" "${CMAKE_BINARY_DIR}/pairinteraction")
+execute_process(COMMAND "${PYINSTALLER}" "--onefile" "--exclude-module" "matplotlib" "--exclude-module" "OpenGL" "--exclude-module" "PyQt5.QtOpenGL" "${SCRIPT}")
