@@ -183,8 +183,6 @@ void SystemTwo::initializeBasis()
     /// Remove vectors with too small norm /////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    // TODO too small norm can perhaps only happen if range_states was used !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
     // Build transformator and remove vectors (if the squared norm is too small)
     std::vector<eigen_triplet_t> triplets_transformator;
     triplets_transformator.reserve(coefficients.cols());
@@ -211,35 +209,6 @@ void SystemTwo::initializeBasis()
     // Build transformator and remove states if the squared norm is to small
     removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
 
-    ////////////////////////////////////////////////////////////////////
-    /// Sort states ////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
-    // TODO combine this here with the removement of states that barely occur
-    // TODO use set in order to save the states
-
-    // Initialize original index locations
-    std::vector<size_t> idx_sorted(states.size());
-    iota(idx_sorted.begin(), idx_sorted.end(), 0);
-
-    // Sort indexes based on comparing values in v
-    std::sort(idx_sorted.begin(), idx_sorted.end(), [=](size_t i1, size_t i2) {return this->states[i1] < this->states[i2];});
-
-    // Make use of the sorted indexes in order to sort the states and transform the coefficients accordingly
-    std::vector<StateTwo> states_new;
-    states_new.reserve(states.size());
-    triplets_transformator.clear();
-    triplets_transformator.reserve(states.size());
-
-    idx_new = 0;
-    for (size_t idx : idx_sorted) {
-        states_new.push_back(states[idx]);
-        triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
-    }
-
-    states_new.shrink_to_fit();
-    states = states_new;
-    this->applyLeftsideTransformator(triplets_transformator);
 }
 
 ////////////////////////////////////////////////////////////////////
