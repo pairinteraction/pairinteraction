@@ -17,12 +17,15 @@
 #ifndef SQLITE_BINDINGS
 #define SQLITE_BINDINGS
 
+#include <functional>
 #include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
+
 #include <sqlite3.h>
-#include <memory>
+
 #include "Iter.h"
 
 
