@@ -2874,6 +2874,7 @@ class MainWindow(QtGui.QMainWindow):
                             return string
 
                 # start thread that collects the output
+                os.chdir(os.path.join(self.path_workingdir, "..")) # TODO why is this necessary?
                 self.proc = multiprocessing.Process(
                     target=pi.compute,args=(self.path_config, self.path_cache))
                 self.proc.start()
