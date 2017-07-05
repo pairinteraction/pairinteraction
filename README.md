@@ -1,4 +1,4 @@
-# pairinteraction [![Gitter][gitter-svg]][gitter-room] [![Build status][travis-svg]][travis-link] [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
+# pairinteraction [![Build status][travis-svg]][travis-link] [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 
 *A Rydberg Interaction Calculator*
 
@@ -22,9 +22,7 @@ We are using [Travis CI](https://travis-ci.org) as a hosted continuous integrati
 
 Documentation for pairinteraction is located in the [Wiki][wiki].
 
-We use a [Gitter](https://gitter.im) chatroom for discussing things related to pairinteraction.  Please come in and say *hi!* or ask a question.  If you think your question is related to problems, bugs, or suggests an improvement, consider raising an [issue][issue-tracker].
-
-*Our Gitter chatroom:* [![Gitter][gitter-svg]][gitter-room]
+If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an [issue][issue-tracker].
 
 ## Downloads
 
@@ -38,8 +36,6 @@ Note that not all files in this repository belong to the pairinteraction project
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
-[gitter-svg]: https://badges.gitter.im/Join%20Chat.svg
-[gitter-room]: https://gitter.im/pairinteraction/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
