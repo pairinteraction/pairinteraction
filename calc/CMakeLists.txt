@@ -12,9 +12,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Use OpenMP
+
+find_package(OpenMP REQUIRED)
+if (OPENMP_FOUND)
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
+if(CMAKE_COMPILER_IS_GNUCXX)
 if(CMAKE_BUILD_TYPE MATCHES Release)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Ofast -pipe")
 endif(CMAKE_BUILD_TYPE MATCHES Release)
+endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -56,7 +65,7 @@ target_link_libraries(pairinteraction-complex ${LIBRARIES})
 target_link_libraries(matrixelements ${LIBRARIES})
 
 # Set c++11
-
+if(NOT MSVC)
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
 CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
@@ -67,13 +76,8 @@ elseif(COMPILER_SUPPORTS_CXX0X)
 else()
     message(FATAL "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler.")
 endif()
-
-# Use OpenMP
-
-find_package(OpenMP REQUIRED)
-if (OPENMP_FOUND)
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-endif()
+endif(NOT MSVC)
+###
 
 # Include test cases
 

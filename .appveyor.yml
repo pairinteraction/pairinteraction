@@ -1,0 +1,67 @@
+os: Visual Studio 2015
+
+platform: x64
+
+configuration: Release
+
+environment:
+    PYTHON_VERSION: 3.6
+    PYTHON_ROOT: C:\Python36-x64
+    MINICONDA: C:\Miniconda36-x64 
+    NSIS: C:\Program Files (x86)\NSIS    
+ 
+install:
+  - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
+  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+
+  - ps: choco install -y swig --version 3.0.9
+  - ps: choco install -y sqlite --version 3.19.2
+  - ps: choco install -y pkgconfiglite
+  - ps: choco install -y doxygen.portable
+  
+  - ps: Start-FileDownload 'https://github.com/seweber/pairinteraction-build-dependencies/releases/download/v110/cpp-libraries-windows-x86_64.zip'
+  - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
+
+  - ps: Start-FileDownload 'https://github.com/seweber/pairinteraction-build-dependencies/releases/download/v110/python-packages-windows_x86_64.zip'
+  - cmd: 7z x -y python-packages-windows_x86_64.zip > nul
+  - cmd: call C:\Miniconda36-x64\Scripts\activate.bat
+  - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
+  - cmd: conda install -y -q pairinteraction-dependencies
+  - git submodule update --init --recursive
+
+  
+cache:
+- C:\ProgramData\chocolatey\bin
+- C:\ProgramData\chocolatey\lib
+
+
+before_build:
+  
+  - cmd: md build && cd build
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
+  - cmd: ls "C:/projects/pairinteraction/build"  
+
+
+build:
+  project: build\pairinteraction.sln
+  parallel: true
+  verbosity: minimal
+
+artifacts:
+  - path: build\Release\pairinteraction.exe
+    name: installer
+
+#cache:
+#- C:\ProgramData\chocolatey\bin
+#- C:\ProgramData\chocolatey\lib
+
+
+deploy:
+  - provider: GitHub
+    release: $(APPVEYOR_REPO_TAG_NAME)
+    auth_token: $(GH_TOKEN)
+    artifact:  installer
+    prerelease: true
+    force_update: true
+    on:
+      appveyor_repo_tag: true  

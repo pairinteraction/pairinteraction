@@ -12,7 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_program( MAKENSIS NAMES makensis )
+
+find_program( MAKENSIS NAMES makensis 
+			  HINTS
+			  ENV NSIS  	)
 if( MAKENSIS )
   message( STATUS "Found makensis: ${MAKENSIS}" )
 else( )
