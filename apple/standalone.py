@@ -49,7 +49,9 @@ def standalone(file):
             libpath = l.strip().split(' (', 1)[0]
 
             if "@rpath" in libpath:
-                if not rpaths: raise
+                if not rpaths:
+                    print(file, rpaths, libpath)
+                    raise
                 for r in rpaths:
                     testpath = libpath.replace("@rpath", r)
                     if os.path.isfile(testpath):
@@ -58,7 +60,9 @@ def standalone(file):
 
             libpath = libpath.replace("@loader_path", os.path.dirname(file))
 
-            if not os.path.isfile(libpath): raise
+            if not os.path.isfile(libpath):
+                print(file, rpaths, libpath)
+                raise
 
             libpath = os.path.abspath(libpath)
 
