@@ -47,6 +47,7 @@ def standalone(file):
 
             # Get path of dependeny
             libpath = l.strip().split(' (', 1)[0]
+            libpath = libpath.replace("@loader_path", os.path.dirname(file))
 
             if "@rpath" in libpath:
                 if not rpaths:
@@ -54,11 +55,10 @@ def standalone(file):
                     raise
                 for r in rpaths:
                     testpath = libpath.replace("@rpath", r)
+                    testpath = testpath.replace("@loader_path", os.path.dirname(file))
                     if os.path.isfile(testpath):
                         libpath = testpath
                         break
-
-            libpath = libpath.replace("@loader_path", os.path.dirname(file))
 
             if not os.path.isfile(libpath):
                 print(file, rpaths, libpath)
