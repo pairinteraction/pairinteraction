@@ -286,7 +286,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::vector<bool> necessary_tmp(basis->size(), false);
 
 #pragma omp parallel for
-    for (size_t i = 0; i < nSteps_one; ++i) {
+    for (int i = 0; i < nSteps_one; ++i) {
         energycutoff(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, necessary_tmp);
     }
 
@@ -516,7 +516,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         mat_single.resize(symmetries.size());
 
 #pragma omp parallel for
-        for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+        for (int idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
             Symmetry sym = symmetries[idx_symmetry];
 
             // Combine the Hamiltonians of the two atoms
@@ -536,8 +536,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
         mat_multipole_transformed.resize(symmetries.size()*(idx_multipole_max+1));
 
-#pragma omp parallel for collapse(2)
-        for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+#pragma omp parallel for
+        for (int idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
             for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
                 mat_multipole_transformed[idx_symmetry*(idx_multipole_max+1)+idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[idx_symmetry].basis());
             }
@@ -551,10 +551,10 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     std::cout << ">>TOT" << std::setw(7) << nSteps_two*symmetries.size() << std::endl;
 
-#pragma omp parallel for collapse(2) schedule(static, 1)
+#pragma omp parallel for schedule(static, 1)
 
     // Loop through steps
-    for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
+    for (int step_two = 0; step_two < nSteps_two; ++step_two) {
 
         // Loop through symmetries
         for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {

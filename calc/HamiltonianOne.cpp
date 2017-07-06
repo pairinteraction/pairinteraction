@@ -407,7 +407,7 @@ void HamiltonianOne::build() {
 #pragma omp parallel for schedule(static, 1)
 
     // Loop through steps
-    for (size_t step = 0; step < nSteps; ++step) {
+    for (int step = 0; step < nSteps; ++step) {
 
         // === Get parameters for the current position inside the loop ===
 
