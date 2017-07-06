@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-add_subdirectory(doxygen)
+if(UNIX) # TODO make doxygen work with windows as well
 
-add_custom_target(doc DEPENDS doxygen)
+  add_subdirectory(doxygen)
+
+  add_custom_target(doc DEPENDS doxygen)
+
+endif( )
