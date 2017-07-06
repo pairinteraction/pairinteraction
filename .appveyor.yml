@@ -18,7 +18,6 @@ install:
   - ps: choco install -y -r swig --version 3.0.9
   - ps: choco install -y -r sqlite --version 3.19.2
   - ps: choco install -y -r pkgconfiglite # TODO can we get rid of this dependency?
-  - ps: choco install -y -r doxygen.portable --version 1.8.11
   
   - ps: Start-FileDownload 'https://github.com/seweber/pairinteraction-build-dependencies/releases/download/v110/cpp-libraries-windows-x86_64.zip'
   - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
@@ -31,8 +30,8 @@ install:
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
 
 cache:
-  - C:\ProgramData\chocolatey\bin
-  - C:\ProgramData\chocolatey\lib
+  - C:\ProgramData\chocolatey\bin -> appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> appveyor.yml
 
 before_build:
   - cmd: md build && cd build

@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if(UNIX) # TODO make doxygen work with windows as well
+if(UNIX) # TODO why is this needed?
 
   add_subdirectory(doxygen)
 
