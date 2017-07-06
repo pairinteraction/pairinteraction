@@ -56,15 +56,15 @@ if( WITH_BACKEND )
   add_subdirectory(calc)
 endif( )
 
-#if( WITH_DATABASE )
-#  add_subdirectory(calc/databases)
-#endif( )
+if( WITH_DATABASE )
+  add_subdirectory(calc/databases)
+endif( )
 
-#if( WITH_GUI )
-#  add_subdirectory(gui)
-#endif( )
+if( WITH_GUI )
+  add_subdirectory(gui)
+endif( )
 
-#add_subdirectory(doc)
+add_subdirectory(doc)
 
 # Concatenate licenses
 

@@ -7,8 +7,8 @@ configuration: Release
 environment:
     PYTHON_VERSION: 3.6
     PYTHON_ROOT: C:\Python36-x64
-    MINICONDA: C:\Miniconda36-x64 
-    NSIS: C:\Program Files (x86)\NSIS
+    MINICONDA_ROOT: C:\Miniconda36-x64 
+    NSIS_ROOT: C:\Program Files (x86)\NSIS
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
 install:
@@ -27,7 +27,7 @@ install:
 
   - ps: Start-FileDownload 'https://github.com/seweber/pairinteraction-build-dependencies/releases/download/v110/python-packages-windows_x86_64.zip'
   - cmd: 7z x -y python-packages-windows_x86_64.zip > nul
-  - cmd: call C:\Miniconda36-x64\Scripts\activate.bat
+  - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
   - cmd: conda install -y -q pairinteraction-dependencies
 
