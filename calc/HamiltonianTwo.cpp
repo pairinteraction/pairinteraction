@@ -220,7 +220,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
 
     StateTwo initial = basis->initial();
-    parity_t initalParityL = static_cast<parity_t>(std::pow(-1, initial.l[0] + initial.l[1]));
+    parity_t initalParityL = (std::pow(-1, initial.l[0] + initial.l[1]) > 0) ? EVEN : ODD;
     int initalM = initial.m[0] + initial.m[1];
     int initalJ = initial.j[0] + initial.j[1];
     bool samestates = initial.first() == initial.second();
