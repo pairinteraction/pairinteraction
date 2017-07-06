@@ -34,11 +34,13 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
-add_custom_command(
-  TARGET gui
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/startgui
-)
+if(UNIX)
+  add_custom_command(
+    TARGET gui
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/startgui
+  )
+endif()
 
 if( WITH_DMG )
 
