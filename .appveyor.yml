@@ -5,9 +5,7 @@ platform: x64
 configuration: Release
 
 environment:
-    PYTHON_VERSION: 3.6
-    PYTHON_ROOT: C:\Python36-x64
-    MINICONDA_ROOT: C:\Miniconda36-x64 
+    MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
@@ -30,6 +28,7 @@ install:
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
   - cmd: conda install -y -q pairinteraction-dependencies
+  - cmd: pip install git+https://github.com/pyinstaller/pyinstaller # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
 
 cache:
   - C:\ProgramData\chocolatey\bin
