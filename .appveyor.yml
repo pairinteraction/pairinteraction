@@ -30,8 +30,8 @@ install:
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
 
 cache:
-  - C:\ProgramData\chocolatey\bin -> appveyor.yml
-  - C:\ProgramData\chocolatey\lib -> appveyor.yml
+  - C:\ProgramData\chocolatey\bin -> .appveyor.yml
+  - C:\ProgramData\chocolatey\lib -> .appveyor.yml
 
 before_build:
   - cmd: md build && cd build
@@ -43,6 +43,7 @@ build:
   verbosity: minimal
 
 after_build:
+  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" calc\
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip calc > nul
 
 artifacts:
