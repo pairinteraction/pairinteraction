@@ -27,7 +27,7 @@ matrix:
         - zip -r -X python-packages-osx conda-export
       before_deploy:
         - git tag $COMMIT_TIMESTAMP
-        - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/pairinteraction/pairinteraction-build-dependencies.git"
+        - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"
 
 deploy:
   provider: releases
