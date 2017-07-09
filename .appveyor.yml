@@ -28,12 +28,13 @@ install:
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
   - cmd: conda install -y -q pairinteraction-dependencies
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
-
+ 
 cache:
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml
   - C:\ProgramData\chocolatey\lib -> .appveyor.yml
 
 before_build:
+  - cmd: ls "C:/projects/pairinteraction" 
   - cmd: md build && cd build
   - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
@@ -43,7 +44,15 @@ build:
   verbosity: minimal
 
 after_build:
-  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" calc\
+  #- cmd: pyinstaller gui\startgui
+  - cmd: ls "C:/projects/pairinteraction/build/win32"
+  - cmd: cd .. 
+  - cmd: dir
+  - cmd: ls win32
+  - cmd: pyinstaller win32\startgui.spec
+  - cmd: ls "C:/projects/pairinteraction/build"
+  - cmd: more startgui.spec  
+  - cmd: copy "C:\Program Files\Microsoft SDKs\Windows\v7.1\Redist\VC\vcredist_x64.exe" calc\
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip calc > nul
 
 artifacts:
