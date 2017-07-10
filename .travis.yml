@@ -22,7 +22,8 @@ matrix:
         - mv /Users/travis/miniconda3/pkgs/*.tar.bz2 conda-export/osx-64
         - conda index conda-export/noarch
         - conda index conda-export/osx-64
-        - zip -r -X python-packages-osx conda-export
+        - conda list -e > conda-spec-file.txt
+        - zip -r -X python-packages-osx conda-export conda-spec-file.txt
       before_deploy:
         - git tag $COMMIT_TIMESTAMP
         - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"

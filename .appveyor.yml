@@ -15,7 +15,7 @@ install:
   - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
   
-  - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
+  - cmd: call %MINICONDA_ROOT%\Scripts\activate root
   - cmd: conda config --append channels conda-forge
   - cmd: conda install -y -q conda-build
   - cmd: conda clean -y -a
@@ -34,7 +34,8 @@ after_build:
   - cmd: move %MINICONDA_ROOT%\pkgs\*.tar.bz2 conda-export\win-64
   - cmd: conda index conda-export\noarch
   - cmd: conda index conda-export\win-64
-  - cmd: 7z a -tzip python-packages-windows_x86_64.zip conda-export > nul
+  - cmd: conda list -e > conda-spec-file.txt
+  - cmd: 7z a -tzip python-packages-windows_x86_64.zip conda-export conda-spec-file.txt > nul
     
   - cmd: C:\vcpkg\vcpkg export sqlite3:x64-windows eigen3:x64-windows boost:x64-windows gsl:x64-windows --raw
   - cmd: move C:\vcpkg\vcpkg-export-* vcpkg-export
