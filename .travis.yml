@@ -23,7 +23,7 @@ matrix:
         - mkdir conda-export/osx-64
         - mv /Users/travis/miniconda3/pkgs/*.tar.bz2 conda-export/osx-64
         - conda index conda-export/noarch
-        - conda index conda-export/win-64
+        - conda index conda-export/osx-64
         - zip -r -X python-packages-osx conda-export
       before_deploy:
         - git tag $COMMIT_TIMESTAMP
