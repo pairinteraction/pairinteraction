@@ -35,10 +35,12 @@ matrix:
       before_install:
         - wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-MacOSX-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && source /Users/travis/miniconda3/bin/activate root
-        - conda update --yes conda
+        - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1499792777/python-packages-osx.zip
+        - unzip python-packages-osx.zip
+        - conda config --prepend channels file:///$TRAVIS_BUILD_DIR/conda-export
       install:
-        - conda install --yes nomkl numpy scipy
-        - pip install psutil pint pyqt5 git+https://github.com/pyinstaller/pyinstaller
+        - conda install -y -q pairinteraction-dependencies
+        - pip install git+https://github.com/pyinstaller/pyinstaller
         - brew install eigen gsl llvm swig zeromq
         - npm install -g fileicon
       before_script:
