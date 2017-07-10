@@ -7,5 +7,5 @@ For the contained C++ and Python libraries, the individual licenses apply.
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction-build-dependencies.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction-build-dependencies
 
-[appveyor-svg]: https://ci.appveyor.com/api/projects/status/ixe9b5hp6to0f4n1/branch/master?svg=true
-[appveyor-link]: https://ci.appveyor.com/project/seweber/pairinteraction-build-dependencies/branch/master
+[appveyor-svg]: https://ci.appveyor.com/api/projects/status/tgsc3sfwjk6ed9qy/branch/master?svg=true
+[appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction-build-dependencies/branch/master
