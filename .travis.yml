@@ -28,8 +28,8 @@ matrix:
         - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"
 
 branches:
-  except:
-    - $COMMIT_TIMESTAMP
+  only:
+    - master
 
 deploy:
   provider: releases
