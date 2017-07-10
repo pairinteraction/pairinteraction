@@ -1,7 +1,5 @@
 language: generic
 
-skip_tags: true
-
 matrix:
   include:
     - os: osx
@@ -28,6 +26,10 @@ matrix:
       before_deploy:
         - git tag $COMMIT_TIMESTAMP
         - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"
+
+branches:
+  except:
+    - $COMMIT_TIMESTAMP
 
 deploy:
   provider: releases
