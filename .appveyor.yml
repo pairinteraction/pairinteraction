@@ -38,7 +38,7 @@ after_build:
   - cmd: activate root
   - cmd: conda index conda-export\noarch
   - cmd: conda index conda-export\win-64
-  - cmd: 7z a -tzip python-packages-windows_x86_64.zip conda-export conda-spec-file.txt > nul
+  - cmd: 7z a -tzip python-packages-windows-x86_64.zip conda-export conda-spec-file.txt > nul
     
   - cmd: C:\vcpkg\vcpkg export sqlite3:x64-windows eigen3:x64-windows boost:x64-windows gsl:x64-windows --raw
   - cmd: move C:\vcpkg\vcpkg-export-* vcpkg-export
@@ -47,14 +47,14 @@ after_build:
 artifacts:
   - path: cpp-libraries-windows-x86_64.zip
     name: cpp-libraries-windows-x86_64
-  - path: python-packages-windows_x86_64.zip
-    name: python-packages-windows_x86_64
+  - path: python-packages-windows-x86_64.zip
+    name: python-packages-windows-x86_64
 
 deploy:
   - provider: GitHub
     release: $(COMMIT_TIMESTAMP)
     auth_token: $(GH_TOKEN)
-    artifact: cpp-libraries-windows-x86_64, python-packages-windows_x86_64
+    artifact: cpp-libraries-windows-x86_64, python-packages-windows-x86_64
     force_update: true
     on:
       branch: master
