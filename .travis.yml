@@ -10,19 +10,25 @@ matrix:
         - wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-MacOSX-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh && ./miniconda.sh -b -p /Users/travis/miniconda3 && source /Users/travis/miniconda3/bin/activate root
         - conda config --append channels conda-forge
-        - conda install -y -q conda-build
-        - conda clean -y -a
       install:
-        - conda metapackage pairinteraction-dependencies $COMMIT_TIMESTAMP --no-anaconda-upload --dependencies "pyqt 5.6.0" "numpy 1.12.1" "scipy 0.19.0" "psutil 5.2.2" "pint 0.8.1"
-        - conda install -y -q pairinteraction-dependencies --use-local 
+        - conda create -y --name default --clone root
+        - conda install -y -q conda-build
       script:
+        - conda metapackage pairinteraction-dependencies $COMMIT_TIMESTAMP --no-anaconda-upload --dependencies "pyqt 5.6.0" "numpy 1.12.1" "scipy 0.19.0" "psutil 5.2.2" "pint 0.8.1"
+
+        - source activate default
+        - conda clean -y -a
+        - conda install -y -q pairinteraction-dependencies --use-local
         - mkdir conda-export
         - mkdir conda-export/noarch
         - mkdir conda-export/osx-64
         - mv /Users/travis/miniconda3/pkgs/*.tar.bz2 conda-export/osx-64
+        - conda list -e > conda-spec-file.txt
+        
+        - source activate root
         - conda index conda-export/noarch
         - conda index conda-export/osx-64
-        - conda list -e > conda-spec-file.txt
+
         - zip -r -X python-packages-osx conda-export conda-spec-file.txt
       before_deploy:
         - git tag $COMMIT_TIMESTAMP

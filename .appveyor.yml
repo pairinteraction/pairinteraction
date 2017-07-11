@@ -17,24 +17,27 @@ install:
   
   - cmd: call %MINICONDA_ROOT%\Scripts\activate root
   - cmd: conda config --append channels conda-forge
+  - cmd: conda create -y --name default --clone root
   - cmd: conda install -y -q conda-build
-  - cmd: conda clean -y -a
   
   - cmd: cd C:\ && git clone https://github.com/Microsoft/vcpkg.git && cd vcpkg && git checkout 7a87e919256fac941a1509b9c67b41c5298f26ac && bootstrap-vcpkg.bat && cd %APPVEYOR_BUILD_FOLDER%
   
 build_script:
   - cmd: conda metapackage pairinteraction-dependencies %COMMIT_TIMESTAMP% --no-anaconda-upload --dependencies "pyqt 5.6.0" "numpy 1.12.1" "scipy 0.19.0" "psutil 5.2.2" "pint 0.8.1"
-  - cmd: conda install -y -q pairinteraction-dependencies --use-local
   
   - cmd: C:\vcpkg\vcpkg install sqlite3:x64-windows eigen3:x64-windows boost:x64-windows gsl:x64-windows
 
 after_build:
+  - cmd: activate default
+  - cmd: conda clean -y -a
+  - cmd: conda install -y -q pairinteraction-dependencies --use-local
   - cmd: md conda-export\noarch
   - cmd: md conda-export\win-64
   - cmd: move %MINICONDA_ROOT%\pkgs\*.tar.bz2 conda-export\win-64
+  - cmd: conda list -e > conda-spec-file.txt
+  - cmd: activate root
   - cmd: conda index conda-export\noarch
   - cmd: conda index conda-export\win-64
-  - cmd: conda list -e > conda-spec-file.txt
   - cmd: 7z a -tzip python-packages-windows_x86_64.zip conda-export conda-spec-file.txt > nul
     
   - cmd: C:\vcpkg\vcpkg export sqlite3:x64-windows eigen3:x64-windows boost:x64-windows gsl:x64-windows --raw
