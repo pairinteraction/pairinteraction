@@ -41,6 +41,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DATABASE "Generate the quantum defect database" ON)
+option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 
 # Mac OS X specific build instructions
@@ -65,7 +66,9 @@ if( WITH_GUI )
   add_subdirectory(gui)
 endif( )
 
-add_subdirectory(doc)
+if ( WITH_DOCS )
+  add_subdirectory(doc)
+endif( )
 
 # Concatenate licenses
 

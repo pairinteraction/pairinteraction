@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-if(UNIX) # TODO why is this needed?
+add_subdirectory(doxygen)
 
-  add_subdirectory(doxygen)
-
-  add_custom_target(doc DEPENDS doxygen)
-
-endif( )
+add_custom_target(doc DEPENDS doxygen)
