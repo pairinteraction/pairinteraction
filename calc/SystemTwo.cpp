@@ -41,20 +41,20 @@ SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_savin
     : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
 }
 
-std::vector<StateOne> SystemTwo::getStatesFirst() {
+std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
-    for (const auto &state : states) {
-        states_one.insert(StateOne(state.getFirstState()));
+    for (const auto &entry : states) {
+        states_one.insert(StateOne(entry.state.getFirstState()));
     }
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-std::vector<StateOne> SystemTwo::getStatesSecond() {
+std::vector<StateOne> SystemTwo::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
-    for (const auto &state : states) {
-        states_one.insert(StateOne(state.getSecondState()));
+    for (const auto &entry : states) {
+        states_one.insert(StateOne(entry.state.getSecondState()));
     }
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
@@ -118,7 +118,6 @@ void SystemTwo::initializeBasis()
     states.reserve(system1.getNumStates()*system2.getNumStates());
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
     std::vector<double> sqnorm_list(system1.getNumStates()*system2.getNumStates(), 0);
-    std::vector<size_t> stateidentifier2row(system1.getNumStates()*system2.getNumStates(), std::numeric_limits<size_t>::max());
 
     size_t col_new = 0;
     for (size_t col_1=0; col_1<system1.getNumVectors(); ++col_1) {
@@ -150,12 +149,12 @@ void SystemTwo::initializeBasis()
                     }
 
                     // Add an entry to the current basis vector
-                    this->addCoefficient(row_1, row_2, col_new, value_new, stateidentifier2row, coefficients_triplets, sqnorm_list);
+                    this->addCoefficient(row_1, row_2, col_new, value_new, coefficients_triplets, sqnorm_list);
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (sym_permutation != NA && col_1 != col_2 ) {
                         value_new *= (sym_permutation == EVEN) ? -1 : 1;
-                        this->addCoefficient(row_2, row_1, col_new, value_new, stateidentifier2row, coefficients_triplets, sqnorm_list);
+                        this->addCoefficient(row_2, row_1, col_new, value_new, coefficients_triplets, sqnorm_list);
                     }
                 }
             }
@@ -207,7 +206,7 @@ void SystemTwo::initializeBasis()
     ////////////////////////////////////////////////////////////////////
 
     // Build transformator and remove states if the squared norm is to small
-    removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
+    removeRestrictedStates([=](const enumerated_state<StateTwo> &entry) -> bool { return sqnorm_list[entry.idx] > 0.05; } );
 
 }
 
@@ -273,46 +272,48 @@ void SystemTwo::initializeInteraction() {
 
     std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_triplets; // TODO reserve
 
-    for (size_t col=0; col<states.size(); ++col) { // TODO parallelization
-        const StateTwo &state_col = states[col];
-        if (state_col.element.empty()) continue; // TODO artifical states TODO [dummystates]
+    // loop over column entries
+    for (const auto &c: states) { // TODO parallelization
 
-        for (size_t row=0; row<states.size(); ++row) {
-            const StateTwo &state_row = states[row];
-            if (state_row.element.empty()) continue; // TODO artifical states TODO [dummystates]
+        if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-            if (row < col) continue;
+        // loop over row entries
+        for (const auto &r: states) {
 
-            if (selectionRulesMultipole(state_row.first(), state_col.first(), 1) && selectionRulesMultipole(state_row.second(), state_col.second(), 1)) {
-                int q1 = state_row.first().m-state_col.first().m;
-                int q2 = state_row.second().m-state_col.second().m;
+            if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+
+            if (r.idx < c.idx) continue;
+
+            if (selectionRulesMultipole(r.state.first(), c.state.first(), 1) && selectionRulesMultipole(r.state.second(), c.state.second(), 1)) {
+                int q1 = r.state.first().m-c.state.first().m;
+                int q2 = r.state.second().m-c.state.second().m;
 
                 if (q1 == 0 && q2 == 0 && calculation_required[1]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
-                            matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
-                    interaction_triplets[1].push_back(eigen_triplet_t(row, col, val));
-                    if (row != col) interaction_triplets[1].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                    interaction_triplets[1].push_back(eigen_triplet_t(r.idx, c.idx, val));
+                    if (r.idx != c.idx) interaction_triplets[1].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
 
                 } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
-                            matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
-                    if (calculation_required[0]) interaction_triplets[0].push_back(eigen_triplet_t(row, col, val));
-                    if (calculation_required[2]) interaction_triplets[2].push_back(eigen_triplet_t(row, col, -val));
-                    if (calculation_required[0] && row != col) interaction_triplets[0].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
-                    if (calculation_required[2] && row != col) interaction_triplets[2].push_back(eigen_triplet_t(col, row, -this->conjugate(val)));
+                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                    if (calculation_required[0]) interaction_triplets[0].push_back(eigen_triplet_t(r.idx, c.idx, val));
+                    if (calculation_required[2]) interaction_triplets[2].push_back(eigen_triplet_t(r.idx, c.idx, -val));
+                    if (calculation_required[0] && r.idx != c.idx) interaction_triplets[0].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
+                    if (calculation_required[2] && r.idx != c.idx) interaction_triplets[2].push_back(eigen_triplet_t(c.idx, r.idx, -this->conjugate(val)));
 
                 } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
-                            matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
+                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
                     if (q1 == 1 || q2 == 1) val *= -1;// TODO think of a better way
-                    interaction_triplets[3].push_back(eigen_triplet_t(row, col, val));
-                    if (row != col) interaction_triplets[3].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+                    interaction_triplets[3].push_back(eigen_triplet_t(r.idx, c.idx, val));
+                    if (r.idx != c.idx) interaction_triplets[3].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
 
                 } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(state_row.first(), state_col.first(), 1) *
-                            matrixelements2.getMultipole(state_row.second(), state_col.second(), 1);
-                    interaction_triplets[2].push_back(eigen_triplet_t(row, col, val));
-                    if (row != col) interaction_triplets[2].push_back(eigen_triplet_t(col, row, this->conjugate(val)));
+                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                    interaction_triplets[2].push_back(eigen_triplet_t(r.idx, c.idx, val));
+                    if (r.idx != c.idx) interaction_triplets[2].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
                 } // TODO simplify code
 
                 // TODO add operators for higer order interaction !!!
@@ -374,14 +375,16 @@ void SystemTwo::deleteInteraction()  {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<size_t> &stateidentifier2row, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
-    size_t stateidentifier = system2.getNumStates()*row_1 + row_2;
-    size_t row_new = stateidentifier2row[stateidentifier];
+void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
+    StateTwo state = StateTwo(system1.getStates()[row_1], system2.getStates()[row_2]);
+    auto state_iter = states.get<1>().find(state);
 
-    if (row_new == std::numeric_limits<size_t>::max()) { // if stateidentifier not contained in map
+    size_t row_new;
+    if (state_iter != states.get<1>().end()) {
+        row_new = state_iter->idx;
+    } else {
         row_new = states.size();
-        stateidentifier2row[stateidentifier] = row_new;
-        states.push_back(StateTwo(system1.getStates()[row_1], system2.getStates()[row_2]));
+        states.push_back(enumerated_state<StateTwo>(row_new, state));
     }
 
     coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));

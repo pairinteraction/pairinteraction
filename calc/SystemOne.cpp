@@ -117,7 +117,7 @@ void SystemOne::initializeBasis()
                 for (auto m : range_adapted_m) {
                     if (std::fabs(m) > j) continue;
 
-                    states.push_back(StateOne(element,n,l,j,m));
+                    states.push_back(enumerated_state<StateOne>(idx, StateOne(element,n,l,j,m)));
                     hamiltonianmatrix_triplets.push_back(eigen_triplet_t(idx,idx,energy));
                     coefficients_triplets.push_back(eigen_triplet_t(idx,idx,1));
 
@@ -128,8 +128,6 @@ void SystemOne::initializeBasis()
     }
 
     // Build data
-    states.shrink_to_fit();
-
     coefficients.resize(idx,idx);
     coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
     coefficients_triplets.clear();
@@ -177,8 +175,9 @@ void SystemOne::initializeInteraction() {
 
     std::string tmp(element.begin(), element.end()); // TODO think of a better solution
     MatrixElements matrixelements(tmp, matrixelementsdir);
-    for (int i : erange) matrixelements.precalculateElectricMomentum(states, i);
-    for (int i : brange) matrixelements.precalculateMagneticMomentum(states, i);
+    auto states_converted = this->getStates(); // TODO remove
+    for (int i : erange) matrixelements.precalculateElectricMomentum(states_converted, i);
+    for (int i : brange) matrixelements.precalculateMagneticMomentum(states_converted, i);
 
     // TODO add operators for diamagnetism !!!
 
@@ -190,30 +189,32 @@ void SystemOne::initializeInteraction() {
     std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_bfield_triplets;// TODO reserve
     std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>> interaction_diamagnetism_triplets; // TODO reserve
 
-    for (size_t col=0; col<states.size(); ++col) { // TODO parallelization
-        const StateOne &state_col = states[col];
-        if (state_col.element.empty()) continue; // TODO artifical states TODO [dummystates]
+    // loop over column entries
+    for (const auto &c: states) { // TODO parallelization
 
-        for (size_t row=0; row<states.size(); ++row) {
-            const StateOne &state_row = states[row];
-            if (state_row.element.empty()) continue; // TODO artifical states TODO [dummystates]
+        if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-            if (row < col) continue;
+        // loop over row entries
+        for (const auto &r: states) {
+
+            if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+
+            if (r.idx < c.idx) continue;
 
             for (int i : erange) {
-                if (selectionRulesMultipole(state_row, state_col, 1, i)) {
-                    scalar_t value = matrixelements.getElectricMomentum(state_row, state_col);
-                    interaction_efield_triplets[i].push_back(eigen_triplet_t(row, col, value));
-                    if (row != col) interaction_efield_triplets[i].push_back(eigen_triplet_t(col, row, this->conjugate(value)));
+                if (selectionRulesMultipole(r.state, c.state, 1, i)) {
+                    scalar_t value = matrixelements.getElectricMomentum(r.state, c.state);
+                    interaction_efield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
+                    if (r.idx != c.idx) interaction_efield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
                     break;
                 }
             }
 
             for (int i : brange) {
-                if (selectionRulesMomentum(state_row, state_col, i)) {
-                    scalar_t value = matrixelements.getMagneticMomentum(state_row, state_col);
-                    interaction_bfield_triplets[i].push_back(eigen_triplet_t(row, col, value));
-                    if (row != col) interaction_bfield_triplets[i].push_back(eigen_triplet_t(col, row, this->conjugate(value)));
+                if (selectionRulesMomentum(r.state, c.state, i)) {
+                    scalar_t value = matrixelements.getMagneticMomentum(r.state, c.state);
+                    interaction_bfield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
+                    if (r.idx != c.idx) interaction_bfield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
                     break;
                 }
             }

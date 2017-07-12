@@ -180,8 +180,8 @@ namespace std {
 %copyctor SystemOne;
 %copyctor SystemTwo;
 
-%attribute(SystemOne, std::vector<StateOne>&, states  , getStates  );
-%attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  );
+// %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  ); // TODO
+// %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  ); // TODO
 
 %boost_picklable(SystemOne);
 %boost_picklable(SystemTwo);
@@ -219,6 +219,8 @@ SystemOne.hamiltonianmatrix = property(SystemOne.getHamiltonianmatrix)
 SystemTwo.hamiltonianmatrix = property(SystemTwo.getHamiltonianmatrix)
 SystemOne.diagonal = property(SystemOne.getDiagonal)
 SystemTwo.diagonal = property(SystemTwo.getDiagonal)
+SystemOne.states = property(SystemOne.getStates) # TODO
+SystemTwo.states = property(SystemTwo.getStates) # TODO
 
 %}
 

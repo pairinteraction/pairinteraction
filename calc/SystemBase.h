@@ -25,13 +25,50 @@
 #include <boost/serialization/vector.hpp>
 #include <boost/serialization/set.hpp>
 #include <boost/serialization/complex.hpp>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/random_access_index.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
 
-// https://stackoverflow.com/questions/23175180/boost-serialization-segfault // TODO, fix possibility of segfaults
+template<class T>
+class enumerated_state {
+public:
+    enumerated_state(size_t idx, T state) : idx(idx), state(state) {
+    }
+    enumerated_state() : idx(0), state() { // TODO remove and use http://www.boost.org/doc/libs/1_46_1/libs/serialization/doc/serialization.html#constructors instead
+    }
+    size_t idx;
+    T state;
+
+private:
+    ////////////////////////////////////////////////////////////////////
+    /// Method for serialization ///////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    friend class boost::serialization::access;
+
+    template<class Archive>
+    void serialize(Archive & ar, const unsigned int version) {
+        (void)version;
+
+        ar & idx & state;
+    }
+};
+
+template<class T>
+using states_set = boost::multi_index_container<
+  enumerated_state<T>,
+  boost::multi_index::indexed_by<
+    boost::multi_index::random_access<>,
+    boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>,T,&enumerated_state<T>::state>, std::hash<T> >
+  >
+>;
 
 template<class T> class SystemBase {
 public:
     SystemBase(std::vector<T> states, std::wstring cachedir) : // TODO
-        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), states(states), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+        (void)states;
         throw std::runtime_error( "Method yet not implemented." );
     }
     
@@ -91,9 +128,14 @@ public:
     /// Methods to get properties of the system ////////////////////////
     ////////////////////////////////////////////////////////////////////
     
-    const std::vector<T>& getStates() {
+    const std::vector<T> getStates() { // TODO @hmenke typemap for "const state_set<T>&"
         this->buildBasis();
-        return states;
+        std::vector<T> states_converted;
+        states_converted.reserve(states.size());
+        for (const auto& s: states) {
+            states_converted.push_back(s.state);
+        }
+        return states_converted;
     }
     
     eigen_sparse_t& getCoefficients() {
@@ -174,7 +216,7 @@ public:
                 }
             }
 
-            states_with_maxval.push_back(states[row_with_maxval]);
+            states_with_maxval.push_back(states[row_with_maxval].state);
         }
 
         return states_with_maxval;
@@ -190,15 +232,13 @@ public:
         std::vector<eigen_triplet_t> triplets_transformator;
         triplets_transformator.reserve(std::min(this->getNumStates(),system_to.getNumStates()));
 
-        std::unordered_map<T, size_t> states2idx; // TODO use multiindex from boost
-        for (size_t idx = 0; idx < states.size(); ++idx) {
-            states2idx[states[idx]] = idx;
-        }
-
         for (size_t idx_to = 0; idx_to < system_to.getNumStates(); ++idx_to) {
             const T &state = system_to.getStates()[idx_to];
-            size_t idx_from = states2idx[state];
-            triplets_transformator.push_back(eigen_triplet_t(idx_from,idx_to,1));
+            auto state_iter =  states.template get<1>().find(state);
+            if (state_iter != states.template get<1>().end()) {
+                size_t idx_from = state_iter->idx;
+                triplets_transformator.push_back(eigen_triplet_t(idx_from,idx_to,1));
+            }
         }
 
         eigen_sparse_t transformator(this->getNumStates(),system_to.getNumStates());
@@ -338,11 +378,11 @@ public:
             size_t col = coefficients.cols();
             hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows()+states_artifical.size(), hamiltonianmatrix.cols()+states_artifical.size());
             coefficients.conservativeResize(coefficients.rows()+states_artifical.size(), coefficients.cols()+states_artifical.size());
-            
+
             states.reserve(states.size()+states_artifical.size());
             coefficients.reserve(coefficients.size()+states_artifical.size());
             for (const auto &state : states_artifical) {
-                states.push_back(state);
+                states.push_back(enumerated_state<T>(row, state));
                 coefficients.insert(row++, col++) = 1;
             }
             coefficients.makeCompressed();
@@ -403,8 +443,14 @@ public:
     
     size_t getStateindex(const T &state) {
         this->buildBasis();
-        
-        return std::distance(states.begin(), std::find(states.begin(), states.end(), state));
+
+        auto state_iter =  states.template get<1>().find(state);
+
+        if (state_iter == states.template get<1>().end()) {
+            throw std::runtime_error("The method getStateindex() is called on a non-existing state.");
+        }
+
+        return state_iter->idx;
     }
     
     scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
@@ -477,7 +523,7 @@ protected:
     bool is_interaction_already_contained;
     bool is_new_hamiltonianmatrix_required;
     
-    std::vector<T> states;
+    states_set<T> states;
     eigen_sparse_t coefficients;
     eigen_sparse_t hamiltonianmatrix;
     eigen_sparse_t coefficients_unperturbed_cache;
@@ -535,7 +581,7 @@ protected:
         return range_q.empty() || (range_q.find(q[0]) != range_q.end() && range_q.find(q[1]) != range_q.end());
     }
     
-    bool checkIsQuantumstateValid(T state) { // TODO (T &state)
+    bool checkIsQuantumstateValid(const T &state) {
         return checkIsQuantumnumberValid(state.n, range_n) && checkIsQuantumnumberValid(state.l, range_l) && checkIsQuantumnumberValid(state.j, range_j) && checkIsQuantumnumberValid(state.m, range_m);
     }
     
@@ -572,23 +618,26 @@ protected:
         if (hamiltonianmatrix_unperturbed_cache.size() != 0) hamiltonianmatrix_unperturbed_cache = transformator.adjoint()*hamiltonianmatrix_unperturbed_cache*transformator;
     }
     
-    void removeRestrictedStates(std::function<bool(size_t)> checkIsValidIndex) {
+    void removeRestrictedStates(std::function<bool(const enumerated_state<T> &)> checkIsValidEntry) {
         // Build transformator and remove states
-        std::vector<T> states_new;
+        states_set<T> states_new;
         states_new.reserve(states.size());
         std::vector<eigen_triplet_t> triplets_transformator;
         triplets_transformator.reserve(states.size());
         
         size_t idx_new = 0;
-        for (size_t idx = 0; idx < states.size(); ++idx) {
-            if (checkIsValidIndex(idx)) {
-                states_new.push_back(states[idx]);
-                triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
+
+        for (const auto &entry: states) {
+            if (checkIsValidEntry(entry)) {
+                states_new.push_back(enumerated_state<T>(idx_new, entry.state));
+                triplets_transformator.push_back(eigen_triplet_t(idx_new,entry.idx,1));
+                ++idx_new;
             }
         }
         
         states_new.shrink_to_fit();
         states = states_new;
+
         this->applyLeftsideTransformator(triplets_transformator);
     }
     
@@ -645,7 +694,7 @@ private:
             ////////////////////////////////////////////////////////////////////
             
             // Remove states if the quantum numbers are not allowed
-            removeRestrictedStates([=](size_t idx) -> bool { return this->checkIsQuantumstateValid(states[idx]); } );
+            removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool { return this->checkIsQuantumstateValid(entry.state); } );
         }
         
         if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() ||
@@ -691,7 +740,7 @@ private:
             }
 
             // Remove states if the squared norm is to small
-            removeRestrictedStates([=](size_t idx) -> bool { return sqnorm_list[idx] > 0.05; } );
+            removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool { return sqnorm_list[entry.idx] > 0.05; } );
         }
         
         // Forget basis restrictions as they were applied now
