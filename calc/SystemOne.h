@@ -60,7 +60,9 @@ protected:
 
 private:
     std::array<double, 3> efield, bfield;
+    std::unordered_map<int, scalar_t>  efield_spherical, bfield_spherical;
     bool diamagnetism;
+    std::unordered_map<std::array<int, 2>, scalar_t> diamagnetism_terms;
     std::wstring element;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
@@ -83,6 +85,7 @@ private:
         ar & boost::serialization::base_object<SystemBase<StateOne>>(*this);
         ar & element;
         ar & efield & bfield & diamagnetism;
+        ar & efield_spherical & bfield_spherical & diamagnetism_terms;
         ar & interaction_efield & interaction_bfield & interaction_diamagnetism;
     }
 };

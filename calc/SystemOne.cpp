@@ -48,11 +48,24 @@ const std::wstring& SystemOne::getElement() const {
 void SystemOne::setEfield(std::array<double, 3> field) {
     this->onParameterChange();
     efield = field;
+
+    // Transform the electric field into spherical coordinates
+    this->changeToSphericalbasis(efield, efield_spherical);
 }
 
 void SystemOne::setBfield(std::array<double, 3> field) {
     this->onParameterChange();
     bfield = field;
+
+    // Transform the magnetic field into spherical coordinates
+    this->changeToSphericalbasis(bfield, bfield_spherical);
+
+    diamagnetism_terms[{{0,+0}}] = bfield_spherical[+0]*bfield_spherical[+0]-bfield_spherical[+1]*bfield_spherical[-1]*2.;
+    diamagnetism_terms[{{2,+0}}] = bfield_spherical[+0]*bfield_spherical[+0]+bfield_spherical[+1]*bfield_spherical[-1];
+    diamagnetism_terms[{{2,+1}}] = bfield_spherical[+0]*bfield_spherical[-1];
+    diamagnetism_terms[{{2,-1}}] = bfield_spherical[+0]*bfield_spherical[+1];
+    diamagnetism_terms[{{2,+2}}] = bfield_spherical[-1]*bfield_spherical[-1];
+    diamagnetism_terms[{{2,-2}}] = bfield_spherical[+1]*bfield_spherical[+1];
 }
 
 void SystemOne::setDiamagnetism(bool enable) {
@@ -146,28 +159,28 @@ void SystemOne::initializeInteraction() {
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    // Transform the electromagnetic fields into spherical coordinates
-    std::unordered_map<int, scalar_t>  efield_spherical, bfield_spherical;
-    this->changeToSphericalbasis(efield, efield_spherical);
-    this->changeToSphericalbasis(bfield, bfield_spherical);
-
     // Check if something to do
+    double tolerance = 1e-24;
+
     std::vector<int> erange, brange;
     std::vector<std::array<int, 2>> drange;
     for (auto entry : efield_spherical) {
-        if (std::abs(entry.second) != 0 && interaction_efield.find(-entry.first) == interaction_efield.end()) {
-            erange.push_back(-entry.first);
+        if (std::abs(entry.second) > tolerance && interaction_efield.find(-entry.first) == interaction_efield.end()) {
+            erange.push_back(-entry.first); // TODO use entry.first without a minus
         }
     }
     for (auto entry : bfield_spherical) {
-        if (std::abs(entry.second) != 0 && interaction_bfield.find(-entry.first) == interaction_bfield.end()) {
-            brange.push_back(-entry.first);
+        if (std::abs(entry.second) > tolerance && interaction_bfield.find(-entry.first) == interaction_bfield.end()) {
+            brange.push_back(-entry.first); // TODO use entry.first without a minus
+        }
+    }
+    for (auto entry : diamagnetism_terms) {
+        if (diamagnetism && std::abs(entry.second) > tolerance && interaction_diamagnetism.find(entry.first) == interaction_diamagnetism.end()) {
+            drange.push_back(entry.first);
         }
     }
 
     if (erange.empty() && brange.empty() && drange.empty()) return;
-
-    // TODO add operators for diamagnetism !!!
 
     // Precalculate matrix elements
     std::string matrixelementsdir = "";
@@ -176,10 +189,9 @@ void SystemOne::initializeInteraction() {
     std::string tmp(element.begin(), element.end()); // TODO think of a better solution
     MatrixElements matrixelements(tmp, matrixelementsdir);
     auto states_converted = this->getStates(); // TODO remove
-    for (int i : erange) matrixelements.precalculateElectricMomentum(states_converted, i);
-    for (int i : brange) matrixelements.precalculateMagneticMomentum(states_converted, i);
-
-    // TODO add operators for diamagnetism !!!
+    for (const auto &i : erange) matrixelements.precalculateElectricMomentum(states_converted, i);
+    for (const auto &i : brange) matrixelements.precalculateMagneticMomentum(states_converted, i);
+    for (const auto &i : drange) matrixelements.precalculateDiamagnetism(states_converted, i[0], i[1]);
 
     ////////////////////////////////////////////////////////////////////
     /// Generate the interaction in the canonical basis ////////////////
@@ -201,25 +213,31 @@ void SystemOne::initializeInteraction() {
 
             if (r.idx < c.idx) continue;
 
-            for (int i : erange) {
+            for (const auto &i : erange) {
                 if (selectionRulesMultipole(r.state, c.state, 1, i)) {
                     scalar_t value = matrixelements.getElectricMomentum(r.state, c.state);
                     interaction_efield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
                     if (r.idx != c.idx) interaction_efield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
-                    break;
+                    break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
             }
 
-            for (int i : brange) {
+            for (const auto &i : brange) {
                 if (selectionRulesMomentum(r.state, c.state, i)) {
                     scalar_t value = matrixelements.getMagneticMomentum(r.state, c.state);
                     interaction_bfield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
                     if (r.idx != c.idx) interaction_bfield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
-                    break;
+                    break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
             }
 
-            // TODO add operators for diamagnetism !!!
+            for (const auto &i : drange) {
+                if (selectionRulesMultipole(r.state, c.state, i[0], i[1])) {
+                    scalar_t value = matrixelements.getDiamagnetism(r.state, c.state, i[0]);
+                    interaction_diamagnetism_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
+                    if (r.idx != c.idx) interaction_diamagnetism_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
+                }
+            }
         }
     }
 
@@ -255,21 +273,22 @@ void SystemOne::initializeInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 void SystemOne::addInteraction() {
-
-    // Transform the electromagnetic fields into spherical coordinates
-    std::unordered_map<int, scalar_t> efield_spherical, bfield_spherical;
-    this->changeToSphericalbasis(efield, efield_spherical);
-    this->changeToSphericalbasis(bfield, bfield_spherical);
-
     // Build the total Hamiltonian
-    if (std::abs(efield_spherical[0]) != 0) hamiltonianmatrix -= interaction_efield[0]*efield_spherical[0];
-    if (std::abs(efield_spherical[-1]) != 0) hamiltonianmatrix += interaction_efield[1]*efield_spherical[-1];
-    if (std::abs(efield_spherical[1]) != 0) hamiltonianmatrix += interaction_efield[-1]*efield_spherical[1];
-    if (std::abs(bfield_spherical[0]) != 0) hamiltonianmatrix += interaction_bfield[0]*bfield_spherical[0];
-    if (std::abs(bfield_spherical[-1]) != 0) hamiltonianmatrix -= interaction_bfield[1]*bfield_spherical[-1];
-    if (std::abs(bfield_spherical[1]) != 0) hamiltonianmatrix -= interaction_bfield[-1]*bfield_spherical[1];
+    double tolerance = 1e-24;
 
-    // TODO add operators for diamagnetism !!!
+    if (std::abs(efield_spherical[+0]) > tolerance) hamiltonianmatrix -= interaction_efield[+0]*efield_spherical[+0];
+    if (std::abs(efield_spherical[-1]) > tolerance) hamiltonianmatrix += interaction_efield[+1]*efield_spherical[-1];
+    if (std::abs(efield_spherical[+1]) > tolerance) hamiltonianmatrix += interaction_efield[-1]*efield_spherical[+1];
+    if (std::abs(bfield_spherical[+0]) > tolerance) hamiltonianmatrix += interaction_bfield[+0]*bfield_spherical[+0];
+    if (std::abs(bfield_spherical[-1]) > tolerance) hamiltonianmatrix -= interaction_bfield[+1]*bfield_spherical[-1];
+    if (std::abs(bfield_spherical[+1]) > tolerance) hamiltonianmatrix -= interaction_bfield[-1]*bfield_spherical[+1];
+
+    if (diamagnetism && std::abs(diamagnetism_terms[{{0,+0}}]) > tolerance) hamiltonianmatrix += interaction_diamagnetism[{{0,+0}}]*diamagnetism_terms[{{0,+0}}];
+    if (diamagnetism && std::abs(diamagnetism_terms[{{2,+0}}]) > tolerance) hamiltonianmatrix -= interaction_diamagnetism[{{2,+0}}]*diamagnetism_terms[{{2,+0}}];
+    if (diamagnetism && std::abs(diamagnetism_terms[{{2,+1}}]) > tolerance) hamiltonianmatrix += interaction_diamagnetism[{{2,+1}}]*diamagnetism_terms[{{2,+1}}]*std::sqrt(3);
+    if (diamagnetism && std::abs(diamagnetism_terms[{{2,-1}}]) > tolerance) hamiltonianmatrix += interaction_diamagnetism[{{2,-1}}]*diamagnetism_terms[{{2,-1}}]*std::sqrt(3);
+    if (diamagnetism && std::abs(diamagnetism_terms[{{2,+2}}]) > tolerance) hamiltonianmatrix -= interaction_diamagnetism[{{2,+2}}]*diamagnetism_terms[{{2,+2}}]*std::sqrt(1.5);
+    if (diamagnetism && std::abs(diamagnetism_terms[{{2,-2}}]) > tolerance) hamiltonianmatrix -= interaction_diamagnetism[{{2,-2}}]*diamagnetism_terms[{{2,-2}}]*std::sqrt(1.5);
 }
 
 ////////////////////////////////////////////////////////////////////
