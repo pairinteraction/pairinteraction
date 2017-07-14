@@ -164,17 +164,18 @@ void SystemOne::initializeInteraction() {
 
     std::vector<int> erange, brange;
     std::vector<std::array<int, 2>> drange;
-    for (auto entry : efield_spherical) {
+
+    for (const auto &entry : efield_spherical) {
         if (std::abs(entry.second) > tolerance && interaction_efield.find(-entry.first) == interaction_efield.end()) {
             erange.push_back(-entry.first); // TODO use entry.first without a minus
         }
     }
-    for (auto entry : bfield_spherical) {
+    for (const auto &entry : bfield_spherical) {
         if (std::abs(entry.second) > tolerance && interaction_bfield.find(-entry.first) == interaction_bfield.end()) {
             brange.push_back(-entry.first); // TODO use entry.first without a minus
         }
     }
-    for (auto entry : diamagnetism_terms) {
+    for (const auto &entry : diamagnetism_terms) {
         if (diamagnetism && std::abs(entry.second) > tolerance && interaction_diamagnetism.find(entry.first) == interaction_diamagnetism.end()) {
             drange.push_back(entry.first);
         }
@@ -194,78 +195,79 @@ void SystemOne::initializeInteraction() {
     for (const auto &i : drange) matrixelements.precalculateDiamagnetism(states_converted, i[0], i[1]);
 
     ////////////////////////////////////////////////////////////////////
-    /// Generate the interaction in the canonical basis ////////////////
+    /// Calculate the interaction in the canonical basis ///////////////
     ////////////////////////////////////////////////////////////////////
 
     std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_efield_triplets; // TODO reserve
     std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_bfield_triplets;// TODO reserve
     std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>> interaction_diamagnetism_triplets; // TODO reserve
 
-    // loop over column entries
+    // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
 
         if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-        // loop over row entries
+        // Loop over row entries
         for (const auto &r: states) {
 
             if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
-
             if (r.idx < c.idx) continue;
 
+            // E-field interaction
             for (const auto &i : erange) {
                 if (selectionRulesMultipole(r.state, c.state, 1, i)) {
                     scalar_t value = matrixelements.getElectricMomentum(r.state, c.state);
-                    interaction_efield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
-                    if (r.idx != c.idx) interaction_efield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
+                    this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
             }
 
+            // B-field interaction
             for (const auto &i : brange) {
                 if (selectionRulesMomentum(r.state, c.state, i)) {
                     scalar_t value = matrixelements.getMagneticMomentum(r.state, c.state);
-                    interaction_bfield_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
-                    if (r.idx != c.idx) interaction_bfield_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
+                    this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
             }
 
+            // Diamagnetic interaction
             for (const auto &i : drange) {
                 if (selectionRulesMultipole(r.state, c.state, i[0], i[1])) {
                     scalar_t value = matrixelements.getDiamagnetism(r.state, c.state, i[0]);
-                    interaction_diamagnetism_triplets[i].push_back(eigen_triplet_t(r.idx, c.idx, value));
-                    if (r.idx != c.idx) interaction_diamagnetism_triplets[i].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(value)));
+                    this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
             }
         }
     }
 
+    ////////////////////////////////////////////////////////////////////
+    /// Build and transform the interaction to the used basis //////////
+    ////////////////////////////////////////////////////////////////////
+
     for (const auto &i : erange) {
         interaction_efield[i].resize(states.size(),states.size());
         interaction_efield[i].setFromTriplets(interaction_efield_triplets[i].begin(), interaction_efield_triplets[i].end());
         interaction_efield_triplets[i].clear();
+
+        interaction_efield[i] = coefficients.adjoint()*interaction_efield[i]*coefficients;
     }
 
     for (const auto &i : brange) {
         interaction_bfield[i].resize(states.size(),states.size());
         interaction_bfield[i].setFromTriplets(interaction_bfield_triplets[i].begin(), interaction_bfield_triplets[i].end());
         interaction_bfield_triplets[i].clear();
+
+        interaction_bfield[i] = coefficients.adjoint()*interaction_bfield[i]*coefficients;
     }
 
     for (const auto &i : drange) {
         interaction_diamagnetism[i].resize(states.size(),states.size());
         interaction_diamagnetism[i].setFromTriplets(interaction_diamagnetism_triplets[i].begin(), interaction_diamagnetism_triplets[i].end());
         interaction_diamagnetism_triplets[i].clear();
+
+        interaction_diamagnetism[i] = coefficients.adjoint()*interaction_diamagnetism[i]*coefficients;
     }
-
-    ////////////////////////////////////////////////////////////////////
-    /// Transform the interaction to the used basis ////////////////////
-    ////////////////////////////////////////////////////////////////////
-
-    for (auto &entry : interaction_efield) entry.second = coefficients.adjoint()*entry.second*coefficients;
-    for (auto &entry : interaction_bfield) entry.second = coefficients.adjoint()*entry.second*coefficients;
-    for (auto &entry : interaction_diamagnetism) entry.second = coefficients.adjoint()*entry.second*coefficients;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -328,4 +330,9 @@ void SystemOne::changeToSphericalbasis(std::array<double, 3> field, std::unorder
     field_spherical[1] = std::complex<double>(-field[0]/std::sqrt(2),-field[1]/std::sqrt(2));
     field_spherical[-1] = std::complex<double>(field[0]/std::sqrt(2),-field[1]/std::sqrt(2));
     field_spherical[0] = std::complex<double>(field[2],0);
+}
+
+void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val) {
+    triplets.push_back(eigen_triplet_t(r_idx, c_idx, val));
+    if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change
 }

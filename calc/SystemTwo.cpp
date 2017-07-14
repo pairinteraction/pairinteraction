@@ -26,24 +26,24 @@
 #include <unordered_set>
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir)
-    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
+    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
+    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
-    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
+    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving)
-    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), kappa_max(1), sym_permutation(NA) {
+    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
 std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
-    std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
+    std::unordered_set<StateOne> states_one;
     for (const auto &entry : states) {
         states_one.insert(StateOne(entry.state.getFirstState()));
     }
@@ -52,7 +52,7 @@ std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for
 
 std::vector<StateOne> SystemTwo::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
-    std::unordered_set<StateOne> states_one; // TODO make set work (this would have the benefit over unordered_set that the states are sorted)
+    std::unordered_set<StateOne> states_one;
     for (const auto &entry : states) {
         states_one.insert(StateOne(entry.state.getSecondState()));
     }
@@ -69,8 +69,22 @@ void SystemTwo::setDistance(double d) {
 }
 
 void SystemTwo::setAngle(double a) {
+    if (a != 0 && ordermax > 3) throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+
     this->onParameterChange();
     angle = a;
+
+    angle_terms[0] = -1.;
+    angle_terms[1] = 1.-3.*std::pow(std::cos(angle),2);
+    angle_terms[2] = -1.5*std::pow(std::sin(angle),2);
+    angle_terms[3] = -3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+}
+
+void SystemTwo::setOrder(double o) {
+    if (angle != 0 && o > 3) throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+
+    this->onParameterChange();
+    ordermax = o;
 }
 
 void SystemTwo::setConservedParityUnderPermutation(parity_t parity) {
@@ -88,12 +102,12 @@ void SystemTwo::initializeBasis()
     /// Restrict one atom states to the allowed quantum numbers ////////
     ////////////////////////////////////////////////////////////////////
 
-    system1.diagonalize(); // important!
+    system1.diagonalize(); // it is important to call this method here!
     system1.restrictN(range_n);
     system1.restrictL(range_l);
     system1.restrictJ(range_j);
     system1.restrictM(range_m);
-    system2.diagonalize(); // important!
+    system2.diagonalize(); // it is important to call this method here!
     system2.restrictN(range_n);
     system2.restrictL(range_l);
     system2.restrictJ(range_j);
@@ -215,39 +229,35 @@ void SystemTwo::initializeBasis()
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::initializeInteraction() {
-    if (distance == std::numeric_limits<double>::max()) {
-        interaction.clear();
-        return;
-    }
+    if (distance == std::numeric_limits<double>::max()) return;
 
     ////////////////////////////////////////////////////////////////////
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
 
     // Check if something to do
-    std::vector<bool> calculation_required(4, false); // TODO use array or set
-
     double tolerance = 1e-24;
 
-    if (interaction.find(0) == interaction.end()) {
-        calculation_required[0] = true;
+    std::vector<bool> calculation_required(4, false);
+    std::vector<int> orange;
+
+    if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for other interaction than dipole-dipole
+
+        for (size_t i = 0; i < 4; ++i) {
+            if (std::abs(angle_terms[i]) > tolerance && interaction_angulardipole.find(i) == interaction_angulardipole.end()) {
+                calculation_required[i] = true;
+            }
+        }
+
+    } else {
+
+        for (unsigned int order = 3; order <= ordermax; ++order) {
+            if (interaction_multipole.find(order) == interaction_multipole.end()) {
+                orange.push_back(order);
+            }
+        }
+
     }
-
-    if (std::fabs(1-3*std::pow(std::cos(angle),2)) > tolerance && interaction.find(1) == interaction.end()) {
-        calculation_required[1] = true;
-    }
-
-    if (std::fabs(1.5*std::pow(std::sin(angle),2)) > tolerance && interaction.find(2) == interaction.end()) {
-        calculation_required[2] = true;
-    }
-
-    if (std::fabs(3./std::sqrt(2)*std::sin(angle)*std::cos(angle)) > tolerance && interaction.find(3) == interaction.end()) {
-        calculation_required[3] = true;
-    }
-
-    if (!std::accumulate(calculation_required.begin(), calculation_required.end(), false)) return;
-
-    // TODO add operators for higer order interaction !!!
 
     // Precalculate matrix elements
     std::string matrixelementsdir = "";
@@ -261,7 +271,7 @@ void SystemTwo::initializeInteraction() {
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
 
-    for (int kappa = 1; kappa <= kappa_max; ++kappa) {
+    for (unsigned int kappa = 1; kappa <= ordermax-2; ++kappa) {
         matrixelements1.precalculateMultipole(states1, kappa);
         matrixelements2.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
     }
@@ -270,69 +280,98 @@ void SystemTwo::initializeInteraction() {
     /// Generate the interaction in the canonical basis ////////////////
     ////////////////////////////////////////////////////////////////////
 
-    std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_triplets; // TODO reserve
+    std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_angulardipole_triplets; // TODO reserve
+    std::unordered_map<int, std::vector<eigen_triplet_t>> interaction_multipole_triplets; // TODO reserve
 
-    // loop over column entries
+    // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
 
         if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
-        // loop over row entries
+        // Loop over row entries
         for (const auto &r: states) {
 
             if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
-
             if (r.idx < c.idx) continue;
 
-            if (selectionRulesMultipole(r.state.first(), c.state.first(), 1) && selectionRulesMultipole(r.state.second(), c.state.second(), 1)) {
-                int q1 = r.state.first().m-c.state.first().m;
-                int q2 = r.state.second().m-c.state.second().m;
+            int q1 = r.state.first().m-c.state.first().m;
+            int q2 = r.state.second().m-c.state.second().m;
 
-                if (q1 == 0 && q2 == 0 && calculation_required[1]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
-                    interaction_triplets[1].push_back(eigen_triplet_t(r.idx, c.idx, val));
-                    if (r.idx != c.idx) interaction_triplets[1].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
+            if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for other interaction than dipole-dipole
 
-                } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
-                    if (calculation_required[0]) interaction_triplets[0].push_back(eigen_triplet_t(r.idx, c.idx, val));
-                    if (calculation_required[2]) interaction_triplets[2].push_back(eigen_triplet_t(r.idx, c.idx, -val));
-                    if (calculation_required[0] && r.idx != c.idx) interaction_triplets[0].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
-                    if (calculation_required[2] && r.idx != c.idx) interaction_triplets[2].push_back(eigen_triplet_t(c.idx, r.idx, -this->conjugate(val)));
+                // Angular dependent dipole-dipole interaction
+                if (selectionRulesMultipole(r.state.first(), c.state.first(), 1) && selectionRulesMultipole(r.state.second(), c.state.second(), 1)) {
+                    if (q1 == 0 && q2 == 0 && calculation_required[1]) {
+                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
 
-                } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
-                    if (q1 == 1 || q2 == 1) val *= -1;// TODO think of a better way
-                    interaction_triplets[3].push_back(eigen_triplet_t(r.idx, c.idx, val));
-                    if (r.idx != c.idx) interaction_triplets[3].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
+                        this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
-                } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
-                    scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                            matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
-                    interaction_triplets[2].push_back(eigen_triplet_t(r.idx, c.idx, val));
-                    if (r.idx != c.idx) interaction_triplets[2].push_back(eigen_triplet_t(c.idx, r.idx, this->conjugate(val)));
-                } // TODO simplify code
+                    } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
+                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
 
-                // TODO add operators for higer order interaction !!!
+                        if (calculation_required[0]) this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
+                        if (calculation_required[2]) this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
+
+                    } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
+                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+
+                        if (q1 == 1 || q2 == 1) this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
+                        else this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
+
+                    } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
+                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
+                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+
+                        this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, val);
+                    }
+                }
+
+            } else {
+
+                // Multipole interaction
+                if (q1 == -q2) { // total momentum conserved
+                    for (const auto &order : orange) {
+                        double val = 0;
+                        for (int kappa1 = 3; kappa1 <= order-2; ++kappa1) {
+                            int kappa2 = order-1-kappa1;
+                            if (selectionRulesMultipole(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipole(r.state.second(), c.state.second(), kappa2)) {
+                                double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
+                                val += inverse_electric_constant * std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements1.getMultipole(r.state.first(), c.state.first(), kappa1)*
+                                        matrixelements2.getMultipole(r.state.second(), c.state.second(), kappa2);
+                            }
+                        }
+
+                        this->addTriplet(interaction_multipole_triplets[order], r.idx, c.idx, val);
+                    }
+                }
+
             }
         }
     }
 
+    ////////////////////////////////////////////////////////////////////
+    /// Build and transform the interaction to the used basis //////////
+    ////////////////////////////////////////////////////////////////////
+
     for (size_t i = 0; i < calculation_required.size(); ++i) {
         if (!calculation_required[i]) continue;
-        interaction[i].resize(states.size(),states.size());
-        interaction[i].setFromTriplets(interaction_triplets[i].begin(), interaction_triplets[i].end());
-        interaction_triplets[i].clear();
+        interaction_angulardipole[i].resize(states.size(),states.size());
+        interaction_angulardipole[i].setFromTriplets(interaction_angulardipole_triplets[i].begin(), interaction_angulardipole_triplets[i].end());
+        interaction_angulardipole_triplets[i].clear();
+
+        interaction_angulardipole[i] = coefficients.adjoint()*interaction_angulardipole[i]*coefficients;
     }
 
-    ////////////////////////////////////////////////////////////////////
-    /// Transform the interaction to the used basis ////////////////////
-    ////////////////////////////////////////////////////////////////////
+    for (const auto &i : orange) {
+        interaction_multipole[i].resize(states.size(),states.size());
+        interaction_multipole[i].setFromTriplets(interaction_multipole_triplets[i].begin(), interaction_multipole_triplets[i].end());
+        interaction_multipole_triplets[i].clear();
 
-    for (auto &entry : interaction) entry.second = coefficients.adjoint()*entry.second*coefficients;
+        interaction_multipole[i] = coefficients.adjoint()*interaction_multipole[i]*coefficients;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -342,17 +381,24 @@ void SystemTwo::initializeInteraction() {
 void SystemTwo::addInteraction() {
     if (distance == std::numeric_limits<double>::max()) return;
 
-    // Calculate the distance dependency
-    double powerlaw = 1./std::pow(distance, 3);
-
     // Build the total Hamiltonian
-    double tolerance = 1e-24; // TODO think about it, can the expressions be evalualted identical to zero?
-    if (interaction.find(0) != interaction.end()) hamiltonianmatrix -= powerlaw*interaction[0];
-    if (std::fabs(1-3*std::pow(std::cos(angle),2)) > tolerance) hamiltonianmatrix += (1-3*std::pow(std::cos(angle),2))*powerlaw*interaction[1];
-    if (std::fabs(1.5*std::pow(std::sin(angle),2)) > tolerance) hamiltonianmatrix -= (1.5*std::pow(std::sin(angle),2))*powerlaw*interaction[2];
-    if (std::fabs(3./std::sqrt(2)*std::sin(angle)*std::cos(angle)) > tolerance) hamiltonianmatrix -= (3./std::sqrt(2)*std::sin(angle)*std::cos(angle))*powerlaw*interaction[3];
+    double tolerance = 1e-24;
 
-    // TODO add operators for higer order interaction !!!
+    if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for other interaction than dipole-dipole
+
+        double powerlaw = 1./std::pow(distance, 3);
+        for (size_t i = 0; i < 4; ++i) {
+            if (std::abs(angle_terms[i]) > tolerance) hamiltonianmatrix += interaction_angulardipole[i]*angle_terms[i]*powerlaw;
+        }
+
+    } else {
+
+        for (unsigned int order = 3; order <= ordermax; ++order) {
+            double powerlaw = 1./std::pow(distance, order);
+            hamiltonianmatrix += interaction_angulardipole[order]*powerlaw;
+        }
+
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -360,7 +406,8 @@ void SystemTwo::addInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::transformInteraction(const eigen_sparse_t &transformator)  {
-    for (auto &entry : interaction) entry.second = transformator.adjoint()*entry.second*transformator;
+    for (auto &entry : interaction_angulardipole) entry.second = transformator.adjoint()*entry.second*transformator;
+    for (auto &entry : interaction_multipole) entry.second = transformator.adjoint()*entry.second*transformator;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -368,7 +415,8 @@ void SystemTwo::transformInteraction(const eigen_sparse_t &transformator)  {
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::deleteInteraction()  {
-    interaction.clear();
+    interaction_angulardipole.clear();
+    interaction_multipole.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -389,4 +437,9 @@ void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const s
 
     coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
     sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
+}
+
+void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val) {
+    triplets.push_back(eigen_triplet_t(r_idx, c_idx, val));
+    if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change
 }

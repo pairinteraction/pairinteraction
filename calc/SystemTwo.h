@@ -21,9 +21,9 @@
 #include "SystemBase.h"
 #include "SystemOne.h"
 
+#include <boost/math/special_functions/binomial.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
-
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
@@ -37,6 +37,7 @@ public:
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
     void setAngle(double a);
+    void setOrder(double o);
 
     void setConservedParityUnderPermutation(parity_t parity);
 
@@ -49,18 +50,22 @@ protected:
 
 private:
     void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
 
     std::array<std::wstring, 2> element;
     SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
     SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
 
-    std::unordered_map<int, eigen_sparse_t> interaction;
+    std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
+    std::unordered_map<int, eigen_sparse_t> interaction_multipole;
 
     double distance;
     double angle;
-    int kappa_max;
+    unsigned int ordermax;
 
     parity_t sym_permutation;
+
+    std::array<double, 4> angle_terms;
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
@@ -74,8 +79,9 @@ private:
 
         ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar & element & system1 & system2;
-        ar & distance & angle & kappa_max & sym_permutation;
-        ar & interaction;
+        ar & distance & angle & ordermax & sym_permutation;
+        ar & angle_terms;
+        ar & interaction_angulardipole & interaction_multipole;
     }
 };
 

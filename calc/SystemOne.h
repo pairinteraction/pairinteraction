@@ -71,6 +71,7 @@ private:
 
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
