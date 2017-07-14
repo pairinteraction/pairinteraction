@@ -157,7 +157,7 @@ void SystemTwo::initializeBasis()
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
-                    // Adapt the normalization if required if required by symmetries
+                    // Adapt the normalization if required by symmetries
                     if (sym_permutation != NA && col_1 != col_2 ) {
                         value_new /= std::sqrt(2);
                     }
@@ -332,10 +332,10 @@ void SystemTwo::initializeInteraction() {
             } else {
 
                 // Multipole interaction
-                if (q1 == -q2) { // total momentum conserved
+                if (q1 + q2 == 0) { // total momentum conserved
                     for (const auto &order : orange) {
                         double val = 0;
-                        for (int kappa1 = 3; kappa1 <= order-2; ++kappa1) {
+                        for (int kappa1 = 1; kappa1 <= order-2; ++kappa1) {
                             int kappa2 = order-1-kappa1;
                             if (selectionRulesMultipole(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipole(r.state.second(), c.state.second(), kappa2)) {
                                 double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
@@ -395,7 +395,7 @@ void SystemTwo::addInteraction() {
 
         for (unsigned int order = 3; order <= ordermax; ++order) {
             double powerlaw = 1./std::pow(distance, order);
-            hamiltonianmatrix += interaction_angulardipole[order]*powerlaw;
+            hamiltonianmatrix += interaction_multipole[order]*powerlaw;
         }
 
     }

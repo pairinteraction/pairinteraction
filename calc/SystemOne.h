@@ -49,6 +49,8 @@ public:
     const std::wstring& getElement() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
+    void setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis);
+    void setBfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis);
     void setDiamagnetism(bool enable);
 
 protected:
@@ -72,6 +74,8 @@ private:
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
     void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
+    void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis);
+
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////

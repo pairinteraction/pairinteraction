@@ -68,6 +68,16 @@ void SystemOne::setBfield(std::array<double, 3> field) {
     diamagnetism_terms[{{2,-2}}] = bfield_spherical[+1]*bfield_spherical[+1];
 }
 
+void SystemOne::setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+    this->rotateVector(field, to_z_axis, to_y_axis);
+    this->setEfield(field);
+}
+
+void SystemOne::setBfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+    this->rotateVector(field, to_z_axis, to_y_axis);
+    this->setBfield(field);
+}
+
 void SystemOne::setDiamagnetism(bool enable) {
     this->onParameterChange();
     diamagnetism = enable;
@@ -336,3 +346,20 @@ void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t 
     triplets.push_back(eigen_triplet_t(r_idx, c_idx, val));
     if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change
 }
+
+void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis) {
+    auto field_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&field[0]);
+    auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_z_axis[0]).normalized();
+    auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_y_axis[0]).normalized();
+
+    double tolerance = 1e-16;
+    if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) throw std::runtime_error( "The z-axis and the y-axis are not orhogonal." );
+
+    if (field_mapped.norm() != 0) {
+        Eigen::Matrix<double,3,3> transformator;
+        transformator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
+        //Eigen::Matrix<double,3,1> euler_zyz = transformator.eulerAngles(2, 1, 2);
+        field_mapped = transformator.transpose()*field_mapped;
+    }
+}
+
