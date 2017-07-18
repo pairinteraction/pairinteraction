@@ -420,6 +420,46 @@ void SystemTwo::deleteInteraction()  {
 }
 
 ////////////////////////////////////////////////////////////////////
+/// Method that allows base class to rotate states /////////////////
+////////////////////////////////////////////////////////////////////
+
+eigen_sparse_complex_t SystemTwo::rotateState(const StateTwo &state, double alpha, double beta, double gamma) {
+    // Initialize Wigner D matrix
+    WignerD wigner;
+
+    // Rotate state
+    StateTwo newstate = state;
+    std::vector<std::complex<double>> val2_vector;
+    std::vector<eigen_triplet_complex_t> state_rotated_triplets;
+    val2_vector.reserve(2*state.second().j+1);
+    state_rotated_triplets.reserve(states.size());
+
+    for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
+        val2_vector.push_back(wigner(state.second().j, state.second().m, m2, alpha, beta, gamma));
+    }
+
+    for (float m1 = -state.first().j; m1 <= state.first().j; ++m1) {
+        std::complex<double> val1 = wigner(state.first().j, state.first().m, m1, alpha, beta, gamma);
+
+        for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
+            newstate.m = {{m1, m2}};
+            auto state_iter = states.get<1>().find(newstate);
+
+            if (state_iter != states.get<1>().end()) {
+                std::complex<double> val = val1*val2_vector[m2+state.second().j]; // TODO think about when complex is really needed
+                state_rotated_triplets.push_back(eigen_triplet_complex_t(state_iter->idx, 0, val));
+            }
+        }
+    }
+
+    eigen_sparse_complex_t state_rotated(states.size(),1);
+    state_rotated.setFromTriplets(state_rotated_triplets.begin(), state_rotated_triplets.end());
+    state_rotated_triplets.clear();
+
+    return state_rotated;
+}
+
+////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 

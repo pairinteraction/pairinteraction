@@ -104,7 +104,7 @@ namespace std {
  *
  * This class implements a two-atom Rydberg state.
  */ // TODO [dummystate]
-class StateTwo : public State {
+class StateTwo : public State { // TODO define getters and setters, save a pair state as two single atom states
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.

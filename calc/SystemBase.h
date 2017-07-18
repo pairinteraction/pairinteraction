@@ -5,6 +5,7 @@
 #include "State.h"
 #include "serialization_eigen.h"
 #include "serialization_path.h"
+#include "WignerD.h"
 
 #include <vector>
 #include <numeric>
@@ -57,11 +58,11 @@ private:
 
 template<class T>
 using states_set = boost::multi_index_container<
-  enumerated_state<T>,
-  boost::multi_index::indexed_by<
-    boost::multi_index::random_access<>,
-    boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>,T,&enumerated_state<T>::state>, std::hash<T> >
-  >
+enumerated_state<T>,
+boost::multi_index::indexed_by<
+boost::multi_index::random_access<>,
+boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>,T,&enumerated_state<T>::state>, std::hash<T> >
+>
 >;
 
 template<class T> class SystemBase {
@@ -186,12 +187,36 @@ public:
 
         // Calculate overlap with the state
         // remark: eigen_vector_t overlap = coefficients.row(idx) causes segementation faults, perhaps a bug in eigen
-        eigen_vector_double_t overlap(coefficients.cols());
+        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(coefficients.cols());
         for (int k=0; k<coefficients.outerSize(); ++k) { // col
             for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
                 if (triple.row() == idx) overlap[k] = std::pow(std::abs(triple.value()),2);
                 if (triple.row() >= idx) break;
             }
+        }
+
+        return overlap;
+    }
+
+    eigen_vector_double_t getOverlap(const T &state, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+        // Build basis
+        this->buildBasis();
+
+        // Get Euler angles
+        Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
+        double alpha = euler_zyz[0];
+        double beta = euler_zyz[1];
+        double gamma = euler_zyz[2];
+
+        // Rotate state
+        eigen_sparse_complex_t state_rotated = this->rotateState(state, alpha, beta, gamma); // TODO think about when complex is really needed // TODO use sparsevector
+
+        // Calculate overlap
+        eigen_sparse_complex_t product = coefficients.cast<complex_t>().adjoint()*state_rotated;
+        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
+        for (eigen_iterator_complex_t triple(product, 0); triple; ++triple) {
+            overlap[triple.row()] = std::pow(std::abs(triple.value()),2);
         }
 
         return overlap;
@@ -394,7 +419,7 @@ public:
             throw std::runtime_error( "The basis contains no states." );
         }
         if (coefficients.cols() == 0) {
-            throw std::runtime_error( "The basis is contains no vectors." );
+            throw std::runtime_error( "The basis contains no vectors." );
         }
     }
     
@@ -512,6 +537,8 @@ protected:
     virtual void transformInteraction(const eigen_sparse_t &transformator) = 0;
     virtual void addInteraction() = 0;
     virtual void deleteInteraction() = 0;
+
+    virtual eigen_sparse_complex_t rotateState(const T &state, double alpha, double beta, double gamma) = 0;
     
     boost::filesystem::path cachedir;
     
@@ -667,6 +694,19 @@ protected:
         for (V r = rmin; r <= rmax; ++r) {
             rset.insert(r);
         }
+    }
+
+    Eigen::Matrix<double,3,3> buildRotator(std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis) {
+        auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_z_axis[0]).normalized();
+        auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_y_axis[0]).normalized();
+
+        double tolerance = 1e-16;
+        if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) throw std::runtime_error( "The z-axis and the y-axis are not orhogonal." );
+
+        Eigen::Matrix<double,3,3> transformator;
+        transformator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
+
+        return transformator;
     }
     
 private:

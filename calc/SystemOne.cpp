@@ -323,6 +323,37 @@ void SystemOne::deleteInteraction()  {
     interaction_diamagnetism.clear();
 }
 
+
+////////////////////////////////////////////////////////////////////
+/// Method that allows base class to rotate states /////////////////
+////////////////////////////////////////////////////////////////////
+
+eigen_sparse_complex_t SystemOne::rotateState(const StateOne &state, double alpha, double beta, double gamma) {
+    // Initialize Wigner D matrix
+    WignerD wigner;
+
+    // Rotate state
+    StateOne newstate = state;
+    std::vector<eigen_triplet_complex_t> state_rotated_triplets;
+    state_rotated_triplets.reserve(states.size());
+
+    for (float m = -state.j; m <= state.j; ++m) {
+        newstate.m = m;
+        auto state_iter = states.get<1>().find(newstate);
+
+        if (state_iter != states.get<1>().end()) {
+            std::complex<double> val = wigner(state.j, state.m, m, alpha, beta, gamma); // TODO think about when complex is really needed
+            state_rotated_triplets.push_back(eigen_triplet_complex_t(state_iter->idx, 0, val));
+        }
+    }
+
+    eigen_sparse_complex_t state_rotated(states.size(),1);
+    state_rotated.setFromTriplets(state_rotated_triplets.begin(), state_rotated_triplets.end());
+    state_rotated_triplets.clear();
+
+    return state_rotated;
+}
+
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
@@ -349,17 +380,10 @@ void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t 
 
 void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis) {
     auto field_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&field[0]);
-    auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_z_axis[0]).normalized();
-    auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_y_axis[0]).normalized();
-
-    double tolerance = 1e-16;
-    if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) throw std::runtime_error( "The z-axis and the y-axis are not orhogonal." );
 
     if (field_mapped.norm() != 0) {
-        Eigen::Matrix<double,3,3> transformator;
-        transformator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
-        //Eigen::Matrix<double,3,1> euler_zyz = transformator.eulerAngles(2, 1, 2);
-        field_mapped = transformator.transpose()*field_mapped;
+        Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        field_mapped = rotator.transpose()*field_mapped;
     }
 }
 

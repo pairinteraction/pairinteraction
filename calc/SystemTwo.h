@@ -47,6 +47,7 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
+    eigen_sparse_complex_t rotateState(const StateTwo &state, double alpha, double beta, double gamma) override;
 
 private:
     void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
