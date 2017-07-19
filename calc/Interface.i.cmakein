@@ -75,10 +75,12 @@ import_array();
 // Wrap the << operator
 // http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
 %define __STR__()
-std::string __str__() {
+std::wstring __str__() {
   std::ostringstream out;
   out << *$self;
-  return out.str();
+
+  std::string s = out.str();
+  return std::wstring(s.begin(), s.end());
 }
 %enddef
 
