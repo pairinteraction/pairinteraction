@@ -199,15 +199,19 @@ public:
     }
 
     eigen_vector_double_t getOverlap(const T &state, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
-        // Build basis
-        this->buildBasis();
-
         // Get Euler angles
         Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
         Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
         double alpha = euler_zyz[0];
         double beta = euler_zyz[1];
         double gamma = euler_zyz[2];
+
+        return this->getOverlap(state, alpha, beta, gamma);
+    }
+
+    eigen_vector_double_t getOverlap(const T &state, double alpha, double beta, double gamma) {
+        // Build basis
+        this->buildBasis();
 
         // Rotate state
         eigen_sparse_t state_rotated = this->rotateState(state, alpha, beta, gamma);
@@ -461,15 +465,19 @@ public:
     }
 
     void rotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
-        // Build basis
-        this->buildBasis();
-
         // Get Euler angles
         Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
         Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
         double alpha = euler_zyz[0];
         double beta = euler_zyz[1];
         double gamma = euler_zyz[2];
+
+        this->rotate(alpha, beta, gamma);
+    }
+
+    void rotate(double alpha, double beta, double gamma) {
+        // Build basis
+        this->buildBasis();
 
         // Get the rotator for the basis states
         eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
@@ -484,18 +492,22 @@ public:
     }
 
     void derotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
-        // Build basis
-        this->buildBasis();
-
         // Get Euler angles
         Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
         Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
-        double alpha = -euler_zyz[0];
-        double beta = -euler_zyz[1];
-        double gamma = -euler_zyz[2];
+        double alpha = euler_zyz[0];
+        double beta = euler_zyz[1];
+        double gamma = euler_zyz[2];
+
+        this->derotate(alpha, beta, gamma);
+    }
+
+    void derotate(double alpha, double beta, double gamma) {
+        // Build basis
+        this->buildBasis();
 
         // Get the rotator for the basis states
-        eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
+        eigen_sparse_t transformator = this->buildStaterotator(-alpha, -beta, -gamma);
 
         // Rotate basis
         this->transformInteraction(coefficients.adjoint());
@@ -505,7 +517,7 @@ public:
 
         this->transformInteraction(coefficients);
     }
-        
+
     ////////////////////////////////////////////////////////////////////
     /// Methods to manipulate individual entries of the Hamiltonian ////
     ////////////////////////////////////////////////////////////////////
@@ -750,6 +762,16 @@ protected:
 
         Eigen::Matrix<double,3,3> transformator;
         transformator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
+
+        return transformator;
+    }
+
+    Eigen::Matrix<double,3,3> buildRotator(const double &alpha, const double &beta, const double &gamma) {
+        Eigen::Matrix<double,3,3> transformator;
+
+        transformator = Eigen::AngleAxisd(alpha, Eigen::Matrix<double,3,1>::UnitZ())
+                * Eigen::AngleAxisd(beta, Eigen::Matrix<double,3,1>::UnitY())
+                * Eigen::AngleAxisd(gamma, Eigen::Matrix<double,3,1>::UnitZ());
 
         return transformator;
     }

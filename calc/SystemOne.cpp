@@ -79,6 +79,17 @@ void SystemOne::setBfield(std::array<double, 3> field, std::array<double, 3> to_
     this->setBfield(field);
 }
 
+
+void SystemOne::setEfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+    this->rotateVector(field, alpha, beta, gamma);
+    this->setEfield(field);
+}
+
+void SystemOne::setBfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+    this->rotateVector(field, alpha, beta, gamma);
+    this->setBfield(field);
+}
+
 void SystemOne::setDiamagnetism(bool enable) {
     this->onParameterChange();
     diamagnetism = enable;
@@ -394,6 +405,15 @@ void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3>
 
     if (field_mapped.norm() != 0) {
         Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        field_mapped = rotator.transpose()*field_mapped;
+    }
+}
+
+void SystemOne::rotateVector(std::array<double, 3> &field, double alpha, double beta, double gamma) {
+    auto field_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&field[0]);
+
+    if (field_mapped.norm() != 0) {
+        Eigen::Matrix<double,3,3> rotator = this->buildRotator(alpha, beta, gamma);
         field_mapped = rotator.transpose()*field_mapped;
     }
 }
