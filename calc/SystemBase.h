@@ -210,12 +210,12 @@ public:
         double gamma = euler_zyz[2];
 
         // Rotate state
-        eigen_sparse_complex_t state_rotated = this->rotateState(state, alpha, beta, gamma); // TODO think about when complex is really needed // TODO use sparsevector
+        eigen_sparse_t state_rotated = this->rotateState(state, alpha, beta, gamma);
 
         // Calculate overlap
-        eigen_sparse_complex_t product = coefficients.cast<complex_t>().adjoint()*state_rotated;
+        eigen_sparse_t product = coefficients.adjoint()*state_rotated;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
-        for (eigen_iterator_complex_t triple(product, 0); triple; ++triple) {
+        for (eigen_iterator_t triple(product, 0); triple; ++triple) {
             overlap[triple.row()] = std::pow(std::abs(triple.value()),2);
         }
 
@@ -459,9 +459,53 @@ public:
         // Transform the basis vectors
         coefficients = coefficients * coefficients.adjoint();
     }
-    
-    // TODO rotate()
-    
+
+    void rotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+        // Build basis
+        this->buildBasis();
+
+        // Get Euler angles
+        Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
+        double alpha = euler_zyz[0];
+        double beta = euler_zyz[1];
+        double gamma = euler_zyz[2];
+
+        // Get the rotator for the basis states
+        eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
+
+        // Rotate basis
+        this->transformInteraction(coefficients.adjoint());
+
+        coefficients = transformator * coefficients;
+        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+
+        this->transformInteraction(coefficients);
+    }
+
+    void derotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+        // Build basis
+        this->buildBasis();
+
+        // Get Euler angles
+        Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        Eigen::Matrix<double,3,1> euler_zyz = rotator.eulerAngles(2, 1, 2);
+        double alpha = -euler_zyz[0];
+        double beta = -euler_zyz[1];
+        double gamma = -euler_zyz[2];
+
+        // Get the rotator for the basis states
+        eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
+
+        // Rotate basis
+        this->transformInteraction(coefficients.adjoint());
+
+        coefficients = transformator * coefficients;
+        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+
+        this->transformInteraction(coefficients);
+    }
+        
     ////////////////////////////////////////////////////////////////////
     /// Methods to manipulate individual entries of the Hamiltonian ////
     ////////////////////////////////////////////////////////////////////
@@ -538,7 +582,8 @@ protected:
     virtual void addInteraction() = 0;
     virtual void deleteInteraction() = 0;
 
-    virtual eigen_sparse_complex_t rotateState(const T &state, double alpha, double beta, double gamma) = 0;
+    virtual eigen_sparse_t rotateState(const T &state, double alpha, double beta, double gamma) = 0;
+    virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
     
     boost::filesystem::path cachedir;
     

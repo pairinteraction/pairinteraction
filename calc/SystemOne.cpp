@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <type_traits>
 
 SystemOne::SystemOne(std::wstring const& element, std::wstring cachedir)
     : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
@@ -325,33 +326,43 @@ void SystemOne::deleteInteraction()  {
 
 
 ////////////////////////////////////////////////////////////////////
-/// Method that allows base class to rotate states /////////////////
+/// Methods that allows base class to rotate states ////////////////
 ////////////////////////////////////////////////////////////////////
 
-eigen_sparse_complex_t SystemOne::rotateState(const StateOne &state, double alpha, double beta, double gamma) {
+eigen_sparse_t SystemOne::rotateState(const StateOne &state, double alpha, double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Rotate state
-    StateOne newstate = state;
-    std::vector<eigen_triplet_complex_t> state_rotated_triplets;
-    state_rotated_triplets.reserve(states.size());
+    std::vector<eigen_triplet_t> state_rotated_triplets;
+    state_rotated_triplets.reserve(std::min(static_cast<size_t>(2*state.j+1), states.size()));
 
-    for (float m = -state.j; m <= state.j; ++m) {
-        newstate.m = m;
-        auto state_iter = states.get<1>().find(newstate);
+    this->addRotated(state, 0, state_rotated_triplets, wigner, alpha, beta, gamma);
 
-        if (state_iter != states.get<1>().end()) {
-            std::complex<double> val = wigner(state.j, state.m, m, alpha, beta, gamma); // TODO think about when complex is really needed
-            state_rotated_triplets.push_back(eigen_triplet_complex_t(state_iter->idx, 0, val));
-        }
-    }
-
-    eigen_sparse_complex_t state_rotated(states.size(),1);
+    eigen_sparse_t state_rotated(states.size(),1);
     state_rotated.setFromTriplets(state_rotated_triplets.begin(), state_rotated_triplets.end());
     state_rotated_triplets.clear();
 
     return state_rotated;
+}
+
+eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double gamma) {
+    // Initialize Wigner D matrix
+    WignerD wigner;
+
+    // Build rotator
+    std::vector<eigen_triplet_t> rotator_triplets;
+    rotator_triplets.reserve(std::min(static_cast<size_t>(10), states.size()) * states.size()); // TODO std::min( 2*jmax+1, states.size() ) * states.size()
+
+    for (auto const &entry: states) {
+        this->addRotated(entry.state, entry.idx, rotator_triplets, wigner, alpha, beta, gamma);
+    }
+
+    eigen_sparse_t rotator(states.size(), states.size());
+    rotator.setFromTriplets(rotator_triplets.begin(), rotator_triplets.end());
+    rotator_triplets.clear();
+
+    return rotator;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -385,5 +396,10 @@ void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3>
         Eigen::Matrix<double,3,3> rotator = this->buildRotator(to_z_axis, to_y_axis);
         field_mapped = rotator.transpose()*field_mapped;
     }
+}
+
+template<>
+double SystemOne::convert(const std::complex<double> &val) {
+    return val.real();
 }
 

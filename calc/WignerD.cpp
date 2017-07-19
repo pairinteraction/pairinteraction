@@ -19,7 +19,7 @@
 WignerD::WignerD() {
 }
 
-std::complex<double> WignerD::operator()(float j, float m, float mp, double beta) {
+double WignerD::operator()(float j, float m, float mp, double beta) {
     double tolerance = 1e-16;
     if (std::abs(beta - M_PI / 2) < tolerance) {
         return this->evalWignerdPiHalf(j, m, mp);
@@ -32,8 +32,8 @@ std::complex<double> WignerD::operator()(float j, float m, float mp, double alph
     return std::complex<double>(std::cos(-mp * alpha), std::sin(-mp * alpha))*this->operator()(j, m, mp, beta)*std::complex<double>(std::cos(-m * gamma), std::sin(-m * gamma));
 }
 
-std::complex<double> WignerD::evalWignerdPiHalf(float j, float m, float mp) {
-    std::complex<double> r = 0;
+double WignerD::evalWignerdPiHalf(float j, float m, float mp) {
+    double r = 0;
     for (unsigned int k = std::max(0, static_cast<int>(mp - m)); k <= j + std::min(mp, - m); ++k) {
         r += std::pow(-1, k) * boost::math::binomial_coefficient<double>(j + mp, k) * boost::math::binomial_coefficient<double>(j - mp, k + m - mp);
     }
@@ -41,12 +41,12 @@ std::complex<double> WignerD::evalWignerdPiHalf(float j, float m, float mp) {
     return r;
 }
 
-std::complex<double> WignerD::evalWignerd(float j, float m, float mp, double beta) {
+double WignerD::evalWignerd(float j, float m, float mp, double beta) {
     std::complex<double> r = 0;
     for (float mpp = j; mpp >= -j; --mpp) { // TODO parallelize
         r += this->evalWignerdPiHalf(j, m, mpp) * std::complex<double>(std::cos(-mpp * beta), std::sin(-mpp * beta)) * this->evalWignerdPiHalf(j, mpp, -mp);
     }
     r *= std::pow(std::complex<double>(0, 1), 2. * j - m - mp) * std::pow(-1., 2. * m);
-    return r;
+    return r.real();
 }
 

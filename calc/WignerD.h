@@ -29,12 +29,12 @@
 class WignerD {
 public:
     WignerD();
-    std::complex<double> operator()(float j, float m, float mp, double beta);
+    double operator()(float j, float m, float mp, double beta);
     std::complex<double> operator()(float j, float m, float mp, double alpha, double beta, double gamma);
 
 private:
-    std::complex<double> evalWignerdPiHalf(float j, float m, float mp);
-    std::complex<double> evalWignerd(float j, float m, float mp, double beta);
+    double evalWignerdPiHalf(float j, float m, float mp);
+    double evalWignerd(float j, float m, float mp, double beta);
 };
 
 #endif

@@ -20,6 +20,8 @@
 #include "State.h"
 #include "SystemBase.h"
 
+#include <cmath>
+#include <type_traits>
 #include <array>
 #include <unordered_map>
 #include <boost/functional/hash.hpp>
@@ -59,7 +61,8 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
-    eigen_sparse_complex_t rotateState(const StateOne &state, double alpha, double beta, double gamma) override;
+    eigen_sparse_t rotateState(const StateOne &state, double alpha, double beta, double gamma) override;
+    eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
 
 private:
     std::array<double, 3> efield, bfield;
@@ -77,6 +80,37 @@ private:
     void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
     void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis);
 
+    ////////////////////////////////////////////////////////////////////
+    /// Utility methods ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    template<class T>
+    void addRotated(const StateOne &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
+        // Check whether the angles are compatible to the used data type
+        double tolerance = 1e-16;
+        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+
+        // Add rotated triplet entries
+        StateOne newstate = state;
+
+        for (float m = -state.j; m <= state.j; ++m) {
+            newstate.m = m;
+            auto state_iter = states.get<1>().find(newstate);
+
+            if (state_iter != states.get<1>().end()) {
+                T val = convert<T>(wigner(state.j, state.m, m, alpha, beta, gamma));
+                triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
+            } else {
+                std::cerr << "Warning: Incomplete rotation because the basis is lacking some Zeeman levels." << std::endl;
+            }
+        }
+    }
+
+    template<class T, class S>
+    T convert(const S &val) {
+        return val;
+    }
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
