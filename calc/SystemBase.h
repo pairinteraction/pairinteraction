@@ -178,20 +178,37 @@ public:
         return coefficients.rows();
     }
 
-    eigen_vector_double_t getOverlap(const T &state) {
+    eigen_vector_double_t getOverlap(const T &generalizedstate) {
         // Build basis
         this->buildBasis();
 
-        // Get index of the state
-        int idx = this->getStateindex(state);
+        // Determine indices of the specified states
+        std::vector<size_t> states_indices;
+        for (const auto &state: states) {
+            if (state.state ^ generalizedstate) { // Check whether state.state is contained in generalizedstate
+                states_indices.push_back(state.idx);
+            }
+        }
 
-        // Calculate overlap with the state
-        // remark: eigen_vector_t overlap = coefficients.row(idx) causes segementation faults, perhaps a bug in eigen
-        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(coefficients.cols());
-        for (int k=0; k<coefficients.outerSize(); ++k) { // col
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
-                if (triple.row() == idx) overlap[k] = std::pow(std::abs(triple.value()),2);
-                if (triple.row() >= idx) break;
+        // Build state vectors
+        std::vector<eigen_triplet_t> overlap_states_triplets;
+        overlap_states_triplets.reserve(states_indices.size());
+
+        size_t current = 0;
+        for (auto const &idx: states_indices) {
+            overlap_states_triplets.push_back(eigen_triplet_t(idx, current++, 1));
+        }
+
+        eigen_sparse_t overlap_states(states.size(), states_indices.size());
+        overlap_states.setFromTriplets(overlap_states_triplets.begin(), overlap_states_triplets.end());
+        overlap_states_triplets.clear();
+
+        // Calculate overlap
+        eigen_sparse_t product = coefficients.adjoint()*overlap_states;
+        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
+        for (int k=0; k<product.outerSize(); ++k) {
+            for (eigen_iterator_t triple(product, k); triple; ++triple) {
+                overlap[triple.row()] += std::pow(std::abs(triple.value()),2);
             }
         }
 
@@ -209,18 +226,28 @@ public:
         return this->getOverlap(state, alpha, beta, gamma);
     }
 
-    eigen_vector_double_t getOverlap(const T &state, double alpha, double beta, double gamma) {
+    eigen_vector_double_t getOverlap(const T &generalizedstate, double alpha, double beta, double gamma) {
         // Build basis
         this->buildBasis();
 
-        // Rotate state
-        eigen_sparse_t state_rotated = this->rotateState(state, alpha, beta, gamma);
+        // Determine indices of the specified states
+        std::vector<size_t> states_indices;
+        for (const auto &state: states) {
+            if (state.state ^ generalizedstate) { // Check whether state.state is contained in generalizedstate
+                states_indices.push_back(state.idx);
+            }
+        }
+
+        // Build rotated state vectors
+        eigen_sparse_t overlap_states_rotated = this->rotateStates(states_indices, alpha, beta, gamma);
 
         // Calculate overlap
-        eigen_sparse_t product = coefficients.adjoint()*state_rotated;
+        eigen_sparse_t product = coefficients.adjoint()*overlap_states_rotated;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
-        for (eigen_iterator_t triple(product, 0); triple; ++triple) {
-            overlap[triple.row()] = std::pow(std::abs(triple.value()),2);
+        for (int k=0; k<product.outerSize(); ++k) {
+            for (eigen_iterator_t triple(product, k); triple; ++triple) {
+                overlap[triple.row()] += std::pow(std::abs(triple.value()),2);
+            }
         }
 
         return overlap;
@@ -594,7 +621,7 @@ protected:
     virtual void addInteraction() = 0;
     virtual void deleteInteraction() = 0;
 
-    virtual eigen_sparse_t rotateState(const T &state, double alpha, double beta, double gamma) = 0;
+    virtual eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) = 0;
     virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
     
     boost::filesystem::path cachedir;

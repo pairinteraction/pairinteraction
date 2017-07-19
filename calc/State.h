@@ -27,6 +27,8 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 
+constexpr const int ARB = 32767;
+
 /** \brief %Base class for states
  *
  * This class is the base class for states specified in the fine structure basis.
@@ -59,6 +61,7 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const StateOne &state);
 
     bool operator==(StateOne const&) const;
+    bool operator^ (StateOne const& )const; // subset
     bool operator!=(StateOne const&) const;
     bool operator< (StateOne const&) const;
     bool operator> (StateOne const&) const;
@@ -130,6 +133,7 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const StateTwo &state);
 
     bool operator==(StateTwo const&) const;
+    bool operator^ (StateTwo const& )const; // subset
     bool operator!=(StateTwo const&) const;
     bool operator< (StateTwo const&) const;
 

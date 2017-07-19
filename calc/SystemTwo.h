@@ -49,7 +49,7 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
-    eigen_sparse_t rotateState(const StateTwo &state, double alpha, double beta, double gamma) override;
+    eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
 
 private:

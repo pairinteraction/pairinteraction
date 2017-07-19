@@ -423,21 +423,24 @@ void SystemTwo::deleteInteraction()  {
 /// Methods that allows base class to rotate states ////////////////
 ////////////////////////////////////////////////////////////////////
 
-eigen_sparse_t SystemTwo::rotateState(const StateTwo &state, double alpha, double beta, double gamma) {
+eigen_sparse_t SystemTwo::rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Rotate state
-    std::vector<eigen_triplet_t> state_rotated_triplets;
-    state_rotated_triplets.reserve(std::min(static_cast<size_t>((2*state.first().j+1)*(2*state.second().j+1)), states.size()));
+    std::vector<eigen_triplet_t> states_rotated_triplets;
+    states_rotated_triplets.reserve(std::min(static_cast<size_t>(10*10), states.size()) * states_indices.size()); // TODO std::min( (2*jmax+1)*(2*jmax+1), states.size() ) * states_indices.size()
 
-    this->addRotated(state, 0, state_rotated_triplets, wigner, alpha, beta, gamma);
+    size_t current = 0;
+    for (auto const &idx: states_indices) {
+        this->addRotated(states[idx].state, current++, states_rotated_triplets, wigner, alpha, beta, gamma);
+    }
 
-    eigen_sparse_t state_rotated(states.size(),1);
-    state_rotated.setFromTriplets(state_rotated_triplets.begin(), state_rotated_triplets.end());
-    state_rotated_triplets.clear();
+    eigen_sparse_t states_rotated(states.size(), states_indices.size());
+    states_rotated.setFromTriplets(states_rotated_triplets.begin(), states_rotated_triplets.end());
+    states_rotated_triplets.clear();
 
-    return state_rotated;
+    return states_rotated;
 }
 
 eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double gamma) {
