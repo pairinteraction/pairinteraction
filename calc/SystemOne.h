@@ -65,6 +65,7 @@ protected:
     void deleteInteraction() override;
     eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
+    void incorporate(SystemBase<StateOne> &system) override;
 
 private:
     std::array<double, 3> efield, bfield;

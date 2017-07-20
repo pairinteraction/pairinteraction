@@ -380,6 +380,24 @@ eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double ga
 }
 
 ////////////////////////////////////////////////////////////////////
+/// Method that allows base class to combine systems ///////////////
+////////////////////////////////////////////////////////////////////
+
+void SystemOne::incorporate(SystemBase<StateOne> &system) {
+    // Combine parameters
+    if (element != dynamic_cast<SystemOne&>(system).element) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (efield != dynamic_cast<SystemOne&>(system).efield) throw std::runtime_error("The value of the variable 'distance' must be the same for both systems."); // implies that efield_spherical is the same, too
+    if (bfield != dynamic_cast<SystemOne&>(system).bfield) throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that bfield_spherical is the same, too
+    if (diamagnetism != dynamic_cast<SystemOne&>(system).diamagnetism) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
+
+    // Combine symmetries
+    // TODO add symmetries
+
+    // Clear cached interaction
+    this->deleteInteraction();
+}
+
+////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 

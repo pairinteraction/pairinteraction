@@ -545,6 +545,74 @@ public:
         this->transformInteraction(coefficients);
     }
 
+    void add(SystemBase<T> &system) {
+        // --- Build Hamiltonians ---
+        this->buildHamiltonian();
+        system.buildHamiltonian();
+
+        // --- Combine system specific variables ---
+        this->incorporate(system);
+
+        // --- Combine universal variables ---
+        if (memory_saving != system.memory_saving) throw std::runtime_error("The value of the variable 'memory_saving' must be the same for both systems.");
+        if (is_interaction_already_contained != system.is_interaction_already_contained) throw std::runtime_error("The value of the variable 'is_interaction_already_contained' must be the same for both systems.");
+        if (is_new_hamiltonianmatrix_required != system.is_new_hamiltonianmatrix_required) throw std::runtime_error("The value of the variable 'is_new_hamiltonianmatrix_required' must be the same for both systems.");
+
+        // --- Combine states and build transformators ---
+        std::vector<eigen_triplet_t> transformator_triplets;
+        transformator_triplets.reserve(system.states.size());
+
+        for (const auto &entry : system.states) {
+            auto state_iter =  states.template get<1>().find(entry.state);
+
+            size_t newidx = states.size();
+            if (state_iter == states.template get<1>().end()) {
+                states.push_back(enumerated_state<T>(newidx, entry.state));
+            } else {
+                newidx = state_iter->idx;
+            }
+
+            transformator_triplets.push_back(eigen_triplet_t(newidx, entry.idx, 1));
+        }
+
+        eigen_sparse_t transformator(states.size(), system.coefficients.rows());
+        transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
+        transformator_triplets.clear();
+
+        // --- Combine coefficients and coefficients_unperturbed_cache ---
+        coefficients.conservativeResize(states.size(), coefficients.cols()+system.coefficients.cols());
+        coefficients.rightCols(system.coefficients.cols()) = transformator*system.coefficients;
+
+        if ((coefficients_unperturbed_cache.size() != 0) != (system.coefficients_unperturbed_cache.size() != 0)) throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+
+        if (coefficients_unperturbed_cache.size() != 0) {
+            coefficients_unperturbed_cache.conservativeResize(states.size(), coefficients_unperturbed_cache.cols()+system.coefficients_unperturbed_cache.cols());
+            coefficients_unperturbed_cache.rightCols(system.coefficients_unperturbed_cache.cols()) = transformator*system.coefficients_unperturbed_cache;
+        }
+
+        // --- Combine hamiltonianmatrix and hamiltonianmatrix_unperturbed_cache ---
+        std::vector<eigen_triplet_t> shifter_triplets;
+        shifter_triplets.reserve(system.hamiltonianmatrix.rows());
+
+        for (size_t idx = 0; idx < system.hamiltonianmatrix.rows(); ++idx) {
+            shifter_triplets.push_back(eigen_triplet_t(hamiltonianmatrix.rows()+idx, idx, 1));
+        }
+
+        eigen_sparse_t shifter(hamiltonianmatrix.rows()+system.hamiltonianmatrix.rows(), system.hamiltonianmatrix.rows());
+        shifter.setFromTriplets(shifter_triplets.begin(), shifter_triplets.end());
+        shifter_triplets.clear();
+
+        hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows()+system.hamiltonianmatrix.rows(), hamiltonianmatrix.cols()+system.hamiltonianmatrix.cols());
+        hamiltonianmatrix.rightCols(system.hamiltonianmatrix.cols()) = shifter*system.hamiltonianmatrix;
+
+        if ((hamiltonianmatrix_unperturbed_cache.size() != 0) != (system.hamiltonianmatrix_unperturbed_cache.size() != 0)) throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+
+        if (hamiltonianmatrix_unperturbed_cache.size() != 0) {
+            hamiltonianmatrix_unperturbed_cache.conservativeResize(hamiltonianmatrix_unperturbed_cache.rows()+system.hamiltonianmatrix_unperturbed_cache.rows(), hamiltonianmatrix_unperturbed_cache.cols()+system.hamiltonianmatrix_unperturbed_cache.cols());
+            hamiltonianmatrix_unperturbed_cache.rightCols(system.hamiltonianmatrix_unperturbed_cache.cols()) = shifter*system.hamiltonianmatrix_unperturbed_cache;
+        }
+    }
+
     ////////////////////////////////////////////////////////////////////
     /// Methods to manipulate individual entries of the Hamiltonian ////
     ////////////////////////////////////////////////////////////////////
@@ -623,7 +691,8 @@ protected:
 
     virtual eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) = 0;
     virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
-    
+    virtual void incorporate(SystemBase<T> &system) = 0;
+
     boost::filesystem::path cachedir;
     
     double energy_min, energy_max;
@@ -664,11 +733,11 @@ protected:
             throw std::runtime_error( "One cannot change symmetries after the basis was built." );
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////
     /// Helper method to check diagonality of a matrix /////////////////
     ////////////////////////////////////////////////////////////////////
-    
+
     bool checkIsDiagonal (const eigen_sparse_t &mat) {
         for (int k=0; k<mat.outerSize(); ++k) {
             for (eigen_iterator_t triple(mat,k); triple; ++triple) {

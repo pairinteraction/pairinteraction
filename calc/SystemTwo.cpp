@@ -463,6 +463,26 @@ eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double ga
 }
 
 ////////////////////////////////////////////////////////////////////
+/// Method that allows base class to combine systems ///////////////
+////////////////////////////////////////////////////////////////////
+
+void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
+    // Combine parameters
+    if (element[0] != dynamic_cast<SystemTwo&>(system).element[0]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (element[1] != dynamic_cast<SystemTwo&>(system).element[1]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (distance != dynamic_cast<SystemTwo&>(system).distance) throw std::runtime_error("The value of the variable 'distance' must be the same for both systems.");
+    if (angle != dynamic_cast<SystemTwo&>(system).angle) throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that angle_terms is the same, too
+    if (ordermax != dynamic_cast<SystemTwo&>(system).ordermax) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
+
+    // Combine symmetries
+    if (sym_permutation != dynamic_cast<SystemTwo&>(system).sym_permutation) sym_permutation = NA;
+    // TODO add additional symmetries
+
+    // Clear cached interaction
+    this->deleteInteraction();
+}
+
+////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 

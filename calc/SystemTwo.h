@@ -51,6 +51,7 @@ protected:
     void deleteInteraction() override;
     eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
+    void incorporate(SystemBase<StateTwo> &system) override;
 
 private:
     void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
