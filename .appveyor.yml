@@ -47,11 +47,11 @@ after_build:
   #- cmd: pyinstaller gui\startgui
   - cmd: ls "C:/projects/pairinteraction/build/win32"
   - cmd: ls "C:/projects/pairinteraction/build/gui"
-  - cmd: copy ..\win32\startgui.spec gui\
-  - cmd: pyinstaller gui\startgui.spec
-  - cmd: ls "C:/projects/pairinteraction/build/gui"
-  - cmd: ls "C:/projects/pairinteraction/build/dist"
-  - cmd: copy "C:\projects\pairinteraction\build\dist\startgui.exe" calc\
+  #- cmd: copy ..\win32\startgui.spec gui\
+  #- cmd: pyinstaller gui\startgui.spec
+  - cmd: ls "C:/projects/pairinteraction/build/gui/dist"
+  #- cmd: ls "C:/projects/pairinteraction/build/dist"
+  - cmd: copy "C:\projects\pairinteraction\build\gui\dist\startgui.exe" calc\
   - cmd: copy "C:\Program Files\Microsoft SDKs\Windows\v7.1\Redist\VC\vcredist_x64.exe" calc\
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip calc > nul
 

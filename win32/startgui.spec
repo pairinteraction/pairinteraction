@@ -2,13 +2,13 @@
 ##Changes
 block_cipher = None
 
-mkl_dlls = [
-    ('C:\\Miniconda36-x64\\Library\\bin\\mkl_tbb_thread.dll', '')
-]
+#mkl_dlls = [
+#    ('C:\\Miniconda36-x64\\Library\\bin\\mkl_tbb_thread.dll', '')
+#]
 
 a = Analysis(['startgui'],
              pathex=['c:\\projects\\pairinteraction\\build\\gui'],
-             binaries=mkl_dlls,
+             binaries=[],
              datas=None,
              hiddenimports=['six', 'scipy.integrate'],
              hookspath=[],
