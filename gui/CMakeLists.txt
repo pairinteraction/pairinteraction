@@ -71,20 +71,20 @@ if( WITH_DMG )
 
 else( )
 
-	if(CMAKE_HOST_WIN32)
+  if(CMAKE_HOST_WIN32)
     find_program(PYINSTALLER NAMES pyinstaller)
     add_custom_command(TARGET gui POST_BUILD
       COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/startgui.spec ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
       COMMAND ${PYINSTALLER} ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     )
-	else()
+  else(CMAKE_HOST_WIN32)
 	find_package(PythonInterp 3 REQUIRED)
 	add_custom_command(TARGET gui POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+      COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
 	)
-	endif(CMAKE_HOST_WIN32)
+  endif(CMAKE_HOST_WIN32)
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)

@@ -1,13 +1,9 @@
 # -*- mode: python -*-
-##Changes
+
 block_cipher = None
 
-#mkl_dlls = [
-#    ('C:\\Miniconda36-x64\\Library\\bin\\mkl_tbb_thread.dll', '')
-#]
-
 a = Analysis(['startgui'],
-             pathex=['c:\\projects\\pairinteraction\\build\\gui'],
+             pathex=['.\\gui'],
              binaries=[],
              datas=None,
              hiddenimports=['six', 'scipy.integrate'],
