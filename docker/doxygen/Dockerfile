@@ -1,4 +1,4 @@
-FROM debian:jessie
+FROM debian:stretch
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
