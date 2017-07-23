@@ -30,7 +30,7 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BI
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/adapt.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein
 )
 
 add_custom_target(pythonscripts ALL
@@ -76,7 +76,7 @@ else( WITH_DMG )
   else(CMAKE_HOST_WIN32)
     find_package(PythonInterp 3 REQUIRED)
     add_custom_command(TARGET pythonscripts POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+      COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     )
   endif(CMAKE_HOST_WIN32)
