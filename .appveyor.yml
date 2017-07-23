@@ -39,7 +39,7 @@ before_build:
 
 build:
   project: build\pairinteraction.sln
-  parallel: true
+  parallel: false
   verbosity: minimal
 
 after_build:
