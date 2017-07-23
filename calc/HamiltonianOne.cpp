@@ -412,10 +412,12 @@ void HamiltonianOne::build() {
 
     publisher.send(">>TOT%7d", nSteps);
 
+    int nSteps_i = static_cast<int>(nSteps);
+
 #pragma omp parallel for schedule(static, 1)
 
     // Loop through steps
-    for (size_t step = 0; step < nSteps; ++step) {
+    for (int step = 0; step < nSteps_i; ++step) {
 
         // === Get parameters for the current position inside the loop ===
 

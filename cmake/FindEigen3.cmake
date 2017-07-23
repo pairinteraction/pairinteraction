@@ -75,7 +75,7 @@ else (EIGEN3_INCLUDE_DIR)
   if(NOT EIGEN3_INCLUDE_DIR)
     find_path(EIGEN3_INCLUDE_DIR NAMES signature_of_eigen3_matrix_library
         HINTS
-        ENV EIGEN3_ROOT 
+        ENV EIGEN3_ROOT
         ENV EIGEN3_ROOT_DIR
         PATHS
         ${CMAKE_INSTALL_PREFIX}/include

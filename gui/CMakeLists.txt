@@ -44,7 +44,7 @@ if( WITH_DMG )
     COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -DSCRIPT=${CMAKE_BINARY_DIR}/pairinteraction -P ${CMAKE_MODULE_PATH}/pyinstaller.cmake
     DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   )
-  
+
   add_custom_target(pyinstaller ALL
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction
   )
@@ -52,26 +52,34 @@ if( WITH_DMG )
 
   install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction DESTINATION .)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
-  
+
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
     message( STATUS "Found fileicon: ${FILEICON}" )
   else( )
     message( FATAL_ERROR "Could not find fileicon" )
   endif( )
-  
+
   set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
-else( )
+else( WITH_DMG )
 
-  find_package(PythonInterp 3 REQUIRED)
-
-  add_custom_command(TARGET pythonscripts POST_BUILD
+  if(CMAKE_HOST_WIN32)
+    find_program(PYINSTALLER NAMES pyinstaller)
+    add_custom_command(TARGET pythonscripts POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/startgui.spec ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
+      COMMAND ${PYINSTALLER} ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    )
+  else(CMAKE_HOST_WIN32)
+    find_package(PythonInterp 3 REQUIRED)
+    add_custom_command(TARGET pythonscripts POST_BUILD
     COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-  )
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    )
+  endif(CMAKE_HOST_WIN32)
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
@@ -84,4 +92,4 @@ else( )
     install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
   endif(CMAKE_HOST_UNIX)
 
-endif( )
+endif( WITH_DMG )
