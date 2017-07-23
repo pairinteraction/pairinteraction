@@ -122,7 +122,7 @@ if( WITH_DMG )
   
   install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4})")
 
-else( )
+elseif ( NOT WIN32 )
 
   install(TARGETS _pairinteraction_real LIBRARY DESTINATION share/pairinteraction/calc)
   install(TARGETS _pairinteraction_complex LIBRARY DESTINATION share/pairinteraction/calc)
