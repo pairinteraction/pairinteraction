@@ -23,7 +23,7 @@ include (FindPackageHandleStandardArgs)
 
 find_path( ZEROMQ_INCLUDE_DIR NAMES zmq.h )
 
-find_library( ZEROMQ_LIBRARY NAMES zmq )
+find_library( ZEROMQ_LIBRARY NAMES zmq libzmq )
 
 # Set the FOUND variable to TRUE if all listed variables are set.
 find_package_handle_standard_args( ZEROMQ DEFAULT_MSG ZEROMQ_LIBRARY ZEROMQ_INCLUDE_DIR )
