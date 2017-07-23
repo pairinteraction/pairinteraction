@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-find_program( MAKENSIS NAMES makensis )
+
+find_program( MAKENSIS NAMES makensis 
+  HINTS
+  ENV NSIS_ROOT
+)
+
 if( MAKENSIS )
   message( STATUS "Found makensis: ${MAKENSIS}" )
 else( )
@@ -29,4 +34,4 @@ add_custom_target(win32
   DEPENDS pairinteraction-real pairinteraction-complex database gui
   COMMAND curl -C - -O ${MINICONDA_DL}
   COMMAND ${MAKENSIS} -DARCH=${MINGW_ARCH} ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.nsi
-  )
+)

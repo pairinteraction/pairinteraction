@@ -220,7 +220,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
 
     StateTwo initial = basis->initial();
-    parity_t initalParityL = static_cast<parity_t>(std::pow(-1, initial.l[0] + initial.l[1]));
+    parity_t initalParityL = (std::pow(-1, initial.l[0] + initial.l[1]) > 0) ? EVEN : ODD;
     int initalM = initial.m[0] + initial.m[1];
     int initalJ = initial.j[0] + initial.j[1];
     bool samestates = initial.first() == initial.second();
@@ -285,8 +285,10 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Apply energy cutoff
     std::vector<bool> necessary_tmp(basis->size(), false);
 
+    int nSteps_one_i = static_cast<int>(nSteps_one);
+
 #pragma omp parallel for
-    for (size_t i = 0; i < nSteps_one; ++i) {
+    for (int i = 0; i < nSteps_one_i; ++i) {
         energycutoff(*(hamiltonian_one1->get(i)), *(hamiltonian_one2->get(i)), deltaE, necessary_tmp);
     }
 
@@ -503,6 +505,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     matrix_path.resize(nSteps_two*symmetries.size());
 
+    int indices_symmetry_i = static_cast<int>(symmetries.size());
+
     // --- Determine combined single atom matrices ---
     // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)
 
@@ -516,7 +520,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         mat_single.resize(symmetries.size());
 
 #pragma omp parallel for
-        for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+        for (int idx_symmetry = 0; idx_symmetry < indices_symmetry_i; ++idx_symmetry) {
             Symmetry sym = symmetries[idx_symmetry];
 
             // Combine the Hamiltonians of the two atoms
@@ -536,8 +540,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
         mat_multipole_transformed.resize(symmetries.size()*(idx_multipole_max+1));
 
-#pragma omp parallel for collapse(2)
-        for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {
+#pragma omp parallel for
+        for (int idx_symmetry = 0; idx_symmetry < indices_symmetry_i; ++idx_symmetry) {
             for (int idx_multipole = 0; idx_multipole <= idx_multipole_max; ++idx_multipole) {
                 mat_multipole_transformed[idx_symmetry*(idx_multipole_max+1)+idx_multipole] = mat_multipole[idx_multipole].changeBasis(mat_single[idx_symmetry].basis());
             }
@@ -551,10 +555,12 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     std::cout << ">>TOT" << std::setw(7) << nSteps_two*symmetries.size() << std::endl;
 
-#pragma omp parallel for collapse(2) schedule(static, 1)
+    int nSteps_two_i = static_cast<int>(nSteps_two);
+
+#pragma omp parallel for schedule(static, 1)
 
     // Loop through steps
-    for (size_t step_two = 0; step_two < nSteps_two; ++step_two) {
+    for (int step_two = 0; step_two < nSteps_two_i; ++step_two) {
 
         // Loop through symmetries
         for (size_t idx_symmetry = 0; idx_symmetry < symmetries.size(); ++idx_symmetry) {

@@ -34,11 +34,13 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/* ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph/* ${CMAKE_CURRENT_SOURCE_DIR}/startgui ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
-add_custom_command(
-  TARGET gui
-  COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
-  DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/startgui
-)
+if(UNIX)
+  add_custom_command(
+    TARGET gui
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_BINARY_DIR}/startgui ${CMAKE_BINARY_DIR}/pairinteraction
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/startgui
+  )
+endif()
 
 if( WITH_DMG )
 
@@ -69,12 +71,20 @@ if( WITH_DMG )
 
 else( )
 
-  find_package(PythonInterp 3 REQUIRED)
-
-  add_custom_command(TARGET gui POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-  )
+  if(CMAKE_HOST_WIN32)
+    find_program(PYINSTALLER NAMES pyinstaller)
+    add_custom_command(TARGET gui POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/startgui.spec ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
+      COMMAND ${PYINSTALLER} ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    )
+  else(CMAKE_HOST_WIN32)
+    find_package(PythonInterp 3 REQUIRED)
+    add_custom_command(TARGET gui POST_BUILD
+      COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    )
+  endif(CMAKE_HOST_WIN32)
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)

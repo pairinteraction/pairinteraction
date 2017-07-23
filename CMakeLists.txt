@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 
 project(pairinteraction CXX)
+set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
 # get version info from git
@@ -40,6 +41,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DATABASE "Generate the quantum defect database" ON)
+option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 
 # Mac OS X specific build instructions
@@ -64,7 +66,9 @@ if( WITH_GUI )
   add_subdirectory(gui)
 endif( )
 
-add_subdirectory(doc)
+if ( WITH_DOCS )
+  add_subdirectory(doc)
+endif( )
 
 # Concatenate licenses
 
