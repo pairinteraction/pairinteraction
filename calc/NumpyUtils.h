@@ -97,7 +97,8 @@ namespace numpy {
          *
          * \return The total length of the array
          */
-        inline void check_array_sanity(int len, int nd, std::initializer_list<long> dims)
+        template < typename T >
+        void check_array_sanity(int len, int nd, std::initializer_list<T> dims)
         {
             if ( len < 1 )
               throw std::out_of_range(
@@ -179,8 +180,8 @@ namespace numpy {
          *
          * \return PyObject* containing a Numpy array
          */
-        template < view_or_copy v, typename RAIter >
-        PyObject * convert(RAIter begin, RAIter end, int nd, std::initializer_list<long> dims,
+        template < view_or_copy v, typename RAIter, typename T >
+        PyObject * convert(RAIter begin, RAIter end, int nd, std::initializer_list<T> dims,
                              std::random_access_iterator_tag)
         {
             using value_type = typename std::iterator_traits<RAIter>::value_type;
@@ -216,8 +217,8 @@ namespace numpy {
      *
      * \return PyObject* containing a Numpy array
      */
-    template < view_or_copy v, typename Iter >
-    PyObject * convert(Iter begin, Iter end, int nd, std::initializer_list<long> dims)
+    template < view_or_copy v, typename Iter, typename T >
+    PyObject * convert(Iter begin, Iter end, int nd, std::initializer_list<T> dims)
     {
         return internal::convert<v>(
           begin, end, nd, dims,
