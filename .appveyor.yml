@@ -46,7 +46,7 @@ after_build:
   - cmd: md pairinteraction\conf
   - cmd: md pairinteraction\databases
   - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction\
-  - cmd: copy gui\dist\startgui.exe pairinteraction\
+  - cmd: copy gui\dist\startgui pairinteraction\
   - cmd: copy gui\conf pairinteraction\conf
   - cmd: copy calc\Release pairinteraction
   - cmd: copy calc\databases\quantum_defects.db pairinteraction\databases\
