@@ -79,11 +79,11 @@ else( )
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     )
   else(CMAKE_HOST_WIN32)
-	find_package(PythonInterp 3 REQUIRED)
-	add_custom_command(TARGET gui POST_BUILD
+    find_package(PythonInterp 3 REQUIRED)
+    add_custom_command(TARGET gui POST_BUILD
       COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-	)
+    )
   endif(CMAKE_HOST_WIN32)
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
