@@ -1,4 +1,4 @@
-# pairinteraction [![Build status][travis-svg]][travis-link] [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
+# pairinteraction [![Build status][travis-svg]][travis-link] [![AppVeyor build status][appveyor-svg]][appveyor-link] [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 
 *A Rydberg Interaction Calculator*
 
@@ -14,9 +14,11 @@ Visit the official website at https://pairinteraction.github.io/
 
 ## Build Status
 
-We are using [Travis CI](https://travis-ci.org) as a hosted continuous integration service to build pairinteraction against various toolchains.
+We are using [Travis CI](https://travis-ci.org) and [AppVeyor](https://www.appveyor.com) as hosted continuous integration services to build pairinteraction against various toolchains.
 
-*Current build status:* [![Build status][travis-svg]][travis-link]
+*Current build status:* 
+
+[![Build status][travis-svg]][travis-link] [![AppVeyor build status][appveyor-svg]][appveyor-link]
 
 ## Support
 
@@ -36,6 +38,8 @@ Note that not all files in this repository belong to the pairinteraction project
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
+[appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
+[appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
