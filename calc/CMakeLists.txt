@@ -36,11 +36,11 @@ add_library(pairinteraction-complex SHARED ${pairinteraction_SRCS} ${wignerSymbo
 set_target_properties(pairinteraction-complex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 if(MSVC)
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS /W4)
-  # TODO set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS /wdSOMENUMBER) maybe /wd0169 or /wd0649
+  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W4 /DNOMINMAX")
+  # TODO set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "/wdSOMENUMBER") maybe /wd0169 or /wd0649
 else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic")
-  set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS -Wno-unused-parameter)
+  set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 endif()
 
 # Use OpenMP
