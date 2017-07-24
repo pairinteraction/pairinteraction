@@ -24,7 +24,7 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf
 )
 
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/app.py
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
@@ -44,10 +44,11 @@ if ( CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE )
 
   find_program(PYINSTALLER NAMES pyinstaller)
 
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/databases/quantum_defects.db
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/calc/databases/quantum_defects.db ${CMAKE_BINARY_DIR}/dist/pairinteraction/calc/databases/quantum_defects.db
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
   )
@@ -56,6 +57,10 @@ if ( CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE )
     DEPENDS ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
   )
   add_dependencies(pyinstaller pythonscripts)
+
+  add_dependencies(pyinstaller _pairinteraction_real)
+  add_dependencies(pyinstaller _pairinteraction_complex)
+  add_dependencies(pyinstaller database)
 
 else( )
 

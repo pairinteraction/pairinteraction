@@ -21,7 +21,7 @@ add_custom_command(TARGET database
 
 if( WITH_DMG )
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION calc/databases)
+  #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION calc/databases)
 
 else( )
 
