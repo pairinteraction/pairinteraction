@@ -21,7 +21,7 @@ add_custom_target(gui ALL)
 add_custom_command(
   TARGET gui
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf/*
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf
 )
 
 add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
@@ -38,20 +38,41 @@ add_custom_target(pythonscripts ALL
 )
 add_dependencies(pythonscripts gui)
 
-if( WITH_DMG )
+# Compile Python scripts
 
-  add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction
-    COMMAND ${CMAKE_COMMAND} -DWITH_DMG=${WITH_DMG} -DSCRIPT=${CMAKE_BINARY_DIR}/pairinteraction -P ${CMAKE_MODULE_PATH}/pyinstaller.cmake
-    DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+if ( CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE )
+
+  find_program(PYINSTALLER NAMES pyinstaller)
+
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
+    COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
   )
 
   add_custom_target(pyinstaller ALL
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction
+    DEPENDS ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
   )
   add_dependencies(pyinstaller pythonscripts)
 
-  install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/dist/pairinteraction DESTINATION .)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION .)
+else( )
+
+  find_package(PythonInterp 3 REQUIRED)
+  add_custom_command(TARGET pythonscripts POST_BUILD
+    COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  )
+
+endif( )
+
+# Install Python scripts
+
+if( CMAKE_HOST_APPLE AND WITH_DMG )
+
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION . PATTERN "pairinteraction" EXCLUDE)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION .)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
@@ -64,33 +85,15 @@ if( WITH_DMG )
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
-else( WITH_DMG )
-
-  if(CMAKE_HOST_WIN32)
-    find_program(PYINSTALLER NAMES pyinstaller)
-    add_custom_command(TARGET pythonscripts POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
-      COMMAND ${PYINSTALLER} ${CMAKE_BINARY_DIR}/pairinteraction.spec
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-    )
-  else(CMAKE_HOST_WIN32)
-    find_package(PythonInterp 3 REQUIRED)
-    add_custom_command(TARGET pythonscripts POST_BUILD
-      COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-      DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-    )
-  endif(CMAKE_HOST_WIN32)
+elseif( CMAKE_HOST_UNIX )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction)
 
-  if(CMAKE_HOST_UNIX)
-    install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
-    install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/pairinteraction ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")
-    install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/pairinteraction DESTINATION bin)
-    install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
-  endif(CMAKE_HOST_UNIX)
+  install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
+  install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/pairinteraction ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/pairinteraction DESTINATION bin)
+  install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
 
-endif( WITH_DMG )
+endif( )

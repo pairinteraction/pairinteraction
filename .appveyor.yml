@@ -46,8 +46,7 @@ after_build:
   - cmd: md pairinteraction-install\calc\databases
   - cmd: md pairinteraction-install\gui\conf
   - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction-install\
-  - cmd: copy dist\startgui pairinteraction-install\gui
-  - cmd: copy gui\conf pairinteraction-install\gui\conf
+  - cmd: xcopy /E dist\pairinteraction\. pairinteraction-install\gui
   - cmd: copy calc\Release pairinteraction-install\calc
   - cmd: copy calc\databases\quantum_defects.db pairinteraction-install\calc\databases
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction-install > nul
