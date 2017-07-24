@@ -31,7 +31,7 @@ matrix:
 
         - zip -r -X python-packages-osx conda-export conda-spec-file.txt
       before_deploy:
-        - git tag $COMMIT_TIMESTAMP
+        - git tag -f $COMMIT_TIMESTAMP
         - git push --quiet --tags "https://pairinteraction-slave:${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git"
 
 branches:
