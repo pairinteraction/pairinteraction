@@ -69,8 +69,9 @@ else( WITH_DMG )
   if(CMAKE_HOST_WIN32)
     find_program(PYINSTALLER NAMES pyinstaller)
     add_custom_command(TARGET pythonscripts POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/startgui.spec ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
-      COMMAND ${PYINSTALLER} ${CMAKE_CURRENT_BINARY_DIR}/startgui.spec
+      COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/win32/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
+      COMMAND ${PYINSTALLER} ${CMAKE_BINARY_DIR}/pairinteraction.spec
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
       DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     )
   else(CMAKE_HOST_WIN32)

@@ -35,22 +35,24 @@ cache:
 
 before_build:
   - cmd: md build && cd build
-  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DWITH_DOCS=no -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build:
   project: build\pairinteraction.sln
-  parallel: false
+  parallel: true
   verbosity: minimal
 
 after_build:
-  - cmd: md pairinteraction\conf
-  - cmd: md pairinteraction\databases
-  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction\
-  - cmd: copy gui\dist\startgui.exe pairinteraction\
-  - cmd: copy gui\conf pairinteraction\conf
-  - cmd: copy calc\Release pairinteraction
-  - cmd: copy calc\databases\quantum_defects.db pairinteraction\databases\
-  - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction > nul
+  - cmd: ls
+  - cmd: ls dist
+  - cmd: md pairinteraction-install\calc\databases
+  - cmd: md pairinteraction-install\gui\conf
+  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction-install\
+  - cmd: copy dist pairinteraction-install\gui
+  - cmd: copy gui\conf pairinteraction-install\gui\conf
+  - cmd: copy calc\Release pairinteraction-install\calc
+  - cmd: copy calc\databases\quantum_defects.db pairinteraction-install\calc\databases
+  - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction-install > nul
 
 artifacts:
   - path: build\pairinteraction-install-windows-x86_64.zip

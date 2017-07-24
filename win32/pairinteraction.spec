@@ -2,8 +2,8 @@
 
 block_cipher = None
 
-a = Analysis(['startgui'],
-             pathex=['.\\gui'],
+a = Analysis(['pairinteraction'],
+             pathex=[],
              binaries=[],
              datas=None,
              hiddenimports=['six', 'scipy.integrate'],
