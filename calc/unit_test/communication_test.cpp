@@ -16,7 +16,9 @@
 
 #include "Communication.h"
 #include <omp.h>
+#include <chrono>
 #include <string>
+#include <thread>
 #define BOOST_TEST_MODULE ZeroMQ interface test
 #include <boost/test/unit_test.hpp>
 
@@ -43,7 +45,8 @@ BOOST_AUTO_TEST_CASE( send_test )
       auto publisher = context.socket(ZMQ_PUB);
       publisher.bind("tcp://*:5555");
 
-      sleep(1); // wait for the others to receive
+      std::chrono::seconds s{1};
+      std::this_thread::sleep_for(s); // wait for the others to receive
       BOOST_CHECK_EQUAL( publisher.send(msg), len-1 );
     }
     else

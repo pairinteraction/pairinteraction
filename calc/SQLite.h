@@ -336,12 +336,17 @@ public:
         char *zErrMsg;
         char **azResult;
         int nRow, nColumn;
-        auto err = sqlite3_get_table( db.get(),    // open database handle
-                                      sql.c_str(), // sql query
-                                      &azResult,   // result table
-                                      &nRow,       // number of rows
-                                      &nColumn,    // number of columns
-                                      &zErrMsg );  // error message
+
+        int err = SQLITE_BUSY;
+        while ( err == SQLITE_BUSY )
+        {
+            err = sqlite3_get_table( db.get(),    // open database handle
+                                     sql.c_str(), // sql query
+                                     &azResult,   // result table
+                                     &nRow,       // number of rows
+                                     &nColumn,    // number of columns
+                                     &zErrMsg );  // error message
+        }
 
         result res( azResult, nRow, nColumn );
 
@@ -373,11 +378,16 @@ public:
     void exec(std::string const& sql)
     {
         char *zErrMsg;
-        auto err = sqlite3_exec( db.get(),    // open database handle
-                                 sql.c_str(), // sql query
-                                 nullptr,     // callback
-                                 nullptr,     // 1st argument to callback
-                                 &zErrMsg );  // error message
+
+        int err = SQLITE_BUSY;
+        while ( err == SQLITE_BUSY )
+        {
+            err = sqlite3_exec( db.get(),    // open database handle
+                                sql.c_str(), // sql query
+                                nullptr,     // callback
+                                nullptr,     // 1st argument to callback
+                                &zErrMsg );  // error message
+        }
 
         if ( err != SQLITE_OK )
         {

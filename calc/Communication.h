@@ -6,6 +6,7 @@
 #include <cstdarg>
 #include <zmq.h>
 
+#include <boost/format.hpp>
 
 namespace zmq {
 
@@ -126,28 +127,24 @@ public:
    * The send() function shall queue a message created from its
    * printf-style arguments.
    *
-   * \param[in] fmt   printf-style string for argument formatting
-   * \param[in] ...   variadic arguments
+   * \param[in] fmt    printf-style string for argument formatting
+   * \param[in] args   variadic arguments
    * \returns number of bytes written (without zero terminator)
    */
-  int send(char const *fmt, ...) const __attribute__((format (printf, 2, 3)));
-  int send(char const *fmt, ...)
+  template < typename... Args >
+  int send(char const *fmt, Args&&... args)
   {
-    va_list args;
-    va_start(args, fmt);
-    char *tmp = nullptr;
-    int len = vasprintf(&tmp, fmt, args);
-    if ( len == -1 )
-    {
-      std::free(tmp);
-      throw std::bad_alloc();
-    }
-    if ( zmq_send(*this, tmp, len+1, 0) == -1 )
-    {
-      std::free(tmp);
+    boost::format formatter(fmt);
+
+    // This is horrible.  In C++17 we have the binary fold expression
+    using expander = int[];
+    (void) expander { 0, (void(formatter % std::forward<Args>(args)), 0)... };
+
+    std::string tmp = formatter.str();
+    int len = tmp.size();
+
+    if ( zmq_send(*this, tmp.c_str(), len+1, 0) == -1 )
       throw error();
-    }
-    std::free(tmp);
     return len;
   }
 };
