@@ -19,28 +19,30 @@
 #include "Wavefunction.h"
 #define BOOST_TEST_MODULE Wavefunctions test
 #include <boost/test/unit_test.hpp>
+#include <boost/mpl/list.hpp>
 
 #include <iostream>
 
-
+template < int l >
 struct Fixture
 {
   QuantumDefect qd;
-  Fixture() : qd( "Rb", 79, 1, 1.5 ) {};
+  Fixture() : qd( "Rb", 79, l, 1.5 ) {};
 };
 
+typedef boost::mpl::list<Fixture<1>, Fixture<2>> Fixtures;
 
-BOOST_FIXTURE_TEST_CASE( model_potentials, Fixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(model_potentials, T, Fixtures, T)
 {
   // There could be better coverage
-  BOOST_CHECK( std::isnan( model_potential::V(qd, 0) ) );
-  BOOST_CHECK( std::isnan( model_potential::g(qd, 0) ) );
+  BOOST_CHECK( std::isnan( model_potential::V(T::qd, 0) ) );
+  BOOST_CHECK( std::isnan( model_potential::g(T::qd, 0) ) );
 }
 
 
-BOOST_FIXTURE_TEST_CASE( numerovs_method, Fixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T)
 {
-  Numerov N( qd );
+  Numerov N( T::qd );
   auto const& x = N.axis();
   auto const& y = N.integrate();
 
@@ -49,14 +51,14 @@ BOOST_FIXTURE_TEST_CASE( numerovs_method, Fixture )
   BOOST_CHECK_EQUAL( y.size(), 12087 );
 
   // Check for correct upper bound and decay to zero
-  BOOST_CHECK( x.back() <= std::sqrt( 2*qd.n*(qd.n+15) ) );
+  BOOST_CHECK( x.back() <= std::sqrt( 2*T::qd.n*(T::qd.n+15) ) );
   BOOST_CHECK_SMALL( y.back(), 1e-6 );
 }
 
 
-BOOST_FIXTURE_TEST_CASE( coulomb_functions, Fixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T)
 {
-  Whittaker W( qd );
+  Whittaker W( T::qd );
   auto const& x = W.axis();
   auto const& y = W.integrate();
 
@@ -65,15 +67,15 @@ BOOST_FIXTURE_TEST_CASE( coulomb_functions, Fixture )
   BOOST_CHECK_EQUAL( y.size(), 12087 );
 
   // Check for correct upper bound and decay to zero
-  BOOST_CHECK( x.back() <= 2*qd.n*(qd.n+15) );
+  BOOST_CHECK( x.back() <= 2*T::qd.n*(T::qd.n+15) );
   BOOST_CHECK_SMALL( y.back(), 1e-6 );
 }
 
 
-BOOST_FIXTURE_TEST_CASE( method_comparison, Fixture )
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
 {
-  Numerov N( qd );
-  Whittaker W( qd );
+  Numerov N( T::qd );
+  Whittaker W( T::qd );
   auto const& nx = W.axis();
   auto const& ny = W.integrate();
   auto const& wx = W.axis();
@@ -86,4 +88,12 @@ BOOST_FIXTURE_TEST_CASE( method_comparison, Fixture )
   // Compare pointwise
   for (size_t i = 0; i < n; ++i)
     BOOST_CHECK_CLOSE( ny[i], wy[i], 1e-16 );
+}
+
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T)
+{
+  BOOST_CHECK_CLOSE(
+    IntegrateRadialElement<Numerov  >(T::qd, 1, T::qd),
+    IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd),
+    1e-3 ); // corresponds to 0.1% deviation
 }

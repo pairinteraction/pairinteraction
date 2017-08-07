@@ -38,6 +38,7 @@ BOOST_AUTO_TEST_CASE( conf_parser_test )
   BOOST_CHECK_EQUAL( c["third"] .str() , "Hello World!" );
   BOOST_CHECK_EQUAL( c["fourth"].str() , "2" );
   BOOST_CHECK_EQUAL( c["fifth"] .str() , "Hello World!" );
+  BOOST_CHECK_EQUAL( c.count("first")  , 1 );
 
   // Test subscript getter and type deduction
   int i;
@@ -57,7 +58,8 @@ BOOST_AUTO_TEST_CASE( conf_parser_test )
   BOOST_CHECK_EQUAL( cc["third"] .str() , "Hello World!" );
   BOOST_CHECK_EQUAL( cc["fourth"].str() , "2" );
   BOOST_CHECK_EQUAL( cc["fifth"] .str() , "Hello World!" );
-  BOOST_CHECK_THROW( cc["nonexistent"] , std::out_of_range );
+  BOOST_CHECK_THROW( cc["nonexistent"]  , std::out_of_range );
+  BOOST_CHECK_EQUAL( cc.count("first")  , 1 );
 
   // Test comparison
   BOOST_CHECK( c == cc );
@@ -70,4 +72,11 @@ BOOST_AUTO_TEST_CASE( conf_parser_test )
   auto cit = cc.find("first");
   BOOST_CHECK_EQUAL( cit->first        , "first" );
   BOOST_CHECK_EQUAL( cit->second.str() , "2"     );
+
+  // iterate
+  for (auto it : c)   it;
+  for (auto cit : cc) cit;
+
+  // Test fusion
+  c += cc;
 }

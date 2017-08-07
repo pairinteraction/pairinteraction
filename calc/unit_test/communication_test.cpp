@@ -15,7 +15,6 @@
  */
 
 #include "Communication.h"
-#include <omp.h>
 #include <chrono>
 #include <string>
 #include <thread>
@@ -30,27 +29,27 @@ BOOST_AUTO_TEST_CASE( exceptions_test )
   BOOST_CHECK_THROW( context.socket ( -42 )       , zmq::error );
   BOOST_CHECK_THROW( socket .bind   ( "garbage" ) , zmq::error );
   BOOST_CHECK_THROW( socket .connect( "garbage" ) , zmq::error );
+
+  try { context.socket ( -42 ); }
+  catch(zmq::error const& e) { e.what(); }
 }
 
 BOOST_AUTO_TEST_CASE( send_test )
 {
   auto context = zmq::context();
-  constexpr char msg[] = "Into the void...";
-  constexpr size_t len = sizeof(msg);
+  constexpr static char msg[] = "Into the void...";
+  constexpr static size_t len = sizeof(msg);
 
-  #pragma omp parallel private(context)
-  {
-    if ( omp_get_thread_num() == 0 )
-    {
+  std::thread sender([&context]() {
       auto publisher = context.socket(ZMQ_PUB);
       publisher.bind("tcp://*:5555");
 
-      std::chrono::seconds s{1};
-      std::this_thread::sleep_for(s); // wait for the others to receive
+      std::chrono::milliseconds ms{10};
+      std::this_thread::sleep_for(ms); // wait for the others to receive
       BOOST_CHECK_EQUAL( publisher.send(msg), len-1 );
-    }
-    else
-    {
+    });
+
+  std::thread receiver([&context]() {
       auto subscriber = context.socket(ZMQ_SUB);
       subscriber.connect("tcp://localhost:5555");
       BOOST_CHECK_EQUAL( zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, nullptr, 0), 0);
@@ -58,6 +57,8 @@ BOOST_AUTO_TEST_CASE( send_test )
       char buf[len];
       BOOST_CHECK_EQUAL( zmq_recv(subscriber, buf, len, 0), len );
       BOOST_CHECK_EQUAL( msg, buf );
-    }
-  }
+    });
+
+  sender.join();
+  receiver.join();
 }
