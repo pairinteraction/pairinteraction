@@ -43,6 +43,7 @@ option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DATABASE "Generate the quantum defect database" ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
+option(WITH_COVERAGE "Generate code coverage report"        OFF)
 
 # Mac OS X specific build instructions
 

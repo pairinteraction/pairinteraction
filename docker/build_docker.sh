@@ -28,20 +28,20 @@ case "${TRAVIS_OS_NAME}" in
     "linux")
 
             case "${image}" in
-                "opensuse:w64")
-                    docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
-                           --interactive --tty \
-                           hmenke/$image \
-                           /bin/bash /travis/docker/build_cmake.sh win32;
-                    ;;
-
                 "debian:doxygen")
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            pairinteraction/$image \
                            /bin/bash /travis/doc/doxygen/publish_doxygen.sh
+                    ;;
+
+                "debian")
+                    docker run --env-file ${ENV_FILE} \
+                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                           --interactive --tty \
+                           hmenke/$image \
+                           /bin/bash /travis/docker/build_cmake.sh gcov;
                     ;;
 
                 *)
@@ -62,3 +62,8 @@ case "${TRAVIS_OS_NAME}" in
         ;;
 
 esac;
+
+if [ "${image}" = "debian" ]; then
+    cd ${TRAVIS_BUILD_DIR}
+    curl -s https://codecov.io/bash | bash -
+fi

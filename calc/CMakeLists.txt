@@ -43,6 +43,11 @@ else()
   set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 endif()
 
+if( WITH_COVERAGE )
+  set(CMAKE_CXX_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
+  link_libraries(gcov)
+endif( )
+
 # Use OpenMP
 
 find_package(OpenMP REQUIRED)
