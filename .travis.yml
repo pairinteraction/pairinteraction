@@ -44,10 +44,6 @@ matrix:
       sudo: required
       env:
         - image=debian:doxygen
-  allow_failures:
-    - env:
-        - image=opensuse
-        - package=pairinteraction-install-linux.rpm
 
 script:
   - docker/build_docker.sh

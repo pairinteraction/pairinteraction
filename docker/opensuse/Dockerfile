@@ -7,7 +7,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     eigen3-devel \
     python3-qt5-devel \
     sqlite3 sqlite3-devel \
-    boost-devel \
+    boost_1_61-devel \
     gsl-devel \
     zeromq-devel \
     swig python3 python3-devel \
