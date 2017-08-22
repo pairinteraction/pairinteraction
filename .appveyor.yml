@@ -44,23 +44,21 @@ build:
 
 after_build:
   - cmd: md pairinteraction-install\calc\databases
-  - cmd: md pairinteraction-install\calc\Release
   - cmd: md pairinteraction-install\gui
-  - cmd: md pairinteraction-install\test
   - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction-install\
   - cmd: xcopy /E dist\pairinteraction\. pairinteraction-install\gui
-  - cmd: copy calc\Release pairinteraction-install\calc\Release
+  - cmd: copy calc\Release pairinteraction-install\calc
   - cmd: copy calc\pairinteraction_real.py pairinteraction-install\calc
   - cmd: copy calc\pairinteraction_complex.py pairinteraction-install\calc
   - cmd: copy calc\databases\quantum_defects.db pairinteraction-install\calc\databases
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gsl.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gslcblas.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\libzmq.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\sqlite3.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_filesystem-vc140-mt-1_64.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_program_options-vc140-mt-1_64.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_serialization-vc140-mt-1_64.dll pairinteraction-install\calc\Release
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_system-vc140-mt-1_64.dll pairinteraction-install\calc\Release
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gsl.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gslcblas.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\libzmq.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\sqlite3.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_filesystem-vc140-mt-1_64.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_program_options-vc140-mt-1_64.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_serialization-vc140-mt-1_64.dll pairinteraction-install\calc
+  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_system-vc140-mt-1_64.dll pairinteraction-install\calc
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction-install > nul
 
 artifacts:
