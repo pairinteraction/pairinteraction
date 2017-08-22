@@ -64,22 +64,32 @@ def standalone(file):
                 print(file, rpaths, libpath)
                 raise
 
-            libpath = os.path.abspath(libpath)
+            libpath_abs = os.path.abspath(libpath)
 
             # If no standard library and no installed library, update path to dependency
-            if (not libpath in executables) and (not libpath.startswith("/System/Library") and not libpath.startswith("/usr/lib") or "libsqlite" in libpath):
+            if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
 
                 # Update paths
-                if file not in executables:
-                    libpath_new = os.path.join("@loader_path", os.path.basename(libpath))
+                if os.path.basename(libpath_abs) == "Python":
+                    libpath_new = "@executable_path/Python"
+                elif libpath_abs in executables:
+                    if file not in executables:
+                        libpath_new = os.path.join("@loader_path/..", os.path.basename(libpath_abs))
+                    else:
+                        libpath_new = os.path.join("@loader_path", os.path.basename(libpath_abs))
                 else:
-                    libpath_new = os.path.join("@executable_path", "libraries", os.path.basename(libpath))
+                    if file not in executables:
+                        libpath_new = os.path.join("@loader_path", os.path.basename(libpath_abs))
+                    else:
+                        libpath_new = os.path.join("@loader_path", "libraries", os.path.basename(libpath_abs))
 
                 cmd = ['install_name_tool', '-change', libpath, libpath_new, file_new]
                 if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
                     raise Exception("Error updating paths.")
 
-                yield libpath
+                # Analyze the current dependency
+                if os.path.basename(libpath_abs) != "Python":
+                    yield libpath_abs
 
 
 if not os.path.exists(librarypath):
@@ -97,3 +107,4 @@ while need:
         need.update(standalone(file))
     done.update(needed)
     need.difference_update(done)
+

@@ -56,6 +56,11 @@ from .worker import Worker
 from .loader import Eigensystem
 from .version import *
 
+if getattr(sys, 'frozen', False):
+    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
+else:
+    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+
 from calc import pairinteraction_real as pir
 from calc import pairinteraction_complex as pic
 pi = None
@@ -507,6 +512,8 @@ class MainWindow(QtGui.QMainWindow):
 
         if os.path.exists(os.path.join(self.path_base, "calc/databases/quantum_defects.db")):
             self.path_workingdir = os.path.join(self.path_base, "calc")
+        elif os.path.exists(os.path.join(self.path_base, "../calc/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "../calc")
         elif os.path.exists(os.path.join(self.path_base, "../../calc/databases/quantum_defects.db")):
             self.path_workingdir = os.path.join(self.path_base, "../../calc")
         else:

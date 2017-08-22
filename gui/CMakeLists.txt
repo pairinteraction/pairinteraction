@@ -48,7 +48,6 @@ if ( CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE )
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_BINARY_DIR}/calc/databases/quantum_defects.db ${CMAKE_BINARY_DIR}/dist/pairinteraction/calc/databases/quantum_defects.db
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
   )
@@ -76,8 +75,8 @@ endif( )
 
 if( CMAKE_HOST_APPLE AND WITH_DMG )
 
-  install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION . PATTERN "pairinteraction" EXCLUDE)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION .)
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION gui PATTERN "pairinteraction" EXCLUDE)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION gui)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
@@ -86,7 +85,7 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
     message( FATAL_ERROR "Could not find fileicon" )
   endif( )
 
-  set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction)
+  set(filepath \${CMAKE_INSTALL_PREFIX}/gui/pairinteraction)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 

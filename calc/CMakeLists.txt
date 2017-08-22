@@ -111,21 +111,21 @@ add_subdirectory( unit_test )
 # CPack
 
 if( WITH_DMG )
-  #find_package(PythonInterp 3 REQUIRED)
+  find_package(PythonInterp 3 REQUIRED)
 
-  #install(TARGETS _pairinteraction_real LIBRARY DESTINATION calc)
-  #install(TARGETS _pairinteraction_complex LIBRARY DESTINATION calc)
-  #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_real.py DESTINATION calc)
-  #install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_complex.py DESTINATION calc)
-  #install(TARGETS pairinteraction-real LIBRARY DESTINATION calc)
-  #install(TARGETS pairinteraction-complex LIBRARY DESTINATION calc)
+  install(TARGETS _pairinteraction_real LIBRARY DESTINATION calc)
+  install(TARGETS _pairinteraction_complex LIBRARY DESTINATION calc)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_real.py DESTINATION calc)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_complex.py DESTINATION calc)
+  install(TARGETS pairinteraction-real LIBRARY DESTINATION calc)
+  install(TARGETS pairinteraction-complex LIBRARY DESTINATION calc)
   
-  #set(bin1 \${CMAKE_INSTALL_PREFIX}/calc/_pairinteraction_real.so)
-  #set(bin2 \${CMAKE_INSTALL_PREFIX}/calc/_pairinteraction_complex.so)
-  #set(bin3 \${CMAKE_INSTALL_PREFIX}/calc/libpairinteraction-real.dylib)
-  #set(bin4 \${CMAKE_INSTALL_PREFIX}/calc/libpairinteraction-complex.dylib)
+  set(bin1 \${CMAKE_INSTALL_PREFIX}/calc/_pairinteraction_real.so)
+  set(bin2 \${CMAKE_INSTALL_PREFIX}/calc/_pairinteraction_complex.so)
+  set(bin3 \${CMAKE_INSTALL_PREFIX}/calc/libpairinteraction-real.dylib)
+  set(bin4 \${CMAKE_INSTALL_PREFIX}/calc/libpairinteraction-complex.dylib)
   
-  #install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4})")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4})")
 
 elseif ( NOT WIN32 )
 
