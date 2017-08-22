@@ -628,26 +628,51 @@ public:
 
         return state_iter->idx;
     }
-    
+
+    size_t getVectorindex(const T &state) {
+        this->buildBasis();
+
+        size_t stateidx = this->getStateindex(state);
+
+        double maxval = -1;
+        size_t col_with_maxval = -1;
+        for (int k=0; k<coefficients.outerSize(); ++k) { // col == idx_vector
+            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+                if (triple.row() == stateidx) {
+                    if (std::abs(triple.value()) > maxval) {
+                        col_with_maxval = triple.col();
+                        maxval = std::abs(triple.value());
+                    }
+                    break;
+                }
+            }
+        }
+
+        if (col_with_maxval == -1) {
+            throw std::runtime_error("The method getVectorindex() is called on a non-occuring state.");
+        }
+
+        return col_with_maxval;
+    }
+
     scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
         this->buildHamiltonian();
         
-        size_t idx_row = getStateindex(state_row);
-        size_t idx_col = getStateindex(state_col);
+        size_t idx_row = this->getStateindex(state_row);
+        size_t idx_col = this->getStateindex(state_col);
         
-        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) TODO [dummystates]
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one
         
         return tmp.coeff(idx_row, idx_col);
-        
     }
     
     void setHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
         
-        size_t idx_row = getStateindex(state_row);
-        size_t idx_col = getStateindex(state_col);
+        size_t idx_row = this->getStateindex(state_row);
+        size_t idx_col = this->getStateindex(state_col);
         
-        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) TODO [dummystates]
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one
         tmp.coeffRef(idx_row, idx_col) = value; // TODO check whether this also works if the element does not exist TODO [dummystates]
         if (idx_row != idx_col) tmp.coeffRef(idx_col, idx_row) = this->conjugate(value);
         
@@ -657,8 +682,8 @@ public:
     void addHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
         
-        size_t idx_row = getStateindex(state_row);
-        size_t idx_col = getStateindex(state_col);
+        size_t idx_row = this->getStateindex(state_row);
+        size_t idx_col = this->getStateindex(state_col);
         
         eigen_sparse_t tmp(states.size(), states.size());
         tmp.reserve(2);

@@ -176,11 +176,11 @@ namespace std {
 %template(_SystemStateOne) SystemBase<StateOne>;
 %template(_SystemStateTwo) SystemBase<StateTwo>;
 
-%include "SystemOne.h"
-%include "SystemTwo.h"
-
 %copyctor SystemOne;
 %copyctor SystemTwo;
+
+%include "SystemOne.h"
+%include "SystemTwo.h"
 
 // %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  ); // TODO
 // %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  ); // TODO
