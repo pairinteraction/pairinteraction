@@ -77,7 +77,7 @@ public:
     
     // TODO setThresholdForSqnorm()
     
-    void setArtificialstates(const std::vector<T> &s) { // TODO [dummystates]
+    void setArtificialstates(const std::vector<T> &s) { //  TODO make this function work after basis was build, too TODO make derived class artifical states TODO include in serialize method TODO [dummystates]
         states_artifical = s;
     }
     
@@ -614,7 +614,7 @@ public:
     }
 
     ////////////////////////////////////////////////////////////////////
-    /// Methods to manipulate individual entries of the Hamiltonian ////
+    /// Methods to manipulate entries of the Hamiltonian ///////////////
     ////////////////////////////////////////////////////////////////////
     
     size_t getStateindex(const T &state) {
@@ -655,13 +655,37 @@ public:
         return col_with_maxval;
     }
 
+    void forgetStatemixing() {
+        this->diagonalize();
+
+        std::vector<eigen_triplet_t> coefficients_triplets;
+        coefficients_triplets.reserve(coefficients.cols());
+        double threshold = std::sqrt(0.5);
+
+        for (int k=0; k<coefficients.outerSize(); ++k) { // col == idx_vector
+            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+                if (std::abs(triple.value()) > threshold) {
+                    coefficients_triplets.push_back(eigen_triplet_t(triple.row(),triple.col(),1));
+                    break;
+                }
+            }
+        }
+
+        if (coefficients_triplets.size() < coefficients.cols()) {
+            throw std::runtime_error("The states are mixed too strongly for calling forgetStatemixing().");
+        }
+
+        coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
+        coefficients_triplets.clear();
+    }
+
     scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
         this->buildHamiltonian();
         
         size_t idx_row = this->getStateindex(state_row);
         size_t idx_col = this->getStateindex(state_col);
         
-        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one TODO [dummystates]
         
         return tmp.coeff(idx_row, idx_col);
     }
@@ -672,9 +696,8 @@ public:
         size_t idx_row = this->getStateindex(state_row);
         size_t idx_col = this->getStateindex(state_col);
         
-        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one
+        eigen_sparse_t tmp = coefficients*hamiltonianmatrix*coefficients.adjoint(); // TODO check whether canonicalization successful by calculating checkIsDiagonal((coefficients*coefficients.adjoint()).prune()) and checking if all entries are one TODO [dummystates]
         tmp.coeffRef(idx_row, idx_col) = value; // TODO check whether this also works if the element does not exist TODO [dummystates]
-        if (idx_row != idx_col) tmp.coeffRef(idx_col, idx_row) = this->conjugate(value);
         
         hamiltonianmatrix = coefficients.adjoint()*tmp*coefficients;
     }
