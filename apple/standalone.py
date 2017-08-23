@@ -71,7 +71,7 @@ def standalone(file):
 
                 # Update paths
                 if os.path.basename(libpath_abs) == "Python":
-                    libpath_new = "@executable_path/Python"
+                    libpath_new = "@rpath/Python"
                 elif libpath_abs in executables:
                     if file not in executables:
                         libpath_new = os.path.join("@loader_path/..", os.path.basename(libpath_abs))
@@ -108,3 +108,8 @@ while need:
     done.update(needed)
     need.difference_update(done)
 
+for file in executables:
+    for rpath in ["@executable_path", "/usr/local/opt/python3/Frameworks/Python.framework/Versions/3.5"]: # TODO implement a function into the gui that changes the rpath of the executables according to the used python distribution and adds the pairinteraction library to the python path
+        cmd = ['install_name_tool', '-add_rpath', rpath, file]
+        if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
+            raise Exception("Error adding rpath.")
