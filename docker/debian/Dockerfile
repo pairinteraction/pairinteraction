@@ -10,7 +10,7 @@ RUN apt-get update \
     libsqlite3-dev sqlite3 \
     libzmq3-dev \
     swig python3 python3-dev \
-    python3-numpy python3-scipy \
+    python3-numpy python3-scipy python3-zmq \
     dpkg rpm \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

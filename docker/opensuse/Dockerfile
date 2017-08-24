@@ -11,7 +11,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     gsl-devel \
     zeromq-devel \
     swig python3 python3-devel \
-    python3-numpy python3-numpy-devel python3-scipy \
+    python3-numpy python3-numpy-devel python3-scipy python3-pyzmq \
     dpkg rpm-build \
   && zypper clean \
   && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 100 \
