@@ -2,7 +2,7 @@ FROM opensuse:leap
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install \
-    patterns-openSUSE-devel_C_C++ \
+    patterns-openSUSE-devel_C_C++ gcc6-c++ \
     git cmake \
     eigen3-devel \
     python3-qt5-devel \
@@ -13,4 +13,6 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
     dpkg rpm-build \
-  && zypper clean
+  && zypper clean \
+  && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 100 \
+  && update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++-6 100
