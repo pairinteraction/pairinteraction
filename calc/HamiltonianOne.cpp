@@ -33,7 +33,7 @@ void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z,
         std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
         auto context = zmq::context();
         auto publisher = context.socket(ZMQ_PUB);
-        publisher.connect("tcp://localhost:5556");
+        publisher.connect(zmq::endpoint::name.c_str());
         publisher.send(">>ERR%s", msg.c_str());
         throw std::runtime_error(msg);
     }
@@ -136,7 +136,7 @@ void HamiltonianOne::build() {
 
     auto context = zmq::context();
     auto publisher = context.socket(ZMQ_PUB);
-    publisher.connect("tcp://localhost:5556");
+    publisher.connect(zmq::endpoint::name.c_str());
 
     std::cout << "One-atom Hamiltonian, basis size with restrictions: " << basis->size() << std::endl;
     publisher.send(">>BAS%7d", basis->size());

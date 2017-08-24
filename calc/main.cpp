@@ -19,7 +19,9 @@
 #include "HamiltonianOne.h"
 #include "HamiltonianTwo.h"
 
+#include <codecvt>
 #include <iostream>
+#include <locale>
 #include <memory>
 #include <boost/filesystem.hpp>
 #include <omp.h>
@@ -32,6 +34,8 @@
 * check why very small Bz fields (e.g. 1e-12) leads to a large basis -> numerical error?
 
 */
+
+std::string zmq::endpoint::name{};
 
 int thread_ctrl(int num_threads /*= -1*/)
 {
@@ -46,10 +50,12 @@ int thread_ctrl(int num_threads /*= -1*/)
 }
 
 
-int compute(const std::wstring &config_name, const std::wstring &output_name) {
+int compute(const std::wstring &config_name, const std::wstring &output_name, std::wstring const &wendpoint) {
+    zmq::endpoint::name = std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>{}.to_bytes(wendpoint);
+
     auto context = zmq::context();
     auto publisher = context.socket(ZMQ_PUB);
-    publisher.connect("tcp://localhost:5556");
+    publisher.connect(zmq::endpoint::name.c_str());
 
     std::cout << std::unitbuf;
 

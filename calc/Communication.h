@@ -2,13 +2,17 @@
 
 #include <memory>
 #include <functional>
-#include <cstdlib>
-#include <cstdarg>
+#include <string>
 #include <zmq.h>
 
 #include <boost/format.hpp>
 
 namespace zmq {
+
+struct endpoint
+{
+  static std::string name;
+};
 
 /** \brief ZeroMQ error
  *

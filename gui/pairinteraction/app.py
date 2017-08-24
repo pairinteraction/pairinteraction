@@ -419,9 +419,23 @@ class AboutDialog(QtGui.QDialog):
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
+        self.endpoint = "tcp://localhost:"
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq.SUB)
-        self.socket.bind("tcp://*:5556")
+
+        bound = False
+        for port in range(5000,6000):
+            try:
+                socket.bind("tcp://*:" + str(port))
+                bound = True
+                break
+            except:
+                pass
+
+        if not bound:
+            raise Exception("No port could be bound!")
+
+        self.endpoint += str(port)
         self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 
         if os.name == 'nt':
@@ -2874,6 +2888,7 @@ class MainWindow(QtGui.QMainWindow):
 
                     def __next__(self):
                         string = self.socket.recv_string()
+                        print(string)
 
                         if ">>END" in string:
                             raise StopIteration
@@ -2883,7 +2898,7 @@ class MainWindow(QtGui.QMainWindow):
                 # start thread that collects the output
                 os.chdir(os.path.join(self.path_workingdir, "..")) # TODO why is this necessary?
                 self.proc = multiprocessing.Process(
-                    target=pi.compute,args=(self.path_config, self.path_cache))
+                    target=pi.compute,args=(self.path_config, self.path_cache, self.endpoint))
                 self.proc.start()
                 self.thread.execute(Communicator(self.socket))
 

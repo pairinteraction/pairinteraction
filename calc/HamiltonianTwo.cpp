@@ -317,7 +317,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     auto context = zmq::context();
     auto publisher = context.socket(ZMQ_PUB);
-    publisher.connect("tcp://localhost:5556");
+    publisher.connect(zmq::endpoint::name.c_str());
 
     int numNecessary = std::count(necessary.begin(), necessary.end(), true);
     std::cout << "Two-atom Hamiltonian, basis size with restrictions: " << numNecessary << std::endl;

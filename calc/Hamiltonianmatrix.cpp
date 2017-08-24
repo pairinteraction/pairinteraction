@@ -384,7 +384,7 @@ void Hamiltonianmatrix::doDeserialization() {
         std::string msg("The data type used in the program does not fit the data type used in the serialized objects.");
         auto context = zmq::context();
         auto publisher = context.socket(ZMQ_PUB);
-        publisher.connect("tcp://localhost:5556");
+        publisher.connect(zmq::endpoint::name.c_str());
         publisher.send(">>ERR%s", msg.c_str());
         throw std::runtime_error(msg);
     }
