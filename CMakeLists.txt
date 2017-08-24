@@ -54,7 +54,7 @@ if( WITH_DMG )
 endif( )
 
 # Target for the unit tests
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure)
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --verbose)
 
 # Build instructions
 
