@@ -37,3 +37,4 @@ add_dependencies(check copy_python_tests)
 
 # Add test cases
 python_test(TARGET states SOURCE state.py)
+python_test(TARGET compute SOURCE compute.py)
