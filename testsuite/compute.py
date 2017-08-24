@@ -68,24 +68,11 @@ with open(path_config, 'w') as io:
         "zerotheta": True
     }, io)
 
-endpoint = "tcp://localhost:"
 context = zmq.Context()
 socket = context.socket(zmq.SUB)
-
-bound = False
-for port in range(5000,6000):
-    try:
-        socket.bind("tcp://*:" + str(port))
-        bound = True
-        break
-    except:
-        pass
-
-if not bound:
-    raise Exception("No port could be bound!")
-
-endpoint += str(port)
+socket.bind("tcp://*:*")
 socket.setsockopt_string(zmq.SUBSCRIBE, u"")
+endpoint = socket.getsockopt_string(zmq.LAST_ENDPOINT)
 
 class Communicator:
     def __iter__(self):

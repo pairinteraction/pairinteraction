@@ -416,36 +416,14 @@ class AboutDialog(QtGui.QDialog):
         self.vLayout.addWidget(self.okButton,
                                alignment=QtCore.Qt.AlignCenter)
 
-
-# Bind socket
-# -----------
-#
-# For some reason I don't understand this has to be done at global
-# scope.  If I move this into MainWindow.__init__ it always fails.
-
-endpoint = "tcp://localhost:"
-context = zmq.Context()
-socket = context.socket(zmq.SUB)
-
-bound = False
-for port in range(5000,6000):
-    try:
-        socket.bind("tcp://*:" + str(port))
-        bound = True
-        break
-    except:
-        pass
-
-if not bound:
-    raise Exception("No port could be bound!")
-
-endpoint += str(port)
-socket.setsockopt_string(zmq.SUBSCRIBE, u"")
-
-
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq.SUB)
+        self.socket.bind("tcp://*:*")
+        self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
+        self.endpoint = self.socket.getsockopt_string(zmq.LAST_ENDPOINT)
 
         if os.name == 'nt':
             ext = ".exe"
@@ -2889,11 +2867,14 @@ class MainWindow(QtGui.QMainWindow):
 
 
                 class Communicator:
+                    def __init__(self, socket):
+                        self.socket = socket
+
                     def __iter__(self):
                         return self
 
                     def __next__(self):
-                        string = socket.recv_string()
+                        string = self.socket.recv_string()
 
                         if ">>END" in string:
                             raise StopIteration
@@ -2903,9 +2884,9 @@ class MainWindow(QtGui.QMainWindow):
                 # start thread that collects the output
                 os.chdir(os.path.join(self.path_workingdir, "..")) # TODO why is this necessary?
                 self.proc = multiprocessing.Process(
-                    target=pi.compute,args=(self.path_config, self.path_cache, endpoint))
+                    target=pi.compute,args=(self.path_config, self.path_cache, self.endpoint))
                 self.proc.start()
-                self.thread.execute(Communicator())
+                self.thread.execute(Communicator(self.socket))
 
                 # start timer used for processing the results
                 self.timer.start(0)
@@ -3905,8 +3886,8 @@ class MainWindow(QtGui.QMainWindow):
         self.abortCalculation()
 
         # Clean up communication socket
-        socket.close()
-        context.destroy()
+        self.socket.close()
+        self.context.destroy()
 
         # Save last settings
         self.saveSettingsSystem(self.path_system_last)
