@@ -1,5 +1,4 @@
 import calc.pairinteraction_complex as pi
-import multiprocessing
 import json
 import tempfile
 import zmq
@@ -70,24 +69,5 @@ socket.bind("tcp://*:*")
 socket.setsockopt_string(zmq.SUBSCRIBE, u"")
 endpoint = socket.getsockopt_string(zmq.LAST_ENDPOINT)
 
-class Communicator:
-    def __iter__(self):
-        return self
+pi.compute(path_config, path_cache, endpoint)
 
-    def __next__(self):
-        string = socket.recv_string()
-
-        if ">>END" in string:
-            raise StopIteration
-        else:
-            return string
-
-# start thread that collects the output
-proc = multiprocessing.Process(
-    target=pi.compute,args=(path_config, path_cache, endpoint))
-proc.start()
-for line in Communicator():
-    print(line)
-
-socket.close()
-context.destroy()
