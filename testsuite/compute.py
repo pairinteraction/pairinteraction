@@ -2,11 +2,7 @@ import calc.pairinteraction_complex as pi
 import multiprocessing
 import json
 import tempfile
-import os
 import zmq
-
-# Otherwise we do not find the database
-os.chdir("../")
 
 _,path_config = tempfile.mkstemp()
 path_cache  = tempfile.mkdtemp()

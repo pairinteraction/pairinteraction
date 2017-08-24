@@ -17,6 +17,8 @@ find_package(Sqlite3 REQUIRED)
 add_custom_target(database ALL)
 add_custom_command(TARGET database
   COMMAND ${SQLITE3_BINARY} ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/testsuite/calc/databases
+  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/testsuite/calc/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
 )
 
 if( WITH_DMG )
