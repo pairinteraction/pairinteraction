@@ -248,6 +248,13 @@ class handle final
     typedef std::unique_ptr<sqlite3, std::function<int(sqlite3 *)>> sqlite3_ptr;
 
 public:
+    /** \brief Conversion operator
+     *
+     * The handle object implicitly behaves like the underlying
+     * pointer.
+     */
+    operator sqlite3 * () { return db.get(); }
+
     /** \brief Constructor
      *
      * This is the canonical constructor.  It takes a filename and opens a
@@ -290,13 +297,10 @@ public:
     /** \brief Place an SQLite query
      *
      * The SQL statements are passed to this function as a string (or
-     * stringstream) and are executed in-place.  The string has to be prepared
-     * before passing to this function.  The table containing the result is
-     * returned in an sqlite::result object.
+     * stringstream);
      *
      * \param[in] sql   SQL statements
-     * \returns result of the query
-     * \throws sqlite::error
+     * \returns an unprepared SQL statement
      */
     statement query(std::string const &sql)
     {
@@ -310,12 +314,9 @@ public:
     /** \brief Execute SQLite statements
      *
      * The SQL statements are passed to this function as a string (or
-     * stringstream) and are executed in-place.  The string has to be prepared
-     * before passing to this function.  This function discards the result
-     * table.
+     * stringstream) and are executed in-place.
      *
      * \param[in] sql   SQL statements
-     * \throws sqlite::error
      */
     void exec(std::string const &sql)
     {

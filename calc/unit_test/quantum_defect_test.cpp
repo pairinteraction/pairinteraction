@@ -14,38 +14,44 @@
  * limitations under the License.
  */
 
-#include "SQLite.h"
 #include "QuantumDefect.h"
+#include "SQLite.h"
 #define BOOST_TEST_MODULE Quantum defect test
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( qd_test )
+BOOST_AUTO_TEST_CASE(qd_test)
 {
-  QuantumDefect qd( "Rb", 45, 1, 0.5 );
+    QuantumDefect qd("Rb", 45, 1, 0.5);
 
-  // Check whether the input was stored correctly
-  BOOST_CHECK_EQUAL( qd.species, "Rb" );
-  BOOST_CHECK_EQUAL( qd.n      , 45   );
-  BOOST_CHECK_EQUAL( qd.l      , 1    );
-  BOOST_CHECK_EQUAL( qd.j      , 0.5  );
+    // Check whether the input was stored correctly
+    BOOST_CHECK_EQUAL(qd.species, "Rb");
+    BOOST_CHECK_EQUAL(qd.n, 45);
+    BOOST_CHECK_EQUAL(qd.l, 1);
+    BOOST_CHECK_EQUAL(qd.j, 0.5);
 
-  // Check whether values are correctly read from the db
-  sqlite::handle db("calc/databases/quantum_defects.db");
-  sqlite::result res = db.query( "select ac,Z,a1,a2,a3,a4,rc from model_potential "
-                                 "where ( (element = 'Rb') and (L = 1) );" );
-  // The database should be consistent
-  BOOST_CHECK( res.size() > 0 );
+    // Check whether values are correctly read from the db
+    sqlite::handle db("calc/databases/quantum_defects.db");
+    sqlite::statement stmt(db);
+    stmt.set("select ac,Z,a1,a2,a3,a4,rc from model_potential where ( (element "
+             "= 'Rb') and (L = 1) );");
+    // The database should be consistent
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_NO_THROW(stmt.step());
 
-  // Check the retrieved values
-  int Z;
-  double ac, a1, a2, a3, a4, rc;
-  res.first() >> ac >> Z >> a1 >> a2 >> a3 >> a4 >> rc;
+    // Check the retrieved values
+    double ac = stmt.get<double>(0);
+    int Z = stmt.get<double>(1);
+    double a1 = stmt.get<double>(2);
+    double a2 = stmt.get<double>(3);
+    double a3 = stmt.get<double>(4);
+    double a4 = stmt.get<double>(5);
+    double rc = stmt.get<double>(6);
 
-  BOOST_CHECK_EQUAL( qd.ac , ac );
-  BOOST_CHECK_EQUAL( qd.Z  , Z  );
-  BOOST_CHECK_EQUAL( qd.a1 , a1 );
-  BOOST_CHECK_EQUAL( qd.a2 , a2 );
-  BOOST_CHECK_EQUAL( qd.a3 , a3 );
-  BOOST_CHECK_EQUAL( qd.a4 , a4 );
-  BOOST_CHECK_EQUAL( qd.rc , rc );
+    BOOST_CHECK_EQUAL(qd.ac, ac);
+    BOOST_CHECK_EQUAL(qd.Z, Z);
+    BOOST_CHECK_EQUAL(qd.a1, a1);
+    BOOST_CHECK_EQUAL(qd.a2, a2);
+    BOOST_CHECK_EQUAL(qd.a3, a3);
+    BOOST_CHECK_EQUAL(qd.a4, a4);
+    BOOST_CHECK_EQUAL(qd.rc, rc);
 }
