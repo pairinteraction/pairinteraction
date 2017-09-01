@@ -75,7 +75,6 @@ class statement
     std::unique_ptr<sqlite3_stmt, std::function<int(sqlite3_stmt *)>> m_stmt;
     std::string m_sql;
     bool m_prepared;
-    bool m_done;
 
     void handle_error(int err)
     {
@@ -186,7 +185,7 @@ public:
     void bind(int where, std::string const &s)
     {
         handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
-                                       s.length(), SQLITE_STATIC));
+                                       s.length(), SQLITE_TRANSIENT));
     }
 
     /** \overload void bind(int where, std::string const &s) */
@@ -253,7 +252,7 @@ public:
      * The handle object implicitly behaves like the underlying
      * pointer.
      */
-    operator sqlite3 * () { return db.get(); }
+    operator sqlite3 *() { return db.get(); }
 
     /** \brief Constructor
      *
