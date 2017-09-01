@@ -269,14 +269,23 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
     float j1, j2, m1, m2;
     double value;
 
+
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         ss.str(std::string());
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
-        sqlite::result result_radial = db.query(ss);
-        for (auto const& r : result_radial) {
-            r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            n1 = stmt.get<decltype(n1)>(0);
+            l1 = stmt.get<decltype(l1)>(1);
+            j1 = stmt.get<decltype(j1)>(2);
+            n2 = stmt.get<decltype(n2)>(3);
+            l2 = stmt.get<decltype(l2)>(4);
+            j2 = stmt.get<decltype(j2)>(5);
+            value = stmt.get<decltype(value)>(6);
             cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -286,9 +295,15 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_angular = db.query(ss);
-        for (auto const& r : result_angular) {
-            r >> j1 >> m1 >> j2 >> m2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            j1 = stmt.get<decltype(j1)>(0);
+            m1 = stmt.get<decltype(m1)>(1);
+            j2 = stmt.get<decltype(j2)>(2);
+            m2 = stmt.get<decltype(m2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{j1, j2}}, {{m1,m2}})] = value;
         }
     }
@@ -298,9 +313,15 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_s = db.query(ss);
-        for (auto const& r : result_reduced_commutes_s) {
-            r >> l1 >> j1 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            j1 = stmt.get<decltype(j1)>(1);
+            l2 = stmt.get<decltype(l2)>(2);
+            j2 = stmt.get<decltype(j2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -310,9 +331,15 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_l = db.query(ss);
-        for (auto const& r : result_reduced_commutes_l) {
-            r >> l1 >> j1 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            j1 = stmt.get<decltype(j1)>(1);
+            l2 = stmt.get<decltype(l2)>(2);
+            j2 = stmt.get<decltype(j2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -322,9 +349,13 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
         ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_multipole = db.query(ss);
-        for (auto const& r : result_reduced_multipole) {
-            r >> l1 >> l2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            l2 = stmt.get<decltype(l2)>(1);
+            value = stmt.get<decltype(value)>(2);
             cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0, 0}}, {{0,0}})] = value;
         }
     }
@@ -633,9 +664,17 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
         ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
            << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
-        sqlite::result result_radial = db.query(ss);
-        for (auto const& r : result_radial) {
-            r >> n1 >> l1 >> j1 >> n2 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            n1 = stmt.get<decltype(n1)>(0);
+            l1 = stmt.get<decltype(l1)>(1);
+            j1 = stmt.get<decltype(j1)>(2);
+            n2 = stmt.get<decltype(n2)>(3);
+            l2 = stmt.get<decltype(l2)>(4);
+            j2 = stmt.get<decltype(j2)>(5);
+            value = stmt.get<decltype(value)>(6);
             cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -645,9 +684,15 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
         ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
            << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_angular = db.query(ss);
-        for (auto const& r : result_angular) {
-            r >> j1 >> m1 >> j2 >> m2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            j1 = stmt.get<decltype(j1)>(0);
+            m1 = stmt.get<decltype(m1)>(1);
+            j2 = stmt.get<decltype(j2)>(2);
+            m2 = stmt.get<decltype(m2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{j1, j2}}, {{m1,m2}})] = value;
         }
     }
@@ -657,9 +702,15 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_s = db.query(ss);
-        for (auto const& r : result_reduced_commutes_s) {
-            r >> l1 >> j1 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            j1 = stmt.get<decltype(j1)>(1);
+            l2 = stmt.get<decltype(l2)>(2);
+            j2 = stmt.get<decltype(j2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -669,9 +720,15 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
         ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
            << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_commutes_l = db.query(ss);
-        for (auto const& r : result_reduced_commutes_l) {
-            r >> l1 >> j1 >> l2 >> j2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            j1 = stmt.get<decltype(j1)>(1);
+            l2 = stmt.get<decltype(l2)>(2);
+            j2 = stmt.get<decltype(j2)>(3);
+            value = stmt.get<decltype(value)>(4);
             cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
         }
     }
@@ -681,9 +738,13 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
         ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
            << "c.l1 = t.l1 AND c.l2 = t.l2) "
            << "WHERE c.k = " << kappa << ";";
-        sqlite::result result_reduced_multipole = db.query(ss);
-        for (auto const& r : result_reduced_multipole) {
-            r >> l1 >> l2 >> value;
+        sqlite::statement stmt(db, ss.str());
+        stmt.prepare();
+        while (stmt.step())
+        {
+            l1 = stmt.get<decltype(l1)>(0);
+            l2 = stmt.get<decltype(l2)>(1);
+            value = stmt.get<decltype(value)>(2);
             cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0, 0}}, {{0,0}})] = value;
         }
     }

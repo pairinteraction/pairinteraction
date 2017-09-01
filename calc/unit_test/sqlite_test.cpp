@@ -26,7 +26,8 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     // Open an in-memory database for tests
     sqlite::handle db(":memory:");
 
-    auto stmt = db.query("This is not valid SQL");
+    sqlite::statement stmt(db);
+    BOOST_CHECK_NO_THROW(stmt.set("This is not valid SQL"));
     BOOST_CHECK_THROW(stmt.prepare(), sqlite::error);
     BOOST_CHECK_THROW(db.exec("Neither is this"), sqlite::error);
 

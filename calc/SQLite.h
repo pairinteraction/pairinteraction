@@ -22,8 +22,8 @@
 #include <memory>
 #include <sstream>
 #include <string>
+#include <type_traits>
 
-#include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 
 namespace sqlite
@@ -214,7 +214,7 @@ public:
     ReturnType get(int field);
 #else
     template <typename T, typename = typename std::enable_if<
-                              std::is_same<T, double>::value>::type>
+                              std::is_floating_point<T>::value>::type>
     double get(int field)
     {
         return sqlite3_column_double(m_stmt.get(), field);
@@ -293,23 +293,6 @@ public:
             throw error(sqlite3_errmsg(db.get()));
         }
     }
-
-    /** \brief Place an SQLite query
-     *
-     * The SQL statements are passed to this function as a string (or
-     * stringstream);
-     *
-     * \param[in] sql   SQL statements
-     * \returns an unprepared SQL statement
-     */
-    statement query(std::string const &sql)
-    {
-        statement stmt(db.get(), sql);
-        return stmt;
-    }
-
-    /** \brief Place an SQLite query */
-    statement query(std::stringstream const &ss) { return query(ss.str()); }
 
     /** \brief Execute SQLite statements
      *

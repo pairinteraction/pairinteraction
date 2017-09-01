@@ -480,9 +480,10 @@ void HamiltonianOne::build() {
 
 #pragma omp critical(database)
         {
-            sqlite::result result = db.query(query);
-            if (result.size() == 1) {
-                uuid = result.first();
+            sqlite::statement stmt(db, query.str());
+            stmt.prepare();
+            if (stmt.step()) {
+              uuid = stmt.get<std::string>(0);
             }
         }
 
