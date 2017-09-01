@@ -22,14 +22,12 @@
 #include <memory>
 #include <sstream>
 #include <string>
-#include <vector>
 
+#include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 
-#include "Iter.h"
-
-
-namespace sqlite {
+namespace sqlite
+{
 
 /** \brief SQLite error
  *
@@ -51,222 +49,193 @@ public:
      *
      * \param[in] msg   error message
      */
-    explicit error(std::string const& msg)
+    explicit error(std::string const &msg)
         : m_msg(std::string("SQLite error: ") + msg)
-    {}
+    {
+    }
 
     /** \brief %what() function
      *
      * \returns error message
      */
-    const char* what() const noexcept
-    {
-        return m_msg.c_str();
-    }
+    const char *what() const noexcept { return m_msg.c_str(); }
 
 private:
     std::string m_msg;
 };
 
-
-/** \brief Result table
+/** \brief SQLite Statement handle
  *
- * This object wraps the result table.  It is iterable and can be used in
- * range-based for loops.
+ * This object wraps an SQLite statement.  It is iterable in a while
+ * loop with the step() function.
  */
-class result {
+class statement
+{
+    sqlite3 *m_db;
+    std::unique_ptr<sqlite3_stmt, std::function<int(sqlite3_stmt *)>> m_stmt;
+    std::string m_sql;
+    bool m_prepared;
+    bool m_done;
+
+    void handle_error(int err)
+    {
+        if (err)
+            throw error(sqlite3_errmsg(m_db));
+    }
+
 public:
-    /** \brief Row of the table
+    /** \brief Constructor
      *
-     * The rows of the table are saved as a string inside a stringstream and
-     * deserialized using the >> operator.
-     */
-    class row {
-    public:
-        /** \brief Constructor
-         *
-         * Intialize a row from a string.
-         *
-         * \param[in] s   contents of the row
-         */
-        explicit row(std::string const& s)
-            : m_row( new std::stringstream(s) )
-        {}
-
-        /** \brief Conversion operator
-         *
-         * A row can behave like a string.
-         */
-        operator std::string() const
-        {
-            return m_row->str();
-        }
-
-        /** \brief Deserialization operator
-         *
-         * Single elements can be piped out.
-         *
-         * \param[out] other    target to write the element
-         * \returns the row itself
-         */
-        template < typename T >
-        row& operator>> ( T& other )
-        {
-            *m_row >> other;
-            return *this;
-        }
-
-        /** \brief Deserialization operator */
-        template < typename T >
-        row const& operator>> ( T& other ) const
-        {
-            *m_row >> other;
-            return *this;
-        }
-
-    private:
-        std::unique_ptr < std::stringstream > m_row;
-    }; // class row
-
-    /** \brief Table iterator
+     * This is called in the query function of the the handle object.
      *
-     * The iterator gives access to the rows of the table.
+     * \param[in] db    unmanaged raw pointer to the sqlite database
      */
-    class iterator {
-    public:
-        /** \brief Constructor
-         *
-         * Construct an iterator for a result table.
-         *
-         * \param[in] res       pointer to the result table
-         * \param[in] pos       position of the row
-         * \param[in] nColumn   number of columns
-         */
-        explicit iterator(result const* res, int pos, int nColumn)
-            : res(res), pos(pos), nColumn(nColumn)
-        {}
-
-        /** \brief Comparison operator
-         *
-         * Required to find the end of the range in a range-based loop.
-         *
-         * \param[in] other   iterator to compare to
-         */
-        bool operator!= (const iterator& other) const
-        {
-            return pos != other.pos;
-        }
-
-        /** \brief Dereference operator
-         *
-         * Get the current row.
-         *
-         * \returns The current row.
-         */
-        row operator* () const
-        {
-            return res->getRow(pos);
-        }
-
-        /** \brief Increment operator
-         *
-         * Advance iterator to the next row.
-         *
-         * \returns The advanced iterator
-         */
-        iterator& operator++ ()
-        {
-            ++pos;
-            return *this;
-        }
-
-    private:
-        result const* res;
-        int pos, nColumn;
-    }; // class iterator
+    explicit statement(sqlite3 *db)
+        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{}, m_prepared{
+                                                                    false}
+    {
+    }
 
     /** \brief Constructor
      *
-     * Construct the result table of a query.
-     */
-    explicit result( char **azResult, int nRow, int nColumn )
-        : azResult(azResult, sqlite3_free_table)
-        , nRow(nRow)
-        , nColumn(nColumn)
-    {}
-
-    /** \brief Number of rows
+     * This is called in the query function of the the handle object.
+     * This variant also sets a default query.
      *
-     * \returns Number of rows
+     * \param[in] db    unmanaged raw pointer to the sqlite database
+     * \param[in] sql   an initial query as a string
      */
-    size_t size() const
+    explicit statement(sqlite3 *db, std::string const &sql)
+        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql}, m_prepared{
+                                                                       false}
     {
-        return nRow;
     }
 
-    /** \brief Iterator pointing to the first row
+    /** \brief Set the query string
      *
-     * \returns Iterator pointing to the first row
+     * \param[in] sql   the query string
      */
-    result::iterator begin() const
+    void set(std::string const &sql)
     {
-        return result::iterator(this, 0, nColumn);
+        if (m_prepared)
+            throw error("Cannot set query on a prepared statement!");
+        m_sql = sql;
     }
 
-    /** \brief Iterator pointing to the last row
+    /** \overload void set(std::string const &sql) */
+    void set(std::stringstream const &ss) { return set(ss.str()); }
+
+    /** \brief Prepare the statement
      *
-     * \returns Iterator pointing to the last row
+     * Prepare the statement for stepping.
      */
-    result::iterator end() const
+    void prepare()
     {
-        return result::iterator(this, nRow, nColumn);
+        m_prepared = true;
+
+        char const *zTail;   // only points into m_sql, no management needed
+        sqlite3_stmt *pStmt; // is managed below
+
+        auto err = sqlite3_prepare_v2(m_db, m_sql.c_str(), m_sql.length(),
+                                      &pStmt, &zTail);
+        m_stmt.reset(pStmt);
+
+        handle_error(err);
     }
 
-    /** \brief First row
+    /** \brief Step the statement
      *
-     * \returns First row
+     * This will do a busy wait if the statement cannot be stepped
+     * immediately.  This is probably a waste of resources but at the
+     * same time we do not lose performance in timeouts.
      */
-    result::row first() const
+    bool step()
     {
-        return getRow(0);
-    }
+        if (!m_prepared)
+            throw error("Cannot step an unprepared statement!");
 
-    /** \brief Header row
-     *
-     * \returns Header row
-     */
-    result::row header() const
-    {
-        return getRow(-1);
-    }
+        auto err = SQLITE_BUSY;
+        while (err == SQLITE_BUSY)
+            err = sqlite3_step(m_stmt.get());
 
-    /** \brief Get a specific row
-     *
-     * \param[in] pos   position of the row
-     * \returns Specified row
-     * \throws sqlite::error
-     */
-    result::row getRow(int pos) const
-    {
-        int p = pos + 1;
-        if ( p > nRow || p < 0 )
-        {
-            throw error("Position index out of range");
+        switch (err) {
+        case SQLITE_DONE:
+            return false;
+        case SQLITE_ROW:
+            return true;
         }
-        std::string output;
-        std::string spacer = "";
-        for (int i = 0; i < nColumn; ++i) {
-            output += spacer + azResult.get()[p*nColumn+i];
-            spacer = " ";
-        }
-        return result::row(output);
+
+        handle_error(err);
+        return false;
     }
 
-private:
-    std::unique_ptr < char*, std::function< void(char**) > > azResult;
-    int nRow, nColumn;
+    /** \brief Reset the statement
+     *
+     * Reset the statement so you can rebind values.
+     */
+    void reset()
+    {
+        handle_error(sqlite3_reset(m_stmt.get()));
+        m_prepared = false;
+    }
+
+    /** \brief Bind a value to a position in the query
+     *
+     * \param[in] where   position in the query (one-based)
+     * \param[in] s       string to bind
+     */
+    void bind(int where, std::string const &s)
+    {
+        handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
+                                       s.length(), SQLITE_STATIC));
+    }
+
+    /** \overload void bind(int where, std::string const &s) */
+    void bind(int where, double d)
+    {
+        handle_error(sqlite3_bind_double(m_stmt.get(), where, d));
+    }
+
+    /** \overload void bind(int where, std::string const &s) */
+    void bind(int where, int i)
+    {
+        handle_error(sqlite3_bind_int(m_stmt.get(), where, i));
+    }
+
+#ifdef SCANNED_BY_DOXYGEN
+    /** \brief Get value of a field
+     *
+     * Retrieve the value stored at position \p field as datatype \p
+     * ReturnType.
+     *
+     * \tparam ReturnType   requested return type
+     * \param[in]           field
+     */
+    template <typename ReturnType>
+    ReturnType get(int field);
+#else
+    template <typename T, typename = typename std::enable_if<
+                              std::is_same<T, double>::value>::type>
+    double get(int field)
+    {
+        return sqlite3_column_double(m_stmt.get(), field);
+    }
+
+    template <typename T, typename = typename std::enable_if<
+                              std::is_same<T, int>::value>::type>
+    int get(int field)
+    {
+        return sqlite3_column_int(m_stmt.get(), field);
+    }
+
+    template <typename T, typename = typename std::enable_if<
+                              std::is_same<T, std::string>::value>::type>
+    std::string get(int field)
+    {
+        return std::string(reinterpret_cast<char const *>(
+            sqlite3_column_text(m_stmt.get(), field)));
+    }
+#endif
 };
-
 
 /** \brief SQLite Database handle
  *
@@ -274,8 +243,10 @@ private:
  * provides a high-level object oriented RAII interface to the C-bindings of
  * SQLite3.
  */
-class handle {
-    typedef std::unique_ptr < sqlite3, std::function<int(sqlite3*)> > sqlite3_ptr;
+class handle final
+{
+    typedef std::unique_ptr<sqlite3, std::function<int(sqlite3 *)>> sqlite3_ptr;
+
 public:
     /** \brief Constructor
      *
@@ -284,17 +255,14 @@ public:
      *
      * \param[in] filename    fully-qualified filename of the database
      */
-    explicit handle(std::string const& filename)
-        : db(nullptr, sqlite3_close)
+    explicit handle(std::string const &filename) : db(nullptr, sqlite3_close)
     {
-        sqlite3* _db;
+        sqlite3 *_db;
         auto err = sqlite3_open(filename.c_str(), &_db);
         db = sqlite3_ptr(_db, sqlite3_close);
 
-        if ( err )
-        {
-            throw error( sqlite3_errmsg( db.get() ) );
-        }
+        if (err)
+            throw error(sqlite3_errmsg(db.get()));
     }
 
     /** \brief Extended Constructor
@@ -307,16 +275,15 @@ public:
      * \param[in] flags       options to open the database (bitmask)
      * \throws sqlite::error
      */
-    explicit handle(std::string const& filename, int flags)
+    explicit handle(std::string const &filename, int flags)
         : db(nullptr, sqlite3_close)
     {
-        sqlite3* _db;
+        sqlite3 *_db;
         auto err = sqlite3_open_v2(filename.c_str(), &_db, flags, nullptr);
         db = sqlite3_ptr(_db, sqlite3_close);
 
-        if ( err )
-        {
-            throw error( sqlite3_errmsg( db.get() ) );
+        if (err) {
+            throw error(sqlite3_errmsg(db.get()));
         }
     }
 
@@ -331,83 +298,39 @@ public:
      * \returns result of the query
      * \throws sqlite::error
      */
-    result query(std::string const& sql)
+    statement query(std::string const &sql)
     {
-        char *zErrMsg;
-        char **azResult;
-        int nRow, nColumn;
-
-        int err = SQLITE_BUSY;
-        while ( err == SQLITE_BUSY )
-        {
-            err = sqlite3_get_table( db.get(),    // open database handle
-                                     sql.c_str(), // sql query
-                                     &azResult,   // result table
-                                     &nRow,       // number of rows
-                                     &nColumn,    // number of columns
-                                     &zErrMsg );  // error message
-        }
-
-        result res( azResult, nRow, nColumn );
-
-        if ( err != SQLITE_OK )
-        {
-            std::string msg(zErrMsg);
-            sqlite3_free(zErrMsg);
-            throw error(msg);
-        }
-
-        return res;
+        statement stmt(db.get(), sql);
+        return stmt;
     }
 
     /** \brief Place an SQLite query */
-    result query(std::stringstream const& ss)
-    {
-        return query(ss.str());
-    }
+    statement query(std::stringstream const &ss) { return query(ss.str()); }
 
     /** \brief Execute SQLite statements
      *
      * The SQL statements are passed to this function as a string (or
      * stringstream) and are executed in-place.  The string has to be prepared
-     * before passing to this function.  This function discards the result table.
+     * before passing to this function.  This function discards the result
+     * table.
      *
      * \param[in] sql   SQL statements
      * \throws sqlite::error
      */
-    void exec(std::string const& sql)
+    void exec(std::string const &sql)
     {
-        char *zErrMsg;
-
-        int err = SQLITE_BUSY;
-        while ( err == SQLITE_BUSY )
-        {
-            err = sqlite3_exec( db.get(),    // open database handle
-                                sql.c_str(), // sql query
-                                nullptr,     // callback
-                                nullptr,     // 1st argument to callback
-                                &zErrMsg );  // error message
-        }
-
-        if ( err != SQLITE_OK )
-        {
-            std::string msg(zErrMsg);
-            sqlite3_free(zErrMsg);
-            throw error(msg);
-        }
+        statement stmt(db.get(), sql);
+        stmt.prepare();
+        stmt.step();
     }
 
-    /** \brief Execute SQLite statements */
-    void exec(std::stringstream const& ss)
-    {
-        return exec(ss.str());
-    }
+    /** \overload void exec(std::string const &sql) */
+    void exec(std::stringstream const &ss) { return exec(ss.str()); }
 
 private:
     sqlite3_ptr db;
 };
 
 } // namespace sqlite
-
 
 #endif // SQLITE_BINDINGS

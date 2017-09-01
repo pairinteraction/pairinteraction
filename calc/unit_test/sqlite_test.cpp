@@ -14,46 +14,59 @@
  * limitations under the License.
  */
 
-#include <string>
-#include <sstream>
-#include <vector>
 #include "SQLite.h"
+#include <sstream>
+#include <string>
+#include <vector>
 #define BOOST_TEST_MODULE SQLite interface test
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE( sqlite_query_test )
+BOOST_AUTO_TEST_CASE(sqlite_query_test)
 {
-  // Open an in-memory database for tests
-  sqlite::handle db(":memory:");
+    // Open an in-memory database for tests
+    sqlite::handle db(":memory:");
 
-  BOOST_CHECK_THROW( db.query("This is not valid SQL"),
-                     sqlite::error );
-  BOOST_CHECK_THROW( db.exec("Neither is this"),
-                     sqlite::error );
+    auto stmt = db.query("This is not valid SQL");
+    BOOST_CHECK_THROW(stmt.prepare(), sqlite::error);
+    BOOST_CHECK_THROW(db.exec("Neither is this"), sqlite::error);
 
-  // Check string calling
-  std::string string_query( "create table test(text);" );
-  BOOST_CHECK_EQUAL( db.query( string_query ).size(), 0 );
+    // Check string calling
+    std::string string_query("create table test(text,integer,real);");
+    BOOST_CHECK_NO_THROW(stmt.reset());
+    BOOST_CHECK_NO_THROW(stmt.set(string_query));
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_EQUAL(stmt.step(), false);
 
-  // Check stringstream calling
-  std::stringstream ss_query;
-  ss_query << "insert into test values(\"Hello World!\");";
-  ss_query << "insert into test values(\"Goodbye Earth!\");";
-  BOOST_CHECK_EQUAL( db.query( ss_query ).size(), 0 );
+    // Check stringstream calling
+    std::stringstream ss_query;
+    ss_query << "insert into test values(?,?,?);";
+    BOOST_CHECK_NO_THROW(stmt.reset());
+    BOOST_CHECK_NO_THROW(stmt.set(ss_query));
+    // Insert some stuff
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_NO_THROW(stmt.bind(1, "Hello World!"));
+    BOOST_CHECK_NO_THROW(stmt.bind(2, 1729));
+    BOOST_CHECK_NO_THROW(stmt.bind(3, 0.5));
+    BOOST_CHECK_EQUAL(stmt.step(), false);
+    // Reuse the query set above
+    BOOST_CHECK_NO_THROW(stmt.reset());
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_NO_THROW(stmt.bind(1, "Goodbye Earth!"));
+    BOOST_CHECK_NO_THROW(stmt.bind(2, 42));
+    BOOST_CHECK_NO_THROW(stmt.bind(3, 1.125));
+    BOOST_CHECK_EQUAL(stmt.step(), false);
 
-  // Check result
-  sqlite::result res = db.query("select * from test;");
-  BOOST_CHECK_EQUAL( res.size(), 2 );
-  std::string entry = *res.begin();
-  BOOST_CHECK_EQUAL( entry, "Hello World!" );
-
-  // Check if result is iterable
-  std::vector < std::string > values;
-  values.reserve( res.size() );
-  for ( auto const& row : res )
-  {
-    values.push_back( std::string(row) );
-  }
-  BOOST_CHECK_EQUAL( values[0], "Hello World!"   );
-  BOOST_CHECK_EQUAL( values[1], "Goodbye Earth!" );
+    // Check result
+    BOOST_CHECK_NO_THROW(stmt.reset());
+    BOOST_CHECK_NO_THROW(stmt.set("select * from test;"));
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_EQUAL(stmt.step(), true);
+    BOOST_CHECK_EQUAL(stmt.get<std::string>(0), "Hello World!");
+    BOOST_CHECK_EQUAL(stmt.get<int>(1), 1729);
+    BOOST_CHECK_EQUAL(stmt.get<double>(2), 0.5);
+    BOOST_CHECK_EQUAL(stmt.step(), true);
+    BOOST_CHECK_EQUAL(stmt.get<std::string>(0), "Goodbye Earth!");
+    BOOST_CHECK_EQUAL(stmt.get<int>(1), 42);
+    BOOST_CHECK_EQUAL(stmt.get<double>(2), 1.125);
+    BOOST_CHECK_EQUAL(stmt.step(), false);
 }
