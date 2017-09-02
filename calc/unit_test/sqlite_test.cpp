@@ -28,7 +28,9 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
 
     sqlite::statement stmt(db);
     BOOST_CHECK_NO_THROW(stmt.set("This is not valid SQL"));
+    BOOST_CHECK_THROW(stmt.step(), sqlite::error);
     BOOST_CHECK_THROW(stmt.prepare(), sqlite::error);
+    BOOST_CHECK_THROW(stmt.set("whatever"), sqlite::error);
     BOOST_CHECK_THROW(db.exec("Neither is this"), sqlite::error);
 
     // Check string calling
@@ -85,4 +87,6 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
         ++count;
     }
     BOOST_CHECK_EQUAL(count, 2);
+
+    BOOST_CHECK_THROW(*(stmt.end()), std::out_of_range);
 }
