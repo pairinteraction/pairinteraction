@@ -29,8 +29,12 @@ function(UNIT_TEST)
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
   # Add target for test and link with libraries
   add_executable(${UT_TARGET} ${UT_SOURCE})
-  set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "-fsanitize=address,bounds,leak")
-  set_target_properties(${UT_TARGET} PROPERTIES LINK_FLAGS "-fsanitize=address,bounds,leak")
+  if(UNIX AND NOT APPLE)
+    set_source_files_properties(${UT_SOURCE}
+      PROPERTIES COMPILE_FLAGS "-fsanitize=address,bounds,leak")
+    set_target_properties(${UT_TARGET}
+      PROPERTIES LINK_FLAGS "-fsanitize=address,bounds,leak")
+  endif()
   target_link_libraries(${UT_TARGET} ${LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the "calc" directory
