@@ -508,7 +508,7 @@ void HamiltonianOne::build() {
             }
             query << ");";
 #pragma omp critical(database)
-            db.exec(query);
+            db.exec(query.str()); // 19: UNIQUE constraint failed
         }
 
         // === Check existence of files === // TODO put code in its own method

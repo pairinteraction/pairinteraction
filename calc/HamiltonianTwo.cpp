@@ -649,7 +649,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 }
                 query << ");";
 #pragma omp critical(database)
-                db.exec(query);
+                db.exec(query.str());
             }
 
             // === Check existence of files ===

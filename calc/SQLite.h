@@ -411,9 +411,6 @@ public:
         stmt.step();
     }
 
-    /** \overload void exec(std::string const &sql) */
-    void exec(std::stringstream const &ss) { return exec(ss.str()); }
-
 private:
     sqlite3_ptr db;
 };

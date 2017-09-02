@@ -206,7 +206,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
                            << state_nlj.n[0] << "," << state_nlj.l[0] << "," << state_nlj.j[0] << ","
                            << state_nlj.n[1] << "," << state_nlj.l[1] << "," << state_nlj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -218,7 +218,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
                            << state_jm.j[0] << "," << state_jm.m[0] << ","
                            << state_jm.j[1] << "," << state_jm.m[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -230,7 +230,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -242,7 +242,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -254,7 +254,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
                            << state_l.l[0] << ","
                            << state_l.l[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
             }
@@ -379,7 +379,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                    << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
 
             }
         }
@@ -400,7 +400,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.j[0] << "," << state.m[0] << ","
                    << state.j[1] << "," << state.m[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -419,7 +419,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -438,7 +438,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -457,7 +457,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << ","
                    << state.l[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -596,7 +596,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
                            << state_nlj.n[0] << "," << state_nlj.l[0] << "," << state_nlj.j[0] << ","
                            << state_nlj.n[1] << "," << state_nlj.l[1] << "," << state_nlj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -608,7 +608,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
                            << state_jm.j[0] << "," << state_jm.m[0] << ","
                            << state_jm.j[1] << "," << state_jm.m[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -620,7 +620,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -632,7 +632,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
 
@@ -644,7 +644,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
                            << state_l.l[0] << ","
                            << state_l.l[1] << ");";
-                        db.exec(ss);
+                        db.exec(ss.str());
                     }
                 }
             }
@@ -768,7 +768,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                    << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                    << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
 
             }
         }
@@ -789,7 +789,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                    << state.j[0] << "," << state.m[0] << ","
                    << state.j[1] << "," << state.m[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -808,7 +808,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -827,7 +827,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
@@ -846,7 +846,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                    << state.l[0] << ","
                    << state.l[1] << ","
                    << cache.second << ");";
-                db.exec(ss);
+                db.exec(ss.str());
             }
         }
     }
