@@ -338,8 +338,7 @@ public:
  */
 class handle final
 {
-    typedef std::unique_ptr<sqlite3, std::function<int(sqlite3 *)>> sqlite3_ptr;
-
+    std::unique_ptr<sqlite3, decltype(&sqlite3_close)> m_db;
 public:
     /** \brief Conversion operator
      *
@@ -348,7 +347,7 @@ public:
      *
      * \returns the raw database pointer
      */
-    operator sqlite3 *() { return db.get(); }
+    operator sqlite3 *() { return m_db.get(); }
 
     /** \brief Constructor
      *
@@ -364,14 +363,14 @@ public:
      */
     explicit handle(std::string const &filename,
                     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        : db(nullptr, sqlite3_close)
+        : m_db{nullptr, sqlite3_close}
     {
-        sqlite3 *_db;
-        auto err = sqlite3_open_v2(filename.c_str(), &_db, flags, nullptr);
-        db = sqlite3_ptr(_db, sqlite3_close);
+        sqlite3 * tmp_db;
+        auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
+        m_db.reset(tmp_db);
 
         if (err)
-            throw error(err, sqlite3_errmsg(db.get()));
+            throw error(err, sqlite3_errmsg(m_db.get()));
     }
 
     /** \brief Execute SQLite statements
@@ -392,13 +391,10 @@ public:
      */
     void exec(std::string const &sql)
     {
-        statement stmt(db.get(), sql);
+        statement stmt(*this, sql);
         stmt.prepare();
         stmt.step();
     }
-
-private:
-    sqlite3_ptr db;
 };
 
 } // namespace sqlite

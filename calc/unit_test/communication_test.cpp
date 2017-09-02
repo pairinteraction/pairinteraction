@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE( send_test )
       auto publisher = context.socket(ZMQ_PUB);
       publisher.bind("tcp://*:5555");
 
-      std::chrono::milliseconds ms{10};
+      std::chrono::milliseconds ms{100};
       std::this_thread::sleep_for(ms); // wait for the others to receive
       BOOST_CHECK_EQUAL( publisher.send(msg), len-1 );
     });
