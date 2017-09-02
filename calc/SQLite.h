@@ -230,7 +230,8 @@ public:
      *
      * \tparam ReturnType   requested return type
      * \param[in]           field
-     * \returns             the value stored in \p field as datatype \p ReturnType
+     * \returns             the value stored in \p field as datatype \p
+     * ReturnType
      */
     template <typename ReturnType>
     ReturnType get(int field);
@@ -351,33 +352,18 @@ public:
 
     /** \brief Constructor
      *
-     * This is the canonical constructor.  It takes a filename and opens a
-     * database connection with the default parameters.
+     * It takes a filename and a bitmask of parameters to open the
+     * database connection.  This is useful if you have to open the
+     * connection, e.g., read-only.  By default it uses the standard
+     * flags for opening a database connection.  See
+     * https://www.sqlite.org/c3ref/open.html for details.
      *
      * \param[in] filename    fully-qualified filename of the database
+     * \param[in] flags       options to open the database (optional)
      * \throws sqlite::error
      */
-    explicit handle(std::string const &filename) : db(nullptr, sqlite3_close)
-    {
-        sqlite3 *_db;
-        auto err = sqlite3_open(filename.c_str(), &_db);
-        db = sqlite3_ptr(_db, sqlite3_close);
-
-        if (err)
-            throw error(err, sqlite3_errmsg(db.get()));
-    }
-
-    /** \brief Extended Constructor
-     *
-     * This is the alternative constructor.  It takes a filename and a bitmask
-     * of parameters to open the database connection.  This is useful if you
-     * have to open the connection, e.g., read-only.
-     *
-     * \param[in] filename    fully-qualified filename of the database
-     * \param[in] flags       options to open the database (bitmask)
-     * \throws sqlite::error
-     */
-    explicit handle(std::string const &filename, int flags)
+    explicit handle(std::string const &filename,
+                    int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
         : db(nullptr, sqlite3_close)
     {
         sqlite3 *_db;
