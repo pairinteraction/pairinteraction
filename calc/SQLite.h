@@ -24,6 +24,7 @@
 #include <string>
 #include <type_traits>
 
+#include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 
 namespace sqlite
@@ -47,10 +48,11 @@ struct error : public std::exception {
 public:
     /** \brief Constructor
      *
+     * \param[in] err   error code
      * \param[in] msg   error message
      */
-    explicit error(std::string const &msg)
-        : m_msg(std::string("SQLite error: ") + msg)
+    explicit error(int err, std::string const &msg)
+        : m_msg(std::string("SQLite error ") + std::to_string(err) + ": " + msg)
     {
     }
 
@@ -67,7 +69,7 @@ private:
 /** \brief SQLite Statement handle
  *
  * This object wraps an SQLite statement.  It is iterable in a while
- * loop with the step() function.
+ * loop with the step() function or in a range-based for loop.
  */
 class statement
 {
@@ -80,7 +82,7 @@ class statement
     void handle_error(int err)
     {
         if (err)
-            throw error(sqlite3_errmsg(m_db));
+            throw error(err, sqlite3_errmsg(m_db));
     }
 
 public:
@@ -109,11 +111,12 @@ public:
     /** \brief Set the query string
      *
      * \param[in] sql   the query string
+     * \throws sqlite::error
      */
     void set(std::string const &sql)
     {
         if (m_prepared)
-            throw error("Cannot set query on a prepared statement!");
+            handle_error(SQLITE_MISUSE);
         m_sql = sql;
     }
 
@@ -123,6 +126,8 @@ public:
     /** \brief Prepare the statement
      *
      * Prepare the statement for stepping.
+     *
+     * \throws sqlite::error
      */
     void prepare()
     {
@@ -143,13 +148,17 @@ public:
      * This will do a busy wait if the statement cannot be stepped
      * immediately.  This is probably a waste of resources but at the
      * same time we do not lose performance in timeouts.
+     *
+     * \returns true if there is a row, false otherwise
+     *
+     * \throws sqlite::error
      */
     bool step()
     {
         if (!m_prepared)
-            throw error("Cannot step an unprepared statement!");
+            handle_error(SQLITE_MISUSE);
         if (!m_valid)
-            throw error("Cannot step an invalid statement!");
+            handle_error(SQLITE_DONE);
 
         auto err = SQLITE_BUSY;
         while (err == SQLITE_BUSY)
@@ -172,6 +181,8 @@ public:
     /** \brief Reset the statement
      *
      * Reset the statement so you can rebind values.
+     *
+     * \throws sqlite::error
      */
     void reset()
     {
@@ -184,6 +195,7 @@ public:
      *
      * \param[in] where   position in the query (one-based)
      * \param[in] s       string to bind
+     * \throws sqlite::error
      */
     void bind(int where, std::string const &s)
     {
@@ -218,6 +230,7 @@ public:
      *
      * \tparam ReturnType   requested return type
      * \param[in]           field
+     * \returns             the value stored in \p field as datatype \p ReturnType
      */
     template <typename ReturnType>
     ReturnType get(int field);
@@ -244,6 +257,76 @@ public:
             sqlite3_column_text(m_stmt.get(), field)));
     }
 #endif
+
+    /** \brief Statement iterator
+     *
+     * The iterator builds upon Boost Iterator Facade to implement an
+     * iterator over the statement with minimal boilerplate.  We refer
+     * to the official documentation for the internal functions:
+     * http://www.boost.org/libs/iterator/
+     */
+    class iterator : public boost::iterator_facade<iterator, statement,
+                                                   boost::forward_traversal_tag>
+    {
+    private:
+        friend class boost::iterator_core_access;
+        statement *m_stmt;
+        bool m_done;
+        bool m_end;
+
+        void increment()
+        {
+            if (!m_done)
+                m_done = m_stmt->step();
+            else
+                m_end = true;
+        }
+
+        bool equal(iterator const &) const { return m_end; }
+
+        statement &dereference() const
+        {
+#ifndef NDEBUG
+            if (m_end)
+                throw std::out_of_range("iterator out of range");
+#endif
+            return *m_stmt;
+        }
+
+    public:
+        iterator() : m_stmt{nullptr}, m_done{true}, m_end{true} {}
+
+        explicit iterator(statement *p) : m_stmt{p}, m_done{false}, m_end{false}
+        {
+            m_stmt->step();
+        }
+    };
+
+    /** \brief returns an iterator to the beginning
+     *
+     * With this, a statement can be iterated in a C++11 range-based for loop.
+     *
+     * \warning This is *not* zero overhead!  If you care about
+     * performance use a while loop using step() instead.
+     * \code
+     * while(stmt.step())
+     *     stmt.get<...>(...);
+     * \endcode
+     *
+     * \returns iterator to the beginning
+     */
+    iterator begin() { return iterator{this}; }
+
+    /** \brief returns an empty iterator
+     *
+     * The iterator for the SQLite statement is a forward iterator
+     * which is implemented in terms of the step() function.  Since
+     * the step() function will determine the end by itself, this
+     * iterator is merely a sentinel.
+     *
+     * \returns empty iterator
+     */
+    iterator end() { return iterator{}; }
 };
 
 /** \brief SQLite Database handle
@@ -261,6 +344,8 @@ public:
      *
      * The handle object implicitly behaves like the underlying
      * pointer.
+     *
+     * \returns the raw database pointer
      */
     operator sqlite3 *() { return db.get(); }
 
@@ -270,6 +355,7 @@ public:
      * database connection with the default parameters.
      *
      * \param[in] filename    fully-qualified filename of the database
+     * \throws sqlite::error
      */
     explicit handle(std::string const &filename) : db(nullptr, sqlite3_close)
     {
@@ -278,7 +364,7 @@ public:
         db = sqlite3_ptr(_db, sqlite3_close);
 
         if (err)
-            throw error(sqlite3_errmsg(db.get()));
+            throw error(err, sqlite3_errmsg(db.get()));
     }
 
     /** \brief Extended Constructor
@@ -298,15 +384,23 @@ public:
         auto err = sqlite3_open_v2(filename.c_str(), &_db, flags, nullptr);
         db = sqlite3_ptr(_db, sqlite3_close);
 
-        if (err) {
-            throw error(sqlite3_errmsg(db.get()));
-        }
+        if (err)
+            throw error(err, sqlite3_errmsg(db.get()));
     }
 
     /** \brief Execute SQLite statements
      *
      * The SQL statements are passed to this function as a string (or
      * stringstream) and are executed in-place.
+     *
+     * \deprecated This is deprecated and should not be used anymore.
+     * The usage of prepared statements in encouraged instead.  Calls
+     * to this function are equivalent to and can hence be replaced by
+     * \code
+     * sqlite::statement stmt(db, sql);
+     * stmt.prepare();
+     * stmt.step();
+     * \endcode
      *
      * \param[in] sql   SQL statements
      */

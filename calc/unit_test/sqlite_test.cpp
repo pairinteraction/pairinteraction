@@ -40,7 +40,7 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
 
     // Check stringstream calling
     std::stringstream ss_query;
-    ss_query << "insert into test values(?,?,?);";
+    ss_query << "insert into test values(?1,?2,?3);";
     BOOST_CHECK_NO_THROW(stmt.reset());
     BOOST_CHECK_NO_THROW(stmt.set(ss_query));
     // Insert some stuff
@@ -56,6 +56,7 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     BOOST_CHECK_NO_THROW(stmt.bind(2, 42));
     BOOST_CHECK_NO_THROW(stmt.bind(3, 1.125));
     BOOST_CHECK_EQUAL(stmt.step(), false);
+    BOOST_CHECK_THROW(stmt.step(), sqlite::error);
 
     // Check result
     BOOST_CHECK_NO_THROW(stmt.reset());
@@ -70,4 +71,18 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     BOOST_CHECK_EQUAL(stmt.get<int>(1), 42);
     BOOST_CHECK_EQUAL(stmt.get<double>(2), 1.125);
     BOOST_CHECK_EQUAL(stmt.step(), false);
+
+    // Check iteration
+    BOOST_CHECK_NO_THROW(stmt.reset());
+    BOOST_CHECK_NO_THROW(stmt.set("select * from test;"));
+    BOOST_CHECK_NO_THROW(stmt.prepare());
+
+    int count = 0;
+    for (auto &&r : stmt) {
+        BOOST_CHECK_NO_THROW(r.get<std::string>(0));
+        BOOST_CHECK_NO_THROW(r.get<int>(1));
+        BOOST_CHECK_NO_THROW(r.get<double>(2));
+        ++count;
+    }
+    BOOST_CHECK_EQUAL(count, 2);
 }
