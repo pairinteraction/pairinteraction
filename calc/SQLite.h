@@ -75,6 +75,7 @@ class statement
     std::unique_ptr<sqlite3_stmt, std::function<int(sqlite3_stmt *)>> m_stmt;
     std::string m_sql;
     bool m_prepared;
+    bool m_valid;
 
     void handle_error(int err)
     {
@@ -89,11 +90,7 @@ public:
      *
      * \param[in] db    unmanaged raw pointer to the sqlite database
      */
-    explicit statement(sqlite3 *db)
-        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{}, m_prepared{
-                                                                    false}
-    {
-    }
+    explicit statement(sqlite3 *db) : statement{db, {}} {}
 
     /** \brief Constructor
      *
@@ -104,8 +101,8 @@ public:
      * \param[in] sql   an initial query as a string
      */
     explicit statement(sqlite3 *db, std::string const &sql)
-        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql}, m_prepared{
-                                                                       false}
+        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql},
+          m_prepared{false}, m_valid{true}
     {
     }
 
@@ -151,6 +148,8 @@ public:
     {
         if (!m_prepared)
             throw error("Cannot step an unprepared statement!");
+        if (!m_valid)
+            throw error("Cannot step an invalid statement!");
 
         auto err = SQLITE_BUSY;
         while (err == SQLITE_BUSY)
@@ -158,12 +157,15 @@ public:
 
         switch (err) {
         case SQLITE_DONE:
+            m_valid = false;
             return false;
         case SQLITE_ROW:
+            m_valid = true;
             return true;
         }
 
         handle_error(err);
+        m_valid = false;
         return false;
     }
 
@@ -174,6 +176,7 @@ public:
     void reset()
     {
         handle_error(sqlite3_reset(m_stmt.get()));
+        m_valid = true;
         m_prepared = false;
     }
 
@@ -183,6 +186,13 @@ public:
      * \param[in] s       string to bind
      */
     void bind(int where, std::string const &s)
+    {
+        handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
+                                       s.length(), SQLITE_STATIC));
+    }
+
+    /** \overload void bind(int where, std::string const &s) */
+    void bind(int where, std::string &&s)
     {
         handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
                                        s.length(), SQLITE_TRANSIENT));
