@@ -44,7 +44,8 @@ else()
 endif()
 
 if( WITH_COVERAGE )
-  set(CMAKE_CXX_FLAGS "-g -O0 --coverage -fprofile-arcs -ftest-coverage")
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage")
   link_libraries(gcov)
 endif( )
 

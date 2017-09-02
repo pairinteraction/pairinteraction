@@ -88,5 +88,7 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     }
     BOOST_CHECK_EQUAL(count, 2);
 
+#ifndef NDEBUG
     BOOST_CHECK_THROW(*(stmt.end()), std::out_of_range);
+#endif
 }
