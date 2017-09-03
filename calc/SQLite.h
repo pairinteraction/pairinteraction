@@ -389,6 +389,11 @@ public:
      *
      * \param[in] sql   SQL statements
      */
+#if defined(_MSC_VER)
+    __declspec(deprecated)
+#else
+    __attribute__((deprecated))
+#endif
     void exec(std::string const &sql)
     {
         statement stmt(*this, sql);
