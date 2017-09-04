@@ -606,11 +606,15 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 }
                 query << "));";
 
+#pragma omp critical(database)
+                db.exec(query.str());
+
                 flag_perhapsmissingtable = false;
             }
 
             // === Get uuid as filename ===
             std::string uuid = "";
+            query.str(std::string());
             spacer = "";
             query << "SELECT uuid FROM cache_two WHERE ";
             for (auto p: conf) {

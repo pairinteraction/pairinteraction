@@ -466,11 +466,16 @@ void HamiltonianOne::build() {
             query << "));";
 
             flag_perhapsmissingtable = false;
+
+#pragma omp critical(database)
+            db.exec(query.str());
         }
+
 
         // === Get uuid as filename === // TODO put code in its own method
         std::string uuid = "";
         spacer = "";
+        query.str(std::string());
         query << "SELECT uuid FROM cache_one WHERE ";
         for (auto p: conf) {
             query << spacer << p.first << "='" << p.second.str() << "'";
@@ -508,7 +513,7 @@ void HamiltonianOne::build() {
             }
             query << ");";
 #pragma omp critical(database)
-            db.exec(query.str()); // 19: UNIQUE constraint failed
+            db.exec(query.str());
         }
 
         // === Check existence of files === // TODO put code in its own method
