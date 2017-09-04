@@ -2723,8 +2723,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'B'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Magnetic field (' + str(Units.bfield) + ')')
-                        self.converter_x[idx] = Quantity(
-                            1, Units.au_bfield).toUU().magnitude
+                        self.converter_x[idx] = 1 #Quantity(1, Units.au_bfield).toUU().magnitude
                         posMin = self.get1DPosition([self.systemdict['minBx'].magnitude, self.systemdict[
                                                     'minBy'].magnitude, self.systemdict['minBz'].magnitude])
                         posMax = self.get1DPosition([self.systemdict['maxBx'].magnitude, self.systemdict[
@@ -2733,8 +2732,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'E'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Electric field (' + str(Units.efield) + ')')
-                        self.converter_x[idx] = Quantity(
-                            1, Units.au_efield).toUU().magnitude
+                        self.converter_x[idx] = 1 #Quantity(1, Units.au_efield).toUU().magnitude
                         posMin = self.get1DPosition([self.systemdict['minEx'].magnitude, self.systemdict[
                                                     'minEy'].magnitude, self.systemdict['minEz'].magnitude])
                         posMax = self.get1DPosition([self.systemdict['maxEx'].magnitude, self.systemdict[
@@ -2743,8 +2741,7 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'R'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Interatomic distance (' + str(Units.length) + ')')
-                        self.converter_x[idx] = Quantity(
-                            1, Units.au_length).toUU().magnitude
+                        self.converter_x[idx] = 1 #Quantity(1, Units.au_length).toUU().magnitude
                         posMin = self.systemdict['minR'].magnitude
                         posMax = self.systemdict['maxR'].magnitude
 
@@ -2769,8 +2766,7 @@ class MainWindow(QtGui.QMainWindow):
                     self.linesO[idx] = {}
                     self.linesSender[idx] = None
 
-                self.converter_y = Quantity(
-                    1, Units.au_energy).toUU().magnitude
+                self.converter_y = 1 #Quantity(1, Units.au_energy).toUU().magnitude
 
                 # save configuration to json file
                 with open(self.path_config, 'w') as f:
@@ -2784,7 +2780,7 @@ class MainWindow(QtGui.QMainWindow):
                         keys = self.systemdict.keys_for_cprogram_field2
 
                     params = {k: self.systemdict[
-                        k].toAU().magnitude for k in keys}
+                        k].toUU().magnitude for k in keys}
 
                     if self.senderbutton == self.ui.pushbutton_potential_calc:
                         params["zerotheta"] = self.angle == 0
