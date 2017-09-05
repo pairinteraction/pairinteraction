@@ -133,11 +133,9 @@ public:
     {
         m_prepared = true;
 
-        char const *zTail;   // only points into m_sql, no management needed
         sqlite3_stmt *pStmt; // is managed below
-
         auto err = sqlite3_prepare_v2(m_db, m_sql.c_str(), m_sql.length(),
-                                      &pStmt, &zTail);
+                                      &pStmt, nullptr);
         m_stmt.reset(pStmt);
 
         handle_error(err);
@@ -396,9 +394,9 @@ public:
 #endif
     void exec(std::string const &sql)
     {
-        statement stmt(*this, sql);
-        stmt.prepare();
-        stmt.step();
+        auto err = sqlite3_exec(*this, sql.c_str(), nullptr, nullptr, nullptr);
+        if (err)
+            throw error(err, sqlite3_errmsg(m_db.get()));
     }
 };
 
