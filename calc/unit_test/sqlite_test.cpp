@@ -33,14 +33,14 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     BOOST_CHECK_NO_THROW(stmt.set("This is not valid SQL"));
     BOOST_CHECK_THROW(stmt.step(), sqlite::error);
     BOOST_CHECK_THROW(stmt.prepare(), sqlite::error);
-    BOOST_CHECK_THROW(stmt.set("whatever"), sqlite::error);
-    BOOST_CHECK_THROW(db.exec("Neither is this"), sqlite::error);
+    BOOST_CHECK_THROW(stmt.exec("Neither is this"), sqlite::error);
 
     // Check string calling
     std::string string_query("create table test(text,integer,real);");
     BOOST_CHECK_NO_THROW(stmt.reset());
     BOOST_CHECK_NO_THROW(stmt.set(string_query));
     BOOST_CHECK_NO_THROW(stmt.prepare());
+    BOOST_CHECK_THROW(stmt.set("whatever"), sqlite::error);
     BOOST_CHECK_EQUAL(stmt.step(), false);
 
     // Check stringstream calling
