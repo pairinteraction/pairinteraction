@@ -131,16 +131,13 @@ public:
      */
     void prepare()
     {
-        m_prepared = true;
-
-        char const *zTail;   // only points into m_sql, no management needed
         sqlite3_stmt *pStmt; // is managed below
-
-        auto err = sqlite3_prepare_v2(m_db, m_sql.c_str(), m_sql.length(),
-                                      &pStmt, &zTail);
+        auto err = sqlite3_prepare_v2(m_db, m_sql.c_str(), -1, &pStmt, nullptr);
         m_stmt.reset(pStmt);
 
         handle_error(err);
+
+        m_prepared = true;
     }
 
     /** \brief Step the statement
@@ -189,6 +186,21 @@ public:
         handle_error(sqlite3_reset(m_stmt.get()));
         m_valid = true;
         m_prepared = false;
+    }
+
+    /** \brief Execute SQLite statements
+     *
+     * The SQL statements are passed to this function as a string and
+     * are executed in-place.
+     *
+     * \param[in] sql   SQL statements
+     * \throws sqlite::error
+     */
+    void exec(std::string const &sql)
+    {
+        set(sql);
+        auto err = sqlite3_exec(m_db, m_sql.c_str(), nullptr, nullptr, nullptr);
+        handle_error(err);
     }
 
     /** \brief Bind a value to a position in the query
@@ -339,6 +351,7 @@ public:
 class handle final
 {
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> m_db;
+
 public:
     /** \brief Conversion operator
      *
@@ -365,7 +378,7 @@ public:
                     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
         : m_db{nullptr, sqlite3_close}
     {
-        sqlite3 * tmp_db;
+        sqlite3 *tmp_db;
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
         m_db.reset(tmp_db);
 
@@ -375,16 +388,15 @@ public:
 
     /** \brief Execute SQLite statements
      *
-     * The SQL statements are passed to this function as a string (or
-     * stringstream) and are executed in-place.
+     * The SQL statements are passed to this function as a string and
+     * are executed in-place.
      *
      * \deprecated This is deprecated and should not be used anymore.
      * The usage of prepared statements in encouraged instead.  Calls
      * to this function are equivalent to and can hence be replaced by
      * \code
-     * sqlite::statement stmt(db, sql);
-     * stmt.prepare();
-     * stmt.step();
+     * sqlite::statement stmt(db);
+     * stmt.exec(sql);
      * \endcode
      *
      * \param[in] sql   SQL statements
@@ -394,11 +406,11 @@ public:
 #else
     __attribute__((deprecated))
 #endif
-    void exec(std::string const &sql)
+        void exec(std::string const &sql)
     {
-        statement stmt(*this, sql);
-        stmt.prepare();
-        stmt.step();
+        auto err = sqlite3_exec(*this, sql.c_str(), nullptr, nullptr, nullptr);
+        if (err)
+            throw error(err, sqlite3_errmsg(m_db.get()));
     }
 };
 
