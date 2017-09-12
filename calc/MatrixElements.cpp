@@ -521,59 +521,66 @@ void MatrixElements::precalculateDiamagnetism(const std::vector<StateOne> &basis
 
 void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
     sqlite::handle db(dbname);
+    sqlite::statement stmt(db);
 
-    // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
+    // --- Create cache tables if necessary (reduced_moemntum_s and reduced_moemntum_l need not to be cached since they are trivial) --- // TODO put this into the constructor of the prospective cache object
+
+    stmt.set("begin immediate transaction;");
+    stmt.prepare();
+    stmt.step();
+    stmt.reset();
 
     if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
+        stmt.set("create table if not exists cache_radial ("
                 "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
-                "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_radial ("
-                "n1 integer, l1 integer, j1 double,"
-                "n2 integer, l2 integer, j2 double);");
+                "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset();
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
+        stmt.set("create table if not exists cache_angular ("
                 "k integer, j1 double, m1 double,"
-                "j2 double, m2 double, value double, UNIQUE (k, j1, m1, j2, m2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_angular ("
-                "j1 double, m1 double,"
-                "j2 double, m2 double);");
+                "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset();
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_s ("
+        stmt.set("create table if not exists cache_reduced_commutes_s ("
                 "k integer, l1 integer, j1 double,"
-                "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_s ("
-                "l1 integer, j1 double,"
-                "l2 integer, j2 double);");
+                "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset();
     }
 
     if (calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_l ("
+        stmt.set("create table if not exists cache_reduced_commutes_l ("
                 "k integer, l1 integer, j1 double,"
-                "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_l ("
-                "l1 integer, j1 double,"
-                "l2 integer, j2 double);");
+                "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset();
     }
 
     if (calcElectricMultipole) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_multipole ("
+        stmt.set("create table if not exists cache_reduced_multipole ("
                 "k integer, l1 integer,"
-                "l2 integer, value double, UNIQUE (k, l1, l2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_multipole ("
-                "l1 integer,"
-                "l2 integer);");
+                "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset();
     }
 
-    // --- determine elements ---
+    stmt.set("commit transaction;");
+    stmt.prepare();
+    stmt.step();
+    stmt.reset();
 
-    std::stringstream ss;
-
-    db.exec("begin transaction;");
+    // --- Determine elements ---
 
     for (const auto &state_col : basis_one) {
         for (const auto &state_row : basis_one) {
@@ -590,170 +597,126 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             if ((calcElectricMultipole && selectionRulesMultipole(state_row, state_col, kappa)) || (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col)) || calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
                     StateTwo state_nlj = StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0,0}}).order();
-                    auto missing_cache_radial = cache_radial[kappar].insert({state_nlj, std::numeric_limits<double>::max()});
-                    if (missing_cache_radial.second) {
-                        ss.str(std::string());
-                        ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
-                           << state_nlj.n[0] << "," << state_nlj.l[0] << "," << state_nlj.j[0] << ","
-                           << state_nlj.n[1] << "," << state_nlj.l[1] << "," << state_nlj.j[1] << ");";
-                        db.exec(ss.str());
-                    }
+                    cache_radial[kappar].insert({state_nlj, std::numeric_limits<double>::max()}); // TODO can this be speed up?
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
                     StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}}, {{state_row.m, state_col.m}});
-                    auto missing_cache_angular = cache_angular[kappa].insert({state_jm, std::numeric_limits<double>::max()});
-                    if (missing_cache_angular.second) {
-                        ss.str(std::string());
-                        ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
-                           << state_jm.j[0] << "," << state_jm.m[0] << ","
-                           << state_jm.j[1] << "," << state_jm.m[1] << ");";
-                        db.exec(ss.str());
-                    }
+                    cache_angular[kappa].insert({state_jm, std::numeric_limits<double>::max()});
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}});
-                    auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[kappa].insert({state_lj, std::numeric_limits<double>::max()});
-                    if (missing_cache_reduced_commutes_s.second) {
-                        ss.str(std::string());
-                        ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
-                           << state_lj.l[0] << "," << state_lj.j[0] << ","
-                           << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
-                    }
+                    cache_reduced_commutes_s[kappa].insert({state_lj, std::numeric_limits<double>::max()});
                 }
 
                 if (calcMagneticMomentum) {
                     StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{state_row.j, state_col.j}}, {{0, 0}});
-                    auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[kappa].insert({state_lj, std::numeric_limits<double>::max()});
-                    if (missing_cache_reduced_commutes_l.second) {
-                        ss.str(std::string());
-                        ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
-                           << state_lj.l[0] << "," << state_lj.j[0] << ","
-                           << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
-                    }
+                    cache_reduced_commutes_l[kappa].insert({state_lj, std::numeric_limits<double>::max()});
                 }
 
                 if (calcElectricMultipole) {
                     StateTwo state_l = StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
-                    auto missing_cache_reduced_multipole = cache_reduced_multipole[kappa].insert({state_l, std::numeric_limits<double>::max()});
-                    if (missing_cache_reduced_multipole.second) {
-                        ss.str(std::string());
-                        ss << "insert into tmp_reduced_multipole (l1,l2) values ("
-                           << state_l.l[0] << ","
-                           << state_l.l[1] << ");";
-                        db.exec(ss.str());
-                    }
+                    cache_reduced_multipole[kappa].insert({state_l, std::numeric_limits<double>::max()});
                 }
             }
         }
     }
 
-    db.exec("end transaction;");
-
-    // --- load from database ---
-
-    int n1, n2, l1, l2;
-    float j1, j2, m1, m2;
-    double value;
+    // --- Load from database ---
 
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
-        ss.str(std::string());
-        ss << "SELECT c.n1, c.l1, c.j1, c.n2, c.l2, c.j2, c.value FROM cache_radial c INNER JOIN tmp_radial t ON ("
-           << "c.n1 = t.n1 AND c.l1 = t.l1 AND c.j1 = t.j1 AND c.n2 = t.n2 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.method= '" << method << "' AND c.species = '" << species << "' AND c.k = " << kappar << ";";
-        sqlite::statement stmt(db, ss.str());
-        stmt.prepare();
-        while (stmt.step())
-        {
-            n1 = stmt.get<decltype(n1)>(0);
-            l1 = stmt.get<decltype(l1)>(1);
-            j1 = stmt.get<decltype(j1)>(2);
-            n2 = stmt.get<decltype(n2)>(3);
-            l2 = stmt.get<decltype(l2)>(4);
-            j2 = stmt.get<decltype(j2)>(5);
-            value = stmt.get<decltype(value)>(6);
-            cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
+        stmt.set("select value from cache_radial where `method` = ?1 and `species` = ?2 and `k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = ?8 and `j2` = ?9;");
+
+        for (auto &cache : cache_radial[kappar]) {
+            auto state = cache.first;
+            stmt.prepare(); // @henri: can this be moved outside the loop?
+            stmt.bind(1, method);
+            stmt.bind(2, species);
+            stmt.bind(3, kappar);
+            stmt.bind(4, state.n[0]);
+            stmt.bind(5, state.l[0]);
+            stmt.bind(6, state.j[0]);
+            stmt.bind(7, state.n[1]);
+            stmt.bind(8, state.l[1]);
+            stmt.bind(9, state.j[1]);
+            if (stmt.step()) cache.second = stmt.get<double>(0);
+            stmt.reset(); // @henri: is this needed here?
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        ss.str(std::string());
-        ss << "SELECT c.j1, c.m1, c.j2, c.m2, c.value FROM cache_angular c INNER JOIN tmp_angular t ON ("
-           << "c.j1 = t.j1 AND c.m1 = t.m1 AND c.j2 = t.j2 AND c.m2 = t.m2) "
-           << "WHERE c.k = " << kappa << ";";
-        sqlite::statement stmt(db, ss.str());
-        stmt.prepare();
-        while (stmt.step())
-        {
-            j1 = stmt.get<decltype(j1)>(0);
-            m1 = stmt.get<decltype(m1)>(1);
-            j2 = stmt.get<decltype(j2)>(2);
-            m2 = stmt.get<decltype(m2)>(3);
-            value = stmt.get<decltype(value)>(4);
-            cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{j1, j2}}, {{m1,m2}})] = value;
+        stmt.set("select value from cache_angular where `k` = ?1 and `j1` = ?2 and `m1` = ?3 and `j2` = ?4 and `m2` = ?5;");
+
+        for (auto &cache : cache_angular[kappa]) {
+            auto state = cache.first;
+            stmt.prepare(); // @henri: can this be moved outside the loop?
+            stmt.bind(1, kappa);
+            stmt.bind(2, state.j[0]);
+            stmt.bind(3, state.m[0]);
+            stmt.bind(4, state.j[1]);
+            stmt.bind(5, state.m[1]);
+            if (stmt.step()) cache.second = stmt.get<double>(0);
+            stmt.reset(); // @henri: is this needed here?
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        ss.str(std::string());
-        ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_s c INNER JOIN tmp_reduced_commutes_s t ON ("
-           << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.k = " << kappa << ";";
-        sqlite::statement stmt(db, ss.str());
-        stmt.prepare();
-        while (stmt.step())
-        {
-            l1 = stmt.get<decltype(l1)>(0);
-            j1 = stmt.get<decltype(j1)>(1);
-            l2 = stmt.get<decltype(l2)>(2);
-            j2 = stmt.get<decltype(j2)>(3);
-            value = stmt.get<decltype(value)>(4);
-            cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
+        stmt.set("select value from cache_reduced_commutes_s where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
+
+        for (auto &cache : cache_reduced_commutes_s[kappa]) {
+            auto state = cache.first;
+            stmt.prepare(); // @henri: can this be moved outside the loop?
+            stmt.bind(1, kappa);
+            stmt.bind(2, state.l[0]);
+            stmt.bind(3, state.j[0]);
+            stmt.bind(4, state.l[1]);
+            stmt.bind(5, state.j[1]);
+            if (stmt.step()) cache.second = stmt.get<double>(0);
+            stmt.reset(); // @henri: is this needed here?
         }
     }
 
     if (calcMagneticMomentum) {
-        ss.str(std::string());
-        ss << "SELECT c.l1, c.j1, c.l2, c.j2, c.value FROM cache_reduced_commutes_l c INNER JOIN tmp_reduced_commutes_l t ON ("
-           << "c.l1 = t.l1 AND c.j1 = t.j1 AND c.l2 = t.l2 AND c.j2 = t.j2) "
-           << "WHERE c.k = " << kappa << ";";
-        sqlite::statement stmt(db, ss.str());
-        stmt.prepare();
-        while (stmt.step())
-        {
-            l1 = stmt.get<decltype(l1)>(0);
-            j1 = stmt.get<decltype(j1)>(1);
-            l2 = stmt.get<decltype(l2)>(2);
-            j2 = stmt.get<decltype(j2)>(3);
-            value = stmt.get<decltype(value)>(4);
-            cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0,0}})] = value;
+        stmt.set("select value from cache_reduced_commutes_l where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
+
+        for (auto &cache : cache_reduced_commutes_l[kappa]) {
+            auto state = cache.first;
+            stmt.prepare(); // @henri: can this be moved outside the loop?
+            stmt.bind(1, kappa);
+            stmt.bind(2, state.l[0]);
+            stmt.bind(3, state.j[0]);
+            stmt.bind(4, state.l[1]);
+            stmt.bind(5, state.j[1]);
+            if (stmt.step()) cache.second = stmt.get<double>(0);
+            stmt.reset(); // @henri: is this needed here?
         }
     }
 
     if (calcElectricMultipole) {
-        ss.str(std::string());
-        ss << "SELECT c.l1, c.l2, c.value FROM cache_reduced_multipole c INNER JOIN tmp_reduced_multipole t ON ("
-           << "c.l1 = t.l1 AND c.l2 = t.l2) "
-           << "WHERE c.k = " << kappa << ";";
-        sqlite::statement stmt(db, ss.str());
-        stmt.prepare();
-        while (stmt.step())
-        {
-            l1 = stmt.get<decltype(l1)>(0);
-            l2 = stmt.get<decltype(l2)>(1);
-            value = stmt.get<decltype(value)>(2);
-            cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0, 0}}, {{0,0}})] = value;
+        stmt.set("select value from cache_reduced_multipole where `k` = ?1 and `l1` = ?2 and `l2` = ?3;");
+
+        for (auto &cache : cache_reduced_multipole[kappa]) {
+            auto state = cache.first;
+            stmt.prepare(); // @henri: can this be moved outside the loop?
+            stmt.bind(1, kappa);
+            stmt.bind(2, state.l[0]);
+            stmt.bind(3, state.l[1]);
+            if (stmt.step()) cache.second = stmt.get<double>(0);
+            stmt.reset(); // @henri: is this needed here?
         }
     }
 
-    // --- calculate missing elements and write them to the database ---
+    // --- Calculate missing elements and write them to the database ---
 
-    db.exec("begin transaction;");
+    stmt.set("begin transaction;");
+    stmt.prepare();
+    stmt.step();
+    stmt.reset();
 
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
+        stmt.set("insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
+
         for (auto &cache : cache_radial[kappar]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -762,19 +725,35 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 QuantumDefect qd2(species, state.n[1], state.l[1], state.j[1]);
                 cache.second = calcRadialElement(qd1, kappar, qd2);
 
-                ss.str(std::string());
-                ss << "insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values ("
-                   << "'" << method << "'" << "," << "'" << species << "'" << "," << kappar << ","
-                   << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
-                   << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
-                   << cache.second << ");";
-                db.exec(ss.str());
+                stmt.prepare(); // @henri: can this be moved outside the loop?
+                stmt.bind(1, method);
+                stmt.bind(2, species);
+                stmt.bind(3, kappar);
+                stmt.bind(4, state.n[0]);
+                stmt.bind(5, state.l[0]);
+                stmt.bind(6, state.j[0]);
+                stmt.bind(7, state.n[1]);
+                stmt.bind(8, state.l[1]);
+                stmt.bind(9, state.j[1]);
+                stmt.bind(10, cache.second);
 
+                try { // @henri: catch only unique constraint
+                    stmt.step();
+                    stmt.reset(); // @henri: can this be moved outside the loop?
+                } catch(...) {
+                    // Do nothing
+                }
             }
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
+        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
+            stmt.set("insert into cache_angular (k, j1, m1, j2, m2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
+        } catch(...) {
+            // Do nothing
+        }
+
         for (auto &cache : cache_angular[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -783,18 +762,30 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.j[0]-state.m[0]) *
                         WignerSymbols::wigner3j(state.j[0], kappa, state.j[1], -state.m[0], q, state.m[1]);
 
-                ss.str(std::string());
-                ss << "insert into cache_angular (k, j1, m1, j2, m2, value) values ("
-                   << kappa << ","
-                   << state.j[0] << "," << state.m[0] << ","
-                   << state.j[1] << "," << state.m[1] << ","
-                   << cache.second << ");";
-                db.exec(ss.str());
+                stmt.prepare(); // @henri: can this be moved outside the loop?
+                stmt.bind(1, kappa);
+                stmt.bind(2, state.j[0]);
+                stmt.bind(3, state.m[0]);
+                stmt.bind(4, state.j[1]);
+                stmt.bind(5, state.m[1]);
+                stmt.bind(6, cache.second);
+                try { // @henri: catch only unique constraint
+                    stmt.step();
+                    stmt.reset(); // @henri: can this be moved outside the loop?
+                } catch(...) {
+                    // Do nothing
+                }
             }
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
+        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
+            stmt.set("insert into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
+        } catch(...) {
+            // Do nothing
+        }
+
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -802,18 +793,30 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
                         WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1], kappa);
 
-                ss.str(std::string());
-                ss << "insert into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values ("
-                   << kappa << ","
-                   << state.l[0] << "," << state.j[0] << ","
-                   << state.l[1] << "," << state.j[1] << ","
-                   << cache.second << ");";
-                db.exec(ss.str());
+                stmt.prepare(); // @henri: can this be moved outside the loop?
+                stmt.bind(1, kappa);
+                stmt.bind(2, state.l[0]);
+                stmt.bind(3, state.j[0]);
+                stmt.bind(4, state.l[1]);
+                stmt.bind(5, state.j[1]);
+                stmt.bind(6, cache.second);
+                try { // @henri: catch only unique constraint
+                    stmt.step();
+                    stmt.reset(); // @henri: can this be moved outside the loop?
+                } catch(...) {
+                    // Do nothing
+                }
             }
         }
     }
 
     if (calcMagneticMomentum) {
+        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
+            stmt.set("insert into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
+        } catch(...) {
+            // Do nothing
+        }
+
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -821,18 +824,30 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
                         WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, kappa);
 
-                ss.str(std::string());
-                ss << "insert into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values ("
-                   << kappa << ","
-                   << state.l[0] << "," << state.j[0] << ","
-                   << state.l[1] << "," << state.j[1] << ","
-                   << cache.second << ");";
-                db.exec(ss.str());
+                stmt.prepare(); // @henri: can this be moved outside the loop?
+                stmt.bind(1, kappa);
+                stmt.bind(2, state.l[0]);
+                stmt.bind(3, state.j[0]);
+                stmt.bind(4, state.l[1]);
+                stmt.bind(5, state.j[1]);
+                stmt.bind(6, cache.second);
+                try { // @henri: catch only unique constraint
+                    stmt.step();
+                    stmt.reset(); // @henri: can this be moved outside the loop?
+                } catch(...) {
+                    // Do nothing
+                }
             }
         }
     }
 
     if (calcElectricMultipole) {
+        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
+            stmt.set("insert into cache_reduced_multipole (k, l1, l2, value) values (?1, ?2, ?3, ?4);");
+        } catch(...) {
+            // Do nothing
+        }
+
         for (auto &cache : cache_reduced_multipole[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -840,16 +855,27 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0]) * sqrt((2*state.l[0]+1)*(2*state.l[1]+1)) *
                         WignerSymbols::wigner3j(state.l[0], kappa, state.l[1], 0, 0, 0);
 
-                ss.str(std::string());
-                ss << "insert into cache_reduced_multipole (k, l1, l2, value) values ("
-                   << kappa << ","
-                   << state.l[0] << ","
-                   << state.l[1] << ","
-                   << cache.second << ");";
-                db.exec(ss.str());
+                stmt.prepare(); // @henri: can this be moved outside the loop?
+                stmt.bind(1, kappa);
+                stmt.bind(2, state.l[0]);
+                stmt.bind(3, state.l[1]);
+                stmt.bind(4, cache.second);
+                try { // @henri: catch only unique constraint
+                    stmt.step();
+                    stmt.reset(); // @henri: can this be moved outside the loop?
+                } catch(...) {
+                    // Do nothing
+                }
             }
         }
     }
 
-    db.exec("end transaction;");
+    try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
+        stmt.set("commit transaction;");
+        stmt.prepare();
+        stmt.step();
+        stmt.reset(); // @henri: is this needed here?
+    } catch(...) {
+        // Do nothing
+    }
 }
