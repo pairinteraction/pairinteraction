@@ -478,7 +478,7 @@ public:
         hamiltonianmatrix.makeCompressed();
         
         // Transform the basis vectors
-        coefficients = (coefficients * evecs).pruned(1e-4,0.5); // TODO use threshold dependence
+        coefficients = (coefficients * evecs); // (coefficients * evecs).pruned(1e-4,0.5) sometimes result in a weird error - maybe, bug in Eigen?
     }
     
     void canonicalize() {
