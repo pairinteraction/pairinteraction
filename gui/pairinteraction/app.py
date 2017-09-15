@@ -69,6 +69,9 @@ pi = None
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+# Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
+multiprocessing.freeze_support()
+
 # Global configurations of pyqtgraph
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
