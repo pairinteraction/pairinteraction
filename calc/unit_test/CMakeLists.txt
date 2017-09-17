@@ -29,7 +29,7 @@ function(UNIT_TEST)
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
   # Add target for test and link with libraries
   add_executable(${UT_TARGET} ${UT_SOURCE})
-  if(UNIX AND NOT APPLE)
+  if(WITH_ASAN)
     set_source_files_properties(${UT_SOURCE}
       PROPERTIES COMPILE_FLAGS "-fsanitize=address,bounds,leak")
     set_target_properties(${UT_TARGET}

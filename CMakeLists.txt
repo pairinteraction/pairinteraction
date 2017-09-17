@@ -44,6 +44,7 @@ option(WITH_DATABASE "Generate the quantum defect database" ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
+option(WITH_ASAN     "Enable leak detection for unit tests" OFF)
 
 # Mac OS X specific build instructions
 
