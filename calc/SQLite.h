@@ -120,7 +120,7 @@ public:
      */
     explicit statement(sqlite3 *db, std::string const &sql)
         : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql},
-          m_prepared{false}, m_valid{true}, m_threshold{5000}
+          m_prepared{false}, m_valid{true}, m_threshold{10000}
     {
         sqlite3_busy_handler(m_db, busyHandler, &m_threshold);
     }
