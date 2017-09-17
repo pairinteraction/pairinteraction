@@ -27,8 +27,23 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 
+#include <stdlib.h>
+#include <chrono>
+#include <thread>
+
 namespace sqlite
 {
+
+inline int busyHandler(void *threshold, int num_prior_calls) {
+    // Sleep if handler has been called less than num_prior_calls
+    if (num_prior_calls < *(int*)threshold) {
+        int mus = 10000.*rand()/RAND_MAX + 5000; // Random number avoids deadlocks
+        std::this_thread::sleep_for(std::chrono::microseconds(mus));
+         return 1;
+    }
+    // Make sqlite3 return SQLITE_BUSY
+    return 0;
+}
 
 /** \brief SQLite error
  *
@@ -78,6 +93,7 @@ class statement
     std::string m_sql;
     bool m_prepared;
     bool m_valid;
+    int m_threshold;
 
     void handle_error(int err)
     {
@@ -104,8 +120,9 @@ public:
      */
     explicit statement(sqlite3 *db, std::string const &sql)
         : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql},
-          m_prepared{false}, m_valid{true}
+          m_prepared{false}, m_valid{true}, m_threshold{5000}
     {
+        sqlite3_busy_handler(m_db, busyHandler, &m_threshold);
     }
 
     /** \brief Set the query string
@@ -142,9 +159,7 @@ public:
 
     /** \brief Step the statement
      *
-     * This will do a busy wait if the statement cannot be stepped
-     * immediately.  This is probably a waste of resources but at the
-     * same time we do not lose performance in timeouts.
+     * This steps the statement.
      *
      * \returns true if there is a row, false otherwise
      *
@@ -157,9 +172,7 @@ public:
         if (!m_valid)
             handle_error(SQLITE_DONE);
 
-        auto err = SQLITE_BUSY;
-        while (err == SQLITE_BUSY)
-            err = sqlite3_step(m_stmt.get());
+        auto err = sqlite3_step(m_stmt.get());
 
         switch (err) {
         case SQLITE_DONE:

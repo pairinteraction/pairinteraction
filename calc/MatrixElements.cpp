@@ -523,62 +523,42 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     sqlite::handle db(dbname);
     sqlite::statement stmt(db);
 
+    // --- Speed up database access ---
+
+    stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+    stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
+
     // --- Create cache tables if necessary (reduced_moemntum_s and reduced_moemntum_l need not to be cached since they are trivial) --- // TODO put this into the constructor of the prospective cache object
 
-    stmt.set("begin immediate transaction;");
-    stmt.prepare();
-    stmt.step();
-    stmt.reset();
-
     if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-        stmt.set("create table if not exists cache_radial ("
-                "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
-                "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset();
+        stmt.exec("create table if not exists cache_radial ("
+                 "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+                 "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        stmt.set("create table if not exists cache_angular ("
-                "k integer, j1 double, m1 double,"
-                "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset();
+        stmt.exec("create table if not exists cache_angular ("
+                 "k integer, j1 double, m1 double,"
+                 "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        stmt.set("create table if not exists cache_reduced_commutes_s ("
-                "k integer, l1 integer, j1 double,"
-                "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset();
+        stmt.exec("create table if not exists cache_reduced_commutes_s ("
+                 "k integer, l1 integer, j1 double,"
+                 "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
     }
 
     if (calcMagneticMomentum) {
-        stmt.set("create table if not exists cache_reduced_commutes_l ("
-                "k integer, l1 integer, j1 double,"
-                "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset();
+        stmt.exec("create table if not exists cache_reduced_commutes_l ("
+                 "k integer, l1 integer, j1 double,"
+                 "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
     }
 
     if (calcElectricMultipole) {
-        stmt.set("create table if not exists cache_reduced_multipole ("
-                "k integer, l1 integer,"
-                "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset();
+        stmt.exec("create table if not exists cache_reduced_multipole ("
+                 "k integer, l1 integer,"
+                 "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
     }
-
-    stmt.set("commit transaction;");
-    stmt.prepare();
-    stmt.step();
-    stmt.reset();
 
     // --- Determine elements ---
 
@@ -709,13 +689,10 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
 
     // --- Calculate missing elements and write them to the database ---
 
-    stmt.set("begin transaction;");
-    stmt.prepare();
-    stmt.step();
-    stmt.reset();
+    stmt.exec("begin transaction;");
 
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
-        stmt.set("insert into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
+        stmt.set("insert or ignore into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
 
         for (auto &cache : cache_radial[kappar]) {
             if (cache.second == std::numeric_limits<double>::max()) {
@@ -737,22 +714,14 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(9, state.j[1]);
                 stmt.bind(10, cache.second);
 
-                try { // @henri: catch only unique constraint
-                    stmt.step();
-                    stmt.reset(); // @henri: can this be moved outside the loop?
-                } catch(...) {
-                    // Do nothing
-                }
+                stmt.step();
+                stmt.reset(); // @henri: can this be moved outside the loop?
             }
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
-            stmt.set("insert into cache_angular (k, j1, m1, j2, m2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
-        } catch(...) {
-            // Do nothing
-        }
+        stmt.set("insert or ignore into cache_angular (k, j1, m1, j2, m2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
 
         for (auto &cache : cache_angular[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
@@ -762,6 +731,11 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.j[0]-state.m[0]) *
                         WignerSymbols::wigner3j(state.j[0], kappa, state.j[1], -state.m[0], q, state.m[1]);
 
+                if (cache.second > 1e9) {
+                    std::cout << "Warning: Error in the calculation of the Wigner-3j-symbol detected and resolved." << std::endl;
+                    cache.second = 0;
+                }
+
                 stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.j[0]);
@@ -769,22 +743,14 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(4, state.j[1]);
                 stmt.bind(5, state.m[1]);
                 stmt.bind(6, cache.second);
-                try { // @henri: catch only unique constraint
-                    stmt.step();
-                    stmt.reset(); // @henri: can this be moved outside the loop?
-                } catch(...) {
-                    // Do nothing
-                }
+                stmt.step();
+                stmt.reset(); // @henri: can this be moved outside the loop?
             }
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
-            stmt.set("insert into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
-        } catch(...) {
-            // Do nothing
-        }
+        stmt.set("insert or ignore into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
 
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
@@ -793,6 +759,11 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
                         WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1], kappa);
 
+                if (cache.second > 1e9) {
+                    std::cout << "Warning: Error in the calculation of the Wigner-6j-symbol detected and resolved." << std::endl; // happens e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1)
+                    cache.second = 0;
+                }
+
                 stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
@@ -800,22 +771,14 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(4, state.l[1]);
                 stmt.bind(5, state.j[1]);
                 stmt.bind(6, cache.second);
-                try { // @henri: catch only unique constraint
-                    stmt.step();
-                    stmt.reset(); // @henri: can this be moved outside the loop?
-                } catch(...) {
-                    // Do nothing
-                }
+                stmt.step();
+                stmt.reset(); // @henri: can this be moved outside the loop?
             }
         }
     }
 
     if (calcMagneticMomentum) {
-        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
-            stmt.set("insert into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
-        } catch(...) {
-            // Do nothing
-        }
+        stmt.set("insert or ignore into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
 
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
@@ -824,6 +787,11 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
                         WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, kappa);
 
+                if (cache.second > 1e9) {
+                    std::cout << "Warning: Error in the calculation of the Wigner-6j-symbol detected and resolved." << std::endl; // happens e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1)
+                    cache.second = 0;
+                }
+
                 stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
@@ -831,22 +799,14 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(4, state.l[1]);
                 stmt.bind(5, state.j[1]);
                 stmt.bind(6, cache.second);
-                try { // @henri: catch only unique constraint
-                    stmt.step();
-                    stmt.reset(); // @henri: can this be moved outside the loop?
-                } catch(...) {
-                    // Do nothing
-                }
+                stmt.step();
+                stmt.reset(); // @henri: can this be moved outside the loop?
             }
         }
     }
 
     if (calcElectricMultipole) {
-        try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
-            stmt.set("insert into cache_reduced_multipole (k, l1, l2, value) values (?1, ?2, ?3, ?4);");
-        } catch(...) {
-            // Do nothing
-        }
+        stmt.set("insert or ignore into cache_reduced_multipole (k, l1, l2, value) values (?1, ?2, ?3, ?4);");
 
         for (auto &cache : cache_reduced_multipole[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
@@ -855,27 +815,21 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 cache.second = pow(-1, state.l[0]) * sqrt((2*state.l[0]+1)*(2*state.l[1]+1)) *
                         WignerSymbols::wigner3j(state.l[0], kappa, state.l[1], 0, 0, 0);
 
+                if (cache.second > 1e9) {
+                    std::cout << "Warning: Error in the calculation of the Wigner-3j-symbol detected and resolved." << std::endl;
+                    cache.second = 0;
+                }
+
                 stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
                 stmt.bind(3, state.l[1]);
                 stmt.bind(4, cache.second);
-                try { // @henri: catch only unique constraint
-                    stmt.step();
-                    stmt.reset(); // @henri: can this be moved outside the loop?
-                } catch(...) {
-                    // Do nothing
-                }
+                stmt.step();
+                stmt.reset(); // @henri: can this be moved outside the loop?
             }
         }
     }
 
-    try { // @henri: catch only unique constraint // @henri: why do we need the catch block here?
-        stmt.set("commit transaction;");
-        stmt.prepare();
-        stmt.step();
-        stmt.reset(); // @henri: is this needed here?
-    } catch(...) {
-        // Do nothing
-    }
+    stmt.exec("commit transaction;");
 }
