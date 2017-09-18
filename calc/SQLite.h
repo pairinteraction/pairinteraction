@@ -78,11 +78,12 @@ class statement
     std::string m_sql;
     bool m_prepared;
     bool m_valid;
+    bool m_reset;
 
     void handle_error(int err)
     {
         if (err)
-            throw error(err, sqlite3_errmsg(m_db));
+            throw error(err, sqlite3_errstr(err));
     }
 
 public:
@@ -104,7 +105,7 @@ public:
      */
     explicit statement(sqlite3 *db, std::string const &sql)
         : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql},
-          m_prepared{false}, m_valid{true}
+          m_prepared{false}, m_valid{true}, m_reset{true}
     {
     }
 
@@ -115,10 +116,11 @@ public:
      */
     void set(std::string const &sql)
     {
-        if (m_prepared)
+        if (!m_reset)
             handle_error(SQLITE_MISUSE);
         m_sql = sql;
         m_prepared = false;
+        m_reset = false;
     }
 
     /** \overload void set(std::string const &sql) */
@@ -167,8 +169,8 @@ public:
             return true;
         }
 
-        handle_error(err);
         m_valid = false;
+        handle_error(err);
         return false;
     }
 
@@ -182,6 +184,7 @@ public:
     {
         handle_error(sqlite3_reset(m_stmt.get()));
         m_valid = true;
+        m_reset = true;
     }
 
     /** \brief Execute SQLite statements

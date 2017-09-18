@@ -608,9 +608,9 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         stmt.set("select value from cache_radial where `method` = ?1 and `species` = ?2 and `k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = ?8 and `j2` = ?9;");
 
+        stmt.prepare();
         for (auto &cache : cache_radial[kappar]) {
             auto state = cache.first;
-            stmt.prepare(); // @henri: can this be moved outside the loop?
             stmt.bind(1, method);
             stmt.bind(2, species);
             stmt.bind(3, kappar);
@@ -621,69 +621,69 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(8, state.l[1]);
             stmt.bind(9, state.j[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
-            stmt.reset(); // @henri: is this needed here?
+            stmt.reset();
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
         stmt.set("select value from cache_angular where `k` = ?1 and `j1` = ?2 and `m1` = ?3 and `j2` = ?4 and `m2` = ?5;");
 
+        stmt.prepare();
         for (auto &cache : cache_angular[kappa]) {
             auto state = cache.first;
-            stmt.prepare(); // @henri: can this be moved outside the loop?
             stmt.bind(1, kappa);
             stmt.bind(2, state.j[0]);
             stmt.bind(3, state.m[0]);
             stmt.bind(4, state.j[1]);
             stmt.bind(5, state.m[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
-            stmt.reset(); // @henri: is this needed here?
+            stmt.reset();
         }
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
         stmt.set("select value from cache_reduced_commutes_s where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             auto state = cache.first;
-            stmt.prepare(); // @henri: can this be moved outside the loop?
             stmt.bind(1, kappa);
             stmt.bind(2, state.l[0]);
             stmt.bind(3, state.j[0]);
             stmt.bind(4, state.l[1]);
             stmt.bind(5, state.j[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
-            stmt.reset(); // @henri: is this needed here?
+            stmt.reset();
         }
     }
 
     if (calcMagneticMomentum) {
         stmt.set("select value from cache_reduced_commutes_l where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             auto state = cache.first;
-            stmt.prepare(); // @henri: can this be moved outside the loop?
             stmt.bind(1, kappa);
             stmt.bind(2, state.l[0]);
             stmt.bind(3, state.j[0]);
             stmt.bind(4, state.l[1]);
             stmt.bind(5, state.j[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
-            stmt.reset(); // @henri: is this needed here?
+            stmt.reset();
         }
     }
 
     if (calcElectricMultipole) {
         stmt.set("select value from cache_reduced_multipole where `k` = ?1 and `l1` = ?2 and `l2` = ?3;");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_multipole[kappa]) {
             auto state = cache.first;
-            stmt.prepare(); // @henri: can this be moved outside the loop?
             stmt.bind(1, kappa);
             stmt.bind(2, state.l[0]);
             stmt.bind(3, state.l[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
-            stmt.reset(); // @henri: is this needed here?
+            stmt.reset();
         }
     }
 
@@ -694,6 +694,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         stmt.set("insert or ignore into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
 
+        stmt.prepare();
         for (auto &cache : cache_radial[kappar]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -702,7 +703,6 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 QuantumDefect qd2(species, state.n[1], state.l[1], state.j[1]);
                 cache.second = calcRadialElement(qd1, kappar, qd2);
 
-                stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, method);
                 stmt.bind(2, species);
                 stmt.bind(3, kappar);
@@ -715,7 +715,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(10, cache.second);
 
                 stmt.step();
-                stmt.reset(); // @henri: can this be moved outside the loop?
+                stmt.reset();
             }
         }
     }
@@ -752,6 +752,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     if (calcElectricMultipole || calcMagneticMomentum) {
         stmt.set("insert or ignore into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -764,7 +765,6 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                     cache.second = 0;
                 }
 
-                stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
                 stmt.bind(3, state.j[0]);
@@ -772,7 +772,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(5, state.j[1]);
                 stmt.bind(6, cache.second);
                 stmt.step();
-                stmt.reset(); // @henri: can this be moved outside the loop?
+                stmt.reset();
             }
         }
     }
@@ -780,6 +780,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     if (calcMagneticMomentum) {
         stmt.set("insert or ignore into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -792,7 +793,6 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                     cache.second = 0;
                 }
 
-                stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
                 stmt.bind(3, state.j[0]);
@@ -800,7 +800,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 stmt.bind(5, state.j[1]);
                 stmt.bind(6, cache.second);
                 stmt.step();
-                stmt.reset(); // @henri: can this be moved outside the loop?
+                stmt.reset();
             }
         }
     }
@@ -808,6 +808,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     if (calcElectricMultipole) {
         stmt.set("insert or ignore into cache_reduced_multipole (k, l1, l2, value) values (?1, ?2, ?3, ?4);");
 
+        stmt.prepare();
         for (auto &cache : cache_reduced_multipole[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
@@ -820,13 +821,12 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                     cache.second = 0;
                 }
 
-                stmt.prepare(); // @henri: can this be moved outside the loop?
                 stmt.bind(1, kappa);
                 stmt.bind(2, state.l[0]);
                 stmt.bind(3, state.l[1]);
                 stmt.bind(4, cache.second);
                 stmt.step();
-                stmt.reset(); // @henri: can this be moved outside the loop?
+                stmt.reset();
             }
         }
     }
