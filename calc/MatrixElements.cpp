@@ -473,10 +473,11 @@ double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     } else {
         std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
-        auto context = zmq::context();
-        auto publisher = context.socket(ZMQ_PUB);
-        publisher.bind(zmq::endpoint::name.c_str());
-        publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
+        std::cout << msg << std::endl;
+        //auto context = zmq::context();
+        //auto publisher = context.socket(ZMQ_PUB);
+        //publisher.bind(zmq::endpoint::name.c_str());
+        //publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
         throw std::runtime_error(msg);
     }
 }

@@ -52,3 +52,5 @@ unit_test(TARGET wavefunction_test
   SOURCE wavefunction_test.cpp ../QuantumDefect.cpp ../Wavefunction.cpp)
 unit_test(TARGET conf_parser_test
   SOURCE conf_parser_test ../ConfParser.cpp)
+unit_test(TARGET integration_test
+  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp ../WignerD.cpp ../MatrixElements.cpp ../wignerSymbols/src/wignerSymbols-cpp.cpp ../SystemOne.cpp ../SystemTwo.cpp)
