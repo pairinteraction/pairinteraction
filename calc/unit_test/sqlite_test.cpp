@@ -40,7 +40,6 @@ BOOST_AUTO_TEST_CASE(sqlite_query_test)
     BOOST_CHECK_NO_THROW(stmt.reset());
     BOOST_CHECK_NO_THROW(stmt.set(string_query));
     BOOST_CHECK_NO_THROW(stmt.prepare());
-    BOOST_CHECK_THROW(stmt.set("whatever"), sqlite::error);
     BOOST_CHECK_EQUAL(stmt.step(), false);
 
     // Check stringstream calling
