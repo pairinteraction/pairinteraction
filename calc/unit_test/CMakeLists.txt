@@ -53,4 +53,11 @@ unit_test(TARGET wavefunction_test
 unit_test(TARGET conf_parser_test
   SOURCE conf_parser_test ../ConfParser.cpp)
 unit_test(TARGET integration_test
-  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp ../WignerD.cpp ../MatrixElements.cpp ../wignerSymbols/src/wignerSymbols-cpp.cpp ../SystemOne.cpp ../SystemTwo.cpp)
+  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp
+  ../WignerD.cpp ../MatrixElements.cpp ../wignerSymbols/src/wignerSymbols-cpp.cpp
+  ../SystemOne.cpp ../SystemTwo.cpp)
+
+# Copy test dependencies
+add_custom_command(TARGET integration_test PRE_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_test_referencedata.txt ${CMAKE_CURRENT_BINARY_DIR}/integration_test_referencedata.txt
+)

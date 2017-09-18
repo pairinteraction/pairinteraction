@@ -58,6 +58,29 @@ void serialize(Archive& ar, Eigen::SparseMatrix<_Scalar,_Options,_Index>& m, con
     }
 }
 
+template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
+void serialize(Archive & ar, Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int version) {
+    (void)version;
+
+    int rows;
+    int cols;
+
+    if(Archive::is_saving::value) {
+        rows = m.rows();
+        cols = m.cols();
+    }
+
+    ar & rows;
+    ar & cols;
+
+    if(Archive::is_loading::value) {
+        m.resize(rows, cols);
+    }
+
+    ar & make_array(m.data(), rows*cols);
+}
+
+
 }
 }
 
