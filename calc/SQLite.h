@@ -20,8 +20,10 @@
 #include <functional>
 #include <iostream>
 #include <memory>
+#include <random>
 #include <sstream>
 #include <string>
+#include <thread>
 #include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
@@ -350,6 +352,22 @@ public:
 class handle final
 {
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> m_db;
+    int m_threshold;
+
+    static int busy_handler(void *self, int num_prior_calls)
+    {
+        // Sleep if handler has been called less than num_prior_calls
+        if (num_prior_calls < static_cast<handle *>(self)->m_threshold) {
+            std::random_device rd;
+            std::mt19937 gen(rd());
+            std::uniform_int_distribution<> timeout(5000, 15000);
+            std::this_thread::sleep_for(
+                std::chrono::microseconds(timeout(gen)));
+            return 1;
+        }
+
+        return 0; // Make sqlite3 return SQLITE_BUSY
+    }
 
 public:
     /** \brief Conversion operator
@@ -375,7 +393,7 @@ public:
      */
     explicit handle(std::string const &filename,
                     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        : m_db{nullptr, sqlite3_close}
+        : m_db{nullptr, sqlite3_close}, m_threshold{10000}
     {
         sqlite3 *tmp_db;
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
@@ -384,7 +402,7 @@ public:
         if (err)
             throw error(err, sqlite3_errmsg(m_db.get()));
 
-        err = sqlite3_busy_timeout(m_db.get(), 10000);
+        err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
 
         if (err)
             throw error(err, sqlite3_errmsg(m_db.get()));
