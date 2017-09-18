@@ -49,8 +49,6 @@ BOOST_AUTO_TEST_CASE( integration_test ) {
     system_one.restrictEnergy(state_one.getEnergy()-40, state_one.getEnergy()+40);
     system_one.restrictN(state_one.n-1, state_one.n+1);
     system_one.restrictL(state_one.l-1, state_one.l+1);
-    system_one.setBfield({0,0,1});
-    system_one.setEfield({0,0,0.1});
 
     BOOST_CHECK_EQUAL(system_one.getNumVectors(), 64);
     BOOST_CHECK_EQUAL(system_one.getNumStates(), 64);
@@ -66,9 +64,12 @@ BOOST_AUTO_TEST_CASE( integration_test ) {
     BOOST_CHECK_EQUAL(system_two.getNumStates(), 468);
 
     // Diagonalize two-atom system
-    system_two.diagonalize();
     eigen_sparse_t hamiltonian = system_two.getHamiltonianmatrix();
     eigen_sparse_t basis = system_two.getCoefficients();
+
+    // Prune results (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
+    hamiltonian.prune(1e-12,1);
+    basis.prune(1e-12,1);
 
     /*std::ofstream ofs("../calc/unit_test/integration_test_referencedata.txt");
     boost::archive::text_oarchive oa(ofs);
@@ -82,16 +83,16 @@ BOOST_AUTO_TEST_CASE( integration_test ) {
     boost::archive::text_iarchive ia(ifs);
     ia >> hamiltonian_reference >> basis_reference;
 
-    // Compare current results to the reference data
-    eigen_sparse_t diff = (basis - basis_reference).cwiseAbs();
+    // Compare current results to the reference data (the results have to be compared before diagonalization as the order of the eigenvectors is not fixed)
+    eigen_sparse_double_t diff = (hamiltonian - hamiltonian_reference).cwiseQuotient(hamiltonian.cwiseMin(hamiltonian_reference)).cwiseAbs();
     double max_diff_hamiltonian = *std::max_element(diff.valuePtr(),diff.valuePtr()+diff.nonZeros());
-    std::cout << "Maximum deviation from reference Hamiltonian: " << max_diff_hamiltonian << std::endl;
-    BOOST_CHECK_CLOSE(max_diff_hamiltonian, 0, 1e-6);
+    std::cout << "Maximum deviation from reference Hamiltonian: " << max_diff_hamiltonian*100 << " %" << std::endl;
+    BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
 
-    diff = (hamiltonian - hamiltonian_reference).cwiseAbs();
+    diff = (basis - basis_reference).cwiseQuotient(basis.cwiseMin(basis_reference)).cwiseAbs();
     double max_diff_basis = *std::max_element(diff.valuePtr(),diff.valuePtr()+diff.nonZeros());
-    std::cout << "Maximum deviation from reference basis: " << max_diff_basis << std::endl;
-    BOOST_CHECK_CLOSE(max_diff_basis, 0, 1e-6);
+    std::cout << "Maximum deviation from reference basis: " << max_diff_basis*100 << " %" << std::endl;
+    BOOST_CHECK_SMALL(max_diff_basis, 1e-6);
 
     // Diagonalize two-atom system
     system_two.diagonalize();
@@ -99,6 +100,7 @@ BOOST_AUTO_TEST_CASE( integration_test ) {
     // Delete cache directory
     boost::filesystem::remove_all(path_cache);
 
+    // TODO check Hamiltonian for system_one in case of electric and magnetic fields
     // TODO call more methods to increase code covering
     // TODO cause exceptions and check whether they are handled correctly
 }
