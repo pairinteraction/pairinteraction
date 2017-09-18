@@ -35,6 +35,9 @@ function(UNIT_TEST)
     set_target_properties(${UT_TARGET}
       PROPERTIES LINK_FLAGS "-fsanitize=address,bounds,leak")
   endif()
+  if(MSVC)
+    set_property(SOURCE ${UT_SOURCE} PROPERTIES COMPILE_FLAGS "${OLD_FLAGS} /DNOMINMAX")
+  endif()
   target_link_libraries(${UT_TARGET} ${LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the "calc" directory
