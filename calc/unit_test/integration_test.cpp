@@ -67,29 +67,34 @@ BOOST_AUTO_TEST_CASE( integration_test ) {
 
     // Diagonalize two-atom system
     system_two.diagonalize();
-    eigen_vector_double_t eigenvalues = system_two.getDiagonal();
-    eigen_sparse_t eigenvectors = system_two.getCoefficients();
+    eigen_sparse_t hamiltonian = system_two.getHamiltonianmatrix();
+    eigen_sparse_t basis = system_two.getCoefficients();
 
     /*std::ofstream ofs("../calc/unit_test/integration_test_referencedata.txt");
     boost::archive::text_oarchive oa(ofs);
-    oa << eigenvalues << eigenvectors;
+    oa << hamiltonian << basis;
     ofs.close();*/
 
     // Load reference data
-    eigen_vector_double_t eigenvalues_reference;
-    eigen_sparse_t eigenvectors_reference;
+    eigen_sparse_t hamiltonian_reference;
+    eigen_sparse_t basis_reference;
     std::ifstream ifs("./calc/unit_test/integration_test_referencedata.txt");
     boost::archive::text_iarchive ia(ifs);
-    ia >> eigenvalues_reference >> eigenvectors_reference;
+    ia >> hamiltonian_reference >> basis_reference;
 
     // Compare current results to the reference data
-    eigen_sparse_t diff = (eigenvectors - eigenvectors_reference).cwiseAbs();
-    double max_diff_eigenvectors = *std::max_element(diff.valuePtr(),diff.valuePtr()+diff.nonZeros());
-    std::cout << "Maximum deviation from reference eigenvectors: " << max_diff_eigenvectors << std::endl;
-    BOOST_CHECK_CLOSE(max_diff_eigenvectors, 0, 1e-12);
-    double max_diff_eigenvalues = (eigenvalues - eigenvalues_reference).cwiseAbs().maxCoeff();
-    std::cout << "Maximum deviation from reference eigenvalues: " << max_diff_eigenvalues << std::endl;
-    BOOST_CHECK_CLOSE(max_diff_eigenvalues, 0, 1e-12);
+    eigen_sparse_t diff = (basis - basis_reference).cwiseAbs();
+    double max_diff_hamiltonian = *std::max_element(diff.valuePtr(),diff.valuePtr()+diff.nonZeros());
+    std::cout << "Maximum deviation from reference Hamiltonian: " << max_diff_hamiltonian << std::endl;
+    BOOST_CHECK_CLOSE(max_diff_hamiltonian, 0, 1e-6);
+
+    diff = (hamiltonian - hamiltonian_reference).cwiseAbs();
+    double max_diff_basis = *std::max_element(diff.valuePtr(),diff.valuePtr()+diff.nonZeros());
+    std::cout << "Maximum deviation from reference basis: " << max_diff_basis << std::endl;
+    BOOST_CHECK_CLOSE(max_diff_basis, 0, 1e-6);
+
+    // Diagonalize two-atom system
+    system_two.diagonalize();
 
     // Delete cache directory
     boost::filesystem::remove_all(path_cache);
