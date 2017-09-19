@@ -29,6 +29,8 @@
 #include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 
+#include "utils.h"
+
 namespace sqlite
 {
 
@@ -353,11 +355,8 @@ class handle final
     {
         // Sleep if handler has been called less than num_prior_calls
         if (num_prior_calls < static_cast<handle *>(self)->m_threshold) {
-            std::random_device rd;
-            std::mt19937 gen(rd());
-            std::uniform_int_distribution<> timeout(5000, 15000);
             std::this_thread::sleep_for(
-                std::chrono::microseconds(timeout(gen)));
+                std::chrono::microseconds(utils::randint(5000, 15000)));
             return 1;
         }
 
