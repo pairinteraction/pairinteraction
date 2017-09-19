@@ -17,15 +17,55 @@
 #ifndef UTILS_H
 #define UTILS_H
 
-#include "State.h"
 #include <complex>
-#include <type_traits>
 #include <functional>
+#include <random>
+#include <type_traits>
 
-namespace utils {
+namespace utils
+{
 
-template<typename T> struct is_complex : public std::false_type {};
-template<typename T> struct is_complex<std::complex<T>> : public std::true_type {};
+template <typename T>
+struct is_complex : public std::false_type {
+};
+template <typename T>
+struct is_complex<std::complex<T>> : public std::true_type {
+};
+
+/** \brief Thread-local static random engine
+ *
+ * To save some effort this function initializes a static thread-local
+ * random engine to avoid race conditions and broken random sampling.
+ * It is seeded once using `std::random_device` for good entropy.
+ *
+ * \returns Reference to static thread-local random engine
+ */
+inline std::default_random_engine &randint_engine()
+{
+    static thread_local std::default_random_engine eng{std::random_device{}()};
+    return eng;
+}
+
+/** \brief Generate a random integer
+ *
+ * This is very similar to the implementation of randint in the GCC
+ * standard library Fundamentals TS v2.  It is specified by the
+ * standard per clause 13.2.2.1, Function template randint.
+ *
+ * The function generates a random integer in the closed interval
+ * [\p a,\p b].
+ *
+ * \param a  lower bound
+ * \param b  upper bound
+ * \returns random integer between \p a and \p b.
+ */
+template <typename T>
+inline T randint(T a, T b)
+{
+    static_assert(std::is_integral<T>::value && sizeof(T) > 1,
+                  "The type must be an integer!");
+    return std::uniform_int_distribution<T>(a, b)(randint_engine());
+}
 
 // https://de.wikipedia.org/wiki/FNV_(Informatik)
 inline uint64_t FNV64(uint8_t *s, size_t sz)
@@ -33,14 +73,11 @@ inline uint64_t FNV64(uint8_t *s, size_t sz)
     const uint64_t magicPrime = 0x00000100000001b3;
     uint64_t hash = 0xcbf29ce484222325;
 
-    for(size_t i = 0; i < sz; ++i)
-    {
+    for (size_t i = 0; i < sz; ++i) {
         hash = (hash ^ s[i]) * magicPrime;
     }
     return hash;
 }
-
 }
-
 
 #endif // UTILS_H
