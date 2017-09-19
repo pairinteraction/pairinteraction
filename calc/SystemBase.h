@@ -479,6 +479,7 @@ public:
         
         // Transform the basis vectors
         coefficients = (coefficients * evecs); // (coefficients * evecs).pruned(1e-4,0.5) sometimes result in a weird error - maybe, bug in Eigen?
+        coefficients.prune(1e-4,0.5);
     }
     
     void canonicalize() {
