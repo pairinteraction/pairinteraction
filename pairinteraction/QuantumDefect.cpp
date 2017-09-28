@@ -15,6 +15,7 @@
  */
 
 #include "QuantumDefect.h"
+#include "EmbeddedDatabase.h"
 #include "SQLite.h"
 
 #include <algorithm>
@@ -40,14 +41,31 @@ public:
 };
 
 QuantumDefect::QuantumDefect(std::string const &_species, int _n, int _l,
-                             double _j)
+                             double _j, std::nullptr_t)
     : ac_(), Z_(), a1_(), a2_(), a3_(), a4_(), rc_(), nstar_(), energy_(),
       species(_species), n(_n), l(_l), j(_j), ac(ac_), Z(Z_), a1(a1_), a2(a2_),
       a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
 {
+}
+
+QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j)
+    : QuantumDefect(species, n, l, j, nullptr)
+{
+    static thread_local EmbeddedDatabase embedded_database{};
+    setup(embedded_database);
+}
+
+QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
+                             std::string const &database)
+    : QuantumDefect(species, n, l, j, nullptr)
+{
+    sqlite::handle db(database, SQLITE_OPEN_READONLY);
+    setup(db);
+}
+
+void QuantumDefect::setup(sqlite3 *db)
+{
     std::stringstream ss;
-    sqlite::handle db("pairinteraction/databases/quantum_defects.db",
-                      SQLITE_OPEN_READONLY);
     sqlite::statement stmt(db);
     int pot_max_l, ryd_max_l;
     int pot_l, ryd_l;

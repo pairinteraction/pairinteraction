@@ -17,10 +17,9 @@
 #ifndef QUANTUM_DEFECT_H
 #define QUANTUM_DEFECT_H
 
-#include <string>
+#include "SQLite.h"
 #include "dtypes.h"
-
-//typedef double double;
+#include <string>
 
 /** \brief Quantum defect storage
  *
@@ -46,7 +45,8 @@
  * The object also loads the parameters for the model potentials which are used
  * in the Numerov object.
  */
-class QuantumDefect {
+class QuantumDefect
+{
 private:
     double ac_;
     int Z_;
@@ -54,6 +54,12 @@ private:
     double rc_;
     double nstar_;
     double energy_;
+
+    void setup(sqlite3 *);
+
+    QuantumDefect(std::string const &species, int n, int l, double j,
+                  std::nullptr_t);
+
 public:
     /** \brief Constructor
      *
@@ -64,7 +70,12 @@ public:
      * \param[in] l         angular quantum number
      * \param[in] j         magnetic quantum number
      */
-    QuantumDefect(std::string const& species, int n, int l, double j);
+    QuantumDefect(std::string const &species, int n, int l, double j);
+
+    /** \overload QuantumDefect(std::string const& species, int n, int l, double
+     * j) */
+    QuantumDefect(std::string const &species, int n, int l, double j,
+                  std::string const &database);
 
     /** \brief Atomic species */
     const std::string species;
@@ -106,7 +117,6 @@ public:
     const double &energy;
 };
 
-
 /** \brief Returns only the energy of a state
  *
  * \warning This function has a considerable overhead because it allocates a new
@@ -119,6 +129,6 @@ public:
  * \param[in] l         angular quantum number
  * \param[in] j         magnetic quantum number
  */
-double energy_level(std::string const& species, int n, int l, double j);
+double energy_level(std::string const &species, int n, int l, double j);
 
 #endif // QUANTUM_DEFECT_H

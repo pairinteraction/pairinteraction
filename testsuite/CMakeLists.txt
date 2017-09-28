@@ -33,7 +33,7 @@ add_custom_target(copy_python_tests
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   )
-add_dependencies(check copy_python_tests)
+add_dependencies(check copy_python_tests _pireal _picomplex)
 
 # Add test cases
 python_test(TARGET states SOURCE state.py)
