@@ -60,12 +60,12 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --ver
 # Build instructions
 
 if( WITH_BACKEND )
-  add_subdirectory(calc)
+  add_subdirectory(pairinteraction)
   add_subdirectory(testsuite)
 endif( )
 
 if( WITH_DATABASE )
-  add_subdirectory(calc/databases)
+  add_subdirectory(pairinteraction/databases)
 endif( )
 
 if( WITH_GUI )

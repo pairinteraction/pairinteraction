@@ -2,14 +2,14 @@
 
 block_cipher = None
 
-a = Analysis(['pairinteraction'],
+a = Analysis(['startgui'],
              pathex=[],
              binaries=[],
              datas=[],
              hiddenimports=['six', 'scipy.integrate'],
              hookspath=[],
              runtime_hooks=[],
-             excludes=['calc', 'matplotlib', 'OpenGL', 'PyQt5.QtOpenGL'],
+             excludes=['pairinteraction', 'matplotlib', 'OpenGL', 'PyQt5.QtOpenGL'],
              win_no_prefer_redirects=False,
              win_private_assemblies=False,
              cipher=block_cipher)

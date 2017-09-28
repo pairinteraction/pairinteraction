@@ -17,16 +17,16 @@ find_package(Sqlite3 REQUIRED)
 add_custom_target(database ALL)
 add_custom_command(TARGET database
   COMMAND ${SQLITE3_BINARY} ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/testsuite/calc/databases
-  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/testsuite/calc/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/testsuite/pairinteraction/databases
+  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/testsuite/pairinteraction/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
 )
 
 if( WITH_DMG )
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION calc/databases)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION pairinteraction/databases)
 
 else( )
 
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION share/pairinteraction/calc/databases)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION share/pairinteraction/pairinteraction/databases)
 
 endif( )

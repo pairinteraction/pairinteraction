@@ -1,4 +1,4 @@
-%module(docstring="C++ backend for @DATATYPE@ matrices") pairinteraction_@DATATYPE@
+%module(docstring="C++ backend for @DATATYPE@ matrices") pi@DATATYPE@
 
 %{
 #define SWIG_FILE_WITH_INIT

@@ -74,8 +74,8 @@ SectionGroup /e "${APP_NAME}"
     SectionIn RO
     SetOutPath "$INSTDIR"
     File "..\LICENSE*"
-    SetOutPath "$INSTDIR\calc"
-    File "${BUILD_DIR}\calc\*.exe"
+    SetOutPath "$INSTDIR\pairinteraction"
+    File "${BUILD_DIR}\pairinteraction\*.exe"
     File "${DLL_DIR}\libboost_filesystem-mt.dll"
     File "${DLL_DIR}\libboost_program_options-mt.dll"
     File "${DLL_DIR}\libboost_system-mt.dll"
@@ -90,8 +90,8 @@ SectionGroup /e "${APP_NAME}"
     File "${DLL_DIR}\libsqlite3-0.dll"
     File "${DLL_DIR}\libstdc++-6.dll"
     File "${DLL_DIR}\libwinpthread-1.dll"
-    SetOutPath "$INSTDIR\calc\databases"
-    File "${BUILD_DIR}\calc\databases\*.db"
+    SetOutPath "$INSTDIR\pairinteraction\databases"
+    File "${BUILD_DIR}\pairinteraction\databases\*.db"
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 
@@ -141,7 +141,7 @@ functionEnd
 
 Section 'uninstall'
   RMDir /r "$INSTDIR\Miniconda3"
-  RMDir /r "$INSTDIR\calc"
+  RMDir /r "$INSTDIR\pairinteraction"
   RMDir /r "$INSTDIR\gui"
 
   delete "$INSTDIR\LICENSE*"

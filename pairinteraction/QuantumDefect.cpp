@@ -46,7 +46,7 @@ QuantumDefect::QuantumDefect(std::string const &_species, int _n, int _l,
       a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
 {
     std::stringstream ss;
-    sqlite::handle db("calc/databases/quantum_defects.db",
+    sqlite::handle db("pairinteraction/databases/quantum_defects.db",
                       SQLITE_OPEN_READONLY);
     sqlite::statement stmt(db);
     int pot_max_l, ryd_max_l;

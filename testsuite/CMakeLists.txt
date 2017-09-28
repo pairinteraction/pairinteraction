@@ -21,7 +21,7 @@ find_package(PythonInterp 3 REQUIRED)
 function(PYTHON_TEST)
   # Parse arguments
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
-  # Tests are executed in the "calc" directory
+  # Tests are executed in the root directory
   add_test(NAME ${UT_TARGET} COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties(${UT_TARGET}
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}")
