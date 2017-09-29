@@ -72,7 +72,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
 {
   Numerov N( T::qd );
   Whittaker W( T::qd );
-  auto const& nxy = W.integrate();
+  auto const& nxy = N.integrate();
   auto const& wxy = W.integrate();
 
   // Check whether both have the same number of points
@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
 
   // Compare pointwise
   for (size_t i = 0; i < n; ++i)
-      BOOST_CHECK_CLOSE( nxy(i,1), wxy(i,1), 1e-16 );
+      BOOST_CHECK_SMALL( std::sqrt(nxy(i,0))*nxy(i,1) - wxy(i,1), 1e-2 );
 }
 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T)

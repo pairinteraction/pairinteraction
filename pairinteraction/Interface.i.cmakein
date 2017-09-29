@@ -13,6 +13,7 @@
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
+#include "Wavefunction.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -106,6 +107,7 @@ std::wstring __str__() {
 %enddef
 
 MAKE_NUMPY_TYPEMAP(eigen_dense_t)
+MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
@@ -137,6 +139,8 @@ namespace std {
 %include "Interface.h"
 
 %include "QuantumDefect.h"
+
+%include "Wavefunction.h"
 
 // Wrap State.h
 %ignore hash;
