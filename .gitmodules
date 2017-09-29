@@ -1,5 +1,5 @@
 [submodule "trunk/wignerSymbols"]
-	path = pairinteraction/wignerSymbols
+	path = pyinteraction/wignerSymbols
 	url = https://github.com/sebastianweber/wignerSymbols.git
 [submodule "gui/pyqtgraph"]
 	path = gui/pyqtgraph

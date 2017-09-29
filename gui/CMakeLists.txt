@@ -34,7 +34,7 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/startgui ${CMAKE_CURRENT_BINARY_DI
 )
 
 add_custom_target(pythonscripts ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  DEPENDS ${CMAKE_BINARY_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
 )
 add_dependencies(pythonscripts gui)
 

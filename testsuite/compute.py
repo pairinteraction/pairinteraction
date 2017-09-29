@@ -1,4 +1,4 @@
-import pairinteraction.picomplex as pi
+import pyinteraction.picomplex as pi
 import json
 import tempfile
 import zmq

@@ -61,8 +61,8 @@ if getattr(sys, 'frozen', False):
 else:
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
 
-from pairinteraction import pireal as pir
-from pairinteraction import picomplex as pic
+from pyinteraction import pireal as pir
+from pyinteraction import picomplex as pic
 pi = None
 
 
@@ -514,12 +514,12 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        if os.path.exists(os.path.join(self.path_base, "pairinteraction/databases/quantum_defects.db")):
-            self.path_workingdir = os.path.join(self.path_base, "pairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../pairinteraction/databases/quantum_defects.db")):
-            self.path_workingdir = os.path.join(self.path_base, "../pairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../../pairinteraction/databases/quantum_defects.db")):
-            self.path_workingdir = os.path.join(self.path_base, "../../pairinteraction")
+        if os.path.exists(os.path.join(self.path_base, "pyinteraction/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "pyinteraction")
+        elif os.path.exists(os.path.join(self.path_base, "../pyinteraction/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "../pyinteraction")
+        elif os.path.exists(os.path.join(self.path_base, "../../pyinteraction/databases/quantum_defects.db")):
+            self.path_workingdir = os.path.join(self.path_base, "../../pyinteraction")
         else:
             raise Exception('Directory containing database not found.')
 

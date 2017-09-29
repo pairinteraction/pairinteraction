@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(qd_test)
     BOOST_CHECK_EQUAL(qd.j, 0.5);
 
     // Check whether values are correctly read from the db
-    sqlite::handle db("pairinteraction/databases/quantum_defects.db");
+    sqlite::handle db("pyinteraction/databases/quantum_defects.db");
     sqlite::statement stmt(db);
     stmt.set("select ac,Z,a1,a2,a3,a4,rc from model_potential where ( (element "
              "= 'Rb') and (L = 1) );");
