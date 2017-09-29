@@ -9,6 +9,7 @@
 #include "Traits.h"
 #include "dtypes.h"
 #include "Interface.h"
+#include "QuantumDefect.h"
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
@@ -133,9 +134,9 @@ namespace std {
 %rename(__lt__) operator<;
 %include "dtypes.h"
 
-
 %include "Interface.h"
 
+%include "QuantumDefect.h"
 
 // Wrap State.h
 %ignore hash;

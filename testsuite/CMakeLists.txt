@@ -38,3 +38,4 @@ add_dependencies(check copy_python_tests _pireal _picomplex)
 # Add test cases
 python_test(TARGET states SOURCE state.py)
 python_test(TARGET compute SOURCE compute.py)
+python_test(TARGET quantum_defect SOURCE quantum_defect.py)
