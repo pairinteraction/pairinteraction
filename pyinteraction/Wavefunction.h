@@ -215,15 +215,17 @@ public:
 
 /** \brief Find and return index
  *
- * Find a value in a random access container and return its index in the
- * container to the caller. This is intended to work with std::vector.
+ * Find a value in an Eigen matrix and return its index in the
+ * container to the caller. This is intended to work with
+ * Eigen::Vector or columns of Eigen::Matrix.
  *
- * \param[in] x     random access container
+ * \param[in] x     An Eigen matrix type
  * \param[in] d     value to find
- * \returns index of d or x.size()
+ * \returns index of d
+ * \throws std::runtime_error if the value can't be found
  */
 template < typename T >
-int findidx(T const& x, typename T::value_type const& d) {
+int findidx(T const& x, typename T::Scalar const& d) {
     int L = 0;
     int R = x.rows() - 1;
     for (;;) {
@@ -281,7 +283,9 @@ double IntegrateRadialElement(QuantumDefect const& qd1, int power, QuantumDefect
         mu = 2*mu;
     }
 
-    // If the power is non-zero, the radial matrix element has a unit that needs to be converted (if the power is zero, unit-free overlap matrix element is returned)
+    // If the power is non-zero, the radial matrix element has a unit
+    // that needs to be converted (if the power is zero, unit-free
+    // overlap matrix element is returned)
     double converter = (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power-1);
 
     return mu * converter;

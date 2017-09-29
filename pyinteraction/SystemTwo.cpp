@@ -25,11 +25,11 @@
 #include <vector>
 #include <unordered_set>
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir)
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
     : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir, bool memory_saving)
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
     : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
 }
 
@@ -59,7 +59,7 @@ std::vector<StateOne> SystemTwo::getStatesSecond() { // TODO @hmenke typemap for
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-const std::array<std::wstring, 2>& SystemTwo::getElement() {
+const std::array<std::string, 2>& SystemTwo::getElement() {
     return element;
 }
 
@@ -263,10 +263,8 @@ void SystemTwo::initializeInteraction() {
     std::string matrixelementsdir = "";
     if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
 
-    std::string tmp(element[0].begin(), element[0].end()); // TODO think of a better solution
-    MatrixElements matrixelements1(tmp, matrixelementsdir);
-    tmp = std::string(element[1].begin(), element[1].end());
-    MatrixElements matrixelements2(tmp, matrixelementsdir);
+    MatrixElements matrixelements1(element[0], matrixelementsdir);
+    MatrixElements matrixelements2(element[1], matrixelementsdir);
 
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();

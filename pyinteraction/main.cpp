@@ -50,8 +50,8 @@ int thread_ctrl(int num_threads /*= -1*/)
 }
 
 
-int compute(const std::wstring &config_name, const std::wstring &output_name, std::wstring const &wendpoint) {
-    zmq::endpoint::name = std::wstring_convert<std::codecvt_utf8<wchar_t>, wchar_t>{}.to_bytes(wendpoint);
+int compute(const std::string &config_name, const std::string &output_name, std::string const &endpoint) {
+    zmq::endpoint::name = endpoint;
 
     auto context = zmq::context();
     auto publisher = context.socket(ZMQ_PUB);

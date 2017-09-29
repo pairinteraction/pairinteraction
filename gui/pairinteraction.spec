@@ -2,7 +2,7 @@
 
 block_cipher = None
 
-a = Analysis(['startgui'],
+a = Analysis(['pairinteraction'],
              pathex=[],
              binaries=[],
              datas=[],

@@ -48,13 +48,13 @@ class StateOne : public State {
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::wstring element;
+    std::string element;
     int n, l;
     float j, m;
 
 
     StateOne();
-    StateOne(std::wstring element, int n, int l, float j, float m);
+    StateOne(std::string element, int n, int l, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
 
@@ -111,12 +111,12 @@ class StateTwo : public State { // TODO define getters and setters, save a pair 
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::array<std::wstring, 2> element;
+    std::array<std::string, 2> element;
     std::array<int, 2> n, l;
     std::array<float, 2> j, m;
 
     StateTwo();
-    StateTwo(std::array<std::wstring, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);

@@ -29,12 +29,12 @@
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir);
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::wstring cachedir, bool memory_saving);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving);
     SystemTwo(const SystemOne &b1, const SystemOne &b2);
     SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving);
 
-    const std::array<std::wstring, 2>& getElement();
+    const std::array<std::string, 2>& getElement();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
@@ -57,7 +57,7 @@ private:
     void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
     void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
 
-    std::array<std::wstring, 2> element;
+    std::array<std::string, 2> element;
     SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
     SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
 

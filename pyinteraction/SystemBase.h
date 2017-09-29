@@ -67,7 +67,7 @@ boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>
 
 template<class T> class SystemBase {
 public:
-    SystemBase(std::vector<T> states, std::wstring cachedir) : // TODO
+    SystemBase(std::vector<T> states, std::string cachedir) : // TODO
         cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
         (void)states;
         throw std::runtime_error( "Method yet not implemented." );
@@ -719,10 +719,10 @@ public:
     }
     
 protected:
-    SystemBase(std::wstring cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase(std::wstring cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
     SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {

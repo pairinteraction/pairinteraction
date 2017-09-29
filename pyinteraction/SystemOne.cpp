@@ -26,23 +26,23 @@
 #include <unordered_set>
 #include <type_traits>
 
-SystemOne::SystemOne(std::wstring const& element, std::wstring cachedir)
+SystemOne::SystemOne(std::string const& element, std::string cachedir)
     : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::wstring const& element, std::wstring cachedir, bool memory_saving)
+SystemOne::SystemOne(std::string const& element, std::string cachedir, bool memory_saving)
     : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::wstring const& element)
+SystemOne::SystemOne(std::string const& element)
     : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-SystemOne::SystemOne(std::wstring const& element, bool memory_saving)
+SystemOne::SystemOne(std::string const& element, bool memory_saving)
     : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
 }
 
-const std::wstring& SystemOne::getElement() const {
+const std::string& SystemOne::getElement() const {
     return element;
 }
 

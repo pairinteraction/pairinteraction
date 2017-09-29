@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     }
 
     // Setup states
-    StateOne state_one(L"Rb", 61, 2, 1.5, 1.5);
+    StateOne state_one("Rb", 61, 2, 1.5, 1.5);
     StateTwo state_two(state_one, state_one);
 
     ////////////////////////////////////////////////////////////////////
@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.element, path_cache.wstring());
+    SystemOne system_one(state_one.element, path_cache.string());
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
@@ -132,14 +132,14 @@ BOOST_AUTO_TEST_CASE(integration_test)
     // Build one-atom system (for this test, system_one has to be diagonal by
     // itself because diagonalization can lead to different order of
     // eigenvectors)
-    system_one = SystemOne(state_one.element, path_cache.wstring());
+    system_one = SystemOne(state_one.element, path_cache.string());
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
     system_one.restrictL(state_one.l - 1, state_one.l + 1);
 
     // Build two-atom system
-    SystemTwo system_two(system_one, system_one, path_cache.wstring());
+    SystemTwo system_two(system_one, system_one, path_cache.string());
     system_two.restrictEnergy(state_two.getEnergy() - 2,
                               state_two.getEnergy() + 2);
     system_two.setConservedParityUnderPermutation(ODD);

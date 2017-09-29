@@ -2,8 +2,6 @@
 
 %{
 #define SWIG_FILE_WITH_INIT
-#define SWIG_PYTHON_STRICT_BYTE_CHAR
-#define SWIG_PYTHON_STRICT_UNICODE_WCHAR
 
 #include "NumpyUtils.h"
 #include "Traits.h"
@@ -38,7 +36,6 @@ import_array();
 %include "std_complex.i"
 %include "std_sstream.i"
 %include "std_string.i"
-%include "std_wstring.i"
 %include "std_vector.i"
 %include "std_set.i"
 
@@ -77,12 +74,10 @@ import_array();
 // Wrap the << operator
 // http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
 %define __STR__()
-std::wstring __str__() {
+std::string __str__() {
   std::ostringstream out;
   out << *$self;
-
-  std::string s = out.str();
-  return std::wstring(s.begin(), s.end());
+  return out.str();
 }
 %enddef
 
@@ -115,7 +110,7 @@ MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
 
 // Instantiate often used STL templates
 namespace std {
-  %template(ArrayWstringTwo) array<wstring,2>;
+  %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
   %template(ArrayFloatTwo) array<float,2>;
   %template(ArrayDoubleTwo) array<double,3>;

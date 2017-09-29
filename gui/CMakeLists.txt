@@ -24,8 +24,8 @@ add_custom_command(
   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf
 )
 
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/app.py
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/startgui
+add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/app.py
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
@@ -34,7 +34,7 @@ add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/startgui ${CMAKE_CURRENT_BINARY_DI
 )
 
 add_custom_target(pythonscripts ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/startgui ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+  DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
 )
 add_dependencies(pythonscripts gui)
 
@@ -76,7 +76,7 @@ endif( )
 if( CMAKE_HOST_APPLE AND WITH_DMG )
 
   install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION gui PATTERN "pairinteraction" EXCLUDE)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/startgui DESTINATION gui)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION gui)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
@@ -85,7 +85,7 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
     message( FATAL_ERROR "Could not find fileicon" )
   endif( )
 
-  set(filepath \${CMAKE_INSTALL_PREFIX}/gui/startgui)
+  set(filepath \${CMAKE_INSTALL_PREFIX}/gui/pairinteraction)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
@@ -93,7 +93,7 @@ elseif( CMAKE_HOST_UNIX )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/gui)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/startgui DESTINATION share/pairinteraction)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
   install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/pairinteraction ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")

@@ -43,12 +43,12 @@ namespace std {
 
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::wstring const& element, std::wstring cachedir);
-    SystemOne(std::wstring const& element, std::wstring cachedir, bool memory_saving);
-    SystemOne(std::wstring const& element);
-    SystemOne(std::wstring const& element, bool memory_saving);
+    SystemOne(std::string const& element, std::string cachedir);
+    SystemOne(std::string const& element, std::string cachedir, bool memory_saving);
+    SystemOne(std::string const& element);
+    SystemOne(std::string const& element, bool memory_saving);
 
-    const std::wstring& getElement() const;
+    const std::string& getElement() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
     void setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis);
@@ -72,7 +72,7 @@ private:
     std::unordered_map<int, scalar_t>  efield_spherical, bfield_spherical;
     bool diamagnetism;
     std::unordered_map<std::array<int, 2>, scalar_t> diamagnetism_terms;
-    std::wstring element;
+    std::string element;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
