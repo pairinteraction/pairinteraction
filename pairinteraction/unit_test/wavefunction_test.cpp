@@ -43,32 +43,28 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(model_potentials, T, Fixtures, T)
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T)
 {
   Numerov N( T::qd );
-  auto const& x = N.axis();
-  auto const& y = N.integrate();
+  auto const& xy = N.integrate();
 
   // Check for correct number of integration steps
-  BOOST_CHECK_EQUAL( x.size(), 12087 );
-  BOOST_CHECK_EQUAL( y.size(), 12087 );
+  BOOST_CHECK_EQUAL( xy.rows(), 12087 );
 
   // Check for correct upper bound and decay to zero
-  BOOST_CHECK( x.back() <= std::sqrt( 2*T::qd.n*(T::qd.n+15) ) );
-  BOOST_CHECK_SMALL( y.back(), 1e-6 );
+  BOOST_CHECK( xy(xy.rows()-1,0) <= std::sqrt( 2*T::qd.n*(T::qd.n+15) ) );
+  BOOST_CHECK_SMALL( xy(xy.rows()-1,1), 1e-6 );
 }
 
 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T)
 {
   Whittaker W( T::qd );
-  auto const& x = W.axis();
-  auto const& y = W.integrate();
+  auto const& xy = W.integrate();
 
   // Check for correct number of integration steps
-  BOOST_CHECK_EQUAL( x.size(), 12087 );
-  BOOST_CHECK_EQUAL( y.size(), 12087 );
+  BOOST_CHECK_EQUAL( xy.rows(), 12087 );
 
   // Check for correct upper bound and decay to zero
-  BOOST_CHECK( x.back() <= 2*T::qd.n*(T::qd.n+15) );
-  BOOST_CHECK_SMALL( y.back(), 1e-6 );
+  BOOST_CHECK( xy(xy.rows()-1,0) <= 2*T::qd.n*(T::qd.n+15) );
+  BOOST_CHECK_SMALL( xy(xy.rows()-1,1), 1e-6 );
 }
 
 
@@ -76,24 +72,21 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
 {
   Numerov N( T::qd );
   Whittaker W( T::qd );
-  auto const& nx = W.axis();
-  auto const& ny = W.integrate();
-  auto const& wx = W.axis();
-  auto const& wy = W.integrate();
+  auto const& nxy = W.integrate();
+  auto const& wxy = W.integrate();
 
   // Check whether both have the same number of points
-  BOOST_CHECK_EQUAL( nx.size(), wx.size() );
-  size_t n = nx.size();
+  BOOST_CHECK_EQUAL( nxy.rows(), wxy.rows() );
+  size_t n = nxy.rows();
 
   // Compare pointwise
   for (size_t i = 0; i < n; ++i)
-    BOOST_CHECK_CLOSE( ny[i], wy[i], 1e-16 );
+      BOOST_CHECK_CLOSE( nxy(i,1), wxy(i,1), 1e-16 );
 }
 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T)
 {
-  BOOST_CHECK_CLOSE(
-    IntegrateRadialElement<Numerov  >(T::qd, 1, T::qd),
-    IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd),
-    1e-3 ); // corresponds to 0.1% deviation
+  double mu_n = IntegrateRadialElement<Numerov  >(T::qd, 1, T::qd);
+  double mu_w = IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd);
+  BOOST_CHECK_CLOSE(mu_n, mu_w, 1e-3); // corresponds to 0.1% deviation
 }

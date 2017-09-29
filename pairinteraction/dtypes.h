@@ -47,6 +47,7 @@ typedef Eigen::SparseMatrix<scalar_t>::InnerIterator eigen_iterator_t;
 typedef Eigen::SparseMatrix<double>::InnerIterator eigen_iterator_double_t;
 typedef Eigen::SparseMatrix<complex_t>::InnerIterator eigen_iterator_complex_t;
 typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_t;
+typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_double_t;
 typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1> eigen_vector_t;
 typedef Eigen::Matrix<double,Eigen::Dynamic,1> eigen_vector_double_t;
 

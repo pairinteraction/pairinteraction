@@ -50,7 +50,7 @@ double g(QuantumDefect const& qd, double x) {
 
 
 Numerov::Numerov(QuantumDefect const& qd)
-    : qd(qd), x(), dx(0.01)
+    : qd(qd), xy()
 {
     // augmented classical turning point
     double xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
@@ -62,54 +62,47 @@ Numerov::Numerov(QuantumDefect const& qd)
     double const xmax = std::sqrt( 2*qd.n*(qd.n+15) );
     double const nsteps = std::ceil( (xmax - xmin)/dx );
 
-    x.resize(nsteps);
+    xy = eigen_dense_double_t::Zero(nsteps,2);
 
     for (int i = 0; i < nsteps; ++i) {
-        x[i] = (xmin + i*dx);
+        xy(i,0) = (xmin + i*dx);
     }
 }
 
 
-std::vector<double> Numerov::axis() const
-{
-    return x;
-}
-
-
-std::vector<double> Numerov::integrate()
+eigen_dense_double_t Numerov::integrate()
 {
     using model_potential::g;
 
-    int const nsteps = x.size();
-    std::vector<double> y(nsteps,0.0);
+    int const nsteps = xy.rows();
 
     // Set the initial condition
     if ( (qd.n-qd.l) % 2 == 0 )
-        y[nsteps-2] = -1e-10;
+        xy(nsteps-2,1) = -1e-10;
     else
-        y[nsteps-2] = 1e-10;
+        xy(nsteps-2,1) = 1e-10;
 
     // Perform the integration using Numerov's scheme
     for (int i = nsteps-3; i >= 0; --i)
     {
-        double A = (2. + 5./6. * dx*dx * g(qd,x[i+1]*x[i+1])) * y[i+1];
-        double B = (1. - 1./12.* dx*dx * g(qd,x[i+2]*x[i+2])) * y[i+2];
-        double C =  1. - 1./12.* dx*dx * g(qd,x[i]*x[i]);
-        y[i] = (A - B)/C;
+        double A = (2. + 5./6. * dx*dx * g(qd,xy(i+1,0)*xy(i+1,0))) * xy(i+1,1);
+        double B = (1. - 1./12.* dx*dx * g(qd,xy(i+2,0)*xy(i+2,0))) * xy(i+2,1);
+        double C =  1. - 1./12.* dx*dx * g(qd,xy(i,0)*xy(i,0));
+        xy(i,1) = (A - B)/C;
     }
 
     // Normalization
     double norm = 0;
     for (int i = 0; i < nsteps; ++i)
-        norm += y[i]*y[i] * x[i]*x[i] * dx;
+        norm += xy(i,1)*xy(i,1) * xy(i,0)*xy(i,0) * dx;
     norm = std::sqrt(2*norm);
 
     if ( norm > 0.0 ) {
         for (int i = 0; i < nsteps; ++i)
-            y[i] /= norm;
+            xy(i,1) /= norm;
     }
 
-    return y;
+    return xy;
 }
 
 
@@ -141,27 +134,21 @@ double RadialWFWhittaker(double r, double nu, int l)
 
 
 Whittaker::Whittaker(QuantumDefect const& qd)
-    : qd(qd), x(), dx(0.01)
+    : qd(qd), xy()
 {
     double const xmin = 1;
     double const xmax = std::sqrt(2*qd.n*(qd.n+15));
     double const nsteps = std::ceil( (xmax - xmin)/dx );
 
-    x.resize(nsteps);
+    xy.resize(nsteps,2);
 
     for (int i = 0; i < nsteps; ++i) {
-        x[i] = (xmin + i*dx)*(xmin + i*dx);
+        xy(i,0) = (xmin + i*dx)*(xmin + i*dx);
     }
 }
 
 
-std::vector<double> Whittaker::axis() const
-{
-    return x;
-}
-
-
-std::vector<double> Whittaker::integrate()
+eigen_dense_double_t Whittaker::integrate()
 {
     using whittaker_functions::RadialWFWhittaker;
 
@@ -172,11 +159,10 @@ std::vector<double> Whittaker::integrate()
     else
         sign = 1;
 
-    int const nsteps = x.size();
-    std::vector<double> y(nsteps);
+    int const nsteps = xy.rows();
 
     for (int i = 0; i < nsteps; ++i)
-        y[i] = sign * RadialWFWhittaker(x[i], qd.nstar, qd.l);
+        xy(i,1) = sign * RadialWFWhittaker(xy(i,0), qd.nstar, qd.l);
 
-    return y;
+    return xy;
 }

@@ -81,10 +81,10 @@ namespace model_potential {
  */
 class Numerov {
     QuantumDefect const& qd;
-    std::vector<double> x;
+    eigen_dense_double_t xy;
 public:
     /** \brief Integration step size */
-    double const dx;
+    static constexpr double const dx = 0.01;
 
     /** \brief Constructor
      *
@@ -96,21 +96,13 @@ public:
      */
     Numerov(QuantumDefect const& qd);
 
-    /** \brief x values
-     *
-     * Returns the domain on which the wavefunction was evaluated.
-     *
-     * \returns vector with radial points
-     */
-    std::vector<double> axis() const;
-
     /** \brief Perform the integration
      *
      * This performs the integration using %Numerov's method.
      *
      * \returns vector with wavefunction amplitude
      */
-    std::vector<double> integrate();
+    eigen_dense_double_t integrate();
 
     /** \brief Power kernel for matrix elements
      *
@@ -177,10 +169,10 @@ namespace whittaker_functions {
 
 class Whittaker {
     QuantumDefect const& qd;
-    std::vector<double> x;
+    eigen_dense_double_t xy;
 public:
     /** \brief Integration step size */
-    double const dx;
+    static constexpr double const dx = 0.01;
 
     /** \brief Constructor
      *
@@ -193,14 +185,6 @@ public:
      */
     Whittaker(QuantumDefect const& qd);
 
-    /** \brief x values
-     *
-     * Returns the domain on which the wavefunction was evaluated.
-     *
-     * \returns vector with radial points
-     */
-    std::vector<double> axis() const;
-
     /** \brief Evaluate the radial wavefunction
      *
      * This does not perform an integration but merely evaluates the %Whittaker
@@ -208,7 +192,7 @@ public:
      *
      * \returns vector with wavefunction amplitude
      */
-    std::vector<double> integrate();
+    eigen_dense_double_t integrate();
 
     /** \brief Power kernel for matrix elements
      *
@@ -239,9 +223,16 @@ public:
  * \returns index of d or x.size()
  */
 template < typename T >
-size_t findidx(T const& x, typename T::value_type const& d) {
-    auto it = std::find(std::begin(x), std::end(x), d);
-    return std::distance(std::begin(x), it);
+int findidx(T const& x, typename T::value_type const& d) {
+    int L = 0;
+    int R = x.rows() - 1;
+    for (;;) {
+        if (L > R) throw std::runtime_error("Search failed");
+        int m = (L+R)/2;
+        if (x(m) < d) L = m + 1;
+        if (x(m) > d) R = m - 1;
+        if (x(m) == d) return m;
+    }
 }
 
 
@@ -262,32 +253,30 @@ size_t findidx(T const& x, typename T::value_type const& d) {
  * \returns Radial matrix element
  */
 template < typename T >
-double IntegrateRadialElement( QuantumDefect const& qd1, int power, QuantumDefect const& qd2)
+double IntegrateRadialElement(QuantumDefect const& qd1, int power, QuantumDefect const& qd2)
 {
     T N1(qd1);
     T N2(qd2);
 
-    auto const& x1 = N1.axis();
-    auto const& y1 = N1.integrate();
-    auto const& x2 = N2.axis();
-    auto const& y2 = N2.integrate();
-    auto const  dx = N1.dx;
+    auto const& xy1 = N1.integrate();
+    auto const& xy2 = N2.integrate();
+    auto const   dx = N1.dx;
 
-    auto const xmin = x1.front() >= x2.front() ? x1.front() : x2.front();
-    auto const xmax = x1.back() <= x2.back() ? x1.back() : x2.back();
+    auto const xmin = xy1(0,0) >= xy2(0,0) ? xy1(0,0) : xy2(0,0);
+    auto const xmax = xy1(xy1.rows()-1,0) <= xy2(xy2.rows()-1,0) ? xy1(xy1.rows()-1,0) : xy2(xy2.rows()-1,0);
 
     double mu = 0;
     // If there is an overlap, calculate the matrix element
     if (xmin <= xmax) {
-        int start1 = findidx(x1, xmin);
-        int end1   = findidx(x1, xmax);
-        int start2 = findidx(x2, xmin);
-        int end2   = findidx(x2, xmax);
+        int start1 = findidx(xy1.col(0), xmin);
+        int end1   = findidx(xy1.col(0), xmax);
+        int start2 = findidx(xy2.col(0), xmin);
+        int end2   = findidx(xy2.col(0), xmax);
 
         int i1, i2;
         for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2)
         {
-            mu += y1[i1]*y2[i2] * std::pow(x1[i1], T::power_kernel(power)) * dx;
+            mu += xy1(i1,1)*xy2(i2,1) * std::pow(xy1(i1,0), T::power_kernel(power)) * dx;
         }
         mu = 2*mu;
     }
