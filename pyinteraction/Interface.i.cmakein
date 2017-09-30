@@ -13,8 +13,8 @@
 #include "SystemTwo.h"
 #include "Wavefunction.h"
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <sstream>
@@ -57,7 +57,7 @@ import_array();
   %extend cls {
     std::string __getstate__() {
       std::stringstream ss;
-      boost::archive::binary_oarchive ar(ss);
+      boost::archive::text_oarchive ar(ss);
       ar << *($self);
       return ss.str();
     }
@@ -65,7 +65,7 @@ import_array();
     void __setstate_internal(std::string const& sState) {
       boost::iostreams::array_source asource(sState.c_str(), sState.size()); // prevents from copying
       boost::iostreams::stream<boost::iostreams::array_source> ss(asource);
-      boost::archive::binary_iarchive ar(ss);
+      boost::archive::text_iarchive ar(ss);
       ar >> *($self);
     }
   }
