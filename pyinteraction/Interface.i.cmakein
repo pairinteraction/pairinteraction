@@ -13,8 +13,8 @@
 #include "SystemTwo.h"
 #include "Wavefunction.h"
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/archive/binary_iarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <sstream>
@@ -55,17 +55,20 @@ import_array();
 // remark: passing as std::stringstream does not work because swig calls the implicitly-deleted copy constructor of std::stringstream instead of the move constructor
 %define %boost_picklable(cls...)
   %extend cls {
-    std::string __getstate__() {
+    PyObject* __getstate__() {
       std::stringstream ss;
-      boost::archive::text_oarchive ar(ss);
+      boost::archive::binary_oarchive ar(ss);
       ar << *($self);
-      return ss.str();
+      return PyBytes_FromStringAndSize(ss.str().data(), ss.str().length());
     }
 
-    void __setstate_internal(std::string const& sState) {
-      boost::iostreams::array_source asource(sState.c_str(), sState.size()); // prevents from copying
+    void __setstate_internal(PyObject* const sState) {
+      char *buffer;
+      Py_ssize_t len;
+      PyBytes_AsStringAndSize(sState, &buffer, &len);
+      boost::iostreams::array_source asource(buffer, static_cast<size_t>(len)); // prevents from copying
       boost::iostreams::stream<boost::iostreams::array_source> ss(asource);
-      boost::archive::text_iarchive ar(ss);
+      boost::archive::binary_iarchive ar(ss);
       ar >> *($self);
     }
   }
@@ -80,7 +83,6 @@ std::string __str__() {
   return out.str();
 }
 %enddef
-
 
 // Make numpy wrappers
 %define MAKE_NUMPY_TYPEMAP(TYPE...)
