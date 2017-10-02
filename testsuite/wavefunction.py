@@ -1,5 +1,5 @@
 import unittest
-from pyinteraction import pireal as pi
+from @LIBNAME@ import pireal as pi
 import numpy as np
 
 class TestWavefunction(unittest.TestCase):

@@ -3,7 +3,7 @@ import sqlite3
 import numpy as np
 from scipy.sparse import coo_matrix
 from multiprocessing import Pool
-from pyinteraction import pireal as pi
+from @LIBNAME@ import pireal as pi
 import tempfile
 import shutil
 
