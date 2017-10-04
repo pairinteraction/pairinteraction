@@ -1,5 +1,4 @@
 import unittest
-import sqlite3
 import numpy as np
 from scipy.sparse import coo_matrix
 from multiprocessing import Pool
@@ -10,21 +9,21 @@ import shutil
 class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
     def test_comparison(self):
-        
+
         #######################################################
         ### Preparations ######################################
         #######################################################
 
         # Create cache directory
         path_cache = tempfile.mkdtemp()
-        
+
         #######################################################
         ### Check parallelization of one atom calculations ####
         #######################################################
 
         # Define state
         state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
-        
+
         # Build one atom system
         system_one = pi.SystemOne(state_one.element, path_cache)
         system_one.restrictEnergy(state_one.energy-40, state_one.energy+40)
@@ -84,7 +83,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 tmp = line_mapper[iFirst]
                 line_mapper = np.zeros(np.max(iSecond)+1)
                 line_mapper[iSecond] = tmp
-        
+
         lines_energies = coo_matrix((line_val, (np.array(line_idx)-1,line_step))).toarray()
         lines_energies[lines_energies == 0] = np.nan
 
@@ -162,7 +161,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         self.assertEqual(len(lines_energies), 10)
         self.assertEqual(np.sum(np.isnan(lines_energies)), 0)
-        
+
         #######################################################
         ### Clean up ##########################################
         #######################################################
