@@ -36,7 +36,7 @@ add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 if(MSVC)
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W4 /DNOMINMAX")
+  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
   # TODO set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "/wdSOMENUMBER") maybe /wd0169 or /wd0649
 else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic")
