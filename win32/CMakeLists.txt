@@ -24,14 +24,8 @@ else( )
   message( FATAL_ERROR "Could not find makensis" )
 endif( )
 
-if( "${MINGW_ARCH}" MATCHES "i686" )
-  set( MINICONDA_DL "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86.exe" )
-elseif( "${MINGW_ARCH}" MATCHES "x86_64" )
-  set( MINICONDA_DL "https://repo.continuum.io/miniconda/Miniconda3-latest-Windows-x86_64.exe" )
-endif( )
-
 add_custom_target(win32
   DEPENDS pairinteraction-real pairinteraction-complex database gui
-  COMMAND curl -C - -O ${MINICONDA_DL}
-  COMMAND ${MAKENSIS} -DARCH=${MINGW_ARCH} ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.nsi
+  COMMENT "Build NSIS installer"
+  #COMMAND ${MAKENSIS} -DARCH=${MINGW_ARCH} ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.nsi
 )

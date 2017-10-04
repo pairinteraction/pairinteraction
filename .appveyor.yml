@@ -37,10 +37,9 @@ before_build:
   - cmd: md build && cd build
   - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
-build:
-  project: build\pairinteraction.sln
-  parallel: true
-  verbosity: minimal
+build_script:
+  - cmd: msbuild %APPVEYOR_BUILD_FOLDER%\build\pairinteraction.sln /m /verbosity:minimal
+  - cmd: msbuild %APPVEYOR_BUILD_FOLDER%\build\win32\win32.vcxproj /m /verbosity:minimal
 
 after_build:
   - cmd: md pairinteraction-install\pyinteraction\databases
