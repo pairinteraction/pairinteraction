@@ -21,23 +21,22 @@ find_package(PythonInterp 3 REQUIRED)
 function(PYTHON_TEST)
   # Parse arguments
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
+  # Copy test to binary directory
+  configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
   add_test(NAME ${UT_TARGET} COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties(${UT_TARGET}
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}")
 endfunction(PYTHON_TEST)
 
-# Copy python tests
-add_custom_target(copy_python_tests
-  COMMAND ${CMAKE_COMMAND} -E copy_directory
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  )
-add_dependencies(check copy_python_tests _pireal _picomplex)
+# Build library before testing
+add_dependencies(check _pireal _picomplex)
 
 # Add test cases
 python_test(TARGET states SOURCE state.py)
 python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
 python_test(TARGET wavefunction SOURCE wavefunction.py)
-python_test(TARGET pythoninterface_multiprocessing SOURCE pythoninterface_multiprocessing.py)
+if(NOT APPLE)
+  python_test(TARGET pythoninterface_multiprocessing SOURCE pythoninterface_multiprocessing.py)
+endif()

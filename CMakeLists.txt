@@ -18,6 +18,8 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
+set(LIBNAME "pyinteraction")
+
 # get version info from git
 
 find_package(Git REQUIRED)
@@ -60,12 +62,12 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure --ver
 # Build instructions
 
 if( WITH_BACKEND )
-  add_subdirectory(pyinteraction)
+  add_subdirectory(${LIBNAME})
   add_subdirectory(testsuite)
 endif( )
 
 if( WITH_DATABASE )
-  add_subdirectory(pyinteraction/databases)
+  add_subdirectory(${LIBNAME}/databases)
 endif( )
 
 if( WITH_GUI )

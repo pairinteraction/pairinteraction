@@ -1,6 +1,6 @@
 import unittest
 
-import pyinteraction.picomplex as pi
+import @LIBNAME@.picomplex as pi
 au2GHz = 6579683.920711
 
 class TestState(unittest.TestCase):
