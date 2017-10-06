@@ -27,6 +27,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <set>
 
 #ifndef SWIG
 namespace std {
@@ -57,6 +58,9 @@ public:
     void setBfield(std::array<double, 3> field, double alpha, double beta, double gamma);
     void setDiamagnetism(bool enable);
 
+    void setConservedParityUnderReflection(parity_t parity);
+    void setConservedMomentaUnderRotation(std::set<float> momenta);
+
 protected:
     void initializeBasis() override;
     void initializeInteraction() override;
@@ -78,15 +82,20 @@ private:
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
     std::unordered_map<std::array<int, 2>, eigen_sparse_t> interaction_diamagnetism;
 
+    parity_t sym_reflection;
+    std::set<float> sym_rotation;
+
+    ////////////////////////////////////////////////////////////////////
+    /// Utility methods ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    void addCoefficient(StateOne state, const size_t &col, const scalar_t &value, std::vector<eigen_triplet_t> &coefficients_triplets);
+
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
     void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
     void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis);
     void rotateVector(std::array<double, 3> &field, double alpha, double beta, double gamma);
-
-    ////////////////////////////////////////////////////////////////////
-    /// Utility methods ////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
 
     template<class T>
     void addRotated(const StateOne &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
@@ -116,6 +125,11 @@ private:
         return val;
     }
 
+    template<class U>
+    U imaginaryUnit();
+
+    bool isRefelectionAndRotationCompatible();
+
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -128,7 +142,7 @@ private:
 
         ar & boost::serialization::base_object<SystemBase<StateOne>>(*this);
         ar & element;
-        ar & efield & bfield & diamagnetism;
+        ar & efield & bfield & diamagnetism & sym_reflection & sym_rotation;
         ar & efield_spherical & bfield_spherical & diamagnetism_terms;
         ar & interaction_efield & interaction_bfield & interaction_diamagnetism;
     }

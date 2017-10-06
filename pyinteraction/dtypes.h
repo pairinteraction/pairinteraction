@@ -58,6 +58,8 @@ constexpr const double au2um = 5.2917721067e-05;
 constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
+constexpr const int ARB = 32767;
+
 class Triple {
 public:
     Triple() : row(0), col(0), val(0) { }

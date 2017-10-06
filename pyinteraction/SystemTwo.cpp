@@ -24,21 +24,22 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
+#include <algorithm>
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
-    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
+    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
+    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
-    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
+    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving)
-    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA) {
+    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
@@ -90,6 +91,24 @@ void SystemTwo::setOrder(double o) {
 void SystemTwo::setConservedParityUnderPermutation(parity_t parity) {
     this->onSymmetryChange();
     sym_permutation = parity;
+}
+
+void SystemTwo::setConservedParityUnderInversion(parity_t parity) {
+    this->onSymmetryChange();
+    sym_inversion = parity;
+}
+
+void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
+    this->onSymmetryChange();
+    sym_reflection = parity;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved parity under reflection is not compatible to the previously specified conserved momenta.");
+}
+
+void SystemTwo::setConservedMomentaUnderRotation(std::set<int> momenta) {
+    if (momenta.count(ARB)!=0 && momenta.size() > 1) throw std::runtime_error("If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
+    this->onSymmetryChange();
+    sym_rotation = momenta;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved momenta are not compatible to the previously specified conserved parity under reflection.");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -473,8 +492,28 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
     if (ordermax != dynamic_cast<SystemTwo&>(system).ordermax) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
 
     // Combine symmetries
-    if (sym_permutation != dynamic_cast<SystemTwo&>(system).sym_permutation) sym_permutation = NA;
-    // TODO add additional symmetries
+    unsigned int num_different_symmetries = 0;
+    if (sym_permutation != dynamic_cast<SystemTwo&>(system).sym_permutation) {
+        sym_permutation = NA;
+        ++num_different_symmetries;
+    }
+    if (sym_inversion != dynamic_cast<SystemTwo&>(system).sym_inversion) {
+        sym_inversion = NA;
+        ++num_different_symmetries;
+    }
+    if (sym_reflection != dynamic_cast<SystemTwo&>(system).sym_reflection) {
+        sym_reflection = NA;
+        ++num_different_symmetries;
+    }
+    if (!std::equal(sym_rotation.begin(), sym_rotation.end(), dynamic_cast<SystemTwo&>(system).sym_rotation.begin())) {
+        if (sym_rotation.count(ARB)!=0 || dynamic_cast<SystemTwo&>(system).sym_rotation.count(ARB)!=0) {
+            sym_rotation = {ARB};
+        } else {
+            sym_rotation.insert(dynamic_cast<SystemTwo&>(system).sym_rotation.begin(), dynamic_cast<SystemTwo&>(system).sym_rotation.end());
+        }
+        ++num_different_symmetries;
+    }
+    if (num_different_symmetries > 1) std::cerr << "Warning: The systems differ in more than one symmetry. For the combined system, the notion of symmetries might be meaningless." << std::endl;
 
     // Clear cached interaction
     this->deleteInteraction();
@@ -508,4 +547,14 @@ void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t 
 template<>
 double SystemTwo::convert(const std::complex<double> &val) {
     return val.real();
+}
+
+bool SystemTwo::isRefelectionAndRotationCompatible() {
+    if (sym_rotation.count(ARB)!=0 || sym_reflection == NA) return true;
+
+    for (const auto& s: sym_rotation) {
+       if (sym_rotation.count(-s)==0) return false;
+    }
+
+    return true;
 }

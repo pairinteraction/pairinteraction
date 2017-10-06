@@ -591,6 +591,8 @@ public:
             coefficients_unperturbed_cache.rightCols(system.coefficients_unperturbed_cache.cols()) = transformator*system.coefficients_unperturbed_cache;
         }
 
+        // TODO check if vectors are orthogonal
+
         // --- Combine hamiltonianmatrix and hamiltonianmatrix_unperturbed_cache ---
         std::vector<eigen_triplet_t> shifter_triplets;
         shifter_triplets.reserve(system.hamiltonianmatrix.rows());

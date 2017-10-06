@@ -26,6 +26,7 @@
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <set>
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
@@ -42,6 +43,9 @@ public:
     void setOrder(double o);
 
     void setConservedParityUnderPermutation(parity_t parity);
+    void setConservedParityUnderInversion(parity_t parity);
+    void setConservedParityUnderReflection(parity_t parity);
+    void setConservedMomentaUnderRotation(std::set<int> momenta);
 
 protected:
     void initializeBasis() override;
@@ -54,9 +58,6 @@ protected:
     void incorporate(SystemBase<StateTwo> &system) override;
 
 private:
-    void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
-
     std::array<std::string, 2> element;
     SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
     SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
@@ -69,12 +70,19 @@ private:
     unsigned int ordermax;
 
     parity_t sym_permutation;
+    parity_t sym_inversion;
+    parity_t sym_reflection;
+    std::set<int> sym_rotation;
 
     std::array<double, 4> angle_terms;
 
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
+
+    void addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
+
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
 
     template<class T>
     void addRotated(const StateTwo &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
@@ -114,6 +122,8 @@ private:
         return val;
     }
 
+    bool isRefelectionAndRotationCompatible();
+
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -126,7 +136,7 @@ private:
 
         ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar & element & system1 & system2;
-        ar & distance & angle & ordermax & sym_permutation;
+        ar & distance & angle & ordermax & sym_permutation & sym_inversion & sym_reflection & sym_rotation;
         ar & angle_terms;
         ar & interaction_angulardipole & interaction_multipole;
     }

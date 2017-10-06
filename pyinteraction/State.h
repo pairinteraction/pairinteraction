@@ -27,7 +27,6 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 
-constexpr const int ARB = 32767;
 
 /** \brief %Base class for states
  *

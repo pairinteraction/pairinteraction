@@ -27,19 +27,19 @@
 #include <type_traits>
 
 SystemOne::SystemOne(std::string const& element, std::string cachedir)
-    : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
+    : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 SystemOne::SystemOne(std::string const& element, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
+    : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 SystemOne::SystemOne(std::string const& element)
-    : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
+    : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 SystemOne::SystemOne(std::string const& element, bool memory_saving)
-    : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element){
+    : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 const std::string& SystemOne::getElement() const {
@@ -95,6 +95,39 @@ void SystemOne::setDiamagnetism(bool enable) {
     diamagnetism = enable;
 }
 
+void SystemOne::setConservedParityUnderReflection(parity_t parity) {
+    this->onSymmetryChange();
+    sym_reflection = parity;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved parity under reflection is not compatible to the previously specified conserved momenta.");
+}
+
+void SystemOne::setConservedMomentaUnderRotation(std::set<float> momenta) {
+    if (momenta.count(static_cast<float>(ARB))!=0 && momenta.size() > 1) throw std::runtime_error("If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
+    this->onSymmetryChange();
+    sym_rotation = momenta;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved momenta are not compatible to the previously specified conserved parity under reflection.");
+}
+
+////////////////////////////////////////////////////////////////////
+/// Explicit template specializations (has to be at the beginning) /
+////////////////////////////////////////////////////////////////////
+
+template<>
+double SystemOne::imaginaryUnit() {
+    // TODO  raise error !!!!!!!!!!!
+    return 1;
+}
+
+template<>
+std::complex<double> SystemOne::imaginaryUnit() {
+    return std::complex<double>(0,1);
+}
+
+template<>
+double SystemOne::convert(const std::complex<double> &val) {
+    return val.real();
+}
+
 ////////////////////////////////////////////////////////////////////
 /// Method that allows base class to initialize Basis //////////////
 ////////////////////////////////////////////////////////////////////
@@ -110,7 +143,7 @@ void SystemOne::initializeBasis()
     /// Build one atom states //////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    // TODO consider symmetries and check whether they are applicable
+    // TODO check whether symmetries are applicable
 
     size_t idx = 0;
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve states, coefficients_triplets, hamiltonianmatrix_triplets
@@ -149,12 +182,38 @@ void SystemOne::initializeBasis()
                 } else {
                     range_adapted_m = range_m;
                 }
-                for (auto m : range_adapted_m) {
+
+                // Consider rotation symmetry
+                std::set<float> range_allowed_m;
+                if (sym_rotation.count(static_cast<float>(ARB)) == 0) {
+                    std::set_intersection(sym_rotation.begin(), sym_rotation.end(), range_adapted_m.begin(), range_adapted_m.end(), std::inserter(range_allowed_m, range_allowed_m.begin()));
+                } else {
+                    range_allowed_m = range_adapted_m;
+                }
+
+                for (auto m : range_allowed_m) {
                     if (std::fabs(m) > j) continue;
 
-                    states.push_back(enumerated_state<StateOne>(idx, StateOne(element,n,l,j,m)));
+                    // In case of reflection symmetry, skip half of the basis vectors
+                    if (sym_reflection != NA && m < 0) continue;
+
+                    // Store the energy of the unperturbed one atom state
                     hamiltonianmatrix_triplets.push_back(eigen_triplet_t(idx,idx,energy));
-                    coefficients_triplets.push_back(eigen_triplet_t(idx,idx,1));
+
+                    // Adapt the normalization if required by symmetries
+                    scalar_t value = 1;
+                    if (sym_reflection != NA) {
+                        value /= std::sqrt(2);
+                    }
+
+                    // Add an entry to the current basis vector
+                    this->addCoefficient(StateOne(element,n,l,j,m), idx, value, coefficients_triplets);
+
+                    // Add further entries to the current basis vector if required by symmetries
+                    if (sym_reflection != NA) {
+                        value *= (sym_reflection == EVEN) ? std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>() : -std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>(); // TODO check compatibility with definition of reflection symmetry for two atoms
+                        this->addCoefficient(StateOne(element,n,l,j,-m), idx, value, coefficients_triplets);
+                    }
 
                     ++idx;
                 }
@@ -163,7 +222,7 @@ void SystemOne::initializeBasis()
     }
 
     // Build data
-    coefficients.resize(idx,idx);
+    coefficients.resize(states.size(),idx);
     coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
     coefficients_triplets.clear();
 
@@ -233,7 +292,7 @@ void SystemOne::initializeInteraction() {
         for (const auto &r: states) {
 
             if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
-            if (r.idx < c.idx) continue;
+            //if (r.idx < c.idx) continue; // TODO modify addTriplet so that skipping half of the entries work
 
             // E-field interaction
             for (const auto &i : erange) {
@@ -391,7 +450,20 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
     if (diamagnetism != dynamic_cast<SystemOne&>(system).diamagnetism) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
 
     // Combine symmetries
-    // TODO add symmetries
+    unsigned int num_different_symmetries = 0;
+    if (sym_reflection != dynamic_cast<SystemOne&>(system).sym_reflection) {
+        sym_reflection = NA;
+        ++num_different_symmetries;
+    }
+    if (!std::equal(sym_rotation.begin(), sym_rotation.end(), dynamic_cast<SystemOne&>(system).sym_rotation.begin())) {
+        if (sym_rotation.count(static_cast<float>(ARB))!=0 || dynamic_cast<SystemOne&>(system).sym_rotation.count(static_cast<float>(ARB))!=0) {
+            sym_rotation = {static_cast<float>(ARB)};
+        } else {
+            sym_rotation.insert(dynamic_cast<SystemOne&>(system).sym_rotation.begin(), dynamic_cast<SystemOne&>(system).sym_rotation.end());
+        }
+        ++num_different_symmetries;
+    }
+    if (num_different_symmetries > 1) std::cerr << "Warning: The systems differ in more than one symmetry. For the combined system, the notion of symmetries might be meaningless." << std::endl;
 
     // Clear cached interaction
     this->deleteInteraction();
@@ -400,6 +472,20 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+
+void SystemOne::addCoefficient(StateOne state, const size_t &col, const scalar_t &value, std::vector<eigen_triplet_t> &coefficients_triplets) {
+    auto state_iter = states.get<1>().find(state);
+
+    size_t row;
+    if (state_iter != states.get<1>().end()) {
+        row = state_iter->idx;
+    } else {
+        row = states.size();
+        states.push_back(enumerated_state<StateOne>(row, state));
+    }
+
+    coefficients_triplets.push_back(eigen_triplet_t(row, col, value));
+}
 
 void SystemOne::changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double> &field_spherical) {
     if(field[1] != 0) {
@@ -418,7 +504,7 @@ void SystemOne::changeToSphericalbasis(std::array<double, 3> field, std::unorder
 
 void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val) {
     triplets.push_back(eigen_triplet_t(r_idx, c_idx, val));
-    if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change
+    //if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change // TODO with interaction_bfield one sometimes has to add a minus sign instead of taking the conjugate
 }
 
 void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis) {
@@ -439,8 +525,13 @@ void SystemOne::rotateVector(std::array<double, 3> &field, double alpha, double 
     }
 }
 
-template<>
-double SystemOne::convert(const std::complex<double> &val) {
-    return val.real();
+bool SystemOne::isRefelectionAndRotationCompatible() {
+    if (sym_rotation.count(static_cast<float>(ARB))!=0 || sym_reflection == NA) return true;
+
+    for (const auto& s: sym_rotation) {
+       if (sym_rotation.count(-s)==0) return false;
+    }
+
+    return true;
 }
 
