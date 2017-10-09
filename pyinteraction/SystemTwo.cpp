@@ -169,18 +169,28 @@ void SystemTwo::initializeBasis()
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
+                    StateOne state_1 = system1.getStates()[row_1];
+                    StateOne state_2 = system2.getStates()[row_2];
+
+                    float M = state_1.m+state_2.m;
+
+                    // Consider rotation symmetry
+                    if (sym_rotation.count(ARB) == 0 && sym_rotation.count(M) == 0 ) {
+                        continue;
+                    }
+
                     // Adapt the normalization if required by symmetries
                     if (sym_permutation != NA && col_1 != col_2 ) {
                         value_new /= std::sqrt(2);
                     }
 
                     // Add an entry to the current basis vector
-                    this->addCoefficient(row_1, row_2, col_new, value_new, coefficients_triplets, sqnorm_list);
+                    this->addCoefficient(StateTwo(state_1, state_2), col_new, value_new, coefficients_triplets, sqnorm_list);
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (sym_permutation != NA && col_1 != col_2 ) {
                         value_new *= (sym_permutation == EVEN) ? -1 : 1;
-                        this->addCoefficient(row_2, row_1, col_new, value_new, coefficients_triplets, sqnorm_list);
+                        this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
                     }
                 }
             }
@@ -512,8 +522,7 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::addCoefficient(const size_t &row_1, const size_t &row_2, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
-    StateTwo state = StateTwo(system1.getStates()[row_1], system2.getStates()[row_2]);
+void SystemTwo::addCoefficient(StateTwo state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row_new;
