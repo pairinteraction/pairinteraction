@@ -547,9 +547,9 @@ public:
     }
 
     void add(SystemBase<T> &system) {
-        // --- Build Hamiltonians ---
-        this->buildHamiltonian();
-        system.buildHamiltonian();
+        // --- Build bases ---
+        this->buildBasis();
+        system.buildBasis();
 
         // --- Combine system specific variables ---
         this->incorporate(system);

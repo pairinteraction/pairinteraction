@@ -114,8 +114,7 @@ void SystemOne::setConservedMomentaUnderRotation(std::set<float> momenta) {
 
 template<>
 double SystemOne::imaginaryUnit() {
-    // TODO  raise error !!!!!!!!!!!
-    return 1;
+    throw std::runtime_error( "For operations that invoke the imaginary number, a complex data type is needed." );
 }
 
 template<>
@@ -211,7 +210,7 @@ void SystemOne::initializeBasis()
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (sym_reflection != NA) {
-                        value *= (sym_reflection == EVEN) ? std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>() : -std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>(); // TODO check compatibility with definition of reflection symmetry for two atoms
+                        value *= (sym_reflection == EVEN) ? std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>() : -std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>(); // S_y is invariant under reflection through xz-plane
                         this->addCoefficient(StateOne(element,n,l,j,-m), idx, value, coefficients_triplets);
                     }
 

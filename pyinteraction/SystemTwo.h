@@ -44,7 +44,6 @@ public:
 
     void setConservedParityUnderPermutation(parity_t parity);
     void setConservedParityUnderInversion(parity_t parity);
-    void setConservedParityUnderReflection(parity_t parity);
     void setConservedMomentaUnderRotation(std::set<int> momenta);
 
 protected:
@@ -71,7 +70,6 @@ private:
 
     parity_t sym_permutation;
     parity_t sym_inversion;
-    parity_t sym_reflection;
     std::set<int> sym_rotation;
 
     std::array<double, 4> angle_terms;
@@ -122,8 +120,6 @@ private:
         return val;
     }
 
-    bool isRefelectionAndRotationCompatible();
-
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -136,7 +132,7 @@ private:
 
         ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar & element & system1 & system2;
-        ar & distance & angle & ordermax & sym_permutation & sym_inversion & sym_reflection & sym_rotation;
+        ar & distance & angle & ordermax & sym_permutation & sym_inversion & sym_rotation;
         ar & angle_terms;
         ar & interaction_angulardipole & interaction_multipole;
     }
