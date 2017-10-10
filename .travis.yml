@@ -31,6 +31,7 @@ matrix:
         - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/python-packages-osx.zip
         - unzip python-packages-osx.zip
         - conda config --prepend channels file:///$TRAVIS_BUILD_DIR/conda-export
+        - brew update
       install:
         - conda install -y -q nomkl pairinteraction-dependencies
         - pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
