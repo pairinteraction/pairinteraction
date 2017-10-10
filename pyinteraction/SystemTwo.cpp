@@ -129,7 +129,7 @@ void SystemTwo::initializeBasis()
     /// Check wther the single atom states fit to the symmetries ///////
     ////////////////////////////////////////////////////////////////////
 
-    if (sym_permutation != NA) {
+    if (sym_permutation != NA || sym_permutation != NA) {
         // TODO check system1 == system2
     }
 
@@ -149,8 +149,15 @@ void SystemTwo::initializeBasis()
     for (size_t col_1=0; col_1<system1.getNumVectors(); ++col_1) {
         for (size_t col_2=0; col_2<system2.getNumVectors(); ++col_2) {
 
+            // In case of inversion symmetry: skip half of the basis vector pairs
+            if ((sym_inversion == EVEN && col_1 <= col_2) || // gerade
+                    (sym_inversion == ODD && col_1 < col_2)) { // ungerade
+                continue;
+            }
+
             // In case of permutation symmetry: skip half of the basis vector pairs
-            if ((sym_permutation == EVEN && col_1 <= col_2) || (sym_permutation == ODD && col_1 < col_2)) { // asym
+            if ((sym_permutation == EVEN && col_1 <= col_2) || // sym
+                    (sym_permutation == ODD && col_1 < col_2)) { // asym
                 continue;
             }
 
@@ -173,24 +180,38 @@ void SystemTwo::initializeBasis()
                     StateOne state_2 = system2.getStates()[row_2];
 
                     float M = state_1.m+state_2.m;
+                    int parityL = std::pow(-1, state_1.l + state_2.l);
 
                     // Consider rotation symmetry
                     if (sym_rotation.count(ARB) == 0 && sym_rotation.count(M) == 0 ) {
                         continue;
                     }
 
-                    // Adapt the normalization if required by symmetries
-                    if (sym_permutation != NA && col_1 != col_2 ) {
-                        value_new /= std::sqrt(2);
+                    if (col_1 != col_2) {
+                        // In case of inversion and permutation symmetry: the inversion symmetric state is already permutation symmetric
+                        if (sym_inversion != NA && sym_permutation != NA) {
+                            if ( ((sym_inversion == EVEN) ? -parityL : parityL) != ((sym_permutation == EVEN) ? -1 : 1) )  {
+                                continue; // the parity under inversion and permutation is different
+                            }
+                        }
+                        // Adapt the normalization if required by symmetries
+                        if (sym_inversion != NA || sym_permutation != NA) {
+                            value_new /= std::sqrt(2);
+                        }
                     }
 
                     // Add an entry to the current basis vector
                     this->addCoefficient(StateTwo(state_1, state_2), col_new, value_new, coefficients_triplets, sqnorm_list);
 
-                    // Add further entries to the current basis vector if required by symmetries
-                    if (sym_permutation != NA && col_1 != col_2 ) {
-                        value_new *= (sym_permutation == EVEN) ? -1 : 1;
-                        this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
+                    if (col_1 != col_2) {
+                        // Add further entries to the current basis vector if required by symmetries
+                        if (sym_inversion != NA) {
+                            value_new *= (sym_inversion == EVEN) ? -parityL : parityL;
+                            this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
+                        } else if (sym_permutation != NA) {
+                            value_new *= (sym_permutation == EVEN) ? -1 : 1;
+                            this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
+                        }
                     }
                 }
             }
