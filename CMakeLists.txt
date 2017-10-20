@@ -18,7 +18,7 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
-set(LIBNAME "pyinteraction")
+set(LIBNAME "libpairinteraction")
 
 # get version info from git
 

@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
 
     if (!dump_new_reference_data) {
         std::ifstream ifs(
-            "./pyinteraction/unit_test/integration_test_referencedata.txt");
+            "./libpairinteraction/unit_test/integration_test_referencedata.txt");
         boost::archive::text_iarchive ia(ifs);
         ia >> hamiltonian_one_reference >> basis_one_reference >>
             hamiltonian_two_reference >> basis_two_reference;
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
 
     if (dump_new_reference_data) {
         std::ofstream ofs(
-            "../pyinteraction/unit_test/integration_test_referencedata.txt");
+            "../libpairinteraction/unit_test/integration_test_referencedata.txt");
         boost::archive::text_oarchive oa(ofs);
         oa << hamiltonian_one << basis_one << hamiltonian_two << basis_two;
         ofs.close();
