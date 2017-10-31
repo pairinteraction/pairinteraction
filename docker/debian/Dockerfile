@@ -12,5 +12,7 @@ RUN apt-get update \
     swig python3 python3-dev \
     python3-numpy python3-scipy python3-zmq \
     dpkg rpm \
+    doxygen graphviz ca-certificates \
+    python3-sphinx python3-numpydoc \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

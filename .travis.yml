@@ -40,11 +40,6 @@ matrix:
       before_script:
         - export CXX=/usr/local/opt/llvm/bin/clang++
         - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib,-rpath,${CONDA_PREFIX}/lib"
-    - os: linux
-      services: docker
-      sudo: required
-      env:
-        - image=debian:doxygen
 
 script:
   - docker/build_docker.sh

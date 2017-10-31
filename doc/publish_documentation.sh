@@ -35,12 +35,13 @@ fi;
 
 function gh_pages_prepare()
 {
-    mkdir -p "${TRAVIS_BUILD_DIR}/build/";
-    cd "${TRAVIS_BUILD_DIR}/build/";
+    mkdir -p "${TRAVIS_BUILD_DIR}/build/doc";
+    cd "${TRAVIS_BUILD_DIR}/build/doc";
 
-    git clone -b gh-pages https://github.com/${TRAVIS_REPO_SLUG} doc;
-
-    cd "doc";
+    git init;
+    git remote add origin https://github.com/${TRAVIS_REPO_SLUG};
+    git fetch origin --depth 1;
+    git checkout gh-pages;
 
     git config user.name "Travis CI";
     git config user.email "travis@travis-ci.org";
@@ -54,7 +55,7 @@ function gh_pages_generate()
 {
     cd "${TRAVIS_BUILD_DIR}/build";
 
-    cmake -DWITH_BACKEND=No -DWITH_GUI=No -DWITH_DATABASE=No ..;
+    cmake ..;
 
     make doc;
 }

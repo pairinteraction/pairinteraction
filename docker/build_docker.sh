@@ -28,20 +28,12 @@ case "${TRAVIS_OS_NAME}" in
     "linux")
 
             case "${image}" in
-                "debian:doxygen")
-                    docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
-                           --interactive --tty \
-                           hmenke/$image \
-                           /bin/bash /travis/doc/publish_documentation.sh
-                    ;;
-
                 "debian")
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            hmenke/$image \
-                           /bin/bash /travis/docker/build_cmake.sh gcov;
+                           /bin/bash -c "/bin/bash /travis/docker/build_cmake.sh gcov; /bin/bash /travis/doc/publish_documentation.sh"
                     ;;
 
                 *)
