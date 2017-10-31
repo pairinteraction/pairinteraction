@@ -35,12 +35,12 @@ fi;
 
 function gh_pages_prepare()
 {
-    mkdir -p "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
-    cd "${TRAVIS_BUILD_DIR}/build/doc/doxygen/";
+    mkdir -p "${TRAVIS_BUILD_DIR}/build/";
+    cd "${TRAVIS_BUILD_DIR}/build/";
 
-    git clone -b gh-pages https://github.com/${TRAVIS_REPO_SLUG} html;
+    git clone -b gh-pages https://github.com/${TRAVIS_REPO_SLUG} doc;
 
-    cd "html";
+    cd "doc";
 
     git config user.name "Travis CI";
     git config user.email "travis@travis-ci.org";
@@ -62,13 +62,13 @@ function gh_pages_generate()
 
 function gh_pages_update()
 {
-    cd "${TRAVIS_BUILD_DIR}/build/doc/doxygen/html";
+    cd "${TRAVIS_BUILD_DIR}/build/doc/";
 
     touch .nojekyll;
 
-    git add --all;
+    git add --all "doxygen/html" "sphinx/html";
 
-    git commit -m "Doxygen build from Travis for commit ${TRAVIS_COMMIT}";
+    git commit -m "Documentation build from Travis for commit ${TRAVIS_COMMIT}";
 
     git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
     git push --quiet --force upstream gh-pages > /dev/null 2>&1;

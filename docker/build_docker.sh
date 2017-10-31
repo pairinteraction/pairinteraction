@@ -32,8 +32,8 @@ case "${TRAVIS_OS_NAME}" in
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
-                           pairinteraction/$image \
-                           /bin/bash /travis/doc/doxygen/publish_doxygen.sh
+                           hmenke/$image \
+                           /bin/bash /travis/doc/publish_documentation.sh
                     ;;
 
                 "debian")
