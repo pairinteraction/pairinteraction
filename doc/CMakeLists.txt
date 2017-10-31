@@ -13,5 +13,6 @@
 # limitations under the License.
 
 add_subdirectory(doxygen)
+add_subdirectory(sphinx)
 
-add_custom_target(doc DEPENDS doxygen)
+add_custom_target(doc DEPENDS doxygen sphinx)

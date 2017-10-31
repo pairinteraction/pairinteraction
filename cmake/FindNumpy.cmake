@@ -20,7 +20,7 @@
 include (FindPackageHandleStandardArgs)
 
 if(NOT PYTHON_EXECUTABLE)
-  find_package(PythonInterp)
+  find_package(PythonInterp 3)
 endif()
 
 if(PYTHON_EXECUTABLE)
