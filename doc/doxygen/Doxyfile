@@ -753,7 +753,7 @@ WARN_LOGFILE           =
 # spaces.
 # Note: If this tag is empty the current directory is searched.
 
-INPUT                  = $(SOURCE_DIR)/pairinteraction \
+INPUT                  = $(SOURCE_DIR)/$(LIBNAME) \
                          $(SOURCE_DIR)/gui \
                          $(SOURCE_DIR)/doc/doxygen
 
@@ -790,7 +790,7 @@ RECURSIVE              = YES
 # Note that relative paths are relative to the directory from which doxygen is
 # run.
 
-EXCLUDE                = $(SOURCE_DIR)/pairinteraction/wignerSymbols \
+EXCLUDE                = $(SOURCE_DIR)/$(LIBNAME)/wignerSymbols \
                          $(SOURCE_DIR)/gui/pyqtgraph
 
 # The EXCLUDE_SYMLINKS tag can be used to select whether or not files or

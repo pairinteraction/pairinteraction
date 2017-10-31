@@ -16,5 +16,5 @@ find_package(Doxygen)
 
 add_custom_target(doxygen
   COMMAND
-  SOURCE_DIR=${CMAKE_SOURCE_DIR}
+  SOURCE_DIR=${CMAKE_SOURCE_DIR} LIBNAME=${LIBNAME}
   ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile)
