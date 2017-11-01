@@ -2,8 +2,6 @@
 
 set -e;
 
-TRAVIS_BUILD_DIR=/travis
-
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "INFO: This is a PR.";
@@ -35,8 +33,8 @@ fi;
 
 function gh_pages_prepare()
 {
-    mkdir -p "${TRAVIS_BUILD_DIR}/build/doc";
-    cd "${TRAVIS_BUILD_DIR}/build/doc";
+    mkdir -p "${SOURCE_DIR}/build/doc";
+    cd "${SOURCE_DIR}/build/doc";
 
     git init;
     git remote add origin https://github.com/${TRAVIS_REPO_SLUG};
@@ -53,7 +51,7 @@ function gh_pages_prepare()
 
 function gh_pages_generate()
 {
-    cd "${TRAVIS_BUILD_DIR}/build";
+    cd "${SOURCE_DIR}/build";
 
     cmake ..;
 
@@ -63,11 +61,11 @@ function gh_pages_generate()
 
 function gh_pages_update()
 {
-    cd "${TRAVIS_BUILD_DIR}/build/doc/";
+    cd "${SOURCE_DIR}/build/doc/";
 
     touch .nojekyll;
 
-    git add --all "doxygen/html" "sphinx/html";
+    git add --all ".nojekyll" "doxygen/html" "sphinx/html";
 
     git commit -m "Documentation build from Travis for commit ${TRAVIS_COMMIT}";
 
@@ -76,7 +74,7 @@ function gh_pages_update()
 }
 
 
-cd "${TRAVIS_BUILD_DIR}";
+cd "${SOURCE_DIR}";
 gh_pages_prepare;
 gh_pages_generate;
 gh_pages_update;
