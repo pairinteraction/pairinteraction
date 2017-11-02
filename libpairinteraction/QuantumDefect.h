@@ -72,8 +72,7 @@ public:
      */
     QuantumDefect(std::string const &species, int n, int l, double j);
 
-    /** \overload QuantumDefect(std::string const& species, int n, int l, double
-     * j) */
+    /** \overload QuantumDefect(std::string const& species, int n, int l, double j) */
     QuantumDefect(std::string const &species, int n, int l, double j,
                   std::string const &database);
 
