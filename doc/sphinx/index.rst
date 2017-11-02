@@ -2,12 +2,15 @@ Welcome to the libpairinteraction documentation!
 ================================================
 
 .. toctree::
+   :numbered:
    :maxdepth: 2
    :caption: Contents:
 
+   installation.rst
 
-Modules
-=======
+
+libpairinteraction package
+==========================
 
 .. toctree::
     :maxdepth: 1

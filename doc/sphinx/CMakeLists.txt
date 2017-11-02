@@ -33,7 +33,8 @@ if(SPHINX_FOUND)
 
   # Files to be copied to the build directory
   set(FILE_LIST 
-    "index.rst")
+    "index.rst"
+    "installation.rst")
 
   foreach(file ${FILE_LIST})
     configure_file(
