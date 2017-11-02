@@ -43,6 +43,7 @@ if(SPHINX_FOUND)
   endforeach()
 
   add_custom_target(sphinx
+      ${CMAKE_COMMAND} -E env SPHINX_APIDOC_OPTIONS=members,show-inheritance
       # sphinx-apidoc
       ${PYTHON_EXECUTABLE} -c
       "import sys; from sphinx.apidoc import main; sys.exit(main(sys.argv))"

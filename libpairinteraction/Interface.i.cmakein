@@ -27,14 +27,13 @@ import_array();
 %}
 
 
-%feature("autodoc", "3");
+%feature("autodoc", "");
 
 
 %include "attribute.i"
 %include "exception.i"
 %include "std_array.i"
 %include "std_complex.i"
-%include "std_sstream.i"
 %include "std_string.i"
 %include "std_vector.i"
 %include "std_set.i"
@@ -128,6 +127,9 @@ namespace std {
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   //TODO @hmenke %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
 };
+
+
+%feature("autodoc", "2");
 
 
 %rename(__lt__) operator<;
