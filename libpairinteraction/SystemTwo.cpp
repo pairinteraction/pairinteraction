@@ -27,19 +27,19 @@
 #include <algorithm>
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
-    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_rotation({ARB}) {
+    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_rotation({ARB}) {
+    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
-    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_rotation({ARB}) {
+    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving)
-    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_rotation({ARB}) {
+    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
@@ -98,10 +98,18 @@ void SystemTwo::setConservedParityUnderInversion(parity_t parity) {
     sym_inversion = parity;
 }
 
+void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
+    this->onSymmetryChange();
+    sym_reflection = parity;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved parity under reflection is not compatible to the previously specified conserved momenta.");
+    //if (sym_reflection != NA) std::cerr << "Warning: The one-atom states must already be reflection symmetric in order to build reflection symmetric two-atom states." << std::endl; // TODO make it work with one-atom states that are not pre-symmetrized
+}
+
 void SystemTwo::setConservedMomentaUnderRotation(std::set<int> momenta) {
     if (momenta.count(ARB)!=0 && momenta.size() > 1) throw std::runtime_error("If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
     this->onSymmetryChange();
     sym_rotation = momenta;
+    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved momenta are not compatible to the previously specified conserved parity under reflection.");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -170,23 +178,27 @@ void SystemTwo::initializeBasis()
 
             // Build the basis vector that corresponds to the stored pair state energy
             for (eigen_iterator_t triple_1(system1.getCoefficients(),col_1); triple_1; ++triple_1) {
+                size_t row_1 = triple_1.row();
+                StateOne state_1 = system1.getStates()[row_1]; // TODO cache states before
+
                 for (eigen_iterator_t triple_2(system2.getCoefficients(),col_2); triple_2; ++triple_2) {
-                    size_t row_1 = triple_1.row();
                     size_t row_2 = triple_2.row();
+                    StateOne state_2 = system2.getStates()[row_2]; // TODO cache states before
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
-                    StateOne state_1 = system1.getStates()[row_1];
-                    StateOne state_2 = system2.getStates()[row_2];
-
-                    float M = state_1.m+state_2.m;
+                    int M = state_1.m+state_2.m;
                     int parityL = std::pow(-1, state_1.l + state_2.l);
+                    int parityJ = std::pow(-1, state_1.j + state_2.j);
+                    int parityM = std::pow(-1, M);
 
                     // Consider rotation symmetry
                     if (sym_rotation.count(ARB) == 0 && sym_rotation.count(M) == 0 ) {
                         continue;
                     }
 
+                    // Combine symmetries
+                    bool skip_reflection = false;
                     if (col_1 != col_2) {
                         // In case of inversion and permutation symmetry: the inversion symmetric state is already permutation symmetric
                         if (sym_inversion != NA && sym_permutation != NA) {
@@ -194,23 +206,68 @@ void SystemTwo::initializeBasis()
                                 continue; // the parity under inversion and permutation is different
                             }
                         }
-                        // Adapt the normalization if required by symmetries
+
+                        // In case of inversion or permutation and reflection symmetry: the inversion or permutation symmetric state is already reflection symmetric
+                        if ((sym_inversion != NA || sym_permutation != NA) && sym_reflection != NA && StateTwo({{state_1.element, state_2.element}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}) == StateTwo(state_2, state_1)) {
+                            if (sym_inversion != NA) {
+                                if ( ((sym_inversion == EVEN) ? -parityL : parityL) != ((sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) )  {
+                                    continue; // the parity under inversion and reflection is different
+                                } else {
+                                    skip_reflection = true; // the parity under inversion and reflection is the same
+                                }
+                            } else if (sym_permutation != NA) {
+                                if ( ((sym_permutation == EVEN) ? -1 : 1) != ((sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) ) {
+                                    continue; // the parity under permutation and reflection is different
+                                } else {
+                                    skip_reflection = true; // the parity under permutation and reflection is the same
+                                }
+                            }
+                        }
+                    }
+
+                    // Adapt the normalization if required by symmetries
+                    if (col_1 != col_2) {
                         if (sym_inversion != NA || sym_permutation != NA) {
                             value_new /= std::sqrt(2);
                         }
+                    }
+                    if (sym_reflection != NA && !skip_reflection) {
+                        value_new /= std::sqrt(2)*std::sqrt(2); // the second factor std::sqrt(2) is because of double counting
                     }
 
                     // Add an entry to the current basis vector
                     this->addCoefficient(StateTwo(state_1, state_2), col_new, value_new, coefficients_triplets, sqnorm_list);
 
+                    // Add further entries to the current basis vector if required by symmetries
                     if (col_1 != col_2) {
-                        // Add further entries to the current basis vector if required by symmetries
                         if (sym_inversion != NA) {
-                            value_new *= (sym_inversion == EVEN) ? -parityL : parityL;
-                            this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
+                            scalar_t v = value_new;
+                            v *= (sym_inversion == EVEN) ? -parityL : parityL;
+                            this->addCoefficient(StateTwo(state_2, state_1), col_new, v, coefficients_triplets, sqnorm_list);
                         } else if (sym_permutation != NA) {
-                            value_new *= (sym_permutation == EVEN) ? -1 : 1;
-                            this->addCoefficient(StateTwo(state_2, state_1), col_new, value_new, coefficients_triplets, sqnorm_list);
+                            scalar_t v = value_new;
+                            v *= (sym_permutation == EVEN) ? -1 : 1;
+                            this->addCoefficient(StateTwo(state_2, state_1), col_new, v, coefficients_triplets, sqnorm_list);
+                        }
+                    }
+
+                    if (sym_reflection != NA && !skip_reflection) {
+                        scalar_t v = value_new;
+                        v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                        this->addCoefficient(StateTwo({{state_1.element, state_2.element}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+
+                        if (col_1 != col_2) {
+                            if (sym_inversion != NA) {
+                                scalar_t v = value_new;
+                                v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                                v *= (sym_inversion == EVEN) ? -parityL : parityL;
+                                this->addCoefficient(StateTwo({{state_2.element, state_1.element}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+                            } else if (sym_permutation != NA) {
+                                scalar_t v = value_new;
+                                v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
+                                v *= (sym_permutation == EVEN) ? -1 : 1;
+                                this->addCoefficient(StateTwo({{state_2.element, state_1.element}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+                            }
                         }
                     }
                 }
@@ -251,6 +308,7 @@ void SystemTwo::initializeBasis()
         for (eigen_iterator_t triple(coefficients,idx); triple; ++triple) {
             sqnorm += std::pow(std::abs(triple.value()),2);
         }
+
         if (sqnorm > 0.05) {
             triplets_transformator.push_back(eigen_triplet_t(idx,idx_new++,1));
         }
@@ -265,6 +323,34 @@ void SystemTwo::initializeBasis()
     // Build transformator and remove states if the squared norm is to small
     removeRestrictedStates([=](const enumerated_state<StateTwo> &entry) -> bool { return sqnorm_list[entry.idx] > 0.05; } );
 
+    /*////////////////////////////////////////////////////////////////////
+    /// Sort states ////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    // TODO put this into an extra method
+
+    // Initialize original index locations
+    std::vector<size_t> idx_sorted(states.size());
+    iota(idx_sorted.begin(), idx_sorted.end(), 0);
+
+    // Sort indexes based on comparing values in v
+    std::sort(idx_sorted.begin(), idx_sorted.end(), [=](size_t i1, size_t i2) {return this->states[i1].state < this->states[i2].state;});
+
+    // Make use of the sorted indexes in order to sort the states and transform the coefficients accordingly
+    states_set<StateTwo> states_new;
+    states_new.reserve(states.size());
+    triplets_transformator.clear();
+    triplets_transformator.reserve(states.size());
+
+    idx_new = 0;
+    for (size_t idx : idx_sorted) {
+        states_new.push_back(enumerated_state<StateTwo>(idx_new, states[idx].state));
+        triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
+    }
+
+    states_new.shrink_to_fit();
+    states = states_new;
+    this->applyLeftsideTransformator(triplets_transformator);*/
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -326,7 +412,6 @@ void SystemTwo::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
-
         if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
 
         // Loop over row entries
@@ -525,6 +610,10 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
         sym_inversion = NA;
         ++num_different_symmetries;
     }
+    if (sym_reflection != dynamic_cast<SystemTwo&>(system).sym_reflection) {
+        sym_reflection = NA;
+        ++num_different_symmetries;
+    }
     if (!std::equal(sym_rotation.begin(), sym_rotation.end(), dynamic_cast<SystemTwo&>(system).sym_rotation.begin())) {
         if (sym_rotation.count(ARB)!=0 || dynamic_cast<SystemTwo&>(system).sym_rotation.count(ARB)!=0) {
             sym_rotation = {ARB};
@@ -533,7 +622,7 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
         }
         ++num_different_symmetries;
     }
-    if (num_different_symmetries > 1) std::cerr << "Warning: The systems differ in more than one symmetry. For the combined system, the notion of symmetries might be meaningless." << std::endl;
+    // if (num_different_symmetries > 1) std::cerr << "Warning: The systems differ in more than one symmetry. For the combined system, the notion of symmetries might be meaningless." << std::endl; // TODO let the user enable/disable this warning
 
     // Clear cached interaction
     this->deleteInteraction();
@@ -566,4 +655,14 @@ void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t 
 template<>
 double SystemTwo::convert(const std::complex<double> &val) {
     return val.real();
+}
+
+bool SystemTwo::isRefelectionAndRotationCompatible() {
+    if (sym_rotation.count(ARB)!=0 || sym_reflection == NA) return true;
+
+    for (const auto& s: sym_rotation) {
+        if (sym_rotation.count(-s)==0) return false;
+    }
+
+    return true;
 }

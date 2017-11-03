@@ -3,6 +3,7 @@ import numpy as np
 from @LIBNAME@ import picomplex as pi
 import tempfile
 import shutil
+from itertools import product
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):
 
@@ -186,20 +187,33 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Diagonalize blockwise
-        system_two_even = pi.SystemTwo(system_one_even, system_one_even, path_cache)
-        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_odd, path_cache))
-        system_two_even.setDistance(1)
-        system_two_even.setOrder(5)
-        system_two_even.diagonalize()
-
-        system_two_odd = pi.SystemTwo(system_one_even, system_one_odd, path_cache)
-        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_even, path_cache))
+        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, path_cache) # it is called odd in order to fit to the notion of the paper
+        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, path_cache))
         system_two_odd.setDistance(1)
         system_two_odd.setOrder(5)
         system_two_odd.diagonalize()
 
+        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, path_cache)
+        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, path_cache))
+        system_two_even.setDistance(1)
+        system_two_even.setOrder(5)
+        system_two_even.diagonalize()
+
         system_two_combined =  pi.SystemTwo(system_two_even)
         system_two_combined.add(system_two_odd)
+
+        # Diagonalize blockwise alternative
+        system_two_alternative= pi.SystemTwo(system_one_combined, system_one_combined, path_cache) # it is important to use system_one_combined
+        system_two_alternative.setDistance(1)
+        system_two_alternative.setOrder(5)
+
+        system_two_even_alternative = pi.SystemTwo(system_two_alternative)
+        system_two_even_alternative.setConservedParityUnderReflection(pi.EVEN)
+        system_two_even_alternative.diagonalize()
+
+        system_two_odd_alternative = pi.SystemTwo(system_two_alternative)
+        system_two_odd_alternative.setConservedParityUnderReflection(pi.ODD)
+        system_two_odd_alternative.diagonalize()
 
         # Diagonalize altogether
         system_two = pi.SystemTwo(system_one, system_one, path_cache)
@@ -210,12 +224,24 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Compare results
         w1 = np.sort(system_two_combined.diagonal)
         w2 = np.sort(system_two.diagonal)
+        w3 = np.sort(system_two_even.diagonal)
+        w4 = np.sort(system_two_odd.diagonal)
+        w5 = np.sort(system_two_even_alternative.diagonal)
+        w6 = np.sort(system_two_odd_alternative.diagonal)
 
-        maxdiff = np.abs((w1-w2)/(np.max([w1,w2],axis=0)))
-        maxdiff[np.abs(w1-w2)<1e-14] = np.abs(w1-w2)[np.abs(w1-w2)<1e-14]
-        maxdiff = np.max(maxdiff)
-        print("Two-atom system with reflection symmetry, relative maximum deviation: ", maxdiff)
-        self.assertAlmostEqual(maxdiff, 0, places=9)
+        maxdiff12 = np.abs((w1-w2)/(np.max([w1,w2],axis=0)))
+        maxdiff35 = np.abs((w3-w5)/(np.max([w3,w5],axis=0)))
+        maxdiff46 = np.abs((w4-w6)/(np.max([w4,w6],axis=0)))
+        maxdiff12[np.abs(w1-w2)<1e-14] = np.abs(w1-w2)[np.abs(w1-w2)<1e-14]
+        maxdiff35[np.abs(w3-w5)<1e-14] = np.abs(w3-w5)[np.abs(w3-w5)<1e-14]
+        maxdiff46[np.abs(w4-w6)<1e-14] = np.abs(w4-w6)[np.abs(w4-w6)<1e-14]
+        maxdiff12 = np.max(maxdiff12)
+        maxdiff35 = np.max(maxdiff35)
+        maxdiff46 = np.max(maxdiff46)
+        print("Two-atom system with reflection symmetry, relative maximum deviation: ", maxdiff12, " (between alternatives: ", maxdiff35,", ", maxdiff46, ")")
+        self.assertAlmostEqual(maxdiff12, 0, places=9)
+        self.assertAlmostEqual(maxdiff35, 0, places=9)
+        self.assertAlmostEqual(maxdiff46, 0, places=9)
 
         #######################################################
         ### Check permutation symmetry of two atom systems ####
@@ -318,9 +344,11 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         print("Two-atom system with inversion symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
 
-        """#######################################################
+        #######################################################
         ### Check combined binary symmetries ##################
         #######################################################
+
+        # Remark: calling restrictEnergy() would cause a small deviation # TODO figure out exact reason (in case of symmetrized basis states, the atom-atom interaction would add energy to the diagonal)
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
@@ -334,86 +362,37 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.restrictJ(state_one.j-1, state_one.j+1)
         system_one.setBfield([0, 100, 0])
 
-        system_one_even = pi.SystemOne(system_one)
-        system_one_even.setConservedParityUnderReflection(pi.EVEN)
-
-        system_one_odd = pi.SystemOne(system_one)
-        system_one_odd.setConservedParityUnderReflection(pi.ODD)
+        system_one_combined = pi.SystemOne(system_one)
+        system_one_combined.setConservedParityUnderReflection(pi.EVEN)
+        system_one_combined.diagonalize()
+        system_one_inverse = pi.SystemOne(system_one)
+        system_one_inverse.setConservedParityUnderReflection(pi.ODD)
+        system_one_inverse.diagonalize()
+        system_one_combined.add(system_one_inverse)
 
         system_one.setConservedParityUnderReflection(pi.NA)
+        system_one.diagonalize()
 
         # Build two atom system
-        system_two_even = pi.SystemTwo(system_one_even, system_one_even, path_cache)
-        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_odd, path_cache))
-        #system_two_even.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
-        system_two_even.setDistance(1)
-        system_two_even.setOrder(5)
-
-        system_two_odd = pi.SystemTwo(system_one_even, system_one_odd, path_cache)
-        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_even, path_cache))
-        #system_two_odd.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
-        system_two_odd.setDistance(1)
-        system_two_odd.setOrder(5)
-
         system_two = pi.SystemTwo(system_one, system_one, path_cache)
-        #system_two.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
         system_two.setDistance(1)
-        system_two.setOrder(5)
-
-        # Diagonalize blockwise
-        system_two_even_even_even = pi.SystemTwo(system_two_even)
-        system_two_even_even_even.setConservedParityUnderPermutation(pi.EVEN)
-        system_two_even_even_even.setConservedParityUnderInversion(pi.EVEN)
-        system_two_even_even_even.diagonalize()
-
-        system_two_even_even_odd = pi.SystemTwo(system_two_even)
-        system_two_even_even_odd.setConservedParityUnderPermutation(pi.EVEN)
-        system_two_even_even_odd.setConservedParityUnderInversion(pi.ODD)
-        system_two_even_even_odd.diagonalize()
-
-        system_two_even_odd_even = pi.SystemTwo(system_two_even)
-        system_two_even_odd_even.setConservedParityUnderPermutation(pi.ODD)
-        system_two_even_odd_even.setConservedParityUnderInversion(pi.EVEN)
-        system_two_even_odd_even.diagonalize()
-
-        system_two_even_odd_odd = pi.SystemTwo(system_two_even)
-        system_two_even_odd_odd.setConservedParityUnderPermutation(pi.ODD)
-        system_two_even_odd_odd.setConservedParityUnderInversion(pi.ODD)
-        system_two_even_odd_odd.diagonalize()
-
-        system_two_odd_even_even = pi.SystemTwo(system_two_odd)
-        system_two_odd_even_even.setConservedParityUnderPermutation(pi.EVEN)
-        system_two_odd_even_even.setConservedParityUnderInversion(pi.EVEN)
-        system_two_odd_even_even.diagonalize()
-
-        system_two_odd_even_odd = pi.SystemTwo(system_two_odd)
-        system_two_odd_even_odd.setConservedParityUnderPermutation(pi.EVEN)
-        system_two_odd_even_odd.setConservedParityUnderInversion(pi.ODD)
-        system_two_odd_even_odd.diagonalize()
-
-        system_two_odd_odd_even = pi.SystemTwo(system_two_odd)
-        system_two_odd_odd_even.setConservedParityUnderPermutation(pi.ODD)
-        system_two_odd_odd_even.setConservedParityUnderInversion(pi.EVEN)
-        system_two_odd_odd_even.diagonalize()
-
-        system_two_odd_odd_odd = pi.SystemTwo(system_two_odd)
-        system_two_odd_odd_odd.setConservedParityUnderPermutation(pi.ODD)
-        system_two_odd_odd_odd.setConservedParityUnderInversion(pi.ODD)
-        system_two_odd_odd_odd.diagonalize()
-
-        system_two_combined = system_two_even_even_even
-        system_two_combined.add(system_two_even_even_odd)
-        system_two_combined.add(system_two_even_odd_even)
-        system_two_combined.add(system_two_even_odd_odd)
-        system_two_combined.add(system_two_odd_even_even)
-        system_two_combined.add(system_two_odd_even_odd)
-        system_two_combined.add(system_two_odd_odd_even)
-        system_two_combined.add(system_two_odd_odd_odd)
-
-        # Diagonalize altogether
-        system_two.setConservedParityUnderPermutation(pi.NA)
-        system_two.setConservedParityUnderInversion(pi.NA)
+        system_two.setOrder(3)
         system_two.diagonalize()
+
+        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, path_cache) # it is important to use system_one_combined
+        system_two_from_combined.setDistance(1)
+        system_two_from_combined.setOrder(3)
+
+        system_two_combined = None
+        for sym_reflection, sym_inversion, sym_permutation in product([pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD]):
+            system_two_tmp = pi.SystemTwo(system_two_from_combined)
+            system_two_tmp.setConservedParityUnderReflection(sym_reflection)
+            system_two_tmp.setConservedParityUnderInversion(sym_inversion)
+            system_two_tmp.setConservedParityUnderPermutation(sym_permutation)
+            system_two_tmp.diagonalize()
+            if system_two_combined is None: system_two_combined = system_two_tmp
+            else: system_two_combined.add(system_two_tmp)
+        system_two_combined.diagonalize()
 
         # Compare results
         w1 = np.sort(system_two_combined.diagonal)
@@ -423,7 +402,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff[np.abs(w1-w2)<1e-14] = np.abs(w1-w2)[np.abs(w1-w2)<1e-14]
         maxdiff = np.max(maxdiff)
         print("Two-atom system with combined binary symmetries, relative maximum deviation: ", maxdiff)
-        self.assertAlmostEqual(maxdiff, 0, places=9)""" # TODO make this work, circumventing error "One cannot change symmetries after the basis was built." (system_two_odd.add builds the basis)
+        self.assertAlmostEqual(maxdiff, 0, places=9)
 
         #######################################################
         ### Clean up ##########################################
