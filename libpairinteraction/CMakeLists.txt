@@ -130,11 +130,14 @@ if( WITH_DMG )
 
 elseif ( NOT WIN32 )
 
-  install(TARGETS _pireal LIBRARY DESTINATION share/pairinteraction/${LIBNAME})
-  install(TARGETS _picomplex LIBRARY DESTINATION share/pairinteraction/${LIBNAME})
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION share/pairinteraction/${LIBNAME})
-  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION share/pairinteraction/${LIBNAME})
-  install(TARGETS pireal LIBRARY DESTINATION share/pairinteraction/${LIBNAME})
-  install(TARGETS picomplex LIBRARY DESTINATION share/pairinteraction/${LIBNAME})
+  set(PY_VERSION "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}")
+  set(PY_MOD_DIR "lib/python${PY_VERSION}/dist-packages/${LIBNAME}")
+
+  install(TARGETS _pireal    LIBRARY DESTINATION ${PY_MOD_DIR})
+  install(TARGETS _picomplex LIBRARY DESTINATION ${PY_MOD_DIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py    DESTINATION ${PY_MOD_DIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
+  install(TARGETS pireal    LIBRARY DESTINATION lib)
+  install(TARGETS picomplex LIBRARY DESTINATION lib)
 
 endif( )
