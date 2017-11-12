@@ -30,11 +30,16 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 file(GLOB pairinteraction_SRCS *.cpp)
 set(wignerSymbols_SRCS wignerSymbols/src/wignerSymbols-cpp.cpp)
+list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
+add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+target_link_libraries(pairinteraction-real    pireal)
+target_link_libraries(pairinteraction-complex picomplex)
 if(MSVC)
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
   # TODO set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "/wdSOMENUMBER") maybe /wd0169 or /wd0649
@@ -139,5 +144,7 @@ elseif ( NOT WIN32 )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
   install(TARGETS pireal    LIBRARY DESTINATION lib)
   install(TARGETS picomplex LIBRARY DESTINATION lib)
+  install(TARGETS pairinteraction-real    RUNTIME DESTINATION share/pairinteraction/${LIBNAME})
+  install(TARGETS pairinteraction-complex RUNTIME DESTINATION share/pairinteraction/${LIBNAME})
 
 endif( )

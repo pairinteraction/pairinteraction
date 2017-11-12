@@ -23,12 +23,10 @@ import os
 import shutil
 import signal
 import sys
+import subprocess
 from time import sleep, time, strftime
 import webbrowser
 import zipfile
-
-# Communication
-import zmq
 
 # Process information
 import psutil
@@ -60,11 +58,6 @@ if getattr(sys, 'frozen', False):
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
 else:
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
-
-from libpairinteraction import pireal as pir
-from libpairinteraction import picomplex as pic
-pi = None
-
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -422,11 +415,6 @@ class AboutDialog(QtGui.QDialog):
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.SUB)
-        self.socket.bind("tcp://*:*")
-        self.socket.setsockopt_string(zmq.SUBSCRIBE, u"")
-        self.endpoint = self.socket.getsockopt_string(zmq.LAST_ENDPOINT)
 
         if os.name == 'nt':
             ext = ".exe"
@@ -514,16 +502,19 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        if os.path.exists(os.path.join(self.path_base, "libpairinteraction/databases/quantum_defects.db")):
-            self.path_workingdir = os.path.join(self.path_base, "libpairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../libpairinteraction/databases/quantum_defects.db")):
-            self.path_workingdir = os.path.join(self.path_base, "../libpairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction/databases/quantum_defects.db")):
+        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real"+ext)):
+            self.path_workingdir = self.path_base
+        elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction", "pairinteraction-real"+ext)):
             self.path_workingdir = os.path.join(self.path_base, "../../libpairinteraction")
         else:
-            raise Exception('Directory containing database not found.')
+            raise Exception('Directory containing executables not found.')
 
-        self.path_quantumdefects = os.path.join(self.path_workingdir, "databases/quantum_defects.db")
+        self.path_cpp_real = os.path.join(
+            self.path_base, self.path_workingdir, "pairinteraction-real")
+        self.path_cpp_complex = os.path.join(
+            self.path_base, self.path_workingdir, "pairinteraction-complex")
+        self.path_quantumdefects = os.path.join(
+            self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
         if os.name == 'nt':
             self.path_out = os.path.join(self.userpath, "pairinteraction/")
@@ -1152,7 +1143,7 @@ class MainWindow(QtGui.QMainWindow):
             self.proc.terminate()
 
         # wait until self.thread has finished
-        self.thread.terminate()
+        self.thread.wait()
 
         # clear queues
         self.thread.clear()
@@ -2209,7 +2200,7 @@ class MainWindow(QtGui.QMainWindow):
 
             # Delete c++ process
             if self.proc is not None:
-                self.proc.join()
+                self.proc.wait()
                 self.proc = None
 
             # Stop this timer
@@ -2849,9 +2840,12 @@ class MainWindow(QtGui.QMainWindow):
                 # start c++ process
                 if params["minEy"] != 0 or params["maxEy"] != 0 or \
                         params["minBy"] != 0 or params["maxBy"] != 0:
-                    pi = pic
+                    path_cpp = self.path_cpp_complex
                 else:
-                    pi = pir
+                    path_cpp = self.path_cpp_real
+
+                if os.name == 'nt':
+                    path_cpp += '.exe'
 
                 self.numprocessors = self.systemdict["cores"].magnitude
                 # OMP_NUM_THREADS – Specifies the number of threads to
@@ -2860,32 +2854,15 @@ class MainWindow(QtGui.QMainWindow):
                 # integers; the value specified the number of threads
                 # to use for the corresponding nested level.  If
                 # undefined one thread per CPU is used.
-                pi.thread_ctrl(self.numprocessors)
+                ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
+
+                self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
+                                             stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **ompthreads))
 
                 self.starttime = time()
 
-
-                class Communicator:
-                    def __init__(self, socket):
-                        self.socket = socket
-
-                    def __iter__(self):
-                        return self
-
-                    def __next__(self):
-                        string = self.socket.recv_string()
-
-                        if ">>END" in string:
-                            raise StopIteration
-                        else:
-                            return string
-
                 # start thread that collects the output
-                os.chdir(os.path.join(self.path_workingdir, "..")) # TODO why is this necessary?
-                self.proc = multiprocessing.Process(
-                    target=pi.compute,args=(self.path_config, self.path_cache, self.endpoint))
-                self.proc.start()
-                self.thread.execute(Communicator(self.socket))
+                self.thread.execute(self.proc.stdout)
 
                 # start timer used for processing the results
                 self.timer.start(0)
@@ -3883,10 +3860,6 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, event):
         # Kill c++ program if necessary
         self.abortCalculation()
-
-        # Clean up communication socket
-        self.socket.close()
-        self.context.destroy()
 
         # Save last settings
         self.saveSettingsSystem(self.path_system_last)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <functional>
 #include <string>
@@ -74,6 +75,7 @@ public:
 class socket
 {
   std::unique_ptr < void, std::function < void(void*) > > m_socket;
+  mutable bool use_cout;
 public:
   /** \brief Constructor
    *
@@ -85,6 +87,7 @@ public:
    */
   explicit socket(void * new_socket)
     : m_socket( new_socket, zmq_close )
+    , use_cout(false)
   {
     if ( !new_socket )
       throw error();
@@ -108,6 +111,11 @@ public:
    */
   void bind(char const *endpoint) const
   {
+    if (endpoint == std::string{"use_cout"})
+    {
+        use_cout = true;
+        return;
+    }
     if ( zmq_bind(*this, endpoint) == -1 )
       throw error();
   }
@@ -122,6 +130,11 @@ public:
    */
   void connect(char const *endpoint) const
   {
+    if (endpoint == std::string{"use_cout"})
+    {
+        use_cout = true;
+        return;
+    }
     if ( zmq_connect(*this, endpoint) == -1 )
       throw error();
   }
@@ -146,6 +159,12 @@ public:
 
     std::string tmp = formatter.str();
     int len = tmp.size();
+
+    if (use_cout)
+    {
+        std::cout << tmp << std::endl;
+        return len;
+    }
 
     if ( zmq_send(*this, tmp.c_str(), len+1, 0) == -1 )
       throw error();
