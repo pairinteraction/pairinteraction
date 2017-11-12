@@ -43,16 +43,16 @@ SectionGroup /e "Dependencies"
     File "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe"
     Exec "$INSTDIR\vcredist_x64.exe"
 
-    ReadRegDword $0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
-    ${If} $0 == "1"
-          Goto fail
-    ${Else}
-          Goto done
-    ${EndIf} 
+    #ReadRegDword $0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
+    #${If} $0 == "1"
+    #      Goto done
+    #${Else}
+    #      Goto fail
+    #${EndIf} # TODO make this check work, see https://stackoverflow.com/questions/12206314/detect-if-visual-c-redistributable-for-visual-studio-2012-is-installed
+    Goto done
 fail:
       MessageBox MB_OK "Redistributable for Visual Studio 2015 could not be found!"
 done:
-
     Delete "$INSTDIR\vcredist_x64.exe"
   SectionEnd
 SectionGroupEnd
