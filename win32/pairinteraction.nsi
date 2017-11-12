@@ -12,25 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-!if ${ARCH} == "x86_64"
-  !define ARCHNAME "x86_64"
-  !define PROGDIR $PROGRAMFILES64
-!else if ${ARCH} == "i686"
-  !define ARCHNAME "x86"
-  !define PROGDIR $PROGRAMFILES
-!else
-  !error "Architecture '${ARCH}' unkown"
-!endif
-
-
 !include "MUI.nsh"
 
 !define APP_NAME "pairinteraction"
 !define BUILD_DIR "..\build"
-!define DLL_DIR "\usr\${ARCH}-w64-mingw32\sys-root\mingw\bin\"
+!define DLL_DIR "..\vcpkg-export\installed\x64-windows\bin\"
+!define PROGDIR $PROGRAMFILES64
+
 name ${APP_NAME}
 
-OutFile '${BUILD_DIR}\${APP_NAME}-install-windows-${ARCH}.exe'
+OutFile '${BUILD_DIR}\${APP_NAME}-install-windows.exe'
 
 showinstdetails show
 
@@ -38,6 +29,7 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${BUILD_DIR}\LICENSES.txt"
+!insertmacro MUI_PAGE_LICENSE "${BUILD_DIR}\..\LICENSE-MKL.txt"
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_COMPONENTS
 !define MUI_FINISHPAGE_NOAUTOCLOSE
@@ -46,26 +38,22 @@ InstallDir '${PROGDIR}\${APP_NAME}'
 !insertmacro MUI_LANGUAGE "English"
 
 SectionGroup /e "Dependencies"
-  Section 'Miniconda'
+  Section 'Redistributable for Visual Studio 2015'
     SetOutPath "$INSTDIR"
-    File "${BUILD_DIR}\win32\Miniconda3-latest-Windows-${ARCHNAME}.exe"
-    nsExec::ExecToLog "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /NoRegistry=1 /S /D=$INSTDIR\Miniconda3"
+    File "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe"
+    Exec "$INSTDIR\vcredist_x64.exe"
 
-    !define CONDA_PATH "$INSTDIR\Miniconda3\Scripts\conda.exe"
-    !define PIP_PATH "$INSTDIR\Miniconda3\Scripts\pip.exe"
-
-    IfFileExists "${CONDA_PATH}" 0 fail
-    IfFileExists "${PIP_PATH}" 0 fail
-
-    nsExec::ExecToLog "${CONDA_PATH} install -y numpy scipy pyqt"
-    nsExec::ExecToLog "${PIP_PATH} install psutil pint"
-    Goto done
-
+    ReadRegDword $0 HKLM "SOFTWARE\Wow6432Node\Microsoft\VisualStudio\14.0\VC\Runtimes\x86" "Installed"
+    ${If} $0 == "1"
+          Goto fail
+    ${Else}
+          Goto done
+    ${EndIf} 
 fail:
-      MessageBox MB_OK "Miniconda installation could not be found!"
+      MessageBox MB_OK "Redistributable for Visual Studio 2015 could not be found!"
 done:
 
-    Delete "$INSTDIR\Miniconda3-latest-Windows-${ARCHNAME}.exe"
+    Delete "$INSTDIR\vcredist_x64.exe"
   SectionEnd
 SectionGroupEnd
 
@@ -74,24 +62,20 @@ SectionGroup /e "${APP_NAME}"
     SectionIn RO
     SetOutPath "$INSTDIR"
     File "..\LICENSE*"
-    SetOutPath "$INSTDIR\pairinteraction"
-    File "${BUILD_DIR}\pairinteraction\*.exe"
-    File "${DLL_DIR}\libboost_filesystem-mt.dll"
-    File "${DLL_DIR}\libboost_program_options-mt.dll"
-    File "${DLL_DIR}\libboost_system-mt.dll"
-    !if ${ARCH} == "x86_64"
-      File "${DLL_DIR}\libgcc_s_seh-1.dll"
-    !else if ${ARCH} == "i686"
-      File "${DLL_DIR}\libgcc_s_sjlj-1.dll"
-    !endif
-    File "${DLL_DIR}\libgsl-0.dll"
-    File "${DLL_DIR}\libgslcblas-0.dll"
-    File "${DLL_DIR}\libgomp-1.dll"
-    File "${DLL_DIR}\libsqlite3-0.dll"
-    File "${DLL_DIR}\libstdc++-6.dll"
-    File "${DLL_DIR}\libwinpthread-1.dll"
-    SetOutPath "$INSTDIR\pairinteraction\databases"
-    File "${BUILD_DIR}\pairinteraction\databases\*.db"
+    SetOutPath "$INSTDIR\libpairinteraction"
+    File "${BUILD_DIR}\libpairinteraction\Release\*"
+    File "${BUILD_DIR}\libpairinteraction\pireal.py"
+    File "${BUILD_DIR}\libpairinteraction\picomplex.py"
+    File "${DLL_DIR}\gsl.dll"
+    File "${DLL_DIR}\gslcblas.dll"
+    File "${DLL_DIR}\libzmq.dll"
+    File "${DLL_DIR}\sqlite3.dll"
+    File "${DLL_DIR}\boost_filesystem-vc140-mt-1_64.dll"
+    File "${DLL_DIR}\boost_program_options-vc140-mt-1_64.dll"
+    File "${DLL_DIR}\boost_serialization-vc140-mt-1_64.dll"
+    File "${DLL_DIR}\boost_system-vc140-mt-1_64.dll"
+    SetOutPath "$INSTDIR\libpairinteraction\databases"
+    File "${BUILD_DIR}\libpairinteraction\databases\*.db"
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 
@@ -103,26 +87,17 @@ SectionGroup /e "${APP_NAME}"
 
   Section 'GUI (Recommended)'
     SetOutPath "$INSTDIR\gui"
-    File "${BUILD_DIR}\gui\startgui"
-    File /r "${BUILD_DIR}\gui\conf"
-    File /r "${BUILD_DIR}\gui\pairinteraction"
+    File /r "${BUILD_DIR}\dist\pairinteraction\*"
   SectionEnd
 SectionGroupEnd
 
-Var PYTHON_PATH
 
 Section 'Desktop Icon'
-  StrCpy $PYTHON_PATH "$INSTDIR\Miniconda3\python.exe"
-  IfFileExists "$PYTHON_PATH" success 0
-  MessageBox MB_OK "Miniconda installation could not be found!  Assuming python.exe to be in PATH."
-  StrCpy $PYTHON_PATH "python.exe"
-
-success:
   SetOutPath "$INSTDIR\"
   File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
   FileWrite $4 "@echo off$\r$\n"
-  FileWrite $4 'cmd /k ""$PYTHON_PATH" "$INSTDIR\gui\startgui""'
+  FileWrite $4 'cmd /k ""$INSTDIR\gui\pairinteraction.exe""'
   FileClose $4
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
@@ -140,8 +115,7 @@ functionEnd
 
 
 Section 'uninstall'
-  RMDir /r "$INSTDIR\Miniconda3"
-  RMDir /r "$INSTDIR\pairinteraction"
+  RMDir /r "$INSTDIR\libpairinteraction"
   RMDir /r "$INSTDIR\gui"
 
   delete "$INSTDIR\LICENSE*"

@@ -61,7 +61,7 @@ after_build:
   - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction-install > nul
 
 artifacts:
-  - path: build\pairinteraction-install-windows-x86_64.zip
+  - path: build\pairinteraction-install-windows.exe
     name: installer
 
 deploy:
