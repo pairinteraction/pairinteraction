@@ -109,7 +109,7 @@ while need:
     need.difference_update(done)
 
 for file in executables:
-    for rpath in ["@executable_path", "@loader_path/libraries", "/usr/local/opt/python3/Frameworks/Python.framework/Versions/3.5"]: # TODO implement a function into the gui that changes the rpath of the executables according to the used python distribution and adds the pairinteraction library to the python path
+    for rpath in ["@executable_path", "@loader_path/libraries", "/usr/local/Frameworks/Python.framework/Versions/3.6"]: # TODO implement a function into the gui that changes the rpath of the executables according to the used python distribution and adds the pairinteraction library to the python path
         cmd = ['install_name_tool', '-add_rpath', rpath, file]
         if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
             raise Exception("Error adding rpath.")

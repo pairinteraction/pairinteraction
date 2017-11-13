@@ -14,5 +14,5 @@
 
 # Versioning
 version_program = "@VERSION@"
-version_settings = 15
-version_cache = 13
+version_settings = 16
+version_cache = 14
