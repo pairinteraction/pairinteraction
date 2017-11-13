@@ -15,6 +15,8 @@
 find_package(Sphinx)
 
 if(SPHINX_FOUND)
+  find_package(IPython REQUIRED)
+
   set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
   set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
   set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/${LIBNAME}")
@@ -31,18 +33,7 @@ if(SPHINX_FOUND)
     "${SPHINX_BASE}/conf.py"
     @ONLY)
 
-  # Files to be copied to the build directory
-  set(FILE_LIST 
-    "index.rst"
-    "installation.rst")
-
-  foreach(file ${FILE_LIST})
-    configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
-      "${SPHINX_BASE}/${file}"
-      COPYONLY)
-  endforeach()
-
+  # Prepare sphinx target
   add_custom_target(sphinx
       ${CMAKE_COMMAND} -E env SPHINX_APIDOC_OPTIONS=members,show-inheritance
       # sphinx-apidoc
@@ -66,4 +57,29 @@ if(SPHINX_FOUND)
     VERBATIM
     DEPENDS _pireal _picomplex
     COMMENT "Building HTML documentation with Sphinx")
+
+  # Files to be copied to the build directory
+  set(FILE_LIST
+    "index.rst"
+    "installation.rst"
+    "tutorials.rst")
+
+  foreach(file ${FILE_LIST})
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
+      "${SPHINX_BASE}/${file}"
+      COPYONLY)
+  endforeach()
+
+  # IPython notebooks to be processed
+  set(NOTEBOOKS
+    "comparison_to_saffman_fig13.ipynb")
+
+  foreach(file ${NOTEBOOKS})
+    add_custom_target("${file}"
+      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
+      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+    add_dependencies(sphinx "${file}")
+  endforeach()
+
 endif(SPHINX_FOUND) 

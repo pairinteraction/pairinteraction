@@ -7,6 +7,7 @@ Welcome to the libpairinteraction documentation!
    :caption: Contents:
 
    installation.rst
+   tutorials.rst
 
 
 libpairinteraction package
