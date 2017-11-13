@@ -506,6 +506,8 @@ class MainWindow(QtGui.QMainWindow):
             self.path_workingdir = self.path_base
         elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction", "pairinteraction-real"+ext)):
             self.path_workingdir = os.path.join(self.path_base, "../../libpairinteraction")
+        elif os.path.exists(os.path.join(self.path_base, "../libpairinteraction", "pairinteraction-real"+ext)):
+            self.path_workingdir = os.path.join(self.path_base, "../libpairinteraction")
         else:
             raise Exception('Directory containing executables not found.')
 

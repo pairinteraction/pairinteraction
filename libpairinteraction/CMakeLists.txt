@@ -125,13 +125,17 @@ if( WITH_DMG )
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${LIBNAME})
   install(TARGETS pireal LIBRARY DESTINATION ${LIBNAME})
   install(TARGETS picomplex LIBRARY DESTINATION ${LIBNAME})
+  install(TARGETS pairinteraction-real RUNTIME DESTINATION ${LIBNAME})
+  install(TARGETS pairinteraction-complex RUNTIME DESTINATION ${LIBNAME})
   
   set(bin1 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/_pireal.so)
   set(bin2 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/_picomplex.so)
   set(bin3 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/libpireal.dylib)
   set(bin4 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/libpicomplex.dylib)
+  set(bin5 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/pairinteraction-real)
+  set(bin6 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/pairinteraction-complex)
   
-  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4})")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4} ${bin5} ${bin6})")
 
 elseif ( NOT WIN32 )
 
