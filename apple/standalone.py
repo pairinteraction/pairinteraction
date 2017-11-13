@@ -70,8 +70,8 @@ def standalone(file):
             if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
 
                 # Update paths
-                if os.path.basename(libpath_abs) == "Python":
-                    libpath_new = "@rpath/Python"
+                if os.path.basename(libpath_abs) == "libpython3.6m.dylib":
+                    libpath_new = "@rpath/libpython3.6m.dylib"
                 elif libpath_abs in executables:
                     if file not in executables:
                         libpath_new = os.path.join("@loader_path/..", os.path.basename(libpath_abs))
@@ -88,7 +88,7 @@ def standalone(file):
                     raise Exception("Error updating paths.")
 
                 # Analyze the current dependency
-                if os.path.basename(libpath_abs) != "Python":
+                if os.path.basename(libpath_abs) != "libpython3.6m.dylib":
                     yield libpath_abs
 
 
