@@ -34,7 +34,7 @@ void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z,
         auto context = zmq::context();
         auto publisher = context.socket(ZMQ_PUB);
         publisher.connect(zmq::endpoint::name.c_str());
-        publisher.send(">>ERR%s", msg.c_str());
+        publisher.send(">>ERR%s", msg);
         throw std::runtime_error(msg);
     }
     val_p = -val_x/std::sqrt(2);
@@ -157,7 +157,7 @@ void HamiltonianOne::build() {
     path_basis /= "basis_one_"+uuid+".csv";
     basis->save(path_basis.string());
 
-    publisher.send(">>STA %s", path_basis.c_str());
+    publisher.send(">>STA %s", path_basis.string());
 
 
     ////////////////////////////////////////////////////////
@@ -579,7 +579,7 @@ void HamiltonianOne::build() {
             // Stdout: Hamiltonian diagonalized
 #pragma omp critical(textoutput)
             {
-                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.c_str());
+                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.string());
                 std::cout << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
             }
         } else {
@@ -587,7 +587,7 @@ void HamiltonianOne::build() {
 #pragma omp critical(textoutput)
             {
                 publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
-                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.c_str());
+                publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step, 1, 0, path.string());
                 std::cout << "One-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
             }
         }

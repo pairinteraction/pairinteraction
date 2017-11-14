@@ -339,7 +339,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     path_basis /= "basis_two_"+uuid+".csv";
     basis->save(path_basis.string()); // TODO save only necessary entries, i.e. save pair state basis in sparse format (possibility, remove basis states but keep their idx - this would also make "if (necessary) continue" unneeded; then, "combine" has to check existence of basis element and the python script has to be adapted)
 
-    publisher.send(">>STA %s", path_basis.c_str());
+    publisher.send(">>STA %s", path_basis.string());
 
 
     ////////////////////////////////////////////////////////
@@ -720,7 +720,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 // Stdout: Hamiltonian diagonalized
 #pragma omp critical(textoutput)
                 {
-                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.c_str());
+                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.string());
                     std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian diagonalized" << std::endl;
                 }
             } else {
@@ -729,7 +729,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 #pragma omp critical(textoutput)
                 {
                     publisher.send(">>DIM%7d", totalmatrix.num_basisvectors());
-                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.c_str());
+                    publisher.send(">>OUT%7d%7d%7d%7d %s", step+1, step_two, symmetries.size(), idx_symmetry, path.string());
                     std::cout << "Two-atom Hamiltonian, " <<  step+1 << ". Hamiltonian loaded" << std::endl;
                 }
             }
