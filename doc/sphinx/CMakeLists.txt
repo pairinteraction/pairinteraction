@@ -76,9 +76,13 @@ if(SPHINX_FOUND)
     "comparison_to_saffman_fig13.ipynb")
 
   foreach(file ${NOTEBOOKS})
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
+      "${SPHINX_BASE}/${file}"
+      COPYONLY)
     add_custom_target("${file}"
-      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
-      WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst "${SPHINX_BASE}/${file}"
+      WORKING_DIRECTORY "${SPHINX_BASE}")
     add_dependencies(sphinx "${file}")
   endforeach()
 
