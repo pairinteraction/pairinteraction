@@ -10,21 +10,24 @@ if(PYTHON_EXECUTABLE)
     COMMAND "${PYTHON_EXECUTABLE}" -c
     "import sphinx; print('TRUE')"
     OUTPUT_VARIABLE SPHINX_BUILD_FOUND
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
 
   # find sphinx-apidoc
   execute_process(
     COMMAND "${PYTHON_EXECUTABLE}" -c
     "import sphinx.apidoc; print('TRUE')"
     OUTPUT_VARIABLE SPHINX_API_DOC_FOUND
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
 
   # Get the version
   execute_process(
     COMMAND "${PYTHON_EXECUTABLE}" -c
     "import sphinx; print(sphinx.__version__)"
     OUTPUT_VARIABLE SPHINX_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
 
 else()
   message(STATUS "Python not found, not finding Sphinx")

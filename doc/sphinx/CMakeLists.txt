@@ -60,6 +60,7 @@ if(SPHINX_FOUND)
 
   # Files to be copied to the build directory
   set(FILE_LIST
+    "logo48x48.png"
     "index.rst"
     "installation.rst"
     "tutorials.rst")

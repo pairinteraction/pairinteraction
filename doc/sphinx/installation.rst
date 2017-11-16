@@ -13,6 +13,85 @@ architectures:
 - Mac OS X ``dmg``: Mac OS X 10.11
 - Windows ``exe``: Compiled with Visual Studio 2015
 
+Installation of the pairinteraction Python library
+--------------------------------------------------
+
+The pairinteraction program comes with a Python 3 library wich can be
+installed under the most popular operating systems. Note that we
+recommend using a Python 3.6 distribution. Older Python distributions
+might not work together with the pairinteraction library.
+
+Installation for GNU/Linux
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+By installing a `pairinteraction software package for GNU/Linux`_, the
+pairinteraction Python 3 library gets installed as well. Everything
+should work out-of-the-box.
+
+.. _pairinteraction software package for GNU/Linux:
+  https://github.com/pairinteraction/pairinteraction/releases
+
+Installation for Windows
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+1. If not already done, download the `Windows installer of the the
+   pairinteraction software`_ and execute it. For the following, we
+   assume that the software is installed to the location ``C:\Program
+   Files\pairinteraction``.
+
+.. _Windows installer of the the pairinteraction software:
+   https://github.com/pairinteraction/pairinteraction/releases
+
+2. We recommend using the Python 3.6 distribution `Miniconda`_ or
+   `Anaconda`_. Then, the pairinteraction Python 3 library and its
+   dependencies are installed by executing the following commands in
+   the Anaconda command prompt:
+
+   .. code-block:: bat
+
+        > conda install numpy scipy pyzmq matplotlib conda-build
+        > conda develop "C:\Program Files\pairinteraction"
+
+   Alternatively, without Miniconda or Anaconda, you can install the
+   dependencies ``numpy``, ``scipy``, and ``pyzmq`` manually and copy
+   or link the folder ``C:\Program
+   Files\pairinteraction\libpairinteraction`` to the Python package
+   search path.
+
+.. _Miniconda: https://conda.io/miniconda.html
+.. _Anaconda: https://www.anaconda.com/distribution/
+
+Installation for OS X
+^^^^^^^^^^^^^^^^^^^^^
+
+1. If not already done, download the `OS X installer of the the
+   pairinteraction software`_ and execute it. For the following, we
+   assume that the software is installed to the location
+   ``/Applications/pairinteraction.app``.
+
+.. _OS X installer of the the pairinteraction software:
+   https://github.com/pairinteraction/pairinteraction/releases
+
+2. We recommend to use the Python 3.6 distribution `Miniconda`_ or
+   `Anaconda`_. Then, the pairinteraction Python 3 library and its
+   dependencies are installed by executing the following commands in
+   the terminal:
+
+   .. code-block:: bash
+
+        $ conda install numpy scipy pyzmq matplotlib conda-build
+        $ conda develop /Applications/pairinteraction.app/Contents/Resources
+        $ ln -s ${CONDA_PREFIX}/lib/libpython3.6m.dylib /Applications/pairinteraction.app/Contents/Resources/libpairinteraction/libraries/libpython3.6m.dylib
+
+   Alternatively, without Miniconda or Anaconda, you can install the
+   dependencies ``numpy``, ``scipy``, and ``pyzmq`` manually and copy
+   or link the folder
+   ``/Applications/pairinteraction.app/Contents/Resources/libpairinteraction``
+   to the Python package search path. In addition, you have to link
+   the Python dylib to ``libpairinteraction/libraries/Python``.
+
+.. _Miniconda: https://conda.io/miniconda.html
+.. _Anaconda: https://www.anaconda.com/distribution/
 
 Building from Source
 --------------------
@@ -31,7 +110,7 @@ CMake
 
 C++ Backend and Python Interface
 """"""""""""""""""""""""""""""""
-    
+
 C++ Compiler
     C++11 capable C++ compiler (e.g., GCC 4.8.1 or later).
 
@@ -74,10 +153,10 @@ Documentation
 
 Doxygen
     Doxygen is used as a documentation generator for C++.
-    
+
 Sphinx
     Sphinx is used as a documentation generator for Python.
-    
+
 Build options
 ^^^^^^^^^^^^^
 
@@ -290,7 +369,7 @@ Instead of calling ``make`` you now call the documentation target
    You can also build only the Doxygen or the Sphinx documentation by
    building the eponymous targets ``doxygen`` or ``sphinx`` (instead of
    ``doc``).
-    
+
 This will build the documentation in the subdirectory
 ``doc/doxygen/html`` and ``doc/sphinx/html`` of the build directory.
 Open the file ``index.html`` in your browser to see the result.
@@ -315,7 +394,7 @@ targets are available:
 
 ``check``
     Runs the testsuite.
-    
+
 ``clean``
     Deletes all files that were created during the compilation.
 

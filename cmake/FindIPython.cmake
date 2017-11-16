@@ -31,7 +31,8 @@ if(PYTHON_EXECUTABLE)
   execute_process(
     COMMAND "${IPYTHON_EXECUTABLE}" --version
     OUTPUT_VARIABLE IPYTHON_VERSION
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    ERROR_QUIET)
 else()
   message(STATUS "Python not found, not finding IPython")
 endif()
