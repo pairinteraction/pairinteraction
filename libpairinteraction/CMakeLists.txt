@@ -103,12 +103,26 @@ include_directories(SYSTEM ${NUMPY_INCLUDE_DIR})
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
 swig_add_module(pireal python ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)
-swig_link_libraries(pireal pireal ${PYTHON_LIBRARIES})
+if(MSVC)
+  swig_link_libraries(pireal pireal ${PYTHON_LIBRARIES})
+elseif(APPLE)
+  set_target_properties(_pireal PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+  swig_link_libraries(pireal pireal)
+else()
+  swig_link_libraries(pireal pireal)
+endif()
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3;-DUSE_COMPLEX")
 swig_add_module(picomplex python ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
-swig_link_libraries(picomplex picomplex ${PYTHON_LIBRARIES})
 set_source_files_properties( ${swig_generated_file_fullname} PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+if(MSVC)
+  swig_link_libraries(picomplex picomplex ${PYTHON_LIBRARIES})
+elseif(APPLE)
+  set_target_properties(_picomplex PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+  swig_link_libraries(picomplex picomplex)
+else()
+  swig_link_libraries(picomplex picomplex)
+endif()
 
 # Include test cases
 
