@@ -5,93 +5,59 @@ Binary Installer
 ----------------
 
 Builds are available for GNU/Linux, Mac OS X, and Windows through
-`GitHub Releases`.  The different packages were built on the following
+`GitHub Releases`_.  The different packages were built on the following
 architectures:
+
+.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
 
 - ``deb`` package: Ubuntu 16.04 amd64
 - ``rpm`` package: OpenSUSE Leap x86_64
 - Mac OS X ``dmg``: Mac OS X 10.11
 - Windows ``exe``: Compiled with Visual Studio 2015
 
-Installation of the pairinteraction Python library
---------------------------------------------------
+Pairinteraction Python Library
+------------------------------
 
-The pairinteraction program comes with a Python 3 library wich can be
-installed under the most popular operating systems. Note that we
-recommend using a Python 3.6 distribution. Older Python distributions
-might not work together with the pairinteraction library.
+The pairinteraction program comes with a Python 3 library. It can be used for simulating a broad range of two-atom Rydberg systems taking into
+account electric and magnetic fields. Quantities as matrix elements, eigenenergies, or excitation dynamics can be calculated. Examples are shown
+in the `tutorials`_ section of the documentation. By installing a build from `GitHub Releases`_, the
+library gets installed as well. The library requires ``python3``, ``numpy``, ``scipy``, ``matplotlib``,
+and ``pyzmq``. After installing these dependencies, the provided `example
+scripts`_ should work out-of-the-box.
 
-Installation for GNU/Linux
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
+.. _example scripts: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples
+.. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
 
-By installing a `pairinteraction software package for GNU/Linux`_, the
-pairinteraction Python 3 library gets installed as well. Everything
-should work out-of-the-box.
+For GNU/Linux, all dependencies are installed automatically and the
+Python library can be used right away.
 
-.. _pairinteraction software package for GNU/Linux:
-  https://github.com/pairinteraction/pairinteraction/releases
-
-Installation for Windows
-^^^^^^^^^^^^^^^^^^^^^^^^
-
-1. If not already done, download the `Windows installer of the the
-   pairinteraction software`_ and execute it. For the following, we
-   assume that the software is installed to the location ``C:\Program
-   Files\pairinteraction``.
-
-.. _Windows installer of the the pairinteraction software:
-   https://github.com/pairinteraction/pairinteraction/releases
-
-2. We recommend using the Python 3.6 distribution `Miniconda`_ or
-   `Anaconda`_. Then, the pairinteraction Python 3 library and its
-   dependencies are installed by executing the following commands in
-   the Anaconda command prompt:
-
-   .. code-block:: bat
-
-        > conda install numpy scipy pyzmq matplotlib conda-build
-        > conda develop "C:\Program Files\pairinteraction"
-
-   Alternatively, without Miniconda or Anaconda, you can install the
-   dependencies ``numpy``, ``scipy``, and ``pyzmq`` manually and copy
-   or link the folder ``C:\Program
-   Files\pairinteraction\libpairinteraction`` to the Python package
-   search path.
+For Windows or OS X, we recommend the installation of the Python 3
+distribution `Miniconda`_ or `Anaconda`_. Then, the dependencies of the
+pairinteraction Python 3 library can be installed by executing the
+following command:
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/
 
-Installation for OS X
-^^^^^^^^^^^^^^^^^^^^^
+.. code-block:: bat
 
-1. If not already done, download the `OS X installer of the the
-   pairinteraction software`_ and execute it. For the following, we
-   assume that the software is installed to the location
-   ``/Applications/pairinteraction.app``.
+    conda install numpy scipy matplotlib pyzmq
 
-.. _OS X installer of the the pairinteraction software:
-   https://github.com/pairinteraction/pairinteraction/releases
+In order to use the pairinteraction Python 3 library with Windows or
+OS X, the path to the library has to be added manually to the Python package search path.
+Assuming that the pairinteraction software was installed to its default location, this
+can be done by adding the following code block to the top of a Python
+script:
 
-2. We recommend to use the Python 3.6 distribution `Miniconda`_ or
-   `Anaconda`_. Then, the pairinteraction Python 3 library and its
-   dependencies are installed by executing the following commands in
-   the terminal:
+.. code-block:: python
 
-   .. code-block:: bash
+    import sys
+    if sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
+    elif sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
 
-        $ conda install numpy scipy pyzmq matplotlib conda-build
-        $ conda develop /Applications/pairinteraction.app/Contents/Resources
-        $ ln -s ${CONDA_PREFIX}/lib/libpython3.6m.dylib /Applications/pairinteraction.app/Contents/Resources/libpairinteraction/libraries/libpython3.6m.dylib
-
-   Alternatively, without Miniconda or Anaconda, you can install the
-   dependencies ``numpy``, ``scipy``, and ``pyzmq`` manually and copy
-   or link the folder
-   ``/Applications/pairinteraction.app/Contents/Resources/libpairinteraction``
-   to the Python package search path. In addition, you have to link
-   the Python dylib to ``libpairinteraction/libraries/Python``.
-
-.. _Miniconda: https://conda.io/miniconda.html
-.. _Anaconda: https://www.anaconda.com/distribution/
+Alternatively, in case of Windows, you can copy or link the folder ``C:\Program Files\pairinteraction\libpairinteraction`` somewhere into the Python package search path.
+In case of OS X, the folder ``/Applications/pairinteraction.app/Contents/Resources/libpairinteraction`` has to be copied or linked.
 
 Building from Source
 --------------------
