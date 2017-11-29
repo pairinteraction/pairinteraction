@@ -78,7 +78,7 @@ if(SPHINX_FOUND)
 
   foreach(file ${NOTEBOOKS})
     configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/examples/${file}"
       "${SPHINX_BASE}/${file}"
       COPYONLY)
     add_custom_target("${file}"
