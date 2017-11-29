@@ -41,22 +41,22 @@ def getEnergies(bfield):
 
     # Calculate Zeeman shift
     zeemanshift = 2*system_one.diagonal[system_one.getVectorindex(state_one)]
-    
+
     # Set up two atom system
     system_two = setup_system_two(system_one,angle)
     system_two.diagonalize()
-    
+
     # Calculate blockade interaction
     eigenenergies = (system_two.diagonal-zeemanshift)*1e3 # MHz
     overlaps = system_two.getOverlap(state_two)
     blockade = 1/np.sqrt(np.sum(overlaps/eigenenergies**2))
-    
+
     return blockade
 
 if __name__ ==  '__main__':
     plt.xlabel(r"$B$ (Gauss)")
     plt.ylabel(r"Blockade (MHz)")
-    plt.xlim(-1,20)
+    plt.xlim(-0.4,20.4)
     plt.ylim(0,0.4)
 
     angle = 0 # rad
@@ -67,6 +67,7 @@ if __name__ ==  '__main__':
     with Pool() as pool:
         energies2 = pool.map(getEnergies, bfields)
 
-    plt.plot(bfields, energies1, '-', label=r"$\theta = 0$")
-    plt.plot(bfields, energies2, '-', label=r"$\theta = \pi/2$")
-    plt.legend(loc=2, bbox_to_anchor=(1.02, 1), borderaxespad=0);
+    plt.plot(bfields, energies1, 'b-', label=r"$\theta = 0$")
+    plt.plot(bfields, energies2, 'g-', label=r"$\theta = \pi/2$")
+    plt.legend(loc=2);
+    plt.show()
