@@ -21,12 +21,9 @@ Visit the official website at https://pairinteraction.github.io/
 
 We are using [Travis CI](https://travis-ci.org) and [AppVeyor](https://www.appveyor.com) as hosted continuous integration services to build pairinteraction against various toolchains.
 
-*Current build status:*
-[![Build status][travis-svg]][travis-link] [![AppVeyor build status][appveyor-svg]][appveyor-link]
-
 ## Support
 
-Documentation for pairinteraction is located in the [Wiki][wiki].
+Documentation for pairinteraction is located on GitHub pages: [Python interface][sphinx-link], [C++ interface][doxygen-link].
 
 If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an [issue][issue-tracker].
 
@@ -49,5 +46,6 @@ Note that not all files in this repository belong to the pairinteraction project
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
-[wiki]: https://github.com/pairinteraction/pairinteraction/wiki
+[sphinx-link]: https://pairinteraction.github.io/pairinteraction/sphinx/html/index.html
+[doxygen-link]: https://pairinteraction.github.io/pairinteraction/doxygen/html/index.html
 [issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
