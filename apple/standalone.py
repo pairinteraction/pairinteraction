@@ -70,9 +70,7 @@ def standalone(file):
             if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
 
                 # Update paths
-                if os.path.basename(libpath_abs) == "libpython3.6m.dylib":
-                    libpath_new = "@rpath/libpython3.6m.dylib"
-                elif libpath_abs in executables:
+                if libpath_abs in executables:
                     if file not in executables:
                         libpath_new = os.path.join("@loader_path/..", os.path.basename(libpath_abs))
                     else:
@@ -88,8 +86,7 @@ def standalone(file):
                     raise Exception("Error updating paths.")
 
                 # Analyze the current dependency
-                if os.path.basename(libpath_abs) != "libpython3.6m.dylib":
-                    yield libpath_abs
+                yield libpath_abs
 
 
 if not os.path.exists(librarypath):
@@ -109,7 +106,7 @@ while need:
     need.difference_update(done)
 
 for file in executables:
-    for rpath in ["@executable_path", "@loader_path/libraries", "/usr/local/Frameworks/Python.framework/Versions/3.6"]: # TODO implement a function into the gui that changes the rpath of the executables according to the used python distribution and adds the pairinteraction library to the python path
+    for rpath in ["@executable_path", "@loader_path/libraries"]:
         cmd = ['install_name_tool', '-add_rpath', rpath, file]
         if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
             raise Exception("Error adding rpath.")
