@@ -161,3 +161,6 @@ texinfo_documents = [
 
 # WARNING: toctree contains reference to nonexisting document
 numpydoc_show_class_members = False
+
+# Use constructor docstring as class docstring
+autoclass_content = "init"
