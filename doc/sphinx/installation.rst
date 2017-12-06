@@ -22,11 +22,11 @@ The pairinteraction program comes with a Python 3 library. It can be used for si
 account electric and magnetic fields. Quantities as matrix elements, eigenenergies, or excitation dynamics can be calculated. Examples are shown
 in the `tutorials`_ section of the documentation. By installing a build from `GitHub Releases`_, the
 library gets installed as well. The library requires ``python3``, ``numpy``, ``scipy``, ``matplotlib``,
-and ``pyzmq``. After installing these dependencies, the provided `example
+and ``pyzmq``. After installing these dependencies, the provided Python `example
 scripts`_ should work out-of-the-box.
 
 .. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
-.. _example scripts: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples
+.. _example scripts: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
 
 For GNU/Linux, all dependencies are installed automatically and the

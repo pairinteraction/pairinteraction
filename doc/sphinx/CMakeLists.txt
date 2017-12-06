@@ -45,6 +45,9 @@ if(SPHINX_FOUND)
         ${SPHINX_PYTHON_DIR}
         ${EXCLUDE}
     COMMAND
+      # override automatically generated modules.rst
+      ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modules.rst ${SPHINX_BASE}/modules.rst
+    COMMAND
       # sphinx-build
       ${PYTHON_EXECUTABLE} -c
       "import sys; from sphinx import main; sys.exit(main(sys.argv))"
@@ -63,6 +66,7 @@ if(SPHINX_FOUND)
     "logo48x48.png"
     "index.rst"
     "installation.rst"
+    "genindex.rst"
     "tutorials.rst")
 
   foreach(file ${FILE_LIST})
@@ -78,7 +82,7 @@ if(SPHINX_FOUND)
 
   foreach(file ${NOTEBOOKS})
     configure_file(
-      "${CMAKE_CURRENT_SOURCE_DIR}/examples/${file}"
+      "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
       "${SPHINX_BASE}/${file}"
       COPYONLY)
     add_custom_target("${file}"

@@ -62,7 +62,6 @@ if __name__ ==  '__main__':
 
     with Pool() as pool:
         energies1 = pool.map(partial(getEnergies, angle=0), bfields)
-    with Pool() as pool:
         energies2 = pool.map(partial(getEnergies, angle=np.pi/2), bfields)
 
     plt.plot(bfields, energies1, 'b-', label=r"$\theta = 0$")
