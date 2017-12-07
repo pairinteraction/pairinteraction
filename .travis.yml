@@ -22,7 +22,7 @@ matrix:
         - package=pairinteraction-install-linux.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       env:
         - package=pairinteraction-install-osx.dmg
       before_install:
