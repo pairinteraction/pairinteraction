@@ -3,7 +3,7 @@ language: generic
 matrix:
   include:
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode8.3
       before_install:
         - COMMIT_TIMESTAMP=$(git log -1 --pretty=format:%ct)
         - echo $COMMIT_TIMESTAMP
