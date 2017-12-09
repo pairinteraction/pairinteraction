@@ -57,13 +57,17 @@ private:
 };
 
 template<class T>
-using states_set = boost::multi_index_container<
-enumerated_state<T>,
-boost::multi_index::indexed_by<
-boost::multi_index::random_access<>,
-boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>,T,&enumerated_state<T>::state>, std::hash<T> >
->
->;
+struct states_set
+{
+    typedef typename boost::multi_index_container<
+    enumerated_state<T>,
+        boost::multi_index::indexed_by<
+        boost::multi_index::random_access<>,
+        boost::multi_index::hashed_unique<boost::multi_index::member<enumerated_state<T>,T,&enumerated_state<T>::state>, std::hash<T> >
+        >
+        >
+        type;
+};
 
 template<class T> class SystemBase {
 public:
@@ -754,7 +758,7 @@ protected:
     bool is_interaction_already_contained;
     bool is_new_hamiltonianmatrix_required;
     
-    states_set<T> states;
+    typename states_set<T>::type states;
     eigen_sparse_t coefficients;
     eigen_sparse_t hamiltonianmatrix;
     eigen_sparse_t coefficients_unperturbed_cache;
@@ -851,7 +855,7 @@ protected:
     
     void removeRestrictedStates(std::function<bool(const enumerated_state<T> &)> checkIsValidEntry) {
         // Build transformator and remove states
-        states_set<T> states_new;
+        typename states_set<T>::type states_new;
         states_new.reserve(states.size());
         std::vector<eigen_triplet_t> triplets_transformator;
         triplets_transformator.reserve(states.size());

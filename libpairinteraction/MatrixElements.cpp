@@ -133,50 +133,51 @@ double MatrixElements::getRadial(StateOne const& state_row, StateOne const& stat
 
 void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
     sqlite::handle db(dbname);
+    sqlite::statement stmt(db);
 
     // --- create cache tables if necessary (reduced_moemntumS and reduced_moemntumL need not to be cached since they are trivial) ---
 
     if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
+        stmt.exec("CREATE TABLE IF NOT EXISTS cache_radial ("
                 "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
                 "n2 integer, l2 integer, j2 double, value double, UNIQUE (method, species, k, n1, l1, j1, n2, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_radial ("
+        stmt.exec("CREATE TEMPORARY TABLE tmp_radial ("
                 "n1 integer, l1 integer, j1 double,"
                 "n2 integer, l2 integer, j2 double);");
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
+        stmt.exec("CREATE TABLE IF NOT EXISTS cache_angular ("
                 "k integer, j1 double, m1 double,"
                 "j2 double, m2 double, value double, UNIQUE (k, j1, m1, j2, m2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_angular ("
+        stmt.exec("CREATE TEMPORARY TABLE tmp_angular ("
                 "j1 double, m1 double,"
                 "j2 double, m2 double);");
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_s ("
+        stmt.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_s ("
                 "k integer, l1 integer, j1 double,"
                 "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_s ("
+        stmt.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_s ("
                 "l1 integer, j1 double,"
                 "l2 integer, j2 double);");
     }
 
     if (calcMagneticMomentum) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_l ("
+        stmt.exec("CREATE TABLE IF NOT EXISTS cache_reduced_commutes_l ("
                 "k integer, l1 integer, j1 double,"
                 "l2 integer, j2 double, value double, UNIQUE (k, l1, j1, l2, j2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_l ("
+        stmt.exec("CREATE TEMPORARY TABLE tmp_reduced_commutes_l ("
                 "l1 integer, j1 double,"
                 "l2 integer, j2 double);");
     }
 
     if (calcElectricMultipole) {
-        db.exec("CREATE TABLE IF NOT EXISTS cache_reduced_multipole ("
+        stmt.exec("CREATE TABLE IF NOT EXISTS cache_reduced_multipole ("
                 "k integer, l1 integer,"
                 "l2 integer, value double, UNIQUE (k, l1, l2));");
-        db.exec("CREATE TEMPORARY TABLE tmp_reduced_multipole ("
+        stmt.exec("CREATE TEMPORARY TABLE tmp_reduced_multipole ("
                 "l1 integer,"
                 "l2 integer);");
     }
@@ -185,7 +186,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     std::stringstream ss;
 
-    db.exec("begin transaction;");
+    stmt.exec("begin transaction;");
 
     for (const auto &state_col : *basis_one) {
         for (const auto &state_row : *basis_one) {
@@ -206,7 +207,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_radial (n1,l1,j1,n2,l2,j2) values ("
                            << state_nlj.n[0] << "," << state_nlj.l[0] << "," << state_nlj.j[0] << ","
                            << state_nlj.n[1] << "," << state_nlj.l[1] << "," << state_nlj.j[1] << ");";
-                        db.exec(ss.str());
+                        stmt.exec(ss.str());
                     }
                 }
 
@@ -218,7 +219,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_angular (j1,m1,j2,m2) values ("
                            << state_jm.j[0] << "," << state_jm.m[0] << ","
                            << state_jm.j[1] << "," << state_jm.m[1] << ");";
-                        db.exec(ss.str());
+                        stmt.exec(ss.str());
                     }
                 }
 
@@ -230,7 +231,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_s (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
+                        stmt.exec(ss.str());
                     }
                 }
 
@@ -242,7 +243,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_commutes_l (l1,j1,l2,j2) values ("
                            << state_lj.l[0] << "," << state_lj.j[0] << ","
                            << state_lj.l[1] << "," << state_lj.j[1] << ");";
-                        db.exec(ss.str());
+                        stmt.exec(ss.str());
                     }
                 }
 
@@ -254,14 +255,14 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                         ss << "insert into tmp_reduced_multipole (l1,l2) values ("
                            << state_l.l[0] << ","
                            << state_l.l[1] << ");";
-                        db.exec(ss.str());
+                        stmt.exec(ss.str());
                     }
                 }
             }
         }
     }
 
-    db.exec("end transaction;");
+    stmt.exec("end transaction;");
 
     // --- load from database ---
 
@@ -362,7 +363,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
 
     // --- calculate missing elements and write them to the database ---
 
-    db.exec("begin transaction;");
+    stmt.exec("begin transaction;");
 
     if (calcElectricMultipole || calcMagneticMomentum  || calcRadial) {
         for (auto &cache : cache_radial[kappar]) {
@@ -379,7 +380,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.n[0] << "," << state.l[0] << "," << state.j[0] << ","
                    << state.n[1] << "," << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                stmt.exec(ss.str());
 
             }
         }
@@ -400,7 +401,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.j[0] << "," << state.m[0] << ","
                    << state.j[1] << "," << state.m[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                stmt.exec(ss.str());
             }
         }
     }
@@ -419,7 +420,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                stmt.exec(ss.str());
             }
         }
     }
@@ -438,7 +439,7 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << "," << state.j[0] << ","
                    << state.l[1] << "," << state.j[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                stmt.exec(ss.str());
             }
         }
     }
@@ -457,12 +458,12 @@ void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one
                    << state.l[0] << ","
                    << state.l[1] << ","
                    << cache.second << ");";
-                db.exec(ss.str());
+                stmt.exec(ss.str());
             }
         }
     }
 
-    db.exec("end transaction;");
+    stmt.exec("end transaction;");
 }
 
 double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,

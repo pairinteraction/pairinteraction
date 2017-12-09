@@ -401,33 +401,6 @@ public:
         if (err)
             throw error(err, sqlite3_errmsg(m_db.get()));
     }
-
-    /** \brief Execute SQLite statements
-     *
-     * The SQL statements are passed to this function as a string and
-     * are executed in-place.
-     *
-     * \deprecated This is deprecated and should not be used anymore.
-     * The usage of prepared statements in encouraged instead.  Calls
-     * to this function are equivalent to and can hence be replaced by
-     * \code
-     * sqlite::statement stmt(db);
-     * stmt.exec(sql);
-     * \endcode
-     *
-     * \param[in] sql   SQL statements
-     */
-#if defined(_MSC_VER)
-    __declspec(deprecated)
-#else
-    __attribute__((deprecated))
-#endif
-        void exec(std::string const &sql)
-    {
-        auto err = sqlite3_exec(*this, sql.c_str(), nullptr, nullptr, nullptr);
-        if (err)
-            throw error(err, sqlite3_errmsg(m_db.get()));
-    }
 };
 
 } // namespace sqlite

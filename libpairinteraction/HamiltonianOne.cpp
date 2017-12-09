@@ -397,6 +397,7 @@ void HamiltonianOne::build() {
         path_db = path_cache / "cache_matrix_real.db";
     }
     sqlite::handle db(path_db.string());
+    sqlite::statement stmt(db);
 
     // === Initialize variables ===
     bool flag_perhapsmissingtable = true;
@@ -468,7 +469,7 @@ void HamiltonianOne::build() {
             flag_perhapsmissingtable = false;
 
 #pragma omp critical(database)
-            db.exec(query.str());
+            stmt.exec(query.str());
         }
 
 
@@ -496,7 +497,7 @@ void HamiltonianOne::build() {
             query.str(std::string());
             query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
 #pragma omp critical(database)
-            db.exec(query.str()); // TODO check whether this slows down the program
+            stmt.exec(query.str()); // TODO check whether this slows down the program
 
         } else {
             boost::uuids::uuid u = generator();
@@ -513,7 +514,7 @@ void HamiltonianOne::build() {
             }
             query << ");";
 #pragma omp critical(database)
-            db.exec(query.str());
+            stmt.exec(query.str());
         }
 
         // === Check existence of files === // TODO put code in its own method

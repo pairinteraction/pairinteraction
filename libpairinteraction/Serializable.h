@@ -28,6 +28,7 @@
 
 class Serializable {
 public:
+    virtual ~Serializable() = default;
     virtual bytes_t& serialize() = 0;
     virtual void deserialize(bytes_t &bytes) = 0;
 };
