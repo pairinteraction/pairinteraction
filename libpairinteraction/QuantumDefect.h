@@ -52,7 +52,7 @@
  */
 class QuantumDefect
 {
-public:
+private:
     /** \brief Key type for quantum defect cache */
     struct Key {
         std::string species;
@@ -92,9 +92,8 @@ public:
     };
 
     /** \brief Typedef for quantum defect cache */
-    using Cache = std::unordered_map<Key, Element, KeyHasher>;
+    typedef std::unordered_map<Key, Element, KeyHasher> Cache;
 
-private:
     static Cache cache;
     static std::mutex cache_mutex;
 
