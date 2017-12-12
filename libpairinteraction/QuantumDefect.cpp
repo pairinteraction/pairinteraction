@@ -37,14 +37,16 @@ public:
               ", l = " + std::to_string(qd.l) + ", j = " + std::to_string(qd.j);
     }
 
-    const char *what() const throw() { return msg.c_str(); }
+    const char *what() const noexcept { return msg.c_str(); }
 };
+
+QuantumDefect::Cache QuantumDefect::cache{};
+std::mutex QuantumDefect::cache_mutex{};
 
 QuantumDefect::QuantumDefect(std::string const &_species, int _n, int _l,
                              double _j, std::nullptr_t)
-    : ac_(), Z_(), a1_(), a2_(), a3_(), a4_(), rc_(), nstar_(), energy_(),
-      species(_species), n(_n), l(_l), j(_j), ac(ac_), Z(Z_), a1(a1_), a2(a2_),
-      a3(a3_), a4(a4_), rc(rc_), nstar(nstar_), energy(energy_)
+    : e(), species(_species), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z), a1(e.a1),
+      a2(e.a2), a3(e.a3), a4(e.a4), rc(e.rc), nstar(e.nstar), energy(e.energy)
 {
 }
 
@@ -65,6 +67,16 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
 
 void QuantumDefect::setup(sqlite3 *db)
 {
+    Key const key{species, n, l, j};
+    {
+        std::lock_guard<std::mutex> lock(cache_mutex);
+        auto cached_it = cache.find(key);
+        if (cached_it != cache.end()) {
+            e = cached_it->second; // Restore cache
+            return; // Return early
+        }
+    }
+
     std::stringstream ss;
     sqlite::statement stmt(db);
     int pot_max_l, ryd_max_l;
@@ -120,13 +132,13 @@ void QuantumDefect::setup(sqlite3 *db)
     stmt.bind(1, species);
     stmt.bind(2, pot_l);
     if (stmt.step()) {
-        ac_ = stmt.get<double>(0);
-        Z_ = stmt.get<int>(1);
-        a1_ = stmt.get<double>(2);
-        a2_ = stmt.get<double>(3);
-        a3_ = stmt.get<double>(4);
-        a4_ = stmt.get<double>(5);
-        rc_ = stmt.get<double>(6);
+        e.ac = stmt.get<double>(0);
+        e.Z = stmt.get<int>(1);
+        e.a1 = stmt.get<double>(2);
+        e.a2 = stmt.get<double>(3);
+        e.a3 = stmt.get<double>(4);
+        e.a4 = stmt.get<double>(5);
+        e.rc = stmt.get<double>(6);
     } else
         throw no_defect(*this);
 
@@ -138,7 +150,7 @@ void QuantumDefect::setup(sqlite3 *db)
     stmt.bind(1, species);
     stmt.bind(2, ryd_l);
     stmt.bind(3, ryd_j);
-    nstar_ = n;
+    e.nstar = n;
     double Ry_inf = 109737.31568525;
     double Ry = Ry_inf;
     if (stmt.step()) {
@@ -148,12 +160,15 @@ void QuantumDefect::setup(sqlite3 *db)
         double d6 = stmt.get<double>(3);
         double d8 = stmt.get<double>(4);
         Ry = stmt.get<double>(5);
-        nstar_ -= d0 + d2 / pow(n - d0, 2) + d4 / pow(n - d0, 4) +
-                  d6 / pow(n - d0, 6) + d8 / pow(n - d0, 8);
+        e.nstar -= d0 + d2 / pow(n - d0, 2) + d4 / pow(n - d0, 4) +
+                   d6 / pow(n - d0, 6) + d8 / pow(n - d0, 8);
     } else
         throw no_defect(*this);
 
-    energy_ = -.5 * (Ry / Ry_inf) / (nstar_ * nstar_) * au2GHz;
+    e.energy = -.5 * (Ry / Ry_inf) / (e.nstar * e.nstar) * au2GHz;
+
+    std::lock_guard<std::mutex> lock(cache_mutex);
+    cache.emplace(std::make_pair(key, e));
 }
 
 double energy_level(std::string const &species, int n, int l, double j)

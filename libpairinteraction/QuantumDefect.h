@@ -19,7 +19,12 @@
 
 #include "SQLite.h"
 #include "dtypes.h"
+#include <mutex>
 #include <string>
+#include <tuple>
+#include <unordered_map>
+
+#include <boost/functional/hash.hpp>
 
 /** \brief Quantum defect storage
  *
@@ -47,13 +52,53 @@
  */
 class QuantumDefect
 {
+public:
+    /** \brief Key type for quantum defect cache */
+    struct Key {
+        std::string species;
+        int n;
+        int l;
+        double j;
+
+        /** \brief Comparison for keys */
+        bool operator==(Key const &o) const
+        {
+            return (species == o.species && n == o.n && l == o.l && j == o.j);
+        }
+    };
+
+    /** \brief Hash for Key */
+    struct KeyHasher {
+        /** \brief Hash the key using boost::hash_combine */
+        std::size_t operator()(Key const &key) const
+        {
+            std::size_t seed = 0;
+            boost::hash_combine(seed, key.species);
+            boost::hash_combine(seed, key.n);
+            boost::hash_combine(seed, key.l);
+            boost::hash_combine(seed, key.j);
+            return seed;
+        }
+    };
+
+    /** \brief Element in the quantum defect cache */
+    struct Element {
+        double ac;
+        int Z;
+        double a1, a2, a3, a4;
+        double rc;
+        double nstar;
+        double energy;
+    };
+
+    /** \brief Typedef for quantum defect cache */
+    using Cache = std::unordered_map<Key, Element, KeyHasher>;
+
 private:
-    double ac_;
-    int Z_;
-    double a1_, a2_, a3_, a4_;
-    double rc_;
-    double nstar_;
-    double energy_;
+    static Cache cache;
+    static std::mutex cache_mutex;
+
+    Element e;
 
     void setup(sqlite3 *);
 
@@ -72,7 +117,8 @@ public:
      */
     QuantumDefect(std::string const &species, int n, int l, double j);
 
-    /** \overload QuantumDefect(std::string const& species, int n, int l, double j) */
+    /** \overload QuantumDefect(std::string const& species, int n, int l, double
+     * j) */
     QuantumDefect(std::string const &species, int n, int l, double j,
                   std::string const &database);
 
