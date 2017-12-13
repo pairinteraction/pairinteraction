@@ -133,7 +133,9 @@ elseif(UNIX)
   set(CPACK_GENERATOR "TGZ;RPM;DEB")
 
   # General
-  set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
+  if(NOT CPACK_PACKAGE_FILE_NAME)
+    set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
+  endif()
   set(CPACK_PACKAGE_VERSION "${VERSION_WITHOUT_LEADING_V}")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
 
