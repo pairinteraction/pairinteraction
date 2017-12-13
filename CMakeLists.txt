@@ -136,6 +136,7 @@ elseif(UNIX)
   if(NOT CPACK_PACKAGE_FILE_NAME)
     set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
   endif()
+  string(REGEX REPLACE "\\.(deb|rpm|tar\\.gz)$" "" CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
   set(CPACK_PACKAGE_VERSION "${VERSION_WITHOUT_LEADING_V}")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
 

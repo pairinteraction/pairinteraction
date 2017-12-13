@@ -7,11 +7,11 @@ mkdir build;
 cd build;
 
 if [ "$1" = "osx" ]; then
-    cmake -DWITH_DMG=On ..;
+    cmake -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
 elif [ "$1" = "gcov" ]; then
-    cmake -DWITH_COVERAGE=On ..;
+    cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
 else
-    cmake ..;
+    cmake -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
 fi;
 
 make -j 2;

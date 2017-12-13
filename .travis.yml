@@ -12,14 +12,28 @@ matrix:
       services: docker
       env:
         - image=ubuntu
-        - package=pairinteraction-install-linux.deb
+        - package=pairinteraction-install-ubuntu-xenial.deb
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=ubuntu:zesty
+        - package=pairinteraction-install-ubuntu-zesty.deb
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=ubuntu:artful
+        - package=pairinteraction-install-ubuntu-artful.deb
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
       services: docker
       env:
         - image=opensuse
-        - package=pairinteraction-install-linux.rpm
+        - package=pairinteraction-install-opensuse.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
       osx_image: xcode9
