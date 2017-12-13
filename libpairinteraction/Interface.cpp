@@ -24,19 +24,9 @@
 #include <locale>
 #include <memory>
 #include <boost/filesystem.hpp>
+
+#if defined(_OPENMP)
 #include <omp.h>
-
-/*
-///////////////////// TODOs /////////////////////
-
-* parallelize construction of Hamiltonian
-* construct only one half of symmetric matrices
-* check why very small Bz fields (e.g. 1e-12) leads to a large basis -> numerical error?
-
-*/
-
-std::string zmq::endpoint::name{};
-
 int thread_ctrl(int num_threads /*= -1*/)
 {
     if (num_threads != -1)
@@ -48,7 +38,23 @@ int thread_ctrl(int num_threads /*= -1*/)
 
     return num_threads;
 }
+#else
+int thread_ctrl(int num_threads /*= -1*/)
+{
+    return 1;
+}
+#endif
 
+/*
+///////////////////// TODOs /////////////////////
+
+* parallelize construction of Hamiltonian
+* construct only one half of symmetric matrices
+* check why very small Bz fields (e.g. 1e-12) leads to a large basis -> numerical error?
+
+*/
+
+std::string zmq::endpoint::name{};
 
 int compute(const std::string &config_name, const std::string &output_name, std::string const &endpoint) {
     zmq::endpoint::name = endpoint;
