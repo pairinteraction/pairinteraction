@@ -139,20 +139,18 @@ elseif(UNIX)
 
   # DEB
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS "\
-    libboost-filesystem1.58.0, libboost-program-options1.58.0, libboost-serialization1.58.0, libboost-system1.58.0, \
-    libsqlite3-0, libc6, libgcc1, libgsl0ldbl|libgsl2, libzmq5, libgomp1, libpython3.5, \
-    python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
+  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+  set(CPACK_DEBIAN_PACKAGE_DEPENDS
+    "python3-pint, python3-pyqt5, python3-psutil, python3-pyqt5.qtsvg, python3-scipy, python3-numpy")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_REQUIRES "\
-    libboost_filesystem1_61_0, libboost_program_options1_61_0, libboost_serialization1_61_0, libboost_system1_61_0, \
-    libsqlite3-0, glibc, libgcc_s1-gcc49, libgsl0, libzmq5, libgomp1, libpython3_4m1_0, \
-    python3-Pint, python3-qt5, python3-psutil, python3-scipy, python3-numpy")
+  set(CPACK_RPM_PACKAGE_AUTOREQPROV ON)
+  set(CPACK_RPM_PACKAGE_REQUIRES
+    "python3-Pint, python3-qt5, python3-psutil, python3-scipy, python3-numpy")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
   set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
   set(CPACK_RPM_PACKAGE_PRIORITY "optional")
