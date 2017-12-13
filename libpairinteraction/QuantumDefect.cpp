@@ -40,8 +40,11 @@ public:
     const char *what() const noexcept { return msg.c_str(); }
 };
 
-QuantumDefect::Cache QuantumDefect::cache{};
-std::mutex QuantumDefect::cache_mutex{};
+// static cache variable
+Cache<QuantumDefect::Key,
+      QuantumDefect::Element,
+      QuantumDefect::Hash>
+QuantumDefect::cache{};
 
 QuantumDefect::QuantumDefect(std::string const &_species, int _n, int _l,
                              double _j, std::nullptr_t)
@@ -68,13 +71,10 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
 void QuantumDefect::setup(sqlite3 *db)
 {
     Key const key{species, n, l, j};
+    if (auto oe = cache.restore(key))
     {
-        std::lock_guard<std::mutex> lock(cache_mutex);
-        auto cached_it = cache.find(key);
-        if (cached_it != cache.end()) {
-            e = cached_it->second; // Restore cache
-            return; // Return early
-        }
+        e = oe.get(); // Restore cache
+        return; // Return early
     }
 
     std::stringstream ss;
@@ -167,8 +167,7 @@ void QuantumDefect::setup(sqlite3 *db)
 
     e.energy = -.5 * (Ry / Ry_inf) / (e.nstar * e.nstar) * au2GHz;
 
-    std::lock_guard<std::mutex> lock(cache_mutex);
-    cache.emplace(std::make_pair(key, e));
+    cache.save(key, e);
 }
 
 double energy_level(std::string const &species, int n, int l, double j)

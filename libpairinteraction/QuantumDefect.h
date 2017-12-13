@@ -17,6 +17,7 @@
 #ifndef QUANTUM_DEFECT_H
 #define QUANTUM_DEFECT_H
 
+#include "Cache.h"
 #include "SQLite.h"
 #include "dtypes.h"
 #include <mutex>
@@ -67,8 +68,8 @@ private:
         }
     };
 
-    /** \brief Hash for Key */
-    struct KeyHasher {
+    //** \brief Hash for Key */
+    struct Hash {
         /** \brief Hash the key using boost::hash_combine */
         std::size_t operator()(Key const &key) const
         {
@@ -91,11 +92,7 @@ private:
         double energy;
     };
 
-    /** \brief Typedef for quantum defect cache */
-    typedef std::unordered_map<Key, Element, KeyHasher> Cache;
-
-    static Cache cache;
-    static std::mutex cache_mutex;
+    static Cache<Key, Element, Hash> cache;
 
     Element e;
 
