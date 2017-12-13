@@ -22,7 +22,7 @@ matrix:
         - package=pairinteraction-install-linux.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
-      osx_image: xcode8
+      osx_image: xcode9
       env:
         - package=pairinteraction-install-osx.dmg
       before_install:
@@ -34,12 +34,12 @@ matrix:
         - brew update
       install:
         - conda install -y -q nomkl pairinteraction-dependencies
-        - pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
-        - brew install eigen gsl llvm swig zeromq
+        - pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 without bugs in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
+        - brew install eigen gsl llvm@3.9 swig zeromq
         - npm install -g fileicon
       before_script:
-        - export CXX=/usr/local/opt/llvm/bin/clang++
-        - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib,-rpath,${CONDA_PREFIX}/lib"
+        - export CXX=/usr/local/opt/llvm@3.9/bin/clang++
+        - export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
 
 script:
   - docker/build_docker.sh
