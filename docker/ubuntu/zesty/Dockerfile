@@ -12,6 +12,6 @@ RUN apt-get update \
     libzmq3-dev \
     swig python3 python3-dev \
     python3-numpy python3-scipy python3-zmq \
-    dpkg rpm \
+    dpkg-dev rpm \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
