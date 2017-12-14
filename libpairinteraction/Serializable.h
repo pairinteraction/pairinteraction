@@ -151,7 +151,7 @@ private:
 
     template<class T>
     void deserialize(T &data, size_t num) {
-        uint16_t type;
+        uint16_t type = 0;
 
         if (cpbytes+sizeof(uint16_t) > cpbytes_end) throw std::runtime_error("Corrupted data discovered."); // TODO use checksum of "bytes" (write checksum into the beginning of "bytes")
         auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
@@ -228,7 +228,7 @@ private:
 
     template<class T>
     void deserialize(std::vector<T> &data, size_t num) {
-        uint16_t type;
+        uint16_t type = 0;
 
         if (cpbytes+sizeof(uint16_t) > cpbytes_end) throw std::runtime_error("Corrupted data discovered.");
         auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
