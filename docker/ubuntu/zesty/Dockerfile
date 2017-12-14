@@ -3,7 +3,7 @@ MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    cmake build-essential git \
+    cmake build-essential git file \
     libeigen3-dev pyqt5-dev-tools \
     libboost-filesystem-dev libboost-program-options-dev \
     libboost-serialization-dev libboost-system-dev libboost-test-dev \
