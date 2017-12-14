@@ -22,6 +22,7 @@
 
 #include <boost/optional.hpp>
 
+
 /** \brief Generic cache object
  *
  * This generic cache object strives to provide a thread-safe cache
@@ -42,7 +43,8 @@ class Cache
 public:
     /** \brief Save something in the cache
      *
-     * Does nothing if the element already exists.
+     * To prevent race-conditions this function will throw if the
+     * element is already in the cache.
      *
      * The usage is extremely straight-forward
      * \code
@@ -51,11 +53,14 @@ public:
      *
      * \param key Key
      * \param e Element
+     * \throws std::runtime_error if the element is already in the cache
      */
     void save(Key const &key, Element const &e)
     {
         std::lock_guard<std::mutex> lock(cache_mutex);
-        cache.emplace(std::make_pair(key, e));
+        if (!cache.emplace(std::make_pair(key, e)).second) {
+            throw std::runtime_error("Cache smashing detected!");
+        }
     }
 
     /** \brief Restore something from the cache

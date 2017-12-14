@@ -59,6 +59,7 @@ unit_test(TARGET integration_test
   SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp
   ../WignerD.cpp ../MatrixElements.cpp ../wignerSymbols/src/wignerSymbols-cpp.cpp
   ../SystemOne.cpp ../SystemTwo.cpp)
+unit_test(TARGET cache_test SOURCE cache_test.cpp)
 
 # Copy test dependencies
 add_custom_command(TARGET integration_test PRE_BUILD
