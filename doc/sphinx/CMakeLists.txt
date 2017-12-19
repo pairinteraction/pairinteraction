@@ -78,7 +78,8 @@ if(SPHINX_FOUND)
 
   # IPython notebooks to be processed
   set(NOTEBOOKS
-    "comparison_to_saffman_fig13.ipynb")
+    "comparison_to_saffman_fig13.ipynb"
+    "pair_potential_efield_sensitivity.ipynb")
 
   foreach(file ${NOTEBOOKS})
     configure_file(
