@@ -33,7 +33,7 @@ case "${TRAVIS_OS_NAME}" in
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                            --interactive --tty \
                            pairinteraction/$image \
-                           /bin/bash -c "/bin/bash /travis/docker/build_cmake.sh gcov; /bin/bash /travis/doc/publish_documentation.sh"
+                           /bin/bash -c "/bin/bash /travis/doc/publish_documentation.sh; /bin/bash /travis/docker/build_cmake.sh gcov"
                     ;;
 
                 *)
