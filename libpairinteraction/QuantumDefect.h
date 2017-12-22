@@ -92,8 +92,6 @@ private:
         double energy;
     };
 
-    static Cache<Key, Element, Hash> cache;
-
     Element e;
 
     void setup(sqlite3 *);

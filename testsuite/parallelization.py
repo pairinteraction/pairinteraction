@@ -8,15 +8,14 @@ import shutil
 
 class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
-    def test_comparison(self):
-
-        #######################################################
-        ### Preparations ######################################
-        #######################################################
-
+    #######################################################
+    ### Preparations ######################################
+    #######################################################
+    def setUp(self):
         # Create cache directory
-        path_cache = tempfile.mkdtemp()
+        self.path_cache = tempfile.mkdtemp()
 
+    def test_parallelization(self):
         #######################################################
         ### Check parallelization of one atom calculations ####
         #######################################################
@@ -25,7 +24,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-40, state_one.energy+40)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -98,7 +97,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         system_two.restrictEnergy(state_two.energy-2, state_two.energy+2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(1)
@@ -162,12 +161,13 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         self.assertEqual(len(lines_energies), 10)
         self.assertEqual(np.sum(np.isnan(lines_energies)), 0)
 
-        #######################################################
-        ### Clean up ##########################################
-        #######################################################
+    #######################################################
+    ### Clean up ##########################################
+    #######################################################
 
+    def tearDown(self):
         # Delete cache directory
-        shutil.rmtree(path_cache)
+        shutil.rmtree(self.path_cache)
 
 if __name__ == '__main__':
     unittest.main()

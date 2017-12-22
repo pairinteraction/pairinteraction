@@ -40,12 +40,6 @@ public:
     const char *what() const noexcept { return msg.c_str(); }
 };
 
-// static cache variable
-Cache<QuantumDefect::Key,
-      QuantumDefect::Element,
-      QuantumDefect::Hash>
-QuantumDefect::cache{};
-
 QuantumDefect::QuantumDefect(std::string const &_species, int _n, int _l,
                              double _j, std::nullptr_t)
     : e(), species(_species), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z), a1(e.a1),
@@ -70,6 +64,8 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
 
 void QuantumDefect::setup(sqlite3 *db)
 {
+    static Cache<Key, Element, Hash> cache;
+
     Key const key{species, n, l, j};
     if (auto oe = cache.restore(key))
     {

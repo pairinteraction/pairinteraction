@@ -11,8 +11,7 @@ class TestWavefunction(unittest.TestCase):
 
         diff = np.sqrt(n[:,0])*n[:,1]-w[:,1]
 
-        for p in diff:
-            self.assertAlmostEqual(p, 0, places=3)
+        np.testing.assert_allclose(diff, 0, atol=1e-3)
 
 if __name__ == '__main__':
     unittest.main()

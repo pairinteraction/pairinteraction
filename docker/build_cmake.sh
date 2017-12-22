@@ -3,7 +3,7 @@
 set -e;
 
 cd "${SOURCE_DIR}";
-mkdir build;
+mkdir -p build;
 cd build;
 
 if [ "$1" = "osx" ]; then
