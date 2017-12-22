@@ -7,15 +7,14 @@ from itertools import product
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):
 
-    def test_comparison(self):
-
-        #######################################################
-        ### Preparations ######################################
-        #######################################################
-
+    #######################################################
+    ### Preparations ######################################
+    #######################################################
+    def setUp(self):
         # Create cache directory
-        path_cache = tempfile.mkdtemp()
+        self.path_cache = tempfile.mkdtemp()
 
+    def test_rotation(self):
         #######################################################
         ### Check rotation symmetry of one atom systems #######
         #######################################################
@@ -24,7 +23,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-40, state_one.energy+40)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -64,7 +63,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff23[np.abs(w3-w2)<1e-14] = np.abs(w3-w2)[np.abs(w3-w2)<1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
-        print("One-atom system with rotation symmetry, relative maximum deviation: ", maxdiff12, " (between alternatives: ", maxdiff23,")")
+        print("One-atom system with rotation symmetry, relative maximum deviation: ",
+              maxdiff12, " (between alternatives: ", maxdiff23,")")
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff23, 0, places=9)
 
@@ -114,7 +114,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_two_combined_alternative.add(system_two_momentum_alternative[m])
 
         # Diagonalize altogether
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         system_two.restrictEnergy(state_two.energy-2, state_two.energy+2)
         system_two.setDistance(1)
         system_two.setOrder(5)
@@ -131,10 +131,12 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff23[np.abs(w3-w2)<1e-14] = np.abs(w3-w2)[np.abs(w3-w2)<1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
-        print("Two-atom system with rotation symmetry, relative maximum deviation: ", maxdiff12, " (between alternatives: ", maxdiff23,")")
+        print("Two-atom system with rotation symmetry, relative maximum deviation: ",
+              maxdiff12, " (between alternatives: ", maxdiff23,")")
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff23, 0, places=9)
 
+    def test_reflection(self):
         #######################################################
         ### Check reflection symmetry of one atom systems #####
         #######################################################
@@ -143,7 +145,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -187,14 +189,15 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Diagonalize blockwise
-        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, path_cache) # it is called odd in order to fit to the notion of the paper
-        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, path_cache))
+        # Note: it is called odd in order to fit to the notion of the paper
+        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, self.path_cache)
+        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, self.path_cache))
         system_two_odd.setDistance(1)
         system_two_odd.setOrder(5)
         system_two_odd.diagonalize()
 
-        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, path_cache)
-        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, path_cache))
+        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, self.path_cache)
+        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, self.path_cache))
         system_two_even.setDistance(1)
         system_two_even.setOrder(5)
         system_two_even.diagonalize()
@@ -203,7 +206,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two_combined.add(system_two_odd)
 
         # Diagonalize blockwise alternative
-        system_two_alternative= pi.SystemTwo(system_one_combined, system_one_combined, path_cache) # it is important to use system_one_combined
+        # Note: it is important to use system_one_combined
+        system_two_alternative= pi.SystemTwo(system_one_combined, system_one_combined, self.path_cache)
         system_two_alternative.setDistance(1)
         system_two_alternative.setOrder(5)
 
@@ -216,7 +220,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two_odd_alternative.diagonalize()
 
         # Diagonalize altogether
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         system_two.setDistance(1)
         system_two.setOrder(5)
         system_two.diagonalize()
@@ -238,23 +242,28 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff12 = np.max(maxdiff12)
         maxdiff35 = np.max(maxdiff35)
         maxdiff46 = np.max(maxdiff46)
-        print("Two-atom system with reflection symmetry, relative maximum deviation: ", maxdiff12, " (between alternatives: ", maxdiff35,", ", maxdiff46, ")")
+        print("Two-atom system with reflection symmetry, relative maximum deviation: ",
+              maxdiff12, " (between alternatives: ", maxdiff35,", ", maxdiff46, ")")
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff35, 0, places=9)
         self.assertAlmostEqual(maxdiff46, 0, places=9)
 
+    def test_permutation(self):
         #######################################################
         ### Check permutation symmetry of two atom systems ####
         #######################################################
 
-        # Remark: calling restrictEnergy() would cause a small deviation # TODO figure out exact reason (in case of symmetrized basis states, the atom-atom interaction would add energy to the diagonal)
+        # Remark: calling restrictEnergy() would cause a small
+        # deviation # TODO figure out exact reason (in case of
+        # symmetrized basis states, the atom-atom interaction would
+        # add energy to the diagonal)
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -263,7 +272,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.setEfield([1, 2, 3])
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         #system_two.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
         system_two.setDistance(1)
         system_two.setOrder(3)
@@ -294,18 +303,22 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         print("Two-atom system with permutation symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
 
+    def test_inversion(self):
         #######################################################
         ### Check inversion symmetry of two atom systems ######
         #######################################################
 
-        # Remark: calling restrictEnergy() would cause a small deviation # TODO figure out exact reason (in case of symmetrized basis states, the atom-atom interaction would add energy to the diagonal)
+        # Remark: calling restrictEnergy() would cause a small
+        # deviation # TODO figure out exact reason (in case of
+        # symmetrized basis states, the atom-atom interaction would
+        # add energy to the diagonal)
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -313,7 +326,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.setBfield([100, 200, 300])
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         #system_two.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
         system_two.setDistance(1)
         system_two.setOrder(5)
@@ -344,18 +357,22 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         print("Two-atom system with inversion symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
 
+    def test_combined(self):
         #######################################################
         ### Check combined binary symmetries ##################
         #######################################################
 
-        # Remark: calling restrictEnergy() would cause a small deviation # TODO figure out exact reason (in case of symmetrized basis states, the atom-atom interaction would add energy to the diagonal)
+        # Remark: calling restrictEnergy() would cause a small
+        # deviation # TODO figure out exact reason (in case of
+        # symmetrized basis states, the atom-atom interaction would
+        # add energy to the diagonal)
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, path_cache)
+        system_one = pi.SystemOne(state_one.element, self.path_cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -374,12 +391,13 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.diagonalize()
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
         system_two.setDistance(1)
         system_two.setOrder(3)
         system_two.diagonalize()
 
-        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, path_cache) # it is important to use system_one_combined
+        # Note: it is important to use system_one_combined
+        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, self.path_cache)
         system_two_from_combined.setDistance(1)
         system_two_from_combined.setOrder(3)
 
@@ -404,12 +422,13 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         print("Two-atom system with combined binary symmetries, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
 
-        #######################################################
-        ### Clean up ##########################################
-        #######################################################
+    #######################################################
+    ### Clean up ##########################################
+    #######################################################
 
+    def tearDown(self):
         # Delete cache directory
-        shutil.rmtree(path_cache)
+        shutil.rmtree(self.path_cache)
 
 if __name__ == '__main__':
     unittest.main()
