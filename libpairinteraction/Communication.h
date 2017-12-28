@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <memory>
-#include <functional>
 #include <string>
 #include <zmq.h>
 
@@ -74,7 +73,7 @@ public:
  */
 class socket
 {
-  std::unique_ptr < void, std::function < void(void*) > > m_socket;
+  std::unique_ptr < void, int(*)(void*) > m_socket;
   mutable bool use_cout;
 public:
   /** \brief Constructor
@@ -191,7 +190,7 @@ public:
  */
 class context
 {
-  std::unique_ptr < void, std::function < int(void*) > > m_context;
+  std::unique_ptr < void, int(*)(void*) > m_context;
 public:
   /** \brief Constructor */
   context() noexcept : m_context( zmq_ctx_new(), zmq_ctx_term ) {}

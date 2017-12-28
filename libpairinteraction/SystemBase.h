@@ -853,7 +853,16 @@ protected:
         if (hamiltonianmatrix_unperturbed_cache.size() != 0) hamiltonianmatrix_unperturbed_cache = transformator.adjoint()*hamiltonianmatrix_unperturbed_cache*transformator;
     }
     
-    void removeRestrictedStates(std::function<bool(const enumerated_state<T> &)> checkIsValidEntry) {
+    template < typename F >
+    void removeRestrictedStates(F&& checkIsValidEntry) {
+        // Validate the call signature of the passed in object
+        static_assert(
+            std::is_same<decltype(checkIsValidEntry(
+                             std::declval<enumerated_state<T> const &>())),
+                         bool>::value,
+            "Function signature mismatch!  Expected `bool "
+            "checkIsValidEntry(enumerated_state<T> const &)'");
+
         // Build transformator and remove states
         typename states_set<T>::type states_new;
         states_new.reserve(states.size());

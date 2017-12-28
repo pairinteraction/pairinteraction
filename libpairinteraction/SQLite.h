@@ -17,7 +17,6 @@
 #ifndef SQLITE_BINDINGS
 #define SQLITE_BINDINGS
 
-#include <functional>
 #include <iostream>
 #include <memory>
 #include <random>
@@ -78,7 +77,7 @@ private:
 class statement
 {
     sqlite3 *m_db;
-    std::unique_ptr<sqlite3_stmt, std::function<int(sqlite3_stmt *)>> m_stmt;
+    std::unique_ptr<sqlite3_stmt, int(*)(sqlite3_stmt *)> m_stmt;
     std::string m_sql;
     bool m_prepared;
     bool m_valid;
