@@ -15,9 +15,9 @@ install:
   - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 
-  - ps: choco install -y -r swig --version 3.0.9
-  - ps: choco install -y -r sqlite --version 3.19.2
-  - ps: choco install -y -r pkgconfiglite # TODO can we get rid of this dependency?
+  - ps: choco install -y --no-progress -r swig --version 3.0.9
+  - ps: choco install -y --no-progress -r sqlite --version 3.19.2
+  - ps: choco install -y --no-progress -r pkgconfiglite # TODO can we get rid of this dependency?
   
   - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/cpp-libraries-windows-x86_64.zip'
   - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
