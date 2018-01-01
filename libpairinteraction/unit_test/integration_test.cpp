@@ -78,8 +78,8 @@ BOOST_AUTO_TEST_CASE(integration_test)
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
     system_one.restrictL(state_one.l - 1, state_one.l + 1);
-    system_one.setEfield({0, 0, 0.1});
-    system_one.setBfield({0, 0, 1});
+    system_one.setEfield({{0, 0, 0.1}});
+    system_one.setBfield({{0, 0, 1}});
 
     // Check for correct dimensions
     BOOST_CHECK_EQUAL(system_one.getNumVectors(), 64);
