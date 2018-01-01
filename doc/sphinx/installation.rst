@@ -143,8 +143,6 @@ The build system uses CMake and has some configuration switches.  These are
 +-------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE`` | Generate code coverage report        | OFF     |
 +-------------------+--------------------------------------+---------+
-| ``WITH_ASAN``     | Enable leak detection for unit tests | OFF     |
-+-------------------+--------------------------------------+---------+
 
 These options can be passed directly to ``cmake``, i.e.
 

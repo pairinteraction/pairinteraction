@@ -74,8 +74,8 @@ BOOST_AUTO_TEST_CASE( conf_parser_test )
   BOOST_CHECK_EQUAL( cit->second.str() , "2"     );
 
   // iterate
-  for (auto it : c)   it;
-  for (auto cit : cc) cit;
+  for (auto it : c)   static_cast<void>(it);
+  for (auto cit : cc) static_cast<void>(cit);
 
   // Test fusion
   c += cc;

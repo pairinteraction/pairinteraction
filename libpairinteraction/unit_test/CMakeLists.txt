@@ -29,14 +29,10 @@ function(UNIT_TEST)
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
   # Add target for test and link with libraries
   add_executable(${UT_TARGET} ${UT_SOURCE})
-  if(WITH_ASAN)
-    set_source_files_properties(${UT_SOURCE}
-      PROPERTIES COMPILE_FLAGS "-fsanitize=address,bounds,leak")
-    set_target_properties(${UT_TARGET}
-      PROPERTIES LINK_FLAGS "-fsanitize=address,bounds,leak")
-  endif()
   if(MSVC)
-    set_property(SOURCE ${UT_SOURCE} PROPERTY COMPILE_FLAGS "/DNOMINMAX")
+    set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
+  else()
+    set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
   endif()
   target_link_libraries(${UT_TARGET} ${LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
@@ -60,6 +56,9 @@ unit_test(TARGET integration_test
   ../WignerD.cpp ../MatrixElements.cpp ../wignerSymbols/src/wignerSymbols-cpp.cpp
   ../SystemOne.cpp ../SystemTwo.cpp)
 unit_test(TARGET cache_test SOURCE cache_test.cpp)
+
+# Workaround for unused variables in wignerSymbols
+set_source_files_properties(../wignerSymbols/src/wignerSymbols-cpp.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 
 # Copy test dependencies
 add_custom_command(TARGET integration_test PRE_BUILD
