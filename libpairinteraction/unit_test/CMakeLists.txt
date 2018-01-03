@@ -58,7 +58,10 @@ unit_test(TARGET integration_test
 unit_test(TARGET cache_test SOURCE cache_test.cpp)
 
 # Workaround for unused variables in wignerSymbols
-set_source_files_properties(../wignerSymbols/src/wignerSymbols-cpp.cpp PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+if(NOT MSVC)
+  set_source_files_properties(../wignerSymbols/src/wignerSymbols-cpp.cpp
+    PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
+endif()
 
 # Copy test dependencies
 add_custom_command(TARGET integration_test PRE_BUILD
