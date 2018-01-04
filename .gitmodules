@@ -1,6 +1,6 @@
-[submodule "trunk/wignerSymbols"]
+[submodule "libpairinteraction/wignerSymbols"]
 	path = libpairinteraction/wignerSymbols
-	url = https://github.com/sebastianweber/wignerSymbols.git
+	url = https://github.com/valandil/wignerSymbols.git
 [submodule "gui/pyqtgraph"]
 	path = gui/pyqtgraph
 	url = https://github.com/pyqtgraph/pyqtgraph

@@ -42,10 +42,8 @@ target_link_libraries(pairinteraction-real    pireal)
 target_link_libraries(pairinteraction-complex picomplex)
 if(MSVC)
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
-  # TODO set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "/wdSOMENUMBER") maybe /wd0169 or /wd0649
 else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
-  set_source_files_properties(${wignerSymbols_SRCS} PROPERTIES COMPILE_FLAGS "-Wno-unused-parameter")
 endif()
 
 if( WITH_COVERAGE )
