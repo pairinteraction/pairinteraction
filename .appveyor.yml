@@ -5,6 +5,7 @@ platform: x64
 configuration: Release
 
 environment:
+    CONFIG: Release
     MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
@@ -35,11 +36,13 @@ cache:
 
 before_build:
   - cmd: md build && cd build
-  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIG%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build_script:
-  - cmd: msbuild %APPVEYOR_BUILD_FOLDER%\build\pairinteraction.sln /m /verbosity:minimal
-  - cmd: msbuild %APPVEYOR_BUILD_FOLDER%\build\win32\win32.vcxproj /m /verbosity:minimal
+  - cmake --build . --config "%CONFIG%"
+
+test_script:
+  - cmake --build . --target check --config "%CONFIG%"
 
 after_build:
   - cmd: md pairinteraction-install\libpairinteraction\databases
