@@ -25,6 +25,12 @@ endif()
 # Add current directory to search path
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+# Generate in-memory database
+
+file(READ databases/quantum_defects.sql QUANTUM_DEFECT_DATABASE_CONTENT)
+configure_file(EmbeddedDatabase.h.in ${CMAKE_CURRENT_BINARY_DIR}/EmbeddedDatabase.h)
 
 # Add the executables
 
