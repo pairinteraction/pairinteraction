@@ -40,7 +40,7 @@ add_dependencies(pythonscripts gui)
 
 # Compile Python scripts
 
-if ( CMAKE_HOST_WIN32 OR CMAKE_HOST_APPLE )
+if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
 
   find_program(PYINSTALLER NAMES pyinstaller)
 
