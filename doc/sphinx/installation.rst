@@ -15,22 +15,22 @@ architectures:
 - Mac OS X ``dmg``: Mac OS X 10.11
 - Windows ``exe``: Compiled with Visual Studio 2015
 
-Pairinteraction Python Library
-------------------------------
+The binary builds come with a Python and C++ library. The library can be used
+for simulating a broad range of two-atom Rydberg systems taking into
+account electric and magnetic fields. Quantities as matrix elements,
+eigenenergies, or excitation dynamics can be calculated. For usage examples
+visit the `tutorials`_ section of the documentation or download the `Python`_
+and `C++`_ example programs.
 
-The pairinteraction program comes with a Python 3 library. It can be used for simulating a broad range of two-atom Rydberg systems taking into
-account electric and magnetic fields. Quantities as matrix elements, eigenenergies, or excitation dynamics can be calculated. Examples are shown
-in the `tutorials`_ section of the documentation. By installing a build from `GitHub Releases`_, the
-library gets installed as well. The library requires ``python3``, ``numpy``, ``scipy``, ``matplotlib``,
-and ``pyzmq``. After installing these dependencies, the provided Python `example
-scripts`_ should work out-of-the-box.
-
-.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
-.. _example scripts: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
+.. _python: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python
+.. _C++: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_cpp
 
-For GNU/Linux, all dependencies are installed automatically and the
-Python library can be used right away.
+Python Library
+^^^^^^^^^^^^^^
+
+For GNU/Linux, all dependencies of the pairinteraction Python 3 library are installed
+automatically and the Python library can be used right away.
 
 For Windows or OS X, we recommend the installation of the Python 3
 distribution `Miniconda`_ or `Anaconda`_. Then, the dependencies of the
@@ -45,7 +45,7 @@ following command:
     conda install numpy scipy matplotlib pyzmq
 
 In order to use the pairinteraction Python 3 library with Windows or
-OS X, the path to the library has to be added manually to the Python package search path.
+OS X, the path containing the library has to be added manually to the Python package search path.
 Assuming that the pairinteraction software was installed to its default location, this
 can be done by adding the following code block to the top of a Python
 script:
@@ -56,16 +56,13 @@ script:
     if sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
     elif sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
 
-Alternatively, in case of Windows, you can copy or link the folder ``C:\Program Files\pairinteraction\libpairinteraction`` somewhere into the Python package search path.
-In case of OS X, the folder ``/Applications/pairinteraction.app/Contents/Resources/libpairinteraction`` has to be copied or linked.
-
 Building from Source
 --------------------
 
 Requirements
 ^^^^^^^^^^^^
 
-The following tools libraries, including header files, are required
+The following tools and libraries, including header files, are required
 for compiling the source code.
 
 Git
@@ -291,8 +288,70 @@ Mac OS X
 Dependencies
 """"""""""""
 
+The build system relies on CMake. For building the pairinteraction C++ backend,
+you have to install (e.g. via homebrew) the following packages
+
+.. code-block:: none
+
+    cmake git eigen gsl swig zeromq llvm@3.9
+
+.. note::
+    The package llvm contains the Clang C++ compiler. We use this compiler as it
+    supports OpenMP with OS X. We install version 3.9 because of a bug
+    with the most recent version.
+
+For the Python pairinteraction library and the Python GUI, you need a Python 3
+distribution (we recommend `Miniconda`_ or `Anaconda`_). The following Python 3
+packages have to be installed
+
+.. code-block:: none
+
+    pint psutil pyqt numpy scipy pyzmq
+
+.. _Miniconda: https://conda.io/miniconda.html
+.. _Anaconda: https://www.anaconda.com/distribution/
+
 Build Instructions
 """"""""""""""""""
+
+To build for OS X checkout the latest version of pairinteraction
+using ``git``
+
+.. code-block:: bash
+
+    $ git clone --recursive https://github.com/pairinteraction/pairinteraction.git
+
+.. note::
+    Don't forget the ``--recursive`` switch.  Otherwise all the submodules
+    will be missing and you won't be able to build pairinteraction
+    successfully.
+
+Given that the package ``llvm@3.9`` has been installed via ``homebrew``, we force CMake
+to use the Clang C++ compiler by executing the bash commands
+
+.. code-block:: bash  
+    $ export CXX=/usr/local/opt/llvm@3.9/bin/clang++
+    $ export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
+
+Then proceed with the usual CMake workflow
+
+.. code-block:: bash
+
+    $ cd pairinteraction
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make -j 8
+
+This will build pairinteraction for real and complex matrices.
+Afterwards you can start the pairinteraction GUI from the build directory
+
+.. code-block:: bash
+
+    $ ./pairinteraction
+
+In order to use the pairinteraction Python 3 library ``libpairinteraction``,
+you has to add the build directory to the Python package search path.
 
 Code documentation
 ^^^^^^^^^^^^^^^^^^
