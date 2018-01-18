@@ -26,7 +26,7 @@ function(PYTHON_TEST)
   # Tests are executed in the root directory
   add_test(NAME ${UT_TARGET} COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties(${UT_TARGET}
-    PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}")
+    PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
 
 # Build library before testing
