@@ -56,6 +56,15 @@ script:
     if sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
     elif sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
 
+C++ Library
+^^^^^^^^^^^
+
+For GNU/Linux, all dependencies of the pairinteraction C++ library are installed
+automatically and the C++ library can be used right away.
+
+For Windows or OS X, the following C++ libraries and their development headers have to
+be installed manually: ``Eigen3``, ``Sqlite3``, ``Boost``, ``GSL``, ``ZeroMQ``
+
 Building from Source
 --------------------
 
@@ -213,6 +222,10 @@ Afterwards you can start the program from the build directory
 For the GUI to work you need Python3 with the packages ``numpy``,
 ``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
 
+In order to use the pairinteraction Python 3 library,
+you has to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.
+
 openSUSE Leap
 ^^^^^^^^^^^^^
 
@@ -282,6 +295,10 @@ Afterwards you can start the program from the build directory
 For the GUI to work you need Python3 with the packages ``numpy``,
 ``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
 
+In order to use the pairinteraction Python 3 library,
+you has to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.
+
 Mac OS X
 ^^^^^^^^
 
@@ -350,8 +367,9 @@ Afterwards you can start the pairinteraction GUI from the build directory
 
     $ ./pairinteraction
 
-In order to use the pairinteraction Python 3 library ``libpairinteraction``,
-you has to add the build directory to the Python package search path.
+In order to use the pairinteraction Python 3 library,
+you has to add the build directory to the Python package search path. The pairinteraction C++
+library can be used right away.
 
 Code documentation
 ^^^^^^^^^^^^^^^^^^
