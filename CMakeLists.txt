@@ -50,7 +50,7 @@ option(WITH_ASAN     "Enable leak detection for unit tests" OFF)
 
 # Mac OS X specific build instructions
 
-set(CMAKE_MACOSX_RPATH 0)
+set(CMAKE_MACOSX_RPATH 1)
 set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/apple")
 if( WITH_DMG )
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")

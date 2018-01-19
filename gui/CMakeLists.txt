@@ -14,9 +14,13 @@
 
 find_package(PyUIC REQUIRED)
 
-configure_file(version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py)
-
 add_custom_target(gui ALL)
+
+add_custom_command(
+  TARGET gui
+  COMMAND ${CMAKE_COMMAND} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein -DOUT=${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py -DVERSION=${VERSION} -P ${CMAKE_MODULE_PATH}/configure.cmake
+  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein
+)
 
 add_custom_command(
   TARGET gui

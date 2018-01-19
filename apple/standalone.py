@@ -37,6 +37,7 @@ def standalone(file):
     out = subprocess.check_output(['otool', '-l', file]).decode('utf-8')
     p = re.compile("LC_RPATH\n.*\n.+path (.*?) \(")
     rpaths = [m.group(1) for m in p.finditer(out)]
+    rpaths.append(installpath)
 
     # Get dependencies
     o = subprocess.Popen(['otool', '-L', file], stdout=subprocess.PIPE)
@@ -46,8 +47,8 @@ def standalone(file):
         if l[0] == '\t':
 
             # Get path of dependeny
-            libpath = l.strip().split(' (', 1)[0]
-            libpath = libpath.replace("@loader_path", os.path.dirname(file))
+            libpath_original = l.strip().split(' (', 1)[0]
+            libpath = libpath_original.replace("@loader_path", os.path.dirname(file))
 
             if "@rpath" in libpath:
                 if not rpaths:
@@ -56,6 +57,7 @@ def standalone(file):
                 for r in rpaths:
                     testpath = libpath.replace("@rpath", r)
                     testpath = testpath.replace("@loader_path", os.path.dirname(file))
+                    testpath = testpath.replace("@executable_path", os.path.dirname(file))
                     if os.path.isfile(testpath):
                         libpath = testpath
                         break
@@ -81,13 +83,12 @@ def standalone(file):
                     else:
                         libpath_new = os.path.join("@loader_path", "libraries", os.path.basename(libpath_abs))
 
-                cmd = ['install_name_tool', '-change', libpath, libpath_new, file_new]
+                cmd = ['install_name_tool', '-change', libpath_original, libpath_new, file_new]
                 if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
                     raise Exception("Error updating paths.")
 
                 # Analyze the current dependency
                 yield libpath_abs
-
 
 if not os.path.exists(librarypath):
     os.makedirs(librarypath)
