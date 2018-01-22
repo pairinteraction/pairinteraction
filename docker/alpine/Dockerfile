@@ -2,7 +2,7 @@ FROM alpine:edge
 RUN echo "http://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories \
   && apk update \
   && apk add \
-    cmake make g++ git file \
+    bash cmake make g++ git file \
     eigen-dev py3-qt5 \
     boost-dev \
     gsl-dev \
