@@ -63,7 +63,7 @@ For GNU/Linux, all dependencies of the pairinteraction C++ library are installed
 automatically and the C++ library can be used right away.
 
 For Windows or OS X, the following C++ libraries and their development headers have to
-be installed manually: ``Eigen3``, ``Sqlite3``, ``Boost``, ``GSL``, ``ZeroMQ``
+be installed manually: Eigen3, Sqlite3, Boost, GSL, ZeroMQ
 
 Building from Source
 --------------------
@@ -219,11 +219,11 @@ Afterwards you can start the program from the build directory
 
     $ ./pairinteraction
 
-For the GUI to work you need Python3 with the packages ``numpy``,
+For the GUI to work, you need Python3 with the packages ``numpy``,
 ``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
 
 In order to use the pairinteraction Python 3 library,
-you has to add the build directory to the Python package search path. The pairinteraction C++
+you have to add the build directory to the Python package search path. The pairinteraction C++
 library can be used right away.
 
 openSUSE Leap
@@ -292,11 +292,11 @@ Afterwards you can start the program from the build directory
 
     $ ./pairinteraction
 
-For the GUI to work you need Python3 with the packages ``numpy``,
+For the GUI to work, you need Python3 with the packages ``numpy``,
 ``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
 
 In order to use the pairinteraction Python 3 library,
-you has to add the build directory to the Python package search path. The pairinteraction C++
+you have to add the build directory to the Python package search path. The pairinteraction C++
 library can be used right away.
 
 Mac OS X
@@ -368,7 +368,7 @@ Afterwards you can start the pairinteraction GUI from the build directory
     $ ./pairinteraction
 
 In order to use the pairinteraction Python 3 library,
-you has to add the build directory to the Python package search path. The pairinteraction C++
+you have to add the build directory to the Python package search path. The pairinteraction C++
 library can be used right away.
 
 Code documentation
