@@ -18,8 +18,8 @@ matrix:
       sudo: required
       services: docker
       env:
-        - image=ubuntu:zesty
-        - package=pairinteraction-install-ubuntu-zesty.deb
+        - image=ubuntu:bionic
+        - package=pairinteraction-install-ubuntu-bionic.deb
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux
       sudo: required
