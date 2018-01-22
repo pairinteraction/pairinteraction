@@ -35,6 +35,13 @@ matrix:
         - image=opensuse
         - package=pairinteraction-install-opensuse.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=alpine
+        - package=pairinteraction-install-alpine.tar.gz
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: osx
       osx_image: xcode9
       env:
