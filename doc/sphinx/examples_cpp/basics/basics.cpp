@@ -17,22 +17,14 @@
 #include <boost/filesystem.hpp>
 #include <stdexcept>
 #include <iostream>
-
-#include "libpairinteraction/dtypes.h"
-#include "libpairinteraction/State.h"
-#include "libpairinteraction/SystemOne.h"
-#include "libpairinteraction/SystemTwo.h"
+#include <libpairinteraction/State>
+#include <libpairinteraction/System>
 
 int main() {
-    // Create cache directory
-    boost::filesystem::path path_cache =
-        boost::filesystem::temp_directory_path()/boost::filesystem::unique_path();
+    // Create cache directory if not already existing
+    boost::filesystem::path path_cache = boost::filesystem::current_path()/"cache";
     if (boost::filesystem::create_directory(path_cache)) {
-        std::cout << "Cache directory "
-                    << boost::filesystem::absolute(path_cache).string()
-                    << " created." << std::endl;
-    } else {
-        throw std::runtime_error("Could not create cache directory.");
+        std::cout << "Cache directory " << path_cache.string() << " created." << std::endl;
     }
 
     // Setup states
@@ -47,20 +39,11 @@ int main() {
     system_one.setBfield({{0, 0, 1}});
     
     // Print Hamiltonian
-    std::cout << system_one.getHamiltonianmatrix() << std::endl;
+    std::cout << system_one.getHamiltonianmatrix() << "\n";
     
     // Diagonalize one-atom system
     system_one.diagonalize();
 
     // Print Hamiltonian
     std::cout << system_one.getHamiltonianmatrix() << std::endl;
-    
-    // Remove cache directory
-    if (boost::filesystem::remove_all(path_cache)) {
-        std::cout << "Cache directory "
-                    << boost::filesystem::absolute(path_cache).string()
-                    << " removed." << std::endl;
-    } else {
-        throw std::runtime_error("Could not remove cache directory.");
-    }
 }
