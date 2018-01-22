@@ -15,7 +15,6 @@
  */
 
 #include <boost/filesystem.hpp>
-#include <stdexcept>
 #include <iostream>
 #include <libpairinteraction/State>
 #include <libpairinteraction/System>
@@ -24,7 +23,7 @@ int main() {
     // Create cache directory if not already existing
     boost::filesystem::path path_cache = boost::filesystem::current_path()/"cache";
     if (boost::filesystem::create_directory(path_cache)) {
-        std::cout << "Cache directory " << path_cache.string() << " created." << std::endl;
+        std::cout << "Cache directory " << path_cache.string() << " created." << "\n";
     }
 
     // Setup states
@@ -45,5 +44,5 @@ int main() {
     system_one.diagonalize();
 
     // Print Hamiltonian
-    std::cout << system_one.getHamiltonianmatrix() << std::endl;
+    std::cout << system_one.getHamiltonianmatrix() << "\n";
 }
