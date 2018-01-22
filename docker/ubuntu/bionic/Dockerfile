@@ -1,5 +1,4 @@
-FROM ubuntu:zesty
-MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
+FROM ubuntu:bionic
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
