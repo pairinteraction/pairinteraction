@@ -42,6 +42,7 @@ build_script:
   - cmake --build . --config "%CONFIG%"
 
 test_script:
+  - xcopy libpairinteraction\Release\* libpairinteraction\
   - cmake --build . --target check --config "%CONFIG%"
 
 after_build:
