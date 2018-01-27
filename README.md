@@ -4,6 +4,7 @@
 [![AppVeyor build status][appveyor-svg]][appveyor-link]
 [![Code coverage report][codecov-svg]][codecov-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
+[![Documentation][docs-svg]][sphinx-link]
 
 *A Rydberg Interaction Calculator*
 
@@ -35,7 +36,7 @@ Binaries are available for many systems, including several GNU/Linux distributio
 
 Pairinteraction is released under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  The Apache License 2.0 has been approved by the Free Software Foundation and the Open Source Initiative and is [compatible with the GNU General Public License version 3 (GPLv3)](https://www.gnu.org/licenses/license-list.html#apache2).
 
-Note that not all files in this repository belong to the pairinteraction project.  `FindEigen3.cmake` is part of the Eigen project and the submodules link to their host repositories.  The individual licenses apply.
+Note that not all files in this repository belong to the pairinteraction project.  The submodules link to their host repositories.  The individual licenses apply.
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
@@ -46,6 +47,7 @@ Note that not all files in this repository belong to the pairinteraction project
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
+[docs-svg]: https://pairinteraction.github.io/images/docs-badge.svg
 [sphinx-link]: https://pairinteraction.github.io/pairinteraction/sphinx/html/index.html
 [doxygen-link]: https://pairinteraction.github.io/pairinteraction/doxygen/html/index.html
 [issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
