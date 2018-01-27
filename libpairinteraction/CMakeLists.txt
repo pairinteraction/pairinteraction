@@ -67,8 +67,8 @@ endif()
 
 # Add external libraries
 
-find_package(Eigen3 REQUIRED)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
+# Include Eigen
+include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/eigen)
 
 find_package(Sqlite3 REQUIRED)
 include_directories(${SQLITE3_INCLUDE_DIR})

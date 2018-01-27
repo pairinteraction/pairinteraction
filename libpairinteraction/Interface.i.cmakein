@@ -125,7 +125,7 @@ namespace std {
   %template(SetInt) set<int>;
   %template(SetFloat) set<float>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
-  //TODO @hmenke %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
+  %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
 };
 
 
