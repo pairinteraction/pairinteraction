@@ -67,7 +67,7 @@ function gh_pages_update()
 
     git add --all ".nojekyll" "doxygen/html" "sphinx/html";
 
-    git commit -m "Documentation build from Travis for commit ${TRAVIS_COMMIT}";
+    git commit --quiet -m "Documentation build from Travis for commit ${TRAVIS_COMMIT}";
 
     git remote add upstream https://${GH_TOKEN}@github.com/${TRAVIS_REPO_SLUG};
     git push --quiet --force upstream gh-pages > /dev/null 2>&1;
