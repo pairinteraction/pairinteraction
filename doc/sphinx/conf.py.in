@@ -35,7 +35,7 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    'numpydoc'
+    'sphinx.ext.napoleon'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -158,9 +158,6 @@ texinfo_documents = [
      author, 'pairinteraction', 'One line description of project.',
      'Miscellaneous'),
 ]
-
-# WARNING: toctree contains reference to nonexisting document
-numpydoc_show_class_members = False
 
 # Use constructor docstring as class docstring
 autoclass_content = "init"

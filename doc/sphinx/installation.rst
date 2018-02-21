@@ -63,10 +63,18 @@ For GNU/Linux, all dependencies of the pairinteraction C++ library are installed
 automatically and the C++ library can be used right away.
 
 For Windows or OS X, the following C++ libraries and their development headers have to
-be installed manually: Eigen3, Sqlite3, Boost, GSL, ZeroMQ
+be installed manually: Sqlite3, Boost, GSL, ZeroMQ
 
 Building from Source
 --------------------
+
+.. warning::
+   In the tutorials and examples you will often find instructions to
+   extend the ``PYTHONPATH`` to accomodate pairinteraction.  These
+   instructions only hold true if you installed pairinteraction from
+   the official binary installers.  If you built from source you
+   instead have to point the scripts to your build directory or the
+   custom location where you installed the program.
 
 Requirements
 ^^^^^^^^^^^^
@@ -85,10 +93,6 @@ C++ Backend and Python Interface
 
 C++ Compiler
     C++11 capable C++ compiler (e.g., GCC 4.8.1 or later).
-
-Eigen3
-    Eigen is a C++ template library for linear algebra: matrices,
-    vectors, numerical solvers, and related algorithms.
 
 Sqlite3
    SQLite is a self-contained, high-reliability, embedded,
@@ -165,12 +169,11 @@ Dependencies
 """"""""""""
 
 The build system relies on CMake.  To build the Python GUI we need the
-PyQT5 toolkit.  The library Eigen3 is header only and thus cross
-platform.  Thus you have to install the following packages
+PyQT5 toolkit.  Thus you have to install the following packages
 
 .. code-block:: none
 
-    cmake build-essential git libeigen3-dev pyqt5-dev-tools
+    cmake build-essential git pyqt5-dev-tools
 
 For the backend we need the following packages
 
@@ -231,12 +234,11 @@ Dependencies
 """"""""""""
 
 The build system relies on CMake.  To build the Python GUI we need the
-PyQT5 toolkit.  The library Eigen3 is header only and thus cross
-platform.  Thus you have to install the following packages
+PyQT5 toolkit.  Thus you have to install the following packages
 
 .. code-block:: none
 
-    git cmake eigen3-devel python3-qt5-devel
+    git cmake python3-qt5-devel
 
 For the backend we need the following packages
 
@@ -308,7 +310,7 @@ you have to install (e.g. via homebrew) the following packages
 
 .. code-block:: none
 
-    cmake git eigen gsl swig zeromq llvm@3.9
+    cmake git gsl swig zeromq llvm@3.9
 
 .. note::
     The package llvm contains the Clang C++ compiler. We use this compiler as it
@@ -344,7 +346,8 @@ using ``git``
 Given that the package ``llvm@3.9`` has been installed via ``homebrew``, we force CMake
 to use the Clang C++ compiler by executing the bash commands
 
-.. code-block:: bash  
+.. code-block:: bash
+
     $ export CXX=/usr/local/opt/llvm@3.9/bin/clang++
     $ export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
 
