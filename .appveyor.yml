@@ -39,30 +39,12 @@ before_build:
   - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIG%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build_script:
-  - cmake --build . --config "%CONFIG%"
+  - cmd: cmake --build . --config "%CONFIG%"
 
 test_script:
-  - xcopy libpairinteraction\Release\* libpairinteraction\
-  - cmake --build . --target check --config "%CONFIG%"
-
-after_build:
-  - cmd: md pairinteraction-install\libpairinteraction\databases
-  - cmd: md pairinteraction-install\gui
-  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe" pairinteraction-install\
-  - cmd: xcopy /E dist\pairinteraction\. pairinteraction-install\gui
-  - cmd: copy libpairinteraction\Release pairinteraction-install\libpairinteraction
-  - cmd: copy libpairinteraction\pireal.py pairinteraction-install\libpairinteraction
-  - cmd: copy libpairinteraction\picomplex.py pairinteraction-install\libpairinteraction
-  - cmd: copy libpairinteraction\databases\quantum_defects.db pairinteraction-install\libpairinteraction\databases
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gsl.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\gslcblas.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\libzmq.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\sqlite3.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_filesystem-vc140-mt-1_64.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_program_options-vc140-mt-1_64.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_serialization-vc140-mt-1_64.dll pairinteraction-install\libpairinteraction
-  - cmd: copy ..\vcpkg-export\installed\x64-windows\bin\boost_system-vc140-mt-1_64.dll pairinteraction-install\libpairinteraction
-  - cmd: 7z a -tzip pairinteraction-install-windows-x86_64.zip pairinteraction-install > nul
+  - cmd: xcopy ..\vcpkg-export\installed\x64-windows\bin\* %SystemRoot%\system32\
+  - cmd: xcopy libpairinteraction\Release\* libpairinteraction
+  - cmd: cmake --build . --target check --config "%CONFIG%"
 
 artifacts:
   - path: build\pairinteraction-install-windows.exe
