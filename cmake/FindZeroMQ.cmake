@@ -16,14 +16,32 @@
 #
 # ZEROMQ_LIBRARY       - the ZeroMQ library
 # ZEROMQ_INCLUDE_DIR   - path including ZeroMQ.h
-# ZEROMQ_BINARY        - ZeroMQ executable
 
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include (FindPackageHandleStandardArgs)
 
+# Get include dir
 find_path( ZEROMQ_INCLUDE_DIR NAMES zmq.h )
 
-find_library( ZEROMQ_LIBRARY NAMES zmq libzmq )
+# Get version, see https://github.com/zeromq/azmq/blob/master/config/FindZeroMQ.cmake
+set(_ZeroMQ_H ${ZEROMQ_INCLUDE_DIR}/zmq.h)
+
+function(_zmqver_EXTRACT _ZeroMQ_VER_COMPONENT _ZeroMQ_VER_OUTPUT)
+    set(CMAKE_MATCH_1 "0")
+    set(_ZeroMQ_expr "^[ \\t]*#define[ \\t]+${_ZeroMQ_VER_COMPONENT}[ \\t]+([0-9]+)$")
+    file(STRINGS "${_ZeroMQ_H}" _ZeroMQ_ver REGEX "${_ZeroMQ_expr}")
+    string(REGEX MATCH "${_ZeroMQ_expr}" ZeroMQ_ver "${_ZeroMQ_ver}")
+    set(${_ZeroMQ_VER_OUTPUT} "${CMAKE_MATCH_1}" PARENT_SCOPE)
+endfunction()
+
+_zmqver_EXTRACT("ZMQ_VERSION_MAJOR" ZeroMQ_VERSION_MAJOR)
+_zmqver_EXTRACT("ZMQ_VERSION_MINOR" ZeroMQ_VERSION_MINOR)
+_zmqver_EXTRACT("ZMQ_VERSION_PATCH" ZeroMQ_VERSION_PATCH)
+
+message(STATUS "ZeroMQ version: ${ZeroMQ_VERSION_MAJOR}.${ZeroMQ_VERSION_MINOR}.${ZeroMQ_VERSION_PATCH}")
+
+# Get library
+find_library( ZEROMQ_LIBRARY NAMES zmq libzmq "libzmq-mt-${ZeroMQ_VERSION_MAJOR}_${ZeroMQ_VERSION_MINOR}_${ZeroMQ_VERSION_PATCH}")
 
 # Set the FOUND variable to TRUE if all listed variables are set.
 find_package_handle_standard_args( ZEROMQ DEFAULT_MSG ZEROMQ_LIBRARY ZEROMQ_INCLUDE_DIR )

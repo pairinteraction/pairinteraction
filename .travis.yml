@@ -49,7 +49,7 @@ matrix:
       before_install:
         - wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-MacOSX-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh && ./miniconda.sh -b -p $HOME/miniconda3 && source $HOME/miniconda3/bin/activate root
-        - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/python-packages-osx.zip
+        - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1521053340/python-packages-osx.zip
         - unzip python-packages-osx.zip
         - conda config --prepend channels file:///$TRAVIS_BUILD_DIR/conda-export
         - brew update

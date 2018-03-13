@@ -16,7 +16,6 @@
 
 !define APP_NAME "pairinteraction"
 !define BUILD_DIR "..\build"
-!define DLL_DIR "..\vcpkg-export\installed\x64-windows\bin\"
 !define PROGDIR $PROGRAMFILES64
 
 name ${APP_NAME}
@@ -80,14 +79,6 @@ SectionGroup /e "${APP_NAME}"
     File "${BUILD_DIR}\libpairinteraction\Release\*"
     File "${BUILD_DIR}\libpairinteraction\pireal.py"
     File "${BUILD_DIR}\libpairinteraction\picomplex.py"
-    File "${DLL_DIR}\gsl.dll"
-    File "${DLL_DIR}\gslcblas.dll"
-    File "${DLL_DIR}\libzmq.dll"
-    File "${DLL_DIR}\sqlite3.dll"
-    File "${DLL_DIR}\boost_filesystem-vc140-mt-1_64.dll"
-    File "${DLL_DIR}\boost_program_options-vc140-mt-1_64.dll"
-    File "${DLL_DIR}\boost_serialization-vc140-mt-1_64.dll"
-    File "${DLL_DIR}\boost_system-vc140-mt-1_64.dll"
     SetOutPath "$INSTDIR\libpairinteraction\databases"
     File "${BUILD_DIR}\libpairinteraction\databases\*.db"
 

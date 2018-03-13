@@ -5,7 +5,6 @@ platform: x64
 configuration: Release
 
 environment:
-    CONFIG: Release
     MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
@@ -20,10 +19,10 @@ install:
   - ps: choco install -y --no-progress -r sqlite --version 3.19.2
   - ps: choco install -y --no-progress -r pkgconfiglite # TODO can we get rid of this dependency?
   
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/cpp-libraries-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1521053340/cpp-libraries-windows-x86_64.zip'
   - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
 
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/python-packages-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1521053340/python-packages-windows-x86_64.zip'
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
@@ -36,15 +35,17 @@ cache:
 
 before_build:
   - cmd: md build && cd build
-  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIG%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
+  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIGURATION%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build_script:
-  - cmd: cmake --build . --config "%CONFIG%"
+  - cmd: cmake --build . --config "%CONFIGURATION%"
+  
+after_build:
+  - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
 
 test_script:
-  - cmd: xcopy ..\vcpkg-export\installed\x64-windows\bin\* %SystemRoot%\system32\
   - cmd: xcopy libpairinteraction\Release\* libpairinteraction
-  - cmd: cmake --build . --target check --config "%CONFIG%"
+  - cmd: cmake --build . --target check --config "%CONFIGURATION%"
 
 artifacts:
   - path: build\pairinteraction-install-windows.exe
