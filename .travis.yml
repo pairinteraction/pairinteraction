@@ -14,7 +14,7 @@ matrix:
         - conda create -y --name default --clone root
         - conda install -y -q conda-build
       script:
-        - conda metapackage pairinteraction-dependencies $COMMIT_TIMESTAMP --no-anaconda-upload --dependencies "pyqt 5.6.0" "numpy 1.13.1" "scipy 0.19.1" "psutil 5.2.2" "pint 0.8.1" "pyzmq 16.0.2"
+        - conda metapackage pairinteraction-dependencies $COMMIT_TIMESTAMP --no-anaconda-upload --dependencies pyqt numpy scipy psutil pint pyzmq
 
         - source activate default
         - conda clean -y -a
