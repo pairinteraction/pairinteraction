@@ -79,8 +79,11 @@ class TestCompute(unittest.TestCase):
         pi.compute(self.path_config, self.path_cache, endpoint)
 
     def tearDown(self):
-        os.remove(self.path_config)
-        shutil.rmtree(self.path_cache)
+        try:
+            os.remove(self.path_config)
+            shutil.rmtree(self.path_cache)
+        except:
+            pass
 
 if __name__ == '__main__':
     unittest.main()

@@ -34,9 +34,7 @@ add_dependencies(check _pireal _picomplex)
 
 # Add Python test cases
 python_test(TARGET states SOURCE state.py)
-if(NOT MSVC) # line 82, os.remove(self.path_config), PermissionError: [WinError 32] The process cannot access the file because it is being used by another process: 'C:\\Users\\appveyor\\AppData\\Local\\Temp\\1\\tmp9z5zs3g_'
-  python_test(TARGET compute SOURCE compute.py)
-endif()
+python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
 python_test(TARGET wavefunction SOURCE wavefunction.py)
 if(NOT MSVC) # timeout
