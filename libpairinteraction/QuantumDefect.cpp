@@ -30,10 +30,10 @@ private:
     std::string msg;
 
 public:
-    no_defect(QuantumDefect const &qd) : msg()
+    no_defect(QuantumDefect const &qd)
+        : msg{"There is no defect available for " + qd.species +
+              ", l = " + std::to_string(qd.l) + ", j = " + std::to_string(qd.j)}
     {
-        msg = "There is no defect available for " + qd.species +
-              ", l = " + std::to_string(qd.l) + ", j = " + std::to_string(qd.j);
     }
 
     const char *what() const noexcept { return msg.c_str(); }
@@ -44,10 +44,10 @@ private:
     std::string msg;
 
 public:
-    no_potential(QuantumDefect const &qd) : msg()
+    no_potential(QuantumDefect const &qd)
+        : msg{"There is no model potential available for " + qd.species +
+              ", l = " + std::to_string(qd.l)}
     {
-        msg = "There is no model potential available for " + qd.species +
-              ", l = " + std::to_string(qd.l);
     }
 
     const char *what() const noexcept { return msg.c_str(); }
@@ -80,10 +80,9 @@ void QuantumDefect::setup(sqlite3 *db)
     static Cache<Key, Element, Hash> cache;
 
     Key const key{species, n, l, j};
-    if (auto oe = cache.restore(key))
-    {
+    if (auto oe = cache.restore(key)) {
         e = oe.get(); // Restore cache
-        return; // Return early
+        return;       // Return early
     }
 
     std::stringstream ss;

@@ -18,6 +18,7 @@
 #include "SystemOne.h"
 #include "MatrixElements.h"
 
+#include <cctype>
 #include <cmath>
 #include <limits>
 #include <numeric>

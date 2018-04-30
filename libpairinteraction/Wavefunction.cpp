@@ -17,6 +17,7 @@
 #include "QuantumDefect.h"
 #include "Wavefunction.h"
 
+#include <cctype>
 #include <string>
 #include <vector>
 #include <cmath>
