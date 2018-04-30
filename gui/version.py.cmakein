@@ -15,4 +15,4 @@
 # Versioning
 version_program = "@VERSION@"
 version_settings = 16
-version_cache = 14
+version_cache = 15

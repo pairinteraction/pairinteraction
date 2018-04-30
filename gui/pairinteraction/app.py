@@ -560,7 +560,7 @@ class MainWindow(QtGui.QMainWindow):
         conn = sqlite3.connect(self.path_quantumdefects)
         c = conn.cursor()
         c.execute('SELECT DISTINCT element FROM rydberg_ritz')
-        elements = [e[0] for e in c.fetchall()]
+        elements = [e[0] for e in c.fetchall() if not e[0] in ["Sr1", "Sr3"]] # TODO
         conn.close()
 
         for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:

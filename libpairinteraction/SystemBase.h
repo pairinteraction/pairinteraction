@@ -95,7 +95,6 @@ public:
     }
     
     void restrictN(int n_min, int n_max) {
-        n_min = std::max(n_min, 1);
         this->range(range_n, n_min, n_max);
     }
     
@@ -104,7 +103,6 @@ public:
     }
     
     void restrictL(int l_min, int l_max) {
-        l_min = std::max(l_min, 0);
         this->range(range_l, l_min, l_max);
     }
     
@@ -113,7 +111,6 @@ public:
     }
     
     void restrictJ(float j_min, float j_max) {
-        j_min = std::fmax(j_min, 0.5);
         this->range(range_j, j_min, j_max);
     }
     

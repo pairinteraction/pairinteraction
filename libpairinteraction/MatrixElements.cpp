@@ -23,6 +23,7 @@
 #include <string>
 #include <limits>
 #include <stdexcept>
+#include <cctype>
 
 bool selectionRulesMomentum(StateOne const& state1, StateOne const& state2, int q) {
     bool validL = state1.l == state2.l;
@@ -62,6 +63,9 @@ MatrixElements::MatrixElements(std::string const& species, std::string const& db
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
+
+    s = 0.5;
+    if (std::isdigit(species.back())) s = (std::atoi(&species.back())-1)/2.;
 }
 
 MatrixElements::MatrixElements(const Configuration& config, std::string const& species, std::string const& dbname) : MatrixElements(species,dbname) {
@@ -546,14 +550,14 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
 
     if (calcElectricMultipole || calcMagneticMomentum) {
         stmt.exec("create table if not exists cache_reduced_commutes_s ("
-                 "k integer, l1 integer, j1 double,"
-                 "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
+                 "s double, k integer, l1 integer, j1 double,"
+                 "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
     }
 
     if (calcMagneticMomentum) {
         stmt.exec("create table if not exists cache_reduced_commutes_l ("
-                 "k integer, l1 integer, j1 double,"
-                 "l2 integer, j2 double, value double, primary key (k, l1, j1, l2, j2)) without rowid;");
+                 "s double, k integer, l1 integer, j1 double,"
+                 "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
     }
 
     if (calcElectricMultipole) {
@@ -644,32 +648,34 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        stmt.set("select value from cache_reduced_commutes_s where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
+        stmt.set("select value from cache_reduced_commutes_s where `s` = ?1 and `k` = ?2 and `l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
 
         stmt.prepare();
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             auto state = cache.first;
-            stmt.bind(1, kappa);
-            stmt.bind(2, state.l[0]);
-            stmt.bind(3, state.j[0]);
-            stmt.bind(4, state.l[1]);
-            stmt.bind(5, state.j[1]);
+            stmt.bind(1, s);
+            stmt.bind(2, kappa);
+            stmt.bind(3, state.l[0]);
+            stmt.bind(4, state.j[0]);
+            stmt.bind(5, state.l[1]);
+            stmt.bind(6, state.j[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
             stmt.reset();
         }
     }
 
     if (calcMagneticMomentum) {
-        stmt.set("select value from cache_reduced_commutes_l where `k` = ?1 and `l1` = ?2 and `j1` = ?3 and `l2` = ?4 and `j2` = ?5;");
+        stmt.set("select value from cache_reduced_commutes_l where `s` = ?1 and `k` = ?2 and `l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
 
         stmt.prepare();
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             auto state = cache.first;
             stmt.bind(1, kappa);
-            stmt.bind(2, state.l[0]);
-            stmt.bind(3, state.j[0]);
-            stmt.bind(4, state.l[1]);
-            stmt.bind(5, state.j[1]);
+            stmt.bind(2, s);
+            stmt.bind(3, state.l[0]);
+            stmt.bind(4, state.j[0]);
+            stmt.bind(5, state.l[1]);
+            stmt.bind(6, state.j[1]);
             if (stmt.step()) cache.second = stmt.get<double>(0);
             stmt.reset();
         }
@@ -752,27 +758,31 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     }
 
     if (calcElectricMultipole || calcMagneticMomentum) {
-        stmt.set("insert or ignore into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
+        stmt.set("insert or ignore into cache_reduced_commutes_s (s, k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
 
         stmt.prepare();
         for (auto &cache : cache_reduced_commutes_s[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
-                        WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1], kappa);
-
-                if (cache.second > 1e9) {
-                    std::cout << "Warning: Error in the calculation of the Wigner-6j-symbol detected and resolved." << std::endl; // happens e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1)
+                // Check triangle conditions (violated e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1))
+                if (state.l[0] >= std::abs(state.j[0]-s) && state.l[0] <= state.j[0]+s &&
+                        state.l[0] >= std::abs(state.l[1]-kappa) && state.l[0] <= state.l[1]+kappa &&
+                        state.j[1] >= std::abs(state.j[0]-kappa) && state.j[1] <= state.j[0]+kappa &&
+                        state.j[1] >= std::abs(state.l[1]-s) && state.j[1] <= state.l[1]+s) {
+                    cache.second = pow(-1, state.l[0] + s + state.j[1] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
+                            WignerSymbols::wigner6j(state.l[0], state.j[0], s, state.j[1], state.l[1], kappa);
+                } else {
                     cache.second = 0;
                 }
 
-                stmt.bind(1, kappa);
-                stmt.bind(2, state.l[0]);
-                stmt.bind(3, state.j[0]);
-                stmt.bind(4, state.l[1]);
-                stmt.bind(5, state.j[1]);
-                stmt.bind(6, cache.second);
+                stmt.bind(1, s);
+                stmt.bind(2, kappa);
+                stmt.bind(3, state.l[0]);
+                stmt.bind(4, state.j[0]);
+                stmt.bind(5, state.l[1]);
+                stmt.bind(6, state.j[1]);
+                stmt.bind(7, cache.second);
                 stmt.step();
                 stmt.reset();
             }
@@ -780,27 +790,31 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
     }
 
     if (calcMagneticMomentum) {
-        stmt.set("insert or ignore into cache_reduced_commutes_l (k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
+        stmt.set("insert or ignore into cache_reduced_commutes_l (s, k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
 
         stmt.prepare();
         for (auto &cache : cache_reduced_commutes_l[kappa]) {
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
-                        WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, kappa);
-
-                if (cache.second > 1e9) {
-                    std::cout << "Warning: Error in the calculation of the Wigner-6j-symbol detected and resolved." << std::endl; // happens e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1)
+                // Check triangle conditions (violated e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5, 0.5, 0, 1))
+                if (s >= std::abs(state.j[0]-state.l[0]) && s <= state.j[0]+state.l[0] &&
+                        s >= std::abs(s-kappa) && s <= s+kappa &&
+                        state.j[1] >= std::abs(state.j[0]-kappa) && state.j[1] <= state.j[0]+kappa &&
+                        state.j[1] >= std::abs(s-state.l[0]) && state.j[1] <= s+state.l[0]) {
+                    cache.second = pow(-1, state.l[0] + s + state.j[0] + kappa) * sqrt((2*state.j[0]+1)*(2*state.j[1]+1)) *
+                            WignerSymbols::wigner6j(s, state.j[0], state.l[0], state.j[1], s, kappa);
+                } else {
                     cache.second = 0;
                 }
 
-                stmt.bind(1, kappa);
-                stmt.bind(2, state.l[0]);
-                stmt.bind(3, state.j[0]);
-                stmt.bind(4, state.l[1]);
-                stmt.bind(5, state.j[1]);
-                stmt.bind(6, cache.second);
+                stmt.bind(1, s);
+                stmt.bind(2, kappa);
+                stmt.bind(3, state.l[0]);
+                stmt.bind(4, state.j[0]);
+                stmt.bind(5, state.l[1]);
+                stmt.bind(6, state.j[1]);
+                stmt.bind(7, cache.second);
                 stmt.step();
                 stmt.reset();
             }

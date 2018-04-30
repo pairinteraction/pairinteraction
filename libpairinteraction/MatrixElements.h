@@ -66,6 +66,7 @@ private:
     double muB; // TODO define them in constants.h
     double gS;
     double gL;
+    double s;
 
     void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
 };

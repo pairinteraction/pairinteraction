@@ -34,8 +34,10 @@ double V(QuantumDefect const& qd, double x) {
     double V_p = -qd.ac/(2.*x*x*x*x) * (1-std::exp(-std::pow(x/qd.rc,6)));
     double V_so = 0.0;
     if ( qd.l < 4 ) {
+        double s = 0.5;
+        if (std::isdigit(qd.species.back())) s = (std::atoi(&qd.species.back())-1)/2.;
         double alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
-        V_so = alpha*alpha/(4 * x*x*x) * (qd.j*(qd.j+1) - qd.l*(qd.l+1) - 0.5*(1+0.5));
+        V_so = alpha*alpha/(4 * x*x*x) * (qd.j*(qd.j+1) - qd.l*(qd.l+1) - s*(s+1));
     }
     return V_c + V_p + V_so;
 }

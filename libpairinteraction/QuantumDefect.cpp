@@ -33,8 +33,21 @@ public:
     no_defect(QuantumDefect const &qd) : msg()
     {
         msg = "There is no defect available for " + qd.species +
-              ", n = " + std::to_string(qd.n) +
               ", l = " + std::to_string(qd.l) + ", j = " + std::to_string(qd.j);
+    }
+
+    const char *what() const noexcept { return msg.c_str(); }
+};
+
+struct no_potential : public std::exception {
+private:
+    std::string msg;
+
+public:
+    no_potential(QuantumDefect const &qd) : msg()
+    {
+        msg = "There is no model potential available for " + qd.species +
+              ", l = " + std::to_string(qd.l);
     }
 
     const char *what() const noexcept { return msg.c_str(); }
@@ -87,7 +100,7 @@ void QuantumDefect::setup(sqlite3 *db)
     if (stmt.step())
         pot_max_l = stmt.get<int>(0);
     else
-        throw no_defect(*this);
+        throw no_potential(*this);
 
     // The l to be used is the minimum of the two below
     pot_l = std::min(l, pot_max_l);
@@ -136,7 +149,7 @@ void QuantumDefect::setup(sqlite3 *db)
         e.a4 = stmt.get<double>(5);
         e.rc = stmt.get<double>(6);
     } else
-        throw no_defect(*this);
+        throw no_potential(*this);
 
     // Load Rydberg-Ritz coefficients from database
     stmt.reset();

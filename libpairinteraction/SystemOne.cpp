@@ -143,6 +143,10 @@ void SystemOne::initializeBasis()
     ////////////////////////////////////////////////////////////////////
 
     // TODO check whether symmetries are applicable
+    // TODO check whether range_j, range_m is half-integer or integer valued
+
+    float s = 0.5;
+    if (std::isdigit(element.back())) s = (std::atoi(&element.back())-1)/2.;
 
     size_t idx = 0;
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve states, coefficients_triplets, hamiltonianmatrix_triplets
@@ -163,17 +167,17 @@ void SystemOne::initializeBasis()
             range_adapted_l = range_l;
         }
         for (auto l : range_adapted_l) {
-            if (l > n-1) continue;
+            if (l > n-1 || l < 0) continue;
 
             if (range_j.empty()) {
-                range_adapted_j = {std::fabs(l-0.5f), l+0.5f};
+                this->range(range_adapted_j, std::fabs(l-s), l+s);
             } else {
                 range_adapted_j = range_j;
             }
             for (auto j : range_adapted_j) {
-                if (std::fabs(j-l) != 0.5) continue;
+                if (std::fabs(j-l) > s || j < 0) continue;
 
-                double energy = StateOne(element,n,l,j,0.5).getEnergy();
+                double energy = StateOne(element,n,l,j,s).getEnergy();
                 if (!checkIsEnergyValid(energy)) continue;
 
                 if (range_m.empty()) {
