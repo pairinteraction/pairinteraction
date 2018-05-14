@@ -66,40 +66,72 @@ private:
     ////////////////////////////////////////////////////////////////////
     /// Keys ///////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
+
     struct CacheKey_cache_radial {
-        CacheKey_cache_radial(const std::string method,
-                              const std::string species, int kappa, int n1,
-                              int n2, int l1, int l2, float j1, float j2);
+        CacheKey_cache_radial(const std::string method, const std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2);
+        CacheKey_cache_radial();
         bool operator==(const CacheKey_cache_radial &rhs) const;
         std::string method, species;
         int kappa;
         std::array<int, 2> n, l;
         std::array<float, 2> j;
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            (void)version;
+            ar & method & species & kappa & n & l & j;
+        }
     };
+
     struct CacheKey_cache_angular {
-        CacheKey_cache_angular(int kappa, float j1, float j2, float m1,
-                               float m2);
+        CacheKey_cache_angular(int kappa, float j1, float j2, float m1, float m2);
+        CacheKey_cache_angular();
         bool operator==(const CacheKey_cache_angular &rhs) const;
         int kappa;
         std::array<float, 2> j, m;
         int sgn;
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            (void)version;
+            ar & kappa & j & m & sgn;
+        }
     };
+
     struct CacheKey_cache_reduced_commutes {
-        CacheKey_cache_reduced_commutes(float s, int kappa, int l1, int l2,
-                                        float j1, float j2);
+        CacheKey_cache_reduced_commutes(float s, int kappa, int l1, int l2, float j1, float j2);
+        CacheKey_cache_reduced_commutes();
         bool operator==(const CacheKey_cache_reduced_commutes &rhs) const;
         float s;
         int kappa;
         std::array<int, 2> l;
         std::array<float, 2> j;
         int sgn;
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            (void)version;
+            ar & s & kappa & l & j & sgn;
+        }
     };
+
     struct CacheKey_cache_reduced_multipole {
         CacheKey_cache_reduced_multipole(int kappa, int l1, int l2);
+        CacheKey_cache_reduced_multipole();
         bool operator==(const CacheKey_cache_reduced_multipole &rhs) const;
         int kappa;
         std::array<int, 2> l;
         int sgn;
+    private:
+        friend class boost::serialization::access;
+        template<class Archive>
+        void serialize(Archive & ar, const unsigned int version) {
+            (void)version;
+            ar & kappa & l & sgn;
+        }
     };
 
     struct CacheKeyHasher_cache_radial{std::size_t operator()(const CacheKey_cache_radial &c) const;};
@@ -120,7 +152,7 @@ private:
     std::unordered_set<CacheKey_cache_reduced_multipole, CacheKeyHasher_cache_reduced_multipole> cache_reduced_multipole_missing;
 
     std::string method;
-    const std::string cachedir, dbname;
+    const std::string dbname;
     sqlite::handle db;
     sqlite::statement stmt;
     double muB; // TODO define them in constants.h
@@ -132,35 +164,19 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     friend class boost::serialization::access;
-    template<class Archive> friend void boost::serialization::save_construct_data(Archive & ar, const MatrixElementCache * t, const unsigned int version);
-
     template<class Archive>
     void serialize(Archive & ar, const unsigned int version) {
         (void)version;
 
         ar & method;
+        ar & dbname;
         ar & cache_radial & cache_angular & cache_reduced_commutes_s & cache_reduced_commutes_l & cache_reduced_multipole;
         ar & cache_radial_missing & cache_angular_missing & cache_reduced_commutes_s_missing & cache_reduced_commutes_l_missing & cache_reduced_multipole_missing;
-        ar & muB & gS & gL;
+
+        if (Archive::is_loading::value) {
+            this->initialize();
+        }
     }
 };
-
-namespace boost { namespace serialization {
-template<class Archive>
-inline void save_construct_data(Archive & ar, const MatrixElementCache * t, const unsigned int version){
-    (void)version;
-
-    ar << t->cachedir;
-} // TODO is this necessary?
-
-template<class Archive>
-inline void load_construct_data(Archive & ar, MatrixElementCache * t, const unsigned int version){
-    (void)version;
-
-    std::string dbname;
-    ar >> dbname;
-    ::new(t)MatrixElementCache(dbname);
-} // TODO is this necessary?
-}}
 
 #endif

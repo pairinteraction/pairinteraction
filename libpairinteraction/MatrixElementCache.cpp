@@ -63,41 +63,12 @@ bool selectionRulesMultipoleNew(StateOne const& state1, StateOne const& state2, 
 /// Constructors ///////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-MatrixElementCache::MatrixElementCache() : cachedir(""), dbname(cachedir), db(dbname), stmt(db) {
+MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db) { // TODO db and stmt have to be initialized here, since they have no default constructor - nicer solution?
     this->initialize();
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : cachedir(cachedir), dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db) {
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db) { // TODO db and stmt have to be initialized here, since they have no default constructor - nicer solution?
     this->initialize();
-
-    // TODO has stmt to be closed explicitely? does the global stmt and db work with multiprocessing?
-
-    // --- Speed up database access ---
-
-    stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
-    stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
-
-    // --- Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since they are trivial) ---
-
-    stmt.exec("create table if not exists cache_radial ("
-              "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
-              "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
-
-    stmt.exec("create table if not exists cache_angular ("
-              "k integer, j1 double, m1 double,"
-              "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
-
-    stmt.exec("create table if not exists cache_reduced_commutes_s ("
-              "s double, k integer, l1 integer, j1 double,"
-              "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
-
-    stmt.exec("create table if not exists cache_reduced_commutes_l ("
-              "s double, k integer, l1 integer, j1 double,"
-              "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
-
-    stmt.exec("create table if not exists cache_reduced_multipole ("
-              "k integer, l1 integer,"
-              "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -157,6 +128,18 @@ MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_mul
         sgn = pow(-1, kappa);
     }
 }
+
+MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial() {
+} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+
+MatrixElementCache::CacheKey_cache_angular::CacheKey_cache_angular() {
+} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+
+MatrixElementCache::CacheKey_cache_reduced_commutes::CacheKey_cache_reduced_commutes() {
+} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+
+MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_multipole() {
+} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
 
 bool MatrixElementCache::CacheKey_cache_radial::operator==(const CacheKey_cache_radial &rhs) const {
     return (method == rhs.method) && (species == rhs.species) && (kappa == rhs.kappa) && (n == rhs.n) && (l == rhs.l) && (j == rhs.j);
@@ -376,10 +359,44 @@ void MatrixElementCache::initialize() {
     //} else {
     //    method = "Error";
     //}
+
+    if (!dbname.empty()) {
+        db = sqlite::handle(dbname);
+        stmt = sqlite::statement(db);
+
+        // TODO has stmt to be closed explicitely? does the global stmt and db work with multiprocessing?
+
+        // --- Speed up database access ---
+
+        stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+        stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
+
+        // --- Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since they are trivial) ---
+
+        stmt.exec("create table if not exists cache_radial ("
+                  "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+                  "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
+
+        stmt.exec("create table if not exists cache_angular ("
+                  "k integer, j1 double, m1 double,"
+                  "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
+
+        stmt.exec("create table if not exists cache_reduced_commutes_s ("
+                  "s double, k integer, l1 integer, j1 double,"
+                  "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
+
+        stmt.exec("create table if not exists cache_reduced_commutes_l ("
+                  "s double, k integer, l1 integer, j1 double,"
+                  "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
+
+        stmt.exec("create table if not exists cache_reduced_multipole ("
+                  "k integer, l1 integer,"
+                  "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
+    }
 }
 
 double MatrixElementCache::calcRadialElement(const QuantumDefect &qd1, int power,
-                                              const QuantumDefect &qd2) {
+                                             const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);
     } else if(method == "Whittaker") {

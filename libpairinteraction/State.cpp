@@ -18,6 +18,7 @@
 #include "State.h"
 #include "QuantumDefect.h"
 
+#include <cctype>
 #include <array>
 #include <string>
 #include <iostream>
