@@ -63,10 +63,44 @@ private:
     double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
     void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
 
-    struct CacheKey_cache_radial;
-    struct CacheKey_cache_angular;
-    struct CacheKey_cache_reduced_commutes;
-    struct CacheKey_cache_reduced_multipole;
+    ////////////////////////////////////////////////////////////////////
+    /// Keys ///////////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+    struct CacheKey_cache_radial {
+        CacheKey_cache_radial(const std::string method,
+                              const std::string species, int kappa, int n1,
+                              int n2, int l1, int l2, float j1, float j2);
+        bool operator==(const CacheKey_cache_radial &rhs) const;
+        std::string method, species;
+        int kappa;
+        std::array<int, 2> n, l;
+        std::array<float, 2> j;
+    };
+    struct CacheKey_cache_angular {
+        CacheKey_cache_angular(int kappa, float j1, float j2, float m1,
+                               float m2);
+        bool operator==(const CacheKey_cache_angular &rhs) const;
+        int kappa;
+        std::array<float, 2> j, m;
+        int sgn;
+    };
+    struct CacheKey_cache_reduced_commutes {
+        CacheKey_cache_reduced_commutes(float s, int kappa, int l1, int l2,
+                                        float j1, float j2);
+        bool operator==(const CacheKey_cache_reduced_commutes &rhs) const;
+        float s;
+        int kappa;
+        std::array<int, 2> l;
+        std::array<float, 2> j;
+        int sgn;
+    };
+    struct CacheKey_cache_reduced_multipole {
+        CacheKey_cache_reduced_multipole(int kappa, int l1, int l2);
+        bool operator==(const CacheKey_cache_reduced_multipole &rhs) const;
+        int kappa;
+        std::array<int, 2> l;
+        int sgn;
+    };
 
     struct CacheKeyHasher_cache_radial{std::size_t operator()(const CacheKey_cache_radial &c) const;};
     struct CacheKeyHasher_cache_angular{std::size_t operator()(const CacheKey_cache_angular &c) const;};
@@ -128,44 +162,5 @@ inline void load_construct_data(Archive & ar, MatrixElementCache * t, const unsi
     ::new(t)MatrixElementCache(dbname);
 } // TODO is this necessary?
 }}
-
-////////////////////////////////////////////////////////////////////
-/// Keys ///////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
-struct MatrixElementCache::CacheKey_cache_radial {
-    CacheKey_cache_radial(const std::string method, const std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2);
-    bool operator==(const CacheKey_cache_radial &rhs) const;
-    std::string method, species;
-    int kappa;
-    std::array<int, 2> n, l;
-    std::array<float, 2> j;
-};
-
-struct MatrixElementCache::CacheKey_cache_angular {
-    CacheKey_cache_angular(int kappa, float j1, float j2, float m1, float m2);
-    bool operator==(const CacheKey_cache_angular &rhs) const;
-    int kappa;
-    std::array<float, 2> j, m;
-    int sgn;
-};
-
-struct MatrixElementCache::CacheKey_cache_reduced_commutes {
-    CacheKey_cache_reduced_commutes(float s, int kappa, int l1, int l2, float j1, float j2);
-    bool operator==(const CacheKey_cache_reduced_commutes &rhs) const;
-    float s;
-    int kappa;
-    std::array<int, 2> l;
-    std::array<float, 2> j;
-    int sgn;
-};
-
-struct MatrixElementCache::CacheKey_cache_reduced_multipole {
-    CacheKey_cache_reduced_multipole(int kappa, int l1, int l2);
-    bool operator==(const CacheKey_cache_reduced_multipole &rhs) const;
-    int kappa;
-    std::array<int, 2> l;
-    int sgn;
-};
 
 #endif
