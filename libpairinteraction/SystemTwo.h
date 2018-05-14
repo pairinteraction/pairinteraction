@@ -35,7 +35,7 @@ public:
     SystemTwo(const SystemOne &b1, const SystemOne &b2);
     SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving);
 
-    const std::array<std::string, 2>& getElement();
+    const std::array<std::string, 2>& getElement(); // TODO rename to getSpecies
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
@@ -58,7 +58,7 @@ protected:
     void incorporate(SystemBase<StateTwo> &system) override;
 
 private:
-    std::array<std::string, 2> element;
+    std::array<std::string, 2> species;
     SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
     SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
 
@@ -135,7 +135,7 @@ private:
         (void)version;
 
         ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
-        ar & element & system1 & system2;
+        ar & species & system1 & system2;
         ar & distance & angle & ordermax & sym_permutation & sym_inversion & sym_reflection & sym_rotation;
         ar & angle_terms;
         ar & interaction_angulardipole & interaction_multipole;

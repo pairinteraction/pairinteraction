@@ -65,7 +65,7 @@ MatrixElements::MatrixElements(std::string const& species, std::string const& db
     gL = 1;
 
     s = 0.5;
-    if (std::isdigit(species.back())) s = (std::atoi(&species.back())-1)/2.;
+    if (std::isdigit(species.back())) s = (std::atoi(&species.back())-1)/2.; // TODO think of a better solution
 }
 
 MatrixElements::MatrixElements(const Configuration& config, std::string const& species, std::string const& dbname) : MatrixElements(species,dbname) {
@@ -574,7 +574,7 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 continue;
             }
 
-            if (state_row.element.empty() || state_col.element.empty()  ) continue; // TODO artifical states !!!
+            if (state_row.species.empty() || state_col.species.empty()  ) continue; // TODO artifical states !!!
 
             //if (state_row.idx < state_col.idx) { // TODO
             //    continue;

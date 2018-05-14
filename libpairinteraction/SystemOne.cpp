@@ -16,7 +16,6 @@
 
 #include "dtypes.h"
 #include "SystemOne.h"
-#include "MatrixElements.h"
 
 #include <cctype>
 #include <cmath>
@@ -27,24 +26,24 @@
 #include <unordered_set>
 #include <type_traits>
 
-SystemOne::SystemOne(std::string const& element, std::string cachedir)
-    : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species, std::string cachedir)
+    : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
-SystemOne::SystemOne(std::string const& element, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species, std::string cachedir, bool memory_saving)
+    : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
-SystemOne::SystemOne(std::string const& element)
-    : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species)
+    : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
-SystemOne::SystemOne(std::string const& element, bool memory_saving)
-    : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), element(element), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species, bool memory_saving)
+    : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 const std::string& SystemOne::getElement() const {
-    return element;
+    return species;
 }
 
 void SystemOne::setEfield(std::array<double, 3> field) {
@@ -147,7 +146,7 @@ void SystemOne::initializeBasis()
     // TODO check whether range_j, range_m is half-integer or integer valued
 
     float s = 0.5;
-    if (std::isdigit(element.back())) s = (std::atoi(&element.back())-1)/2.;
+    if (std::isdigit(species.back())) s = (std::atoi(&species.back())-1)/2.; // TODO think of a better solution
 
     size_t idx = 0;
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve states, coefficients_triplets, hamiltonianmatrix_triplets
@@ -178,7 +177,7 @@ void SystemOne::initializeBasis()
             for (auto j : range_adapted_j) {
                 if (std::fabs(j-l) > s || j < 0) continue;
 
-                double energy = StateOne(element,n,l,j,s).getEnergy();
+                double energy = StateOne(species,n,l,j,s).getEnergy();
                 if (!checkIsEnergyValid(energy)) continue;
 
                 if (range_m.empty()) {
@@ -211,12 +210,12 @@ void SystemOne::initializeBasis()
                     }
 
                     // Add an entry to the current basis vector
-                    this->addCoefficient(StateOne(element,n,l,j,m), idx, value, coefficients_triplets);
+                    this->addCoefficient(StateOne(species,n,l,j,m), idx, value, coefficients_triplets);
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (sym_reflection != NA) {
                         value *= (sym_reflection == EVEN) ? std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>() : -std::pow(-1,l+m-j)*this->imaginaryUnit<scalar_t>(); // S_y is invariant under reflection through xz-plane
-                        this->addCoefficient(StateOne(element,n,l,j,-m), idx, value, coefficients_triplets);
+                        this->addCoefficient(StateOne(species,n,l,j,-m), idx, value, coefficients_triplets);
                     }
 
                     ++idx;
@@ -269,11 +268,7 @@ void SystemOne::initializeInteraction() {
     if (erange.empty() && brange.empty() && drange.empty()) return;
 
     // Precalculate matrix elements
-    std::string matrixelementsdir = "";
-    if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
-
-    std::string tmp(element.begin(), element.end()); // TODO think of a better solution
-    MatrixElements matrixelements(tmp, matrixelementsdir);
+    MatrixElementCache matrixelements(cachedir.string());
     auto states_converted = this->getStates(); // TODO remove
     for (const auto &i : erange) matrixelements.precalculateElectricMomentum(states_converted, i);
     for (const auto &i : brange) matrixelements.precalculateMagneticMomentum(states_converted, i);
@@ -290,17 +285,17 @@ void SystemOne::initializeInteraction() {
     // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
 
-        if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+        if (c.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
 
         // Loop over row entries
         for (const auto &r: states) {
 
-            if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+            if (r.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
             //if (r.idx < c.idx) continue; // TODO modify addTriplet so that skipping half of the entries work
 
             // E-field interaction
             for (const auto &i : erange) {
-                if (selectionRulesMultipole(r.state, c.state, 1, i)) {
+                if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
                     scalar_t value = matrixelements.getElectricMomentum(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
@@ -309,7 +304,7 @@ void SystemOne::initializeInteraction() {
 
             // B-field interaction
             for (const auto &i : brange) {
-                if (selectionRulesMomentum(r.state, c.state, i)) {
+                if (selectionRulesMomentumNew(r.state, c.state, i)) {
                     scalar_t value = matrixelements.getMagneticMomentum(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
@@ -318,7 +313,7 @@ void SystemOne::initializeInteraction() {
 
             // Diamagnetic interaction
             for (const auto &i : drange) {
-                if (selectionRulesMultipole(r.state, c.state, i[0], i[1])) {
+                if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
                     scalar_t value = matrixelements.getDiamagnetism(r.state, c.state, i[0]);
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
@@ -448,7 +443,7 @@ eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double ga
 
 void SystemOne::incorporate(SystemBase<StateOne> &system) {
     // Combine parameters
-    if (element != dynamic_cast<SystemOne&>(system).element) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (species != dynamic_cast<SystemOne&>(system).species) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
     if (efield != dynamic_cast<SystemOne&>(system).efield) throw std::runtime_error("The value of the variable 'distance' must be the same for both systems."); // implies that efield_spherical is the same, too
     if (bfield != dynamic_cast<SystemOne&>(system).bfield) throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that bfield_spherical is the same, too
     if (diamagnetism != dynamic_cast<SystemOne&>(system).diamagnetism) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");

@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <array>
+#include <cmath>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 
@@ -56,6 +57,7 @@ constexpr const double au2Vcm = 5142206707.0;
 constexpr const double au2G = 2350517550.0;
 constexpr const double au2um = 5.2917721067e-05;
 constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
+constexpr const double sqrt_inverse_electric_constant = 0.7717003798774048; // equals sqrt(inverse_electric_constant)
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
 constexpr const int ARB = 32767;

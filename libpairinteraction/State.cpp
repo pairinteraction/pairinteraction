@@ -23,23 +23,33 @@
 #include <iostream>
 #include <iomanip>
 
-// Implementation of StateOne
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 StateOne::StateOne(std::string element, int n, int l, float j, float m)
-    : State(0), element(element), n(n), l(l), j(j), m(m)
-{}
+    : State(0), species(element), n(n), l(l), j(j), m(m)
+{
+    this->analyzeSpecies();
+}
 
 StateOne::StateOne()
-    : State(0), element(""), n(0), l(0), j(0), m(0)
-{}
+    : State(0), species(""), n(0), l(0), j(0), m(0)
+{
+    this->analyzeSpecies();
+}
 
 StateOne::StateOne(idx_t idx, int n, int l, float j, float m)
     : State(idx), n(n), l(l), j(j), m(m)
-{}
+{
+    this->analyzeSpecies();
+}
 
 StateOne::StateOne(int n, int l, float j, float m)
     : State(0), n(n), l(l), j(j), m(m)
-{}
+{
+    this->analyzeSpecies();
+}
 
 std::ostream& operator<< (std::ostream &out, const StateOne &state)
 {
@@ -81,46 +91,73 @@ bool StateOne::operator>(StateOne const& rhs) const // TODO remove this operator
 
 double StateOne::getEnergy() const
 {
-    std::string tmp(element.begin(), element.end()); // TODO think of a better solution
+    std::string tmp(species.begin(), species.end()); // TODO think of a better solution
     return energy_level(tmp, n, l, j);
 }
 
 
-// Implementation of StateTwo
+////////////////////////////////////////////////////////////////////
+/// Utility methods ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
+void StateOne::analyzeSpecies() {
+    s = 0.5;
+    element = species;
+
+    if (std::isdigit(species.back())) {
+        s = (std::atoi(&species.back())-1)/2.;
+        element = species.substr(0, species.size()-1);
+    }
+}
+
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/// Implementation of StateTwo +++++++++++++++++++++++++++++++++++++
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 StateTwo::StateTwo()
-    : State(0), element({{"",""}}), n({{0,0}}), l({{0,0}}), j({{0,0}}), m({{0,0}})
-{}
+    : State(0), species({{"",""}}), n({{0,0}}), l({{0,0}}), j({{0,0}}), m({{0,0}})
+{
+    this->analyzeSpecies();
+}
 
 StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
-    : State(0), element(element), n(n), l(l), j(j), m(m)
-{}
+    : State(0), species(element), n(n), l(l), j(j), m(m)
+{
+    this->analyzeSpecies();
+}
 
 StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
-    : State(0), element({{s1.element, s2.element}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}), m({{s1.m, s2.m}})
-{}
+    : State(0), species({{s1.species, s2.species}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}), m({{s1.m, s2.m}})
+{
+    this->analyzeSpecies();
+}
 
 StateTwo::StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
     : State(idx), n(n), l(l), j(j), m(m)
-{}
+{
+    this->analyzeSpecies();
+}
 
 StateTwo::StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
     : State(0), n(n), l(l), j(j), m(m)
-{}
+{
+    this->analyzeSpecies();
+}
 
 StateTwo::StateTwo(idx_t idx, const StateOne &a, const StateOne &b)
     : State(idx), n({{a.n,b.n}}), l({{a.l,b.l}}), j({{a.j,b.j}}), m({{a.m,b.m}})
-{}
+{
+    this->analyzeSpecies();
+}
 
 
 StateOne StateTwo::getFirstState() const
 {
-    return StateOne(element[0], n[0], l[0], j[0], m[0]);
+    return StateOne(species[0], n[0], l[0], j[0], m[0]);
 }
 void StateTwo::setFirstState(StateOne const& s)
 {
-    element[0] = s.element;
+    species[0] = s.species;
     n[0] = s.n;
     l[0] = s.l;
     j[0] = s.j;
@@ -129,11 +166,11 @@ void StateTwo::setFirstState(StateOne const& s)
 
 StateOne StateTwo::getSecondState() const
 {
-    return StateOne(element[1], n[1], l[1], j[1], m[1]);
+    return StateOne(species[1], n[1], l[1], j[1], m[1]);
 }
 void StateTwo::setSecondState(StateOne const& s)
 {
-    element[1] = s.element;
+    species[1] = s.species;
     n[1] = s.n;
     l[1] = s.l;
     j[1] = s.j;
@@ -142,11 +179,11 @@ void StateTwo::setSecondState(StateOne const& s)
 
 StateOne StateTwo::first() const
 {
-    return StateOne(element[0], n[0], l[0], j[0], m[0]);
+    return StateOne(species[0], n[0], l[0], j[0], m[0]);
 }
 StateOne StateTwo::second() const
 {
-    return StateOne(element[1], n[1], l[1], j[1], m[1]);
+    return StateOne(species[1], n[1], l[1], j[1], m[1]);
 }
 
 std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
@@ -195,3 +232,19 @@ StateTwo StateTwo::order() { // TODO use element, too?
 }
 
 double StateTwo::getEnergy() const { return this->first().getEnergy()+this->second().getEnergy(); }
+
+////////////////////////////////////////////////////////////////////
+/// Utility methods ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+void StateTwo::analyzeSpecies() {
+    for (size_t i = 0; i < 2; ++i) {
+        s[i] = 0.5;
+        element[i] = species[i];
+
+        if (std::isdigit(species[i].back())) {
+            s[i] = (std::atoi(&species[i].back())-1)/2.;
+            element[i] = species[i].substr(0, species[i].size()-1);
+        }
+    }
+}

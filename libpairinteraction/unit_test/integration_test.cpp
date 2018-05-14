@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.element, path_cache.string());
+    SystemOne system_one(state_one.species, path_cache.string());
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     // Build one-atom system (for this test, system_one has to be diagonal by
     // itself because diagonalization can lead to different order of
     // eigenvectors)
-    system_one = SystemOne(state_one.element, path_cache.string());
+    system_one = SystemOne(state_one.species, path_cache.string());
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);

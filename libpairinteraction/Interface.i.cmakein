@@ -12,6 +12,7 @@
 #include "SystemOne.h"
 #include "SystemTwo.h"
 #include "Wavefunction.h"
+#include "MatrixElementCache.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -140,6 +141,8 @@ namespace std {
 %include "QuantumDefect.h"
 
 %include "Wavefunction.h"
+
+%include "MatrixElementCache.h"
 
 // Wrap State.h
 %ignore hash;

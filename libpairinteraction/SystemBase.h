@@ -6,6 +6,7 @@
 #include "serialization_eigen.h"
 #include "serialization_path.h"
 #include "WignerD.h"
+#include "MatrixElementCache.h"
 
 #include <vector>
 #include <numeric>
