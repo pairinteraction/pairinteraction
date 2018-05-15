@@ -151,7 +151,7 @@ private:
     std::unordered_set<CacheKey_cache_reduced_multipole, CacheKeyHasher_cache_reduced_multipole> cache_reduced_multipole_missing;
 
     std::string method;
-    const std::string dbname;
+    std::string dbname;
     sqlite::handle db;
     sqlite::statement stmt;
 

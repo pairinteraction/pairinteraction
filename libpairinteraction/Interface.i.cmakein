@@ -142,7 +142,21 @@ namespace std {
 
 %include "Wavefunction.h"
 
+
+// Wrap MatrixElementCache.h
+
 %include "MatrixElementCache.h"
+
+%boost_picklable(MatrixElementCache);
+
+%extend MatrixElementCache {
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
+
 
 // Wrap State.h
 %ignore hash;
@@ -213,7 +227,7 @@ namespace std {
   %}
 }
 
-  
+
 // Python specific extensions
 
 // This block has to be the last in the Interface.i file, because it
