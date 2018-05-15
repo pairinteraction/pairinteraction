@@ -60,6 +60,10 @@ constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2
 constexpr const double sqrt_inverse_electric_constant = 0.7717003798774048; // equals sqrt(inverse_electric_constant)
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
+constexpr const double muB = 0.5; // in atomic units
+constexpr const double gS = 2.0023192;
+constexpr const double gL = 1;
+
 constexpr const int ARB = 32767;
 
 class Triple {

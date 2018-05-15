@@ -57,7 +57,6 @@ public:
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 
 private:
-    void initialize();
     int update();
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
     double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
@@ -155,9 +154,6 @@ private:
     const std::string dbname;
     sqlite::handle db;
     sqlite::statement stmt;
-    double muB; // TODO define them in constants.h
-    double gS;
-    double gL;
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
@@ -173,8 +169,14 @@ private:
         ar & cache_radial & cache_angular & cache_reduced_commutes_s & cache_reduced_commutes_l & cache_reduced_multipole;
         ar & cache_radial_missing & cache_angular_missing & cache_reduced_commutes_s_missing & cache_reduced_commutes_l_missing & cache_reduced_multipole_missing;
 
-        if (Archive::is_loading::value) {
-            this->initialize();
+        if (Archive::is_loading::value && !dbname.empty()) {
+            // Open database
+            db = sqlite::handle(dbname);
+            stmt = sqlite::statement(db);
+
+            // Speed up database access
+            stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+            stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
         }
     }
 };

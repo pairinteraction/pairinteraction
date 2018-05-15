@@ -64,11 +64,52 @@ bool selectionRulesMultipoleNew(StateOne const& state1, StateOne const& state2, 
 ////////////////////////////////////////////////////////////////////
 
 MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db) { // TODO db and stmt have to be initialized here, since they have no default constructor - nicer solution?
-    this->initialize();
+    method = "Modelpotentials";
+    //if (config["missingCalc"].str() == "true") {
+    //    method = "Modelpotentials";
+    //} else if (config["missingWhittaker"].str() == "true") {
+    //    method = "Whittaker";
+    //} else {
+    //    method = "Error";
+    //}
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db) { // TODO db and stmt have to be initialized here, since they have no default constructor - nicer solution?
-    this->initialize();
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db) {
+    method = "Modelpotentials";
+    //if (config["missingCalc"].str() == "true") {
+    //    method = "Modelpotentials";
+    //} else if (config["missingWhittaker"].str() == "true") {
+    //    method = "Whittaker";
+    //} else {
+    //    method = "Error";
+    //}
+
+    // TODO has stmt to be closed explicitely? does the global stmt and db work with multiprocessing?
+
+    // Speed up database access
+    stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+    stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
+
+    // Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since they are trivial)
+    stmt.exec("create table if not exists cache_radial ("
+              "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+              "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
+
+    stmt.exec("create table if not exists cache_angular ("
+              "k integer, j1 double, m1 double,"
+              "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
+
+    stmt.exec("create table if not exists cache_reduced_commutes_s ("
+              "s double, k integer, l1 integer, j1 double,"
+              "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
+
+    stmt.exec("create table if not exists cache_reduced_commutes_l ("
+              "s double, k integer, l1 integer, j1 double,"
+              "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
+
+    stmt.exec("create table if not exists cache_reduced_multipole ("
+              "k integer, l1 integer,"
+              "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -345,55 +386,6 @@ void MatrixElementCache::precalculateDiamagnetism(const std::vector<StateOne> &b
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
-
-void MatrixElementCache::initialize() {
-    method = "Modelpotentials";
-    muB = 0.5; // in atomic units
-    gS = 2.0023192;
-    gL = 1;
-
-    //if (config["missingCalc"].str() == "true") {
-    //    method = "Modelpotentials";
-    //} else if (config["missingWhittaker"].str() == "true") {
-    //    method = "Whittaker";
-    //} else {
-    //    method = "Error";
-    //}
-
-    if (!dbname.empty()) {
-        db = sqlite::handle(dbname);
-        stmt = sqlite::statement(db);
-
-        // TODO has stmt to be closed explicitely? does the global stmt and db work with multiprocessing?
-
-        // --- Speed up database access ---
-
-        stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
-        stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
-
-        // --- Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since they are trivial) ---
-
-        stmt.exec("create table if not exists cache_radial ("
-                  "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
-                  "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, n1, l1, j1, n2, l2, j2)) without rowid;");
-
-        stmt.exec("create table if not exists cache_angular ("
-                  "k integer, j1 double, m1 double,"
-                  "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
-
-        stmt.exec("create table if not exists cache_reduced_commutes_s ("
-                  "s double, k integer, l1 integer, j1 double,"
-                  "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
-
-        stmt.exec("create table if not exists cache_reduced_commutes_l ("
-                  "s double, k integer, l1 integer, j1 double,"
-                  "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
-
-        stmt.exec("create table if not exists cache_reduced_multipole ("
-                  "k integer, l1 integer,"
-                  "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
-    }
-}
 
 double MatrixElementCache::calcRadialElement(const QuantumDefect &qd1, int power,
                                              const QuantumDefect &qd2) {
