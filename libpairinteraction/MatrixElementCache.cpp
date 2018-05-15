@@ -736,3 +736,7 @@ int MatrixElementCache::update() {
 
     return 1;
 }
+
+size_t MatrixElementCache::size() {
+    return cache_radial.size()+cache_angular.size()+cache_reduced_commutes_s.size()+cache_reduced_commutes_l.size()+cache_reduced_multipole.size();
+}

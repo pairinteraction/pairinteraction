@@ -56,6 +56,8 @@ public:
     void precalculateMultipole(const std::vector<StateOne> &basis_one, int k);
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 
+    size_t size();
+
 private:
     int update();
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
@@ -77,8 +79,7 @@ private:
     private:
         friend class boost::serialization::access;
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version) {
-            (void)version;
+        void serialize(Archive & ar, const unsigned int /*version*/) {
             ar & method & species & kappa & n & l & j;
         }
     };
@@ -93,8 +94,7 @@ private:
     private:
         friend class boost::serialization::access;
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version) {
-            (void)version;
+        void serialize(Archive & ar, const unsigned int /*version*/) {
             ar & kappa & j & m & sgn;
         }
     };
@@ -111,8 +111,7 @@ private:
     private:
         friend class boost::serialization::access;
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version) {
-            (void)version;
+        void serialize(Archive & ar, const unsigned int /*version*/) {
             ar & s & kappa & l & j & sgn;
         }
     };
@@ -127,8 +126,7 @@ private:
     private:
         friend class boost::serialization::access;
         template<class Archive>
-        void serialize(Archive & ar, const unsigned int version) {
-            (void)version;
+        void serialize(Archive & ar, const unsigned int /*version*/) {
             ar & kappa & l & sgn;
         }
     };
@@ -161,9 +159,7 @@ private:
 
     friend class boost::serialization::access;
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        (void)version;
-
+    void serialize(Archive & ar, const unsigned int /*version*/) {
         ar & method;
         ar & dbname;
         ar & cache_radial & cache_angular & cache_reduced_commutes_s & cache_reduced_commutes_l & cache_reduced_multipole;
