@@ -65,6 +65,7 @@ public:
     bool operator> (StateOne const&) const;
 
     double getEnergy() const;
+    double getNStar() const;
 
 private:
     ////////////////////////////////////////////////////////////////////
@@ -125,6 +126,7 @@ public:
     StateTwo order();
 
     double getEnergy() const;
+    std::array<double, 2> getNStar() const;
 
 private:
     ////////////////////////////////////////////////////////////////////

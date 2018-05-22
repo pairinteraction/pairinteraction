@@ -96,6 +96,12 @@ double StateOne::getEnergy() const
     return energy_level(tmp, n, l, j);
 }
 
+double StateOne::getNStar() const
+{
+    std::string tmp(species.begin(), species.end()); // TODO think of a better solution
+    return nstar(tmp, n, l, j);
+}
+
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
@@ -232,7 +238,13 @@ StateTwo StateTwo::order() { // TODO use element, too?
     }
 }
 
-double StateTwo::getEnergy() const { return this->first().getEnergy()+this->second().getEnergy(); }
+double StateTwo::getEnergy() const {
+    return this->first().getEnergy()+this->second().getEnergy();
+}
+
+std::array<double, 2> StateTwo::getNStar() const {
+    return {{this->first().getNStar(), this->second().getNStar()}};
+}
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////

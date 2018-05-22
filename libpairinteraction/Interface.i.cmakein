@@ -116,7 +116,8 @@ namespace std {
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
   %template(ArrayFloatTwo) array<float,2>;
-  %template(ArrayDoubleTwo) array<double,3>;
+  %template(ArrayDoubleTwo) array<double,2>;
+  %template(ArrayDoubleThree) array<double,3>;
   %template(VectorInt) vector<int>;
   %template(VectorDouble) vector<double>;
   %template(VectorFloat) vector<float>;
