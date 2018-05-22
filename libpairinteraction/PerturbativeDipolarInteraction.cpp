@@ -32,8 +32,6 @@ PerturbativeDipolarInteraction::PerturbativeDipolarInteraction(MatrixElementCach
 }
 
 PerturbativeDipolarInteraction::PerturbativeDipolarInteraction(MatrixElementCache &cache, double angle) : cache(cache) {
-    // TODO validate array_angle_term
-
     array_q.reserve(9);
 
     array_q.push_back({{0,0}});
@@ -186,6 +184,7 @@ eigen_dense_double_t PerturbativeDipolarInteraction::getC6(std::vector<StateTwo>
 
                                         int q0_back = state_row.m[0]-m0;
                                         int q1_back = state_row.m[1]-m1;
+                                        if (std::abs(q0_back) > 1 || std::abs(q1_back) > 1) continue;
                                         if (array_q.size() == 3 && q0_back+q1_back != 0) continue;
 
                                         StateTwo state_virtual = StateTwo(species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
