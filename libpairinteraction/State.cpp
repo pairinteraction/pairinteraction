@@ -92,14 +92,12 @@ bool StateOne::operator>(StateOne const& rhs) const // TODO remove this operator
 
 double StateOne::getEnergy() const
 {
-    std::string tmp(species.begin(), species.end()); // TODO think of a better solution
-    return energy_level(tmp, n, l, j);
+    return energy_level(species, n, l, j);
 }
 
 double StateOne::getNStar() const
 {
-    std::string tmp(species.begin(), species.end()); // TODO think of a better solution
-    return nstar(tmp, n, l, j);
+    return nstar(species, n, l, j);
 }
 
 

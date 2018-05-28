@@ -50,7 +50,6 @@ public:
     int n, l;
     float j, m, s;
 
-
     StateOne();
     StateOne(std::string species, int n, int l, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
