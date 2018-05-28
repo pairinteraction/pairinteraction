@@ -169,6 +169,9 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
     #######################################################
 
     def tearDown(self):
+        # Delete cache object
+        del self.cache
+        
         # Delete cache directory
         shutil.rmtree(self.path_cache)
 

@@ -30,8 +30,27 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
 
-BOOST_AUTO_TEST_CASE(integration_test)
+struct F {
+    F() : path_cache(boost::filesystem::temp_directory_path()/boost::filesystem::unique_path()) {
+        // Create cache directory
+        if (boost::filesystem::create_directory(path_cache)) {
+            std::cout << "Cache directory "
+                      << boost::filesystem::absolute(path_cache).string()
+                      << " created." << std::endl;
+        } else {
+            throw std::runtime_error("Could not create cache directory.");
+        }
+    }
+    ~F() {
+        // Delete cache directory
+        boost::filesystem::remove_all(path_cache);
+    }
+    boost::filesystem::path path_cache;
+};
+
+BOOST_FIXTURE_TEST_CASE(integration_test, F)
 {
 
     constexpr bool dump_new_reference_data = false;
@@ -39,18 +58,6 @@ BOOST_AUTO_TEST_CASE(integration_test)
     ////////////////////////////////////////////////////////////////////
     /// Preparations ///////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-
-    // Create cache directory
-    boost::filesystem::path path_cache =
-        boost::filesystem::temp_directory_path() /
-        boost::filesystem::unique_path();
-    if (boost::filesystem::create_directory(path_cache)) {
-        std::cout << "Cache directory "
-                  << boost::filesystem::absolute(path_cache).string()
-                  << " created." << std::endl;
-    } else {
-        throw std::runtime_error("Could not create cache directory.");
-    }
 
     // Set up cache
     MatrixElementCache cache(path_cache.string());
@@ -209,9 +216,6 @@ BOOST_AUTO_TEST_CASE(integration_test)
         BOOST_CHECK_MESSAGE(!dump_new_reference_data,
                             "No tests were executed. Only dumping data!");
     }
-
-    // Delete cache directory
-    boost::filesystem::remove_all(path_cache);
 
     // TODO call more methods to increase code covering
     // TODO cause exceptions and check whether they are handled correctly
