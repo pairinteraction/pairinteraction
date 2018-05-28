@@ -35,7 +35,9 @@ endif()
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
-# Link the pairinteraction library # TODO create a FindPairinteraction.cmake file
+# Link the pairinteraction library and its dependencies # TODO create a FindPairinteraction.cmake file
+
+include_directories(SYSTEM TODO/pairinteractio/eigen)
 
 #target_compile_definitions(basics PRIVATE USE_COMPLEX) # if used, libpicomplex.dylib has to be linked
 include_directories(TODO/pairinteraction)
