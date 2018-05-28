@@ -18,6 +18,7 @@
 #include "MatrixElementCache.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
+#include "version.h"
 
 #include <sstream>
 #include <iostream>
@@ -74,7 +75,7 @@ MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db), pid
     //}
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/("cache_elements_"+version::cache+".db")).string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
