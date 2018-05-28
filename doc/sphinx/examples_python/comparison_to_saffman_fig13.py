@@ -8,17 +8,20 @@ if sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/
 elif sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
 from libpairinteraction import pireal as pi
 
+# Parameters
 distance = 10 # um
 bfields = np.linspace(0, 20, 200) # Gauss
 
 state_one = pi.StateOne("Rb", 43, 2, 2.5, 0.5)
 state_two = pi.StateTwo(state_one, state_one)
 
+# Set up cache
 if not os.path.exists("./cache"):
     os.makedirs("./cache")
+cache = pi.MatrixElementCache("./cache")
 
 def setup_system_one(bfield):
-    system_one = pi.SystemOne(state_one.element, "./cache")
+    system_one = pi.SystemOne(state_one.species, cache)
     system_one.restrictEnergy(state_one.energy-100, state_one.energy+100)
     system_one.restrictN(state_one.n-2, state_one.n+2)
     system_one.restrictL(state_one.l-2, state_one.l+2)
@@ -26,7 +29,7 @@ def setup_system_one(bfield):
     return system_one
 
 def setup_system_two(system_one, angle):
-    system_two = pi.SystemTwo(system_one, system_one, "./cache")
+    system_two = pi.SystemTwo(system_one, system_one, cache)
     system_two.restrictEnergy(state_two.energy-5, state_two.energy+5)
     system_two.setDistance(10)
     system_two.setAngle(angle)

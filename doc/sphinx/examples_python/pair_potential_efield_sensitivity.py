@@ -7,7 +7,6 @@ from cycler import cycler
 
 # Parallel computing
 from multiprocessing import Pool
-from functools import partial
 
 # Platform specific
 import sys, os
@@ -17,6 +16,7 @@ elif sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction"
 # pairinteraction :-)
 from libpairinteraction import pireal as pi
 
+# Parameters
 distances = np.linspace(14, 4, 200) # µm
 efields = [0, 0.020] # V/cm
 bfield = 6.9 # Gauss
@@ -25,11 +25,13 @@ angle = 78*np.pi/180 # rad
 state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
 state_two = pi.StateTwo(state_one, state_one)
 
+# Set up cache
 if not os.path.exists("./cache"):
     os.makedirs("./cache")
+cache = pi.MatrixElementCache("./cache")
 
 def setup_system_one(efield):
-    system_one = pi.SystemOne(state_one.element, "./cache")
+    system_one = pi.SystemOne(state_one.species, cache)
     system_one.restrictEnergy(state_one.energy-30, state_one.energy+30)
     system_one.restrictN(state_one.n-2, state_one.n+2)
     system_one.restrictL(state_one.l-2, state_one.l+2)
@@ -38,7 +40,7 @@ def setup_system_one(efield):
     return system_one
 
 def setup_system_two(system_one, distance):
-    system_two = pi.SystemTwo(system_one, system_one, "./cache")
+    system_two = pi.SystemTwo(system_one, system_one, cache)
     system_two.restrictEnergy(state_two.energy-1, state_two.energy+1)
     system_two.setDistance(distance)
     system_two.setAngle(angle)
@@ -67,8 +69,9 @@ if __name__ ==  '__main__':
         fieldshift = 2*system_one.diagonal[system_one.getVectorindex(state_one)]
     
         # Get diagonalized two atom systems
+        def fct(distance): return getSystems(distance, system_one, fieldshift)
         with Pool() as pool:
-            systems_two = pool.map(partial(getSystems, system_one=system_one, fieldshift=fieldshift), distances)
+            systems_two = pool.map(fct, distances)
     
         # Plot pair potentials
         ax.set_title(r"$E_z$ = ${}$ mV/cm".format(efield*1e3))

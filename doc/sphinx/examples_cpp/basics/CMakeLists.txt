@@ -31,40 +31,15 @@ if (${OPENMP_FOUND})
     set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
 endif()
 
-################################################################################
-### TODO create a FindPairinteraction.cmake file ############################### 
-################################################################################
+# Set search path for CMake modules
 
-# Add external libraries needed by pairinteraction
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../../../../cmake) # TODO
-
-find_package(Eigen3 REQUIRED)
-include_directories(SYSTEM ${EIGEN3_INCLUDE_DIR})
-
-find_package(Sqlite3 REQUIRED)
-include_directories(${SQLITE3_INCLUDE_DIR})
-list(APPEND LIBRARIES ${SQLITE3_LIBRARY})
-
-find_package(Boost COMPONENTS filesystem system program_options serialization REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-list(APPEND LIBRARIES ${Boost_LIBRARIES})
-
-find_package(GSL REQUIRED)
-include_directories(${GSL_INCLUDE_DIRS})
-list(APPEND LIBRARIES ${GSL_LIBRARIES})
-
-find_package(ZeroMQ REQUIRED)
-include_directories(${ZEROMQ_INCLUDE_DIR})
-list(APPEND LIBRARIES ${ZEROMQ_LIBRARY})
-
-# Add the pairinteraction library
+# Link the pairinteraction library # TODO create a FindPairinteraction.cmake file
 
 #target_compile_definitions(basics PRIVATE USE_COMPLEX) # if used, libpicomplex.dylib has to be linked
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../../../)
-list(APPEND LIBRARIES "/Applications/pairinteraction.app/Contents/Resources/libpairinteraction/libpireal.dylib")
-
-################################################################################
+include_directories(TODO/pairinteraction)
+list(APPEND LIBRARIES "TODO/pairinteraction/build/libpairinteraction/libpireal.dylib")
 
 # Link boost filesystem
 
