@@ -21,7 +21,11 @@
 #include <functional>
 #include <random>
 #include <type_traits>
-#ifndef _WIN32
+
+#ifdef _WIN32
+#define NOMINMAX
+#include <Windows.h>
+#else
 #include <unistd.h>
 #endif
 
