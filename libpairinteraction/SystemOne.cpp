@@ -26,20 +26,12 @@
 #include <unordered_set>
 #include <type_traits>
 
-SystemOne::SystemOne(std::string const& species, std::string cachedir)
-    : SystemBase(cachedir), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species, MatrixElementCache &cache)
+    : SystemBase(cache), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
-SystemOne::SystemOne(std::string const& species, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
-}
-
-SystemOne::SystemOne(std::string const& species)
-    : SystemBase(), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
-}
-
-SystemOne::SystemOne(std::string const& species, bool memory_saving)
-    : SystemBase(memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
+SystemOne::SystemOne(std::string const& species, MatrixElementCache &cache, bool memory_saving)
+    : SystemBase(cache, memory_saving), efield({{0,0,0}}), bfield({{0,0,0}}), diamagnetism(false), species(species), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {
 }
 
 const std::string& SystemOne::getElement() const {
@@ -268,11 +260,10 @@ void SystemOne::initializeInteraction() {
     if (erange.empty() && brange.empty() && drange.empty()) return;
 
     // Precalculate matrix elements
-    MatrixElementCache matrixelements(cachedir.string());
     auto states_converted = this->getStates(); // TODO remove
-    for (const auto &i : erange) matrixelements.precalculateElectricMomentum(states_converted, i);
-    for (const auto &i : brange) matrixelements.precalculateMagneticMomentum(states_converted, i);
-    for (const auto &i : drange) matrixelements.precalculateDiamagnetism(states_converted, i[0], i[1]);
+    for (const auto &i : erange) cache.precalculateElectricMomentum(states_converted, i);
+    for (const auto &i : brange) cache.precalculateMagneticMomentum(states_converted, i);
+    for (const auto &i : drange) cache.precalculateDiamagnetism(states_converted, i[0], i[1]);
 
     ////////////////////////////////////////////////////////////////////
     /// Calculate the interaction in the canonical basis ///////////////
@@ -296,7 +287,7 @@ void SystemOne::initializeInteraction() {
             // E-field interaction
             for (const auto &i : erange) {
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
-                    scalar_t value = matrixelements.getElectricMomentum(r.state, c.state);
+                    scalar_t value = cache.getElectricMomentum(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
@@ -305,7 +296,7 @@ void SystemOne::initializeInteraction() {
             // B-field interaction
             for (const auto &i : brange) {
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
-                    scalar_t value = matrixelements.getMagneticMomentum(r.state, c.state);
+                    scalar_t value = cache.getMagneticMomentum(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
@@ -314,7 +305,7 @@ void SystemOne::initializeInteraction() {
             // Diamagnetic interaction
             for (const auto &i : drange) {
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
-                    scalar_t value = matrixelements.getDiamagnetism(r.state, c.state, i[0]);
+                    scalar_t value = cache.getDiamagnetism(r.state, c.state, i[0]);
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
             }

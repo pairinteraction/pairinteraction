@@ -25,20 +25,12 @@
 #include <unordered_set>
 #include <algorithm>
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
-    : SystemBase(cachedir), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
+    : SystemBase(cache), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
-}
-
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
-    : SystemBase(), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
-}
-
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving)
-    : SystemBase(memory_saving), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache, bool memory_saving)
+    : SystemBase(cache, memory_saving), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
@@ -277,8 +269,8 @@ void SystemTwo::initializeBasis()
     }
 
     // Delete unecessary storage
-    system1 = SystemOne(species[0]);
-    system2 = SystemOne(species[1]);
+    //system1 = SystemOne(species[0], cache); // TODO
+    //system2 = SystemOne(species[1], cache); // TODO
 
     // Build data
     states.shrink_to_fit();
@@ -388,14 +380,12 @@ void SystemTwo::initializeInteraction() {
     }
 
     // Precalculate matrix elements
-    MatrixElementCache matrixelements(cachedir.string());
-
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
 
     for (unsigned int kappa = 1; kappa <= ordermax-2; ++kappa) {
-        matrixelements.precalculateMultipole(states1, kappa);
-        matrixelements.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
+        cache.precalculateMultipole(states1, kappa);
+        cache.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -423,28 +413,28 @@ void SystemTwo::initializeInteraction() {
                 // Angular dependent dipole-dipole interaction
                 if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), 1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), 1)) {
                     if (q1 == 0 && q2 == 0 && calculation_required[1]) {
-                        scalar_t val = matrixelements.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
+                                cache.getMultipole(r.state.second(), c.state.second(), 1);
 
                         this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
                     } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
-                        scalar_t val = matrixelements.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
+                                cache.getMultipole(r.state.second(), c.state.second(), 1);
 
                         if (calculation_required[0]) this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
                         if (calculation_required[2]) this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
 
                     } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
-                        scalar_t val = matrixelements.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
+                                cache.getMultipole(r.state.second(), c.state.second(), 1);
 
                         if (q1 == 1 || q2 == 1) this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
                         else this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
 
                     } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
-                        scalar_t val = matrixelements.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
+                                cache.getMultipole(r.state.second(), c.state.second(), 1);
 
                         this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, val);
                     }
@@ -460,8 +450,8 @@ void SystemTwo::initializeInteraction() {
                             int kappa2 = order-1-kappa1;
                             if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), kappa2)) {
                                 double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                val += std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements.getMultipole(r.state.first(), c.state.first(), kappa1)*
-                                        matrixelements.getMultipole(r.state.second(), c.state.second(), kappa2);
+                                val += std::pow(-1,kappa2) * std::sqrt(binomials) * cache.getMultipole(r.state.first(), c.state.first(), kappa1)*
+                                        cache.getMultipole(r.state.second(), c.state.second(), kappa2);
                             }
                         }
 

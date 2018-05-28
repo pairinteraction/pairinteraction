@@ -21,6 +21,7 @@
 #include "Basisnames.h"
 #include "Wavefunction.h"
 #include "wignerSymbols/include/wignerSymbols/wignerSymbols-cpp.h"
+#include "utils.h"
 
 #include <string>
 #include <unordered_map>
@@ -30,6 +31,7 @@
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
+#include <boost/filesystem.hpp>
 
 bool selectionRulesMomentumNew(StateOne const& state1, StateOne const& state2, int q); // TODO rename, integrate into the MatrixElementCache namespace
 bool selectionRulesMomentumNew(StateOne const& state1, StateOne const& state2);
@@ -152,6 +154,7 @@ private:
     std::string dbname;
     sqlite::handle db;
     sqlite::statement stmt;
+    long pid_which_created_db;
 
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
@@ -169,6 +172,7 @@ private:
             // Open database
             db = sqlite::handle(dbname);
             stmt = sqlite::statement(db);
+            pid_which_created_db = utils::get_pid();
 
             // Speed up database access
             stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on

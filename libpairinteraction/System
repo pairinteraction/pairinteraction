@@ -14,5 +14,6 @@
  * limitations under the License.
  */
 
+#include "MatrixElementCache.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"

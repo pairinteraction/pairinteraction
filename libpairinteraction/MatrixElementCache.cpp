@@ -18,6 +18,7 @@
 #include "MatrixElementCache.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
+
 #include <sstream>
 #include <iostream>
 #include <string>
@@ -25,7 +26,6 @@
 #include <stdexcept>
 #include <cctype>
 #include <memory>
-#include <boost/filesystem.hpp>
 
 bool selectionRulesMomentumNew(StateOne const& state1, StateOne const& state2, int q) {
     bool validL = state1.l == state2.l;
@@ -63,7 +63,7 @@ bool selectionRulesMultipoleNew(StateOne const& state1, StateOne const& state2, 
 /// Constructors ///////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db) { // TODO db and stmt have to be initialized here, since they have no default constructor - nicer solution?
+MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they have no default constructor
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
@@ -74,7 +74,7 @@ MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db) { //
     //}
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db) {
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/"cache_elements.db").string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
@@ -83,8 +83,6 @@ MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((bo
     //} else {
     //    method = "Error";
     //}
-
-    // TODO has stmt to be closed explicitely? does the global stmt and db work with multiprocessing?
 
     // Speed up database access
     stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
@@ -466,6 +464,17 @@ int MatrixElementCache::update() {
 
     // --- Load from database ---
     if (!dbname.empty()) {
+
+        // Reopen the connection to the database if it was opend by a different process (without doing this, there can be problems with Python multiprocessing)
+        if (pid_which_created_db != static_cast<long>(utils::get_pid())) {
+            db = sqlite::handle(dbname);
+            stmt = sqlite::statement(db);
+            pid_which_created_db = utils::get_pid();
+
+            // Speed up database access
+            stmt.exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+            stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
+        }
 
         if (cache_radial_missing.size() > 0) {
             stmt.set("select value from cache_radial where `method` = ?1 and `species` = ?2 and `k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = ?8 and `j2` = ?9;");

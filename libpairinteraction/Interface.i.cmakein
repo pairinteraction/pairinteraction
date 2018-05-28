@@ -216,7 +216,8 @@ namespace std {
 %extend SystemOne {
   %pythoncode %{
     def __setstate__(self, sState):
-      self.__init__("")
+      tmp = MatrixElementCache()
+      self.__init__("", tmp)
       self.__setstate_internal(sState)
   %}
 }
@@ -224,9 +225,10 @@ namespace std {
 %extend SystemTwo {
   %pythoncode %{
     def __setstate__(self, sState):
-      s1 = SystemOne("")
-      s2 = SystemOne("")
-      self.__init__(s1, s2)
+      tmp = MatrixElementCache()
+      s1 = SystemOne("", tmp)
+      s2 = SystemOne("", tmp)
+      self.__init__(s1, s2, tmp)
       self.__setstate_internal(sState)
   %}
 }

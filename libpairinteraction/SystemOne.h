@@ -44,10 +44,8 @@ namespace std {
 
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::string const& species, std::string cachedir);
-    SystemOne(std::string const& species, std::string cachedir, bool memory_saving);
-    SystemOne(std::string const& species);
-    SystemOne(std::string const& species, bool memory_saving);
+    SystemOne(std::string const& species, MatrixElementCache &cache);
+    SystemOne(std::string const& species, MatrixElementCache &cache, bool memory_saving);
 
     const std::string& getElement() const; // TODO rename to getSpecies
     void setEfield(std::array<double, 3> field);
@@ -137,9 +135,7 @@ private:
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        (void)version;
-
+    void serialize(Archive & ar, const unsigned int /*version*/) {
         ar & boost::serialization::base_object<SystemBase<StateOne>>(*this);
         ar & species;
         ar & efield & bfield & diamagnetism & sym_reflection & sym_rotation;

@@ -18,6 +18,7 @@
 #include "SystemOne.h"
 #include "SystemTwo.h"
 #include "dtypes.h"
+#include "MatrixElementCache.h"
 
 #define BOOST_TEST_MODULE Integration test
 #include <boost/test/unit_test.hpp>
@@ -51,6 +52,9 @@ BOOST_AUTO_TEST_CASE(integration_test)
         throw std::runtime_error("Could not create cache directory.");
     }
 
+    // Set up cache
+    MatrixElementCache cache(path_cache.string());
+
     // Load reference data
     eigen_sparse_t hamiltonian_one_reference, hamiltonian_two_reference;
     eigen_sparse_t basis_one_reference, basis_two_reference;
@@ -73,7 +77,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.species, path_cache.string());
+    SystemOne system_one(state_one.species, cache);
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
@@ -132,14 +136,15 @@ BOOST_AUTO_TEST_CASE(integration_test)
     // Build one-atom system (for this test, system_one has to be diagonal by
     // itself because diagonalization can lead to different order of
     // eigenvectors)
-    system_one = SystemOne(state_one.species, path_cache.string());
-    system_one.restrictEnergy(state_one.getEnergy() - 40,
+    //system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot be assigned because its copy assignment operator is implicitly deleted
+    SystemOne system_one_new(state_one.species, cache);
+    system_one_new.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
-    system_one.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one_new.restrictN(state_one.n - 1, state_one.n + 1);
+    system_one_new.restrictL(state_one.l - 1, state_one.l + 1);
 
     // Build two-atom system
-    SystemTwo system_two(system_one, system_one, path_cache.string());
+    SystemTwo system_two(system_one_new, system_one_new, cache);
     system_two.restrictEnergy(state_two.getEnergy() - 2,
                               state_two.getEnergy() + 2);
     system_two.setConservedParityUnderPermutation(ODD);

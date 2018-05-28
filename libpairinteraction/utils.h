@@ -21,6 +21,9 @@
 #include <functional>
 #include <random>
 #include <type_traits>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
 
 namespace utils
 {
@@ -77,6 +80,14 @@ inline uint64_t FNV64(uint8_t *s, size_t sz)
         hash = (hash ^ s[i]) * magicPrime;
     }
     return hash;
+}
+
+inline long get_pid() {
+#ifdef _WIN32
+    return GetCurrentProcessId();
+#else
+    return ::getpid();
+#endif
 }
 }
 
