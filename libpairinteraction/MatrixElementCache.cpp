@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2018 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db), pid
     //}
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/("cache_elements_"+version::cache+".db")).string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/("cache_elements_"+version::cache()+".db")).string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
