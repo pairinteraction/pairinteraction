@@ -2982,12 +2982,9 @@ class MainWindow(QtGui.QMainWindow):
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
-            self.converter_bfield = \
-                Quantity(1, Units.au_bfield).toUU().magnitude
-            self.converter_efield = \
-                Quantity(1, Units.au_efield).toUU().magnitude
-            self.converter_length = \
-                Quantity(1, Units.au_length).toUU().magnitude
+            self.converter_bfield = 1#Quantity(1, Units.au_bfield).toUU().magnitude
+            self.converter_efield = 1#Quantity(1, Units.au_efield).toUU().magnitude
+            self.converter_length = 1#Quantity(1, Units.au_length).toUU().magnitude
 
             rotator = np.array([[np.cos(-self.angle), 0, -np.sin(-self.angle)],
                                 [0, 1, 0],
