@@ -348,12 +348,11 @@ public:
 class handle final
 {
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> m_db;
-    int m_threshold;
 
-    static int busy_handler(void *self, int num_prior_calls)
+    static int busy_handler(void* /*self*/, int num_prior_calls)
     {
         // Sleep if handler has been called less than num_prior_calls
-        if (num_prior_calls < static_cast<handle *>(self)->m_threshold) {
+        if (num_prior_calls < 100000) {
             std::this_thread::sleep_for(
                 std::chrono::microseconds(utils::randint(2000, 20000)));
             return 1;
@@ -386,7 +385,7 @@ public:
      */
     explicit handle(std::string const &filename,
                     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        : m_db{nullptr, sqlite3_close}, m_threshold{100000}
+        : m_db{nullptr, sqlite3_close}
     {
         sqlite3 *tmp_db;
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
