@@ -60,6 +60,10 @@ constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2
 constexpr const double sqrt_inverse_electric_constant = 0.7717003798774048; // equals sqrt(inverse_electric_constant)
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
+constexpr const double coulombs_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
+constexpr const double electron_rest_mass = au2G * au2G * au2GHz / au2Vcm / au2Vcm;
+constexpr const double elementary_charge = au2GHz / au2um / au2Vcm;
+
 constexpr const double muB = 0.5; // in atomic units
 constexpr const double gS = 2.0023192;
 constexpr const double gL = 1;
