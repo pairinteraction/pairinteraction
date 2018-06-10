@@ -221,6 +221,7 @@ eigen_dense_double_t PerturbativeDipolarInteraction::getC3(std::vector<StateTwo>
             int q1 = state_row.m[1]-state_col.m[1];
 
             if (array_q.size() == 3 && q0+q1 != 0) continue;
+            if (std::abs(q0) > 1 || std::abs(q1) > 1) continue;
 
             C3_matrix(idx_row, idx_col) = array_angle_term[3*(q0+1)+(q1+1)] * cache.getMultipole(state_row.first(), state_col.first(), 1) * cache.getMultipole(state_row.second(), state_col.second(), 1);
         }
