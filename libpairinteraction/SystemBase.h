@@ -141,31 +141,43 @@ public:
         return states_converted;
     }
     
-    eigen_sparse_t& getCoefficients() {
+    eigen_sparse_t& getBasisvectors() {
         this->buildBasis();
         return coefficients;
+    }
+
+    eigen_sparse_t& getCoefficients() { // TODO remove
+        return this->getBasisvectors();
     }
 
     eigen_vector_double_t getDiagonal() {
         this->buildHamiltonian();
         return hamiltonianmatrix.diagonal().real();
     }
-    
-    eigen_sparse_t& getHamiltonianmatrix() {
+
+    eigen_sparse_t& getHamiltonian() {
         this->buildHamiltonian();
         return hamiltonianmatrix;
     }
+
+    eigen_sparse_t& getHamiltonianmatrix() { // TODO remove
+        return this->getHamiltonian();
+    }
     
-    size_t getNumVectors() {
+    size_t getNumBasisvectors() {
         // Build basis
         this->buildBasis();
-        
+
         // Check variables for consistency
         if ( (coefficients.outerSize() != coefficients.cols()) || (coefficients.outerSize() != hamiltonianmatrix.rows()) || (coefficients.outerSize() != hamiltonianmatrix.cols()) ) {
             throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
         }
-        
+
         return coefficients.cols();
+    }
+
+    size_t getNumVectors() { // TODO remove
+        return this->getNumBasisvectors();
     }
     
     size_t getNumStates() {
