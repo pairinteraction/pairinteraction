@@ -54,10 +54,24 @@ StateOne::StateOne(int n, int l, float j, float m)
 
 std::ostream& operator<< (std::ostream &out, const StateOne &state)
 {
-    out << "n  =" << std::setw(3) << state.n << ",   ";
-    out << "l  =" << std::setw(3) << state.l << ",   ";
-    out << "j  =" << std::setprecision(4) << std::setw(5) << state.j << ",   ";
-    out << "m  =" << std::setprecision(4) << std::setw(5) << state.m;
+    out << "|" << state.species << ", ";
+
+    out << state.n << " ";
+
+    if (static_cast<size_t>(state.l) < momentum2label.size()) {
+        out << momentum2label[state.l] << "_";
+    } else {
+        out << state.l << "_";
+    }
+
+    if(std::ceil(state.j) == state.j) {
+        out << state.j << ", ";
+        out << "mj=" << state.m << ">";
+    } else {
+        out << 2*state.j << "/2, ";
+        out << "mj=" << 2*state.m << "/2>";
+    }
+
     return out;
 }
 
@@ -100,6 +114,30 @@ double StateOne::getNStar() const
     return nstar(species, n, l, j);
 }
 
+std::string StateOne::getSpecies() const
+{
+    return species;
+}
+
+int StateOne::getN() const
+{
+    return n;
+}
+
+int StateOne::getL() const
+{
+    return l;
+}
+
+float StateOne::getJ() const
+{
+    return j;
+}
+
+float StateOne::getM() const
+{
+    return m;
+}
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
@@ -192,13 +230,29 @@ StateOne StateTwo::second() const
 }
 
 std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
+    out << "|";
     for (size_t i = 0; i < 2; ++i) {
-        out << "n" << i << " =" << std::setw(3) << state.n[i] << ",   ";
-        out << "l" << i << " =" << std::setw(3) << state.l[i] << ",   ";
-        out << "j" << i << " =" << std::setprecision(4) << std::setw(5) << state.j[i] << ",   ";
-        out << "m" << i << " =" << std::setprecision(4) << std::setw(5) << state.m[i];
-        if (i == 0) out << ",   ";
+        out << state.species[i] << ", ";
+
+        out << state.n[i] << " ";
+
+        if (static_cast<size_t>(state.l[i]) < momentum2label.size()) {
+            out << momentum2label[state.l[i]] << "_";
+        } else {
+            out << state.l[i] << "_";
+        }
+
+        if(std::ceil(state.j[i]) == state.j[i]) {
+            out << state.j[i] << ", ";
+            out << "mj=" << state.m[i] << ">";
+        } else {
+            out << 2*state.j[i] << "/2, ";
+            out << "mj=" << 2*state.m[i] << "/2";
+        }
+
+        if (i == 0) out << "; ";
     }
+    out << ">";
     return out;
 }
 
@@ -242,6 +296,31 @@ double StateTwo::getEnergy() const {
 
 std::array<double, 2> StateTwo::getNStar() const {
     return {{this->first().getNStar(), this->second().getNStar()}};
+}
+
+std::array<std::string, 2> StateTwo::getSpecies() const
+{
+    return species;
+}
+
+std::array<int, 2> StateTwo::getN() const
+{
+    return n;
+}
+
+std::array<int, 2> StateTwo::getL() const
+{
+    return l;
+}
+
+std::array<float, 2> StateTwo::getJ() const
+{
+    return j;
+}
+
+std::array<float, 2> StateTwo::getM() const
+{
+    return m;
 }
 
 ////////////////////////////////////////////////////////////////////

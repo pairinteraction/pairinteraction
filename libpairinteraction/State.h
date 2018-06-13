@@ -22,10 +22,15 @@
 #include <array>
 #include <string>
 #include <iostream>
+#include <cmath>
 #include <boost/functional/hash.hpp>
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
+
+
+constexpr const std::array<char, 7> momentum2label = {{'S', 'P', 'D', 'F', 'G', 'H', 'I'}};
+
 
 /** \brief %Base class for states
  *
@@ -65,6 +70,12 @@ public:
 
     double getEnergy() const;
     double getNStar() const;
+
+    std::string getSpecies() const;
+    int getN() const;
+    int getL() const;
+    float getJ() const;
+    float getM() const;
 
 private:
     ////////////////////////////////////////////////////////////////////
@@ -126,6 +137,12 @@ public:
 
     double getEnergy() const;
     std::array<double, 2> getNStar() const;
+
+    std::array<std::string, 2> getSpecies() const;
+    std::array<int, 2> getN() const;
+    std::array<int, 2> getL() const;
+    std::array<float, 2> getJ() const;
+    std::array<float, 2> getM() const;
 
 private:
     ////////////////////////////////////////////////////////////////////
