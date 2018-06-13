@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-#ifndef PERTURBATIVEDIPOLARINTERACTION_H
-#define PERTURBATIVEDIPOLARINTERACTION_H
+#ifndef PERTURBATIVEINTERACTION_H
+#define PERTURBATIVEINTERACTION_H
 
 #include "dtypes.h"
 #include "MatrixElementCache.h"
@@ -24,14 +24,15 @@
 #include <vector>
 #include <array>
 
-class PerturbativeDipolarInteraction {
+class PerturbativeInteraction {
 public:
-    PerturbativeDipolarInteraction(MatrixElementCache &cache);
-    PerturbativeDipolarInteraction(MatrixElementCache &cache, double angle);
+    PerturbativeInteraction(MatrixElementCache &cache);
+    PerturbativeInteraction(double angle, MatrixElementCache &cache);
     double getC6(StateTwo state, double deltaN); // return value in GHz*um^6
     eigen_dense_double_t getC6(std::vector<StateTwo> states, double deltaN); // return value in GHz*um^6
     eigen_dense_double_t getC3(std::vector<StateTwo> states); // return value in GHz*um^3
 private:
+    void initializeAngleTerms(double angle);
     MatrixElementCache &cache;
     std::vector<std::array<int,2>> array_q;
     std::array<double, 9> array_angle_term;

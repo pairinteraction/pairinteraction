@@ -14,55 +14,19 @@
  * limitations under the License.
  */
 
-#include "PerturbativeDipolarInteraction.h"
+#include "PerturbativeInteraction.h"
 
 #include <unordered_set>
 
-PerturbativeDipolarInteraction::PerturbativeDipolarInteraction(MatrixElementCache &cache) : cache(cache) {
-    array_q.reserve(3);
-
-    array_q.push_back({{0,0}});
-    array_angle_term[3*(0+1)+(0+1)] = -2;
-
-    array_q.push_back({{1,-1}});
-    array_angle_term[3*(1+1)+(-1+1)] = -1;
-
-    array_q.push_back({{-1,1}});
-    array_angle_term[3*(-1+1)+(1+1)] = -1;
+PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache) : cache(cache) {
+    initializeAngleTerms(0);
 }
 
-PerturbativeDipolarInteraction::PerturbativeDipolarInteraction(MatrixElementCache &cache, double angle) : cache(cache) {
-    array_q.reserve(9);
-
-    array_q.push_back({{0,0}});
-    array_angle_term[3*(0+1)+(0+1)] = 1.-3.*std::pow(std::cos(angle),2);
-
-    array_q.push_back({{1,-1}});
-    array_angle_term[3*(1+1)+(-1+1)] = -1+1.5*std::pow(std::sin(angle),2);
-
-    array_q.push_back({{-1,1}});
-    array_angle_term[3*(-1+1)+(1+1)] = -1+1.5*std::pow(std::sin(angle),2);
-
-    array_q.push_back({{1,1}});
-    array_angle_term[3*(1+1)+(1+1)] = -1.5*std::pow(std::sin(angle),2);
-
-    array_q.push_back({{-1,-1}});
-    array_angle_term[3*(-1+1)+(-1+1)] = -1.5*std::pow(std::sin(angle),2);
-
-    array_q.push_back({{0,1}});
-    array_angle_term[3*(0+1)+(1+1)] = 3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
-
-    array_q.push_back({{1,0}});
-    array_angle_term[3*(1+1)+(0+1)] = 3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
-
-    array_q.push_back({{0,-1}});
-    array_angle_term[3*(0+1)+(-1+1)] = -3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
-
-    array_q.push_back({{-1,0}});
-    array_angle_term[3*(-1+1)+(0+1)] = -3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+PerturbativeInteraction::PerturbativeInteraction(double angle, MatrixElementCache &cache) : cache(cache) {
+    initializeAngleTerms(angle);
 }
 
-double PerturbativeDipolarInteraction::getC6(StateTwo state, double deltaN) {
+double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
     double C6 = 0;
 
     for (int n0 = state.n[0]-deltaN; n0 <= state.n[0]+deltaN; ++n0) {
@@ -112,7 +76,7 @@ double PerturbativeDipolarInteraction::getC6(StateTwo state, double deltaN) {
     return C6;
 }
 
-eigen_dense_double_t PerturbativeDipolarInteraction::getC6(std::vector<StateTwo> states, double deltaN) {
+eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states, double deltaN) {
     eigen_dense_double_t C6_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     std::unordered_set<StateTwo> set_states(states.begin(), states.end());
@@ -208,7 +172,7 @@ eigen_dense_double_t PerturbativeDipolarInteraction::getC6(std::vector<StateTwo>
     return C6_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeDipolarInteraction::getC3(std::vector<StateTwo> states) {
+eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states) {
     eigen_dense_double_t C3_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     for (size_t idx_row = 0; idx_row < states.size(); ++idx_row) {
@@ -228,4 +192,48 @@ eigen_dense_double_t PerturbativeDipolarInteraction::getC3(std::vector<StateTwo>
     }
 
     return C3_matrix.selfadjointView<Eigen::Upper>();
+}
+
+void PerturbativeInteraction::initializeAngleTerms(double angle) {
+    if (angle == 0) {
+        array_q.reserve(3);
+
+        array_q.push_back({{0,0}});
+        array_angle_term[3*(0+1)+(0+1)] = -2;
+
+        array_q.push_back({{1,-1}});
+        array_angle_term[3*(1+1)+(-1+1)] = -1;
+
+        array_q.push_back({{-1,1}});
+        array_angle_term[3*(-1+1)+(1+1)] = -1;
+    } else {
+        array_q.reserve(9);
+
+        array_q.push_back({{0,0}});
+        array_angle_term[3*(0+1)+(0+1)] = 1.-3.*std::pow(std::cos(angle),2);
+
+        array_q.push_back({{1,-1}});
+        array_angle_term[3*(1+1)+(-1+1)] = -1+1.5*std::pow(std::sin(angle),2);
+
+        array_q.push_back({{-1,1}});
+        array_angle_term[3*(-1+1)+(1+1)] = -1+1.5*std::pow(std::sin(angle),2);
+
+        array_q.push_back({{1,1}});
+        array_angle_term[3*(1+1)+(1+1)] = -1.5*std::pow(std::sin(angle),2);
+
+        array_q.push_back({{-1,-1}});
+        array_angle_term[3*(-1+1)+(-1+1)] = -1.5*std::pow(std::sin(angle),2);
+
+        array_q.push_back({{0,1}});
+        array_angle_term[3*(0+1)+(1+1)] = 3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+
+        array_q.push_back({{1,0}});
+        array_angle_term[3*(1+1)+(0+1)] = 3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+
+        array_q.push_back({{0,-1}});
+        array_angle_term[3*(0+1)+(-1+1)] = -3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+
+        array_q.push_back({{-1,0}});
+        array_angle_term[3*(-1+1)+(0+1)] = -3./std::sqrt(2)*std::sin(angle)*std::cos(angle);
+    }
 }

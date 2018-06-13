@@ -13,7 +13,7 @@
 #include "SystemTwo.h"
 #include "Wavefunction.h"
 #include "MatrixElementCache.h"
-#include "PerturbativeDipolarInteraction.h"
+#include "PerturbativeInteraction.h"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -144,7 +144,7 @@ namespace std {
 
 %include "Wavefunction.h"
 
-%include "PerturbativeDipolarInteraction.h"
+%include "PerturbativeInteraction.h"
 
 
 // Wrap MatrixElementCache.h
