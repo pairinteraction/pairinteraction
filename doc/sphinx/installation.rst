@@ -196,12 +196,14 @@ using `git`
 
 .. code-block:: bash
 
-    $ git clone --recursive https://github.com/pairinteraction/pairinteraction.git
+    $ git clone --single-branch --recursive https://github.com/pairinteraction/pairinteraction.git
 
 .. note::
    Don't forget the ``--recursive`` switch.  Otherwise all the
    submodules will be missing and you won't be able to build
-   pairinteraction successfully.
+   pairinteraction successfully.  The ``--single-branch`` flag is not
+   essential but will speed up the download significantly by omitting
+   all other branch except ``master``.
 
 Then proceed with the usual CMake workflow
 
@@ -268,12 +270,14 @@ using ``git``
 
 .. code-block:: bash
 
-    $ git clone --recursive https://github.com/pairinteraction/pairinteraction.git
+    $ git clone --single-branch --recursive https://github.com/pairinteraction/pairinteraction.git
 
 .. note::
-    Don't forget the ``--recursive`` switch.  Otherwise all the submodules
-    will be missing and you won't be able to build pairinteraction
-    successfully.
+    Don't forget the ``--recursive`` switch.  Otherwise all the
+    submodules will be missing and you won't be able to build
+    pairinteraction successfully.  The ``--single-branch`` flag is not
+    essential but will speed up the download significantly by omitting
+    all other branch except ``master``.
 
 Then proceed with the usual CMake workflow
 
@@ -336,12 +340,14 @@ using ``git``
 
 .. code-block:: bash
 
-    $ git clone --recursive https://github.com/pairinteraction/pairinteraction.git
+    $ git clone --single-branch --recursive https://github.com/pairinteraction/pairinteraction.git
 
 .. note::
-    Don't forget the ``--recursive`` switch.  Otherwise all the submodules
-    will be missing and you won't be able to build pairinteraction
-    successfully.
+    Don't forget the ``--recursive`` switch.  Otherwise all the
+    submodules will be missing and you won't be able to build
+    pairinteraction successfully.  The ``--single-branch`` flag is not
+    essential but will speed up the download significantly by omitting
+    all other branch except ``master``.
 
 Given that the package ``llvm@3.9`` has been installed via ``homebrew``, we force CMake
 to use the Clang C++ compiler by executing the bash commands
@@ -387,12 +393,14 @@ Then checkout the latest version of pairinteraction using `git`
 
 .. code-block:: bash
 
-    $ git clone --recursive https://github.com/pairinteraction/pairinteraction.git
+    $ git clone --single-branch --recursive https://github.com/pairinteraction/pairinteraction.git
 
 .. note::
-    Don't forget the ``--recursive`` switch.  Otherwise all the submodules
-    will be missing and you won't be able to build pairinteraction
-    successfully.
+    Don't forget the ``--recursive`` switch.  Otherwise all the
+    submodules will be missing and you won't be able to build
+    pairinteraction successfully.  The ``--single-branch`` flag is not
+    essential but will speed up the download significantly by omitting
+    all other branch except ``master``.
 
 Then proceed with the usual CMake workflow
 
