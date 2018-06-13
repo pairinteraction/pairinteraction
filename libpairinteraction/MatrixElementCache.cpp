@@ -64,7 +64,7 @@ bool selectionRulesMultipoleNew(StateOne const& state1, StateOne const& state2, 
 /// Constructors ///////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they have no default constructor
+MatrixElementCache::MatrixElementCache() : defectdbname(""), dbname(""), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they have no default constructor
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
@@ -75,7 +75,7 @@ MatrixElementCache::MatrixElementCache() : dbname(""), db(dbname), stmt(db), pid
     //}
 }
 
-MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((boost::filesystem::absolute(cachedir)/("cache_elements_"+version::cache()+".db")).string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
+MatrixElementCache::MatrixElementCache(std::string const& cachedir) : defectdbname(""), dbname((boost::filesystem::absolute(cachedir)/("cache_elements_"+version::cache()+".db")).string()), db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
     method = "Modelpotentials";
     //if (config["missingCalc"].str() == "true") {
     //    method = "Modelpotentials";
@@ -109,6 +109,14 @@ MatrixElementCache::MatrixElementCache(std::string const& cachedir) : dbname((bo
     stmt.exec("create table if not exists cache_reduced_multipole ("
               "k integer, l1 integer,"
               "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
+}
+
+void MatrixElementCache::setDefectDB(std::string const& path) {
+    // Set path to user defined database for quantum defects and model potential parameters
+    defectdbname = path;
+
+    // Prevent using the cache file to avoid inconsistencies through the user defined database
+    dbname = "";
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -593,10 +601,17 @@ int MatrixElementCache::update() {
         }
 
         for (auto &cached : cache_radial_missing) {
-            QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0]);
-            QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1]);
+            double val = 0;
+            if (defectdbname.empty()) {
+                QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0]);
+                QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1]);
+                val = calcRadialElement(qd1, cached.kappa, qd2);
+            } else {
+                QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0], defectdbname);
+                QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1], defectdbname);
+                val = calcRadialElement(qd1, cached.kappa, qd2);
+            }
 
-            double val = calcRadialElement(qd1, cached.kappa, qd2);
             cache_radial.insert({std::move(cached),val});
 
             if (!dbname.empty()) {

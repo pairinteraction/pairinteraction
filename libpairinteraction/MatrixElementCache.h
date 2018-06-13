@@ -58,6 +58,8 @@ public:
     void precalculateMultipole(const std::vector<StateOne> &basis_one, int k);
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 
+    void setDefectDB(std::string const& path);
+
     size_t size();
 
 private:
@@ -151,6 +153,7 @@ private:
     std::unordered_set<CacheKey_cache_reduced_multipole, CacheKeyHasher_cache_reduced_multipole> cache_reduced_multipole_missing;
 
     std::string method;
+    std::string defectdbname;
     std::string dbname;
     sqlite::handle db;
     sqlite::statement stmt;
