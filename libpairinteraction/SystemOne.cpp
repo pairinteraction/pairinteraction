@@ -287,7 +287,7 @@ void SystemOne::initializeInteraction() {
             // E-field interaction
             for (const auto &i : erange) {
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
-                    scalar_t value = cache.getElectricMomentum(r.state, c.state);
+                    scalar_t value = cache.getElectricDipole(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
@@ -296,7 +296,7 @@ void SystemOne::initializeInteraction() {
             // B-field interaction
             for (const auto &i : brange) {
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
-                    scalar_t value = cache.getMagneticMomentum(r.state, c.state);
+                    scalar_t value = cache.getMagneticDipole(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic quantum numbers will not be fulfilled
                 }
@@ -305,7 +305,7 @@ void SystemOne::initializeInteraction() {
             // Diamagnetic interaction
             for (const auto &i : drange) {
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
-                    scalar_t value = cache.getDiamagnetism(r.state, c.state, i[0]);
+                    scalar_t value = 1./(8*electron_rest_mass) * cache.getDiamagnetism(r.state, c.state, i[0]);
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
             }

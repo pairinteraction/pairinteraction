@@ -413,28 +413,28 @@ void SystemTwo::initializeInteraction() {
                 // Angular dependent dipole-dipole interaction
                 if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), 1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), 1)) {
                     if (q1 == 0 && q2 == 0 && calculation_required[1]) {
-                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
-                                cache.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
                     } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
-                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
-                                cache.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         if (calculation_required[0]) this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
                         if (calculation_required[2]) this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
 
                     } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
-                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
-                                cache.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         if (q1 == 1 || q2 == 1) this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
                         else this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
 
                     } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
-                        scalar_t val = cache.getMultipole(r.state.first(), c.state.first(), 1) *
-                                cache.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, val);
                     }
@@ -450,8 +450,8 @@ void SystemTwo::initializeInteraction() {
                             int kappa2 = order-1-kappa1;
                             if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), kappa2)) {
                                 double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                val += std::pow(-1,kappa2) * std::sqrt(binomials) * cache.getMultipole(r.state.first(), c.state.first(), kappa1)*
-                                        cache.getMultipole(r.state.second(), c.state.second(), kappa2);
+                                val += coulombs_constant * std::pow(-1,kappa2) * std::sqrt(binomials) * cache.getElectricMultipole(r.state.first(), c.state.first(), kappa1) *
+                                        cache.getElectricMultipole(r.state.second(), c.state.second(), kappa2);
                             }
                         }
 

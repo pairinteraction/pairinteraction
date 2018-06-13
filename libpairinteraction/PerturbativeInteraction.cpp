@@ -63,7 +63,7 @@ double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
                                 if (std::abs(m1) > j1) continue;
 
                                 StateTwo state_virtual = StateTwo(state.species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
-                                C6 += std::pow(array_angle_term[3*(q[0]+1)+(q[1]+1)] * cache.getMultipole(state_virtual.first(), state.first(), 1) * cache.getMultipole(state_virtual.second(), state.second(), 1), 2)
+                                C6 += std::pow(coulombs_constant * array_angle_term[3*(q[0]+1)+(q[1]+1)] * cache.getElectricDipole(state_virtual.first(), state.first()) * cache.getElectricDipole(state_virtual.second(), state.second()), 2)
                                         / (state.getEnergy()-state_virtual.getEnergy()); // getMultipole(final, inital, 1)
                             }
                         }
@@ -154,8 +154,8 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
                                         StateTwo state_virtual = StateTwo(species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
                                         if (set_states.find(state_virtual) != set_states.end()) continue;
 
-                                        C6 +=  array_angle_term[3*(q0_back+1)+(q1_back+1)] * cache.getMultipole(state_row.first(), state_virtual.first(), 1) * cache.getMultipole(state_row.second(), state_virtual.second(), 1)
-                                                * array_angle_term[3*(q0_forth+1)+(q1_forth+1)] * cache.getMultipole(state_virtual.first(), state_col.first(), 1) * cache.getMultipole(state_virtual.second(), state_col.second(), 1)
+                                        C6 +=  coulombs_constant * array_angle_term[3*(q0_back+1)+(q1_back+1)] * cache.getElectricDipole(state_row.first(), state_virtual.first()) * cache.getElectricDipole(state_row.second(), state_virtual.second())
+                                                * coulombs_constant * array_angle_term[3*(q0_forth+1)+(q1_forth+1)] * cache.getElectricDipole(state_virtual.first(), state_col.first()) * cache.getElectricDipole(state_virtual.second(), state_col.second())
                                                 * 0.5 * (1/(state_row.getEnergy()-state_virtual.getEnergy())+1/(state_col.getEnergy()-state_virtual.getEnergy())); // getMultipole(final, inital, 1)
                                     }
                                 }
@@ -187,7 +187,7 @@ eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states
             if (array_q.size() == 3 && q0+q1 != 0) continue;
             if (std::abs(q0) > 1 || std::abs(q1) > 1) continue;
 
-            C3_matrix(idx_row, idx_col) = array_angle_term[3*(q0+1)+(q1+1)] * cache.getMultipole(state_row.first(), state_col.first(), 1) * cache.getMultipole(state_row.second(), state_col.second(), 1);
+            C3_matrix(idx_row, idx_col) = coulombs_constant * array_angle_term[3*(q0+1)+(q1+1)] * cache.getElectricDipole(state_row.first(), state_col.first()) * cache.getElectricDipole(state_row.second(), state_col.second());
         }
     }
 

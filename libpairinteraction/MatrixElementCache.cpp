@@ -249,27 +249,23 @@ std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_multipole::operator
 /// Get matrix elements ////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-double MatrixElementCache::getDipole(StateOne const& state_row, StateOne const& state_col) {
-    return getMultipole(state_row,state_col, 1, 1);
+double MatrixElementCache::getElectricDipole(StateOne const& state_row, StateOne const& state_col) {
+    return getElectricMultipole(state_row,state_col, 1, 1);
 }
 
-double MatrixElementCache::getQuadrupole(StateOne const& state_row, StateOne const& state_col) {
-    return getMultipole(state_row,state_col, 2, 2);
+double MatrixElementCache::getElectricQuadrupole(StateOne const& state_row, StateOne const& state_col) {
+    return getElectricMultipole(state_row,state_col, 2, 2);
 }
 
-double MatrixElementCache::getMultipole(StateOne const& state_row, StateOne const& state_col, int k) {
-    return getMultipole(state_row,state_col, k, k);
-}
-
-double MatrixElementCache::getElectricMomentum(StateOne const& state_row, StateOne const& state_col) {
-    return 1/sqrt_inverse_electric_constant * getMultipole(state_row,state_col, 1, 1);
+double MatrixElementCache::getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int k) {
+    return getElectricMultipole(state_row,state_col, k, k);
 }
 
 double MatrixElementCache::getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k) {
-    return inverse_electron_rest_mass/sqrt_inverse_electric_constant * 1./12. * getMultipole(state_row,state_col, 2, k);
+    return 2./3. * getElectricMultipole(state_row,state_col, 2, k);
 }
 
-double MatrixElementCache::getMagneticMomentum(StateOne const& state_row, StateOne const& state_col) {
+double MatrixElementCache::getMagneticDipole(StateOne const& state_row, StateOne const& state_col) {
     if (state_row.species != state_col.species) {
         throw std::runtime_error( "The species must be the same for the final and initial state." );
     }
@@ -306,7 +302,7 @@ double MatrixElementCache::getMagneticMomentum(StateOne const& state_row, StateO
             (gL * key3.sgn * iter3->second * sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) + gS * key4.sgn * iter4->second * sqrt(s*(s+1)*(2*s+1)));
 }
 
-double MatrixElementCache::getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa_radial, int kappa_angular) {
+double MatrixElementCache::getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int kappa_radial, int kappa_angular) {
     if (state_row.species != state_col.species) {
         throw std::runtime_error( "The species must be the same for the final and initial state." );
     }
@@ -339,7 +335,7 @@ double MatrixElementCache::getMultipole(StateOne const& state_row, StateOne cons
         if (iter4 == cache_reduced_multipole.end()) iter4 = cache_reduced_multipole.find(key4);
     }
 
-    return sqrt_inverse_electric_constant * iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second * key4.sgn * iter4->second;
+    return iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second * key4.sgn * iter4->second;
 }
 
 double MatrixElementCache::getRadial(StateOne const& state_row, StateOne const& state_col, int kappa) {
@@ -359,7 +355,7 @@ double MatrixElementCache::getRadial(StateOne const& state_row, StateOne const& 
         if (iter1 == cache_radial.end()) iter1 = cache_radial.find(key1);
     }
 
-    return au2Vcm/au2GHz*au2um * iter1->second; // TODO change the converter in Wavefunction.cpp to std::pow(au2um, power) so that the prefactor au2Vcm/au2GHz*au2um is not necessary anymore
+    return 1./elementary_charge * iter1->second; // TODO change the converter in Wavefunction.cpp to std::pow(au2um, power) so that 1./elementary_charge is not necessary anymore
 }
 
 ////////////////////////////////////////////////////////////////////

@@ -43,13 +43,12 @@ public:
     MatrixElementCache();
     MatrixElementCache(std::string const& cachedir);
 
-    double getDipole(StateOne const& state_row, StateOne const& state_col); // return value in sqrt(GHz*um)*um
-    double getQuadrupole(StateOne const& state_row, StateOne const& state_col); // return value in sqrt(GHz*um)*um^2
-    double getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in sqrt(GHz*um)*um^kappa
-    double getElectricMomentum(StateOne const& state_row, StateOne const& state_col); // return value in GHz/(V/cm)
-    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in GHz/G^2
-    double getMagneticMomentum(StateOne const& state_row, StateOne const& state_col); // return value in GHz/G
-    double getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa_radial, int kappa_angular); // return value in sqrt(GHz*um)*um^kappa_angular
+    double getElectricDipole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/(V/cm)
+    double getElectricQuadrupole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/(V/cm)*um
+    double getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in GHz/(V/cm)*um^(kappa-1)
+    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in GHz/(V/cm)*um
+    double getMagneticDipole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/G
+    double getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int kappa_radial, int kappa_angular); // return value in GHz/(V/cm)*um^(kappa_radial-1)
     double getRadial(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in um^kappa
 
     void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
