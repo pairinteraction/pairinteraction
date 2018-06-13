@@ -7,6 +7,9 @@ configuration: Release
 environment:
     MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
+    BOOST_ROOT: C:\Libraries\boost_1_65_0
+    BOOST_LIBRARYDIR: C:\Libraries\boost_1_65_0\lib64-msvc-14.0
+    PATH: "%BOOST_LIBRARYDIR%;%PATH%"
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
 install:
@@ -19,10 +22,10 @@ install:
   - ps: choco install -y --no-progress -r sqlite --version 3.19.2
   - ps: choco install -y --no-progress -r pkgconfiglite # TODO can we get rid of this dependency?
   
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1521053340/cpp-libraries-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1528914514/cpp-libraries-windows-x86_64.zip'
   - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
 
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1521053340/python-packages-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1528914514/python-packages-windows-x86_64.zip'
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
