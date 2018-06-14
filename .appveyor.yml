@@ -7,9 +7,9 @@ configuration: Release
 environment:
     MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
-    BOOST_ROOT: C:\Libraries\boost_1_65_1
-    BOOST_LIBRARYDIR: C:\Libraries\boost_1_65_1\lib64-msvc-14.0
-    PATH: "%BOOST_LIBRARYDIR%;%PATH%"
+    BOOST_ROOT: C:\Libraries\boost_1_66_0
+    BOOST_LIBRARYDIR: C:\Libraries\boost_1_66_0\lib64-msvc-14.0
+    PATH: %BOOST_LIBRARYDIR%;%PATH%
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
 install:
