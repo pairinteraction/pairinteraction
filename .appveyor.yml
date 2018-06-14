@@ -9,7 +9,7 @@ environment:
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     BOOST_ROOT: C:\Libraries\boost_1_66_0
     BOOST_LIBRARYDIR: C:\Libraries\boost_1_66_0\lib64-msvc-14.0
-    PATH: %BOOST_LIBRARYDIR%;%PATH%
+    PATH: "%BOOST_LIBRARYDIR%;%PATH%"
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
 install:
