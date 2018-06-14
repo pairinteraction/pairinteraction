@@ -285,6 +285,46 @@ namespace numpy {
         return numpy::convert<v>(vec.data(), vec.data()+vec.size(), 1, {vec.size()});
     }
 
+    /** \brief Create a Numpy array from a std::vector
+     *
+     * Specialization of numpy::convert for std::vector
+     *
+     * \param[in] vec    std::vector&
+     *
+     * \return PyObject* containing a Numpy array
+     */
+    template < view_or_copy v, typename T >
+    PyObject * convert(std::vector<T>& vec)
+    {
+        return numpy::convert<v>(vec.data(), vec.data()+vec.size(), 1, {vec.size()});
+    }
+    template < view_or_copy v, typename T >
+    PyObject * convert(std::vector<T> const& vec)
+    {
+        return numpy::convert<v>(vec.data(), vec.data()+vec.size(), 1, {vec.size()});
+    }
+
+    /** \brief Create a Numpy array from a std::array
+     *
+     * Specialization of numpy::convert for std::array
+     *
+     * \param[in] vec    std::array&
+     *
+     * \return PyObject* containing a Numpy array
+     */
+    template < view_or_copy v, typename T, size_t N >
+    PyObject * convert(std::array<T,N>& vec)
+    {
+        using ssize_t = std::make_signed<size_t>::type;
+        return numpy::convert<v>(vec.data(), vec.data()+N, 1, {ssize_t{N}});
+    }
+    template < view_or_copy v, typename T, size_t N >
+    PyObject * convert(std::array<T,N> const& vec)
+    {
+        using ssize_t = std::make_signed<size_t>::type;
+        return numpy::convert<v>(vec.data(), vec.data()+N, 1, {ssize_t{N}});
+    }
+
     // Experimental support for Sparse matrix return types
 
     namespace internal {

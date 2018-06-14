@@ -86,7 +86,7 @@ std::string __str__() {
 %enddef
 
 // Make numpy wrappers
-%define MAKE_NUMPY_TYPEMAP(TYPE...)
+%define MAKE_NUMPY_TYPEMAP_OUT(TYPE...)
   %typemap(out) TYPE        { $result = numpy::convert<numpy::copy>( $1); }
   %typemap(out) TYPE &      { $result = numpy::convert<numpy::view>(*$1); }
   %typemap(out) TYPE const&
@@ -94,6 +94,9 @@ std::string __str__() {
     $result = numpy::convert<numpy::view>(*const_cast<
       traits::pointer_add_const< decltype($1) >::type >($1));
   }
+%enddef
+
+%define MAKE_NUMPY_TYPEMAP_IN(TYPE...)
   %typemap(in) TYPE // SWIG omits the exception handler here
   {
     try {
@@ -104,14 +107,21 @@ std::string __str__() {
   }
 %enddef
 
+%define MAKE_NUMPY_TYPEMAP(TYPE...)
+  MAKE_NUMPY_TYPEMAP_OUT(TYPE)
+  MAKE_NUMPY_TYPEMAP_IN(TYPE)
+%enddef
+
 MAKE_NUMPY_TYPEMAP(eigen_dense_t)
+MAKE_NUMPY_TYPEMAP(eigen_dense_t)
+MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
 
-// Instantiate often used STL templates
+ // Instantiate often used STL templates
 namespace std {
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
@@ -131,6 +141,12 @@ namespace std {
   %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
 };
 
+MAKE_NUMPY_TYPEMAP_OUT(std::vector<int>)
+MAKE_NUMPY_TYPEMAP_OUT(std::vector<float>)
+MAKE_NUMPY_TYPEMAP_OUT(std::vector<double>)
+MAKE_NUMPY_TYPEMAP_OUT(std::array<int,2>)
+MAKE_NUMPY_TYPEMAP_OUT(std::array<float,2>)
+MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %feature("autodoc", "2");
 
