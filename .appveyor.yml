@@ -44,6 +44,10 @@ build_script:
   - cmd: cmake --build . --config "%CONFIGURATION%"
   
 after_build:
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll libpairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll libpairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll libpairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
 
 test_script:
