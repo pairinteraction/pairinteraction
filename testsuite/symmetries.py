@@ -14,6 +14,9 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Create cache directory
         self.path_cache = tempfile.mkdtemp()
 
+        # Set up cache
+        self.cache = pi.MatrixElementCache(self.path_cache)
+
     def test_rotation(self):
         #######################################################
         ### Check rotation symmetry of one atom systems #######
@@ -23,7 +26,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, self.path_cache)
+        system_one = pi.SystemOne(state_one.species, self.cache)
         system_one.restrictEnergy(state_one.energy-40, state_one.energy+40)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -81,11 +84,11 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         for m1 in momenta_one:
             for m2 in momenta_one:
                 if m1+m2 in system_two_momentum:
-                    tmp = pi.SystemTwo(system_one_momentum[m1], system_one_momentum[m2])
+                    tmp = pi.SystemTwo(system_one_momentum[m1], system_one_momentum[m2], self.cache)
                     tmp.restrictEnergy(state_two.energy-2, state_two.energy+2)
                     system_two_momentum[m1+m2].add(tmp)
                 else:
-                    system_two_momentum[m1+m2] = pi.SystemTwo(system_one_momentum[m1], system_one_momentum[m2])
+                    system_two_momentum[m1+m2] = pi.SystemTwo(system_one_momentum[m1], system_one_momentum[m2], self.cache)
                     system_two_momentum[m1+m2].restrictEnergy(state_two.energy-2, state_two.energy+2)
 
         momenta_two = list(system_two_momentum.keys())
@@ -102,7 +105,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize blockwise, alternative
         system_two_momentum_alternative = {}
         for m in momenta_two:
-            system_two_momentum_alternative[m] = pi.SystemTwo(system_one, system_one)
+            system_two_momentum_alternative[m] = pi.SystemTwo(system_one, system_one, self.cache)
             system_two_momentum_alternative[m].restrictEnergy(state_two.energy-2, state_two.energy+2)
             system_two_momentum_alternative[m].setConservedMomentaUnderRotation([int(m)])
             system_two_momentum_alternative[m].setDistance(1)
@@ -114,7 +117,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_two_combined_alternative.add(system_two_momentum_alternative[m])
 
         # Diagonalize altogether
-        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.restrictEnergy(state_two.energy-2, state_two.energy+2)
         system_two.setDistance(1)
         system_two.setOrder(5)
@@ -145,7 +148,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, self.path_cache)
+        system_one = pi.SystemOne(state_one.species, self.cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -190,14 +193,14 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Diagonalize blockwise
         # Note: it is called odd in order to fit to the notion of the paper
-        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, self.path_cache)
-        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, self.path_cache))
+        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, self.cache)
+        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, self.cache))
         system_two_odd.setDistance(1)
         system_two_odd.setOrder(5)
         system_two_odd.diagonalize()
 
-        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, self.path_cache)
-        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, self.path_cache))
+        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, self.cache)
+        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, self.cache))
         system_two_even.setDistance(1)
         system_two_even.setOrder(5)
         system_two_even.diagonalize()
@@ -207,7 +210,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Diagonalize blockwise alternative
         # Note: it is important to use system_one_combined
-        system_two_alternative= pi.SystemTwo(system_one_combined, system_one_combined, self.path_cache)
+        system_two_alternative= pi.SystemTwo(system_one_combined, system_one_combined, self.cache)
         system_two_alternative.setDistance(1)
         system_two_alternative.setOrder(5)
 
@@ -220,7 +223,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two_odd_alternative.diagonalize()
 
         # Diagonalize altogether
-        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setDistance(1)
         system_two.setOrder(5)
         system_two.diagonalize()
@@ -263,7 +266,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, self.path_cache)
+        system_one = pi.SystemOne(state_one.species, self.cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -272,7 +275,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.setEfield([1, 2, 3])
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.cache)
         #system_two.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
         system_two.setDistance(1)
         system_two.setOrder(3)
@@ -318,7 +321,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, self.path_cache)
+        system_one = pi.SystemOne(state_one.species, self.cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -326,7 +329,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.setBfield([100, 200, 300])
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.cache)
         #system_two.restrictEnergy(state_two.energy-2, state_two.energy+2) # TODO
         system_two.setDistance(1)
         system_two.setOrder(5)
@@ -372,7 +375,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.element, self.path_cache)
+        system_one = pi.SystemOne(state_one.species, self.cache)
         system_one.restrictEnergy(state_one.energy-20, state_one.energy+20)
         system_one.restrictN(state_one.n-1, state_one.n+1)
         system_one.restrictL(state_one.l-1, state_one.l+1)
@@ -391,13 +394,13 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.diagonalize()
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.path_cache)
+        system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setDistance(1)
         system_two.setOrder(3)
         system_two.diagonalize()
 
         # Note: it is important to use system_one_combined
-        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, self.path_cache)
+        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, self.cache)
         system_two_from_combined.setDistance(1)
         system_two_from_combined.setOrder(3)
 
@@ -427,6 +430,9 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
     #######################################################
 
     def tearDown(self):
+        # Delete cache object
+        del self.cache
+        
         # Delete cache directory
         shutil.rmtree(self.path_cache)
 

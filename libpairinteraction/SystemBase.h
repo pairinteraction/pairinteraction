@@ -6,6 +6,7 @@
 #include "serialization_eigen.h"
 #include "serialization_path.h"
 #include "WignerD.h"
+#include "MatrixElementCache.h"
 
 #include <vector>
 #include <numeric>
@@ -71,8 +72,8 @@ struct states_set
 
 template<class T> class SystemBase {
 public:
-    SystemBase(std::vector<T> states, std::string cachedir) : // TODO
-        cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(std::vector<T> states, MatrixElementCache &cache) : // TODO
+        cache(cache), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
         (void)states;
         throw std::runtime_error( "Method yet not implemented." );
     }
@@ -95,7 +96,6 @@ public:
     }
     
     void restrictN(int n_min, int n_max) {
-        n_min = std::max(n_min, 1);
         this->range(range_n, n_min, n_max);
     }
     
@@ -104,7 +104,6 @@ public:
     }
     
     void restrictL(int l_min, int l_max) {
-        l_min = std::max(l_min, 0);
         this->range(range_l, l_min, l_max);
     }
     
@@ -113,7 +112,6 @@ public:
     }
     
     void restrictJ(float j_min, float j_max) {
-        j_min = std::fmax(j_min, 0.5);
         this->range(range_j, j_min, j_max);
     }
     
@@ -143,31 +141,43 @@ public:
         return states_converted;
     }
     
-    eigen_sparse_t& getCoefficients() {
+    eigen_sparse_t& getBasisvectors() {
         this->buildBasis();
         return coefficients;
+    }
+
+    eigen_sparse_t& getCoefficients() { // TODO remove
+        return this->getBasisvectors();
     }
 
     eigen_vector_double_t getDiagonal() {
         this->buildHamiltonian();
         return hamiltonianmatrix.diagonal().real();
     }
-    
-    eigen_sparse_t& getHamiltonianmatrix() {
+
+    eigen_sparse_t& getHamiltonian() {
         this->buildHamiltonian();
         return hamiltonianmatrix;
     }
+
+    eigen_sparse_t& getHamiltonianmatrix() { // TODO remove
+        return this->getHamiltonian();
+    }
     
-    size_t getNumVectors() {
+    size_t getNumBasisvectors() {
         // Build basis
         this->buildBasis();
-        
+
         // Check variables for consistency
         if ( (coefficients.outerSize() != coefficients.cols()) || (coefficients.outerSize() != hamiltonianmatrix.rows()) || (coefficients.outerSize() != hamiltonianmatrix.cols()) ) {
             throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
         }
-        
+
         return coefficients.cols();
+    }
+
+    size_t getNumVectors() { // TODO remove
+        return this->getNumBasisvectors();
     }
     
     size_t getNumStates() {
@@ -460,7 +470,7 @@ public:
     
     void diagonalize() {
         this->buildHamiltonian();
-        
+
         // Check if already diagonal
         if (checkIsDiagonal(hamiltonianmatrix)) return;
         
@@ -725,16 +735,10 @@ public:
     }
     
 protected:
-    SystemBase(std::string cachedir) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(MatrixElementCache &cache) : cache(cache), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
-    SystemBase(std::string cachedir, bool memory_saving) : cachedir(boost::filesystem::absolute(cachedir)), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
-    }
-    
-    SystemBase() : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(false), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
-    }
-    
-    SystemBase(bool memory_saving) : cachedir(""), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+    SystemBase(MatrixElementCache &cache, bool memory_saving) : cache(cache), energy_min(std::numeric_limits<double>::lowest()), energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving), is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
     }
     
     virtual void initializeBasis() = 0;
@@ -748,7 +752,7 @@ protected:
     virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
     virtual void incorporate(SystemBase<T> &system) = 0;
 
-    boost::filesystem::path cachedir;
+    MatrixElementCache &cache;
     
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
@@ -1021,10 +1025,8 @@ private:
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        (void)version;
-
-        ar & cachedir;
+    void serialize(Archive & ar, const unsigned int /*version*/) {
+        ar & cache;
         ar & energy_min & energy_max & range_n & range_l & range_j & range_m;
         ar & memory_saving & is_interaction_already_contained & is_new_hamiltonianmatrix_required;
         ar & states & coefficients & hamiltonianmatrix;

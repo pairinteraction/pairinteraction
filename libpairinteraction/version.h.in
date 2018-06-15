@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2018 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,7 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <string>
 
-#include "MatrixElementCache.h"
-#include "SystemOne.h"
-#include "SystemTwo.h"
+struct version {
+    static std::string software() { return "@VERSION_SOFTWARE@"; }
+    static std::string settings() { return "@VERSION_SETTINGS@"; }
+    static std::string cache() { return "@VERSION_CACHE@"; }
+};

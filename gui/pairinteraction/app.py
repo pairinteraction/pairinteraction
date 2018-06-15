@@ -560,7 +560,7 @@ class MainWindow(QtGui.QMainWindow):
         conn = sqlite3.connect(self.path_quantumdefects)
         c = conn.cursor()
         c.execute('SELECT DISTINCT element FROM rydberg_ritz')
-        elements = [e[0] for e in c.fetchall()]
+        elements = [e[0] for e in c.fetchall() if not e[0] in ["Sr1", "Sr3"]] # TODO
         conn.close()
 
         for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
@@ -2982,12 +2982,9 @@ class MainWindow(QtGui.QMainWindow):
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
-            self.converter_bfield = \
-                Quantity(1, Units.au_bfield).toUU().magnitude
-            self.converter_efield = \
-                Quantity(1, Units.au_efield).toUU().magnitude
-            self.converter_length = \
-                Quantity(1, Units.au_length).toUU().magnitude
+            self.converter_bfield = 1#Quantity(1, Units.au_bfield).toUU().magnitude
+            self.converter_efield = 1#Quantity(1, Units.au_efield).toUU().magnitude
+            self.converter_length = 1#Quantity(1, Units.au_length).toUU().magnitude
 
             rotator = np.array([[np.cos(-self.angle), 0, -np.sin(-self.angle)],
                                 [0, 1, 0],

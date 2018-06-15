@@ -48,12 +48,23 @@ INSERT INTO `model_potential` VALUES('Cs',1,'15.6440',55,'4.69366096','1.7139834
 INSERT INTO `model_potential` VALUES('Cs',2,'15.6440',55,'4.32466196','1.61365288','-6.70128850','-0.74095193','0.93007296');
 INSERT INTO `model_potential` VALUES('Cs',3,'15.6440',55,'3.01048361','1.40000001','-3.20036138','0.00034538','1.99969677');
 
+-- Own fit, ac: J. Phys. B 43 202001 (2010), singlet states -- TODO perform fit with ac=91.10
+INSERT INTO `model_potential` VALUES('Sr1',0,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr1',1,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr1',2,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr1',3,'0',1,'1','1','0','0','1');
+
+-- TODO Own fit, ac: J. Phys. B 43 202001 (2010), triplet states -- TODO perform fit with ac=91.10
+INSERT INTO `model_potential` VALUES('Sr3',0,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr3',1,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr3',2,'0',1,'1','1','0','0','1');
+INSERT INTO `model_potential` VALUES('Sr3',3,'0',1,'1','1','0','0','1');
 
 DROP TABLE IF EXISTS `rydberg_ritz`;
 CREATE TABLE `rydberg_ritz` ( `element` text,`L` int,`J` real,`d0` real,`d2` real,`d4` real,`d6` real,`d8` real,`Ry` real);
 
 -- [1] Phys. Rev. A 34, 2889 (1986) (Li 7)
--- [2] T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1 
+-- [2] T. F. Gallagher, ``Rydberg Atoms'', Cambridge University Press (2005), ISBN: 978-0-52-102166-1
 -- [3] Johansson I 1958 Ark. Fysik 15 169
 INSERT INTO `rydberg_ritz` VALUES('Li',0,'0.5','0.3995101','0.029','0.0','0.0','0.0','109728.64'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Li',1,'0.5','0.0471780','-0.024','0.0','0.0','0.0','109728.64'); -- [1]
@@ -68,8 +79,8 @@ INSERT INTO `rydberg_ritz` VALUES('Li',4,'3.5','0.0','0.0','0.0','0.0','0.0','10
 -- [2] Quantum Electron. 25 914 (1995)
 -- [3] J. Phys. B: At. Mol. Opt. Phys. 30 2345 (1997)
 INSERT INTO `rydberg_ritz` VALUES('Na',0,'0.5','1.34796938','0.0609892','0.0196743','-0.001045','0.0','109734.69'); -- [1,2]
-INSERT INTO `rydberg_ritz` VALUES('Na',1,'0.5','0.85544502','0.112067','0.0479','0.0457','0.0','109734.69'); -- [2] 
-INSERT INTO `rydberg_ritz` VALUES('Na',1,'1.5','0.85462615','0.112344','0.0497','0.0406','0.0','109734.69'); -- [2] 
+INSERT INTO `rydberg_ritz` VALUES('Na',1,'0.5','0.85544502','0.112067','0.0479','0.0457','0.0','109734.69'); -- [2]
+INSERT INTO `rydberg_ritz` VALUES('Na',1,'1.5','0.85462615','0.112344','0.0497','0.0406','0.0','109734.69'); -- [2]
 INSERT INTO `rydberg_ritz` VALUES('Na',2,'1.5','0.014909286','-0.042506','0.00840','0.0','0.0','109734.69'); -- [2,3]
 INSERT INTO `rydberg_ritz` VALUES('Na',2,'2.5','0.01492422','-0.042585','0.00840','0.0','0.0','109734.69'); -- [2,3]
 INSERT INTO `rydberg_ritz` VALUES('Na',3,'2.5','0.001632977','-0.0069906','0.00423','0.0','0.0','109734.69'); -- [3]
@@ -80,9 +91,9 @@ INSERT INTO `rydberg_ritz` VALUES('Na',5,'4.5','0.00016114','-0.00185','0.0','0.
 INSERT INTO `rydberg_ritz` VALUES('Na',5,'5.5','0.00015796','-0.00148','0.0','0.0','0.0','109734.69'); -- [3]
 INSERT INTO `rydberg_ritz` VALUES('Na',6,'5.5','0.0','0.0','0.0','0.0','0.0','109734.69');
 
--- [1] Phys. Scr. 27, 300 (1983) 
+-- [1] Phys. Scr. 27, 300 (1983)
 -- [2] Opt. Commun. 39, 370 (1981)
--- [3] Ark. Fys., 10 p.583 (1956) 
+-- [3] Ark. Fys., 10 p.583 (1956)
 INSERT INTO `rydberg_ritz` VALUES('K',0,'0.5','2.180197','0.136','0.0759','0.117','-0.206','109735.774'); -- [1,2]
 INSERT INTO `rydberg_ritz` VALUES('K',1,'0.5','1.713892','0.2332','0.16137','0.5345','-0.234','109735.774'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('K',1,'1.5','1.710848','0.2354','0.11551','1.105','-2.0356','109735.774'); -- [1]
@@ -114,11 +125,31 @@ INSERT INTO `rydberg_ritz` VALUES('Cs',0,'0.5','4.0493532','0.2391','0.06','11',
 INSERT INTO `rydberg_ritz` VALUES('Cs',1,'0.5','3.5915871','0.36273','0.0','0.0','0.0','109736.8627339'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Cs',1,'1.5','3.5590676','0.37469','0.0','0.0','0.0','109736.8627339'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Cs',2,'1.5','2.475365','0.5554','0.0','0.0','0.0','109736.85999132106'); -- [2]
-INSERT INTO `rydberg_ritz` VALUES('Cs',2,'2.5','2.4663144','0.01381','−0.392','−1.9','0.0','109736.8627339'); -- [1]
+INSERT INTO `rydberg_ritz` VALUES('Cs',2,'2.5','2.4663144','0.01381','-0.392','-1.9','0.0','109736.8627339'); -- [1]
 INSERT INTO `rydberg_ritz` VALUES('Cs',3,'2.5','0.03341424','-0.198674','0.28953','-0.2601','0.0','109736.86224'); -- [3]
 INSERT INTO `rydberg_ritz` VALUES('Cs',3,'3.5','0.033537','-0.191','0.0','0.0','0.0','109736.85999132106'); -- [2]
 INSERT INTO `rydberg_ritz` VALUES('Cs',4,'3.5','0.00703865','-0.049252','0.01291','0.0','0.0','109736.86224'); -- [3]
 INSERT INTO `rydberg_ritz` VALUES('Cs',5,'4.5','0.0','0.0','0.0','0.0','0.0','109736.86224');
+
+-- J. Phys. B 45, 135004 (2012), singlet states
+INSERT INTO `rydberg_ritz` VALUES('Sr1',0,'0','3.26896','-0.138','0.9','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',1,'1','2.7295','-4.67','-157','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',2,'2','2.3807','-39.41','-1090','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',3,'3','0.089','-2.0','30','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',4,'4','0.0','0.0','0.0','0.0','0.0','109736.627');
+
+-- J. Phys. B 45, 135004 (2012), triplet states
+INSERT INTO `rydberg_ritz` VALUES('Sr3',0,'1','3.371','0.5','-10','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'2','2.8719','0.446','-1.9','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'1','2.8824','0.407','-1.3','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'0','2.8866','0.44','-1.9','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'3','2.63','-42.3','-18000','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'2','2.636','-1','-9800','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'1','2.658','3','-8800','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'4','0.120','-2.4','120','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'3','0.120','-2.2','120','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'2','0.120','-2.2','120','0.0','0.0','109736.627');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',4,'3','0.0','0.0','0.0','0.0','0.0','109736.627');
 
 COMMIT;
 

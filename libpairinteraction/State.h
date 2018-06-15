@@ -22,10 +22,14 @@
 #include <array>
 #include <string>
 #include <iostream>
+#include <cmath>
 #include <boost/functional/hash.hpp>
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
+
+
+constexpr const std::array<char, 7> momentum2label = {{'S', 'P', 'D', 'F', 'G', 'H', 'I'}};
 
 
 /** \brief %Base class for states
@@ -47,26 +51,39 @@ class StateOne : public State {
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::string element;
+    std::string species, element;
     int n, l;
-    float j, m;
-
+    float j, m, s;
 
     StateOne();
-    StateOne(std::string element, int n, int l, float j, float m);
+    StateOne(std::string species, int n, int l, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
 
     friend std::ostream& operator<<(std::ostream &out, const StateOne &state);
 
     bool operator==(StateOne const&) const;
-    bool operator^ (StateOne const& )const; // subset
+    bool operator^ (StateOne const&) const; // subset
     bool operator!=(StateOne const&) const;
     bool operator< (StateOne const&) const;
     bool operator> (StateOne const&) const;
 
     double getEnergy() const;
+    double getNStar() const;
+
+    std::string getSpecies() const;
+    int getN() const;
+    int getL() const;
+    float getJ() const;
+    float getM() const;
+
 private:
+    ////////////////////////////////////////////////////////////////////
+    /// Utility methods ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    void analyzeSpecies();
+
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -77,30 +94,10 @@ private:
     void serialize(Archive & ar, const unsigned int version) {
         (void)version;
 
-        ar & element & n & l & j & m;
+        ar & species & element & s & n & l & j & m;
     }
 };
 
-
-#ifndef SWIG
-namespace std {
-
-    template <>
-    struct hash<StateOne>
-    {
-        size_t operator()(const StateOne & s) const
-        {
-            size_t seed = 0; // TODO use element, too
-            boost::hash_combine(seed, s.n);
-            boost::hash_combine(seed, s.l);
-            boost::hash_combine(seed, s.j);
-            boost::hash_combine(seed, s.m);
-            return seed;
-        }
-    };
-
-}
-#endif
 
 /** \brief %Two-atom Rydberg state
  *
@@ -110,12 +107,12 @@ class StateTwo : public State { // TODO define getters and setters, save a pair 
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
-    std::array<std::string, 2> element;
+    std::array<std::string, 2> species, element;
     std::array<int, 2> n, l;
-    std::array<float, 2> j, m;
+    std::array<float, 2> j, m, s;
 
     StateTwo();
-    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
@@ -132,14 +129,28 @@ public:
     friend std::ostream& operator<<(std::ostream &out, const StateTwo &state);
 
     bool operator==(StateTwo const&) const;
-    bool operator^ (StateTwo const& )const; // subset
+    bool operator^ (StateTwo const&) const; // subset
     bool operator!=(StateTwo const&) const;
     bool operator< (StateTwo const&) const;
 
     StateTwo order();
 
     double getEnergy() const;
+    std::array<double, 2> getNStar() const;
+
+    std::array<std::string, 2> getSpecies() const;
+    std::array<int, 2> getN() const;
+    std::array<int, 2> getL() const;
+    std::array<float, 2> getJ() const;
+    std::array<float, 2> getM() const;
+
 private:
+    ////////////////////////////////////////////////////////////////////
+    /// Utility methods ////////////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    void analyzeSpecies();
+
     ////////////////////////////////////////////////////////////////////
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -150,7 +161,7 @@ private:
     void serialize(Archive & ar, const unsigned int version) {
         (void)version;
 
-        ar & element & n & l & j & m;
+        ar & species & element & s & n & l & j & m;
     }
 };
 
@@ -158,23 +169,33 @@ private:
 #ifndef SWIG
 namespace std {
 
-    template <>
-    struct hash<StateTwo>
+template <>
+struct hash<StateOne>
+{
+    size_t operator()(const StateOne & s) const
     {
-        size_t operator()(const StateTwo & s) const
-        {
-            size_t seed = 0;  // TODO use element, too
-            boost::hash_combine(seed, s.n[0]);  // TODO do hash s.n etc. at once --> template for StateOne and StateTwo will work
-            boost::hash_combine(seed, s.l[0]);
-            boost::hash_combine(seed, s.j[0]);
-            boost::hash_combine(seed, s.m[0]);
-            boost::hash_combine(seed, s.n[1]);
-            boost::hash_combine(seed, s.l[1]);
-            boost::hash_combine(seed, s.j[1]);
-            boost::hash_combine(seed, s.m[1]);
-            return seed;
-        }
-    };
+        std::size_t seed = 0;
+        boost::hash_combine(seed, s.n);
+        boost::hash_combine(seed, s.l);
+        boost::hash_combine(seed, s.j);
+        boost::hash_combine(seed, s.m);
+        return seed;
+    }
+};
+
+template <>
+struct hash<StateTwo>
+{
+    size_t operator()(const StateTwo & s) const
+    {
+        std::size_t seed = 0;
+        boost::hash_combine(seed, s.n);
+        boost::hash_combine(seed, s.l);
+        boost::hash_combine(seed, s.j);
+        boost::hash_combine(seed, s.m);
+        return seed;
+    }
+};
 
 }
 #endif

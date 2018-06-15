@@ -18,6 +18,7 @@
 #include "SystemOne.h"
 #include "SystemTwo.h"
 #include "dtypes.h"
+#include "MatrixElementCache.h"
 
 #define BOOST_TEST_MODULE Integration test
 #include <boost/test/unit_test.hpp>
@@ -29,8 +30,27 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <memory>
 
-BOOST_AUTO_TEST_CASE(integration_test)
+struct F {
+    F() : path_cache(boost::filesystem::temp_directory_path()/boost::filesystem::unique_path()) {
+        // Create cache directory
+        if (boost::filesystem::create_directory(path_cache)) {
+            std::cout << "Cache directory "
+                      << boost::filesystem::absolute(path_cache).string()
+                      << " created." << std::endl;
+        } else {
+            throw std::runtime_error("Could not create cache directory.");
+        }
+    }
+    ~F() {
+        // Delete cache directory
+        boost::filesystem::remove_all(path_cache);
+    }
+    boost::filesystem::path path_cache;
+};
+
+BOOST_FIXTURE_TEST_CASE(integration_test, F)
 {
 
     constexpr bool dump_new_reference_data = false;
@@ -39,17 +59,8 @@ BOOST_AUTO_TEST_CASE(integration_test)
     /// Preparations ///////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    // Create cache directory
-    boost::filesystem::path path_cache =
-        boost::filesystem::temp_directory_path() /
-        boost::filesystem::unique_path();
-    if (boost::filesystem::create_directory(path_cache)) {
-        std::cout << "Cache directory "
-                  << boost::filesystem::absolute(path_cache).string()
-                  << " created." << std::endl;
-    } else {
-        throw std::runtime_error("Could not create cache directory.");
-    }
+    // Set up cache
+    MatrixElementCache cache(path_cache.string());
 
     // Load reference data
     eigen_sparse_t hamiltonian_one_reference, hamiltonian_two_reference;
@@ -73,7 +84,7 @@ BOOST_AUTO_TEST_CASE(integration_test)
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.element, path_cache.string());
+    SystemOne system_one(state_one.species, cache);
     system_one.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
@@ -132,14 +143,15 @@ BOOST_AUTO_TEST_CASE(integration_test)
     // Build one-atom system (for this test, system_one has to be diagonal by
     // itself because diagonalization can lead to different order of
     // eigenvectors)
-    system_one = SystemOne(state_one.element, path_cache.string());
-    system_one.restrictEnergy(state_one.getEnergy() - 40,
+    //system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot be assigned because its copy assignment operator is implicitly deleted
+    SystemOne system_one_new(state_one.species, cache);
+    system_one_new.restrictEnergy(state_one.getEnergy() - 40,
                               state_one.getEnergy() + 40);
-    system_one.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one_new.restrictN(state_one.n - 1, state_one.n + 1);
+    system_one_new.restrictL(state_one.l - 1, state_one.l + 1);
 
     // Build two-atom system
-    SystemTwo system_two(system_one, system_one, path_cache.string());
+    SystemTwo system_two(system_one_new, system_one_new, cache);
     system_two.restrictEnergy(state_two.getEnergy() - 2,
                               state_two.getEnergy() + 2);
     system_two.setConservedParityUnderPermutation(ODD);
@@ -204,9 +216,6 @@ BOOST_AUTO_TEST_CASE(integration_test)
         BOOST_CHECK_MESSAGE(!dump_new_reference_data,
                             "No tests were executed. Only dumping data!");
     }
-
-    // Delete cache directory
-    boost::filesystem::remove_all(path_cache);
 
     // TODO call more methods to increase code covering
     // TODO cause exceptions and check whether they are handled correctly

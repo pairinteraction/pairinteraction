@@ -78,6 +78,9 @@ if(SPHINX_FOUND)
 
   # IPython notebooks to be processed
   set(NOTEBOOKS
+    "introduction.ipynb"
+    "matrix_elements.ipynb"
+    "wavefunctions.ipynb"
     "comparison_to_saffman_fig13.ipynb"
     "pair_potential_efield_sensitivity.ipynb")
 

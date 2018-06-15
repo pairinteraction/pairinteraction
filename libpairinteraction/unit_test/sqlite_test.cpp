@@ -21,6 +21,14 @@
 #define BOOST_TEST_MODULE SQLite interface test
 #include <boost/test/unit_test.hpp>
 
+BOOST_AUTO_TEST_CASE(sqlite_thread_safety)
+{
+    // The sqlite3_threadsafe() function returns zero if and only if
+    // SQLite was compiled with mutexing code omitted due to the
+    // SQLITE_THREADSAFE compile-time option being set to 0.
+    BOOST_CHECK(sqlite3_threadsafe());
+}
+
 BOOST_AUTO_TEST_CASE(sqlite_query_test)
 {
     BOOST_CHECK_THROW(

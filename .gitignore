@@ -15,3 +15,7 @@ obj/
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Ignore files resulting from executing a jupyter notebook
+/doc/sphinx/examples_python/.ipynb_checkpoints
+/doc/sphinx/examples_python/cache

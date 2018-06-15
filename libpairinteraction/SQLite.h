@@ -352,14 +352,23 @@ class handle final
 
     static int busy_handler(void *self, int num_prior_calls)
     {
+        int thresh = static_cast<handle*>(self)->m_threshold;
         // Sleep if handler has been called less than num_prior_calls
-        if (num_prior_calls < static_cast<handle *>(self)->m_threshold) {
+        if (num_prior_calls < thresh) {
             std::this_thread::sleep_for(
                 std::chrono::microseconds(utils::randint(2000, 20000)));
             return 1;
         }
 
         return 0; // Make sqlite3 return SQLITE_BUSY
+    }
+
+    void install_busy_handler() {
+        auto err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
+
+        if (err) {
+            throw error(err, sqlite3_errmsg(m_db.get()));
+        }
     }
 
 public:
@@ -392,13 +401,36 @@ public:
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
         m_db.reset(tmp_db);
 
-        if (err)
+        if (err) {
             throw error(err, sqlite3_errmsg(m_db.get()));
+        }
 
-        err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
+        install_busy_handler();
+    }
 
-        if (err)
-            throw error(err, sqlite3_errmsg(m_db.get()));
+    /** \brief Move constructor
+     *
+     * Reinstalls the busy handler.
+     */
+    handle(handle &&other)
+        : m_db{std::move(other.m_db)}, m_threshold{std::move(other.m_threshold)}
+    {
+        install_busy_handler();
+    }
+
+    /** \brief Move assignment operator
+     *
+     * Reinstalls the busy handler.
+     */
+    handle &operator=(handle &&other)
+    {
+        if (this != std::addressof(other)) // skip self-assignment
+        {
+            m_db = std::move(other.m_db);
+            m_threshold = std::move(other.m_threshold);
+            install_busy_handler();
+        }
+        return *this;
     }
 };
 

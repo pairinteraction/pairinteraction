@@ -32,6 +32,9 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 file(READ databases/quantum_defects.sql QUANTUM_DEFECT_DATABASE_CONTENT)
 configure_file(EmbeddedDatabase.h.in ${CMAKE_CURRENT_BINARY_DIR}/EmbeddedDatabase.h)
 
+# Generate header containing the version informations
+configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+
 # Add the executables
 
 file(GLOB pairinteraction_SRCS *.cpp)
@@ -77,6 +80,10 @@ list(APPEND LIBRARIES ${SQLITE3_LIBRARY})
 find_package(Boost COMPONENTS filesystem system program_options serialization REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${Boost_LIBRARIES})
+if(MSVC)
+  add_definitions(-DBOOST_ALL_NO_LIB)
+  add_definitions(-DBOOST_ALL_DYN_LINK)
+endif()
 
 find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})

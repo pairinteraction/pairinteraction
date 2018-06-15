@@ -13,6 +13,6 @@
 # limitations under the License.
 
 # Versioning
-version_program = "@VERSION@"
-version_settings = 16
-version_cache = 14
+version_program = "@VERSION_SOFTWARE@"
+version_settings = "@VERSION_SETTINGS@"
+version_cache = "@VERSION_CACHE@"

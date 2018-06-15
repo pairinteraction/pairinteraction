@@ -19,6 +19,7 @@
 
 #include <vector>
 #include <array>
+#include <cmath>
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 
@@ -56,7 +57,17 @@ constexpr const double au2Vcm = 5142206707.0;
 constexpr const double au2G = 2350517550.0;
 constexpr const double au2um = 5.2917721067e-05;
 constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
+constexpr const double sqrt_inverse_electric_constant = 0.7717003798774048; // equals sqrt(inverse_electric_constant)
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
+
+constexpr const double coulombs_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
+constexpr const double electron_rest_mass = au2G * au2G * au2GHz / au2Vcm / au2Vcm;
+constexpr const double elementary_charge = au2GHz / au2um / au2Vcm;
+// TODO Planck constant, Bohr magneton (required for magnetic dipole moment)
+
+constexpr const double muB = 0.5; // in atomic units
+constexpr const double gS = 2.0023192;
+constexpr const double gL = 1;
 
 constexpr const int ARB = 32767;
 

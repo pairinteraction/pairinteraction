@@ -20,21 +20,27 @@ enable_testing()
 
 set(LIBNAME "libpairinteraction")
 
-# get version info from git
+# set version of settings and cache
+
+set(VERSION_SETTINGS "v16")
+set(VERSION_CACHE "v15")
+
+# get software version info from git
 
 find_package(Git REQUIRED)
 execute_process(
   COMMAND "${GIT_EXECUTABLE}" describe --tags --always
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-  OUTPUT_VARIABLE VERSION
+  OUTPUT_VARIABLE VERSION_SOFTWARE
   OUTPUT_STRIP_TRAILING_WHITESPACE )
-string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION})
+string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
 
 # default build type is "Release"
 
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 

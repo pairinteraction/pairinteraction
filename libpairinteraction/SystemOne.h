@@ -44,12 +44,10 @@ namespace std {
 
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::string const& element, std::string cachedir);
-    SystemOne(std::string const& element, std::string cachedir, bool memory_saving);
-    SystemOne(std::string const& element);
-    SystemOne(std::string const& element, bool memory_saving);
+    SystemOne(std::string const& species, MatrixElementCache &cache);
+    SystemOne(std::string const& species, MatrixElementCache &cache, bool memory_saving);
 
-    const std::string& getElement() const;
+    const std::string& getElement() const; // TODO rename to getSpecies
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
     void setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis);
@@ -76,7 +74,7 @@ private:
     std::unordered_map<int, scalar_t>  efield_spherical, bfield_spherical;
     bool diamagnetism;
     std::unordered_map<std::array<int, 2>, scalar_t> diamagnetism_terms;
-    std::string element;
+    std::string species;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
@@ -137,11 +135,9 @@ private:
     friend class boost::serialization::access;
 
     template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
-        (void)version;
-
+    void serialize(Archive & ar, const unsigned int /*version*/) {
         ar & boost::serialization::base_object<SystemBase<StateOne>>(*this);
-        ar & element;
+        ar & species;
         ar & efield & bfield & diamagnetism & sym_reflection & sym_rotation;
         ar & efield_spherical & bfield_spherical & diamagnetism_terms;
         ar & interaction_efield & interaction_bfield & interaction_diamagnetism;

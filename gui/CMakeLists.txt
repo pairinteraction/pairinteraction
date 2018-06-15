@@ -14,33 +14,15 @@
 
 find_package(PyUIC REQUIRED)
 
-add_custom_target(gui ALL)
-
-add_custom_command(
-  TARGET gui
-  COMMAND ${CMAKE_COMMAND} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein -DOUT=${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py -DVERSION=${VERSION} -P ${CMAKE_MODULE_PATH}/configure.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein
-)
-
-add_custom_command(
-  TARGET gui
+add_custom_target(gui ALL
+  COMMAND ${CMAKE_COMMAND} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein -DOUT=${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py -DVERSION_SOFTWARE=${VERSION_SOFTWARE} -DVERSION_SETTINGS=${VERSION_SETTINGS} -DVERSION_CACHE=${VERSION_CACHE} -P ${CMAKE_MODULE_PATH}/configure.cmake
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/conf
-)
-
-add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/app.py
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_MODULE_PATH}/adapt.cmake
-  DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein
 )
-
-add_custom_target(pythonscripts ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
-)
-add_dependencies(pythonscripts gui)
 
 # Compile Python scripts
 
@@ -59,7 +41,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
   add_custom_target(pyinstaller ALL
     DEPENDS ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
   )
-  add_dependencies(pyinstaller pythonscripts)
+  add_dependencies(pyinstaller gui)
 
   add_dependencies(pyinstaller _pireal)
   add_dependencies(pyinstaller _picomplex)
@@ -68,7 +50,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
 else( )
 
   find_package(PythonInterp 3 REQUIRED)
-  add_custom_command(TARGET pythonscripts POST_BUILD
+  add_custom_command(TARGET gui POST_BUILD
     COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   )

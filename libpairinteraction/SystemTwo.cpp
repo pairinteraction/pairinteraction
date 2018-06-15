@@ -16,7 +16,6 @@
 
 #include "dtypes.h"
 #include "SystemTwo.h"
-#include "MatrixElements.h"
 
 #include <cmath>
 #include <limits>
@@ -26,20 +25,12 @@
 #include <unordered_set>
 #include <algorithm>
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir)
-    : SystemBase(cachedir), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
+    : SystemBase(cache), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, std::string cachedir, bool memory_saving)
-    : SystemBase(cachedir, memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
-}
-
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2)
-    : SystemBase(), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
-}
-
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, bool memory_saving)
-    : SystemBase(memory_saving), element({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
+SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache, bool memory_saving)
+    : SystemBase(cache, memory_saving), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {
 }
 
 std::vector<StateOne> SystemTwo::getStatesFirst() {  // TODO @hmenke typemap for "state_set<StateOne>"
@@ -61,7 +52,7 @@ std::vector<StateOne> SystemTwo::getStatesSecond() { // TODO @hmenke typemap for
 }
 
 const std::array<std::string, 2>& SystemTwo::getElement() {
-    return element;
+    return species;
 }
 
 void SystemTwo::setDistance(double d) {
@@ -208,7 +199,7 @@ void SystemTwo::initializeBasis()
                         }
 
                         // In case of inversion or permutation and reflection symmetry: the inversion or permutation symmetric state is already reflection symmetric
-                        if ((sym_inversion != NA || sym_permutation != NA) && sym_reflection != NA && StateTwo({{state_1.element, state_2.element}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}) == StateTwo(state_2, state_1)) {
+                        if ((sym_inversion != NA || sym_permutation != NA) && sym_reflection != NA && StateTwo({{state_1.species, state_2.species}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}) == StateTwo(state_2, state_1)) {
                             if (sym_inversion != NA) {
                                 if ( ((sym_inversion == EVEN) ? -parityL : parityL) != ((sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) )  {
                                     continue; // the parity under inversion and reflection is different
@@ -254,19 +245,19 @@ void SystemTwo::initializeBasis()
                     if (sym_reflection != NA && !skip_reflection) {
                         scalar_t v = value_new;
                         v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
-                        this->addCoefficient(StateTwo({{state_1.element, state_2.element}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+                        this->addCoefficient(StateTwo({{state_1.species, state_2.species}},{{state_1.n, state_2.n}},{{state_1.l, state_2.l}},{{state_1.j, state_2.j}},{{-state_1.m, -state_2.m}}), col_new, v, coefficients_triplets, sqnorm_list);
 
                         if (col_1 != col_2) {
                             if (sym_inversion != NA) {
                                 scalar_t v = value_new;
                                 v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
                                 v *= (sym_inversion == EVEN) ? -parityL : parityL;
-                                this->addCoefficient(StateTwo({{state_2.element, state_1.element}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+                                this->addCoefficient(StateTwo({{state_2.species, state_1.species}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
                                 scalar_t v = value_new;
                                 v *= (sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM;
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
-                                this->addCoefficient(StateTwo({{state_2.element, state_1.element}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
+                                this->addCoefficient(StateTwo({{state_2.species, state_1.species}},{{state_2.n, state_1.n}},{{state_2.l, state_1.l}},{{state_2.j, state_1.j}},{{-state_2.m, -state_1.m}}), col_new, v, coefficients_triplets, sqnorm_list);
                             }
                         }
                     }
@@ -278,8 +269,8 @@ void SystemTwo::initializeBasis()
     }
 
     // Delete unecessary storage
-    system1 = SystemOne(element[0]);
-    system2 = SystemOne(element[1]);
+    //system1 = SystemOne(species[0], cache); // TODO
+    //system2 = SystemOne(species[1], cache); // TODO
 
     // Build data
     states.shrink_to_fit();
@@ -389,18 +380,12 @@ void SystemTwo::initializeInteraction() {
     }
 
     // Precalculate matrix elements
-    std::string matrixelementsdir = "";
-    if (!cachedir.empty()) matrixelementsdir = (cachedir / "cache_elements.db").string(); // TODO do this in the MatrixElements class, just pass cachedir as an argument to the constructor
-
-    MatrixElements matrixelements1(element[0], matrixelementsdir);
-    MatrixElements matrixelements2(element[1], matrixelementsdir);
-
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
 
     for (unsigned int kappa = 1; kappa <= ordermax-2; ++kappa) {
-        matrixelements1.precalculateMultipole(states1, kappa);
-        matrixelements2.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
+        cache.precalculateMultipole(states1, kappa);
+        cache.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -412,12 +397,12 @@ void SystemTwo::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
-        if (c.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+        if (c.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
 
         // Loop over row entries
         for (const auto &r: states) {
 
-            if (r.state.element.empty()) continue; // TODO artifical states TODO [dummystates]
+            if (r.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
             if (r.idx < c.idx) continue;
 
             int q1 = r.state.first().m-c.state.first().m;
@@ -426,30 +411,30 @@ void SystemTwo::initializeInteraction() {
             if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for other interaction than dipole-dipole
 
                 // Angular dependent dipole-dipole interaction
-                if (selectionRulesMultipole(r.state.first(), c.state.first(), 1) && selectionRulesMultipole(r.state.second(), c.state.second(), 1)) {
+                if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), 1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), 1)) {
                     if (q1 == 0 && q2 == 0 && calculation_required[1]) {
-                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
                     } else if (q1 != 0 && q2 != 0 && q1+q2 == 0 && (calculation_required[0] || calculation_required[2])) {
-                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         if (calculation_required[0]) this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
                         if (calculation_required[2]) this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
 
                     } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
-                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         if (q1 == 1 || q2 == 1) this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
                         else this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
 
                     } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
-                        scalar_t val = inverse_electric_constant * matrixelements1.getMultipole(r.state.first(), c.state.first(), 1) *
-                                matrixelements2.getMultipole(r.state.second(), c.state.second(), 1);
+                        scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
+                                cache.getElectricDipole(r.state.second(), c.state.second());
 
                         this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, val);
                     }
@@ -463,10 +448,10 @@ void SystemTwo::initializeInteraction() {
                         double val = 0;
                         for (int kappa1 = 1; kappa1 <= order-2; ++kappa1) {
                             int kappa2 = order-1-kappa1;
-                            if (selectionRulesMultipole(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipole(r.state.second(), c.state.second(), kappa2)) {
+                            if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), kappa1) && selectionRulesMultipoleNew(r.state.second(), c.state.second(), kappa2)) {
                                 double binomials = boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa1+q1)*boost::math::binomial_coefficient<double>(kappa1+kappa2, kappa2-q2);
-                                val += inverse_electric_constant * std::pow(-1,kappa2) * std::sqrt(binomials) * matrixelements1.getMultipole(r.state.first(), c.state.first(), kappa1)*
-                                        matrixelements2.getMultipole(r.state.second(), c.state.second(), kappa2);
+                                val += coulombs_constant * std::pow(-1,kappa2) * std::sqrt(binomials) * cache.getElectricMultipole(r.state.first(), c.state.first(), kappa1) *
+                                        cache.getElectricMultipole(r.state.second(), c.state.second(), kappa2);
                             }
                         }
 
@@ -594,8 +579,8 @@ eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double ga
 
 void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
     // Combine parameters
-    if (element[0] != dynamic_cast<SystemTwo&>(system).element[0]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
-    if (element[1] != dynamic_cast<SystemTwo&>(system).element[1]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (species[0] != dynamic_cast<SystemTwo&>(system).species[0]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+    if (species[1] != dynamic_cast<SystemTwo&>(system).species[1]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
     if (distance != dynamic_cast<SystemTwo&>(system).distance) throw std::runtime_error("The value of the variable 'distance' must be the same for both systems.");
     if (angle != dynamic_cast<SystemTwo&>(system).angle) throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that angle_terms is the same, too
     if (ordermax != dynamic_cast<SystemTwo&>(system).ordermax) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
