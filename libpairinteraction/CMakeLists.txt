@@ -38,7 +38,6 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 # Add the executables
 
 file(GLOB pairinteraction_SRCS *.cpp)
-set(wignerSymbols_SRCS wignerSymbols/src/wignerSymbols-cpp.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
@@ -55,6 +54,8 @@ else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
 endif()
 
+# Generate coverage report
+
 if( WITH_COVERAGE )
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -O0 --coverage -fprofile-arcs -ftest-coverage")
@@ -69,6 +70,11 @@ if (OPENMP_FOUND)
 endif()
 
 # Add external libraries
+
+# Wigner Symbols
+add_library(wignerSymbols wignerSymbols/src/wignerSymbols-cpp.cpp)
+set_target_properties(wignerSymbols PROPERTIES CXX_CLANG_TIDY "" POSITION_INDEPENDENT_CODE ON)
+list(APPEND LIBRARIES wignerSymbols)
 
 # Include Eigen
 include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/eigen)
@@ -114,6 +120,7 @@ include_directories(SYSTEM ${NUMPY_INCLUDE_DIR})
 
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3")
 swig_add_module(pireal python ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)
+  set_target_properties(_pireal PROPERTIES CXX_CLANG_TIDY "")
 if(APPLE)
   set_target_properties(_pireal PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
   swig_link_libraries(pireal pireal)
@@ -124,6 +131,7 @@ endif()
 set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTIES CPLUSPLUS ON SWIG_FLAGS "-py3;-DUSE_COMPLEX")
 swig_add_module(picomplex python ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
 set_source_files_properties( ${swig_generated_file_fullname} PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+  set_target_properties(_picomplex PROPERTIES CXX_CLANG_TIDY "")
 if(APPLE)
   set_target_properties(_picomplex PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
   swig_link_libraries(picomplex picomplex)
