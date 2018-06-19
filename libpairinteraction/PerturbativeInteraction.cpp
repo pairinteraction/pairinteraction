@@ -18,11 +18,15 @@
 
 #include <unordered_set>
 
-PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache) : cache(cache) {
+PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache) : cache(cache), bfield(0) { // TODO remove this constructor
     initializeAngleTerms(0);
 }
 
-PerturbativeInteraction::PerturbativeInteraction(double angle, MatrixElementCache &cache) : cache(cache) {
+PerturbativeInteraction::PerturbativeInteraction(double angle, MatrixElementCache &cache) : cache(cache), bfield(0) {
+    initializeAngleTerms(angle);
+}
+
+PerturbativeInteraction::PerturbativeInteraction(double angle, double weak_bfield_along_z, MatrixElementCache &cache) : cache(cache), bfield(weak_bfield_along_z) {
     initializeAngleTerms(angle);
 }
 
@@ -63,8 +67,14 @@ double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
                                 if (std::abs(m1) > j1) continue;
 
                                 StateTwo state_virtual = StateTwo(state.species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
+
+                                double energydiff = state.getEnergy()-state_virtual.getEnergy();
+                                if (bfield != 0) {
+                                    energydiff += -bfield*(cache.getMagneticDipole(state.first(), state.first())+cache.getMagneticDipole(state.second(), state.second())-cache.getMagneticDipole(state_virtual.first(), state_virtual.first())-cache.getMagneticDipole(state_virtual.second(), state_virtual.second()));
+                                }
+
                                 C6 += std::pow(coulombs_constant * array_angle_term[3*(q[0]+1)+(q[1]+1)] * cache.getElectricDipole(state_virtual.first(), state.first()) * cache.getElectricDipole(state_virtual.second(), state.second()), 2)
-                                        / (state.getEnergy()-state_virtual.getEnergy()); // getMultipole(final, inital, 1)
+                                        / energydiff; // getMultipole(final, inital, 1)
                             }
                         }
                     }
@@ -154,9 +164,19 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
                                         StateTwo state_virtual = StateTwo(species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
                                         if (set_states.find(state_virtual) != set_states.end()) continue;
 
+                                        double energydiff_row = state_row.getEnergy()-state_virtual.getEnergy();
+                                        if (bfield != 0) {
+                                            energydiff_row += -bfield*(cache.getMagneticDipole(state_row.first(), state_row.first())+cache.getMagneticDipole(state_row.second(), state_row.second())-cache.getMagneticDipole(state_virtual.first(), state_virtual.first())-cache.getMagneticDipole(state_virtual.second(), state_virtual.second()));
+                                        }
+
+                                        double energydiff_col = state_col.getEnergy()-state_virtual.getEnergy();
+                                        if (bfield != 0) {
+                                            energydiff_col += -bfield*(cache.getMagneticDipole(state_col.first(), state_col.first())+cache.getMagneticDipole(state_col.second(), state_col.second())-cache.getMagneticDipole(state_virtual.first(), state_virtual.first())-cache.getMagneticDipole(state_virtual.second(), state_virtual.second()));
+                                        }
+
                                         C6 +=  coulombs_constant * array_angle_term[3*(q0_back+1)+(q1_back+1)] * cache.getElectricDipole(state_row.first(), state_virtual.first()) * cache.getElectricDipole(state_row.second(), state_virtual.second())
                                                 * coulombs_constant * array_angle_term[3*(q0_forth+1)+(q1_forth+1)] * cache.getElectricDipole(state_virtual.first(), state_col.first()) * cache.getElectricDipole(state_virtual.second(), state_col.second())
-                                                * 0.5 * (1/(state_row.getEnergy()-state_virtual.getEnergy())+1/(state_col.getEnergy()-state_virtual.getEnergy())); // getMultipole(final, inital, 1)
+                                                * 0.5 * (1/energydiff_row+1/energydiff_col); // getMultipole(final, inital, 1)
                                     }
                                 }
                             }

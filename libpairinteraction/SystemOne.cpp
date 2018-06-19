@@ -352,9 +352,9 @@ void SystemOne::addInteraction() {
     if (std::abs(efield_spherical[+0]) > tolerance) hamiltonianmatrix -= interaction_efield[+0]*efield_spherical[+0];
     if (std::abs(efield_spherical[-1]) > tolerance) hamiltonianmatrix += interaction_efield[+1]*efield_spherical[-1];
     if (std::abs(efield_spherical[+1]) > tolerance) hamiltonianmatrix += interaction_efield[-1]*efield_spherical[+1];
-    if (std::abs(bfield_spherical[+0]) > tolerance) hamiltonianmatrix += interaction_bfield[+0]*bfield_spherical[+0];
-    if (std::abs(bfield_spherical[-1]) > tolerance) hamiltonianmatrix -= interaction_bfield[+1]*bfield_spherical[-1];
-    if (std::abs(bfield_spherical[+1]) > tolerance) hamiltonianmatrix -= interaction_bfield[-1]*bfield_spherical[+1];
+    if (std::abs(bfield_spherical[+0]) > tolerance) hamiltonianmatrix -= interaction_bfield[+0]*bfield_spherical[+0];
+    if (std::abs(bfield_spherical[-1]) > tolerance) hamiltonianmatrix += interaction_bfield[+1]*bfield_spherical[-1];
+    if (std::abs(bfield_spherical[+1]) > tolerance) hamiltonianmatrix += interaction_bfield[-1]*bfield_spherical[+1];
 
     if (diamagnetism && std::abs(diamagnetism_terms[{{0,+0}}]) > tolerance) hamiltonianmatrix += interaction_diamagnetism[{{0,+0}}]*diamagnetism_terms[{{0,+0}}];
     if (diamagnetism && std::abs(diamagnetism_terms[{{2,+0}}]) > tolerance) hamiltonianmatrix -= interaction_diamagnetism[{{2,+0}}]*diamagnetism_terms[{{2,+0}}];

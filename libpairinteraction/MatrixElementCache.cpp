@@ -298,7 +298,7 @@ double MatrixElementCache::getMagneticDipole(StateOne const& state_row, StateOne
         if (iter4 == cache_reduced_commutes_l.end()) iter4 = cache_reduced_commutes_l.find(key4);
     }
 
-    return au2GHz / au2G * muB * iter1->second * key2.sgn * iter2->second *
+    return - au2GHz / au2G * muB * iter1->second * key2.sgn * iter2->second *
             (gL * key3.sgn * iter3->second * sqrt(state_row.l*(state_row.l+1)*(2*state_row.l+1)) + gS * key4.sgn * iter4->second * sqrt(s*(s+1)*(2*s+1)));
 }
 
