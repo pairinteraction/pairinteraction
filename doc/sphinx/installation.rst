@@ -1,5 +1,5 @@
-Obtaining pairinteraction
-=========================
+Installation
+============
 
 Binary Installer
 ----------------

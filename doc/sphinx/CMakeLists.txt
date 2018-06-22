@@ -63,7 +63,13 @@ if(SPHINX_FOUND)
 
   # Files to be copied to the build directory
   set(FILE_LIST
-    "logo48x48.png"
+    "images/logo48x48.png"
+    "html/slides/screen-osx-pairpotential.jpg"
+    "html/slides/screen-osx-starkmap.jpg"
+    "html/slides/screen-osx-zeemanmap.jpg"
+    "html/slides/screen-win64.png"
+    "images/license-badge.svg"
+    "images/arXiv-badge.svg"
     "index.rst"
     "installation.rst"
     "genindex.rst"
