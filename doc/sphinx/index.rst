@@ -18,8 +18,11 @@ Pairinteraction - A Rydberg Interaction Calculator
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
 For usage examples visit the `tutorials`_ section of the documentation.
+Stay tuned by signing up for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. To subscribe click `here`_.
 
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
+
+.. _here: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
 
 .. |br| raw:: html
 
@@ -30,14 +33,10 @@ Please cite as
     *Tutorial: Calculation of Rydberg interaction potentials*,
     `J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017) <https://doi.org/10.1088/1361-6455/aa743a>`_, `arXiv:1612.08053 <https://arxiv.org/abs/1612.08053>`_
 
-    See works citing pairinteraction on `Google Scholar`_ and the `ADS Digital Library`_.
+See works citing pairinteraction on `Google Scholar`_ and the `ADS Digital Library`_.
 
 .. _Google Scholar: https://scholar.google.com/scholar?cites=5795867423675717201,11312532522524857261
 .. _ADS Digital Library: http://adsabs.harvard.edu/cgi-bin/nph-ref_query?bibcode=2017JPhB...50m3001W&amp;refs=CITATIONS&amp;db_key=PHY
-
-Stay tuned by signing up for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. To subscribe click `here`_.
-
-.. _here: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
 
 Installation
 ============
