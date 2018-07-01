@@ -5,15 +5,20 @@ Pairinteraction - A Rydberg Interaction Calculator
 .. image:: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
    :target: https://travis-ci.org/pairinteraction/pairinteraction
    :alt: Travis Build Status
+   :height: 20px
 .. image:: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
    :target: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
    :alt: AppVeyor Build Status
+   :height: 20px
 .. image:: images/arXiv-badge.svg
    :target: https://arxiv.org/abs/1612.08053
    :alt: arXiv:1612.08053
+   :height: 20px
 .. image:: images/license-badge.svg
-  :target: https://opensource.org/licenses/Apache-2.0
-  :alt: License
+   :target: https://opensource.org/licenses/Apache-2.0
+   :alt: License
+   :height: 20px
+   
 
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
