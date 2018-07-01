@@ -5,18 +5,22 @@ Pairinteraction - A Rydberg Interaction Calculator
 .. image:: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
    :target: https://travis-ci.org/pairinteraction/pairinteraction
    :alt: Travis Build Status
+   :width: 90px
    :height: 20px
 .. image:: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
    :target: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
    :alt: AppVeyor Build Status
+   :width: 106px
    :height: 20px
 .. image:: images/arXiv-badge.svg
    :target: https://arxiv.org/abs/1612.08053
    :alt: arXiv:1612.08053
+   :width: 118px
    :height: 20px
 .. image:: images/license-badge.svg
    :target: https://opensource.org/licenses/Apache-2.0
    :alt: License
+   :width: 124px
    :height: 20px
    
 
