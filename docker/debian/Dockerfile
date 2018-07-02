@@ -14,7 +14,8 @@ RUN apt-get update \
     python3-numpy python3-scipy python3-zmq \
     dpkg rpm \
     doxygen graphviz ca-certificates \
-    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
+    python3-sphinx python3-numpydoc python3-pip \
     python3-nbconvert pandoc ipython3 \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && pip3 install sphinx_rtd_theme
