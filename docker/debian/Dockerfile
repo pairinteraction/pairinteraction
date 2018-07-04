@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     cmake build-essential git \
-    libeigen3-dev pyqt5-dev-tools \
+    pyqt5-dev-tools \
     libboost-filesystem-dev libboost-program-options-dev \
     libboost-serialization-dev libboost-system-dev libboost-test-dev \
     libgsl-dev \

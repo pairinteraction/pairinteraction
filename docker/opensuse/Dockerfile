@@ -4,7 +4,6 @@ RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install \
     patterns-openSUSE-devel_C_C++ gcc6-c++ \
     git cmake \
-    eigen3-devel \
     python3-qt5-devel \
     sqlite3 sqlite3-devel \
     boost_1_61-devel \

@@ -20,7 +20,6 @@ For the contained C++ and Python libraries, the individual licenses apply.
 
 | Image    | Build Status                                       |
 |----------|----------------------------------------------------|
-| Alpine   | [![Alpine image][alpine-svg]][alpine-link]         |
 | Debian   | [![Debian image][debian-svg]][debian-link]         |
 | openSUSE | [![openSUSE image][opensuse-svg]][opensuse-link]   |
 | Ubuntu   | [![Ubuntu image][ubuntu-svg]][ubuntu-link]         |
@@ -31,8 +30,6 @@ Pairinteraction is released under the terms of the [Apache License 2.0](https://
 
 Status badges are provided by https://shields.io/
 
-[alpine-svg]: https://img.shields.io/docker/build/pairinteraction/alpine.svg
-[alpine-link]: https://hub.docker.com/r/pairinteraction/alpine/builds/
 [debian-svg]: https://img.shields.io/docker/build/pairinteraction/debian.svg
 [debian-link]: https://hub.docker.com/r/pairinteraction/debian/builds/
 [opensuse-svg]: https://img.shields.io/docker/build/pairinteraction/opensuse.svg
