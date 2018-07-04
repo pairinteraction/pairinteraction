@@ -43,7 +43,7 @@ public:
     void setConservedParityUnderPermutation(parity_t parity);
     void setConservedParityUnderInversion(parity_t parity);
     void setConservedParityUnderReflection(parity_t parity);
-    void setConservedMomentaUnderRotation(std::set<int> momenta);
+    void setConservedMomentaUnderRotation(const std::set<int>& momenta);
 
 protected:
     void initializeBasis() override;
@@ -78,16 +78,18 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addCoefficient(StateTwo state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
+    void addCoefficient(const StateTwo& state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
 
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx, scalar_t val);
 
     template<class T>
     void addRotated(const StateTwo &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
         // Check whether the angles are compatible to the used data type
         double tolerance = 1e-16;
-        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
-        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+}
+        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+}
 
         // Add rotated triplet entries
         StateTwo newstate = state;

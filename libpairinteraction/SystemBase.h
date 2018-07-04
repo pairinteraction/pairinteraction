@@ -8,6 +8,7 @@
 #include "WignerD.h"
 #include "MatrixElementCache.h"
 
+#include <utility>
 #include <vector>
 #include <numeric>
 #include <string>
@@ -35,11 +36,11 @@
 template<class T>
 class enumerated_state {
 public:
-    enumerated_state(size_t idx, T state) : idx(idx), state(state) {
+    enumerated_state(size_t idx, T state) : idx(idx), state(std::move(state)) {
     }
-    enumerated_state() : idx(0), state() { // TODO remove and use http://www.boost.org/doc/libs/1_46_1/libs/serialization/doc/serialization.html#constructors instead
+    enumerated_state() : state() { // TODO remove and use http://www.boost.org/doc/libs/1_46_1/libs/serialization/doc/serialization.html#constructors instead
     }
-    size_t idx;
+    size_t idx{0};
     T state;
 
 private:
@@ -210,7 +211,7 @@ public:
 
         size_t current = 0;
         for (auto const &idx: states_indices) {
-            overlap_states_triplets.push_back(eigen_triplet_t(idx, current++, 1));
+            overlap_states_triplets.emplace_back(idx, current++, 1);
         }
 
         eigen_sparse_t overlap_states(states.size(), states_indices.size());
@@ -307,7 +308,7 @@ public:
             auto state_iter =  states.template get<1>().find(state);
             if (state_iter != states.template get<1>().end()) {
                 size_t idx_from = state_iter->idx;
-                triplets_transformator.push_back(eigen_triplet_t(idx_from,idx_to,1));
+                triplets_transformator.emplace_back(idx_from,idx_to,1);
             }
         }
 
@@ -424,13 +425,13 @@ public:
         }
         
         // In case of no new basis restrictions and already initialized basis, there is nothing to do
-        if (states.size() != 0 && range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() &&
+        if (!states.empty() && range_n.empty() && range_l.empty() && range_j.empty() && range_m.empty() &&
                 energy_min == std::numeric_limits<double>::lowest() && energy_max == std::numeric_limits<double>::max()) { // TODO check for new threshold, too
             return;
         }
         
         // Check whether the basis does not exist
-        if (states.size() == 0) {
+        if (states.empty()) {
             
             // Initialize the basis
             this->initializeBasis();
@@ -443,7 +444,7 @@ public:
         }
         
         // Add dummy states
-        if (states_artifical.size() > 0) { // TODO [dummystates]
+        if (!states_artifical.empty()) { // TODO [dummystates]
             size_t row = coefficients.rows();
             size_t col = coefficients.cols();
             hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows()+states_artifical.size(), hamiltonianmatrix.cols()+states_artifical.size());
@@ -472,7 +473,8 @@ public:
         this->buildHamiltonian();
 
         // Check if already diagonal
-        if (checkIsDiagonal(hamiltonianmatrix)) return;
+        if (checkIsDiagonal(hamiltonianmatrix)) { return;
+}
         
         // Diagonalize hamiltonianmatrix
         eigen_dense_t densemat(hamiltonianmatrix);
@@ -528,7 +530,8 @@ public:
         this->transformInteraction(coefficients.adjoint());
 
         coefficients = transformator * coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+        if (coefficients_unperturbed_cache.size() != 0) { coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+}
 
         this->transformInteraction(coefficients);
     }
@@ -555,7 +558,8 @@ public:
         this->transformInteraction(coefficients.adjoint());
 
         coefficients = transformator * coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+        if (coefficients_unperturbed_cache.size() != 0) { coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+}
 
         this->transformInteraction(coefficients);
     }
@@ -569,9 +573,12 @@ public:
         this->incorporate(system);
 
         // --- Combine universal variables ---
-        if (memory_saving != system.memory_saving) throw std::runtime_error("The value of the variable 'memory_saving' must be the same for both systems.");
-        if (is_interaction_already_contained != system.is_interaction_already_contained) throw std::runtime_error("The value of the variable 'is_interaction_already_contained' must be the same for both systems.");
-        if (is_new_hamiltonianmatrix_required != system.is_new_hamiltonianmatrix_required) throw std::runtime_error("The value of the variable 'is_new_hamiltonianmatrix_required' must be the same for both systems.");
+        if (memory_saving != system.memory_saving) { throw std::runtime_error("The value of the variable 'memory_saving' must be the same for both systems.");
+}
+        if (is_interaction_already_contained != system.is_interaction_already_contained) { throw std::runtime_error("The value of the variable 'is_interaction_already_contained' must be the same for both systems.");
+}
+        if (is_new_hamiltonianmatrix_required != system.is_new_hamiltonianmatrix_required) { throw std::runtime_error("The value of the variable 'is_new_hamiltonianmatrix_required' must be the same for both systems.");
+}
 
         // --- Combine states and build transformators ---
         std::vector<eigen_triplet_t> transformator_triplets;
@@ -598,7 +605,8 @@ public:
         coefficients.conservativeResize(states.size(), coefficients.cols()+system.coefficients.cols());
         coefficients.rightCols(system.coefficients.cols()) = transformator*system.coefficients;
 
-        if ((coefficients_unperturbed_cache.size() != 0) != (system.coefficients_unperturbed_cache.size() != 0)) throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        if ((coefficients_unperturbed_cache.size() != 0) != (system.coefficients_unperturbed_cache.size() != 0)) { throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+}
 
         if (coefficients_unperturbed_cache.size() != 0) {
             coefficients_unperturbed_cache.conservativeResize(states.size(), coefficients_unperturbed_cache.cols()+system.coefficients_unperturbed_cache.cols());
@@ -622,7 +630,8 @@ public:
         hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows()+system.hamiltonianmatrix.rows(), hamiltonianmatrix.cols()+system.hamiltonianmatrix.cols());
         hamiltonianmatrix.rightCols(system.hamiltonianmatrix.cols()) = shifter*system.hamiltonianmatrix;
 
-        if ((hamiltonianmatrix_unperturbed_cache.size() != 0) != (system.hamiltonianmatrix_unperturbed_cache.size() != 0)) throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+        if ((hamiltonianmatrix_unperturbed_cache.size() != 0) != (system.hamiltonianmatrix_unperturbed_cache.size() != 0)) { throw std::runtime_error( "Inconsistent variables at " + std::string(__FILE__) + ":" + std::to_string(__LINE__) + ".");
+}
 
         if (hamiltonianmatrix_unperturbed_cache.size() != 0) {
             hamiltonianmatrix_unperturbed_cache.conservativeResize(hamiltonianmatrix_unperturbed_cache.rows()+system.hamiltonianmatrix_unperturbed_cache.rows(), hamiltonianmatrix_unperturbed_cache.cols()+system.hamiltonianmatrix_unperturbed_cache.cols());
@@ -682,7 +691,7 @@ public:
         for (int k=0; k<coefficients.outerSize(); ++k) { // col == idx_vector
             for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
                 if (std::abs(triple.value()) > threshold) {
-                    coefficients_triplets.push_back(eigen_triplet_t(triple.row(),triple.col(),1));
+                    coefficients_triplets.emplace_back(triple.row(),triple.col(),1);
                     break;
                 }
             }
@@ -728,7 +737,8 @@ public:
         eigen_sparse_t tmp(states.size(), states.size());
         tmp.reserve(2);
         tmp.insert(idx_row, idx_col) = value;
-        if (idx_row != idx_col) tmp.insert(idx_col, idx_row) = this->conjugate(value);
+        if (idx_row != idx_col) { tmp.insert(idx_col, idx_row) = this->conjugate(value);
+}
         tmp.makeCompressed();
         
         hamiltonianmatrix += coefficients.adjoint()*tmp*coefficients;
@@ -800,7 +810,8 @@ protected:
     bool checkIsDiagonal (const eigen_sparse_t &mat) {
         for (int k=0; k<mat.outerSize(); ++k) {
             for (eigen_iterator_t triple(mat,k); triple; ++triple) {
-                if (triple.row() != triple.col()) return false;
+                if (triple.row() != triple.col()) { return false;
+}
             }
         }
         return true;
@@ -838,7 +849,8 @@ protected:
         
         // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
         coefficients = transformator*coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+        if (coefficients_unperturbed_cache.size() != 0) { coefficients_unperturbed_cache = transformator*coefficients_unperturbed_cache;
+}
     }
     
     void applyRightsideTransformator(std::vector<eigen_triplet_t> triplets_transformator) {
@@ -847,14 +859,16 @@ protected:
         
         // Apply transformator in order to remove columns from the coefficient matrix (i.e. basis vectors)
         coefficients = coefficients*transformator;
-        if (coefficients_unperturbed_cache.size() != 0) coefficients_unperturbed_cache = coefficients_unperturbed_cache*transformator;
+        if (coefficients_unperturbed_cache.size() != 0) { coefficients_unperturbed_cache = coefficients_unperturbed_cache*transformator;
+}
         
         // Apply transformator in order to remove rows and columns from the matrices that help constructing the total Hamiltonianmatrix
         this->transformInteraction(transformator);
         
         // Apply transformator in order to remove rows and columns from the total Hamiltonianmatrix
         hamiltonianmatrix = transformator.adjoint()*hamiltonianmatrix*transformator;
-        if (hamiltonianmatrix_unperturbed_cache.size() != 0) hamiltonianmatrix_unperturbed_cache = transformator.adjoint()*hamiltonianmatrix_unperturbed_cache*transformator;
+        if (hamiltonianmatrix_unperturbed_cache.size() != 0) { hamiltonianmatrix_unperturbed_cache = transformator.adjoint()*hamiltonianmatrix_unperturbed_cache*transformator;
+}
     }
     
     template < typename F >
@@ -922,7 +936,8 @@ protected:
         auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<double,3,1>>(&to_y_axis[0]).normalized();
 
         double tolerance = 1e-16;
-        if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) throw std::runtime_error( "The z-axis and the y-axis are not orhogonal." );
+        if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) { throw std::runtime_error( "The z-axis and the y-axis are not orhogonal." );
+}
 
         Eigen::Matrix<double,3,3> transformator;
         transformator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
@@ -991,7 +1006,7 @@ private:
                         sqnorm += std::pow(std::abs(triple.value()),2);
                     }
                     if (sqnorm > 0.05) {
-                        triplets_transformator.push_back(eigen_triplet_t(idx,idx_new++,1));
+                        triplets_transformator.emplace_back(idx,idx_new++,1);
                     }
                 }
             }

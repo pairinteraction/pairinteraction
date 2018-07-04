@@ -16,16 +16,15 @@
 
 #include "WignerD.h"
 
-WignerD::WignerD() {
-}
+WignerD::WignerD() = default;
 
 double WignerD::operator()(float j, float m, float mp, double beta) {
     double tolerance = 1e-16;
     if (std::abs(beta - M_PI / 2) < tolerance) {
         return this->evalWignerdPiHalf(j, m, mp);
-    } else {
+    } 
         return this->evalWignerd(j, m, mp, beta);
-    }
+    
 }
 
 std::complex<double> WignerD::operator()(float j, float m, float mp, double alpha, double beta, double gamma) {

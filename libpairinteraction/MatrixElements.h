@@ -34,18 +34,18 @@ bool selectionRulesMultipole(StateOne const& state1, StateOne const& state2, int
 
 class MatrixElements { // TODO use one single buffer, initialiezed at the start of the program
 public:
-    MatrixElements(std::string const& species, std::string const& dbname);
+    MatrixElements(std::string const& species, std::string  dbname);
     MatrixElements(const Configuration& config, std::string const& species, std::string const& dbname);
-    void precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q);
-    void precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q);
-    void precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> basis_one, int k, int q);
-    void precalculateMultipole(std::shared_ptr<const BasisnamesOne> basis_one, int k);
-    void precalculateRadial(std::shared_ptr<const BasisnamesOne> basis_one, int k);
+    void precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> const &basis_one, int q);
+    void precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> const &basis_one, int q);
+    void precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> const &basis_one, int k, int q);
+    void precalculateMultipole(std::shared_ptr<const BasisnamesOne> const &basis_one, int k);
+    void precalculateRadial(std::shared_ptr<const BasisnamesOne> const &basis_one, int k);
     double getElectricMomentum(StateOne const& state_row, StateOne const& state_col);
     double getMagneticMomentum(StateOne const& state_row, StateOne const& state_col);
-    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa);
-    double getMultipole(StateOne const& state_row, StateOne const& state_col, int kappa);
-    double getRadial(StateOne const& state_row, StateOne const& state_col, int kappa);
+    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k);
+    double getMultipole(StateOne const& state_row, StateOne const& state_col, int k);
+    double getRadial(StateOne const& state_row, StateOne const& state_col, int k);
 
     void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
     void precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q);
@@ -53,7 +53,7 @@ public:
     void precalculateMultipole(const std::vector<StateOne> &basis_one, int k);
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 private:
-    void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
+    void precalculate(const std::shared_ptr<const BasisnamesOne>& basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial);
     double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
     std::string method;
     std::string species;
@@ -68,7 +68,7 @@ private:
     double gL;
     double s;
 
-    void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
+    void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial);
 };
 
 #endif

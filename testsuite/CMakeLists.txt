@@ -37,9 +37,7 @@ python_test(TARGET states SOURCE state.py)
 python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
 python_test(TARGET wavefunction SOURCE wavefunction.py)
-if(NOT MSVC) # timeout
-  if(NOT (APPLE AND DEFINED ENV{TRAVIS}))
-    python_test(TARGET parallelization SOURCE parallelization.py)
-  endif()
-endif()
 python_test(TARGET symmetries SOURCE symmetries.py)
+if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
+    python_test(TARGET parallelization SOURCE parallelization.py)
+endif()

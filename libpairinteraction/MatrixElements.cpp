@@ -24,6 +24,7 @@
 #include <limits>
 #include <stdexcept>
 #include <cctype>
+#include <utility>
 
 bool selectionRulesMomentum(StateOne const& state1, StateOne const& state2, int q) {
     bool validL = state1.l == state2.l;
@@ -58,14 +59,15 @@ bool selectionRulesMultipole(StateOne const& state1, StateOne const& state2, int
 }
 
 
-MatrixElements::MatrixElements(std::string const& species, std::string const& dbname) : species(species), dbname(dbname) {
+MatrixElements::MatrixElements(std::string const& species, std::string  dbname) : species(species), dbname(std::move(dbname)) {
     method = "Modelpotentials";
     muB = 0.5;
     gS = 2.0023192;
     gL = 1;
 
     s = 0.5;
-    if (std::isdigit(species.back())) s = (std::atoi(&species.back())-1)/2.; // TODO think of a better solution
+    if (std::isdigit(species.back()) != 0) { s = (std::atoi(&species.back())-1)/2.; // TODO think of a better solution
+}
 }
 
 MatrixElements::MatrixElements(const Configuration& config, std::string const& species, std::string const& dbname) : MatrixElements(species,dbname) {
@@ -78,25 +80,25 @@ MatrixElements::MatrixElements(const Configuration& config, std::string const& s
     }
 }
 
-void MatrixElements::precalculateMultipole(std::shared_ptr<const BasisnamesOne> basis_one, int k) {
+void MatrixElements::precalculateMultipole(std::shared_ptr<const BasisnamesOne> const &basis_one, int k) {
     int q = std::numeric_limits<int>::max();
     precalculate(basis_one, k, q, k, true, false, false);
 }
 
-void MatrixElements::precalculateRadial(std::shared_ptr<const BasisnamesOne> basis_one, int k) {
+void MatrixElements::precalculateRadial(std::shared_ptr<const BasisnamesOne> const &basis_one, int k) {
     int q = std::numeric_limits<int>::max();
     precalculate(basis_one, k, q, k, false, false, true);
 }
 
-void MatrixElements::precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
+void MatrixElements::precalculateElectricMomentum(std::shared_ptr<const BasisnamesOne> const &basis_one, int q) {
     precalculate(basis_one, 1, q, 1, true, false, false);
 }
 
-void MatrixElements::precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> basis_one, int q) {
+void MatrixElements::precalculateMagneticMomentum(std::shared_ptr<const BasisnamesOne> const &basis_one, int q) {
     precalculate(basis_one, 1, q, 0, false, true, false);
 }
 
-void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> basis_one, int k, int q) {
+void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOne> const &basis_one, int k, int q) {
     precalculate(basis_one, k, q, 2, true, false, false);
 }
 
@@ -135,7 +137,7 @@ double MatrixElements::getRadial(StateOne const& state_row, StateOne const& stat
     return val;
 }
 
-void MatrixElements::precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
+void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne>& basis_one, int kappa, int q, int kappar, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
     sqlite::handle db(dbname);
     sqlite::statement stmt(db);
 
@@ -474,17 +476,16 @@ double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
                                          const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);
-    } else if(method == "Whittaker") {
+    } if(method == "Whittaker") {
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
-    } else {
-        std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
-        std::cout << msg << std::endl;
-        //auto context = zmq::context();
-        //auto publisher = context.socket(ZMQ_PUB);
-        //publisher.bind(zmq::endpoint::name.c_str());
-        //publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
-        throw std::runtime_error(msg);
     }
+    std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+    std::cout << msg << std::endl;
+    //auto context = zmq::context();
+    //auto publisher = context.socket(ZMQ_PUB);
+    //publisher.bind(zmq::endpoint::name.c_str());
+    //publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
+    throw std::runtime_error(msg);
 }
 
 
@@ -574,7 +575,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 continue;
             }
 
-            if (state_row.species.empty() || state_col.species.empty()  ) continue; // TODO artifical states !!!
+            if (state_row.species.empty() || state_col.species.empty()  ) { continue; // TODO artifical states !!!
+}
 
             //if (state_row.idx < state_col.idx) { // TODO
             //    continue;
@@ -626,7 +628,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(7, state.n[1]);
             stmt.bind(8, state.l[1]);
             stmt.bind(9, state.j[1]);
-            if (stmt.step()) cache.second = stmt.get<double>(0);
+            if (stmt.step()) { cache.second = stmt.get<double>(0);
+}
             stmt.reset();
         }
     }
@@ -642,7 +645,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(3, state.m[0]);
             stmt.bind(4, state.j[1]);
             stmt.bind(5, state.m[1]);
-            if (stmt.step()) cache.second = stmt.get<double>(0);
+            if (stmt.step()) { cache.second = stmt.get<double>(0);
+}
             stmt.reset();
         }
     }
@@ -659,7 +663,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(4, state.j[0]);
             stmt.bind(5, state.l[1]);
             stmt.bind(6, state.j[1]);
-            if (stmt.step()) cache.second = stmt.get<double>(0);
+            if (stmt.step()) { cache.second = stmt.get<double>(0);
+}
             stmt.reset();
         }
     }
@@ -676,7 +681,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(4, state.j[0]);
             stmt.bind(5, state.l[1]);
             stmt.bind(6, state.j[1]);
-            if (stmt.step()) cache.second = stmt.get<double>(0);
+            if (stmt.step()) { cache.second = stmt.get<double>(0);
+}
             stmt.reset();
         }
     }
@@ -690,7 +696,8 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
             stmt.bind(1, kappa);
             stmt.bind(2, state.l[0]);
             stmt.bind(3, state.l[1]);
-            if (stmt.step()) cache.second = stmt.get<double>(0);
+            if (stmt.step()) { cache.second = stmt.get<double>(0);
+}
             stmt.reset();
         }
     }

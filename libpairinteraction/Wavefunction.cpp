@@ -36,7 +36,8 @@ double V(QuantumDefect const& qd, double x) {
     double V_so = 0.0;
     if ( qd.l < 4 ) {
         double s = 0.5;
-        if (std::isdigit(qd.species.back())) s = (std::atoi(&qd.species.back())-1)/2.; // TODO think of a better solution
+        if (std::isdigit(qd.species.back()) != 0) { s = (std::atoi(&qd.species.back())-1)/2.; // TODO think of a better solution
+}
         double alpha = 7.2973525664e-3;// ~1/137 fine-structure constant CODATA 2014
         V_so = alpha*alpha/(4 * x*x*x) * (qd.j*(qd.j+1) - qd.l*(qd.l+1) - s*(s+1));
     }
@@ -53,14 +54,15 @@ double g(QuantumDefect const& qd, double x) {
 
 
 Numerov::Numerov(QuantumDefect const& qd)
-    : qd(qd), xy()
+    : qd(qd)
 {
     // augmented classical turning point
     double xmin = qd.n*qd.n - qd.n*std::sqrt(qd.n*qd.n-(qd.l-1)*(qd.l-1));
-    if ( xmin < 2.08 )
+    if ( xmin < 2.08 ) {
         xmin = std::floor( std::sqrt( 2.08 ) );
-    else
+    } else {
         xmin = std::floor( std::sqrt( xmin ) );
+}
 
     double const xmax = std::sqrt( 2*qd.n*(qd.n+15) );
     double const nsteps = std::ceil( (xmax - xmin)/dx );
@@ -80,10 +82,11 @@ eigen_dense_double_t Numerov::integrate()
     int const nsteps = xy.rows();
 
     // Set the initial condition
-    if ( (qd.n-qd.l) % 2 == 0 )
+    if ( (qd.n-qd.l) % 2 == 0 ) {
         xy(nsteps-2,1) = -1e-10;
-    else
+    } else {
         xy(nsteps-2,1) = 1e-10;
+}
 
     // Perform the integration using Numerov's scheme
     for (int i = nsteps-3; i >= 0; --i)
@@ -96,13 +99,15 @@ eigen_dense_double_t Numerov::integrate()
 
     // Normalization
     double norm = 0;
-    for (int i = 0; i < nsteps; ++i)
+    for (int i = 0; i < nsteps; ++i) {
         norm += xy(i,1)*xy(i,1) * xy(i,0)*xy(i,0) * dx;
+}
     norm = std::sqrt(2*norm);
 
     if ( norm > 0.0 ) {
-        for (int i = 0; i < nsteps; ++i)
+        for (int i = 0; i < nsteps; ++i) {
             xy(i,1) /= norm;
+}
     }
 
     return xy;
@@ -116,7 +121,8 @@ namespace whittaker_functions {
 
 double HypergeometricU(double a, double b, double z)
 {
-    if (z == 0) return NAN;
+    if (z == 0) { return NAN;
+}
     return gsl_sf_hyperg_U(a,b,z);
 }
 
@@ -137,7 +143,7 @@ double RadialWFWhittaker(double r, double nu, int l)
 
 
 Whittaker::Whittaker(QuantumDefect const& qd)
-    : qd(qd), xy()
+    : qd(qd)
 {
     double const xmin = 1;
     double const xmax = std::sqrt(2*qd.n*(qd.n+15));
@@ -157,15 +163,17 @@ eigen_dense_double_t Whittaker::integrate()
 
     // Set the sign
     int sign;
-    if ( (qd.n-qd.l) % 2 == 0 )
+    if ( (qd.n-qd.l) % 2 == 0 ) {
         sign = -1;
-    else
+    } else {
         sign = 1;
+}
 
     int const nsteps = xy.rows();
 
-    for (int i = 0; i < nsteps; ++i)
+    for (int i = 0; i < nsteps; ++i) {
         xy(i,1) = sign * RadialWFWhittaker(xy(i,0), qd.nstar, qd.l);
+}
 
     return xy;
 }

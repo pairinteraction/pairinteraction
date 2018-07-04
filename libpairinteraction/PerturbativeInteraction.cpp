@@ -38,33 +38,43 @@ double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
         for (int n1 = state.n[1]-deltaN; n1 <= state.n[1]+deltaN; ++n1) {
 
             std::vector<int> array_l0;
-            if (state.l[0] > 0) array_l0.push_back(state.l[0]-1);
-            if (state.l[0] < n0-1) array_l0.push_back(state.l[0]+1);
+            if (state.l[0] > 0) { array_l0.push_back(state.l[0]-1);
+}
+            if (state.l[0] < n0-1) { array_l0.push_back(state.l[0]+1);
+}
             for (int l0 : array_l0) {
 
                 std::vector<int> array_l1;
-                if (state.l[1] > 0) array_l1.push_back(state.l[1]-1);
-                if (state.l[1] < n1-1) array_l1.push_back(state.l[1]+1);
+                if (state.l[1] > 0) { array_l1.push_back(state.l[1]-1);
+}
+                if (state.l[1] < n1-1) { array_l1.push_back(state.l[1]+1);
+}
                 for (int l1 : array_l1) {
 
                     std::set<float> array_j0;
-                    if (std::abs(std::abs(l0-state.s[0])-state.j[0]) < 2) array_j0.insert(std::abs(l0-state.s[0]));
-                    if (std::abs(l0+state.s[0]-state.j[0]) < 2) array_j0.insert(l0+state.s[0]);
+                    if (std::abs(std::abs(l0-state.s[0])-state.j[0]) < 2) { array_j0.insert(std::abs(l0-state.s[0]));
+}
+                    if (std::abs(l0+state.s[0]-state.j[0]) < 2) { array_j0.insert(l0+state.s[0]);
+}
                     for (float j0 : array_j0) {
 
                         std::set<float> array_j1;
-                        if (std::abs(std::abs(l1-state.s[1])-state.j[1]) < 2) array_j1.insert(std::abs(l1-state.s[1]));
-                        if (std::abs(l1+state.s[1]-state.j[1]) < 2) array_j1.insert(l1+state.s[1]);
+                        if (std::abs(std::abs(l1-state.s[1])-state.j[1]) < 2) { array_j1.insert(std::abs(l1-state.s[1]));
+}
+                        if (std::abs(l1+state.s[1]-state.j[1]) < 2) { array_j1.insert(l1+state.s[1]);
+}
                         for (float j1 : array_j1) {
 
-                            for (size_t idx = 0; idx < array_q.size(); ++idx) {
-                                auto &q = array_q[idx]; // q = final.m - initial.m
+                            for (auto & q : array_q) {
+                                // q = final.m - initial.m
 
                                 float m0 = state.m[0]+q[0];
-                                if (std::abs(m0) > j0) continue;
+                                if (std::abs(m0) > j0) { continue;
+}
 
                                 float m1 = state.m[1]+q[1];
-                                if (std::abs(m1) > j1) continue;
+                                if (std::abs(m1) > j1) { continue;
+}
 
                                 StateTwo state_virtual = StateTwo(state.species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
 
@@ -97,10 +107,12 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
         for (size_t idx_col = idx_row; idx_col < states.size(); ++idx_col) {
             auto &state_col = states[idx_col];
 
-            if (state_row.s[0] != state_col.s[0] || state_row.s[1] != state_col.s[1]) continue;
+            if (state_row.s[0] != state_col.s[0] || state_row.s[1] != state_col.s[1]) { continue;
+}
             auto &s = state_col.s;
 
-            if (state_row.species[0] != state_col.species[0] || state_row.species[1] != state_col.species[1]) continue;
+            if (state_row.species[0] != state_col.species[0] || state_row.species[1] != state_col.species[1]) { continue;
+}
             auto &species = state_col.species;
 
             int n0_min = std::min(state_row.n[0], state_col.n[0]);
@@ -116,8 +128,10 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
 
                     std::vector<int> array_l0;
                     if(state_row.l[0] == state_col.l[0]) {
-                        if (state_col.l[0] < n0-1) array_l0.push_back(state_col.l[0]+1);
-                        if (state_col.l[0] > 0) array_l0.push_back(state_col.l[0]-1);
+                        if (state_col.l[0] < n0-1) { array_l0.push_back(state_col.l[0]+1);
+}
+                        if (state_col.l[0] > 0) { array_l0.push_back(state_col.l[0]-1);
+}
                     } else if(state_row.l[0]+2 == state_col.l[0] && state_col.l[0] < n0-1) {
                         array_l0.push_back(state_col.l[0]+1);
                     } else if(state_row.l[0]-2 == state_col.l[0] && state_col.l[0] > 0) {
@@ -127,8 +141,10 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
 
                         std::vector<int> array_l1;
                         if(state_row.l[1] == state_col.l[1]) {
-                            if (state_col.l[1] < n1-1) array_l1.push_back(state_col.l[1]+1);
-                            if (state_col.l[1] > 0) array_l1.push_back(state_col.l[1]-1);
+                            if (state_col.l[1] < n1-1) { array_l1.push_back(state_col.l[1]+1);
+}
+                            if (state_col.l[1] > 0) { array_l1.push_back(state_col.l[1]-1);
+}
                         } else if(state_row.l[1]+2 == state_col.l[1] && state_col.l[1] < n1-1) {
                             array_l1.push_back(state_col.l[1]+1);
                         } else if(state_row.l[1]-2 == state_col.l[1] && state_col.l[1] > 0) {
@@ -137,32 +153,41 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
                         for (int l1 : array_l1) {
 
                             std::set<float> array_j0;
-                            if (std::abs(std::abs(l0-s[0])-state_col.j[0]) < 2 && std::abs(std::abs(l0-s[0])-state_row.j[0]) < 2 ) array_j0.insert(std::abs(l0-s[0]));
-                            if (std::abs(l0+s[0]-state_col.j[0]) < 2 && std::abs(l0+s[0]-state_row.j[0]) < 2) array_j0.insert(l0+s[0]);
+                            if (std::abs(std::abs(l0-s[0])-state_col.j[0]) < 2 && std::abs(std::abs(l0-s[0])-state_row.j[0]) < 2 ) { array_j0.insert(std::abs(l0-s[0]));
+}
+                            if (std::abs(l0+s[0]-state_col.j[0]) < 2 && std::abs(l0+s[0]-state_row.j[0]) < 2) { array_j0.insert(l0+s[0]);
+}
                             for (float j0 : array_j0) {
 
                                 std::set<float> array_j1;
-                                if (std::abs(std::abs(l1-s[1])-state_col.j[1]) < 2 && std::abs(std::abs(l1-s[1])-state_row.j[1]) < 2 ) array_j1.insert(std::abs(l1-s[1]));
-                                if (std::abs(l1+s[1]-state_col.j[1]) < 2 && std::abs(l1+s[1]-state_row.j[1]) < 2) array_j1.insert(l1+s[1]);
+                                if (std::abs(std::abs(l1-s[1])-state_col.j[1]) < 2 && std::abs(std::abs(l1-s[1])-state_row.j[1]) < 2 ) { array_j1.insert(std::abs(l1-s[1]));
+}
+                                if (std::abs(l1+s[1]-state_col.j[1]) < 2 && std::abs(l1+s[1]-state_row.j[1]) < 2) { array_j1.insert(l1+s[1]);
+}
                                 for (float j1 : array_j1) {
 
-                                    for (size_t idx = 0; idx < array_q.size(); ++idx) {
-                                        int q0_forth = array_q[idx][0]; // q = final.m - initial.m
-                                        int q1_forth = array_q[idx][1];
+                                    for (auto & idx : array_q) {
+                                        int q0_forth = idx[0]; // q = final.m - initial.m
+                                        int q1_forth = idx[1];
 
                                         float m0 = state_col.m[0]+q0_forth;
-                                        if (std::abs(m0) > j0) continue;
+                                        if (std::abs(m0) > j0) { continue;
+}
 
                                         float m1 = state_col.m[1]+q1_forth;
-                                        if (std::abs(m1) > j1) continue;
+                                        if (std::abs(m1) > j1) { continue;
+}
 
                                         int q0_back = state_row.m[0]-m0;
                                         int q1_back = state_row.m[1]-m1;
-                                        if (std::abs(q0_back) > 1 || std::abs(q1_back) > 1) continue;
-                                        if (array_q.size() == 3 && q0_back+q1_back != 0) continue;
+                                        if (std::abs(q0_back) > 1 || std::abs(q1_back) > 1) { continue;
+}
+                                        if (array_q.size() == 3 && q0_back+q1_back != 0) { continue;
+}
 
                                         StateTwo state_virtual = StateTwo(species, {{n0, n1}}, {{l0, l1}}, {{j0, j1}}, {{m0, m1}});
-                                        if (set_states.find(state_virtual) != set_states.end()) continue;
+                                        if (set_states.find(state_virtual) != set_states.end()) { continue;
+}
 
                                         double energydiff_row = state_row.getEnergy()-state_virtual.getEnergy();
                                         if (bfield != 0) {
@@ -204,8 +229,10 @@ eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states
             int q0 = state_row.m[0]-state_col.m[0];
             int q1 = state_row.m[1]-state_col.m[1];
 
-            if (array_q.size() == 3 && q0+q1 != 0) continue;
-            if (std::abs(q0) > 1 || std::abs(q1) > 1) continue;
+            if (array_q.size() == 3 && q0+q1 != 0) { continue;
+}
+            if (std::abs(q0) > 1 || std::abs(q1) > 1) { continue;
+}
 
             C3_matrix(idx_row, idx_col) = coulombs_constant * array_angle_term[3*(q0+1)+(q1+1)] * cache.getElectricDipole(state_row.first(), state_col.first()) * cache.getElectricDipole(state_row.second(), state_col.second());
         }

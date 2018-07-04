@@ -73,11 +73,11 @@ constexpr const int ARB = 32767;
 
 class Triple {
 public:
-    Triple() : row(0), col(0), val(0) { }
+    Triple() = default;
     Triple(idx_t row, idx_t col, scalar_t val) : row(row), col(col), val(val) { }
-    idx_t row;
-    idx_t col;
-    scalar_t val;
+    idx_t row{0};
+    idx_t col{0};
+    scalar_t val{0};
 };
 
 enum parity_t {
@@ -101,7 +101,7 @@ struct Symmetry {
         for (size_t i = 0; i < syms1.size(); ++i) {
             if (syms1[i] < syms2[i]) {
                 return true;
-            } else if (syms1[i] > syms2[i]) {
+            } if (syms1[i] > syms2[i]) {
                 return false;
             }
         }

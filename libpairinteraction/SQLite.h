@@ -26,6 +26,7 @@
 #include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
+#include <utility>
 #include <sqlite3.h>
 
 #include "utils.h"
@@ -63,7 +64,7 @@ public:
      *
      * \returns error message
      */
-    const char *what() const noexcept { return m_msg.c_str(); }
+    const char *what() const noexcept override { return m_msg.c_str(); }
 
 private:
     std::string m_msg;
@@ -84,8 +85,9 @@ class statement
 
     void handle_error(int err)
     {
-        if (err)
+        if (err != 0) {
             throw error(err, sqlite3_errstr(err));
+}
     }
 
 public:
@@ -105,8 +107,8 @@ public:
      * \param[in] db    unmanaged raw pointer to the sqlite database
      * \param[in] sql   an initial query as a string
      */
-    explicit statement(sqlite3 *db, std::string const &sql)
-        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{sql},
+    explicit statement(sqlite3 *db, std::string sql)
+        : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{std::move(sql)},
           m_prepared{false}, m_valid{true}
     {
     }
@@ -152,10 +154,12 @@ public:
      */
     bool step()
     {
-        if (!m_prepared)
+        if (!m_prepared) {
             handle_error(SQLITE_MISUSE);
-        if (!m_valid)
+}
+        if (!m_valid) {
             handle_error(SQLITE_DONE);
+}
 
         auto err = sqlite3_step(m_stmt.get());
 
@@ -286,13 +290,14 @@ public:
 
         void increment()
         {
-            if (!m_done)
+            if (!m_done) {
                 m_done = m_stmt->step();
-            else
+            } else {
                 m_end = true;
+}
         }
 
-        bool equal(iterator const &) const { return m_end; }
+        bool equal(iterator const & /*unused*/) const { return m_end; }
 
         statement &dereference() const
         {
@@ -366,7 +371,7 @@ class handle final
     void install_busy_handler() {
         auto err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
 
-        if (err) {
+        if (err != 0) {
             throw error(err, sqlite3_errmsg(m_db.get()));
         }
     }
@@ -401,7 +406,7 @@ public:
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
         m_db.reset(tmp_db);
 
-        if (err) {
+        if (err != 0) {
             throw error(err, sqlite3_errmsg(m_db.get()));
         }
 
@@ -412,8 +417,8 @@ public:
      *
      * Reinstalls the busy handler.
      */
-    handle(handle &&other)
-        : m_db{std::move(other.m_db)}, m_threshold{std::move(other.m_threshold)}
+    handle(handle &&other) noexcept
+        : m_db{std::move(other.m_db)}, m_threshold{other.m_threshold}
     {
         install_busy_handler();
     }
@@ -422,12 +427,12 @@ public:
      *
      * Reinstalls the busy handler.
      */
-    handle &operator=(handle &&other)
+    handle &operator=(handle &&other) noexcept
     {
         if (this != std::addressof(other)) // skip self-assignment
         {
             m_db = std::move(other.m_db);
-            m_threshold = std::move(other.m_threshold);
+            m_threshold = other.m_threshold;
             install_busy_handler();
         }
         return *this;

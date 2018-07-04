@@ -52,21 +52,24 @@ public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
     std::string species, element;
-    int n, l;
-    float j, m, s;
+    int n{0};
+    int l{0};
+    float j{0};
+    float m{0};
+    float s;
 
     StateOne();
-    StateOne(std::string species, int n, int l, float j, float m);
+    StateOne(std::string element, int n, int l, float j, float m);
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
 
     friend std::ostream& operator<<(std::ostream &out, const StateOne &state);
 
-    bool operator==(StateOne const&) const;
-    bool operator^ (StateOne const&) const; // subset
-    bool operator!=(StateOne const&) const;
-    bool operator< (StateOne const&) const;
-    bool operator> (StateOne const&) const;
+    bool operator==(StateOne const& /*rhs*/) const;
+    bool operator^ (StateOne const& /*rhs*/) const; // subset
+    bool operator!=(StateOne const& /*rhs*/) const;
+    bool operator< (StateOne const& /*rhs*/) const;
+    bool operator> (StateOne const& /*rhs*/) const;
 
     double getEnergy() const;
     double getNStar() const;
@@ -112,7 +115,7 @@ public:
     std::array<float, 2> j, m, s;
 
     StateTwo();
-    StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
     StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
@@ -120,18 +123,18 @@ public:
 
     StateOne getFirstState() const;
     StateOne getSecondState() const;
-    void setFirstState(StateOne const&);
-    void setSecondState(StateOne const&);
+    void setFirstState(StateOne const& /*s*/);
+    void setSecondState(StateOne const& /*s*/);
 
     StateOne first() const;
     StateOne second() const;
 
     friend std::ostream& operator<<(std::ostream &out, const StateTwo &state);
 
-    bool operator==(StateTwo const&) const;
-    bool operator^ (StateTwo const&) const; // subset
-    bool operator!=(StateTwo const&) const;
-    bool operator< (StateTwo const&) const;
+    bool operator==(StateTwo const& /*rhs*/) const;
+    bool operator^ (StateTwo const& /*rhs*/) const; // subset
+    bool operator!=(StateTwo const& /*rhs*/) const;
+    bool operator< (StateTwo const& /*rhs*/) const;
 
     StateTwo order();
 

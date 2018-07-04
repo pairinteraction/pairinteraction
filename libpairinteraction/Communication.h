@@ -88,8 +88,9 @@ public:
     : m_socket( new_socket, zmq_close )
     , use_cout(false)
   {
-    if ( !new_socket )
+    if ( new_socket == nullptr ) {
       throw error();
+}
   }
 
   /** \brief Conversion operator
@@ -115,8 +116,9 @@ public:
         use_cout = true;
         return;
     }
-    if ( zmq_bind(*this, endpoint) == -1 )
+    if ( zmq_bind(*this, endpoint) == -1 ) {
       throw error();
+}
   }
 
   /** \brief Create outgoing connection from socket
@@ -134,8 +136,9 @@ public:
         use_cout = true;
         return;
     }
-    if ( zmq_connect(*this, endpoint) == -1 )
+    if ( zmq_connect(*this, endpoint) == -1 ) {
       throw error();
+}
   }
 
   /** \brief Send a message part on a socket
@@ -165,8 +168,9 @@ public:
         return len;
     }
 
-    if ( zmq_send(*this, tmp.c_str(), len+1, 0) == -1 )
+    if ( zmq_send(*this, tmp.c_str(), len+1, 0) == -1 ) {
       throw error();
+}
     return len;
   }
 };

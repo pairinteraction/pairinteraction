@@ -23,19 +23,20 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <utility>
 
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 StateOne::StateOne(std::string element, int n, int l, float j, float m)
-    : State(0), species(element), n(n), l(l), j(j), m(m)
+    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m)
 {
     this->analyzeSpecies();
 }
 
 StateOne::StateOne()
-    : State(0), species(""), n(0), l(0), j(0), m(0)
+    : State(0), species("")
 {
     this->analyzeSpecies();
 }
@@ -147,7 +148,7 @@ void StateOne::analyzeSpecies() {
     s = 0.5;
     element = species;
 
-    if (std::isdigit(species.back())) {
+    if (std::isdigit(species.back()) != 0) {
         s = (std::atoi(&species.back())-1)/2.;
         element = species.substr(0, species.size()-1);
     }
@@ -164,7 +165,7 @@ StateTwo::StateTwo()
 }
 
 StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m)
-    : State(0), species(element), n(n), l(l), j(j), m(m)
+    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m)
 {
     this->analyzeSpecies();
 }
@@ -250,7 +251,8 @@ std::ostream& operator<< (std::ostream &out, const StateTwo &state) {
             out << "mj=" << 2*state.m[i] << "/2";
         }
 
-        if (i == 0) out << "; ";
+        if (i == 0) { out << "; ";
+}
     }
     out << ">";
     return out;
@@ -285,9 +287,9 @@ StateTwo StateTwo::order() { // TODO use element, too?
                                              ((j[0] < j[1]) || ((j[0] == j[1]) &&
                                                                 (m[0] <= m[1]))))))) {
         return *this;
-    } else {
+    } 
         return StateTwo(this->second(),this->first());
-    }
+    
 }
 
 double StateTwo::getEnergy() const {
@@ -332,7 +334,7 @@ void StateTwo::analyzeSpecies() {
         s[i] = 0.5;
         element[i] = species[i];
 
-        if (std::isdigit(species[i].back())) {
+        if (std::isdigit(species[i].back()) != 0) {
             s[i] = (std::atoi(&species[i].back())-1)/2.;
             element[i] = species[i].substr(0, species[i].size()-1);
         }

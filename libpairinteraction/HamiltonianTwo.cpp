@@ -17,9 +17,10 @@
 #include "Communication.h"
 #include "HamiltonianTwo.h"
 #include <stdexcept>
+#include <utility>
 
-HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one)  :
-    Hamiltonian<BasisnamesTwo>(), hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), path_cache(path_cache) { // TODO
+HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, const std::shared_ptr<HamiltonianOne>& hamiltonian_one)  :
+    hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one), path_cache(path_cache) { // TODO
 
     samebasis = true;
 
@@ -27,7 +28,7 @@ HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::p
 }
 
 HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one1, std::shared_ptr<HamiltonianOne> hamiltonian_one2) :
-    Hamiltonian<BasisnamesTwo>(), hamiltonian_one1(hamiltonian_one1), hamiltonian_one2(hamiltonian_one2), path_cache(path_cache) {
+    hamiltonian_one1(std::move(hamiltonian_one1)), hamiltonian_one2(std::move(hamiltonian_one2)), path_cache(path_cache) {
 
     samebasis = false;
 
@@ -117,19 +118,28 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     //fields_change_l = true; // TODO
 
     std::vector<parity_t> sym_inversion;
-    if (conf_tot["invE"].str() == "true") sym_inversion.push_back(EVEN);
-    if (conf_tot["invO"].str() == "true") sym_inversion.push_back(ODD);
-    if (!sym_inversion.size()) sym_inversion.push_back(NA);
+    if (conf_tot["invE"].str() == "true") { sym_inversion.push_back(EVEN);
+}
+    if (conf_tot["invO"].str() == "true") { sym_inversion.push_back(ODD);
+}
+    if (sym_inversion.empty()) { sym_inversion.push_back(NA);
+}
 
     std::vector<parity_t> sym_permutation;
-    if (conf_tot["perE"].str() == "true") sym_permutation.push_back(EVEN);
-    if (conf_tot["perO"].str() == "true") sym_permutation.push_back(ODD);
-    if (!sym_permutation.size()) sym_permutation.push_back(NA);
+    if (conf_tot["perE"].str() == "true") { sym_permutation.push_back(EVEN);
+}
+    if (conf_tot["perO"].str() == "true") { sym_permutation.push_back(ODD);
+}
+    if (sym_permutation.empty()) { sym_permutation.push_back(NA);
+}
 
     std::vector<parity_t> sym_reflection;
-    if (conf_tot["refE"].str() == "true") sym_reflection.push_back(EVEN);
-    if (conf_tot["refO"].str() == "true") sym_reflection.push_back(ODD);
-    if (!sym_reflection.size()) sym_reflection.push_back(NA);
+    if (conf_tot["refE"].str() == "true") { sym_reflection.push_back(EVEN);
+}
+    if (conf_tot["refO"].str() == "true") { sym_reflection.push_back(ODD);
+}
+    if (sym_reflection.empty()) { sym_reflection.push_back(NA);
+}
 
     bool conserveM = conf_tot["conserveM"].str() == "true";
 
@@ -159,10 +169,14 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         bool validM = false;
 
         for (const auto &initial: initial1) {
-            if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) validN = true;
-            if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) validL = true;
-            if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) validJ = true;
-            if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) validM = true;
+            if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) { validN = true;
+}
+            if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) { validL = true;
+}
+            if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) { validJ = true;
+}
+            if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) { validM = true;
+}
         }
 
         if (validN && validL && validJ && validM) {
@@ -186,10 +200,14 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             bool validM = false;
 
             for (const auto &initial: initial2) {
-                if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) validN = true;
-                if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) validL = true;
-                if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) validJ = true;
-                if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) validM = true;
+                if (deltaN < 0 || std::abs(state.n - initial.n) <= deltaN) { validN = true;
+}
+                if (deltaL < 0 || std::abs(state.l - initial.l) <= deltaL) { validL = true;
+}
+                if (deltaJ < 0 || std::abs(state.j - initial.j) <= deltaJ) { validJ = true;
+}
+                if (deltaM < 0 || std::abs(state.m - initial.m) <= deltaM) { validM = true;
+}
             }
 
             if (validN && validL && validJ && validM) {
@@ -229,9 +247,11 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::vector<int> sym_rotation;
     if (conserveM) {
         if (!sametrafo) {
-            for (const auto &state: *basis) sym_rotation.push_back(state.m[0] + state.m[1]);
+            for (const auto &state: *basis) { sym_rotation.push_back(state.m[0] + state.m[1]);
+}
         } else if (!zerotheta) {
-            for (int M = -initalJ; M <= initalJ; ++M) sym_rotation.push_back(M);
+            for (int M = -initalJ; M <= initalJ; ++M) { sym_rotation.push_back(M);
+}
         } else {
             sym_rotation.push_back(initalM);
         }
@@ -259,7 +279,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
             // In case of inversion and permutation symmetry: the orbital parity is conserved and we just use the blocks with the same parity as the inital state
             if (sym.inversion != NA && sym.permutation != NA && sametrafo) {
-                if (sym.inversion*sym.permutation != initalParityL) continue;
+                if (sym.inversion*sym.permutation != initalParityL) { continue;
+}
             }
 
             for (const parity_t &ref : sym_reflection) {
@@ -286,7 +307,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Apply energy cutoff
     std::vector<bool> necessary_tmp(basis->size(), false);
 
-    int nSteps_one_i = static_cast<int>(nSteps_one);
+    auto nSteps_one_i = static_cast<int>(nSteps_one);
 
 #pragma omp parallel for
     for (int i = 0; i < nSteps_one_i; ++i) {
@@ -392,16 +413,20 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             int idx_multipole = sumOfKappas-sumOfKappas_min;
 
             for (const auto &state_col : *basis) { // TODO parallelization
-                if (!necessary[state_col.idx]) continue;
+                if (!necessary[state_col.idx]) { continue;
+}
 
                 int M_col = state_col.first().m + state_col.second().m;
 
                 for (const auto &state_row : *basis) {
-                    if (!necessary[state_row.idx]) continue;
+                    if (!necessary[state_row.idx]) { continue;
+}
 
-                    if (state_row.idx < state_col.idx) continue;
+                    if (state_row.idx < state_col.idx) { continue;
+}
                     int M_row = state_row.first().m + state_row.second().m;
-                    if (M_col != M_row) continue;
+                    if (M_col != M_row) { continue;
+}
 
                     // multipole interaction with 1/R^(sumOfKappas+1) = 1/R^(idx_multipole+3) decay
                     for (int kappa1 = kappa_min; kappa1 <= sumOfKappas-1; ++kappa1) {
@@ -432,19 +457,23 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             int idx_multipole = sumOfKappas-sumOfKappas_min;
 
             exponent_multipole.push_back(sumOfKappas+1);
-            mat_multipole.push_back(Hamiltonianmatrix(size_basis, 2*size_mat_multipole[idx_multipole])); // factor of 2 because triangular matrix is not sufficient
+            mat_multipole.emplace_back(size_basis, 2*size_mat_multipole[idx_multipole]); // factor of 2 because triangular matrix is not sufficient
 
             for (const auto &state_col : *basis) { // TODO parallelization
-                if (!necessary[state_col.idx]) continue;
+                if (!necessary[state_col.idx]) { continue;
+}
 
                 int M_col = state_col.first().m + state_col.second().m;
 
                 for (const auto &state_row : *basis) {
-                    if (!necessary[state_row.idx]) continue;
+                    if (!necessary[state_row.idx]) { continue;
+}
 
-                    if (state_row.idx < state_col.idx) continue;
+                    if (state_row.idx < state_col.idx) { continue;
+}
                     int M_row = state_row.first().m + state_row.second().m;
-                    if (M_col != M_row) continue;
+                    if (M_col != M_row) { continue;
+}
 
                     // construct basis
                     if (state_row.idx == state_col.idx) {
@@ -473,7 +502,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
                     if (std::abs(val) > tol) {
                         mat_multipole[idx_multipole].addEntries(state_row.idx,state_col.idx,val);
-                        if (state_row.idx != state_col.idx) mat_multipole[idx_multipole].addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+                        if (state_row.idx != state_col.idx) { mat_multipole[idx_multipole].addEntries(state_col.idx,state_row.idx,val); // triangular matrix is not sufficient because of basis change
+}
                     }
 
                     // TODO state_two soll std::array<state_one, 2> sein! Dann geht auch die Abfrage der selection rules eindeutiger
@@ -511,7 +541,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     matrix_path.resize(nSteps_two*symmetries.size());
 
-    int indices_symmetry_i = static_cast<int>(symmetries.size());
+    auto indices_symmetry_i = static_cast<int>(symmetries.size());
 
     // --- Determine combined single atom matrices ---
     // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 + Hamiltonian1 x 1)
@@ -561,7 +591,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     publisher.send(">>TOT%7d", nSteps_two*symmetries.size());
 
-    int nSteps_two_i = static_cast<int>(nSteps_two);
+    auto nSteps_two_i = static_cast<int>(nSteps_two);
 
 #pragma omp parallel for schedule(static, 1)
 
@@ -591,7 +621,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
             // === Create table if necessary ===
             std::stringstream query;
-            std::string spacer = "";
+            std::string spacer;
 
             if (flag_perhapsmissingtable) {
                 query << "CREATE TABLE IF NOT EXISTS cache_two (uuid text NOT NULL PRIMARY KEY, "
@@ -614,7 +644,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             }
 
             // === Get uuid as filename ===
-            std::string uuid = "";
+            std::string uuid;
             query.str(std::string());
             spacer = "";
             query << "SELECT uuid FROM cache_two WHERE ";
@@ -633,7 +663,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 }
             }
 
-            if (uuid != "") {
+            if (!uuid.empty()) {
                 query.str(std::string());
                 query << "UPDATE cache_two SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
 #pragma omp critical(database)

@@ -36,7 +36,7 @@
 
 class HamiltonianTwo : public Hamiltonian<BasisnamesTwo> {
 public:
-    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one);
+    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, const std::shared_ptr<HamiltonianOne>& hamiltonian_one);
     HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one1, std::shared_ptr<HamiltonianOne> hamiltonian_one2);
     void calculate(const Configuration &conf_tot);
 

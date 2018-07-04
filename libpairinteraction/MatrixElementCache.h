@@ -45,8 +45,8 @@ public:
 
     double getElectricDipole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/(V/cm)
     double getElectricQuadrupole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/(V/cm)*um
-    double getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in GHz/(V/cm)*um^(kappa-1)
-    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in GHz/(V/cm)*um
+    double getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int k); // return value in GHz/(V/cm)*um^(kappa-1)
+    double getDiamagnetism(StateOne const& state_row, StateOne const& state_col, int k); // return value in GHz/(V/cm)*um
     double getMagneticDipole(StateOne const& state_row, StateOne const& state_col); // return value in GHz/G
     double getElectricMultipole(StateOne const& state_row, StateOne const& state_col, int kappa_radial, int kappa_angular); // return value in GHz/(V/cm)*um^(kappa_radial-1)
     double getRadial(StateOne const& state_row, StateOne const& state_col, int kappa); // return value in um^kappa
@@ -65,14 +65,14 @@ private:
     int update();
     void precalculate(std::shared_ptr<const BasisnamesOne> basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
     double calcRadialElement(const QuantumDefect &qd1, int power, const QuantumDefect &qd2);
-    void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar, bool calcMultipole, bool calcMomentum, bool calcRadial);
+    void precalculate(const std::vector<StateOne> &basis_one, int kappa_angular, int q, int kappa_radial, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial);
 
     ////////////////////////////////////////////////////////////////////
     /// Keys ///////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
     struct CacheKey_cache_radial {
-        CacheKey_cache_radial(const std::string method, const std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2);
+        CacheKey_cache_radial(std::string method, std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2);
         CacheKey_cache_radial();
         bool operator==(const CacheKey_cache_radial &rhs) const;
         std::string method, species;

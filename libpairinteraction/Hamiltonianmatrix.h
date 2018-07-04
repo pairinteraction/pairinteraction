@@ -25,7 +25,7 @@
 
 #include <cmath>
 #include <cstdint>
-#include <stdio.h>
+#include <cstdio>
 #include <memory>
 #include <exception>
 #include <stdexcept>
@@ -37,7 +37,7 @@ const uint8_t complex_not_real = 0x02; // xx0x: real, xx1x: complex
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix();
-    Hamiltonianmatrix(eigen_sparse_t entries, eigen_sparse_t basis);
+    Hamiltonianmatrix(const eigen_sparse_t& entries, const eigen_sparse_t& basis);
     Hamiltonianmatrix(size_t szBasis, size_t szEntries);
     eigen_sparse_t& entries();
     const eigen_sparse_t& entries() const;
@@ -50,7 +50,7 @@ public:
     void compress(size_t nBasis, size_t nCoordinates);
     std::vector<Hamiltonianmatrix> findSubs() const;
     Hamiltonianmatrix abs() const;
-    Hamiltonianmatrix changeBasis(eigen_sparse_t basis) const;
+    Hamiltonianmatrix changeBasis(const eigen_sparse_t& basis) const;
     void applyCutoff(double cutoff);
     void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const;
     void removeUnnecessaryBasisvectors(const std::vector<bool> &isNecessaryCoordinate);
@@ -64,15 +64,15 @@ public:
     friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs,  const scalar_t& rhs);
     Hamiltonianmatrix& operator+=(const Hamiltonianmatrix& rhs);
     Hamiltonianmatrix& operator-=(const Hamiltonianmatrix& rhs);
-    bytes_t& serialize();
+    bytes_t& serialize() override;
     void doSerialization();
-    void deserialize(bytes_t &bytesin);
+    void deserialize(bytes_t &bytesin) override;
     void doDeserialization();
     uint64_t hashEntries();
     uint64_t hashBasis();
-    void save(std::string fname);
-    bool load(std::string fname);
-    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym);
+    void save(const std::string& fname);
+    bool load(const std::string& fname);
+    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, const std::shared_ptr<BasisnamesTwo>& basis_two, const Symmetry &sym);
     friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::vector<bool> &necessary);
 
     template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>

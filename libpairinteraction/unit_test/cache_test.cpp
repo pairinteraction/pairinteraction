@@ -47,15 +47,18 @@ BOOST_AUTO_TEST_CASE(parallel_cache_test)
 
     std::vector<std::thread> threads(10);
 
-    for (std::size_t i = 0; i < 10; ++i)
+    for (std::size_t i = 0; i < 10; ++i) {
         threads[i] = std::thread([&cache, i]() {
             cache.save(i, "Hello from thread " + std::to_string(i));
         });
+}
 
-    for (std::size_t i = 0; i < 10; ++i)
+    for (std::size_t i = 0; i < 10; ++i) {
         threads[i].join();
+}
 
-    for (std::size_t i = 0; i < 10; ++i)
+    for (std::size_t i = 0; i < 10; ++i) {
         BOOST_CHECK_EQUAL(cache.restore(i).get(),
                           "Hello from thread " + std::to_string(i));
+}
 }

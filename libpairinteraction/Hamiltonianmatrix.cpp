@@ -18,13 +18,12 @@
 #include "Hamiltonianmatrix.h"
 #include <stdexcept>
 
-Hamiltonianmatrix::Hamiltonianmatrix() : Serializable() {
+Hamiltonianmatrix::Hamiltonianmatrix() = default;
+
+Hamiltonianmatrix::Hamiltonianmatrix(const eigen_sparse_t& entries, const eigen_sparse_t& basis) : entries_(entries), basis_(basis) {
 }
 
-Hamiltonianmatrix::Hamiltonianmatrix(eigen_sparse_t entries, eigen_sparse_t basis) : Serializable(), entries_(entries), basis_(basis) {
-}
-
-Hamiltonianmatrix::Hamiltonianmatrix(size_t szBasis, size_t szEntries) : Serializable()  {
+Hamiltonianmatrix::Hamiltonianmatrix(size_t szBasis, size_t szEntries) {
     triplets_basis.reserve(szBasis);
     triplets_entries.reserve(szEntries);
 }
@@ -56,11 +55,11 @@ size_t Hamiltonianmatrix::num_coordinates() const {
 }
 
 void Hamiltonianmatrix::addBasis(idx_t row, idx_t col, scalar_t val) {
-    triplets_basis.push_back(eigen_triplet_t(row,col,val));
+    triplets_basis.emplace_back(row,col,val);
 }
 
 void Hamiltonianmatrix::addEntries(idx_t row, idx_t col, scalar_t val) {
-    triplets_entries.push_back(eigen_triplet_t(row,col,val));
+    triplets_entries.emplace_back(row,col,val);
 }
 
 void Hamiltonianmatrix::compress(size_t nBasis, size_t nCoordinates) {
@@ -82,7 +81,7 @@ Hamiltonianmatrix Hamiltonianmatrix::abs() const {
     return Hamiltonianmatrix(entries_.cwiseAbs().cast<scalar_t>(), basis_);
 }
 
-Hamiltonianmatrix Hamiltonianmatrix::changeBasis(eigen_sparse_t basis) const{
+Hamiltonianmatrix Hamiltonianmatrix::changeBasis(const eigen_sparse_t& basis) const{
     auto transformator = basis_.adjoint()*basis;
     auto entries = transformator.adjoint()*entries_*transformator;
     return Hamiltonianmatrix(entries, basis);
@@ -100,7 +99,7 @@ void Hamiltonianmatrix::applyCutoff(double cutoff) {
     size_t idxBasis = 0;
     for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
         if (std::abs(diag[idx]) < cutoff) {
-            triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
+            triplets_transformator.emplace_back(idx,idxBasis++,1);
         }
     }
 
@@ -148,7 +147,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors(const std::vector<bool> &i
     size_t idxBasis = 0;
     for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
         if (isNecessaryBasisvector[idx] > 0.05) { // TODO
-            triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
+            triplets_transformator.emplace_back(idx,idxBasis++,1);
         }
     }
 
@@ -178,7 +177,7 @@ void Hamiltonianmatrix::removeUnnecessaryBasisvectors() {
     size_t idxBasis = 0;
     for (size_t idx = 0; idx < this->num_basisvectors(); ++idx) {
         if (isNecessaryBasisvector[idx] > 0.05) {
-            triplets_transformator.push_back(eigen_triplet_t(idx,idxBasis++,1));
+            triplets_transformator.emplace_back(idx,idxBasis++,1);
         }
     }
 
@@ -200,7 +199,7 @@ void Hamiltonianmatrix::removeUnnecessaryStates(const std::vector<bool> &isNeces
     size_t idxCoordinate = 0;
     for (size_t idx = 0; idx < this->num_coordinates(); ++idx) {
         if (isNecessaryCoordinate[idx]) {
-            triplets_transformator.push_back(eigen_triplet_t(idxCoordinate++,idx,1));
+            triplets_transformator.emplace_back(idxCoordinate++,idx,1);
         }
     }
 
@@ -215,7 +214,7 @@ Hamiltonianmatrix Hamiltonianmatrix::getBlock(const std::vector<ptrdiff_t> &indi
     std::vector<eigen_triplet_t> triplets_transformator;
     triplets_transformator.reserve(indices.size());
     for (size_t idx = 0; idx < indices.size(); ++idx) {
-        triplets_transformator.push_back(eigen_triplet_t(indices[idx],idx,1));
+        triplets_transformator.emplace_back(indices[idx],idx,1);
     }
     eigen_sparse_t transformator(this->num_basisvectors(),indices.size());
     transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
@@ -288,13 +287,13 @@ bytes_t& Hamiltonianmatrix::serialize() {
 }
 
 void Hamiltonianmatrix::doSerialization() {
-    if (bytes.size() == 0) {
+    if (bytes.empty()) {
         entries_.makeCompressed();
         basis_.makeCompressed();
 
         // convert matrix "entries" to vectors of primitive data types
         byte_t entries_flags = 0;
-        if (entries_.IsRowMajor) {
+        if (entries_.IsRowMajor != 0) {
             entries_flags |= csr_not_csc;
         }
         if (utils::is_complex<scalar_t>::value) {
@@ -310,7 +309,7 @@ void Hamiltonianmatrix::doSerialization() {
 
         // convert matrix "basis" to vectors of primitive data types
         byte_t basis_flags = 0;
-        if (basis_.IsRowMajor) {
+        if (basis_.IsRowMajor != 0) {
             basis_flags |= csr_not_csc;
         }
         if (utils::is_complex<scalar_t>::value) {
@@ -330,14 +329,16 @@ void Hamiltonianmatrix::doSerialization() {
         s << entries_rows;
         s << entries_cols;
         s << entries_data_real;
-        if (entries_flags & complex_not_real) s << entries_data_imag;
+        if ((entries_flags & complex_not_real) != 0) { s << entries_data_imag;
+}
         s << entries_indices;
         s << entries_indptr;
         s << basis_flags;
         s << basis_rows;
         s << basis_cols;
         s << basis_data_real;
-        if (basis_flags & complex_not_real) s << basis_data_imag;
+        if ((basis_flags & complex_not_real) != 0) { s << basis_data_imag;
+}
         s << basis_indices;
         s << basis_indptr;
         s.save(bytes);
@@ -368,14 +369,16 @@ void Hamiltonianmatrix::doDeserialization() {
     s >> entries_rows;
     s >> entries_cols;
     s >> entries_data_real;
-    if (entries_flags & complex_not_real) s >> entries_data_imag;
+    if ((entries_flags & complex_not_real) != 0) { s >> entries_data_imag;
+}
     s >> entries_indices;
     s >> entries_indptr;
     s >> basis_flags;
     s >> basis_rows;
     s >> basis_cols;
     s >> basis_data_real;
-    if (basis_flags & complex_not_real) s >> basis_data_imag;
+    if ((basis_flags & complex_not_real) != 0) { s >> basis_data_imag;
+}
     s >> basis_indices;
     s >> basis_indptr;
 
@@ -424,7 +427,7 @@ uint64_t Hamiltonianmatrix::hashBasis() {
     return utils::FNV64(&bytes[0], bytes.size());
 }
 
-void Hamiltonianmatrix::save(std::string fname) {
+void Hamiltonianmatrix::save(const std::string& fname) {
     doSerialization();
 
     // open file
@@ -438,7 +441,7 @@ void Hamiltonianmatrix::save(std::string fname) {
     fclose(pFile);
 }
 
-bool Hamiltonianmatrix::load(std::string fname) {
+bool Hamiltonianmatrix::load(const std::string& fname) {
     try{
         // open file
         if (FILE *pFile = fopen(fname.c_str() , "rb" )) {
@@ -450,7 +453,8 @@ bool Hamiltonianmatrix::load(std::string fname) {
             // read
             bytes.resize(size_file/sizeof(byte_t));
             size_t size_result = fread(&bytes[0], 1 , sizeof(byte_t)*bytes.size() , pFile);
-            if (size_result != size_file) throw std::runtime_error("Matrix could not be read from file.");
+            if (size_result != size_file) { throw std::runtime_error("Matrix could not be read from file.");
+}
 
             // close file
             fclose(pFile);
@@ -458,9 +462,9 @@ bool Hamiltonianmatrix::load(std::string fname) {
             doDeserialization();
 
             return true;
-        } else {
+        } 
             return false;
-        }
+        
     } catch (std::exception& e) {
 #pragma omp critical(textoutput)
         std::cerr << e.what() << std::endl;
@@ -468,7 +472,7 @@ bool Hamiltonianmatrix::load(std::string fname) {
     }
 }
 
-Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::shared_ptr<BasisnamesTwo> basis_two, const Symmetry &sym) {
+Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, const std::shared_ptr<BasisnamesTwo>& basis_two, const Symmetry &sym) {
     // TODO program a faster method for samebasis == true
 
     size_t num_basisvectors = lhs.num_basisvectors()*rhs.num_basisvectors();
@@ -495,7 +499,8 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
                 continue;
             }
             mapping[buffer[state]] = state.idx;
-            if (sym.inversion != NA || sym.permutation != NA ) mapping[state.idx] = buffer[state];
+            if (sym.inversion != NA || sym.permutation != NA ) { mapping[state.idx] = buffer[state];
+}
         }
     }
 
@@ -562,18 +567,18 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
                         if (sym.inversion != NA && col_1 != col_2 && sym.reflection != NA && mapping[row] == rhs.num_coordinates()*triple_2.row() + triple_1.row()) {
                             if ( ((sym.inversion == EVEN) ? -parityL : parityL) != ((sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) )  {
                                 continue; // the parity under inversion and reflection is different
-                            } else {
+                            } 
                                 skip_reflection = true; // the parity under inversion and reflection is the same
-                            }
+                            
                         }
 
                         // In case of permutation and reflection symmetry: check whether the permutation symmetric state is already reflection symmetric
                         if (sym.permutation != NA && col_1 != col_2 && sym.reflection != NA && mapping[row] == rhs.num_coordinates()*triple_2.row() + triple_1.row()) {
                             if ( ((sym.permutation == EVEN) ? -1 : 1) != ((sym.reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) ) {
                                 continue; // the parity under permutation and reflection is different
-                            } else {
+                            } 
                                 skip_reflection = true; // the parity under permutation and reflection is the same
-                            }
+                            
                         }
 
                         // In case of inversion and permutation symmetry: the inversion symmetric state is already permutation symmetric
@@ -581,9 +586,9 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
                         if (sym.inversion != NA && sym.permutation != NA && col_1 != col_2) {
                             if ( ((sym.inversion == EVEN) ? -parityL : parityL) != ((sym.permutation == EVEN) ? -1 : 1) )  {
                                 continue; // the parity under inversion and permutation is different
-                            } else {
+                            } 
                                 skip_permutation = true; // the parity under inversion and permutation is the same
-                            }
+                            
                         }
 
                         // In case of rotation symmetry: skip coordinates with wrong total magnetic momentum
