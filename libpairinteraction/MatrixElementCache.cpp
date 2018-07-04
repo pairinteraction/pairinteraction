@@ -123,8 +123,8 @@ void MatrixElementCache::setDefectDB(std::string const& path) {
 /// Keys ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial(const std::string method, const std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2)
-    : method(method), species(species), kappa(kappa) {
+MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial(std::string method, std::string species, int kappa, int n1, int n2, int l1, int l2, float j1, float j2)
+    : method(std::move(method)), species(std::move(species)), kappa(kappa) {
     if ((n1 < n2) || ((n1 == n2) &&
                       ((l1 < l2) || ((l1 == l2) &&
                                      (j1 <= j2))))) {
@@ -177,17 +177,13 @@ MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_mul
     }
 }
 
-MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial() {
-} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial() = default; // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
 
-MatrixElementCache::CacheKey_cache_angular::CacheKey_cache_angular() {
-} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+MatrixElementCache::CacheKey_cache_angular::CacheKey_cache_angular() = default; // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
 
-MatrixElementCache::CacheKey_cache_reduced_commutes::CacheKey_cache_reduced_commutes() {
-} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+MatrixElementCache::CacheKey_cache_reduced_commutes::CacheKey_cache_reduced_commutes() = default; // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
 
-MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_multipole() {
-} // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
+MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_multipole() = default; // TODO the default constructors seem to be needed for serialization, can one somehow circumvent the need of default constructors?
 
 bool MatrixElementCache::CacheKey_cache_radial::operator==(const CacheKey_cache_radial &rhs) const {
     return (method == rhs.method) && (species == rhs.species) && (kappa == rhs.kappa) && (n == rhs.n) && (l == rhs.l) && (j == rhs.j);
@@ -276,26 +272,34 @@ double MatrixElementCache::getMagneticDipole(StateOne const& state_row, StateOne
     // Search cache for constituents of the matrix element
     auto key1 = CacheKey_cache_radial(method, species, 0, state_row.n, state_col.n, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter1 = cache_radial.find(key1);
-    if (iter1 == cache_radial.end()) cache_radial_missing.insert(key1);
+    if (iter1 == cache_radial.end()) { cache_radial_missing.insert(key1);
+}
 
     auto key2 = CacheKey_cache_angular(1, state_row.j, state_col.j, state_row.m, state_col.m);
     auto iter2 = cache_angular.find(key2);
-    if (iter2 == cache_angular.end()) cache_angular_missing.insert(key2);
+    if (iter2 == cache_angular.end()) { cache_angular_missing.insert(key2);
+}
 
     auto key3 = CacheKey_cache_reduced_commutes(s, 1, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter3 = cache_reduced_commutes_s.find(key3);
-    if (iter3 == cache_reduced_commutes_s.end()) cache_reduced_commutes_s_missing.insert(key3);
+    if (iter3 == cache_reduced_commutes_s.end()) { cache_reduced_commutes_s_missing.insert(key3);
+}
 
     auto key4 = CacheKey_cache_reduced_commutes(s, 1, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter4 = cache_reduced_commutes_l.find(key4);
-    if (iter4 == cache_reduced_commutes_l.end()) cache_reduced_commutes_l_missing.insert(key4);
+    if (iter4 == cache_reduced_commutes_l.end()) { cache_reduced_commutes_l_missing.insert(key4);
+}
 
     // Update cache by calculate missing constituents
-    if (this->update()) {
-        if (iter1 == cache_radial.end()) iter1 = cache_radial.find(key1);
-        if (iter2 == cache_angular.end()) iter2 = cache_angular.find(key2);
-        if (iter3 == cache_reduced_commutes_s.end()) iter3 = cache_reduced_commutes_s.find(key3);
-        if (iter4 == cache_reduced_commutes_l.end()) iter4 = cache_reduced_commutes_l.find(key4);
+    if (this->update() != 0) {
+        if (iter1 == cache_radial.end()) { iter1 = cache_radial.find(key1);
+}
+        if (iter2 == cache_angular.end()) { iter2 = cache_angular.find(key2);
+}
+        if (iter3 == cache_reduced_commutes_s.end()) { iter3 = cache_reduced_commutes_s.find(key3);
+}
+        if (iter4 == cache_reduced_commutes_l.end()) { iter4 = cache_reduced_commutes_l.find(key4);
+}
     }
 
     return - au2GHz / au2G * muB * iter1->second * key2.sgn * iter2->second *
@@ -313,26 +317,34 @@ double MatrixElementCache::getElectricMultipole(StateOne const& state_row, State
     // Search cache for constituents of the matrix element
     auto key1 = CacheKey_cache_radial(method, species, kappa_radial, state_row.n, state_col.n, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter1 = cache_radial.find(key1);
-    if (iter1 == cache_radial.end()) cache_radial_missing.insert(key1);
+    if (iter1 == cache_radial.end()) { cache_radial_missing.insert(key1);
+}
 
     auto key2 = CacheKey_cache_angular(kappa_angular, state_row.j, state_col.j, state_row.m, state_col.m);
     auto iter2 = cache_angular.find(key2);
-    if (iter2 == cache_angular.end()) cache_angular_missing.insert(key2);
+    if (iter2 == cache_angular.end()) { cache_angular_missing.insert(key2);
+}
 
     auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter3 = cache_reduced_commutes_s.find(key3);
-    if (iter3 == cache_reduced_commutes_s.end()) cache_reduced_commutes_s_missing.insert(key3);
+    if (iter3 == cache_reduced_commutes_s.end()) { cache_reduced_commutes_s_missing.insert(key3);
+}
 
     auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, state_row.l, state_col.l);
     auto iter4 = cache_reduced_multipole.find(key4);
-    if (iter4 == cache_reduced_multipole.end()) cache_reduced_multipole_missing.insert(key4);
+    if (iter4 == cache_reduced_multipole.end()) { cache_reduced_multipole_missing.insert(key4);
+}
 
     // Update cache by calculate missing constituents
-    if (this->update()) {
-        if (iter1 == cache_radial.end()) iter1 = cache_radial.find(key1);
-        if (iter2 == cache_angular.end()) iter2 = cache_angular.find(key2);
-        if (iter3 == cache_reduced_commutes_s.end()) iter3 = cache_reduced_commutes_s.find(key3);
-        if (iter4 == cache_reduced_multipole.end()) iter4 = cache_reduced_multipole.find(key4);
+    if (this->update() != 0) {
+        if (iter1 == cache_radial.end()) { iter1 = cache_radial.find(key1);
+}
+        if (iter2 == cache_angular.end()) { iter2 = cache_angular.find(key2);
+}
+        if (iter3 == cache_reduced_commutes_s.end()) { iter3 = cache_reduced_commutes_s.find(key3);
+}
+        if (iter4 == cache_reduced_multipole.end()) { iter4 = cache_reduced_multipole.find(key4);
+}
     }
 
     return iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second * key4.sgn * iter4->second;
@@ -348,11 +360,13 @@ double MatrixElementCache::getRadial(StateOne const& state_row, StateOne const& 
     // Search cache for constituents of the matrix element
     auto key1 = CacheKey_cache_radial(method, species, kappa, state_row.n, state_col.n, state_row.l, state_col.l, state_row.j, state_col.j);
     auto iter1 = cache_radial.find(key1);
-    if (iter1 == cache_radial.end()) cache_radial_missing.insert(key1);
+    if (iter1 == cache_radial.end()) { cache_radial_missing.insert(key1);
+}
 
     // Update cache by calculate missing constituents
-    if (this->update()) {
-        if (iter1 == cache_radial.end()) iter1 = cache_radial.find(key1);
+    if (this->update() != 0) {
+        if (iter1 == cache_radial.end()) { iter1 = cache_radial.find(key1);
+}
     }
 
     return 1./elementary_charge * iter1->second; // TODO change the converter in Wavefunction.cpp to std::pow(au2um, power) so that 1./elementary_charge is not necessary anymore
@@ -394,13 +408,13 @@ double MatrixElementCache::calcRadialElement(const QuantumDefect &qd1, int power
                                              const QuantumDefect &qd2) {
     if (method == "Modelpotentials") {
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);
-    } else if(method == "Whittaker") {
-        return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
-    } else {
-        std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
-        std::cout << msg << std::endl;
-        throw std::runtime_error(msg);
     }
+    if (method == "Whittaker") {
+        return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
+    }
+    std::string msg("You have to provide all radial matrix elements on your own because you have deactivated the calculation of missing radial matrix elements!");
+    std::cout << msg << std::endl;
+    throw std::runtime_error(msg);
 }
 
 void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, int kappa_angular, int q, int kappa_radial, bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial) {
@@ -420,7 +434,8 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
                 continue;
             }
 
-            if (state_row.species.empty() || state_col.species.empty()  ) continue; // TODO artifical states !!!
+            if (state_row.species.empty() || state_col.species.empty()  ) { continue; // TODO artifical states !!!
+}
 
             if ((calcElectricMultipole && selectionRulesMultipoleNew(state_row, state_col, kappa_angular)) || (calcMagneticMomentum && selectionRulesMomentumNew(state_row, state_col)) || calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
@@ -465,7 +480,8 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
 int MatrixElementCache::update() {
 
     // --- Return if the cache is already up-to-date ---
-    if (cache_radial_missing.size() == 0 && cache_angular_missing.size() == 0 && cache_reduced_commutes_s_missing.size() == 0 && cache_reduced_commutes_l_missing.size() == 0 && cache_reduced_multipole_missing.size() == 0) return 0;
+    if (cache_radial_missing.empty() && cache_angular_missing.empty() && cache_reduced_commutes_s_missing.empty() && cache_reduced_commutes_l_missing.empty() && cache_reduced_multipole_missing.empty()) { return 0;
+}
 
     // --- Load from database ---
     if (!dbname.empty()) {
@@ -481,7 +497,7 @@ int MatrixElementCache::update() {
             stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
         }
 
-        if (cache_radial_missing.size() > 0) {
+        if (!cache_radial_missing.empty()) {
             stmt.set("select value from cache_radial where `method` = ?1 and `species` = ?2 and `k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = ?8 and `j2` = ?9;");
             stmt.prepare();
 
@@ -496,7 +512,7 @@ int MatrixElementCache::update() {
                 stmt.bind(8, cached->l[1]);
                 stmt.bind(9, cached->j[1]);
                 if (stmt.step()) {
-                    cache_radial.insert({std::move(*cached), stmt.get<double>(0)});
+                    cache_radial.insert({*cached, stmt.get<double>(0)});
                     cached = cache_radial_missing.erase(cached);
                 } else {
                     ++cached;
@@ -505,7 +521,7 @@ int MatrixElementCache::update() {
             }
         }
 
-        if (cache_angular_missing.size() > 0) {
+        if (!cache_angular_missing.empty()) {
             stmt.set("select value from cache_angular where `k` = ?1 and `j1` = ?2 and `m1` = ?3 and `j2` = ?4 and `m2` = ?5;");
             stmt.prepare();
 
@@ -516,7 +532,7 @@ int MatrixElementCache::update() {
                 stmt.bind(4, cached->j[1]);
                 stmt.bind(5, cached->m[1]);
                 if (stmt.step()) {
-                    cache_angular.insert({std::move(*cached), stmt.get<double>(0)});
+                    cache_angular.insert({*cached, stmt.get<double>(0)});
                     cached = cache_angular_missing.erase(cached);
                 } else {
                     ++cached;
@@ -525,7 +541,7 @@ int MatrixElementCache::update() {
             }
         }
 
-        if (cache_reduced_commutes_s_missing.size() > 0) {
+        if (!cache_reduced_commutes_s_missing.empty()) {
             stmt.set("select value from cache_reduced_commutes_s where `s` = ?1 and `k` = ?2 and `l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
             stmt.prepare();
 
@@ -537,7 +553,7 @@ int MatrixElementCache::update() {
                 stmt.bind(5, cached->l[1]);
                 stmt.bind(6, cached->j[1]);
                 if (stmt.step()) {
-                    cache_reduced_commutes_s.insert({std::move(*cached), stmt.get<double>(0)});
+                    cache_reduced_commutes_s.insert({*cached, stmt.get<double>(0)});
                     cached = cache_reduced_commutes_s_missing.erase(cached);
                 } else {
                     ++cached;
@@ -546,7 +562,7 @@ int MatrixElementCache::update() {
             }
         }
 
-        if (cache_reduced_commutes_l_missing.size() > 0) {
+        if (!cache_reduced_commutes_l_missing.empty()) {
             stmt.set("select value from cache_reduced_commutes_l where `s` = ?1 and `k` = ?2 and `l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
             stmt.prepare();
 
@@ -558,7 +574,7 @@ int MatrixElementCache::update() {
                 stmt.bind(5, cached->l[1]);
                 stmt.bind(6, cached->j[1]);
                 if (stmt.step()) {
-                    cache_reduced_commutes_l.insert({std::move(*cached), stmt.get<double>(0)});
+                    cache_reduced_commutes_l.insert({*cached, stmt.get<double>(0)});
                     cached = cache_reduced_commutes_l_missing.erase(cached);
                 } else {
                     ++cached;
@@ -567,7 +583,7 @@ int MatrixElementCache::update() {
             }
         }
 
-        if (cache_reduced_multipole_missing.size() > 0) {
+        if (!cache_reduced_multipole_missing.empty()) {
             stmt.set("select value from cache_reduced_multipole where `k` = ?1 and `l1` = ?2 and `l2` = ?3;");
             stmt.prepare();
 
@@ -576,7 +592,7 @@ int MatrixElementCache::update() {
                 stmt.bind(2, cached->l[0]);
                 stmt.bind(3, cached->l[1]);
                 if (stmt.step()) {
-                    cache_reduced_multipole.insert({std::move(*cached), stmt.get<double>(0)});
+                    cache_reduced_multipole.insert({*cached, stmt.get<double>(0)});
                     cached = cache_reduced_multipole_missing.erase(cached);
                 } else {
                     ++cached;
@@ -588,9 +604,10 @@ int MatrixElementCache::update() {
 
     // --- Calculate missing elements and write them to the database --- // TODO parallelize
 
-    if (!dbname.empty()) stmt.exec("begin transaction;");
+    if (!dbname.empty()) { stmt.exec("begin transaction;");
+}
 
-    if (cache_radial_missing.size() > 0) {
+    if (!cache_radial_missing.empty()) {
         if (!dbname.empty()) {
             stmt.set("insert or ignore into cache_radial (method, species, k, n1, l1, j1, n2, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
             stmt.prepare();
@@ -608,7 +625,7 @@ int MatrixElementCache::update() {
                 val = calcRadialElement(qd1, cached.kappa, qd2);
             }
 
-            cache_radial.insert({std::move(cached),val});
+            cache_radial.insert({cached,val});
 
             if (!dbname.empty()) {
                 stmt.bind(1, cached.method);
@@ -629,7 +646,7 @@ int MatrixElementCache::update() {
         cache_radial_missing.clear();
     }
 
-    if (cache_angular_missing.size() > 0) {
+    if (!cache_angular_missing.empty()) {
         if (!dbname.empty()) {
             stmt.set("insert or ignore into cache_angular (k, j1, m1, j2, m2, value) values (?1, ?2, ?3, ?4, ?5, ?6);");
             stmt.prepare();
@@ -640,7 +657,7 @@ int MatrixElementCache::update() {
 
             double val = pow(-1, int(cached.j[0]-cached.m[0])) *
                     WignerSymbols::wigner3j(cached.j[0], cached.kappa, cached.j[1], -cached.m[0], q, cached.m[1]);
-            cache_angular.insert({std::move(cached), val});
+            cache_angular.insert({cached, val});
 
             if (!dbname.empty()) {
                 stmt.bind(1, cached.kappa);
@@ -657,7 +674,7 @@ int MatrixElementCache::update() {
         cache_angular_missing.clear();
     }
 
-    if (cache_reduced_commutes_s_missing.size() > 0) {
+    if (!cache_reduced_commutes_s_missing.empty()) {
         if (!dbname.empty()) {
             stmt.set("insert or ignore into cache_reduced_commutes_s (s, k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
             stmt.prepare();
@@ -675,7 +692,7 @@ int MatrixElementCache::update() {
                         WignerSymbols::wigner6j(cached.l[0], cached.j[0], cached.s, cached.j[1], cached.l[1], cached.kappa);
 
             }
-            cache_reduced_commutes_s.insert({std::move(cached), val});
+            cache_reduced_commutes_s.insert({cached, val});
 
             if (!dbname.empty()) {
                 stmt.bind(1, cached.s);
@@ -693,7 +710,7 @@ int MatrixElementCache::update() {
         cache_reduced_commutes_s_missing.clear();
     }
 
-    if (cache_reduced_commutes_l_missing.size() > 0) {
+    if (!cache_reduced_commutes_l_missing.empty()) {
         if (!dbname.empty()) {
             stmt.set("insert or ignore into cache_reduced_commutes_l (s, k, l1, j1, l2, j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
             stmt.prepare();
@@ -710,7 +727,7 @@ int MatrixElementCache::update() {
                 val = pow(-1, int(cached.l[0] + cached.s + cached.j[0] + cached.kappa)) * sqrt((2*cached.j[0]+1)*(2*cached.j[1]+1)) *
                         WignerSymbols::wigner6j(cached.s, cached.j[0], cached.l[0], cached.j[1], cached.s, cached.kappa);
             }
-            cache_reduced_commutes_l.insert({std::move(cached), val});
+            cache_reduced_commutes_l.insert({cached, val});
 
             if (!dbname.empty()) {
                 stmt.bind(1, cached.s);
@@ -728,7 +745,7 @@ int MatrixElementCache::update() {
         cache_reduced_commutes_l_missing.clear();
     }
 
-    if (cache_reduced_multipole_missing.size() > 0) {
+    if (!cache_reduced_multipole_missing.empty()) {
         if (!dbname.empty()) {
             stmt.set("insert or ignore into cache_reduced_multipole (k, l1, l2, value) values (?1, ?2, ?3, ?4);");
             stmt.prepare();
@@ -738,7 +755,7 @@ int MatrixElementCache::update() {
 
             double val = pow(-1, cached.l[0]) * sqrt((2*cached.l[0]+1)*(2*cached.l[1]+1)) *
                     WignerSymbols::wigner3j(cached.l[0], cached.kappa, cached.l[1], 0, 0, 0); // TODO call WignerSymbols::wigner3j(cached.kappa, cached.l[1], 0, 0, 0) and loop over the resulting vector
-            cache_reduced_multipole.insert({std::move(cached), val});
+            cache_reduced_multipole.insert({cached, val});
 
             if (!dbname.empty()) {
                 stmt.bind(1, cached.kappa);
@@ -753,7 +770,8 @@ int MatrixElementCache::update() {
         cache_reduced_multipole_missing.clear();
     }
 
-    if (!dbname.empty()) stmt.exec("commit transaction;");
+    if (!dbname.empty()) { stmt.exec("commit transaction;");
+}
 
     return 1;
 }

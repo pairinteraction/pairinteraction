@@ -37,7 +37,7 @@ private:
     {
         std::string m_value;
     public:
-        value() : m_value() {};
+        value() = default;
 
         std::string const str() const
         {
@@ -108,7 +108,7 @@ public:
     void save_to_json(std::string const& filename) const;
 
     /** \brief Constructor */
-    Configuration() : params() {};
+    Configuration() = default;
 
     /** \brief Number of elements matching specific key
      *

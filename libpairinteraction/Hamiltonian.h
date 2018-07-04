@@ -24,7 +24,7 @@
 template <class T>
 class Hamiltonian {
 public:
-    Hamiltonian() {}
+    Hamiltonian() = default;
     std::shared_ptr<Hamiltonianmatrix> get(size_t idx) {
         return matrix_diag[idx];
     }

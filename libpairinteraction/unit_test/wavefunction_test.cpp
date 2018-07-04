@@ -80,8 +80,9 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
   size_t n = nxy.rows();
 
   // Compare pointwise
-  for (size_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i) {
       BOOST_CHECK_SMALL( std::sqrt(nxy(i,0))*nxy(i,1) - wxy(i,1), 1e-2 );
+}
 }
 
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T)

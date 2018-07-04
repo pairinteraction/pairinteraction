@@ -29,8 +29,9 @@
 #include <omp.h>
 int thread_ctrl(int num_threads /*= -1*/)
 {
-    if (num_threads != -1)
+    if (num_threads != -1) {
         omp_set_num_threads(num_threads);
+}
 
     #pragma omp parallel
     #pragma omp single
@@ -74,8 +75,8 @@ int compute(const std::string &config_name, const std::string &output_name, std:
     Configuration config;
     config.load_from_json(path_config.string());
 
-    bool existAtom1 = config.count("species1") && config.count("n1") && config.count("l1") && config.count("j1") && config.count("m1");
-    bool existAtom2 = config.count("species2") && config.count("n2") && config.count("l2") && config.count("j2") && config.count("m2");
+    bool existAtom1 = (config.count("species1") != 0u) && (config.count("n1") != 0u) && (config.count("l1") != 0u) && (config.count("j1") != 0u) && (config.count("m1") != 0u);
+    bool existAtom2 = (config.count("species2") != 0u) && (config.count("n2") != 0u) && (config.count("l2") != 0u) && (config.count("j2") != 0u) && (config.count("m2") != 0u);
 
     // === Solve the system ===
     bool combined = config["samebasis"].str() == "true";
@@ -92,7 +93,7 @@ int compute(const std::string &config_name, const std::string &output_name, std:
             hamiltonian_one = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
-        if (existAtom1 && existAtom2 && config.count("minR")) {
+        if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             publisher.send(">>TYP%7d", 2);
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one);
         }
@@ -110,7 +111,7 @@ int compute(const std::string &config_name, const std::string &output_name, std:
             hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one2);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
-        if (existAtom1 && existAtom2 && config.count("minR")) {
+        if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             publisher.send(">>TYP%7d", 2);
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1, hamiltonian_one2);
         }

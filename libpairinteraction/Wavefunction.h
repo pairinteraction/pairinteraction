@@ -229,11 +229,15 @@ int findidx(T const& x, typename T::Scalar const& d) {
     int L = 0;
     int R = x.rows() - 1;
     for (;;) {
-        if (L > R) throw std::runtime_error("Search failed");
+        if (L > R) { throw std::runtime_error("Search failed");
+}
         int m = (L+R)/2;
-        if (x(m) < d) L = m + 1;
-        if (x(m) > d) R = m - 1;
-        if (x(m) == d) return m;
+        if (x(m) < d) { L = m + 1;
+}
+        if (x(m) > d) { R = m - 1;
+}
+        if (x(m) == d) { return m;
+}
     }
 }
 

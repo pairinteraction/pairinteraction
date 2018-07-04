@@ -61,7 +61,8 @@ void SystemTwo::setDistance(double d) {
 }
 
 void SystemTwo::setAngle(double a) {
-    if (a != 0 && ordermax > 3) throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+    if (a != 0 && ordermax > 3) { throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+}
 
     this->onParameterChange();
     angle = a;
@@ -73,7 +74,8 @@ void SystemTwo::setAngle(double a) {
 }
 
 void SystemTwo::setOrder(double o) {
-    if (angle != 0 && o > 3) throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+    if (angle != 0 && o > 3) { throw std::runtime_error( "A non-zero interaction angle can be directly used only for dipole-dipole interaction.");
+}
 
     this->onParameterChange();
     ordermax = o;
@@ -92,15 +94,18 @@ void SystemTwo::setConservedParityUnderInversion(parity_t parity) {
 void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
     this->onSymmetryChange();
     sym_reflection = parity;
-    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved parity under reflection is not compatible to the previously specified conserved momenta.");
+    if (!this->isRefelectionAndRotationCompatible()) { throw std::runtime_error("The conserved parity under reflection is not compatible to the previously specified conserved momenta.");
+}
     //if (sym_reflection != NA) std::cerr << "Warning: The one-atom states must already be reflection symmetric in order to build reflection symmetric two-atom states." << std::endl; // TODO make it work with one-atom states that are not pre-symmetrized
 }
 
-void SystemTwo::setConservedMomentaUnderRotation(std::set<int> momenta) {
-    if (momenta.count(ARB)!=0 && momenta.size() > 1) throw std::runtime_error("If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
+void SystemTwo::setConservedMomentaUnderRotation(const std::set<int>& momenta) {
+    if (momenta.count(ARB)!=0 && momenta.size() > 1) { throw std::runtime_error("If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
+}
     this->onSymmetryChange();
     sym_rotation = momenta;
-    if (!this->isRefelectionAndRotationCompatible()) throw std::runtime_error("The conserved momenta are not compatible to the previously specified conserved parity under reflection.");
+    if (!this->isRefelectionAndRotationCompatible()) { throw std::runtime_error("The conserved momenta are not compatible to the previously specified conserved parity under reflection.");
+}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -162,10 +167,11 @@ void SystemTwo::initializeBasis()
 
             // Continue if the pair statet energy is not valid
             double energy = this->real(system1.getHamiltonianmatrix().coeff(col_1, col_1)+system2.getHamiltonianmatrix().coeff(col_2, col_2));
-            if (!checkIsEnergyValid(energy)) continue;
+            if (!checkIsEnergyValid(energy)) { continue;
+}
 
             // Store the pair state energy
-            hamiltonianmatrix_triplets.push_back(eigen_triplet_t(col_new, col_new, energy));
+            hamiltonianmatrix_triplets.emplace_back(col_new, col_new, energy);
 
             // Build the basis vector that corresponds to the stored pair state energy
             for (eigen_iterator_t triple_1(system1.getCoefficients(),col_1); triple_1; ++triple_1) {
@@ -203,15 +209,15 @@ void SystemTwo::initializeBasis()
                             if (sym_inversion != NA) {
                                 if ( ((sym_inversion == EVEN) ? -parityL : parityL) != ((sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) )  {
                                     continue; // the parity under inversion and reflection is different
-                                } else {
+                                } 
                                     skip_reflection = true; // the parity under inversion and reflection is the same
-                                }
+                                
                             } else if (sym_permutation != NA) {
                                 if ( ((sym_permutation == EVEN) ? -1 : 1) != ((sym_reflection == EVEN) ? parityL*parityJ*parityM : -parityL*parityJ*parityM) ) {
                                     continue; // the parity under permutation and reflection is different
-                                } else {
+                                } 
                                     skip_reflection = true; // the parity under permutation and reflection is the same
-                                }
+                                
                             }
                         }
                     }
@@ -301,7 +307,7 @@ void SystemTwo::initializeBasis()
         }
 
         if (sqnorm > 0.05) {
-            triplets_transformator.push_back(eigen_triplet_t(idx,idx_new++,1));
+            triplets_transformator.emplace_back(idx,idx_new++,1);
         }
     }
 
@@ -349,7 +355,8 @@ void SystemTwo::initializeBasis()
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::initializeInteraction() {
-    if (distance == std::numeric_limits<double>::max()) return;
+    if (distance == std::numeric_limits<double>::max()) { return;
+}
 
     ////////////////////////////////////////////////////////////////////
     /// Prepare the calculation of the interaction /////////////////////
@@ -397,13 +404,16 @@ void SystemTwo::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c: states) { // TODO parallelization
-        if (c.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
+        if (c.state.species.empty()) { continue; // TODO artifical states TODO [dummystates]
+}
 
         // Loop over row entries
         for (const auto &r: states) {
 
-            if (r.state.species.empty()) continue; // TODO artifical states TODO [dummystates]
-            if (r.idx < c.idx) continue;
+            if (r.state.species.empty()) { continue; // TODO artifical states TODO [dummystates]
+}
+            if (r.idx < c.idx) { continue;
+}
 
             int q1 = r.state.first().m-c.state.first().m;
             int q2 = r.state.second().m-c.state.second().m;
@@ -422,15 +432,18 @@ void SystemTwo::initializeInteraction() {
                         scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
                                 cache.getElectricDipole(r.state.second(), c.state.second());
 
-                        if (calculation_required[0]) this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
-                        if (calculation_required[2]) this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
+                        if (calculation_required[0]) { this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx, val);
+}
+                        if (calculation_required[2]) { this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, -val);
+}
 
                     } else if (std::abs(q1+q2) == 1 && calculation_required[3]) {
                         scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
                                 cache.getElectricDipole(r.state.second(), c.state.second());
 
-                        if (q1 == 1 || q2 == 1) this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
-                        else this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
+                        if (q1 == 1 || q2 == 1) { this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, -val);
+                        } else { this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx, val);
+}
 
                     } else if (std::abs(q1+q2) == 2 && calculation_required[2]) {
                         scalar_t val = coulombs_constant * cache.getElectricDipole(r.state.first(), c.state.first()) *
@@ -468,7 +481,8 @@ void SystemTwo::initializeInteraction() {
     ////////////////////////////////////////////////////////////////////
 
     for (size_t i = 0; i < calculation_required.size(); ++i) {
-        if (!calculation_required[i]) continue;
+        if (!calculation_required[i]) { continue;
+}
         interaction_angulardipole[i].resize(states.size(),states.size());
         interaction_angulardipole[i].setFromTriplets(interaction_angulardipole_triplets[i].begin(), interaction_angulardipole_triplets[i].end());
         interaction_angulardipole_triplets[i].clear();
@@ -490,7 +504,8 @@ void SystemTwo::initializeInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::addInteraction() {
-    if (distance == std::numeric_limits<double>::max()) return;
+    if (distance == std::numeric_limits<double>::max()) { return;
+}
 
     // Build the total Hamiltonian
     double tolerance = 1e-24;
@@ -499,7 +514,8 @@ void SystemTwo::addInteraction() {
 
         double powerlaw = 1./std::pow(distance, 3);
         for (size_t i = 0; i < 4; ++i) {
-            if (std::abs(angle_terms[i]) > tolerance) hamiltonianmatrix += interaction_angulardipole[i]*angle_terms[i]*powerlaw;
+            if (std::abs(angle_terms[i]) > tolerance) { hamiltonianmatrix += interaction_angulardipole[i]*angle_terms[i]*powerlaw;
+}
         }
 
     } else {
@@ -517,8 +533,10 @@ void SystemTwo::addInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 void SystemTwo::transformInteraction(const eigen_sparse_t &transformator)  {
-    for (auto &entry : interaction_angulardipole) entry.second = transformator.adjoint()*entry.second*transformator;
-    for (auto &entry : interaction_multipole) entry.second = transformator.adjoint()*entry.second*transformator;
+    for (auto &entry : interaction_angulardipole) { entry.second = transformator.adjoint()*entry.second*transformator;
+}
+    for (auto &entry : interaction_multipole) { entry.second = transformator.adjoint()*entry.second*transformator;
+}
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -579,11 +597,16 @@ eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double ga
 
 void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
     // Combine parameters
-    if (species[0] != dynamic_cast<SystemTwo&>(system).species[0]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
-    if (species[1] != dynamic_cast<SystemTwo&>(system).species[1]) throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
-    if (distance != dynamic_cast<SystemTwo&>(system).distance) throw std::runtime_error("The value of the variable 'distance' must be the same for both systems.");
-    if (angle != dynamic_cast<SystemTwo&>(system).angle) throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that angle_terms is the same, too
-    if (ordermax != dynamic_cast<SystemTwo&>(system).ordermax) throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
+    if (species[0] != dynamic_cast<SystemTwo&>(system).species[0]) { throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+}
+    if (species[1] != dynamic_cast<SystemTwo&>(system).species[1]) { throw std::runtime_error("The value of the variable 'element' must be the same for both systems.");
+}
+    if (distance != dynamic_cast<SystemTwo&>(system).distance) { throw std::runtime_error("The value of the variable 'distance' must be the same for both systems.");
+}
+    if (angle != dynamic_cast<SystemTwo&>(system).angle) { throw std::runtime_error("The value of the variable 'angle' must be the same for both systems."); // implies that angle_terms is the same, too
+}
+    if (ordermax != dynamic_cast<SystemTwo&>(system).ordermax) { throw std::runtime_error("The value of the variable 'ordermax' must be the same for both systems.");
+}
 
     // Combine symmetries
     unsigned int num_different_symmetries = 0;
@@ -617,7 +640,7 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::addCoefficient(StateTwo state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
+void SystemTwo::addCoefficient(const StateTwo& state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row_new;
@@ -628,13 +651,14 @@ void SystemTwo::addCoefficient(StateTwo state, const size_t &col_new, const scal
         states.push_back(enumerated_state<StateTwo>(row_new, state));
     }
 
-    coefficients_triplets.push_back(eigen_triplet_t(row_new, col_new, value_new));
+    coefficients_triplets.emplace_back(row_new, col_new, value_new);
     sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
 }
 
 void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val) {
-    triplets.push_back(eigen_triplet_t(r_idx, c_idx, val));
-    if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val))); // triangular matrix is not sufficient because of basis change
+    triplets.emplace_back(r_idx, c_idx, val);
+    if (r_idx != c_idx) { triplets.emplace_back(c_idx, r_idx, this->conjugate(val)); // triangular matrix is not sufficient because of basis change
+}
 }
 
 template<>
@@ -643,10 +667,12 @@ double SystemTwo::convert(const std::complex<double> &val) {
 }
 
 bool SystemTwo::isRefelectionAndRotationCompatible() {
-    if (sym_rotation.count(ARB)!=0 || sym_reflection == NA) return true;
+    if (sym_rotation.count(ARB)!=0 || sym_reflection == NA) { return true;
+}
 
     for (const auto& s: sym_rotation) {
-        if (sym_rotation.count(-s)==0) return false;
+        if (sym_rotation.count(-s)==0) { return false;
+}
     }
 
     return true;

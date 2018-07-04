@@ -75,7 +75,7 @@ inline T randint(T a, T b)
 }
 
 // https://de.wikipedia.org/wiki/FNV_(Informatik)
-inline uint64_t FNV64(uint8_t *s, size_t sz)
+inline uint64_t FNV64(const uint8_t *s, size_t sz)
 {
     const uint64_t magicPrime = 0x00000100000001b3;
     uint64_t hash = 0xcbf29ce484222325;

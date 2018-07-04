@@ -17,9 +17,8 @@
 #include "Basisnames.h"
 #include <stdexcept>
 
-BasisnamesOne::BasisnamesOne() {
-}
-BasisnamesOne BasisnamesOne::fromStates(std::vector<StateOne> names) {
+BasisnamesOne::BasisnamesOne() = default;
+BasisnamesOne BasisnamesOne::fromStates(const std::vector<StateOne>& names) {
    BasisnamesOne basisnames;
    basisnames.names_ = names;
    basisnames.dim_ = names.size();
@@ -38,7 +37,7 @@ BasisnamesOne BasisnamesOne::fromFirst(const Configuration &config) {
    basisnames.build(startstate, config["species1"].str());
    return basisnames;
 }
-BasisnamesOne BasisnamesOne::fromFirst(std::shared_ptr<const BasisnamesTwo> basis_two) {
+BasisnamesOne BasisnamesOne::fromFirst(const std::shared_ptr<const BasisnamesTwo>& basis_two) {
    Configuration config = basis_two->getConf();
    StateOne startstate;
    config["n1"] >> startstate.n;
@@ -65,7 +64,7 @@ BasisnamesOne BasisnamesOne::fromSecond(const Configuration &config) {
     basisnames.build(startstate, config["species2"].str());
     return basisnames;
 }
-BasisnamesOne BasisnamesOne::fromSecond(std::shared_ptr<const BasisnamesTwo> basis_two) {
+BasisnamesOne BasisnamesOne::fromSecond(const std::shared_ptr<const BasisnamesTwo>& basis_two) {
     Configuration config = basis_two->getConf();
     StateOne startstate;
     config["n2"] >> startstate.n;
@@ -113,7 +112,7 @@ BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
 
     }*/ // TODO
 }
-void BasisnamesOne::build(StateTwo startstate, std::string species) {
+void BasisnamesOne::build(StateTwo startstate, const std::string& species) {
     states_initial.push_back(startstate.first()); // TODO correct for idx
     states_initial.push_back(startstate.second()); // TODO correct for idx
 
@@ -135,9 +134,12 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
 
     idx_t idx = 0;
 
-    if (delta_l < 0) delta_l = std::fmax(startstate.l[0],startstate.l[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 1;
-    if (delta_j < 0) delta_j = std::fmax(startstate.j[0],startstate.j[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 0.5;
-    if (delta_m < 0) delta_m = std::fmax(startstate.m[0],startstate.m[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 0.5;
+    if (delta_l < 0) { delta_l = std::fmax(startstate.l[0],startstate.l[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 1;
+}
+    if (delta_j < 0) { delta_j = std::fmax(startstate.j[0],startstate.j[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 0.5;
+}
+    if (delta_m < 0) { delta_m = std::fmax(startstate.m[0],startstate.m[1]) + std::fmax(startstate.n[0],startstate.n[1]) + delta_n - 0.5;
+}
 
     // loop over quantum numbers of startstate1
     for (int n = std::fmax(0, startstate.n[0] - delta_n); n <= startstate.n[0] + delta_n; ++n) {
@@ -145,7 +147,8 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
             for (float j = std::fmax(fabs(l - 0.5), startstate.j[0] - delta_j); j <= fmin(l + 0.5, startstate.j[0] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[0] - delta_m); m <= fmin(j, startstate.m[0] + delta_m); ++m) {
                     auto result = names_set.insert(StateOne(idx,n,l,j,m));
-                    if (result.second) idx++;
+                    if (result.second) { idx++;
+}
                 }
             }
         }
@@ -157,7 +160,8 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
             for (float j = std::fmax(fabs(l - 0.5), startstate.j[1] - delta_j); j <= fmin(l + 0.5, startstate.j[1] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[1] - delta_m); m <= fmin(j, startstate.m[1] + delta_m); ++m) {
                     auto result = names_set.insert(StateOne(idx,n,l,j,m));
-                    if (result.second) idx++;
+                    if (result.second) { idx++;
+}
                 }
             }
         }
@@ -168,7 +172,7 @@ void BasisnamesOne::build(StateTwo startstate, std::string species) {
 
     dim_ = idx;
 }
-void BasisnamesOne::build(StateOne startstate, std::string species) {
+void BasisnamesOne::build(StateOne startstate, const std::string& species) {
     states_initial.push_back(startstate); // TODO correct for idx
 
     conf["species1"] << species;
@@ -183,16 +187,19 @@ void BasisnamesOne::build(StateOne startstate, std::string species) {
 
     idx_t idx = 0;
 
-    if (delta_l < 0) delta_l = startstate.l + startstate.n + delta_n - 1;
-    if (delta_j < 0) delta_j = startstate.j + startstate.n + delta_n - 0.5;
-    if (delta_m < 0) delta_m = startstate.m + startstate.n + delta_n - 0.5;
+    if (delta_l < 0) { delta_l = startstate.l + startstate.n + delta_n - 1;
+}
+    if (delta_j < 0) { delta_j = startstate.j + startstate.n + delta_n - 0.5;
+}
+    if (delta_m < 0) { delta_m = startstate.m + startstate.n + delta_n - 0.5;
+}
 
     // loop over quantum numbers
     for (int n = std::fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l - delta_l); l <= fmin(n-1,startstate.l + delta_l); ++l) {
             for (float j = std::fmax(fabs(l - 0.5), startstate.j - delta_j); j <= fmin(l + 0.5, startstate.j + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m - delta_m); m <= fmin(j, startstate.m + delta_m); ++m) { // TODO
-                    names_.push_back(StateOne(idx++,n,l,j,m));
+                    names_.emplace_back(idx++,n,l,j,m);
                 }
             }
         }
@@ -200,7 +207,7 @@ void BasisnamesOne::build(StateOne startstate, std::string species) {
 
     dim_ = idx;
 }
-void BasisnamesOne::build(StateOne startstate, std::string species, std::shared_ptr<const BasisnamesTwo> basis_two, int i) {
+void BasisnamesOne::build(StateOne startstate, const std::string& species, const std::shared_ptr<const BasisnamesTwo>& basis_two, int i) {
     states_initial.push_back(startstate); // TODO correct for idx
 
     conf["species1"] << species;
@@ -220,7 +227,8 @@ void BasisnamesOne::build(StateOne startstate, std::string species, std::shared_
     // loop over quantum numbers
     for (auto state : *basis_two) {
         auto result = names_set.insert(StateOne(idx,state.n[i],state.l[i],state.j[i],state.m[i]));
-        if (result.second) idx++;
+        if (result.second) { idx++;
+}
     }
 
     std::set<StateOne> names_ordered(names_set.begin(), names_set.end());
@@ -256,7 +264,7 @@ bool BasisnamesOne::constructedFromFirst() {
     return _constructedFromFirst;
 }
 
-void BasisnamesOne::save(std::string path) {
+void BasisnamesOne::save(const std::string& path) {
     std::ofstream csvfile;
     csvfile.open(path);
     for (const auto &state: *this) {
@@ -265,10 +273,10 @@ void BasisnamesOne::save(std::string path) {
     csvfile.close();
 }
 
-BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1) {
+BasisnamesTwo::BasisnamesTwo(const std::shared_ptr<const BasisnamesOne>& basis_one1) {
     const Configuration conf1 = basis_one1->getConf();
 
-    if (conf1["n2"].str() == "") {
+    if (conf1["n2"].str().empty()) {
         throw std::runtime_error("BasisnamesTwo can be only constructed from two BasisnamesOne::fromFirst / BasisnamesOne::fromSecond.");
     }
 
@@ -290,11 +298,11 @@ BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1) {
 }
 
 
-BasisnamesTwo::BasisnamesTwo(std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
+BasisnamesTwo::BasisnamesTwo(const std::shared_ptr<const BasisnamesOne>& basis_one1, const std::shared_ptr<const BasisnamesOne>& basis_one2) {
     const Configuration conf1 = basis_one1->getConf();
     const Configuration conf2 = basis_one2->getConf();
 
-    if (conf1["n2"].str() != "" || conf2["n2"].str() != "") {
+    if (!conf1["n2"].str().empty() || !conf2["n2"].str().empty()) {
         throw std::runtime_error("BasisnamesTwo can be only constructed from one single BasisnamesOne::fromBoth.");
     }
 
@@ -360,7 +368,7 @@ void BasisnamesTwo::removeUnnecessaryStatesKeepIdx(const std::vector<bool> &is_n
     names_.shrink_to_fit();
 }
 
-void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species, std::shared_ptr<const BasisnamesOne> basis_one1, std::shared_ptr<const BasisnamesOne> basis_one2) {
+void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species, const std::shared_ptr<const BasisnamesOne>& basis_one1, const std::shared_ptr<const BasisnamesOne>& basis_one2) {
     state_initial = startstate;
 
     conf["species1"] << species[0];
@@ -383,7 +391,7 @@ void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species
     bool state_initial_found = false;
     for (const auto &state_1 : *basis_one1) {
         for (const auto &state_2 : *basis_one2) {
-            names_.push_back(StateTwo(idx,state_1,state_2));
+            names_.emplace_back(idx,state_1,state_2);
 
             if (!state_initial_found && names_.back() == state_initial) {
                 state_initial.idx = idx;
@@ -397,7 +405,7 @@ void BasisnamesTwo::build(StateTwo startstate, std::array<std::string,2> species
     dim_ = idx;
 }
 
-void BasisnamesTwo::save(std::string path) {
+void BasisnamesTwo::save(const std::string& path) {
     std::ofstream csvfile;
     csvfile.open(path);
     for (const auto &state: *this) {

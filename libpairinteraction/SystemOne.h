@@ -44,8 +44,8 @@ namespace std {
 
 class SystemOne : public SystemBase<StateOne> {
 public:
-    SystemOne(std::string const& species, MatrixElementCache &cache);
-    SystemOne(std::string const& species, MatrixElementCache &cache, bool memory_saving);
+    SystemOne(std::string  species, MatrixElementCache &cache);
+    SystemOne(std::string  species, MatrixElementCache &cache, bool memory_saving);
 
     const std::string& getElement() const; // TODO rename to getSpecies
     void setEfield(std::array<double, 3> field);
@@ -57,7 +57,7 @@ public:
     void setDiamagnetism(bool enable);
 
     void setConservedParityUnderReflection(parity_t parity);
-    void setConservedMomentaUnderRotation(std::set<float> momenta);
+    void setConservedMomentaUnderRotation(const std::set<float>& momenta);
 
 protected:
     void initializeBasis() override;
@@ -87,11 +87,11 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addCoefficient(StateOne state, const size_t &col, const scalar_t &value, std::vector<eigen_triplet_t> &coefficients_triplets);
+    void addCoefficient(const StateOne& state, const size_t &col, const scalar_t &value, std::vector<eigen_triplet_t> &coefficients_triplets);
 
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, double>& field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field, std::unordered_map<int, std::complex<double>>& field_spherical);
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx, const size_t c_idx, const scalar_t val);
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx, scalar_t val);
     void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis, std::array<double, 3> &to_y_axis);
     void rotateVector(std::array<double, 3> &field, double alpha, double beta, double gamma);
 
@@ -99,8 +99,10 @@ private:
     void addRotated(const StateOne &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
         // Check whether the angles are compatible to the used data type
         double tolerance = 1e-16;
-        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
-        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+}
+        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
+}
 
         // Add rotated triplet entries
         StateOne newstate = state;

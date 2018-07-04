@@ -17,9 +17,10 @@
 #include "Communication.h"
 #include "HamiltonianOne.h"
 #include <stdexcept>
+#include <utility>
 
-HamiltonianOne::HamiltonianOne(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<BasisnamesOne> basis_one) : Hamiltonian<BasisnamesOne>(), path_cache(path_cache) {
-    basis = basis_one;
+HamiltonianOne::HamiltonianOne(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<BasisnamesOne> basis_one) : path_cache(path_cache) {
+    basis = std::move(basis_one);
     configure(config);
     build();
 }
@@ -181,20 +182,32 @@ void HamiltonianOne::build() {
 
     MatrixElements matrix_elements(basicconf, species, (path_cache / "cache_elements.db").string());
 
-    if (exist_E_0) matrix_elements.precalculateElectricMomentum(basis, 0);
-    if (exist_E_1) matrix_elements.precalculateElectricMomentum(basis, 1);
-    if (exist_E_1) matrix_elements.precalculateElectricMomentum(basis, -1);
+    if (exist_E_0) { matrix_elements.precalculateElectricMomentum(basis, 0);
+}
+    if (exist_E_1) { matrix_elements.precalculateElectricMomentum(basis, 1);
+}
+    if (exist_E_1) { matrix_elements.precalculateElectricMomentum(basis, -1);
+}
 
-    if (exist_B_0) matrix_elements.precalculateMagneticMomentum(basis, 0);
-    if (exist_B_1) matrix_elements.precalculateMagneticMomentum(basis, 1);
-    if (exist_B_1) matrix_elements.precalculateMagneticMomentum(basis, -1);
+    if (exist_B_0) { matrix_elements.precalculateMagneticMomentum(basis, 0);
+}
+    if (exist_B_1) { matrix_elements.precalculateMagneticMomentum(basis, 1);
+}
+    if (exist_B_1) { matrix_elements.precalculateMagneticMomentum(basis, -1);
+}
 
-    if (diamagnetism && (exist_B_0 || exist_B_1)) matrix_elements.precalculateDiamagnetism(basis, 0, 0);
-    if (diamagnetism && (exist_B_0 || exist_B_1)) matrix_elements.precalculateDiamagnetism(basis, 2, 0);
-    if (diamagnetism && exist_B_0 && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, 1);
-    if (diamagnetism && exist_B_0 && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, -1);
-    if (diamagnetism && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, 2);
-    if (diamagnetism && exist_B_1) matrix_elements.precalculateDiamagnetism(basis, 2, -2);
+    if (diamagnetism && (exist_B_0 || exist_B_1)) { matrix_elements.precalculateDiamagnetism(basis, 0, 0);
+}
+    if (diamagnetism && (exist_B_0 || exist_B_1)) { matrix_elements.precalculateDiamagnetism(basis, 2, 0);
+}
+    if (diamagnetism && exist_B_0 && exist_B_1) { matrix_elements.precalculateDiamagnetism(basis, 2, 1);
+}
+    if (diamagnetism && exist_B_0 && exist_B_1) { matrix_elements.precalculateDiamagnetism(basis, 2, -1);
+}
+    if (diamagnetism && exist_B_1) { matrix_elements.precalculateDiamagnetism(basis, 2, 2);
+}
+    if (diamagnetism && exist_B_1) { matrix_elements.precalculateDiamagnetism(basis, 2, -2);
+}
 
     // --- Count entries of atom-field Hamiltonian ---
     std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian" << std::endl;
@@ -413,7 +426,7 @@ void HamiltonianOne::build() {
 
     publisher.send(">>TOT%7d", nSteps);
 
-    int nSteps_i = static_cast<int>(nSteps);
+    auto nSteps_i = static_cast<int>(nSteps);
 
 #pragma omp parallel for schedule(static, 1)
 
@@ -450,7 +463,7 @@ void HamiltonianOne::build() {
 
         // === Create table if necessary ===
         std::stringstream query;
-        std::string spacer = "";
+        std::string spacer;
 
         if (flag_perhapsmissingtable) {
             query << "CREATE TABLE IF NOT EXISTS cache_one (uuid text NOT NULL PRIMARY KEY, "
@@ -474,7 +487,7 @@ void HamiltonianOne::build() {
 
 
         // === Get uuid as filename === // TODO put code in its own method
-        std::string uuid = "";
+        std::string uuid;
         spacer = "";
         query.str(std::string());
         query << "SELECT uuid FROM cache_one WHERE ";
@@ -493,7 +506,7 @@ void HamiltonianOne::build() {
             }
         }
 
-        if (uuid != "") {
+        if (!uuid.empty()) {
             query.str(std::string());
             query << "UPDATE cache_one SET accessed = CURRENT_TIMESTAMP WHERE uuid = '" << uuid << "';";
 #pragma omp critical(database)
