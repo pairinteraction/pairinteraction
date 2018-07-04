@@ -82,8 +82,8 @@ if(WITH_CLANG_TIDY)
     message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
     set(CMAKE_CXX_CLANG_TIDY "${CLANG_TIDY_EXE}"
       "-checks=-*,bugprone-*,misc-*,modernize-*,-modernize-use-using,performance-*,readability-*"
-      "-header-filter=.*")
-      #"-warnings-as-errors=*")
+      "-header-filter=.*"
+      "-warnings-as-errors=*")
   endif()
 endif()
 

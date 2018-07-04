@@ -54,10 +54,11 @@ public:
     const char *what() const noexcept override { return msg.c_str(); }
 };
 
-QuantumDefect::QuantumDefect(std::string _species, int _n, int _l,
-                             double _j, std::nullptr_t)
-    : e(), species(std::move(_species)), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z), a1(e.a1),
-      a2(e.a2), a3(e.a3), a4(e.a4), rc(e.rc), nstar(e.nstar), energy(e.energy)
+QuantumDefect::QuantumDefect(std::string _species, int _n, int _l, double _j,
+                             std::nullptr_t)
+    : e(), species(std::move(_species)), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z),
+      a1(e.a1), a2(e.a2), a3(e.a3), a4(e.a4), rc(e.rc), nstar(e.nstar),
+      energy(e.energy)
 {
 }
 
@@ -101,7 +102,7 @@ void QuantumDefect::setup(sqlite3 *db)
         pot_max_l = stmt.get<int>(0);
     } else {
         throw no_potential(*this);
-}
+    }
 
     // The l to be used is the minimum of the two below
     pot_l = std::min(l, pot_max_l);
@@ -115,7 +116,7 @@ void QuantumDefect::setup(sqlite3 *db)
         ryd_max_l = stmt.get<int>(0);
     } else {
         throw no_defect(*this);
-}
+    }
 
     // The l to be used is the minimum of the two below
     ryd_l = std::min(l, ryd_max_l);
@@ -131,7 +132,7 @@ void QuantumDefect::setup(sqlite3 *db)
         ryd_max_j = stmt.get<double>(0);
     } else {
         throw no_defect(*this);
-}
+    }
 
     // The j to be used is the minimum of the two below
     ryd_j = std::min(j, ryd_max_j);
@@ -153,7 +154,7 @@ void QuantumDefect::setup(sqlite3 *db)
         e.rc = stmt.get<double>(6);
     } else {
         throw no_potential(*this);
-}
+    }
 
     // Load Rydberg-Ritz coefficients from database
     stmt.reset();
@@ -177,7 +178,7 @@ void QuantumDefect::setup(sqlite3 *db)
                    d6 / pow(n - d0, 6) + d8 / pow(n - d0, 8);
     } else {
         throw no_defect(*this);
-}
+    }
 
     e.energy = -.5 * (Ry / Ry_inf) / (e.nstar * e.nstar) * au2GHz;
 

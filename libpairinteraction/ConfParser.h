@@ -17,9 +17,9 @@
 #ifndef CONF_PARSER_H
 #define CONF_PARSER_H
 
-#include <string>
-#include <sstream>
 #include <map>
+#include <sstream>
+#include <string>
 
 #include <boost/lexical_cast.hpp>
 
@@ -31,73 +31,71 @@
  * advanced features which make it better than a pure `std::string`
  * value.
  */
-class Configuration {
+class Configuration
+{
 private:
     class value
     {
         std::string m_value;
+
     public:
         value() = default;
 
-        std::string const str() const
+        std::string const str() const { return m_value; }
+
+        bool operator==(value const &rhs) const
         {
-            return m_value;
+            return this->m_value == rhs.m_value;
         }
 
-        bool operator==(value const& rhs) const
-        {
-          return this->m_value == rhs.m_value;
-        }
-
-        template < typename T >
-        value& operator<<(T const& rhs)
+        template <typename T>
+        value &operator<<(T const &rhs)
         {
             m_value = boost::lexical_cast<std::string>(rhs);
             return *this;
         }
 
-        template < typename T >
-        value& operator>>(T& rhs)
+        template <typename T>
+        value &operator>>(T &rhs)
         {
             rhs = boost::lexical_cast<T>(m_value);
             return *this;
         }
 
-        template < typename T >
-        value const& operator>>(T& rhs) const
+        template <typename T>
+        value const &operator>>(T &rhs) const
         {
             rhs = boost::lexical_cast<T>(m_value);
             return *this;
         }
 
-        value& operator<<(value const& rhs)
+        value &operator<<(value const &rhs)
         {
             m_value = rhs.m_value;
             return *this;
         }
 
-        value& operator>>(value& rhs)
+        value &operator>>(value &rhs)
         {
             rhs.m_value = m_value;
-            return *this;  
+            return *this;
         }
 
-        value const& operator>>(value& rhs) const
+        value const &operator>>(value &rhs) const
         {
             rhs.m_value = m_value;
-            return *this;  
+            return *this;
         }
     };
 
 public:
-
     /** \brief Load configuration from JSON file
      *
      * Loads the configuration from a JSON file using Boost's ptree.
      *
      * \param[in] filename    Path to the JSON file
      */
-    void load_from_json(std::string const& filename);
+    void load_from_json(std::string const &filename);
 
     /** \brief Save configuration to JSON file
      *
@@ -105,7 +103,7 @@ public:
      *
      * \param[in] filename    Path to the JSON file
      */
-    void save_to_json(std::string const& filename) const;
+    void save_to_json(std::string const &filename) const;
 
     /** \brief Constructor */
     Configuration() = default;
@@ -119,19 +117,13 @@ public:
      * \param[in] key    Key
      * \returns Number of elements machting key
      */
-    size_t count(std::string const& key) const
-    {
-        return params.count(key);
-    }
+    size_t count(std::string const &key) const { return params.count(key); }
 
     /** \brief Number of elements
      *
      * \returns Number of elements
      */
-    size_t size() const
-    {
-        return params.size();
-    }
+    size_t size() const { return params.size(); }
 
     /** \brief Append operator
      *
@@ -141,10 +133,9 @@ public:
      *
      * \returns Configuration appended to
      */
-    Configuration& operator+=(Configuration const& rhs)
+    Configuration &operator+=(Configuration const &rhs)
     {
-        for (auto const& p : rhs)
-        {
+        for (auto const &p : rhs) {
             (*this)[p.first] = p.second;
         }
         return *this;
@@ -157,10 +148,7 @@ public:
      *
      * \returns Reference to the value
      */
-    value& operator[](std::string const& key)
-    {
-        return params[key];
-    }
+    value &operator[](std::string const &key) { return params[key]; }
 
     /** \brief Constant element access operator
      *
@@ -170,10 +158,7 @@ public:
      * \returns Copy of the value
      * \throws std::out_of_range
      */
-    value operator[](std::string const& key) const
-    {
-        return params.at(key);
-    }
+    value operator[](std::string const &key) const { return params.at(key); }
 
     /** \brief Comparison operator
      *
@@ -181,7 +166,7 @@ public:
      *
      * \returns Truth value for equality
      */
-    bool operator==(Configuration const& rhs) const
+    bool operator==(Configuration const &rhs) const
     {
         return this->params == rhs.params;
     }
@@ -191,50 +176,38 @@ public:
      * Instead of implementing an own iterator we use the existing one
      * of the underlying `std::map`.
      */
-    typedef std::map < std::string, value > ::iterator iterator;
+    typedef std::map<std::string, value>::iterator iterator;
 
     /** \brief Constant iterator type
      *
      * Instead of implementing an own constant iterator we use the
      * existing one of the underlying `std::map`.
      */
-    typedef std::map < std::string, value > ::const_iterator const_iterator;
+    typedef std::map<std::string, value>::const_iterator const_iterator;
 
     /** \brief Iterator pointing to the beginning
      *
      * \returns iterator
      */
-    iterator begin()
-    {
-        return params.begin();
-    }
+    iterator begin() { return params.begin(); }
 
     /** \brief Iterator pointing to the end
      *
      * \returns iterator
      */
-    iterator end()
-    {
-        return params.end();
-    }
+    iterator end() { return params.end(); }
 
     /** \brief Constant iterator pointing to the beginning
      *
      * \returns constant iterator
      */
-    const_iterator begin() const
-    {
-        return params.cbegin();
-    }
+    const_iterator begin() const { return params.cbegin(); }
 
     /** \brief Constant iterator pointing to the end
      *
      * \returns constant iterator
      */
-    const_iterator end() const
-    {
-        return params.cend();
-    }
+    const_iterator end() const { return params.cend(); }
 
     /** \brief Find an element associated to a key
      *
@@ -244,16 +217,13 @@ public:
      *
      * \returns iterator
      */
-    iterator find(std::string const& key)
-    {
-        return params.find(key);
-    }
+    iterator find(std::string const &key) { return params.find(key); }
 
     /** \brief Constant version of find(std::string const&)
      *
      * \returns constant iterator
      */
-    const_iterator find(std::string const& key) const
+    const_iterator find(std::string const &key) const
     {
         return params.find(key);
     }
@@ -261,6 +231,5 @@ public:
 private:
     std::map<std::string, value> params;
 };
-
 
 #endif // CONF_PARSER_H
