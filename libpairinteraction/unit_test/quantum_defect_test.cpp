@@ -20,7 +20,7 @@
 #define BOOST_TEST_MODULE Quantum defect test
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE(qd_test)
+BOOST_AUTO_TEST_CASE(qd_test) // NOLINT
 {
     QuantumDefect qd("Rb", 45, 1, 0.5);
 

@@ -20,7 +20,7 @@
 #include <thread>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE(cache_test)
+BOOST_AUTO_TEST_CASE(cache_test) // NOLINT
 {
     Cache<std::string, int> cache;
 
@@ -33,7 +33,7 @@ BOOST_AUTO_TEST_CASE(cache_test)
     BOOST_CHECK_NO_THROW(cache.clear());
 }
 
-BOOST_AUTO_TEST_CASE(smash_test)
+BOOST_AUTO_TEST_CASE(smash_test) // NOLINT
 {
     Cache<std::string, int> cache;
 
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(smash_test)
     BOOST_CHECK_THROW(cache.save("Hello world!", 2), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE(parallel_cache_test)
+BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
 {
     Cache<int, std::string> cache;
 

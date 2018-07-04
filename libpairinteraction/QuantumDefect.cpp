@@ -166,7 +166,7 @@ void QuantumDefect::setup(sqlite3 *db)
     stmt.bind(3, ryd_j);
     e.nstar = n;
     double Ry_inf = 109737.31568525;
-    double Ry = Ry_inf;
+    double Ry;
     if (stmt.step()) {
         double d0 = stmt.get<double>(0);
         double d2 = stmt.get<double>(1);

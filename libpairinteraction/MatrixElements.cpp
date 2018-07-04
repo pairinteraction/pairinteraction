@@ -66,7 +66,7 @@ MatrixElements::MatrixElements(std::string const& species, std::string  dbname) 
     gL = 1;
 
     s = 0.5;
-    if (std::isdigit(species.back()) != 0) { s = (std::atoi(&species.back())-1)/2.; // TODO think of a better solution
+    if (std::isdigit(species.back()) != 0) { s = ((species.back() - '0')-1)/2.; // TODO think of a better solution
 }
 }
 

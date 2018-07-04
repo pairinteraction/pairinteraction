@@ -21,7 +21,7 @@
 #define BOOST_TEST_MODULE ZeroMQ interface test
 #include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE(exceptions_test)
+BOOST_AUTO_TEST_CASE(exceptions_test) // NOLINT
 {
     auto context = zmq::context();
     auto socket = context.socket(ZMQ_REQ);
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(exceptions_test)
     }
 }
 
-BOOST_AUTO_TEST_CASE(send_test)
+BOOST_AUTO_TEST_CASE(send_test) // NOLINT
 {
     auto context = zmq::context();
     constexpr static char msg[] = "Into the void...";

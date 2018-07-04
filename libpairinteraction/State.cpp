@@ -149,7 +149,7 @@ void StateOne::analyzeSpecies() {
     element = species;
 
     if (std::isdigit(species.back()) != 0) {
-        s = (std::atoi(&species.back())-1)/2.;
+        s = ((species.back() - '0')-1)/2.;
         element = species.substr(0, species.size()-1);
     }
 }
@@ -335,7 +335,7 @@ void StateTwo::analyzeSpecies() {
         element[i] = species[i];
 
         if (std::isdigit(species[i].back()) != 0) {
-            s[i] = (std::atoi(&species[i].back())-1)/2.;
+            s[i] = ((species[i].back() - '0')-1)/2.;
             element[i] = species[i].substr(0, species[i].size()-1);
         }
     }

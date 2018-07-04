@@ -20,7 +20,7 @@
 
 #include <iostream>
 
-BOOST_AUTO_TEST_CASE(conf_parser_test)
+BOOST_AUTO_TEST_CASE(conf_parser_test) // NOLINT
 {
     Configuration c;
 
