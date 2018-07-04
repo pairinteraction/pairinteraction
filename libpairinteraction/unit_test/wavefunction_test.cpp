@@ -31,14 +31,14 @@ struct Fixture {
 
 typedef boost::mpl::list<Fixture<1>, Fixture<2>> Fixtures;
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(model_potentials, T, Fixtures, T)
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(model_potentials, T, Fixtures, T) // NOLINT
 {
     // There could be better coverage
     BOOST_CHECK(std::isnan(model_potential::V(T::qd, 0)));
     BOOST_CHECK(std::isnan(model_potential::g(T::qd, 0)));
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T)
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T) // NOLINT
 {
     Numerov N(T::qd);
     auto const &xy = N.integrate();
@@ -52,7 +52,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T)
     BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T)
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T) // NOLINT
 {
     Whittaker W(T::qd);
     auto const &xy = W.integrate();
@@ -65,7 +65,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T)
     BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T) // NOLINT
 {
     Numerov N(T::qd);
     Whittaker W(T::qd);
@@ -82,7 +82,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T)
     }
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T)
+BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T) // NOLINT
 {
     double mu_n = IntegrateRadialElement<Numerov>(T::qd, 1, T::qd);
     double mu_w = IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd);

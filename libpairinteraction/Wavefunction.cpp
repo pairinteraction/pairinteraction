@@ -39,7 +39,7 @@ double V(QuantumDefect const &qd, double x)
     if (qd.l < 4) {
         double s = 0.5;
         if (std::isdigit(qd.species.back()) != 0) {
-            s = (std::atoi(&qd.species.back()) - 1) /
+            s = ((qd.species.back() - '0') - 1) /
                 2.; // TODO think of a better solution
         }
         double alpha =

@@ -50,7 +50,7 @@ struct F {
     boost::filesystem::path path_cache;
 };
 
-BOOST_FIXTURE_TEST_CASE(integration_test, F)
+BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 {
 
     constexpr bool dump_new_reference_data = false;
