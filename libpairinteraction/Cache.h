@@ -22,7 +22,6 @@
 
 #include <boost/optional.hpp>
 
-
 /** \brief Generic cache object
  *
  * This generic cache object strives to provide a thread-safe cache

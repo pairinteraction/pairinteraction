@@ -20,65 +20,66 @@
 
 #include <iostream>
 
-
-BOOST_AUTO_TEST_CASE( conf_parser_test )
+BOOST_AUTO_TEST_CASE(conf_parser_test)
 {
-  Configuration c;
+    Configuration c;
 
-  // Test subscript setter
-  c["first"]  << 2;
-  c["second"] << 1.2;
-  c["third"]  << "Hello World!";
-  c["fourth"] << c["first"];
-  c["third"] >> c["fifth"];
+    // Test subscript setter
+    c["first"] << 2;
+    c["second"] << 1.2;
+    c["third"] << "Hello World!";
+    c["fourth"] << c["first"];
+    c["third"] >> c["fifth"];
 
-  // Test subscript getter and str() conversion
-  BOOST_CHECK_EQUAL( c["first"] .str() , "2" );
-  BOOST_CHECK_EQUAL( c["second"].str() , "1.2" );
-  BOOST_CHECK_EQUAL( c["third"] .str() , "Hello World!" );
-  BOOST_CHECK_EQUAL( c["fourth"].str() , "2" );
-  BOOST_CHECK_EQUAL( c["fifth"] .str() , "Hello World!" );
-  BOOST_CHECK_EQUAL( c.count("first")  , 1 );
+    // Test subscript getter and str() conversion
+    BOOST_CHECK_EQUAL(c["first"].str(), "2");
+    BOOST_CHECK_EQUAL(c["second"].str(), "1.2");
+    BOOST_CHECK_EQUAL(c["third"].str(), "Hello World!");
+    BOOST_CHECK_EQUAL(c["fourth"].str(), "2");
+    BOOST_CHECK_EQUAL(c["fifth"].str(), "Hello World!");
+    BOOST_CHECK_EQUAL(c.count("first"), 1);
 
-  // Test subscript getter and type deduction
-  int i;
-  double d;
-  std::string s;
-  c["first"]  >> i;
-  c["second"] >> d;
-  c["third"]  >> s;
-  BOOST_CHECK_EQUAL( i , 2 );
-  BOOST_CHECK_EQUAL( d , 1.2 );
-  BOOST_CHECK_EQUAL( s , "Hello World!" );
+    // Test subscript getter and type deduction
+    int i;
+    double d;
+    std::string s;
+    c["first"] >> i;
+    c["second"] >> d;
+    c["third"] >> s;
+    BOOST_CHECK_EQUAL(i, 2);
+    BOOST_CHECK_EQUAL(d, 1.2);
+    BOOST_CHECK_EQUAL(s, "Hello World!");
 
-  // Test const methods
-  Configuration const cc(c);
-  BOOST_CHECK_EQUAL( cc["first"] .str() , "2" );
-  BOOST_CHECK_EQUAL( cc["second"].str() , "1.2" );
-  BOOST_CHECK_EQUAL( cc["third"] .str() , "Hello World!" );
-  BOOST_CHECK_EQUAL( cc["fourth"].str() , "2" );
-  BOOST_CHECK_EQUAL( cc["fifth"] .str() , "Hello World!" );
-  BOOST_CHECK_THROW( cc["nonexistent"]  , std::out_of_range );
-  BOOST_CHECK_EQUAL( cc.count("first")  , 1 );
+    // Test const methods
+    Configuration const cc(c);
+    BOOST_CHECK_EQUAL(cc["first"].str(), "2");
+    BOOST_CHECK_EQUAL(cc["second"].str(), "1.2");
+    BOOST_CHECK_EQUAL(cc["third"].str(), "Hello World!");
+    BOOST_CHECK_EQUAL(cc["fourth"].str(), "2");
+    BOOST_CHECK_EQUAL(cc["fifth"].str(), "Hello World!");
+    BOOST_CHECK_THROW(cc["nonexistent"], std::out_of_range);
+    BOOST_CHECK_EQUAL(cc.count("first"), 1);
 
-  // Test comparison
-  BOOST_CHECK( c == cc );
+    // Test comparison
+    BOOST_CHECK(c == cc);
 
-  // finder
-  auto it = c.find("first");
-  BOOST_CHECK_EQUAL( it->first        , "first" );
-  BOOST_CHECK_EQUAL( it->second.str() , "2"     );
+    // finder
+    auto it = c.find("first");
+    BOOST_CHECK_EQUAL(it->first, "first");
+    BOOST_CHECK_EQUAL(it->second.str(), "2");
 
-  auto cit = cc.find("first");
-  BOOST_CHECK_EQUAL( cit->first        , "first" );
-  BOOST_CHECK_EQUAL( cit->second.str() , "2"     );
+    auto cit = cc.find("first");
+    BOOST_CHECK_EQUAL(cit->first, "first");
+    BOOST_CHECK_EQUAL(cit->second.str(), "2");
 
-  // iterate
-  for (auto it : c) {   static_cast<void>(it);
-}
-  for (auto cit : cc) { static_cast<void>(cit);
-}
+    // iterate
+    for (auto it : c) {
+        static_cast<void>(it);
+    }
+    for (auto cit : cc) {
+        static_cast<void>(cit);
+    }
 
-  // Test fusion
-  c += cc;
+    // Test fusion
+    c += cc;
 }

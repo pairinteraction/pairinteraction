@@ -15,12 +15,11 @@
  */
 
 #include "ConfParser.h"
-#include <string>
-#include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/json_parser.hpp>
+#include <boost/property_tree/ptree.hpp>
+#include <string>
 
-
-void Configuration::load_from_json(std::string const& filename)
+void Configuration::load_from_json(std::string const &filename)
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::read_json;
@@ -28,22 +27,20 @@ void Configuration::load_from_json(std::string const& filename)
     ptree pt;
     read_json(filename, pt);
 
-    for (auto const& itr: pt)
-    {
+    for (auto const &itr : pt) {
         params[itr.first] << itr.second.data();
     }
 }
 
-
-void Configuration::save_to_json(std::string const& filename) const
+void Configuration::save_to_json(std::string const &filename) const
 {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::write_json;
 
     ptree pt;
 
-    for (auto const& p: *this) {
-        pt.put(p.first,p.second.str());
+    for (auto const &p : *this) {
+        pt.put(p.first, p.second.str());
     }
 
     write_json(filename, pt);

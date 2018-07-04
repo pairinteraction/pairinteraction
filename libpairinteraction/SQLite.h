@@ -26,8 +26,8 @@
 #include <type_traits>
 
 #include <boost/iterator/iterator_facade.hpp>
-#include <utility>
 #include <sqlite3.h>
+#include <utility>
 
 #include "utils.h"
 
@@ -78,7 +78,7 @@ private:
 class statement
 {
     sqlite3 *m_db;
-    std::unique_ptr<sqlite3_stmt, int(*)(sqlite3_stmt *)> m_stmt;
+    std::unique_ptr<sqlite3_stmt, int (*)(sqlite3_stmt *)> m_stmt;
     std::string m_sql;
     bool m_prepared;
     bool m_valid;
@@ -87,7 +87,7 @@ class statement
     {
         if (err != 0) {
             throw error(err, sqlite3_errstr(err));
-}
+        }
     }
 
 public:
@@ -156,10 +156,10 @@ public:
     {
         if (!m_prepared) {
             handle_error(SQLITE_MISUSE);
-}
+        }
         if (!m_valid) {
             handle_error(SQLITE_DONE);
-}
+        }
 
         auto err = sqlite3_step(m_stmt.get());
 
@@ -294,7 +294,7 @@ public:
                 m_done = m_stmt->step();
             } else {
                 m_end = true;
-}
+            }
         }
 
         bool equal(iterator const & /*unused*/) const { return m_end; }
@@ -357,7 +357,7 @@ class handle final
 
     static int busy_handler(void *self, int num_prior_calls)
     {
-        int thresh = static_cast<handle*>(self)->m_threshold;
+        int thresh = static_cast<handle *>(self)->m_threshold;
         // Sleep if handler has been called less than num_prior_calls
         if (num_prior_calls < thresh) {
             std::this_thread::sleep_for(
@@ -368,7 +368,8 @@ class handle final
         return 0; // Make sqlite3 return SQLITE_BUSY
     }
 
-    void install_busy_handler() {
+    void install_busy_handler()
+    {
         auto err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
 
         if (err != 0) {
