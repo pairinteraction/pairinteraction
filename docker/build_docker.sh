@@ -30,26 +30,51 @@ case "${TRAVIS_OS_NAME}" in
             case "${image}" in
                 "debian")
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
-                           --interactive --tty \
-                           pairinteraction/$image \
-                           /bin/bash -c "/bin/bash /travis/doc/publish_documentation.sh; /bin/bash /travis/docker/build_cmake.sh gcov"
+                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                        --interactive --tty \
+                        pairinteraction/$image \
+                        /bin/bash -c "
+                            set -e;
+                            cd "${SOURCE_DIR}";
+                            mkdir -p build;
+                            cd build;
+                            /bin/bash /travis/doc/publish_documentation.sh;
+                            cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            make -j 2;
+                            make check;
+                        "
                     ;;
 
                 "ubuntu:static-analysis")
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
-                           --interactive --tty \
-                           pairinteraction/$image \
-                           /bin/bash -c "/bin/bash /travis/docker/build_cmake.sh tidy"
+                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                        --interactive --tty \
+                        pairinteraction/$image \
+                        /bin/bash -c "
+                            set -e;
+                            cd "${SOURCE_DIR}";
+                            mkdir -p build;
+                            cd build;
+                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            make -j 2;
+                        "
                     ;;
 
                 *)
                     docker run --env-file ${ENV_FILE} \
-                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
-                           --interactive --tty \
-                           pairinteraction/$image \
-                           /bin/bash /travis/docker/build_cmake.sh;
+                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                        --interactive --tty \
+                        pairinteraction/$image \
+                        /bin/bash -c "
+                            set -e;
+                            cd "${SOURCE_DIR}";
+                            mkdir -p build;
+                            cd build;
+                            cmake -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            make -j 2;
+                            make check;
+                            make package;
+                        "
                     ;;
             esac;
             ;;
@@ -57,8 +82,13 @@ case "${TRAVIS_OS_NAME}" in
     # Build on Mac OS X directly
     "osx")
 
-        export SOURCE_DIR=".";
-        docker/build_cmake.sh osx;
+        mkdir -p build;
+        cd build;
+        cmake -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+        make -j 2;
+        make check;
+        make package;
+        make license;
         ;;
 
 esac;
