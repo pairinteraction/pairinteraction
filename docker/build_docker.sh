@@ -57,6 +57,7 @@ case "${TRAVIS_OS_NAME}" in
                             cd build;
                             cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
                             make -j 2;
+                            make check;
                         "
                     ;;
 
