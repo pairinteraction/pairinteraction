@@ -36,6 +36,14 @@ case "${TRAVIS_OS_NAME}" in
                            /bin/bash -c "/bin/bash /travis/doc/publish_documentation.sh; /bin/bash /travis/docker/build_cmake.sh gcov"
                     ;;
 
+                "ubuntu:static-analysis")
+                    docker run --env-file ${ENV_FILE} \
+                           -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                           --interactive --tty \
+                           pairinteraction/$image \
+                           /bin/bash -c "/bin/bash /travis/docker/build_cmake.sh tidy"
+                    ;;
+
                 *)
                     docker run --env-file ${ENV_FILE} \
                            -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
