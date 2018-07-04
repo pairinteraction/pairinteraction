@@ -11,6 +11,11 @@ matrix:
       sudo: required
       services: docker
       env:
+        - image=ubuntu:static-analysis
+    - os: linux
+      sudo: required
+      services: docker
+      env:
         - image=ubuntu
         - package=pairinteraction-install-ubuntu-xenial.deb
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
