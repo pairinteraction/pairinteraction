@@ -401,7 +401,7 @@ void SystemOne::transformInteraction(const eigen_sparse_t &transformator)  {
 }
     for (auto &entry : interaction_bfield) { entry.second = transformator.adjoint()*entry.second*transformator;
 }
-    for (auto &entry : interaction_diamagnetism) { entry.second = transformator.adjoint()*entry.second*transformator;
+    for (auto &entry : interaction_diamagnetism) { entry.second = transformator.adjoint()*entry.second*transformator; // NOLINT
 }
 }
 
@@ -453,7 +453,7 @@ eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double ga
     }
 
     eigen_sparse_t rotator(states.size(), states.size());
-    rotator.setFromTriplets(rotator_triplets.begin(), rotator_triplets.end());
+    rotator.setFromTriplets(rotator_triplets.begin(), rotator_triplets.end()); // NOLINT
     rotator_triplets.clear();
 
     return rotator;
