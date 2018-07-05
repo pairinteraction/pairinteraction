@@ -40,8 +40,8 @@ case "${TRAVIS_OS_NAME}" in
                             cd build;
                             /bin/bash /travis/doc/publish_documentation.sh;
                             cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
-                            make -j 2;
-                            make check;
+                            make -k -j 2;
+                            make -k -j 2 check;
                         "
                     ;;
 
@@ -56,8 +56,8 @@ case "${TRAVIS_OS_NAME}" in
                             mkdir -p build;
                             cd build;
                             cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
-                            make -j 2;
-                            make check;
+                            make -k -j 2;
+                            make -k -j 2 check;
                         "
                     ;;
 
@@ -72,9 +72,9 @@ case "${TRAVIS_OS_NAME}" in
                             mkdir -p build;
                             cd build;
                             cmake -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
-                            make -j 2;
-                            make check;
-                            make package;
+                            make -k -j 2;
+                            make -k -j 2 check;
+                            make -k -j 2 package;
                         "
                     ;;
             esac;
