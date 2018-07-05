@@ -15,4 +15,7 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+COPY boost.patch /tmp/
+RUN cd /usr/include/boost && patch -p1 < /tmp/boost.patch
+
 ENV CXX=clang++
