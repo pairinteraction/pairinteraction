@@ -20,8 +20,7 @@
 
 Hamiltonianmatrix::Hamiltonianmatrix() = default;
 
-Hamiltonianmatrix::Hamiltonianmatrix(const eigen_sparse_t& entries, const eigen_sparse_t& basis) : entries_(entries), basis_(basis) {
-}
+Hamiltonianmatrix::Hamiltonianmatrix(const eigen_sparse_t& entries, const eigen_sparse_t& basis) : entries_(entries), basis_(basis) {}
 
 Hamiltonianmatrix::Hamiltonianmatrix(size_t szBasis, size_t szEntries) {
     triplets_basis.reserve(szBasis);
@@ -226,7 +225,7 @@ Hamiltonianmatrix Hamiltonianmatrix::getBlock(const std::vector<ptrdiff_t> &indi
 }
 
 void Hamiltonianmatrix::diagonalize() {
-    if (this->num_basisvectors() > 1) {
+    if (this->num_basisvectors() > 1) { // NOLINT
         // diagonalization
         Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(eigen_dense_t(this->entries()));
 
@@ -484,7 +483,7 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
     ////////////////////////////////////////////////////////
 
     std::vector<size_t> mapping(num_coordinates, -1);
-    if (sym.reflection != NA) {
+    if (sym.reflection != NA) { // NOLINT
         std::unordered_map<StateTwo, size_t> buffer;
         for (auto state: *basis_two) {
             if (state.m[0] < 0) {
