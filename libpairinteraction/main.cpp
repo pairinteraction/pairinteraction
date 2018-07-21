@@ -43,5 +43,5 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    return compute(vm["config"].as<std::string>(), vm["output"].as<std::string>(), "use_cout");
+    return compute(vm["config"].as<std::string>(), vm["output"].as<std::string>());
 }

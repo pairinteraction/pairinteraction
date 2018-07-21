@@ -15,8 +15,9 @@
  */
 
 #include "Hamiltonianmatrix.h"
-#include "Communication.h"
 #include <stdexcept>
+
+#include <boost/format.hpp>
 
 Hamiltonianmatrix::Hamiltonianmatrix() = default;
 
@@ -388,10 +389,7 @@ void Hamiltonianmatrix::doDeserialization() {
         (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
         std::string msg("The data type used in the program does not fit the data type used in the "
                         "serialized objects.");
-        auto context = zmq::context();
-        auto publisher = context.socket(ZMQ_PUB);
-        publisher.connect(zmq::endpoint::name.c_str());
-        publisher.send(">>ERR%s", msg.c_str());
+        std::cout << boost::format(">>ERR%s") % msg.c_str() << std::endl;
         throw std::runtime_error(msg);
     }
 

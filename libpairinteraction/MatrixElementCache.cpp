@@ -15,7 +15,6 @@
  */
 
 #include "MatrixElementCache.h"
-#include "Communication.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
 #include "version.h"
