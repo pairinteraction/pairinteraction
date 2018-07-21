@@ -15,7 +15,6 @@
  */
 
 #include "MatrixElements.h"
-#include "Communication.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
 #include <cctype>
@@ -25,6 +24,8 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
+
+#include <boost/format.hpp>
 
 bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2, int q) {
     bool validL = state1.l == state2.l;
@@ -549,10 +550,6 @@ double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
     std::string msg("You have to provide all radial matrix elements on your own because you have "
                     "deactivated the calculation of missing radial matrix elements!");
     std::cout << msg << std::endl;
-    // auto context = zmq::context();
-    // auto publisher = context.socket(ZMQ_PUB);
-    // publisher.bind(zmq::endpoint::name.c_str());
-    // publisher.send(">>ERR%s", msg.c_str()); // TODO make it thread save
     throw std::runtime_error(msg);
 }
 

@@ -42,7 +42,7 @@ following command:
 
 .. code-block:: bat
 
-    conda install numpy scipy matplotlib pyzmq
+    conda install numpy scipy matplotlib
 
 In order to use the pairinteraction Python 3 library with Windows or
 OS X, the path containing the library has to be added manually to the Python package search path.
@@ -63,7 +63,7 @@ For GNU/Linux, all dependencies of the pairinteraction C++ library are installed
 automatically and the C++ library can be used right away.
 
 For Windows or OS X, the following C++ libraries and their development headers have to
-be installed manually: Sqlite3, Boost, GSL, ZeroMQ
+be installed manually: Sqlite3, Boost, GSL
 
 Building from Source
 --------------------
@@ -103,9 +103,6 @@ Boost
 
 GSL
     The GNU Scientific Library (GSL) is a numerical library.
-
-ZeroMQ
-    ZeroMQ is a high-performance asynchronous messaging library.
 
 SWIG
     Simplified Wrapper and Interface Generator to generate a Python
@@ -179,7 +176,7 @@ For the backend we need the following packages
 
 .. code-block:: none
 
-    libboost-all-dev libgsl-dev libsqlite3-dev sqlite3 libzmq3-dev swig python3 python3-dev python3-numpy python3-scipy python3-zmq
+    libboost-all-dev libgsl-dev libsqlite3-dev sqlite3 swig python3 python3-dev python3-numpy python3-scipy
 
 The GUI builds with only ``pyqt5-dev-tools`` but to run it we
 additionally need
@@ -246,7 +243,7 @@ For the backend we need the following packages
 
 .. code-block:: none
 
-    patterns-openSUSE-devel_C_C++ gcc6-c++ sqlite3 sqlite3-devel boost_1_61-devel gsl-devel zeromq-devel swig python3 python3-devel python3-numpy python3-numpy-devel python3-scipy python3-pyzmq
+    patterns-openSUSE-devel_C_C++ gcc6-c++ sqlite3 sqlite3-devel boost_1_61-devel gsl-devel swig python3 python3-devel python3-numpy python3-numpy-devel python3-scipy
 
 The GUI builds with only ``python3-qt5-devel`` but to run it we
 additionally need
@@ -314,7 +311,7 @@ you have to install (e.g. via homebrew) the following packages
 
 .. code-block:: none
 
-    cmake git gsl swig zeromq llvm@3.9
+    cmake git gsl swig llvm@3.9
 
 .. note::
     The package llvm contains the Clang C++ compiler. We use this compiler as it
@@ -327,7 +324,7 @@ packages have to be installed
 
 .. code-block:: none
 
-    pint psutil pyqt numpy scipy pyzmq
+    pint psutil pyqt numpy scipy
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/

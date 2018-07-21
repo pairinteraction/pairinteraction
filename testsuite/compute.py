@@ -4,7 +4,6 @@ import os
 import shutil
 import tempfile
 import unittest
-import zmq
 
 class TestCompute(unittest.TestCase):
 
@@ -70,13 +69,7 @@ class TestCompute(unittest.TestCase):
             }, io)
 
     def test_compute(self):
-        context = zmq.Context()
-        socket = context.socket(zmq.SUB)
-        socket.bind("tcp://*:*")
-        socket.setsockopt_string(zmq.SUBSCRIBE, u"")
-        endpoint = socket.getsockopt_string(zmq.LAST_ENDPOINT)
-
-        pi.compute(self.path_config, self.path_cache, endpoint)
+        pi.compute(self.path_config, self.path_cache)
 
     def tearDown(self):
         try:
