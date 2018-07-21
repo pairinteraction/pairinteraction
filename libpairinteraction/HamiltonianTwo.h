@@ -17,27 +17,30 @@
 #ifndef HAMILTONIAN_TWO_H
 #define HAMILTONIAN_TWO_H
 
-#include "dtypes.h"
-#include "ConfParser.h"
-#include "MatrixElements.h"
-#include "SQLite.h"
 #include "Basisnames.h"
+#include "ConfParser.h"
 #include "Hamiltonian.h"
 #include "HamiltonianOne.h"
+#include "MatrixElements.h"
+#include "SQLite.h"
+#include "dtypes.h"
 
+#include <boost/algorithm/hex.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/math/special_functions/binomial.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <cmath>
 #include <iostream>
 #include <memory>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/hex.hpp>
-#include <boost/math/special_functions/binomial.hpp>
 
 class HamiltonianTwo : public Hamiltonian<BasisnamesTwo> {
 public:
-    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, const std::shared_ptr<HamiltonianOne>& hamiltonian_one);
-    HamiltonianTwo(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<HamiltonianOne> hamiltonian_one1, std::shared_ptr<HamiltonianOne> hamiltonian_one2);
+    HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+                   const std::shared_ptr<HamiltonianOne> &hamiltonian_one);
+    HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+                   std::shared_ptr<HamiltonianOne> hamiltonian_one1,
+                   std::shared_ptr<HamiltonianOne> hamiltonian_one2);
     void calculate(const Configuration &conf_tot);
 
 private:
@@ -55,6 +58,5 @@ private:
     bool samebasis;
     boost::filesystem::path path_cache;
 };
-
 
 #endif // HAMILTONIAN_TWO_H

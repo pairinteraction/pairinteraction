@@ -15,36 +15,30 @@
  */
 #include "Interface.h"
 
-#include <iostream>
-#include <memory>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <iostream>
+#include <memory>
 
 int main(int argc, char **argv) {
     namespace po = boost::program_options;
 
     po::options_description desc("Usage");
-    desc.add_options()
-            ("help,?", "produce this help message")
-            ("config,c", po::value<std::string>()->required(),"Path to config JSON file")
-            ("output,o", po::value<std::string>()->required(),"Path to cache JSON file")
-            ;
+    desc.add_options()("help,?", "produce this help message")(
+        "config,c", po::value<std::string>()->required(), "Path to config JSON file")(
+        "output,o", po::value<std::string>()->required(), "Path to cache JSON file");
 
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
 
-    if ( vm.count("help") != 0u )
-    {
+    if (vm.count("help") != 0u) {
         std::cout << desc << std::endl;
         return 0;
     }
 
-    try
-    {
+    try {
         po::notify(vm);
-    }
-    catch (po::required_option& e)
-    {
+    } catch (po::required_option &e) {
         std::cerr << "Error: " << e.what() << std::endl;
         return 1;
     }

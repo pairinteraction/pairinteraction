@@ -17,36 +17,40 @@
 #ifndef HAMILTONIAN_ONE_H
 #define HAMILTONIAN_ONE_H
 
-#include "dtypes.h"
+#include "Basisnames.h"
 #include "ConfParser.h"
+#include "Hamiltonian.h"
 #include "MatrixElements.h"
 #include "SQLite.h"
-#include "Basisnames.h"
-#include "Hamiltonian.h"
+#include "dtypes.h"
 
+#include <boost/algorithm/hex.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/uuid/uuid.hpp>
+#include <boost/uuid/uuid_generators.hpp>
 #include <cmath>
 #include <iostream>
 #include <memory>
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/algorithm/hex.hpp>
 
-class HamiltonianOne : public Hamiltonian<BasisnamesOne>{
+class HamiltonianOne : public Hamiltonian<BasisnamesOne> {
 public:
-    HamiltonianOne(const Configuration &config, boost::filesystem::path& path_cache, std::shared_ptr<BasisnamesOne> basis_one);
-    const Configuration& getConf() const;
+    HamiltonianOne(const Configuration &config, boost::filesystem::path &path_cache,
+                   std::shared_ptr<BasisnamesOne> basis_one);
+    const Configuration &getConf() const;
 
 protected:
-    void changeToSpherical(double val_x, double val_y, double val_z, double& val_p, double& val_m, double& val_0);
-    void changeToSpherical(double val_x, double val_y, double val_z, std::complex<double>& val_p, std::complex<double>& val_m, std::complex<double>& val_0);
+    void changeToSpherical(double val_x, double val_y, double val_z, double &val_p, double &val_m,
+                           double &val_0);
+    void changeToSpherical(double val_x, double val_y, double val_z, std::complex<double> &val_p,
+                           std::complex<double> &val_m, std::complex<double> &val_0);
     void configure(const Configuration &config);
     void build();
 
 private:
     Configuration basicconf;
     double deltaE;
-    double min_E_x,min_E_y,min_E_z,max_E_x,max_E_y,max_E_z,min_B_x,min_B_y,min_B_z,max_B_x,max_B_y,max_B_z;
+    double min_E_x, min_E_y, min_E_z, max_E_x, max_E_y, max_E_z, min_B_x, min_B_y, min_B_z, max_B_x,
+        max_B_y, max_B_z;
     size_t nSteps;
     bool diamagnetism;
     std::string species;

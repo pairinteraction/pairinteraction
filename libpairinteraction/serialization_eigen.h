@@ -23,14 +23,15 @@ namespace boost {
 namespace serialization {
 
 template <class Archive, typename _Scalar, int _Options, typename _Index>
-void serialize(Archive& ar, Eigen::SparseMatrix<_Scalar,_Options,_Index>& m, const unsigned int version) {
+void serialize(Archive &ar, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
+               const unsigned int version) {
     (void)version;
 
     _Index innerSize;
     _Index outerSize;
     _Index valuesSize;
 
-    if(Archive::is_saving::value) {
+    if (Archive::is_saving::value) {
         innerSize = m.innerSize();
         outerSize = m.outerSize();
         valuesSize = m.nonZeros();
@@ -38,50 +39,51 @@ void serialize(Archive& ar, Eigen::SparseMatrix<_Scalar,_Options,_Index>& m, con
         m.makeCompressed();
     }
 
-    ar & innerSize;
-    ar & outerSize;
-    ar & valuesSize;
+    ar &innerSize;
+    ar &outerSize;
+    ar &valuesSize;
 
-    if(Archive::is_loading::value) {
-        _Index rows = (m.IsRowMajor)? outerSize : innerSize;
-        _Index cols = (m.IsRowMajor)? innerSize : outerSize;
+    if (Archive::is_loading::value) {
+        _Index rows = (m.IsRowMajor) ? outerSize : innerSize;
+        _Index cols = (m.IsRowMajor) ? innerSize : outerSize;
         m.resize(rows, cols);
         m.resizeNonZeros(valuesSize);
     }
 
-    ar & make_array(m.innerIndexPtr(), valuesSize);
-    ar & make_array(m.outerIndexPtr(), outerSize);
-    ar & make_array(m.valuePtr(), valuesSize);
+    ar &make_array(m.innerIndexPtr(), valuesSize);
+    ar &make_array(m.outerIndexPtr(), outerSize);
+    ar &make_array(m.valuePtr(), valuesSize);
 
-    if(Archive::is_loading::value) {
+    if (Archive::is_loading::value) {
         m.finalize();
     }
 }
 
-template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows, int _MaxCols>
-void serialize(Archive & ar, Eigen::Matrix<_Scalar,_Rows,_Cols,_Options,_MaxRows,_MaxCols> & m, const unsigned int version) {
+template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows,
+          int _MaxCols>
+void serialize(Archive &ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> &m,
+               const unsigned int version) {
     (void)version;
 
     int rows;
     int cols;
 
-    if(Archive::is_saving::value) {
+    if (Archive::is_saving::value) {
         rows = m.rows();
         cols = m.cols();
     }
 
-    ar & rows;
-    ar & cols;
+    ar &rows;
+    ar &cols;
 
-    if(Archive::is_loading::value) {
+    if (Archive::is_loading::value) {
         m.resize(rows, cols);
     }
 
-    ar & make_array(m.data(), rows*cols);
+    ar &make_array(m.data(), rows * cols);
 }
 
-
-}
-}
+} // namespace serialization
+} // namespace boost
 
 #endif // SERIALIZATION_EIGEN_H

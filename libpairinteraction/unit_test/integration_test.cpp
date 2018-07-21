@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+#include "MatrixElementCache.h"
 #include "State.h"
 #include "SystemOne.h"
 #include "SystemTwo.h"
 #include "dtypes.h"
-#include "MatrixElementCache.h"
 
 #define BOOST_TEST_MODULE Integration test
 #include <boost/test/unit_test.hpp>
@@ -29,15 +29,14 @@
 #include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
-#include <stdexcept>
 #include <memory>
+#include <stdexcept>
 
 struct F {
-    F() : path_cache(boost::filesystem::temp_directory_path()/boost::filesystem::unique_path()) {
+    F() : path_cache(boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()) {
         // Create cache directory
         if (boost::filesystem::create_directory(path_cache)) {
-            std::cout << "Cache directory "
-                      << boost::filesystem::absolute(path_cache).string()
+            std::cout << "Cache directory " << boost::filesystem::absolute(path_cache).string()
                       << " created." << std::endl;
         } else {
             throw std::runtime_error("Could not create cache directory.");
@@ -67,11 +66,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     eigen_sparse_t basis_one_reference, basis_two_reference;
 
     if (!dump_new_reference_data) {
-        std::ifstream ifs(
-            "./libpairinteraction/unit_test/integration_test_referencedata.txt");
+        std::ifstream ifs("./libpairinteraction/unit_test/integration_test_referencedata.txt");
         boost::archive::text_iarchive ia(ifs);
-        ia >> hamiltonian_one_reference >> basis_one_reference >>
-            hamiltonian_two_reference >> basis_two_reference;
+        ia >> hamiltonian_one_reference >> basis_one_reference >> hamiltonian_two_reference >>
+            basis_two_reference;
         ifs.close();
     }
 
@@ -85,8 +83,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 
     // Build one-atom system
     SystemOne system_one(state_one.species, cache);
-    system_one.restrictEnergy(state_one.getEnergy() - 40,
-                              state_one.getEnergy() + 40);
+    system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
     system_one.restrictN(state_one.n - 1, state_one.n + 1);
     system_one.restrictL(state_one.l - 1, state_one.l + 1);
     system_one.setEfield({{0, 0, 0.1}});
@@ -112,11 +109,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_one - hamiltonian_one_reference)
-                   .cwiseQuotient(
-                       hamiltonian_one.cwiseMin(hamiltonian_one_reference))
+                   .cwiseQuotient(hamiltonian_one.cwiseMin(hamiltonian_one_reference))
                    .cwiseAbs();
-        max_diff_hamiltonian = *std::max_element(
-            diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
+        max_diff_hamiltonian =
+            *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
@@ -125,8 +121,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         diff = (basis_one - basis_one_reference)
                    .cwiseQuotient(basis_one.cwiseMin(basis_one_reference))
                    .cwiseAbs();
-        max_diff_basis = *std::max_element(diff.valuePtr(),
-                                           diff.valuePtr() + diff.nonZeros());
+        max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
@@ -143,17 +138,16 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     // Build one-atom system (for this test, system_one has to be diagonal by
     // itself because diagonalization can lead to different order of
     // eigenvectors)
-    //system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot be assigned because its copy assignment operator is implicitly deleted
+    // system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot
+    // be assigned because its copy assignment operator is implicitly deleted
     SystemOne system_one_new(state_one.species, cache);
-    system_one_new.restrictEnergy(state_one.getEnergy() - 40,
-                              state_one.getEnergy() + 40);
+    system_one_new.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
     system_one_new.restrictN(state_one.n - 1, state_one.n + 1);
     system_one_new.restrictL(state_one.l - 1, state_one.l + 1);
 
     // Build two-atom system
     SystemTwo system_two(system_one_new, system_one_new, cache);
-    system_two.restrictEnergy(state_two.getEnergy() - 2,
-                              state_two.getEnergy() + 2);
+    system_two.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2);
     system_two.setConservedParityUnderPermutation(ODD);
     system_two.setDistance(6);
     system_two.setAngle(0.9);
@@ -175,11 +169,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_two - hamiltonian_two_reference)
-                   .cwiseQuotient(
-                       hamiltonian_two.cwiseMin(hamiltonian_two_reference))
+                   .cwiseQuotient(hamiltonian_two.cwiseMin(hamiltonian_two_reference))
                    .cwiseAbs();
-        max_diff_hamiltonian = *std::max_element(
-            diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
+        max_diff_hamiltonian =
+            *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
@@ -188,8 +181,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         diff = (basis_two - basis_two_reference)
                    .cwiseQuotient(basis_two.cwiseMin(basis_two_reference))
                    .cwiseAbs();
-        max_diff_basis = *std::max_element(diff.valuePtr(),
-                                           diff.valuePtr() + diff.nonZeros());
+        max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
@@ -204,8 +196,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     ////////////////////////////////////////////////////////////////////
 
     if (dump_new_reference_data) {
-        std::ofstream ofs(
-            "../libpairinteraction/unit_test/integration_test_referencedata.txt");
+        std::ofstream ofs("../libpairinteraction/unit_test/integration_test_referencedata.txt");
         boost::archive::text_oarchive oa(ofs);
         oa << hamiltonian_one << basis_one << hamiltonian_two << basis_two;
         ofs.close();
@@ -213,8 +204,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         // We deliberately crash the test in case we are dumping new
         // data because we want to prevent accidentally dumping new
         // data when running in Travis CI.
-        BOOST_CHECK_MESSAGE(!dump_new_reference_data,
-                            "No tests were executed. Only dumping data!");
+        BOOST_CHECK_MESSAGE(!dump_new_reference_data, "No tests were executed. Only dumping data!");
     }
 
     // TODO call more methods to increase code covering

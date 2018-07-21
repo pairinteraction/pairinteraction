@@ -19,18 +19,19 @@
 
 #define _USE_MATH_DEFINES
 
-#include <cmath>
-#include <complex>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/math/special_functions/factorials.hpp>
-#include <vector>
+#include <cmath>
+#include <complex>
 #include <numeric>
+#include <vector>
 
 class WignerD {
 public:
     WignerD();
     double operator()(float j, float m, float mp, double beta);
-    std::complex<double> operator()(float j, float m, float mp, double alpha, double beta, double gamma);
+    std::complex<double> operator()(float j, float m, float mp, double alpha, double beta,
+                                    double gamma);
 
 private:
     double evalWignerdPiHalf(float j, float m, float mp);

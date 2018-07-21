@@ -19,17 +19,17 @@
 
 #include "dtypes.h"
 
-#include <vector>
-#include <typeinfo>
-#include <typeindex>
-#include <memory>
-#include <unordered_map>
 #include <iterator>
+#include <memory>
+#include <typeindex>
+#include <typeinfo>
+#include <unordered_map>
+#include <vector>
 
 class Serializable {
 public:
     virtual ~Serializable() = default;
-    virtual bytes_t& serialize() = 0;
+    virtual bytes_t &serialize() = 0;
     virtual void deserialize(bytes_t &bytes) = 0;
 };
 
@@ -46,7 +46,7 @@ public:
         type_ids[std::type_index(typeid(uint16_t))] = 1116;
         type_ids[std::type_index(typeid(uint32_t))] = 1132;
         type_ids[std::type_index(typeid(uint64_t))] = 1164;
-        type_ids[std::type_index(typeid(float))] = 2032; // float32_t
+        type_ids[std::type_index(typeid(float))] = 2032;  // float32_t
         type_ids[std::type_index(typeid(double))] = 2064; // float64_t
         type_ids[std::type_index(typeid(char))] = 3000;
         type_ids[std::type_index(typeid(bool))] = 4000;
@@ -75,7 +75,7 @@ public:
             }
 
             serialize(&buffer_types[i], sizeof(type_t));
-            serialize(buffer_pitems[i], buffer_nums[i]*buffer_sizes[i]);
+            serialize(buffer_pitems[i], buffer_nums[i] * buffer_sizes[i]);
         }
 
         // the buffers are not needed anymore
@@ -90,36 +90,35 @@ public:
         size_t sz = size();
         if (sz > 0) {
             return sz;
-        } 
-            return std::distance(cpbytes_start,cpbytes);
-        
+        }
+        return std::distance(cpbytes_start, cpbytes);
     }
 
-    template<class T>
-    friend void operator<< (Serializer &s, const T &data) {
+    template <class T>
+    friend void operator<<(Serializer &s, const T &data) {
         s.buffer_isVector.push_back(false);
         s.buffer_types.push_back(s.type_ids[std::type_index(typeid(T))]);
-        s.buffer_pitems.push_back(reinterpret_cast<const byte_t*>(&data));
+        s.buffer_pitems.push_back(reinterpret_cast<const byte_t *>(&data));
         s.buffer_nums.push_back(1);
         s.buffer_sizes.push_back(sizeof(T));
     }
 
-    template<class T>
-    friend void operator<< (Serializer &s, const std::vector<T> &data) {
+    template <class T>
+    friend void operator<<(Serializer &s, const std::vector<T> &data) {
         s.buffer_isVector.push_back(true);
         s.buffer_types.push_back(s.type_ids[std::type_index(typeid(T))]);
-        s.buffer_pitems.push_back(reinterpret_cast<const byte_t*>(&data[0]));
+        s.buffer_pitems.push_back(reinterpret_cast<const byte_t *>(&data[0]));
         s.buffer_nums.push_back(data.size());
         s.buffer_sizes.push_back(sizeof(T));
     }
 
-    template<class T>
-    friend void operator>> (Serializer &s, T &data) {
+    template <class T>
+    friend void operator>>(Serializer &s, T &data) {
         s.deserialize(data, 1);
     }
 
-    template<class T>
-    friend void operator>> (Serializer &s, std::vector<T> &data) {
+    template <class T>
+    friend void operator>>(Serializer &s, std::vector<T> &data) {
         size_t szvector;
         s.deserialize(szvector, 1);
         s.deserialize(data, szvector);
@@ -136,208 +135,236 @@ private:
                 totalsize += sizeof(storage_idx_t);
             }
             totalsize += sizeof(type_t);
-            totalsize += buffer_nums[i]*buffer_sizes[i];
+            totalsize += buffer_nums[i] * buffer_sizes[i];
         }
 
         return totalsize;
     }
 
-    template<class T>
+    template <class T>
     void serialize(const T *pdata, size_t sz) {
-        auto data_reinterpreted = reinterpret_cast<const byte_t*>(pdata);
-        std::copy(data_reinterpreted, data_reinterpreted+sz, pbytes);
+        auto data_reinterpreted = reinterpret_cast<const byte_t *>(pdata);
+        std::copy(data_reinterpreted, data_reinterpreted + sz, pbytes);
         pbytes += sz;
     }
 
-    template<class T>
+    template <class T>
     void deserialize(T &data, size_t num) {
         uint16_t type = 0;
 
-        if (cpbytes+sizeof(uint16_t) > cpbytes_end) { throw std::runtime_error("Corrupted data discovered."); // TODO use checksum of "bytes" (write checksum into the beginning of "bytes")
-}
-        auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
-        std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
+        if (cpbytes + sizeof(uint16_t) > cpbytes_end) {
+            throw std::runtime_error(
+                "Corrupted data discovered."); // TODO use checksum of "bytes" (write checksum into
+                                               // the beginning of "bytes")
+        }
+        auto pbytes_reinterpreted = reinterpret_cast<const type_t *>(&(*cpbytes));
+        std::copy(pbytes_reinterpreted, pbytes_reinterpreted + 1, &type);
         cpbytes += sizeof(uint16_t);
 
         if (type == type_ids[std::type_index(typeid(int8_t))]) {
-            if (cpbytes+sizeof(int8_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int8_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(int8_t)*num;
+            if (cpbytes + sizeof(int8_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int8_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(int8_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int16_t))]) {
-            if (cpbytes+sizeof(int16_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int16_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(int16_t)*num;
+            if (cpbytes + sizeof(int16_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int16_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(int16_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int32_t))]) {
-            if (cpbytes+sizeof(int32_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int32_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(int32_t)*num;
+            if (cpbytes + sizeof(int32_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int32_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(int32_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int64_t))]) {
-            if (cpbytes+sizeof(int64_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int64_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(int64_t)*num;
+            if (cpbytes + sizeof(int64_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int64_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(int64_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint8_t))]) {
-            if (cpbytes+sizeof(uint8_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(uint8_t)*num;
+            if (cpbytes + sizeof(uint8_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(uint8_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint16_t))]) {
-            if (cpbytes+sizeof(uint16_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(uint16_t)*num;
+            if (cpbytes + sizeof(uint16_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint16_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(uint16_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint32_t))]) {
-            if (cpbytes+sizeof(uint32_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint32_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(uint32_t)*num;
+            if (cpbytes + sizeof(uint32_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint32_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(uint32_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint64_t))]) {
-            if (cpbytes+sizeof(uint64_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint64_t*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(uint64_t)*num;
+            if (cpbytes + sizeof(uint64_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint64_t *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(uint64_t) * num;
         } else if (type == type_ids[std::type_index(typeid(float))]) {
-            if (cpbytes+sizeof(float)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const float*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(float)*num;
+            if (cpbytes + sizeof(float) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const float *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(float) * num;
         } else if (type == type_ids[std::type_index(typeid(double))]) {
-            if (cpbytes+sizeof(double)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const double*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(double)*num;
+            if (cpbytes + sizeof(double) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const double *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(double) * num;
         } else if (type == type_ids[std::type_index(typeid(char))]) {
-            if (cpbytes+sizeof(char)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const char*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(char)*num;
+            if (cpbytes + sizeof(char) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const char *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(char) * num;
         } else if (type == type_ids[std::type_index(typeid(bool))]) {
-            if (cpbytes+sizeof(bool)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const bool*>(&(*cpbytes));
-            std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            cpbytes += sizeof(bool)*num;
-        }else {
+            if (cpbytes + sizeof(bool) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const bool *>(&(*cpbytes));
+            std::copy(pbytes_reinterpreted, pbytes_reinterpreted + num, &data);
+            cpbytes += sizeof(bool) * num;
+        } else {
             throw std::runtime_error("Corrupted data discovered.");
-            //auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
-            //std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
-            //cpbytes += sizeof(T)*num;
+            // auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
+            // std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num, &data);
+            // cpbytes += sizeof(T)*num;
         }
     }
 
-    template<class T>
+    template <class T>
     void deserialize(std::vector<T> &data, size_t num) {
         uint16_t type = 0;
 
-        if (cpbytes+sizeof(uint16_t) > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-        auto pbytes_reinterpreted = reinterpret_cast<const type_t*>(&(*cpbytes));
-        std::copy(pbytes_reinterpreted, pbytes_reinterpreted+1, &type);
+        if (cpbytes + sizeof(uint16_t) > cpbytes_end) {
+            throw std::runtime_error("Corrupted data discovered.");
+        }
+        auto pbytes_reinterpreted = reinterpret_cast<const type_t *>(&(*cpbytes));
+        std::copy(pbytes_reinterpreted, pbytes_reinterpreted + 1, &type);
         cpbytes += sizeof(uint16_t);
 
         if (type == type_ids[std::type_index(typeid(int8_t))]) {
-            if (cpbytes+sizeof(int8_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int8_t*>(&(*cpbytes));
-            std::vector<int8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(int8_t)*num;
+            if (cpbytes + sizeof(int8_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int8_t *>(&(*cpbytes));
+            std::vector<int8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(int8_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int16_t))]) {
-            if (cpbytes+sizeof(int16_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int16_t*>(&(*cpbytes));
-            std::vector<int16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(int16_t)*num;
+            if (cpbytes + sizeof(int16_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int16_t *>(&(*cpbytes));
+            std::vector<int16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(int16_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int32_t))]) {
-            if (cpbytes+sizeof(int32_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int32_t*>(&(*cpbytes));
-            std::vector<int32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(int32_t)*num;
+            if (cpbytes + sizeof(int32_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int32_t *>(&(*cpbytes));
+            std::vector<int32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(int32_t) * num;
         } else if (type == type_ids[std::type_index(typeid(int64_t))]) {
-            if (cpbytes+sizeof(int64_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const int64_t*>(&(*cpbytes));
-            std::vector<int64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(int64_t)*num;
+            if (cpbytes + sizeof(int64_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const int64_t *>(&(*cpbytes));
+            std::vector<int64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(int64_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint8_t))]) {
-            if (cpbytes+sizeof(uint8_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t*>(&(*cpbytes));
-            std::vector<uint8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(uint8_t)*num;
+            if (cpbytes + sizeof(uint8_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint8_t *>(&(*cpbytes));
+            std::vector<uint8_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(uint8_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint16_t))]) {
-            if (cpbytes+sizeof(uint16_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint16_t*>(&(*cpbytes));
-            std::vector<uint16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(uint16_t)*num;
+            if (cpbytes + sizeof(uint16_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint16_t *>(&(*cpbytes));
+            std::vector<uint16_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(uint16_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint32_t))]) {
-            if (cpbytes+sizeof(uint32_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint32_t*>(&(*cpbytes));
-            std::vector<uint32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(uint32_t)*num;
+            if (cpbytes + sizeof(uint32_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint32_t *>(&(*cpbytes));
+            std::vector<uint32_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(uint32_t) * num;
         } else if (type == type_ids[std::type_index(typeid(uint64_t))]) {
-            if (cpbytes+sizeof(uint64_t)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const uint64_t*>(&(*cpbytes));
-            std::vector<uint64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(uint64_t)*num;
+            if (cpbytes + sizeof(uint64_t) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const uint64_t *>(&(*cpbytes));
+            std::vector<uint64_t> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(uint64_t) * num;
         } else if (type == type_ids[std::type_index(typeid(float))]) {
-            if (cpbytes+sizeof(float)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const float*>(&(*cpbytes));
-            std::vector<float> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(float)*num;
+            if (cpbytes + sizeof(float) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const float *>(&(*cpbytes));
+            std::vector<float> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(float) * num;
         } else if (type == type_ids[std::type_index(typeid(double))]) {
-            if (cpbytes+sizeof(double)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const double*>(&(*cpbytes));
-            std::vector<double> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(double)*num;
+            if (cpbytes + sizeof(double) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const double *>(&(*cpbytes));
+            std::vector<double> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(double) * num;
         } else if (type == type_ids[std::type_index(typeid(char))]) {
-            if (cpbytes+sizeof(char)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const char*>(&(*cpbytes));
-            std::vector<char> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(char)*num;
+            if (cpbytes + sizeof(char) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const char *>(&(*cpbytes));
+            std::vector<char> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(char) * num;
         } else if (type == type_ids[std::type_index(typeid(bool))]) {
-            if (cpbytes+sizeof(bool)*num > cpbytes_end) { throw std::runtime_error("Corrupted data discovered.");
-}
-            auto pbytes_reinterpreted = reinterpret_cast<const bool*>(&(*cpbytes));
-            std::vector<bool> vectmp(pbytes_reinterpreted, pbytes_reinterpreted+num);
-            data.insert(data.end(),vectmp.begin(), vectmp.end());
-            cpbytes += sizeof(bool)*num;
+            if (cpbytes + sizeof(bool) * num > cpbytes_end) {
+                throw std::runtime_error("Corrupted data discovered.");
+            }
+            auto pbytes_reinterpreted = reinterpret_cast<const bool *>(&(*cpbytes));
+            std::vector<bool> vectmp(pbytes_reinterpreted, pbytes_reinterpreted + num);
+            data.insert(data.end(), vectmp.begin(), vectmp.end());
+            cpbytes += sizeof(bool) * num;
         } else {
             throw std::runtime_error("Corrupted data discovered.");
-            //auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
-            //std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num,back_inserter(data));
-            //cpbytes += sizeof(T)*num;
+            // auto pbytes_reinterpreted = reinterpret_cast<const T*>(&(*cpbytes));
+            // std::copy(pbytes_reinterpreted, pbytes_reinterpreted+num,back_inserter(data));
+            // cpbytes += sizeof(T)*num;
         }
     }
 
@@ -348,7 +375,7 @@ private:
     bytes_t::const_iterator cpbytes_end;
     std::vector<bool> buffer_isVector;
     std::vector<uint16_t> buffer_types;
-    std::vector<const byte_t*> buffer_pitems;
+    std::vector<const byte_t *> buffer_pitems;
     std::vector<storage_idx_t> buffer_nums;
     std::vector<size_t> buffer_sizes;
 };

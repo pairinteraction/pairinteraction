@@ -20,17 +20,15 @@
 #include "dtypes.h"
 
 #include <array>
-#include <string>
-#include <iostream>
-#include <cmath>
 #include <boost/functional/hash.hpp>
+#include <cmath>
+#include <iostream>
+#include <string>
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 
-
 constexpr const std::array<char, 7> momentum2label = {{'S', 'P', 'D', 'F', 'G', 'H', 'I'}};
-
 
 /** \brief %Base class for states
  *
@@ -38,10 +36,9 @@ constexpr const std::array<char, 7> momentum2label = {{'S', 'P', 'D', 'F', 'G', 
  */ // TODO [dummystate]
 class State {
 public:
-    State(idx_t idx) : idx(idx) { }
+    State(idx_t idx) : idx(idx) {}
     idx_t idx;
 };
-
 
 /** \brief %One-atom Rydberg state
  *
@@ -63,13 +60,13 @@ public:
     StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
 
-    friend std::ostream& operator<<(std::ostream &out, const StateOne &state);
+    friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
 
-    bool operator==(StateOne const& /*rhs*/) const;
-    bool operator^ (StateOne const& /*rhs*/) const; // subset
-    bool operator!=(StateOne const& /*rhs*/) const;
-    bool operator< (StateOne const& /*rhs*/) const;
-    bool operator> (StateOne const& /*rhs*/) const;
+    bool operator==(StateOne const & /*rhs*/) const;
+    bool operator^(StateOne const & /*rhs*/) const; // subset
+    bool operator!=(StateOne const & /*rhs*/) const;
+    bool operator<(StateOne const & /*rhs*/) const;
+    bool operator>(StateOne const & /*rhs*/) const;
 
     double getEnergy() const;
     double getNStar() const;
@@ -93,20 +90,20 @@ private:
 
     friend class boost::serialization::access;
 
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
         (void)version;
 
-        ar & species & element & s & n & l & j & m;
+        ar &species &element &s &n &l &j &m;
     }
 };
-
 
 /** \brief %Two-atom Rydberg state
  *
  * This class implements a two-atom Rydberg state.
  */ // TODO [dummystate]
-class StateTwo : public State { // TODO define getters and setters, save a pair state as two single atom states
+class StateTwo
+    : public State { // TODO define getters and setters, save a pair state as two single atom states
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
@@ -115,26 +112,29 @@ public:
     std::array<float, 2> j, m, s;
 
     StateTwo();
-    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l,
+             std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
-    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
-    StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
+             std::array<float, 2> m);
+    StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
+             std::array<float, 2> m);
     StateTwo(idx_t idx, const StateOne &a, const StateOne &b);
 
     StateOne getFirstState() const;
     StateOne getSecondState() const;
-    void setFirstState(StateOne const& /*s*/);
-    void setSecondState(StateOne const& /*s*/);
+    void setFirstState(StateOne const & /*s*/);
+    void setSecondState(StateOne const & /*s*/);
 
     StateOne first() const;
     StateOne second() const;
 
-    friend std::ostream& operator<<(std::ostream &out, const StateTwo &state);
+    friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
 
-    bool operator==(StateTwo const& /*rhs*/) const;
-    bool operator^ (StateTwo const& /*rhs*/) const; // subset
-    bool operator!=(StateTwo const& /*rhs*/) const;
-    bool operator< (StateTwo const& /*rhs*/) const;
+    bool operator==(StateTwo const & /*rhs*/) const;
+    bool operator^(StateTwo const & /*rhs*/) const; // subset
+    bool operator!=(StateTwo const & /*rhs*/) const;
+    bool operator<(StateTwo const & /*rhs*/) const;
 
     StateTwo order();
 
@@ -160,23 +160,20 @@ private:
 
     friend class boost::serialization::access;
 
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int version) {
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int version) {
         (void)version;
 
-        ar & species & element & s & n & l & j & m;
+        ar &species &element &s &n &l &j &m;
     }
 };
-
 
 #ifndef SWIG
 namespace std {
 
 template <>
-struct hash<StateOne>
-{
-    size_t operator()(const StateOne & s) const
-    {
+struct hash<StateOne> {
+    size_t operator()(const StateOne &s) const {
         std::size_t seed = 0;
         boost::hash_combine(seed, s.n);
         boost::hash_combine(seed, s.l);
@@ -187,10 +184,8 @@ struct hash<StateOne>
 };
 
 template <>
-struct hash<StateTwo>
-{
-    size_t operator()(const StateTwo & s) const
-    {
+struct hash<StateTwo> {
+    size_t operator()(const StateTwo &s) const {
         std::size_t seed = 0;
         boost::hash_combine(seed, s.n);
         boost::hash_combine(seed, s.l);
@@ -200,8 +195,7 @@ struct hash<StateTwo>
     }
 };
 
-}
+} // namespace std
 #endif
-
 
 #endif

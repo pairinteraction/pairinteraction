@@ -19,8 +19,7 @@
 #include <boost/property_tree/ptree.hpp>
 #include <string>
 
-void Configuration::load_from_json(std::string const &filename)
-{
+void Configuration::load_from_json(std::string const &filename) {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::read_json;
 
@@ -32,8 +31,7 @@ void Configuration::load_from_json(std::string const &filename)
     }
 }
 
-void Configuration::save_to_json(std::string const &filename) const
-{
+void Configuration::save_to_json(std::string const &filename) const {
     using boost::property_tree::ptree;
     using boost::property_tree::json_parser::write_json;
 

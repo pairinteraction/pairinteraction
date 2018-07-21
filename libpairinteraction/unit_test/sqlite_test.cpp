@@ -31,9 +31,7 @@ BOOST_AUTO_TEST_CASE(sqlite_thread_safety) // NOLINT
 
 BOOST_AUTO_TEST_CASE(sqlite_query_test) // NOLINT
 {
-    BOOST_CHECK_THROW(
-        sqlite::handle db("no such database", SQLITE_OPEN_READWRITE),
-        sqlite::error);
+    BOOST_CHECK_THROW(sqlite::handle db("no such database", SQLITE_OPEN_READWRITE), sqlite::error);
     // Open an in-memory database for tests
     sqlite::handle db(":memory:");
 

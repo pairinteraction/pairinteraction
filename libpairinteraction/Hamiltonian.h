@@ -25,21 +25,11 @@ template <class T>
 class Hamiltonian {
 public:
     Hamiltonian() = default;
-    std::shared_ptr<Hamiltonianmatrix> get(size_t idx) {
-        return matrix_diag[idx];
-    }
-    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const {
-        return matrix_diag[idx];
-    }
-    std::shared_ptr<const Configuration> getParams(size_t idx) const {
-        return params[idx];
-    }
-    size_t size() const {
-        return matrix_diag.size();
-    }
-    std::shared_ptr<const T> names() const {
-        return basis;
-    }
+    std::shared_ptr<Hamiltonianmatrix> get(size_t idx) { return matrix_diag[idx]; }
+    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const { return matrix_diag[idx]; }
+    std::shared_ptr<const Configuration> getParams(size_t idx) const { return params[idx]; }
+    size_t size() const { return matrix_diag.size(); }
+    std::shared_ptr<const T> names() const { return basis; }
     void removeUnnecessaryStates(std::vector<bool> &necessary) {
         basis->removeUnnecessaryStates(necessary);
         for (auto &p : matrix_diag) {

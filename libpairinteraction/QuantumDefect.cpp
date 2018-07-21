@@ -32,10 +32,8 @@ private:
 
 public:
     no_defect(QuantumDefect const &qd)
-        : msg{"There is no defect available for " + qd.species +
-              ", l = " + std::to_string(qd.l) + ", j = " + std::to_string(qd.j)}
-    {
-    }
+        : msg{"There is no defect available for " + qd.species + ", l = " + std::to_string(qd.l) +
+              ", j = " + std::to_string(qd.j)} {}
 
     const char *what() const noexcept override { return msg.c_str(); }
 };
@@ -47,38 +45,29 @@ private:
 public:
     no_potential(QuantumDefect const &qd)
         : msg{"There is no model potential available for " + qd.species +
-              ", l = " + std::to_string(qd.l)}
-    {
-    }
+              ", l = " + std::to_string(qd.l)} {}
 
     const char *what() const noexcept override { return msg.c_str(); }
 };
 
-QuantumDefect::QuantumDefect(std::string _species, int _n, int _l, double _j,
-                             std::nullptr_t)
-    : e(), species(std::move(_species)), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z),
-      a1(e.a1), a2(e.a2), a3(e.a3), a4(e.a4), rc(e.rc), nstar(e.nstar),
-      energy(e.energy)
-{
-}
+QuantumDefect::QuantumDefect(std::string _species, int _n, int _l, double _j, std::nullptr_t)
+    : e(), species(std::move(_species)), n(_n), l(_l), j(_j), ac(e.ac), Z(e.Z), a1(e.a1), a2(e.a2),
+      a3(e.a3), a4(e.a4), rc(e.rc), nstar(e.nstar), energy(e.energy) {}
 
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j)
-    : QuantumDefect(species, n, l, j, nullptr)
-{
+    : QuantumDefect(species, n, l, j, nullptr) {
     static thread_local EmbeddedDatabase embedded_database{};
     setup(embedded_database);
 }
 
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
                              std::string const &database)
-    : QuantumDefect(species, n, l, j, nullptr)
-{
+    : QuantumDefect(species, n, l, j, nullptr) {
     sqlite::handle db(database, SQLITE_OPEN_READONLY);
     setup(db);
 }
 
-void QuantumDefect::setup(sqlite3 *db)
-{
+void QuantumDefect::setup(sqlite3 *db) {
     static Cache<Key, Element, Hash> cache;
 
     Key const key{species, n, l, j};
@@ -174,8 +163,8 @@ void QuantumDefect::setup(sqlite3 *db)
         double d6 = stmt.get<double>(3);
         double d8 = stmt.get<double>(4);
         Ry = stmt.get<double>(5);
-        e.nstar -= d0 + d2 / pow(n - d0, 2) + d4 / pow(n - d0, 4) +
-                   d6 / pow(n - d0, 6) + d8 / pow(n - d0, 8);
+        e.nstar -= d0 + d2 / pow(n - d0, 2) + d4 / pow(n - d0, 4) + d6 / pow(n - d0, 6) +
+            d8 / pow(n - d0, 8);
     } else {
         throw no_defect(*this);
     }
@@ -185,14 +174,12 @@ void QuantumDefect::setup(sqlite3 *db)
     cache.save(key, e);
 }
 
-double energy_level(std::string const &species, int n, int l, double j)
-{
+double energy_level(std::string const &species, int n, int l, double j) {
     QuantumDefect qd(species, n, l, j);
     return qd.energy;
 }
 
-double nstar(std::string const &species, int n, int l, double j)
-{
+double nstar(std::string const &species, int n, int l, double j) {
     QuantumDefect qd(species, n, l, j);
     return qd.nstar;
 }

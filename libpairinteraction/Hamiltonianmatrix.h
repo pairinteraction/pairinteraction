@@ -17,32 +17,32 @@
 #ifndef HAMILTONIANMATRIX_H
 #define HAMILTONIANMATRIX_H
 
-#include "dtypes.h"
-#include "Serializable.h"
 #include "Basisnames.h"
+#include "Serializable.h"
 #include "State.h"
+#include "dtypes.h"
 #include "utils.h"
 
 #include <cmath>
 #include <cstdint>
 #include <cstdio>
-#include <memory>
 #include <exception>
+#include <memory>
 #include <stdexcept>
 #include <vector>
 
-const uint8_t csr_not_csc = 0x01; // xxx0: csc, xxx1: csr
+const uint8_t csr_not_csc = 0x01;      // xxx0: csc, xxx1: csr
 const uint8_t complex_not_real = 0x02; // xx0x: real, xx1x: complex
 
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix();
-    Hamiltonianmatrix(const eigen_sparse_t& entries, const eigen_sparse_t& basis);
+    Hamiltonianmatrix(const eigen_sparse_t &entries, const eigen_sparse_t &basis);
     Hamiltonianmatrix(size_t szBasis, size_t szEntries);
-    eigen_sparse_t& entries();
-    const eigen_sparse_t& entries() const;
-    eigen_sparse_t& basis();
-    const eigen_sparse_t& basis() const;
+    eigen_sparse_t &entries();
+    const eigen_sparse_t &entries() const;
+    eigen_sparse_t &basis();
+    const eigen_sparse_t &basis() const;
     size_t num_basisvectors() const;
     size_t num_coordinates() const;
     void addBasis(idx_t row, idx_t col, scalar_t val);
@@ -50,7 +50,7 @@ public:
     void compress(size_t nBasis, size_t nCoordinates);
     std::vector<Hamiltonianmatrix> findSubs() const;
     Hamiltonianmatrix abs() const;
-    Hamiltonianmatrix changeBasis(const eigen_sparse_t& basis) const;
+    Hamiltonianmatrix changeBasis(const eigen_sparse_t &basis) const;
     void applyCutoff(double cutoff);
     void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const;
     void removeUnnecessaryBasisvectors(const std::vector<bool> &isNecessaryCoordinate);
@@ -58,40 +58,48 @@ public:
     void removeUnnecessaryStates(const std::vector<bool> &isNecessaryCoordinate);
     Hamiltonianmatrix getBlock(const std::vector<ptrdiff_t> &indices);
     void diagonalize();
-    friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs);
-    friend Hamiltonianmatrix operator-(Hamiltonianmatrix lhs, const Hamiltonianmatrix& rhs);
-    friend Hamiltonianmatrix operator*(const scalar_t& lhs,  Hamiltonianmatrix rhs);
-    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs,  const scalar_t& rhs);
-    Hamiltonianmatrix& operator+=(const Hamiltonianmatrix& rhs);
-    Hamiltonianmatrix& operator-=(const Hamiltonianmatrix& rhs);
-    bytes_t& serialize() override;
+    friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
+    friend Hamiltonianmatrix operator-(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
+    friend Hamiltonianmatrix operator*(const scalar_t &lhs, Hamiltonianmatrix rhs);
+    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs, const scalar_t &rhs);
+    Hamiltonianmatrix &operator+=(const Hamiltonianmatrix &rhs);
+    Hamiltonianmatrix &operator-=(const Hamiltonianmatrix &rhs);
+    bytes_t &serialize() override;
     void doSerialization();
     void deserialize(bytes_t &bytesin) override;
     void doDeserialization();
     uint64_t hashEntries();
     uint64_t hashBasis();
-    void save(const std::string& fname);
-    bool load(const std::string& fname);
-    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, const std::shared_ptr<BasisnamesTwo>& basis_two, const Symmetry &sym);
-    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs, const double &deltaE, std::vector<bool> &necessary);
+    void save(const std::string &fname);
+    bool load(const std::string &fname);
+    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
+                                     const double &deltaE,
+                                     const std::shared_ptr<BasisnamesTwo> &basis_two,
+                                     const Symmetry &sym);
+    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
+                             const double &deltaE, std::vector<bool> &necessary);
 
-    template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
-    void mergeComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
+    template <typename T, typename std::enable_if<utils::is_complex<T>::value>::type * = nullptr>
+    void mergeComplex(std::vector<storage_double> &real, std::vector<storage_double> &imag,
+                      std::vector<T> &complex) {
         std::vector<storage_double>::iterator real_it, imag_it;
         complex.reserve(real.size());
-        for (real_it = real.begin(), imag_it = imag.begin(); real_it != real.end(); ++real_it, ++imag_it) {
-            complex.push_back(T(*real_it,*imag_it));
+        for (real_it = real.begin(), imag_it = imag.begin(); real_it != real.end();
+             ++real_it, ++imag_it) {
+            complex.push_back(T(*real_it, *imag_it));
         }
     }
 
-    template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
-    void mergeComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
-        (void) imag;
+    template <typename T, typename std::enable_if<!utils::is_complex<T>::value>::type * = nullptr>
+    void mergeComplex(std::vector<storage_double> &real, std::vector<storage_double> &imag,
+                      std::vector<T> &complex) {
+        (void)imag;
         complex = real;
     }
 
-    template<typename T, typename std::enable_if<utils::is_complex<T>::value>::type* = nullptr>
-    void splitComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
+    template <typename T, typename std::enable_if<utils::is_complex<T>::value>::type * = nullptr>
+    void splitComplex(std::vector<storage_double> &real, std::vector<storage_double> &imag,
+                      std::vector<T> &complex) {
         real.reserve(complex.size());
         imag.reserve(imag.size());
         for (auto complex_it = complex.begin(); complex_it != complex.end(); ++complex_it) {
@@ -100,10 +108,11 @@ public:
         }
     }
 
-    template<typename T, typename std::enable_if<!utils::is_complex<T>::value>::type* = nullptr>
-    void splitComplex(std::vector<storage_double>& real, std::vector<storage_double>& imag, std::vector<T>& complex) {
+    template <typename T, typename std::enable_if<!utils::is_complex<T>::value>::type * = nullptr>
+    void splitComplex(std::vector<storage_double> &real, std::vector<storage_double> &imag,
+                      std::vector<T> &complex) {
         imag = std::vector<storage_double>();
-        real = complex; //std::vector<storage_double>(complex.begin(),complex.end());
+        real = complex; // std::vector<storage_double>(complex.begin(),complex.end());
     }
 
 protected:

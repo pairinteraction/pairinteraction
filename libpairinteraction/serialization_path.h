@@ -22,24 +22,24 @@
 namespace boost {
 namespace serialization {
 
-template<class Archive>
-void serialize(Archive& ar, boost::filesystem::path &p, const unsigned int version) {
+template <class Archive>
+void serialize(Archive &ar, boost::filesystem::path &p, const unsigned int version) {
     (void)version;
 
     std::string s;
 
-    if(Archive::is_saving::value) {
+    if (Archive::is_saving::value) {
         s = p.string();
     }
 
-    ar & s;
+    ar &s;
 
-    if(Archive::is_loading::value) {
+    if (Archive::is_loading::value) {
         p = boost::filesystem::path(s);
     }
 }
 
-}
-}
+} // namespace serialization
+} // namespace boost
 
 #endif // SERIALIZATION_PATH_H

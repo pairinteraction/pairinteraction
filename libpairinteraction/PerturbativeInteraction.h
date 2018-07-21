@@ -17,12 +17,12 @@
 #ifndef PERTURBATIVEINTERACTION_H
 #define PERTURBATIVEINTERACTION_H
 
-#include "dtypes.h"
 #include "MatrixElementCache.h"
 #include "State.h"
+#include "dtypes.h"
 
-#include <vector>
 #include <array>
+#include <vector>
 
 class PerturbativeInteraction {
 public:
@@ -30,14 +30,15 @@ public:
     PerturbativeInteraction(double angle, MatrixElementCache &cache);
     PerturbativeInteraction(double angle, double weak_bfield_along_z, MatrixElementCache &cache);
     double getC6(StateTwo state, double deltaN); // return value in GHz*um^6
-    eigen_dense_double_t getC6(std::vector<StateTwo> states, double deltaN); // return value in GHz*um^6
-    eigen_dense_double_t getC3(std::vector<StateTwo> states); // return value in GHz*um^3
+    eigen_dense_double_t getC6(std::vector<StateTwo> states,
+                               double deltaN);                      // return value in GHz*um^6
+    eigen_dense_double_t getC3(std::vector<StateTwo> states);       // return value in GHz*um^3
     eigen_dense_double_t getEnergies(std::vector<StateTwo> states); // return value in GHz
 private:
     void initializeAngleTerms(double angle);
     MatrixElementCache &cache;
     double bfield;
-    std::vector<std::array<int,2>> array_q;
+    std::vector<std::array<int, 2>> array_q;
     std::array<double, 9> array_angle_term;
 };
 
