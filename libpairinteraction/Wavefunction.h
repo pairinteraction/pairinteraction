@@ -24,8 +24,7 @@
 
 // --- Numerov's method ---
 
-namespace model_potential
-{
+namespace model_potential {
 /** \brief Calculate the model potentials.
  *
  * This function calculates the model potentials and returns \f$
@@ -84,8 +83,7 @@ double g(QuantumDefect const &qd, double x);
  * at infinity we choose \f$ y_0 = 0 \f$. Now depending on the number of knots
  * of wavefunction we decide whether to set \f$ y_1 = \pm\varepsilon \f$.
  */
-class Numerov
-{
+class Numerov {
     QuantumDefect const &qd;
     eigen_dense_double_t xy;
 
@@ -120,16 +118,12 @@ public:
      * \param[in] power     exponent of r
      * \returns power kernel
      */
-    constexpr static inline int power_kernel(int power)
-    {
-        return 2 * power + 2;
-    }
+    constexpr static inline int power_kernel(int power) { return 2 * power + 2; }
 };
 
 // --- Whittaker method ---
 
-namespace whittaker_functions
-{
+namespace whittaker_functions {
 /** \brief Compute the confluent hypergeometric function
  *
  * This is merely a wrapper around
@@ -175,8 +169,7 @@ double WhittakerW(double k, double m, double z);
 double RadialWFWhittaker(double r, double nu, int l);
 } // namespace whittaker_functions
 
-class Whittaker
-{
+class Whittaker {
     QuantumDefect const &qd;
     eigen_dense_double_t xy;
 
@@ -213,10 +206,7 @@ public:
      * \param[in] power     exponent of r
      * \returns power kernel
      */
-    constexpr static inline double power_kernel(int power)
-    {
-        return 1.5 * power;
-    }
+    constexpr static inline double power_kernel(int power) { return 1.5 * power; }
 };
 
 // --- Matrix element calculation ---
@@ -233,8 +223,7 @@ public:
  * \throws std::runtime_error if the value can't be found
  */
 template <typename T>
-int findidx(T const &x, typename T::Scalar const &d)
-{
+int findidx(T const &x, typename T::Scalar const &d) {
     int L = 0;
     int R = x.rows() - 1;
     for (;;) {
@@ -270,9 +259,7 @@ int findidx(T const &x, typename T::Scalar const &d)
  * \returns Radial matrix element
  */
 template <typename T>
-double IntegrateRadialElement(QuantumDefect const &qd1, int power,
-                              QuantumDefect const &qd2)
-{
+double IntegrateRadialElement(QuantumDefect const &qd1, int power, QuantumDefect const &qd2) {
     T N1(qd1);
     T N2(qd2);
 
@@ -281,9 +268,8 @@ double IntegrateRadialElement(QuantumDefect const &qd1, int power,
     auto const dx = N1.dx;
 
     auto const xmin = xy1(0, 0) >= xy2(0, 0) ? xy1(0, 0) : xy2(0, 0);
-    auto const xmax = xy1(xy1.rows() - 1, 0) <= xy2(xy2.rows() - 1, 0)
-                          ? xy1(xy1.rows() - 1, 0)
-                          : xy2(xy2.rows() - 1, 0);
+    auto const xmax = xy1(xy1.rows() - 1, 0) <= xy2(xy2.rows() - 1, 0) ? xy1(xy1.rows() - 1, 0)
+                                                                       : xy2(xy2.rows() - 1, 0);
 
     double mu = 0;
     // If there is an overlap, calculate the matrix element
@@ -295,8 +281,7 @@ double IntegrateRadialElement(QuantumDefect const &qd1, int power,
 
         int i1, i2;
         for (i1 = start1, i2 = start2; i1 < end1 && i2 < end2; ++i1, ++i2) {
-            mu += xy1(i1, 1) * xy2(i2, 1) *
-                  std::pow(xy1(i1, 0), T::power_kernel(power)) * dx;
+            mu += xy1(i1, 1) * xy2(i2, 1) * std::pow(xy1(i1, 0), T::power_kernel(power)) * dx;
         }
         mu = 2 * mu;
     }
@@ -304,8 +289,7 @@ double IntegrateRadialElement(QuantumDefect const &qd1, int power,
     // If the power is non-zero, the radial matrix element has a unit
     // that needs to be converted (if the power is zero, unit-free
     // overlap matrix element is returned)
-    double converter =
-        (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power - 1);
+    double converter = (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power - 1);
 
     return mu * converter;
 }

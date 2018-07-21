@@ -47,16 +47,14 @@ BOOST_AUTO_TEST_CASE(send_test) // NOLINT
         auto publisher = context.socket(ZMQ_PUB);
         publisher.bind("tcp://*:5555");
 
-        std::this_thread::sleep_for(
-            std::chrono::seconds{1}); // wait for the others to receive
+        std::this_thread::sleep_for(std::chrono::seconds{1}); // wait for the others to receive
         BOOST_CHECK_EQUAL(publisher.send(msg), len - 1);
     });
 
     std::thread receiver([&context]() {
         auto subscriber = context.socket(ZMQ_SUB);
         subscriber.connect("tcp://localhost:5555");
-        BOOST_CHECK_EQUAL(zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, nullptr, 0),
-                          0);
+        BOOST_CHECK_EQUAL(zmq_setsockopt(subscriber, ZMQ_SUBSCRIBE, nullptr, 0), 0);
 
         char buf[len];
         BOOST_CHECK_EQUAL(zmq_recv(subscriber, buf, len, 0), len);

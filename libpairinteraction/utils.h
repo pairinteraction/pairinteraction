@@ -29,15 +29,12 @@
 #include <unistd.h>
 #endif
 
-namespace utils
-{
+namespace utils {
 
 template <typename T>
-struct is_complex : public std::false_type {
-};
+struct is_complex : public std::false_type {};
 template <typename T>
-struct is_complex<std::complex<T>> : public std::true_type {
-};
+struct is_complex<std::complex<T>> : public std::true_type {};
 
 /** \brief Thread-local static random engine
  *
@@ -47,8 +44,7 @@ struct is_complex<std::complex<T>> : public std::true_type {
  *
  * \returns Reference to static thread-local random engine
  */
-inline std::default_random_engine &randint_engine()
-{
+inline std::default_random_engine &randint_engine() {
     static thread_local std::default_random_engine eng{std::random_device{}()};
     return eng;
 }
@@ -67,16 +63,13 @@ inline std::default_random_engine &randint_engine()
  * \returns random integer between \p a and \p b.
  */
 template <typename T>
-inline T randint(T a, T b)
-{
-    static_assert(std::is_integral<T>::value && sizeof(T) > 1,
-                  "The type must be an integer!");
+inline T randint(T a, T b) {
+    static_assert(std::is_integral<T>::value && sizeof(T) > 1, "The type must be an integer!");
     return std::uniform_int_distribution<T>(a, b)(randint_engine());
 }
 
 // https://de.wikipedia.org/wiki/FNV_(Informatik)
-inline uint64_t FNV64(const uint8_t *s, size_t sz)
-{
+inline uint64_t FNV64(const uint8_t *s, size_t sz) {
     const uint64_t magicPrime = 0x00000100000001b3;
     uint64_t hash = 0xcbf29ce484222325;
 
@@ -93,6 +86,6 @@ inline long get_pid() {
     return ::getpid();
 #endif
 }
-}
+} // namespace utils
 
 #endif // UTILS_H

@@ -32,8 +32,7 @@
 
 #include "Traits.h"
 
-namespace numpy
-{
+namespace numpy {
 
 /** \brief Selector for view or copy
  *
@@ -49,8 +48,7 @@ enum view_or_copy { view, copy };
  */
 typedef PyObject *array;
 
-namespace internal
-{
+namespace internal {
 
 /** \brief Map C++ types to Numpy types
  *
@@ -100,8 +98,7 @@ struct py_type<std::complex<double>> {
  * \return The total length of the array
  */
 template <typename T>
-void check_array_sanity(int len, int nd, std::initializer_list<T> dims)
-{
+void check_array_sanity(int len, int nd, std::initializer_list<T> dims) {
     if (len < 1)
         throw std::out_of_range("Trying to create a numpy array with zero or "
                                 "negative element count!");
@@ -109,8 +106,7 @@ void check_array_sanity(int len, int nd, std::initializer_list<T> dims)
     if (nd != static_cast<int>(dims.size()))
         throw std::out_of_range("Dimension mismatch!");
 
-    if (len > std::accumulate(dims.begin(), dims.end(), int{1},
-                              [](int a, int b) { return a * b; }))
+    if (len > std::accumulate(dims.begin(), dims.end(), int{1}, [](int a, int b) { return a * b; }))
         throw std::out_of_range("Requested dimension is larger than data!");
 }
 
@@ -130,14 +126,12 @@ void check_array_sanity(int len, int nd, std::initializer_list<T> dims)
  */
 template <view_or_copy v, bool const_tag, typename value_type>
 typename std::enable_if<v == numpy::view, PyObject *>::type
-convert_impl(int nd, npy_intp *dim, int dtype, void *data, int)
-{
-    PyObject *ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
-                                    data, 0, NPY_ARRAY_FARRAY, nullptr);
+convert_impl(int nd, npy_intp *dim, int dtype, void *data, int) {
+    PyObject *ndarray =
+        PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr, data, 0, NPY_ARRAY_FARRAY, nullptr);
 
     if (const_tag)
-        PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject *>(ndarray),
-                           NPY_ARRAY_WRITEABLE);
+        PyArray_CLEARFLAGS(reinterpret_cast<PyArrayObject *>(ndarray), NPY_ARRAY_WRITEABLE);
     return ndarray;
 }
 
@@ -157,15 +151,13 @@ convert_impl(int nd, npy_intp *dim, int dtype, void *data, int)
  */
 template <view_or_copy v, bool const_tag, typename value_type>
 typename std::enable_if<v == numpy::copy, PyObject *>::type
-convert_impl(int nd, npy_intp *dim, int dtype, void *data, int len)
-{
-    PyObject *ndarray = PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr,
-                                    nullptr, 0, NPY_ARRAY_FARRAY, nullptr);
+convert_impl(int nd, npy_intp *dim, int dtype, void *data, int len) {
+    PyObject *ndarray =
+        PyArray_New(&PyArray_Type, nd, dim, dtype, nullptr, nullptr, 0, NPY_ARRAY_FARRAY, nullptr);
 
     std::memcpy(PyArray_DATA(reinterpret_cast<PyArrayObject *>(ndarray)), data,
                 len * sizeof(value_type));
-    PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject *>(ndarray),
-                        NPY_ARRAY_OWNDATA);
+    PyArray_ENABLEFLAGS(reinterpret_cast<PyArrayObject *>(ndarray), NPY_ARRAY_OWNDATA);
     return ndarray;
 }
 
@@ -182,24 +174,21 @@ convert_impl(int nd, npy_intp *dim, int dtype, void *data, int len)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename RAIter, typename T>
-PyObject *convert(RAIter begin, RAIter end, int nd,
-                  std::initializer_list<T> dims,
-                  std::random_access_iterator_tag)
-{
+PyObject *convert(RAIter begin, RAIter end, int nd, std::initializer_list<T> dims,
+                  std::random_access_iterator_tag) {
     using value_type = typename std::iterator_traits<RAIter>::value_type;
-    constexpr auto const_tag =
-        traits::is_pointer_to_const<decltype(&(*begin))>::value;
+    constexpr auto const_tag = traits::is_pointer_to_const<decltype(&(*begin))>::value;
 
     int const len = std::distance(begin, end);
 
     check_array_sanity(len, nd, dims);
 
-    npy_intp *dim = const_cast<typename traits::pointer_remove_const<decltype(
-        &(*dims.begin()))>::type>(&(*dims.begin()));
+    npy_intp *dim =
+        const_cast<typename traits::pointer_remove_const<decltype(&(*dims.begin()))>::type>(
+            &(*dims.begin()));
     auto dtype = py_type<value_type>::type;
-    void *data = const_cast<
-        typename traits::pointer_remove_const<decltype(&(*begin))>::type>(
-        &(*begin));
+    void *data =
+        const_cast<typename traits::pointer_remove_const<decltype(&(*begin))>::type>(&(*begin));
 
     return convert_impl<v, const_tag, value_type>(nd, dim, dtype, data, len);
 }
@@ -220,11 +209,9 @@ PyObject *convert(RAIter begin, RAIter end, int nd,
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename Iter, typename T>
-PyObject *convert(Iter begin, Iter end, int nd, std::initializer_list<T> dims)
-{
-    return internal::convert<v>(
-        begin, end, nd, dims,
-        typename std::iterator_traits<Iter>::iterator_category());
+PyObject *convert(Iter begin, Iter end, int nd, std::initializer_list<T> dims) {
+    return internal::convert<v>(begin, end, nd, dims,
+                                typename std::iterator_traits<Iter>::iterator_category());
 }
 
 // Overloads for often used types
@@ -239,13 +226,11 @@ PyObject *convert(Iter begin, Iter end, int nd, std::initializer_list<T> dims)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T>
-PyObject *convert(T *begin, T *end)
-{
+PyObject *convert(T *begin, T *end) {
     return numpy::convert<v>(begin, end, 1, {std::distance(begin, end)});
 }
 template <view_or_copy v, typename T>
-PyObject *convert(T const *begin, T const *end)
-{
+PyObject *convert(T const *begin, T const *end) {
     return numpy::convert<v>(begin, end, 1, {std::distance(begin, end)});
 }
 
@@ -258,16 +243,12 @@ PyObject *convert(T const *begin, T const *end)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &m)
-{
-    return numpy::convert<v>(m.data(), m.data() + m.size(), 2,
-                             {m.rows(), m.cols()});
+PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &m) {
+    return numpy::convert<v>(m.data(), m.data() + m.size(), 2, {m.rows(), m.cols()});
 }
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> const &m)
-{
-    return numpy::convert<v>(m.data(), m.data() + m.size(), 2,
-                             {m.rows(), m.cols()});
+PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> const &m) {
+    return numpy::convert<v>(m.data(), m.data() + m.size(), 2, {m.rows(), m.cols()});
 }
 
 /** \brief Create a Numpy array from an Eigen::Vector
@@ -279,16 +260,12 @@ PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> const &m)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, 1> &vec)
-{
-    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1,
-                             {vec.size()});
+PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, 1> &vec) {
+    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1, {vec.size()});
 }
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, 1> const &vec)
-{
-    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1,
-                             {vec.size()});
+PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, 1> const &vec) {
+    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1, {vec.size()});
 }
 
 /** \brief Create a Numpy array from a std::vector
@@ -300,16 +277,12 @@ PyObject *convert(Eigen::Matrix<T, Eigen::Dynamic, 1> const &vec)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T>
-PyObject *convert(std::vector<T> &vec)
-{
-    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1,
-                             {vec.size()});
+PyObject *convert(std::vector<T> &vec) {
+    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1, {vec.size()});
 }
 template <view_or_copy v, typename T>
-PyObject *convert(std::vector<T> const &vec)
-{
-    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1,
-                             {vec.size()});
+PyObject *convert(std::vector<T> const &vec) {
+    return numpy::convert<v>(vec.data(), vec.data() + vec.size(), 1, {vec.size()});
 }
 
 /** \brief Create a Numpy array from a std::array
@@ -321,22 +294,19 @@ PyObject *convert(std::vector<T> const &vec)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T, size_t N>
-PyObject *convert(std::array<T, N> &vec)
-{
+PyObject *convert(std::array<T, N> &vec) {
     using ssize_t = std::make_signed<size_t>::type;
     return numpy::convert<v>(vec.data(), vec.data() + N, 1, {ssize_t{N}});
 }
 template <view_or_copy v, typename T, size_t N>
-PyObject *convert(std::array<T, N> const &vec)
-{
+PyObject *convert(std::array<T, N> const &vec) {
     using ssize_t = std::make_signed<size_t>::type;
     return numpy::convert<v>(vec.data(), vec.data() + N, 1, {ssize_t{N}});
 }
 
 // Experimental support for Sparse matrix return types
 
-namespace internal
-{
+namespace internal {
 
 /** \brief Create a Numpy array from an Eigen::SparseMatrix
  *
@@ -350,20 +320,18 @@ namespace internal
  * \return PyObject* containing a Scipy csc_matrix
  */
 template <view_or_copy v, typename T>
-PyObject *sparse_impl(T &&sm)
-{
+PyObject *sparse_impl(T &&sm) {
     if (!sm.isCompressed())
         // we cannot call makeCompressed here because sm might be const
         throw std::runtime_error("Sparse matrix is not compressed!");
 
-    numpy::array indptr = numpy::convert<v>(
-        sm.outerIndexPtr(), sm.outerIndexPtr() + sm.outerSize() + 1);
+    numpy::array indptr =
+        numpy::convert<v>(sm.outerIndexPtr(), sm.outerIndexPtr() + sm.outerSize() + 1);
 
-    numpy::array indices = numpy::convert<v>(
-        sm.innerIndexPtr(), sm.innerIndexPtr() + sm.nonZeros());
+    numpy::array indices =
+        numpy::convert<v>(sm.innerIndexPtr(), sm.innerIndexPtr() + sm.nonZeros());
 
-    numpy::array data =
-        numpy::convert<v>(sm.valuePtr(), sm.valuePtr() + sm.nonZeros());
+    numpy::array data = numpy::convert<v>(sm.valuePtr(), sm.valuePtr() + sm.nonZeros());
 
     int num_rows = sm.rows();
     int num_cols = sm.cols();
@@ -371,8 +339,8 @@ PyObject *sparse_impl(T &&sm)
     char object[] = "csc_matrix";
     char arglist[] = "(OOO)(ii)";
     PyObject *scipy = PyImport_ImportModule("scipy.sparse");
-    PyObject *mat = PyObject_CallMethod(scipy, object, arglist, data, indices,
-                                        indptr, num_rows, num_cols);
+    PyObject *mat =
+        PyObject_CallMethod(scipy, object, arglist, data, indices, indptr, num_rows, num_cols);
     Py_DECREF(scipy);
     return mat;
 }
@@ -388,20 +356,17 @@ PyObject *sparse_impl(T &&sm)
  * \return PyObject* containing a Numpy array
  */
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::SparseMatrix<T> &sm)
-{
+PyObject *convert(Eigen::SparseMatrix<T> &sm) {
     return internal::sparse_impl<v>(sm);
 }
 template <view_or_copy v, typename T>
-PyObject *convert(Eigen::SparseMatrix<T> const &sm)
-{
+PyObject *convert(Eigen::SparseMatrix<T> const &sm) {
     return internal::sparse_impl<v>(sm);
 }
 
 // Experimental support for Numpy arguments
 
-namespace internal
-{
+namespace internal {
 
 /** \brief Check if a Numpy has given storage order and alignment
  *
@@ -411,12 +376,10 @@ namespace internal
  *
  * \param[in] ndarray    Numpy array
  */
-void check_order_and_alignment(PyArrayObject *ndarray)
-{
+void check_order_and_alignment(PyArrayObject *ndarray) {
     int const flags = PyArray_FLAGS(ndarray);
     if ((flags & NPY_ARRAY_F_CONTIGUOUS) == 0)
-        throw std::invalid_argument(
-            "The argument is not contiguous or has wrong storage order!");
+        throw std::invalid_argument("The argument is not contiguous or has wrong storage order!");
     if ((flags & NPY_ARRAY_ALIGNED) == 0)
         throw std::invalid_argument("The argument is not not aligned!");
 }
@@ -429,8 +392,7 @@ void check_order_and_alignment(PyArrayObject *ndarray)
  * dimensions, and a pointer to the data.
  */
 template <typename T, typename Scalar = typename T::Scalar>
-std::tuple<int, npy_intp *, Scalar *> as_dense_impl(numpy::array ndarray_)
-{
+std::tuple<int, npy_intp *, Scalar *> as_dense_impl(numpy::array ndarray_) {
     if (!ndarray_ || !PyArray_Check(ndarray_))
         throw std::invalid_argument("The argument is not a valid Numpy array!");
 
@@ -460,16 +422,15 @@ std::tuple<int, npy_intp *, Scalar *> as_dense_impl(numpy::array ndarray_)
 #ifndef SCANNED_BY_DOXYGEN
 template <typename T, typename Scalar = typename T::Scalar>
 typename std::enable_if<
-    std::is_same<T, Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic,
-                                  T::Options, T::MaxRowsAtCompileTime,
-                                  T::MaxColsAtCompileTime>>::value,
+    std::is_same<T,
+                 Eigen::Matrix<Scalar, Eigen::Dynamic, Eigen::Dynamic, T::Options,
+                               T::MaxRowsAtCompileTime, T::MaxColsAtCompileTime>>::value,
     Eigen::Map<T const>>::type
 #else
 template <typename MatrixType>
 Eigen::Map<MatrixType>
 #endif
-as(numpy::array ndarray)
-{
+as(numpy::array ndarray) {
     int nd;
     npy_intp *dims;
     Scalar *data;
@@ -493,16 +454,15 @@ as(numpy::array ndarray)
 #ifndef SCANNED_BY_DOXYGEN
 template <typename T, typename Scalar = typename T::Scalar>
 typename std::enable_if<
-    std::is_same<T, Eigen::Matrix<Scalar, Eigen::Dynamic, 1, T::Options,
-                                  T::MaxRowsAtCompileTime,
-                                  T::MaxColsAtCompileTime>>::value,
+    std::is_same<T,
+                 Eigen::Matrix<Scalar, Eigen::Dynamic, 1, T::Options, T::MaxRowsAtCompileTime,
+                               T::MaxColsAtCompileTime>>::value,
     Eigen::Map<T const>>::type
 #else
 template <typename VectorType>
 Eigen::Map<VectorType>
 #endif
-as(numpy::array ndarray)
-{
+as(numpy::array ndarray) {
     int nd;
     npy_intp *dims;
     Scalar *data;
@@ -527,15 +487,13 @@ as(numpy::array ndarray)
 template <typename T, typename Scalar = typename T::Scalar,
           typename StorageIndex = typename T::StorageIndex>
 typename std::enable_if<
-    std::is_same<T,
-                 Eigen::SparseMatrix<Scalar, T::Options, StorageIndex>>::value,
+    std::is_same<T, Eigen::SparseMatrix<Scalar, T::Options, StorageIndex>>::value,
     Eigen::Map<T const>>::type
 #else
 template <typename SparseMatrixType>
 Eigen::Map<SparseMatrixType>
 #endif
-as(numpy::array ndarray)
-{
+as(numpy::array ndarray) {
     PyObject *scipy = PyImport_ImportModule("scipy.sparse");
     PyObject *csc_matrix = PyObject_GetAttrString(scipy, "csc_matrix");
     if (!ndarray || !PyObject_IsInstance(ndarray, csc_matrix))
@@ -571,10 +529,8 @@ as(numpy::array ndarray)
     npy_intp *nnz = PyArray_SHAPE(data_);
 
     Scalar *data = reinterpret_cast<Scalar *>(PyArray_DATA(data_));
-    StorageIndex *indices =
-        reinterpret_cast<StorageIndex *>(PyArray_DATA(indices_));
-    StorageIndex *indptr =
-        reinterpret_cast<StorageIndex *>(PyArray_DATA(indptr_));
+    StorageIndex *indices = reinterpret_cast<StorageIndex *>(PyArray_DATA(indices_));
+    StorageIndex *indptr = reinterpret_cast<StorageIndex *>(PyArray_DATA(indptr_));
 
     if (PyArray_TYPE(data_) != internal::py_type<Scalar>::type)
         throw std::invalid_argument("Type mismatch.");

@@ -17,8 +17,7 @@
 #ifndef TRAITS_H
 #define TRAITS_H
 
-namespace traits
-{
+namespace traits {
 
 /** \brief Check if something points to const
  *
@@ -26,18 +25,15 @@ namespace traits
  * points to const
  */
 template <typename T>
-struct is_pointer_to_const : std::false_type {
-};
+struct is_pointer_to_const : std::false_type {};
 
 /** \brief Specialization of is_pointer_to_const for T const * */
 template <typename T>
-struct is_pointer_to_const<T const *> : std::true_type {
-};
+struct is_pointer_to_const<T const *> : std::true_type {};
 
 /** \brief Specialization of is_pointer_to_const for T const * const */
 template <typename T>
-struct is_pointer_to_const<T const *const> : std::true_type {
-};
+struct is_pointer_to_const<T const *const> : std::true_type {};
 
 /** \brief Remove const qualifiers from pointer
  *

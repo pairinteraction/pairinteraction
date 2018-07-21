@@ -31,8 +31,7 @@
 
 #include "utils.h"
 
-namespace sqlite
-{
+namespace sqlite {
 
 /** \brief SQLite error
  *
@@ -56,9 +55,7 @@ public:
      * \param[in] msg   error message
      */
     explicit error(int err, std::string const &msg)
-        : m_msg(std::string("SQLite error ") + std::to_string(err) + ": " + msg)
-    {
-    }
+        : m_msg(std::string("SQLite error ") + std::to_string(err) + ": " + msg) {}
 
     /** \brief %what() function
      *
@@ -75,16 +72,14 @@ private:
  * This object wraps an SQLite statement.  It is iterable in a while
  * loop with the step() function or in a range-based for loop.
  */
-class statement
-{
+class statement {
     sqlite3 *m_db;
     std::unique_ptr<sqlite3_stmt, int (*)(sqlite3_stmt *)> m_stmt;
     std::string m_sql;
     bool m_prepared;
     bool m_valid;
 
-    void handle_error(int err)
-    {
+    void handle_error(int err) {
         if (err != 0) {
             throw error(err, sqlite3_errstr(err));
         }
@@ -109,17 +104,14 @@ public:
      */
     explicit statement(sqlite3 *db, std::string sql)
         : m_db{db}, m_stmt{nullptr, sqlite3_finalize}, m_sql{std::move(sql)},
-          m_prepared{false}, m_valid{true}
-    {
-    }
+          m_prepared{false}, m_valid{true} {}
 
     /** \brief Set the query string
      *
      * \param[in] sql   the query string
      * \throws sqlite::error
      */
-    void set(std::string const &sql)
-    {
+    void set(std::string const &sql) {
         m_sql = sql;
         m_prepared = false;
     }
@@ -133,8 +125,7 @@ public:
      *
      * \throws sqlite::error
      */
-    void prepare()
-    {
+    void prepare() {
         sqlite3_stmt *pStmt; // is managed below
         auto err = sqlite3_prepare_v2(m_db, m_sql.c_str(), -1, &pStmt, nullptr);
         m_stmt.reset(pStmt);
@@ -152,8 +143,7 @@ public:
      *
      * \throws sqlite::error
      */
-    bool step()
-    {
+    bool step() {
         if (!m_prepared) {
             handle_error(SQLITE_MISUSE);
         }
@@ -183,8 +173,7 @@ public:
      *
      * \throws sqlite::error
      */
-    void reset()
-    {
+    void reset() {
         handle_error(sqlite3_reset(m_stmt.get()));
         m_valid = true;
     }
@@ -197,8 +186,7 @@ public:
      * \param[in] sql   SQL statements
      * \throws sqlite::error
      */
-    void exec(std::string const &sql)
-    {
+    void exec(std::string const &sql) {
         set(sql);
         auto err = sqlite3_exec(m_db, m_sql.c_str(), nullptr, nullptr, nullptr);
         handle_error(err);
@@ -210,30 +198,21 @@ public:
      * \param[in] s       string to bind
      * \throws sqlite::error
      */
-    void bind(int where, std::string const &s)
-    {
-        handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
-                                       s.length(), SQLITE_STATIC));
+    void bind(int where, std::string const &s) {
+        handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(), s.length(), SQLITE_STATIC));
     }
 
     /** \overload void bind(int where, std::string const &s) */
-    void bind(int where, std::string &&s)
-    {
-        handle_error(sqlite3_bind_text(m_stmt.get(), where, s.c_str(),
-                                       s.length(), SQLITE_TRANSIENT));
+    void bind(int where, std::string &&s) {
+        handle_error(
+            sqlite3_bind_text(m_stmt.get(), where, s.c_str(), s.length(), SQLITE_TRANSIENT));
     }
 
     /** \overload void bind(int where, std::string const &s) */
-    void bind(int where, double d)
-    {
-        handle_error(sqlite3_bind_double(m_stmt.get(), where, d));
-    }
+    void bind(int where, double d) { handle_error(sqlite3_bind_double(m_stmt.get(), where, d)); }
 
     /** \overload void bind(int where, std::string const &s) */
-    void bind(int where, int i)
-    {
-        handle_error(sqlite3_bind_int(m_stmt.get(), where, i));
-    }
+    void bind(int where, int i) { handle_error(sqlite3_bind_int(m_stmt.get(), where, i)); }
 
 #ifdef SCANNED_BY_DOXYGEN
     /** \brief Get value of a field
@@ -249,26 +228,22 @@ public:
     template <typename ReturnType>
     ReturnType get(int field);
 #else
-    template <typename T, typename = typename std::enable_if<
-                              std::is_floating_point<T>::value>::type>
-    double get(int field)
-    {
+    template <typename T,
+              typename = typename std::enable_if<std::is_floating_point<T>::value>::type>
+    double get(int field) {
         return sqlite3_column_double(m_stmt.get(), field);
     }
 
-    template <typename T, typename = typename std::enable_if<
-                              std::is_same<T, int>::value>::type>
-    int get(int field)
-    {
+    template <typename T, typename = typename std::enable_if<std::is_same<T, int>::value>::type>
+    int get(int field) {
         return sqlite3_column_int(m_stmt.get(), field);
     }
 
-    template <typename T, typename = typename std::enable_if<
-                              std::is_same<T, std::string>::value>::type>
-    std::string get(int field)
-    {
-        return std::string(reinterpret_cast<char const *>(
-            sqlite3_column_text(m_stmt.get(), field)));
+    template <typename T,
+              typename = typename std::enable_if<std::is_same<T, std::string>::value>::type>
+    std::string get(int field) {
+        return std::string(
+            reinterpret_cast<char const *>(sqlite3_column_text(m_stmt.get(), field)));
     }
 #endif
 
@@ -279,17 +254,15 @@ public:
      * to the official documentation for the internal functions:
      * http://www.boost.org/libs/iterator/
      */
-    class iterator : public boost::iterator_facade<iterator, statement,
-                                                   boost::forward_traversal_tag>
-    {
+    class iterator
+        : public boost::iterator_facade<iterator, statement, boost::forward_traversal_tag> {
     private:
         friend class boost::iterator_core_access;
         statement *m_stmt;
         bool m_done;
         bool m_end;
 
-        void increment()
-        {
+        void increment() {
             if (!m_done) {
                 m_done = m_stmt->step();
             } else {
@@ -299,8 +272,7 @@ public:
 
         bool equal(iterator const & /*unused*/) const { return m_end; }
 
-        statement &dereference() const
-        {
+        statement &dereference() const {
 #ifndef NDEBUG
             if (m_end)
                 throw std::out_of_range("iterator out of range");
@@ -311,10 +283,7 @@ public:
     public:
         iterator() : m_stmt{nullptr}, m_done{true}, m_end{true} {}
 
-        explicit iterator(statement *p) : m_stmt{p}, m_done{false}, m_end{false}
-        {
-            m_stmt->step();
-        }
+        explicit iterator(statement *p) : m_stmt{p}, m_done{false}, m_end{false} { m_stmt->step(); }
     };
 
     /** \brief returns an iterator to the beginning
@@ -350,26 +319,22 @@ public:
  * provides a high-level object oriented RAII interface to the C-bindings of
  * SQLite3.
  */
-class handle final
-{
+class handle final {
     std::unique_ptr<sqlite3, decltype(&sqlite3_close)> m_db;
     int m_threshold;
 
-    static int busy_handler(void *self, int num_prior_calls)
-    {
+    static int busy_handler(void *self, int num_prior_calls) {
         int thresh = static_cast<handle *>(self)->m_threshold;
         // Sleep if handler has been called less than num_prior_calls
         if (num_prior_calls < thresh) {
-            std::this_thread::sleep_for(
-                std::chrono::microseconds(utils::randint(2000, 20000)));
+            std::this_thread::sleep_for(std::chrono::microseconds(utils::randint(2000, 20000)));
             return 1;
         }
 
         return 0; // Make sqlite3 return SQLITE_BUSY
     }
 
-    void install_busy_handler()
-    {
+    void install_busy_handler() {
         auto err = sqlite3_busy_handler(m_db.get(), busy_handler, this);
 
         if (err != 0) {
@@ -401,8 +366,7 @@ public:
      */
     explicit handle(std::string const &filename,
                     int flags = SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE)
-        : m_db{nullptr, sqlite3_close}, m_threshold{100000}
-    {
+        : m_db{nullptr, sqlite3_close}, m_threshold{100000} {
         sqlite3 *tmp_db;
         auto err = sqlite3_open_v2(filename.c_str(), &tmp_db, flags, nullptr);
         m_db.reset(tmp_db);
@@ -418,9 +382,7 @@ public:
      *
      * Reinstalls the busy handler.
      */
-    handle(handle &&other) noexcept
-        : m_db{std::move(other.m_db)}, m_threshold{other.m_threshold}
-    {
+    handle(handle &&other) noexcept : m_db{std::move(other.m_db)}, m_threshold{other.m_threshold} {
         install_busy_handler();
     }
 
@@ -428,8 +390,7 @@ public:
      *
      * Reinstalls the busy handler.
      */
-    handle &operator=(handle &&other) noexcept
-    {
+    handle &operator=(handle &&other) noexcept {
         if (this != std::addressof(other)) // skip self-assignment
         {
             m_db = std::move(other.m_db);

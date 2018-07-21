@@ -47,8 +47,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T) // NOLINT
     BOOST_CHECK_EQUAL(xy.rows(), 12087);
 
     // Check for correct upper bound and decay to zero
-    BOOST_CHECK(xy(xy.rows() - 1, 0) <=
-                std::sqrt(2 * T::qd.n * (T::qd.n + 15)));
+    BOOST_CHECK(xy(xy.rows() - 1, 0) <= std::sqrt(2 * T::qd.n * (T::qd.n + 15)));
     BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
 }
 

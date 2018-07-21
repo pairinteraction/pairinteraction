@@ -32,8 +32,7 @@
  * user should not search the cache manually for entries.
  */
 template <typename Key, typename Element, typename Hash = std::hash<Key>>
-class Cache
-{
+class Cache {
     typedef std::unordered_map<Key, Element, Hash> cache_t;
 
     cache_t cache;
@@ -54,8 +53,7 @@ public:
      * \param e Element
      * \throws std::runtime_error if the element is already in the cache
      */
-    void save(Key const &key, Element const &e)
-    {
+    void save(Key const &key, Element const &e) {
         std::lock_guard<std::mutex> lock(cache_mutex);
         if (!cache.emplace(std::make_pair(key, e)).second) {
             throw std::runtime_error("Cache smashing detected!");
@@ -83,8 +81,7 @@ public:
      * \param key Key
      * \returns Optional element
      */
-    boost::optional<Element> restore(Key const &key)
-    {
+    boost::optional<Element> restore(Key const &key) {
         std::lock_guard<std::mutex> lock(cache_mutex);
         auto cached_it = cache.find(key);
         if (cached_it != cache.end()) {

@@ -17,11 +17,11 @@
 #ifndef DTYPES_H
 #define DTYPES_H
 
-#include <vector>
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 #include <array>
 #include <cmath>
-#include <Eigen/Sparse>
-#include <Eigen/Dense>
+#include <vector>
 
 typedef std::complex<double> complex_t;
 typedef uint32_t idx_t;
@@ -47,17 +47,18 @@ typedef Eigen::SparseMatrix<complex_t> eigen_sparse_complex_t;
 typedef Eigen::SparseMatrix<scalar_t>::InnerIterator eigen_iterator_t;
 typedef Eigen::SparseMatrix<double>::InnerIterator eigen_iterator_double_t;
 typedef Eigen::SparseMatrix<complex_t>::InnerIterator eigen_iterator_complex_t;
-typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_t;
-typedef Eigen::Matrix<double,Eigen::Dynamic,Eigen::Dynamic> eigen_dense_double_t;
-typedef Eigen::Matrix<scalar_t,Eigen::Dynamic,1> eigen_vector_t;
-typedef Eigen::Matrix<double,Eigen::Dynamic,1> eigen_vector_double_t;
+typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_t;
+typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_double_t;
+typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> eigen_vector_t;
+typedef Eigen::Matrix<double, Eigen::Dynamic, 1> eigen_vector_double_t;
 
 constexpr const double au2GHz = 6579683.920757349;
 constexpr const double au2Vcm = 5142206707.0;
 constexpr const double au2G = 2350517550.0;
 constexpr const double au2um = 5.2917721067e-05;
 constexpr const double inverse_electric_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
-constexpr const double sqrt_inverse_electric_constant = 0.7717003798774048; // equals sqrt(inverse_electric_constant)
+constexpr const double sqrt_inverse_electric_constant =
+    0.7717003798774048; // equals sqrt(inverse_electric_constant)
 constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2G / au2GHz;
 
 constexpr const double coulombs_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
@@ -74,7 +75,7 @@ constexpr const int ARB = 32767;
 class Triple {
 public:
     Triple() = default;
-    Triple(idx_t row, idx_t col, scalar_t val) : row(row), col(col), val(val) { }
+    Triple(idx_t row, idx_t col, scalar_t val) : row(row), col(col), val(val) {}
     idx_t row{0};
     idx_t col{0};
     scalar_t val{0};
@@ -93,15 +94,15 @@ struct Symmetry {
     int rotation;
 
     // Comparison operator that is needed if an object of type Symmetry is used as key for std::map
-    friend bool operator< (const Symmetry& s1, const Symmetry& s2)
-    {
-        std::array<int, 5> syms1{ {s1.inversion, s1.reflection, s1.permutation, s1.rotation} };
-        std::array<int, 5> syms2{ {s2.inversion, s2.reflection, s2.permutation, s2.rotation} };
+    friend bool operator<(const Symmetry &s1, const Symmetry &s2) {
+        std::array<int, 5> syms1{{s1.inversion, s1.reflection, s1.permutation, s1.rotation}};
+        std::array<int, 5> syms2{{s2.inversion, s2.reflection, s2.permutation, s2.rotation}};
 
         for (size_t i = 0; i < syms1.size(); ++i) {
             if (syms1[i] < syms2[i]) {
                 return true;
-            } if (syms1[i] > syms2[i]) {
+            }
+            if (syms1[i] > syms2[i]) {
                 return false;
             }
         }

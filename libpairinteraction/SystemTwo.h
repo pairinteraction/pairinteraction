@@ -21,19 +21,20 @@
 #include "SystemBase.h"
 #include "SystemOne.h"
 
-#include <cmath>
-#include <type_traits>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <cmath>
 #include <set>
+#include <type_traits>
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
     SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache);
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache, bool memory_saving);
+    SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
+              bool memory_saving);
 
-    const std::array<std::string, 2>& getElement(); // TODO rename to getSpecies
+    const std::array<std::string, 2> &getElement(); // TODO rename to getSpecies
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
@@ -43,7 +44,7 @@ public:
     void setConservedParityUnderPermutation(parity_t parity);
     void setConservedParityUnderInversion(parity_t parity);
     void setConservedParityUnderReflection(parity_t parity);
-    void setConservedMomentaUnderRotation(const std::set<int>& momenta);
+    void setConservedMomentaUnderRotation(const std::set<int> &momenta);
 
 protected:
     void initializeBasis() override;
@@ -51,7 +52,8 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
-    eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha, double beta, double gamma) override;
+    eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha,
+                                double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateTwo> &system) override;
 
@@ -78,26 +80,40 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addCoefficient(const StateTwo& state, const size_t &col_new, const scalar_t &value_new, std::vector<eigen_triplet_t> &coefficients_triplets, std::vector<double> &sqnorm_list);
+    void addCoefficient(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
+                        std::vector<eigen_triplet_t> &coefficients_triplets,
+                        std::vector<double> &sqnorm_list);
 
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx, scalar_t val);
+    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
+                    scalar_t val);
 
-    template<class T>
-    void addRotated(const StateTwo &state, const size_t &idx, std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha, const double &beta, const double &gamma) {
+    template <class T>
+    void addRotated(const StateTwo &state, const size_t &idx,
+                    std::vector<Eigen::Triplet<T>> &triplets, WignerD &wigner, const double &alpha,
+                    const double &beta, const double &gamma) {
         // Check whether the angles are compatible to the used data type
         double tolerance = 1e-16;
-        if (std::is_same<T, double>::value && std::abs(std::remainder(alpha,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
-}
-        if (std::is_same<T, double>::value && std::abs(std::remainder(gamma,2*M_PI)) > tolerance) { throw std::runtime_error( "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element is complex and cannot be converted to double." );
-}
+        if (std::is_same<T, double>::value &&
+            std::abs(std::remainder(alpha, 2 * M_PI)) > tolerance) {
+            throw std::runtime_error(
+                "If the Euler angle alpha is not a multiple of 2 pi, the Wigner D matrix element "
+                "is complex and cannot be converted to double.");
+        }
+        if (std::is_same<T, double>::value &&
+            std::abs(std::remainder(gamma, 2 * M_PI)) > tolerance) {
+            throw std::runtime_error(
+                "If the Euler angle gamma is not a multiple of 2 pi, the Wigner D matrix element "
+                "is complex and cannot be converted to double.");
+        }
 
         // Add rotated triplet entries
         StateTwo newstate = state;
         std::vector<T> val2_vector;
-        val2_vector.reserve(2*state.second().j+1);
+        val2_vector.reserve(2 * state.second().j + 1);
 
         for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
-            val2_vector.push_back(convert<T>(wigner(state.second().j, state.second().m, m2, alpha, beta, gamma)));
+            val2_vector.push_back(
+                convert<T>(wigner(state.second().j, state.second().m, m2, alpha, beta, gamma)));
         }
 
         for (float m1 = -state.first().j; m1 <= state.first().j; ++m1) {
@@ -108,16 +124,18 @@ private:
                 auto state_iter = states.get<1>().find(newstate);
 
                 if (state_iter != states.get<1>().end()) {
-                    T val = val1*val2_vector[m2+state.second().j];
+                    T val = val1 * val2_vector[m2 + state.second().j];
                     triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
                 } else {
-                    std::cerr << "Warning: Incomplete rotation because the basis is lacking some Zeeman levels." << std::endl;
+                    std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
+                                 "Zeeman levels."
+                              << std::endl;
                 }
             }
         }
     }
 
-    template<class T, class S>
+    template <class T, class S>
     T convert(const S &val) {
         return val;
     }
@@ -130,13 +148,13 @@ private:
 
     friend class boost::serialization::access;
 
-    template<class Archive>
-    void serialize(Archive & ar, const unsigned int /*version*/) {
-        ar & boost::serialization::base_object<SystemBase<StateTwo>>(*this);
-        ar & species & system1 & system2;
-        ar & distance & angle & ordermax & sym_permutation & sym_inversion & sym_reflection & sym_rotation;
-        ar & angle_terms;
-        ar & interaction_angulardipole & interaction_multipole;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &boost::serialization::base_object<SystemBase<StateTwo>>(*this);
+        ar &species &system1 &system2;
+        ar &distance &angle &ordermax &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
+        ar &angle_terms;
+        ar &interaction_angulardipole &interaction_multipole;
     }
 };
 

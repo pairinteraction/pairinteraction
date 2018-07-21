@@ -19,31 +19,27 @@
 #include "HamiltonianOne.h"
 #include "HamiltonianTwo.h"
 
+#include <boost/filesystem.hpp>
 #include <codecvt>
 #include <iostream>
 #include <locale>
 #include <memory>
-#include <boost/filesystem.hpp>
 
 #if defined(_OPENMP)
 #include <omp.h>
-int thread_ctrl(int num_threads /*= -1*/)
-{
+int thread_ctrl(int num_threads /*= -1*/) {
     if (num_threads != -1) {
         omp_set_num_threads(num_threads);
-}
+    }
 
-    #pragma omp parallel
-    #pragma omp single
+#pragma omp parallel
+#pragma omp single
     num_threads = omp_get_num_threads();
 
     return num_threads;
 }
 #else
-int thread_ctrl(int num_threads /*= -1*/)
-{
-    return 1;
-}
+int thread_ctrl(int num_threads /*= -1*/) { return 1; }
 #endif
 
 /*
@@ -57,7 +53,8 @@ int thread_ctrl(int num_threads /*= -1*/)
 
 std::string zmq::endpoint::name{};
 
-int compute(const std::string &config_name, const std::string &output_name, std::string const &endpoint) {
+int compute(const std::string &config_name, const std::string &output_name,
+            std::string const &endpoint) {
     zmq::endpoint::name = endpoint;
 
     auto context = zmq::context();
@@ -69,21 +66,25 @@ int compute(const std::string &config_name, const std::string &output_name, std:
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
 
     boost::filesystem::path path_config = boost::filesystem::absolute(config_name);
-    boost::filesystem::path path_cache  = boost::filesystem::absolute(output_name);
+    boost::filesystem::path path_cache = boost::filesystem::absolute(output_name);
 
     // === Load configuration ===
     Configuration config;
     config.load_from_json(path_config.string());
 
-    bool existAtom1 = (config.count("species1") != 0u) && (config.count("n1") != 0u) && (config.count("l1") != 0u) && (config.count("j1") != 0u) && (config.count("m1") != 0u);
-    bool existAtom2 = (config.count("species2") != 0u) && (config.count("n2") != 0u) && (config.count("l2") != 0u) && (config.count("j2") != 0u) && (config.count("m2") != 0u);
+    bool existAtom1 = (config.count("species1") != 0u) && (config.count("n1") != 0u) &&
+        (config.count("l1") != 0u) && (config.count("j1") != 0u) && (config.count("m1") != 0u);
+    bool existAtom2 = (config.count("species2") != 0u) && (config.count("n2") != 0u) &&
+        (config.count("l2") != 0u) && (config.count("j2") != 0u) && (config.count("m2") != 0u);
 
     // === Solve the system ===
     bool combined = config["samebasis"].str() == "true";
 
     if (combined) {
         if (config["species1"].str() != config["species2"].str()) {
-            std::cout << "species1 and species2 has to be the same in order to use the same basis set." << std::endl;
+            std::cout
+                << "species1 and species2 has to be the same in order to use the same basis set."
+                << std::endl;
             return 1;
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one;
@@ -101,19 +102,24 @@ int compute(const std::string &config_name, const std::string &output_name, std:
         std::shared_ptr<HamiltonianOne> hamiltonian_one1;
         if (existAtom1) {
             publisher.send(">>TYP%7d", 0);
-            auto basisnames_one1 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
-            hamiltonian_one1 = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one1);
+            auto basisnames_one1 =
+                std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
+            hamiltonian_one1 =
+                std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one1);
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one2;
         if (existAtom2) {
             publisher.send(">>TYP%7d", 1);
-            auto basisnames_one2 = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
-            hamiltonian_one2 = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one2);
+            auto basisnames_one2 =
+                std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
+            hamiltonian_one2 =
+                std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one2);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             publisher.send(">>TYP%7d", 2);
-            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1, hamiltonian_one2);
+            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1,
+                                                               hamiltonian_one2);
         }
     }
 
@@ -123,25 +129,17 @@ int compute(const std::string &config_name, const std::string &output_name, std:
     return 0;
 }
 
-
-int mainMatrixElement(std::string const& element, std::string const& row, std::string const& col, int power) {
+int mainMatrixElement(std::string const &element, std::string const &row, std::string const &col,
+                      int power) {
     std::cout << std::unitbuf;
 
     size_t precision = std::numeric_limits<double>::digits10 + 1;
 
     StateOne state_row;
-    std::stringstream(row)
-        >> state_row.n
-        >> state_row.l
-        >> state_row.j
-        >> state_row.m;
+    std::stringstream(row) >> state_row.n >> state_row.l >> state_row.j >> state_row.m;
 
     StateOne state_col;
-    std::stringstream(col)
-        >> state_col.n
-        >> state_col.l
-        >> state_col.j
-        >> state_col.m;
+    std::stringstream(col) >> state_col.n >> state_col.l >> state_col.j >> state_col.m;
 
     std::cout << element << std::endl;
     std::cout << state_row << std::endl;

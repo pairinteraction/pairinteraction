@@ -31,11 +31,9 @@
  * advanced features which make it better than a pure `std::string`
  * value.
  */
-class Configuration
-{
+class Configuration {
 private:
-    class value
-    {
+    class value {
         std::string m_value;
 
     public:
@@ -43,46 +41,37 @@ private:
 
         std::string const str() const { return m_value; }
 
-        bool operator==(value const &rhs) const
-        {
-            return this->m_value == rhs.m_value;
-        }
+        bool operator==(value const &rhs) const { return this->m_value == rhs.m_value; }
 
         template <typename T>
-        value &operator<<(T const &rhs)
-        {
+        value &operator<<(T const &rhs) {
             m_value = boost::lexical_cast<std::string>(rhs);
             return *this;
         }
 
         template <typename T>
-        value &operator>>(T &rhs)
-        {
+        value &operator>>(T &rhs) {
             rhs = boost::lexical_cast<T>(m_value);
             return *this;
         }
 
         template <typename T>
-        value const &operator>>(T &rhs) const
-        {
+        value const &operator>>(T &rhs) const {
             rhs = boost::lexical_cast<T>(m_value);
             return *this;
         }
 
-        value &operator<<(value const &rhs)
-        {
+        value &operator<<(value const &rhs) {
             m_value = rhs.m_value;
             return *this;
         }
 
-        value &operator>>(value &rhs)
-        {
+        value &operator>>(value &rhs) {
             rhs.m_value = m_value;
             return *this;
         }
 
-        value const &operator>>(value &rhs) const
-        {
+        value const &operator>>(value &rhs) const {
             rhs.m_value = m_value;
             return *this;
         }
@@ -133,8 +122,7 @@ public:
      *
      * \returns Configuration appended to
      */
-    Configuration &operator+=(Configuration const &rhs)
-    {
+    Configuration &operator+=(Configuration const &rhs) {
         for (auto const &p : rhs) {
             (*this)[p.first] = p.second;
         }
@@ -166,10 +154,7 @@ public:
      *
      * \returns Truth value for equality
      */
-    bool operator==(Configuration const &rhs) const
-    {
-        return this->params == rhs.params;
-    }
+    bool operator==(Configuration const &rhs) const { return this->params == rhs.params; }
 
     /** \brief Iterator type
      *
@@ -223,10 +208,7 @@ public:
      *
      * \returns constant iterator
      */
-    const_iterator find(std::string const &key) const
-    {
-        return params.find(key);
-    }
+    const_iterator find(std::string const &key) const { return params.find(key); }
 
 private:
     std::map<std::string, value> params;

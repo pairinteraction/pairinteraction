@@ -51,8 +51,7 @@
  * The object also loads the parameters for the model potentials which are used
  * in the Numerov object.
  */
-class QuantumDefect
-{
+class QuantumDefect {
 private:
     /** \brief Key type for quantum defect cache */
     struct Key {
@@ -62,8 +61,7 @@ private:
         double j;
 
         /** \brief Comparison for keys */
-        bool operator==(Key const &o) const
-        {
+        bool operator==(Key const &o) const {
             return (species == o.species && n == o.n && l == o.l && j == o.j);
         }
     };
@@ -71,8 +69,7 @@ private:
     //** \brief Hash for Key */
     struct Hash {
         /** \brief Hash the key using boost::hash_combine */
-        std::size_t operator()(Key const &key) const
-        {
+        std::size_t operator()(Key const &key) const {
             std::size_t seed = 0;
             boost::hash_combine(seed, key.species);
             boost::hash_combine(seed, key.n);
@@ -96,8 +93,7 @@ private:
 
     void setup(sqlite3 * /*db*/);
 
-    QuantumDefect(std::string _species, int _n, int _l, double _j,
-                  std::nullptr_t);
+    QuantumDefect(std::string _species, int _n, int _l, double _j, std::nullptr_t);
 
 public:
     /** \brief Constructor
@@ -113,8 +109,7 @@ public:
 
     /** \overload QuantumDefect(std::string const& species, int n, int l, double
      * j) */
-    QuantumDefect(std::string const &species, int n, int l, double j,
-                  std::string const &database);
+    QuantumDefect(std::string const &species, int n, int l, double j, std::string const &database);
 
     /** \brief Atomic species */
     const std::string species;

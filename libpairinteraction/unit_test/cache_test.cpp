@@ -48,9 +48,8 @@ BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
     std::vector<std::thread> threads(10);
 
     for (std::size_t i = 0; i < 10; ++i) {
-        threads[i] = std::thread([&cache, i]() {
-            cache.save(i, "Hello from thread " + std::to_string(i));
-        });
+        threads[i] =
+            std::thread([&cache, i]() { cache.save(i, "Hello from thread " + std::to_string(i)); });
     }
 
     for (std::size_t i = 0; i < 10; ++i) {
@@ -58,7 +57,6 @@ BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
     }
 
     for (std::size_t i = 0; i < 10; ++i) {
-        BOOST_CHECK_EQUAL(cache.restore(i).get(),
-                          "Hello from thread " + std::to_string(i));
+        BOOST_CHECK_EQUAL(cache.restore(i).get(), "Hello from thread " + std::to_string(i));
     }
 }
