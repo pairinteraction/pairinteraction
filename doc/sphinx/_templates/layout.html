@@ -1,0 +1,23 @@
+{% extends "!layout.html" %}
+{% block menu %}
+{{ super() }}
+<style>
+a.button {
+  display: block;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 100px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url(buttons/github.png) 0 0 no-repeat;
+}
+a.button small {
+  display: block;
+  font-size: 11px;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="button"><small>Get pairinteraction on</small> GitHub</a>
+{% endblock %}
