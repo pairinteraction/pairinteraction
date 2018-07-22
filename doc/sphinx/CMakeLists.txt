@@ -63,11 +63,13 @@ if(SPHINX_FOUND)
 
   # Files to be copied to the build directory
   set(FILE_LIST
+    "_templates/layout.html"
     "images/logo48x48.png"
     "html/slides/screen-osx-pairpotential.jpg"
     "html/slides/screen-osx-starkmap.jpg"
     "html/slides/screen-osx-zeemanmap.jpg"
     "html/slides/screen-win64.png"
+    "html/buttons/github.png"
     "images/license-badge.svg"
     "images/arXiv-badge.svg"
     "index.rst"
