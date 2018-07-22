@@ -31,7 +31,7 @@ Please cite us
 
 See works citing pairinteraction on `Google Scholar`_ and the `ADS Digital Library`_.
 
-.. _Google Scholar: https://scholar.google.com/scholar?cites=5795867423675717201,11312532522524857261
+.. _Google Scholar: https://scholar.google.com/scholar?cites=5795867423675717201
 .. _ADS Digital Library: http://adsabs.harvard.edu/cgi-bin/nph-ref_query?bibcode=2017JPhB...50m3001W&amp;refs=CITATIONS&amp;db_key=PHY
 
 Installation
