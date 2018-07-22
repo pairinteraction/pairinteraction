@@ -69,7 +69,7 @@ if(SPHINX_FOUND)
     "html/slides/screen-osx-starkmap.jpg"
     "html/slides/screen-osx-zeemanmap.jpg"
     "html/slides/screen-win64.png"
-    "html/buttons/github.png"
+    "html/buttons/github.svg"
     "images/license-badge.svg"
     "images/arXiv-badge.svg"
     "index.rst"
