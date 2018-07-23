@@ -27,12 +27,19 @@ set(VERSION_CACHE "v15")
 
 # get software version info from git
 
-find_package(Git REQUIRED)
-execute_process(
-  COMMAND "${GIT_EXECUTABLE}" describe --tags --always
-  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-  OUTPUT_VARIABLE VERSION_SOFTWARE
-  OUTPUT_STRIP_TRAILING_WHITESPACE )
+find_package(Git)
+
+if(GIT_FOUND)
+  execute_process(
+    COMMAND "${GIT_EXECUTABLE}" describe --tags --always
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    OUTPUT_VARIABLE VERSION_SOFTWARE
+    OUTPUT_STRIP_TRAILING_WHITESPACE )
+else()
+  message(WARNING "Because Git was not found, the version of the pairinteraction software cannot be determined.")
+  set(VERSION_SOFTWARE "v0.0.0")
+endif()
+
 string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
 
 # default build type is "Release"
