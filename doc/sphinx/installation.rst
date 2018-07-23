@@ -140,7 +140,7 @@ The build system uses CMake and has some configuration switches.  These are
 +=====================+======================================+=========+
 | ``WITH_BACKEND``    | Build with C++ backend               | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_BACKEND``    | Build with SWIG Python interface     | ON      |
+| ``WITH_PYTHON``     | Build with SWIG Python interface     | ON      |
 +---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
