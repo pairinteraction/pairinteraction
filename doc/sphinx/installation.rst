@@ -135,21 +135,25 @@ Build options
 
 The build system uses CMake and has some configuration switches.  These are
 
-+-------------------+--------------------------------------+---------+
-| Option            | Effect                               | Default |
-+===================+======================================+=========+
-| ``WITH_BACKEND``  | Build with C++ backend               | ON      |
-+-------------------+--------------------------------------+---------+
-| ``WITH_GUI``      | Build with Python GUI                | ON      |
-+-------------------+--------------------------------------+---------+
-| ``WITH_DATABASE`` | Generate the quantum defect database | ON      |
-+-------------------+--------------------------------------+---------+
-| ``WITH_DOCS``     | Generate documentation               | ON      |
-+-------------------+--------------------------------------+---------+
-| ``WITH_DMG``      | Generate a DMG file (Mac OS X only)  | OFF     |
-+-------------------+--------------------------------------+---------+
-| ``WITH_COVERAGE`` | Generate code coverage report        | OFF     |
-+-------------------+--------------------------------------+---------+
++---------------------+--------------------------------------+---------+
+| Option              | Effect                               | Default |
++=====================+======================================+=========+
+| ``WITH_BACKEND``    | Build with C++ backend               | ON      |
++---------------------+--------------------------------------+---------+
+| ``WITH_BACKEND``    | Build with SWIG Python interface     | ON      |
++---------------------+--------------------------------------+---------+
+| ``WITH_GUI``        | Build with Python GUI                | ON      |
++---------------------+--------------------------------------+---------+
+| ``WITH_DATABASE``   | Generate the quantum defect database | ON      |
++---------------------+--------------------------------------+---------+
+| ``WITH_DOCS``       | Generate documentation               | ON      |
++---------------------+--------------------------------------+---------+
+| ``WITH_DMG``        | Generate a DMG file (Mac OS X only)  | OFF     |
++---------------------+--------------------------------------+---------+
+| ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
++---------------------+--------------------------------------+---------+
+| ``WITH_CLANG_TIDY`` | Run Clang-Tidy during compilation    | OFF     |
++---------------------+--------------------------------------+---------+
 
 These options can be passed directly to ``cmake``, i.e.
 
