@@ -47,6 +47,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 # Build options
 
 option(WITH_BACKEND  "Build with C++ backend"               ON)
+option(WITH_PYTOHN   "Build with SWIG Python interface"     ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DATABASE "Generate the quantum defect database" ON)
 option(WITH_DOCS     "Generate documentation"               ON)
@@ -91,7 +92,9 @@ endif()
 
 if( WITH_BACKEND )
   add_subdirectory(${LIBNAME})
-  add_subdirectory(testsuite)
+  if(WITH_PYTHON)
+    add_subdirectory(testsuite)
+  endif()
 endif( )
 
 if( WITH_DATABASE )
