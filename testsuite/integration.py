@@ -55,16 +55,16 @@ class IntegrationTest(unittest.TestCase):
         basis_one.eliminate_zeros()
 
         if self.dump_new_reference_data:
-            self.hamiltonian_one = hamiltonian_one.todense()
-            self.basis_one = basis_one.todense()
+            self.hamiltonian_one = hamiltonian_one.copy()
+            self.basis_one = basis_one.copy()
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
                 hamiltonian_one_reference, basis_one_reference, _, _ = pickle.load(f)
-                np.testing.assert_allclose(np.asarray(hamiltonian_one.todense()),
-                                           np.asarray(hamiltonian_one_reference),
+                np.testing.assert_allclose(hamiltonian_one.A,
+                                           hamiltonian_one_reference.A,
                                            rtol=1e-6)
-                np.testing.assert_allclose(np.asarray(basis_one.todense()),
-                                           np.asarray(basis_one_reference),
+                np.testing.assert_allclose(basis_one.A,
+                                           basis_one_reference.A,
                                            rtol=1e-9)
 
         # Diagonalize one-atom system
@@ -102,16 +102,16 @@ class IntegrationTest(unittest.TestCase):
         basis_two.eliminate_zeros()
 
         if self.dump_new_reference_data:
-            self.hamiltonian_two = hamiltonian_two.todense()
-            self.basis_two = basis_two.todense()
+            self.hamiltonian_two = hamiltonian_two.copy()
+            self.basis_two = basis_two.copy()
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
                 _, _, hamiltonian_two_reference, basis_two_reference = pickle.load(f)
-                np.testing.assert_allclose(np.asarray(hamiltonian_two.todense()),
-                                           np.asarray(hamiltonian_two_reference),
+                np.testing.assert_allclose(hamiltonian_two.A,
+                                           hamiltonian_two_reference.A,
                                            rtol=1e-6)
-                np.testing.assert_allclose(np.asarray(basis_two.todense()),
-                                           np.asarray(basis_two_reference),
+                np.testing.assert_allclose(basis_two.A,
+                                           basis_two_reference.A,
                                            rtol=1e-9)
 
         # Diagonalize two-atom system
