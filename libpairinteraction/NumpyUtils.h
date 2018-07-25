@@ -32,6 +32,32 @@
 
 #include "Traits.h"
 
+namespace {
+
+#define CONCATENATE_IMPL(s1, s2) s1##s2
+#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
+#define ANONYMOUS_VARIABLE(str) CONCATENATE(str, __LINE__)
+
+enum class ScopeGuardOnExit {};
+
+template <typename F>
+class ScopeGuard {
+    F f;
+
+public:
+    ScopeGuard(F f) : f(std::move(f)) {}
+    ~ScopeGuard() noexcept { f(); }
+};
+
+template <typename F>
+ScopeGuard<F> operator+(ScopeGuardOnExit, F &&f) {
+    return ScopeGuard<F>(std::forward<F>(f));
+}
+
+#define SCOPE_EXIT auto ANONYMOUS_VARIABLE(onexit_) = ScopeGuardOnExit{} + [=]()
+
+} // namespace
+
 namespace numpy {
 
 /** \brief Selector for view or copy
@@ -339,9 +365,17 @@ PyObject *sparse_impl(T &&sm) {
     char object[] = "csc_matrix";
     char arglist[] = "(OOO)(ii)";
     PyObject *scipy = PyImport_ImportModule("scipy.sparse");
+    SCOPE_EXIT { Py_XDECREF(scipy); };
+    if (scipy == nullptr) {
+        PyErr_Print();
+        return nullptr;
+    }
     PyObject *mat =
         PyObject_CallMethod(scipy, object, arglist, data, indices, indptr, num_rows, num_cols);
-    Py_DECREF(scipy);
+    if (mat == nullptr) {
+        PyErr_Print();
+        return nullptr;
+    }
     return mat;
 }
 
@@ -495,36 +529,41 @@ Eigen::Map<SparseMatrixType>
 #endif
 as(numpy::array ndarray) {
     PyObject *scipy = PyImport_ImportModule("scipy.sparse");
+    SCOPE_EXIT { Py_XDECREF(scipy); };
+    if (scipy == nullptr) {
+        PyErr_Print();
+        return nullptr;
+    }
     PyObject *csc_matrix = PyObject_GetAttrString(scipy, "csc_matrix");
+    SCOPE_EXIT { Py_XDECREF(csc_matrix); };
+    if (csc_matrix == nullptr) {
+        PyErr_Print();
+        return nullptr;
+    }
     if (!ndarray || !PyObject_IsInstance(ndarray, csc_matrix))
         throw std::invalid_argument("The argument is not a valid csc_matrix!");
-    Py_DECREF(csc_matrix);
-    Py_DECREF(scipy);
 
     PyObject *tmp;
 
     tmp = PyObject_GetAttrString(ndarray, "data");
+    SCOPE_EXIT { Py_XDECREF(tmp); };
     PyArrayObject *data_ = reinterpret_cast<PyArrayObject *>(tmp);
-    Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never
-                    // be garbage collected
     internal::check_order_and_alignment(data_);
 
     tmp = PyObject_GetAttrString(ndarray, "indices");
+    SCOPE_EXIT { Py_XDECREF(tmp); };
     PyArrayObject *indices_ = reinterpret_cast<PyArrayObject *>(tmp);
-    Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never
-                    // be garbage collected
     internal::check_order_and_alignment(indices_);
 
     tmp = PyObject_GetAttrString(ndarray, "indptr");
+    SCOPE_EXIT { Py_XDECREF(tmp); };
     PyArrayObject *indptr_ = reinterpret_cast<PyArrayObject *>(tmp);
-    Py_DECREF(tmp); // Probably unsafe but otherwise the passed object can never
-                    // be garbage collected
     internal::check_order_and_alignment(indptr_);
 
     PyObject *shape = PyObject_GetAttrString(ndarray, "shape");
+    SCOPE_EXIT { Py_XDECREF(tmp); };
     int rows, cols;
     PyArg_ParseTuple(shape, "ii", &rows, &cols);
-    Py_DECREF(shape);
 
     npy_intp *nnz = PyArray_SHAPE(data_);
 
