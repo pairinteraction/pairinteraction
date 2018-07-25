@@ -18,7 +18,10 @@ class IntegrationTest(unittest.TestCase):
         self.state_two = pi.StateTwo(self.state_one, self.state_one)
 
     def tearDown(self):
-        shutil.rmtree(self.cache_path)
+        try:
+            shutil.rmtree(self.cache_path)
+        except:
+            pass
 
         if self.dump_new_reference_data:
             with open("integration_test_referencedata.pickle", "wb") as f:
