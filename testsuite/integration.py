@@ -49,9 +49,9 @@ class IntegrationTest(unittest.TestCase):
         basis_one = system_one.getCoefficients()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_one.data *= (hamiltonian_one.data > 1e-6)
+        hamiltonian_one.data *= (abs(hamiltonian_one).data > 1e-6)
         hamiltonian_one.eliminate_zeros()
-        basis_one.data *= (basis_one.data > 1e-6)
+        basis_one.data *= (abs(basis_one).data > 1e-6)
         basis_one.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -60,8 +60,12 @@ class IntegrationTest(unittest.TestCase):
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
                 hamiltonian_one_reference, basis_one_reference, _, _ = pickle.load(f)
-                np.testing.assert_allclose(hamiltonian_one_reference, hamiltonian_one.todense())
-                np.testing.assert_allclose(basis_one_reference, basis_one.todense())
+                np.testing.assert_allclose(np.asarray(hamiltonian_one.todense()),
+                                           np.asarray(hamiltonian_one_reference),
+                                           rtol=1e-6)
+                np.testing.assert_allclose(np.asarray(basis_one.todense()),
+                                           np.asarray(basis_one_reference),
+                                           rtol=1e-9)
 
         # Diagonalize one-atom system
         system_one.diagonalize()
@@ -92,9 +96,9 @@ class IntegrationTest(unittest.TestCase):
         basis_two = system_two.getCoefficients()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_two.data *= (hamiltonian_two.data > 1e-6)
+        hamiltonian_two.data *= (abs(hamiltonian_two).data > 1e-6)
         hamiltonian_two.eliminate_zeros()
-        basis_two.data *= (basis_two.data > 1e-6)
+        basis_two.data *= (abs(basis_two).data > 1e-6)
         basis_two.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -103,8 +107,12 @@ class IntegrationTest(unittest.TestCase):
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
                 _, _, hamiltonian_two_reference, basis_two_reference = pickle.load(f)
-                np.testing.assert_allclose(hamiltonian_two_reference, hamiltonian_two.todense())
-                np.testing.assert_allclose(basis_two_reference, basis_two.todense())
+                np.testing.assert_allclose(np.asarray(hamiltonian_two.todense()),
+                                           np.asarray(hamiltonian_two_reference),
+                                           rtol=1e-6)
+                np.testing.assert_allclose(np.asarray(basis_two.todense()),
+                                           np.asarray(basis_two_reference),
+                                           rtol=1e-9)
 
         # Diagonalize two-atom system
         system_two.diagonalize()
