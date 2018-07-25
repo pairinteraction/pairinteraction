@@ -38,6 +38,12 @@ python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
 python_test(TARGET wavefunction SOURCE wavefunction.py)
 python_test(TARGET symmetries SOURCE symmetries.py)
+python_test(TARGET integration_python SOURCE integration.py)
 if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
 endif()
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/integration_test_referencedata.pickle
+  ${CMAKE_CURRENT_BINARY_DIR}/integration_test_referencedata.pickle
+  COPYONLY)
