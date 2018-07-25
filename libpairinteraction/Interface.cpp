@@ -26,23 +26,6 @@
 #include <locale>
 #include <memory>
 
-#if defined(_OPENMP)
-#include <omp.h>
-int thread_ctrl(int num_threads /*= -1*/) {
-    if (num_threads != -1) {
-        omp_set_num_threads(num_threads);
-    }
-
-#pragma omp parallel
-#pragma omp single
-    num_threads = omp_get_num_threads();
-
-    return num_threads;
-}
-#else
-int thread_ctrl(int num_threads /*= -1*/) { return 1; }
-#endif
-
 /*
 ///////////////////// TODOs /////////////////////
 
@@ -117,34 +100,6 @@ int compute(const std::string &config_name, const std::string &output_name) {
 
     // === Communicate that everything has finished ===
     std::cout << boost::format(">>END") << std::endl;
-
-    return 0;
-}
-
-int mainMatrixElement(std::string const &element, std::string const &row, std::string const &col,
-                      int power) {
-    std::cout << std::unitbuf;
-
-    size_t precision = std::numeric_limits<double>::digits10 + 1;
-
-    StateOne state_row;
-    std::stringstream(row) >> state_row.n >> state_row.l >> state_row.j >> state_row.m;
-
-    StateOne state_col;
-    std::stringstream(col) >> state_col.n >> state_col.l >> state_col.j >> state_col.m;
-
-    std::cout << element << std::endl;
-    std::cout << state_row << std::endl;
-    std::cout << state_col << std::endl;
-    std::cout << power << std::endl;
-
-    std::vector<StateOne> states({{state_row, state_col}});
-    auto basis = std::make_shared<BasisnamesOne>(BasisnamesOne::fromStates(states));
-    MatrixElements matrixelement(element, "");
-
-    matrixelement.precalculateRadial(basis, power);
-    double val = matrixelement.getRadial(state_row, state_col, power);
-    std::cout << ">>RES" << std::setprecision(precision) << val << std::endl;
 
     return 0;
 }
