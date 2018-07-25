@@ -66,7 +66,6 @@ public:
     bool operator^(StateOne const & /*rhs*/) const; // subset
     bool operator!=(StateOne const & /*rhs*/) const;
     bool operator<(StateOne const & /*rhs*/) const;
-    bool operator>(StateOne const & /*rhs*/) const;
 
     double getEnergy() const;
     double getNStar() const;

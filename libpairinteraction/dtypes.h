@@ -72,15 +72,6 @@ constexpr const double gL = 1;
 
 constexpr const int ARB = 32767;
 
-class Triple {
-public:
-    Triple() = default;
-    Triple(idx_t row, idx_t col, scalar_t val) : row(row), col(col), val(val) {}
-    idx_t row{0};
-    idx_t col{0};
-    scalar_t val{0};
-};
-
 enum parity_t {
     NA = INT_MAX,
     EVEN = 1,
