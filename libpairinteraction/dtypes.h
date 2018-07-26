@@ -78,6 +78,11 @@ enum parity_t {
     ODD = -1,
 };
 
+enum method_t {
+    NUMEROV = 0,
+    WHITTAKER = 1,
+};
+
 struct Symmetry {
     parity_t inversion;
     parity_t reflection;

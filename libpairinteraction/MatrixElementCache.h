@@ -68,6 +68,7 @@ public:
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 
     void setDefectDB(std::string const &path);
+    void setMethod(method_t const &m);
 
     size_t size();
 
@@ -85,11 +86,12 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     struct CacheKey_cache_radial {
-        CacheKey_cache_radial(std::string method, std::string species, int kappa, int n1, int n2,
+        CacheKey_cache_radial(method_t method, std::string species, int kappa, int n1, int n2,
                               int l1, int l2, float j1, float j2);
         CacheKey_cache_radial();
         bool operator==(const CacheKey_cache_radial &rhs) const;
-        std::string method, species;
+        std::string species;
+        method_t method;
         int kappa;
         std::array<int, 2> n, l;
         std::array<float, 2> j;
@@ -186,7 +188,7 @@ private:
     std::unordered_set<CacheKey_cache_reduced_multipole, CacheKeyHasher_cache_reduced_multipole>
         cache_reduced_multipole_missing;
 
-    std::string method;
+    method_t method;
     std::string defectdbname;
     std::string dbname;
     sqlite::handle db;
