@@ -68,15 +68,15 @@ bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, 
 ////////////////////////////////////////////////////////////////////
 
 MatrixElementCache::MatrixElementCache()
-    : method(NUMEROV), defectdbname(""), dbname(""), db(dbname), stmt(db),
+    : defectdbname(""), dbname(""), db(dbname), stmt(db),
       pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they
                                                // have no default constructor
 }
 
 MatrixElementCache::MatrixElementCache(std::string const &cachedir)
-    : method(NUMEROV), defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
-                                                 ("cache_elements_" + version::cache() + ".db"))
-                                                    .string()),
+    : defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
+                                ("cache_elements_" + version::cache() + ".db"))
+                                   .string()),
       db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
 
     // Speed up database access
@@ -420,6 +420,10 @@ double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &
         if (iter1 == cache_radial.end()) {
             iter1 = cache_radial.find(key1);
         }
+    }
+
+    if (kappa == 0) {
+        return iter1->second;
     }
 
     return 1. / elementary_charge *
