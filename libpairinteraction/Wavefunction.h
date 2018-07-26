@@ -206,7 +206,7 @@ public:
      * \param[in] power     exponent of r
      * \returns power kernel
      */
-    constexpr static inline double power_kernel(int power) { return 1.5 * power; }
+    constexpr static inline double power_kernel(int power) { return power+0.5; }
 };
 
 // --- Matrix element calculation ---
