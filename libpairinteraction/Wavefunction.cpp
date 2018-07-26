@@ -136,7 +136,7 @@ Whittaker::Whittaker(QuantumDefect const &qd) : qd(qd) {
     xy.resize(nsteps, 2);
 
     for (int i = 0; i < nsteps; ++i) {
-        xy(i, 0) = (xmin + i * dx) * (xmin + i * dx);
+        xy(i, 0) = (xmin + i * dx);
     }
 }
 
@@ -154,7 +154,7 @@ eigen_dense_double_t Whittaker::integrate() {
     int const nsteps = xy.rows();
 
     for (int i = 0; i < nsteps; ++i) {
-        xy(i, 1) = sign * RadialWFWhittaker(xy(i, 0), qd.nstar, qd.l);
+        xy(i, 1) = sign * RadialWFWhittaker(xy(i, 0)*xy(i, 0), qd.nstar, qd.l);
     }
 
     return xy;
