@@ -188,7 +188,7 @@ private:
     std::unordered_set<CacheKey_cache_reduced_multipole, CacheKeyHasher_cache_reduced_multipole>
         cache_reduced_multipole_missing;
 
-    method_t method;
+    method_t method{NUMEROV};
     std::string defectdbname;
     std::string dbname;
     sqlite::handle db;
