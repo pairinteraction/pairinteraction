@@ -68,32 +68,16 @@ bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, 
 ////////////////////////////////////////////////////////////////////
 
 MatrixElementCache::MatrixElementCache()
-    : defectdbname(""), dbname(""), db(dbname), stmt(db),
+    : method(NUMEROV), defectdbname(""), dbname(""), db(dbname), stmt(db),
       pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they
                                                // have no default constructor
-    method = "Modelpotentials";
-    // if (config["missingCalc"].str() == "true") {
-    //    method = "Modelpotentials";
-    //} else if (config["missingWhittaker"].str() == "true") {
-    //    method = "Whittaker";
-    //} else {
-    //    method = "Error";
-    //}
 }
 
 MatrixElementCache::MatrixElementCache(std::string const &cachedir)
-    : defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
-                                ("cache_elements_" + version::cache() + ".db"))
-                                   .string()),
+    : method(NUMEROV), defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
+                                                 ("cache_elements_" + version::cache() + ".db"))
+                                                    .string()),
       db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
-    method = "Modelpotentials";
-    // if (config["missingCalc"].str() == "true") {
-    //    method = "Modelpotentials";
-    //} else if (config["missingWhittaker"].str() == "true") {
-    //    method = "Whittaker";
-    //} else {
-    //    method = "Error";
-    //}
 
     // Speed up database access
     stmt.exec("PRAGMA synchronous = OFF");     // do not wait on write, hand off to OS and carry on
@@ -102,7 +86,7 @@ MatrixElementCache::MatrixElementCache(std::string const &cachedir)
     // Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since
     // they are trivial)
     stmt.exec("create table if not exists cache_radial ("
-              "method text, species text, k integer, n1 integer, l1 integer, j1 double,"
+              "method int, species text, k integer, n1 integer, l1 integer, j1 double,"
               "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, "
               "n1, l1, j1, n2, l2, j2)) without rowid;");
 
@@ -134,15 +118,17 @@ void MatrixElementCache::setDefectDB(std::string const &path) {
     dbname = "";
 }
 
+void MatrixElementCache::setMethod(method_t const &m) { method = m; }
+
 ////////////////////////////////////////////////////////////////////
 /// Keys ///////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial(std::string method,
+MatrixElementCache::CacheKey_cache_radial::CacheKey_cache_radial(method_t method,
                                                                  std::string species, int kappa,
                                                                  int n1, int n2, int l1, int l2,
                                                                  float j1, float j2)
-    : method(std::move(method)), species(std::move(species)), kappa(kappa) {
+    : species(std::move(species)), method(method), kappa(kappa) {
     if ((n1 < n2) || ((n1 == n2) && ((l1 < l2) || ((l1 == l2) && (j1 <= j2))))) {
         n = {{n1, n2}};
         l = {{l1, l2}};
@@ -479,10 +465,10 @@ void MatrixElementCache::precalculateDiamagnetism(const std::vector<StateOne> &b
 
 double MatrixElementCache::calcRadialElement(const QuantumDefect &qd1, int power,
                                              const QuantumDefect &qd2) {
-    if (method == "Modelpotentials") {
+    if (method == NUMEROV) {
         return IntegrateRadialElement<Numerov>(qd1, power, qd2);
     }
-    if (method == "Whittaker") {
+    if (method == WHITTAKER) {
         return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     }
     std::string msg("You have to provide all radial matrix elements on your own because you have "
