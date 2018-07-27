@@ -47,8 +47,6 @@ public:
 
     double getElectricDipole(StateOne const &state_row,
                              StateOne const &state_col); // return value in GHz/(V/cm)
-    double getElectricQuadrupole(StateOne const &state_row,
-                                 StateOne const &state_col); // return value in GHz/(V/cm)*um
     double getElectricMultipole(StateOne const &state_row, StateOne const &state_col,
                                 int k); // return value in GHz/(V/cm)*um^(kappa-1)
     double getDiamagnetism(StateOne const &state_row, StateOne const &state_col,
