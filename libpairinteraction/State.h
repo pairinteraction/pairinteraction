@@ -28,8 +28,6 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 
-constexpr const std::array<char, 7> momentum2label = {{'S', 'P', 'D', 'F', 'G', 'H', 'I'}};
-
 /** \brief %Base class for states
  *
  * This class is the base class for states specified in the fine structure basis.
@@ -38,6 +36,8 @@ class State {
 public:
     State(idx_t idx) : idx(idx) {}
     idx_t idx;
+protected:
+    char getMomentumLabel(int l) const;
 };
 
 /** \brief %One-atom Rydberg state

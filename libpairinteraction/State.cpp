@@ -25,6 +25,27 @@
 #include <string>
 #include <utility>
 
+char State::getMomentumLabel(int l) const {
+    switch (l) {
+    case 0:
+        return 'S';
+    case 1:
+        return 'P';
+    case 2:
+        return 'D';
+    case 3:
+        return 'F';
+    case 4:
+        return 'G';
+    case 5:
+        return 'H';
+    case 6:
+        return 'I';
+    default:
+        return '\0';
+    }
+}
+
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -49,8 +70,9 @@ std::ostream &operator<<(std::ostream &out, const StateOne &state) {
 
     out << state.n << " ";
 
-    if (static_cast<size_t>(state.l) < momentum2label.size()) {
-        out << momentum2label[state.l] << "_";
+    char label = state.getMomentumLabel(state.l);
+    if (label != '\0') {
+        out << label << "_";
     } else {
         out << state.l << "_";
     }
@@ -182,8 +204,9 @@ std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
 
         out << state.n[i] << " ";
 
-        if (static_cast<size_t>(state.l[i]) < momentum2label.size()) {
-            out << momentum2label[state.l[i]] << "_";
+        char label = state.getMomentumLabel(state.l[i]);
+        if (label != '\0') {
+            out << label << "_";
         } else {
             out << state.l[i] << "_";
         }
