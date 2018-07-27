@@ -64,7 +64,8 @@ constexpr const double inverse_electron_rest_mass = au2Vcm * au2Vcm / au2G / au2
 constexpr const double coulombs_constant = au2Vcm * au2Vcm * au2um * au2um * au2um / au2GHz;
 constexpr const double electron_rest_mass = au2G * au2G * au2GHz / au2Vcm / au2Vcm;
 constexpr const double elementary_charge = au2GHz / au2um / au2Vcm;
-// TODO Planck constant, Bohr magneton (required for magnetic dipole moment)
+constexpr const double bohr_magneton = 0.5 * au2GHz / au2G;
+constexpr const double planck_constant = au2GHz * au2um * au2G / au2Vcm;
 
 constexpr const double muB = 0.5; // in atomic units
 constexpr const double gS = 2.0023192;

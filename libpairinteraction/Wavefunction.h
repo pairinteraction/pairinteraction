@@ -286,12 +286,8 @@ double IntegrateRadialElement(QuantumDefect const &qd1, int power, QuantumDefect
         mu = 2 * mu;
     }
 
-    // If the power is non-zero, the radial matrix element has a unit
-    // that needs to be converted (if the power is zero, unit-free
-    // overlap matrix element is returned)
-    double converter = (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power - 1);
-
-    return mu * converter;
+    // The radial matrix element is returned in atomic units
+    return mu;
 }
 
 #endif // WAVEFUNCTION_H

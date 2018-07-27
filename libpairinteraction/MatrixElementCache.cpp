@@ -335,7 +335,7 @@ double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne
         }
     }
 
-    return -au2GHz / au2G * muB * iter1->second * key2.sgn * iter2->second *
+    return -bohr_magneton * iter1->second * key2.sgn * iter2->second *
         (gL * key3.sgn * iter3->second *
              sqrt(state_row.l * (state_row.l + 1) * (2 * state_row.l + 1)) +
          gS * key4.sgn * iter4->second * sqrt(s * (s + 1) * (2 * s + 1)));
@@ -395,8 +395,8 @@ double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
         }
     }
 
-    return iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second * key4.sgn *
-        iter4->second;
+    return elementary_charge * iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second *
+        key4.sgn * iter4->second;
 }
 
 double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &state_col,
@@ -422,13 +422,7 @@ double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &
         }
     }
 
-    if (kappa == 0) {
-        return iter1->second;
-    }
-
-    return 1. / elementary_charge *
-        iter1->second; // TODO change the converter in Wavefunction.cpp to std::pow(au2um, power) so
-                       // that 1./elementary_charge is not necessary anymore
+    return iter1->second;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -470,10 +464,10 @@ void MatrixElementCache::precalculateDiamagnetism(const std::vector<StateOne> &b
 double MatrixElementCache::calcRadialElement(const QuantumDefect &qd1, int power,
                                              const QuantumDefect &qd2) {
     if (method == NUMEROV) {
-        return IntegrateRadialElement<Numerov>(qd1, power, qd2);
+        return std::pow(au2um, power) * IntegrateRadialElement<Numerov>(qd1, power, qd2);
     }
     if (method == WHITTAKER) {
-        return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
+        return std::pow(au2um, power) * IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     }
     std::string msg("You have to provide all radial matrix elements on your own because you have "
                     "deactivated the calculation of missing radial matrix elements!");

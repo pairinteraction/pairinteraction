@@ -541,11 +541,14 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
 
 double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
                                          const QuantumDefect &qd2) {
+
+    double converter = (power == 0) ? 1 : au2GHz / au2Vcm * std::pow(au2um, power - 1);
+
     if (method == "Modelpotentials") {
-        return IntegrateRadialElement<Numerov>(qd1, power, qd2);
+        return converter * IntegrateRadialElement<Numerov>(qd1, power, qd2);
     }
     if (method == "Whittaker") {
-        return IntegrateRadialElement<Whittaker>(qd1, power, qd2);
+        return converter * IntegrateRadialElement<Whittaker>(qd1, power, qd2);
     }
     std::string msg("You have to provide all radial matrix elements on your own because you have "
                     "deactivated the calculation of missing radial matrix elements!");
