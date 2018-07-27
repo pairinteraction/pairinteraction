@@ -268,11 +268,6 @@ double MatrixElementCache::getElectricDipole(StateOne const &state_row, StateOne
     return getElectricMultipole(state_row, state_col, 1, 1);
 }
 
-double MatrixElementCache::getElectricQuadrupole(StateOne const &state_row,
-                                                 StateOne const &state_col) {
-    return getElectricMultipole(state_row, state_col, 2, 2);
-}
-
 double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
                                                 StateOne const &state_col, int k) {
     return getElectricMultipole(state_row, state_col, k, k);
