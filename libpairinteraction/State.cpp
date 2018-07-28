@@ -25,7 +25,9 @@
 #include <string>
 #include <utility>
 
-char State::getMomentumLabel(int l) const {
+namespace {
+
+inline boost::variant<char, int> getMomentumLabel(int l) {
     switch (l) {
     case 0:
         return 'S';
@@ -42,9 +44,11 @@ char State::getMomentumLabel(int l) const {
     case 6:
         return 'I';
     default:
-        return '\0';
+        return l;
     }
 }
+
+} // namespace
 
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
@@ -70,12 +74,7 @@ std::ostream &operator<<(std::ostream &out, const StateOne &state) {
 
     out << state.n << " ";
 
-    char label = state.getMomentumLabel(state.l);
-    if (label != '\0') {
-        out << label << "_";
-    } else {
-        out << state.l << "_";
-    }
+    out << getMomentumLabel(state.l) << "_";
 
     if (std::ceil(state.j) == state.j) {
         out << state.j << ", ";
@@ -204,12 +203,7 @@ std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
 
         out << state.n[i] << " ";
 
-        char label = state.getMomentumLabel(state.l[i]);
-        if (label != '\0') {
-            out << label << "_";
-        } else {
-            out << state.l[i] << "_";
-        }
+        out << getMomentumLabel(state.l[i]) << "_";
 
         if (std::ceil(state.j[i]) == state.j[i]) {
             out << state.j[i] << ", ";
