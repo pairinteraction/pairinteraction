@@ -27,6 +27,7 @@
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
+#include <boost/variant.hpp>
 
 /** \brief %Base class for states
  *
@@ -36,8 +37,6 @@ class State {
 public:
     State(idx_t idx) : idx(idx) {}
     idx_t idx;
-protected:
-    char getMomentumLabel(int l) const;
 };
 
 /** \brief %One-atom Rydberg state
