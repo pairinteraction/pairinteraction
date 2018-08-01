@@ -184,6 +184,12 @@ class PlotDict(GuiDict):
 class SystemDict(GuiDict):
 
     def _setup(self, store, ui):
+        store["minE_storage"] = {
+            'widget': ui.lineedit_storage_minE,
+            'unit': Units.energy}
+        store["maxE_storage"] = {
+            'widget': ui.lineedit_storage_maxE,
+            'unit': Units.energy}
         store["species1"] = {
             'widget': ui.combobox_system_species1,
             'unit': None}
@@ -695,6 +701,8 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.lineedit_field2_maxE.setValidator(validator_doublenone)
         self.ui.lineedit_potential_minE.setValidator(validator_doublenone)
         self.ui.lineedit_potential_maxE.setValidator(validator_doublenone)
+        self.ui.lineedit_storage_minE.setValidator(validator_doublenone)
+        self.ui.lineedit_storage_maxE.setValidator(validator_doublenone)
 
         # Connect signals and slots
         self.thread.criticalsignal.connect(self.showCriticalMessage)
@@ -2909,7 +2917,10 @@ class MainWindow(QtGui.QMainWindow):
 
         # TODO sicherstellen, dass die Funktion auch ohne Plot / mit leerem
         # Plotwindow nicht abst?rzt
-
+        
+        minE = self.systemdict["minE_storage"].magnitude
+        maxE = self.systemdict["maxE_storage"].magnitude
+        
         try:
             # save plot
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot,
@@ -2926,7 +2937,7 @@ class MainWindow(QtGui.QMainWindow):
                 1500, 1500, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
             image.save(buffer, "PNG")
             ziparchive.writestr('plot.png', buffer.data())
-
+            
             # save configuration
             ziparchive.writestr(
                 'settings.sconf', self.storage_configuration[idx][0])
@@ -3017,17 +3028,36 @@ class MainWindow(QtGui.QMainWindow):
                     if idx == 2:
                         data['distances'].append(
                             float(eigensystem.params["R"]) * self.converter_length)
-                    data['eigenvectors'].append(basis)
-                    data['eigenvalues'].append(energies)
-                    if self.stateidx_field[idx] is not None:
-                        data['overlaps'].append(overlaps)
+                        
+                    if minE is None and maxE is None:
+                        data['eigenvectors'].append(basis)
+                        data['eigenvalues'].append(energies)
+                        if self.stateidx_field[idx] is not None: data['overlaps'].append(overlaps)
+                    else:
+                        # Select which eigenpairs should be saved
+                        if minE is None: selector = energies < maxE
+                        elif maxE is None: selector = energies > minE
+                        else: selector = (energies < maxE) & (energies > minE)
+                        
+                        data['eigenvectors'].append(basis[:,selector])
+                        data['eigenvalues'].append(energies[selector])
+                        if self.stateidx_field[idx] is not None: data['overlaps'].append(overlaps[selector])
+                        
                 else:  # new block
-                    csc_happend(data['eigenvectors'][-1], basis)
-                    data[
-                        'eigenvalues'][-1] = np.append(data['eigenvalues'][-1], energies)
-                    if self.stateidx_field[idx] is not None:
-                        data[
-                            'overlaps'][-1] = np.append(data['overlaps'][-1], overlaps)
+                    if minE is None and maxE is None:
+                        csc_happend(data['eigenvectors'][-1], basis)
+                        data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1], energies)
+                        if self.stateidx_field[idx] is not None: data['overlaps'][-1] = np.append(data['overlaps'][-1], overlaps)
+                    else:
+                        # Select which eigenpairs should be saved
+                        selector = energies
+                        if minE is None: selector = energies < maxE
+                        elif maxE is None: selector = energies > minE
+                        else: selector = (energies < maxE) & (energies > minE)
+                        
+                        csc_happend(data['eigenvectors'][-1], basis[:,selector])
+                        data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1], energies[selector])
+                        if self.stateidx_field[idx] is not None: data['overlaps'][-1] = np.append(data['overlaps'][-1], overlaps[selector])
 
                 filestep_last = filestep
 

@@ -22,7 +22,7 @@ set(LIBNAME "libpairinteraction")
 
 # set version of settings and cache
 
-set(VERSION_SETTINGS "v16")
+set(VERSION_SETTINGS "v17")
 set(VERSION_CACHE "v16")
 
 # get software version info from git
