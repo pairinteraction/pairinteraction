@@ -107,6 +107,10 @@
         0.0,
         "gauss"
     ],
+    "maxE_storage": [
+        null,
+        "gigahertz"
+    ],
     "maxEx": [
         0.0,
         "volt/centimeter"
@@ -134,6 +138,10 @@
     "minBz": [
         0.0,
         "gauss"
+    ],
+    "minE_storage": [
+        null,
+        "gigahertz"
     ],
     "minEx": [
         0.0,
