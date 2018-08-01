@@ -8,9 +8,8 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     sqlite3 sqlite3-devel \
     boost_1_61-devel \
     gsl-devel \
-    zeromq-devel \
     swig python3 python3-devel \
-    python3-numpy python3-numpy-devel python3-scipy python3-pyzmq \
+    python3-numpy python3-numpy-devel python3-scipy \
     dpkg rpm-build \
   && zypper clean \
   && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 100 \

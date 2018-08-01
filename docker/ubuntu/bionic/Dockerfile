@@ -8,9 +8,8 @@ RUN apt-get update \
     libboost-serialization-dev libboost-system-dev libboost-test-dev \
     libgsl-dev \
     libsqlite3-dev sqlite3 \
-    libzmq3-dev \
     swig python3 python3-dev \
-    python3-numpy python3-scipy python3-zmq \
+    python3-numpy python3-scipy \
     dpkg-dev rpm \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
