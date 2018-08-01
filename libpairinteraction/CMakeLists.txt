@@ -62,6 +62,11 @@ if( WITH_COVERAGE )
   link_libraries(gcov)
 endif( )
 
+# Threads
+
+find_package(Threads REQUIRED)
+list(APPEND LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
+
 # Use OpenMP
 
 find_package(OpenMP)
