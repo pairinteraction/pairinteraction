@@ -13,6 +13,7 @@
 # limitations under the License.
 
 find_package(Sphinx)
+find_package(IPython)
 
 if(SPHINX_FOUND)
   find_package(IPython REQUIRED)
@@ -104,3 +105,24 @@ if(SPHINX_FOUND)
   endforeach()
 
 endif(SPHINX_FOUND) 
+
+if(IPython_FOUND)
+  # IPython notebooks to be tested
+  set(NOTEBOOKS
+    "introduction.ipynb"
+    "matrix_elements.ipynb"
+    "wavefunctions.ipynb"
+    "comparison_to_saffman_fig13.ipynb")
+
+  foreach(file ${NOTEBOOKS})
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
+      "${SPHINX_BASE}/${file}"
+      COPYONLY)
+    add_test(NAME "test_${file}"
+      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
+      WORKING_DIRECTORY "${SPHINX_BASE}")
+    set_tests_properties("test_${file}"
+      PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+  endforeach()
+endif(IPython_FOUND)
