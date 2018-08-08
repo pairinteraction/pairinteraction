@@ -61,7 +61,7 @@ matrix:
         - export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
 
 script:
-  - docker/build_docker.sh
+  - travis_wait 30 sleep infinity & docker/build_docker.sh
 
 deploy:
   provider: releases
