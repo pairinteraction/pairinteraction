@@ -121,10 +121,11 @@ if(IPython_FOUND)
       "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
       "${SPHINX_BASE}/${file}"
       COPYONLY)
-    add_test(NAME "test_${file}"
+    string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
+    add_test(NAME "notebook.${NOTEBOOK_NAME}"
       COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
       WORKING_DIRECTORY "${SPHINX_BASE}")
-    set_tests_properties("test_${file}"
+    set_tests_properties("notebook.${NOTEBOOK_NAME}"
       PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
   endforeach()
 endif(IPython_FOUND)
