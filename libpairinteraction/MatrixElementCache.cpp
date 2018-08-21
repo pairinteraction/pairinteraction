@@ -19,6 +19,7 @@
 #include "SQLite.h"
 #include "version.h"
 
+#include <boost/tokenizer.hpp>
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -118,7 +119,79 @@ void MatrixElementCache::setDefectDB(std::string const &path) {
     dbname = "";
 }
 
-void MatrixElementCache::setMethod(method_t const &m) { method = m; }
+void MatrixElementCache::setMethod(method_t const &m) {
+    // Set method for calculating the radial matrix element
+    method = m;
+}
+
+void MatrixElementCache::loadElectricDipoleDB(std::string const &path, std::string const &species) {
+    int kappa_angular = 1;
+    float s = 0.5;
+    if (std::isdigit(species.back()) != 0) {
+        s = ((species.back() - '0') - 1) / 2.;
+    }
+
+    // Get the radial matrix elements from the CSV file
+    boost::escaped_list_separator<char> els("", ";", "\"\'");
+    std::vector<std::pair<CacheKey_cache_radial, double>> radial_raw_data;
+    std::ifstream ifs(path.c_str());
+    std::string line;
+    bool firstline = true;
+    while (std::getline(ifs, line)) {
+        boost::tokenizer<boost::escaped_list_separator<char>> tk(line, els);
+        std::vector<std::string> tk_vec(tk.begin(), tk.end());
+
+        try {
+            int n1 = std::stoi(tk_vec[0]);
+            int l1 = std::stoi(tk_vec[1]);
+            float j1 = std::stof(tk_vec[2]);
+            int n2 = std::stoi(tk_vec[3]);
+            int l2 = std::stoi(tk_vec[4]);
+            float j2 = std::stof(tk_vec[5]);
+            double val = std::stod(tk_vec[6]);
+
+            // Convert the radial matrix element to um
+            val *= au2um;
+
+            // Store the radial matrix element
+            auto key1 =
+                CacheKey_cache_radial(method, species, kappa_angular, n1, n2, l1, l2, j1, j2);
+            radial_raw_data.push_back(std::make_pair(key1, val));
+
+            // Store which expressions are needed for converting the radial matrix element to a
+            // reduced radial matrix element
+            auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, l1, l2, j1, j2);
+            cache_reduced_commutes_s_missing.insert(key3);
+            auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, l1, l2);
+            cache_reduced_multipole_missing.insert(key4);
+
+        } catch (std::invalid_argument &e) {
+            if (not firstline) { // Skip header
+                std::cerr << "WARNING: During loading the electric dipole database, the error '"
+                          << e.what() << "' occured." << std::endl;
+            }
+        }
+
+        firstline = false;
+    }
+    ifs.close();
+
+    // Precaculate the expressions
+    this->update();
+
+    // Calculate the reduced radial matrix element and save it to the in-memory cache (it's not
+    // saved to the sqlite database)
+    for (auto const &pair : radial_raw_data) {
+        auto key1 = pair.first;
+        auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, key1.l[0], key1.l[1],
+                                                    key1.j[0], key1.j[1]);
+        auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, key1.l[0], key1.l[1]);
+        double val = pair.second /
+            (key3.sgn * cache_reduced_commutes_s[key3] * key4.sgn * cache_reduced_multipole[key4]);
+
+        cache_radial[key1] = val;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////
 /// Keys ///////////////////////////////////////////////////////////

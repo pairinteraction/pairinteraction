@@ -67,6 +67,7 @@ public:
 
     void setDefectDB(std::string const &path);
     void setMethod(method_t const &m);
+    void loadElectricDipoleDB(std::string const &path, std::string const &species);
 
     size_t size();
 
