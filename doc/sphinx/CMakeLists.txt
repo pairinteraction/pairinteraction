@@ -112,7 +112,7 @@ if(IPython_FOUND)
     "introduction.ipynb"
     "matrix_elements.ipynb"
     "wavefunctions.ipynb"
-    "comparison_to_saffman_fig13.ipynb"
+    #"comparison_to_saffman_fig13.ipynb"
     #"pair_potential_efield_sensitivity.ipynb"
     )
 
