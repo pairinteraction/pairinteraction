@@ -118,6 +118,8 @@ public:
 
     void restrictM(std::set<float> m) { range_m = m; }
 
+    // TODO if restrictSomething is called, set minimal_le_roy_radius = std::numeric_limits<double>::max();
+
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -1107,6 +1109,8 @@ private:
             removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
                 return sqnorm_list[entry.idx] > 0.05;
             });
+
+            // TODO recalculate minimal_le_roy_radius
         }
 
         // Forget basis restrictions as they were applied now

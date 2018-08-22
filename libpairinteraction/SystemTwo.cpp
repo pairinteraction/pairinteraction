@@ -27,14 +27,16 @@
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
     : SystemBase(cache), species({{b1.getElement(), b2.getElement()}}), system1(b1), system2(b2),
+      minimal_le_roy_radius(std::numeric_limits<double>::max()),
       distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA),
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
                      bool memory_saving)
     : SystemBase(cache, memory_saving), species({{b1.getElement(), b2.getElement()}}), system1(b1),
-      system2(b2), distance(std::numeric_limits<double>::max()), angle(0), ordermax(3),
-      sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
+      system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
+      distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA),
+      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 std::vector<StateOne>
 SystemTwo::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
@@ -61,6 +63,7 @@ const std::array<std::string, 2> &SystemTwo::getElement() { return species; }
 void SystemTwo::setDistance(double d) {
     this->onParameterChange();
     distance = d;
+    this->checkDistance(d);
 }
 
 void SystemTwo::setAngle(double a) {
@@ -106,7 +109,8 @@ void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
                                  "previously specified conserved momenta.");
     }
     // if (sym_reflection != NA) std::cerr << "Warning: The one-atom states must already be
-    // reflection symmetric in order to build reflection symmetric two-atom states." << std::endl; //
+    // reflection symmetric in order to build reflection symmetric two-atom states." << std::endl;
+
     // TODO make it work with one-atom states that are not pre-symmetrized
 }
 
@@ -375,6 +379,36 @@ void SystemTwo::initializeBasis() {
     removeRestrictedStates([=](const enumerated_state<StateTwo> &entry) -> bool {
         return sqnorm_list[entry.idx] > 0.05;
     });
+
+    ////////////////////////////////////////////////////////////////////
+    /// Get minimal Le Roy radius //////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    // Estimate minimal Le Roy radius
+    StateTwo crucial_state;
+    for (const auto &e : states) {
+        auto n = e.state.getNStar();
+        auto l = e.state.getL();
+
+        double le_roy_radius = 2 * au2um *
+            (std::sqrt(0.5 * n[0] * n[0] * (5 * n[0] * n[0] + 1 - 3 * l[0] * (l[0] + 1))) +
+             std::sqrt(0.5 * n[1] * n[1] * (5 * n[1] * n[1] + 1 - 3 * l[1] * (l[1] + 1))));
+
+        if (le_roy_radius < minimal_le_roy_radius) {
+            minimal_le_roy_radius = le_roy_radius;
+            crucial_state = e.state;
+        }
+    }
+
+    // Calculate minimal Le Roy radius precisely
+    minimal_le_roy_radius = 2 *
+        (std::sqrt(
+             cache.getRadial(crucial_state.getFirstState(), crucial_state.getFirstState(), 2)) +
+         std::sqrt(
+             cache.getRadial(crucial_state.getSecondState(), crucial_state.getSecondState(), 2)));
+
+    // Check whether distances are larger than the minimal Le Roy radius
+    this->checkDistance(distance);
 
     /*////////////////////////////////////////////////////////////////////
     /// Sort states ////////////////////////////////////////////////////
@@ -759,6 +793,15 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
+
+void SystemTwo::checkDistance(double distance) {
+    if (minimal_le_roy_radius != std::numeric_limits<double>::max() &&
+        distance < minimal_le_roy_radius) {
+        std::cerr << "WARNING: The distance " << distance
+                  << " um is smaller than the Le Roy radius " << minimal_le_roy_radius << " um."
+                  << std::endl;
+    }
+}
 
 void SystemTwo::addCoefficient(const StateTwo &state, const size_t &col_new,
                                const scalar_t &value_new,

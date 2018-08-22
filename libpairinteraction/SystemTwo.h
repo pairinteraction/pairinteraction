@@ -65,6 +65,7 @@ private:
     std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
     std::unordered_map<int, eigen_sparse_t> interaction_multipole;
 
+    double minimal_le_roy_radius;
     double distance;
     double angle;
     unsigned int ordermax;
@@ -79,6 +80,8 @@ private:
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
+
+    void checkDistance(double separation);
 
     void addCoefficient(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
                         std::vector<eigen_triplet_t> &coefficients_triplets,
