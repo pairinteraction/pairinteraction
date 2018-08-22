@@ -156,7 +156,7 @@ void MatrixElementCache::loadElectricDipoleDB(std::string const &path, std::stri
             // Store the radial matrix element
             auto key1 =
                 CacheKey_cache_radial(method, species, kappa_angular, n1, n2, l1, l2, j1, j2);
-            radial_raw_data.push_back(std::make_pair(key1, val));
+            radial_raw_data.emplace_back(key1, val);
 
             // Store which expressions are needed for converting the radial matrix element to a
             // reduced radial matrix element
@@ -166,7 +166,7 @@ void MatrixElementCache::loadElectricDipoleDB(std::string const &path, std::stri
             cache_reduced_multipole_missing.insert(key4);
 
         } catch (std::invalid_argument &e) {
-            if (not firstline) { // Skip header
+            if (!firstline) { // Skip header
                 std::cerr << "WARNING: During loading the electric dipole database, the error '"
                           << e.what() << "' occured." << std::endl;
             }

@@ -81,7 +81,7 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void checkDistance(double separation);
+    void checkDistance(double distance);
 
     void addCoefficient(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
                         std::vector<eigen_triplet_t> &coefficients_triplets,
