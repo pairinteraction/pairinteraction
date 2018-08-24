@@ -703,10 +703,16 @@ public:
 
         this->applyRightsideTransformator(triplets_transformator);
 
-        /*// TODO // Build transformator and remove states if the squared norm is to small
-        removeRestrictedStates([=](const enumerated_state<SystemBase<T>> &entry) -> bool {
+        // Remove states that barely occur
+        std::vector<double> sqnorm_list(this->getNumStates(), 0);
+        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
+            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+                sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
+            }
+        }
+        removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
             return sqnorm_list[entry.idx] > 0.05;
-        });*/
+        });
     }
 
     void applySchriefferWolffTransformation(const SystemBase<T> &system0) {
