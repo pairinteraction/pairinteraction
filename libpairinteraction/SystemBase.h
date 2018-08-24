@@ -702,6 +702,38 @@ public:
         }
 
         this->applyRightsideTransformator(triplets_transformator);
+
+        /*// TODO // Build transformator and remove states if the squared norm is to small
+        removeRestrictedStates([=](const enumerated_state<SystemBase<T>> &entry) -> bool {
+            return sqnorm_list[entry.idx] > 0.05;
+        });*/
+    }
+
+    void applySchriefferWolffTransformation(const SystemBase<T> &system0) {
+        this->diagonalize();
+
+        // Check that system0, i.e. the unperturbed system, is diagonal
+        // TODO
+
+        // Check that all the states of system0 occur
+        // TODO
+
+        // Find basisvectors which corresponds to the basis vectors of system0
+        // TODO
+
+        // Projector on the selected basis vectors (typically low-energy subspace)
+        // TODO
+
+        // Reflection operator which change signes of the selectes basis vectors but act trivially on others
+        // TODO
+
+        // Direct rotator from eigvecs_restricted to eigvecs0_restricted
+        // TODO
+
+        // Calculate the effective Hamiltonian
+        // TODO
+
+        (void)system0;
     }
 
     ////////////////////////////////////////////////////////////////////
