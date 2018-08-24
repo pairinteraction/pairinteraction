@@ -118,7 +118,8 @@ public:
 
     void restrictM(std::set<float> m) { range_m = m; }
 
-    // TODO if restrictSomething is called, set minimal_le_roy_radius = std::numeric_limits<double>::max();
+    // TODO if restrictSomething is called, set minimal_le_roy_radius =
+    // std::numeric_limits<double>::max();
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
@@ -686,6 +687,23 @@ public:
         }
     }
 
+    void removeBasisvectors(std::set<int> indices_of_unwanted_basisvectors) {
+        this->buildHamiltonian();
+
+        // Build transformator and remove vectors
+        std::vector<eigen_triplet_t> triplets_transformator;
+        triplets_transformator.reserve(coefficients.cols());
+
+        size_t idx_new = 0;
+        for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
+            if (indices_of_unwanted_basisvectors.find(idx) == indices_of_unwanted_basisvectors.end()) {
+                triplets_transformator.emplace_back(idx, idx_new++, 1);
+            }
+        }
+
+        this->applyRightsideTransformator(triplets_transformator);
+    }
+
     ////////////////////////////////////////////////////////////////////
     /// Methods to manipulate entries of the Hamiltonian ///////////////
     ////////////////////////////////////////////////////////////////////
@@ -762,9 +780,10 @@ public:
         size_t idx_col = this->getStateindex(state_col);
 
         eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
-            coefficients.adjoint(); // TODO check whether canonicalization successful by calculating
-                                    // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
-                                    // and checking if all entries are one TODO [dummystates]
+            coefficients
+                .adjoint(); // TODO check whether canonicalization successful by calculating
+                            // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
+                            // and checking if all entries are one TODO [dummystates]
 
         return tmp.coeff(idx_row, idx_col);
     }
@@ -776,9 +795,10 @@ public:
         size_t idx_col = this->getStateindex(state_col);
 
         eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
-            coefficients.adjoint(); // TODO check whether canonicalization successful by calculating
-                                    // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
-                                    // and checking if all entries are one TODO [dummystates]
+            coefficients
+                .adjoint(); // TODO check whether canonicalization successful by calculating
+                            // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
+                            // and checking if all entries are one TODO [dummystates]
         tmp.coeffRef(idx_row, idx_col) = value; // TODO check whether this also works if the element
                                                 // does not exist TODO [dummystates]
 
