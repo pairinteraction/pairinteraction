@@ -53,6 +53,7 @@ case "${TRAVIS_OS_NAME}" in
                         /bin/bash -c "
                             set -e;
                             cd \"${SOURCE_DIR}\";
+                            /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
                             cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
