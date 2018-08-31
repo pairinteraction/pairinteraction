@@ -57,7 +57,7 @@ done
 
 # Check if things have changed and print an error
 cd "${SRC}"
-if ! git diff-index --quiet HEAD -- && [ "$1" != "-f" ]; then
+if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
     echo "Formatting errors detected!"
 
     # Upload diff
