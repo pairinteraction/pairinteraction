@@ -13,6 +13,11 @@ if ! command -v autopep8 > /dev/null; then
     exit 1
 fi
 
+if ! command -v curl > /dev/null; then
+    echo "Could not find curl"
+    exit 1
+fi
+
 if ! clang-format -version | grep -q "version ${CLANG_FORMAT_VER}"; then
     echo "Could not find clang-format ${CLANG_FORMAT_VER}!"
     echo "You have $(clang-format -version)"
@@ -61,7 +66,7 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
     echo "Formatting errors detected!"
 
     # Post link as a comment on GitHub
-    if ! [ -z "$GH_TOKEN" ] && command -v curl > /dev/null; then
+    if [ -n "$GH_TOKEN" ]; then
         # Upload diff
         DIFF_URL=$(git --no-pager diff | nc termbin.com 9999 | tr -d '\0')
         echo "You can download the diff from here: ${DIFF_URL}"
@@ -74,14 +79,14 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
 
         # Post failure status
         curl --silent --show-error --output /dev/null --request POST \
-             --data "{\"state\": \"failed\", \"context\": \"Style check\", \"target_url\": \"${DIFF_URL}\"}" \
+             --data "{\"state\": \"failure\", \"context\": \"Style check\", \"target_url\": \"${DIFF_URL}\"}" \
              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
     else
         echo "Skipping GitHub comment."
     fi
 else
     # Post success status
-    if ! [ -z "$GH_TOKEN" ] && command -v curl > /dev/null; then
+    if [ -n "$GH_TOKEN" ]; then
         curl --silent --show-error --output /dev/null --request POST \
              --data "{\"state\": \"success\", \"context\": \"Style check\"}" \
              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
