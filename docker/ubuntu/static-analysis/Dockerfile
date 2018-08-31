@@ -15,7 +15,7 @@ RUN apt-get update \
     curl ca-certificates netcat \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
-  && pip3 install autopep8
+  && pip3 install 'autopep8==1.3.5'
 
 COPY boost.patch /tmp/
 RUN cd /usr/include/boost && patch -p1 < /tmp/boost.patch
