@@ -30,7 +30,7 @@ SRC=$(git rev-parse --show-toplevel)
 
 # Check if the working tree is clean
 cd "${SRC}"
-if ! git diff-index --quiet HEAD -- && [ "$1" != "-f" ]; then
+if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
     echo "Your working tree is not clean!"
     echo "Please commit your changes before continuing or use the -f option."
     exit 1
@@ -60,20 +60,18 @@ cd "${SRC}"
 if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
     echo "Formatting errors detected!"
 
-    # Upload diff
-    DIFF=$(git --no-pager diff | nc termbin.com 9999 | tr -d '\0')
-    echo "Your changes have some formatting issues."
-    echo "You can download the diff from here: ${DIFF}"
-
     # Post link as a comment on GitHub
     if ! [ -z "$GH_TOKEN" ] && command -v curl > /dev/null; then
+        # Upload diff
+        DIFF=$(git --no-pager diff | nc termbin.com 9999 | tr -d '\0')
+        echo "You can download the diff from here: ${DIFF}"
+
         echo "Posting GitHub comment on commit ${TRAVIS_COMMIT}"
         curl --silent --show-error --output /dev/null --request POST \
              --data "{\"body\":\"Your changes have some formatting issues. You can download the diff from here: ${DIFF}\n\nTo apply the diff directly use \`curl ${DIFF} | git apply -\`\"}" \
              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/commits/${TRAVIS_COMMIT}/comments?access_token=${GH_TOKEN}"
     else
-        echo "Could not post comment on GitHub."
-        echo "Either curl or the GitHub access token are missing."
+        echo "Skipping GitHub comment."
     fi
 
     # Go back and exit
