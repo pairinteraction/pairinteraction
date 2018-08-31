@@ -11,6 +11,7 @@ RUN apt-get update \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
     clang clang-tidy \
+    clang-format pycodestyle \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
