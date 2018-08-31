@@ -11,9 +11,11 @@ RUN apt-get update \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
     clang clang-tidy \
-    clang-format pycodestyle \
+    clang-format python3-pip python3-setuptools \
+    curl ca-certificates netcat \
   && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
+  && rm -rf /var/lib/apt/lists/* \
+  && pip3 install autopep8
 
 COPY boost.patch /tmp/
 RUN cd /usr/include/boost && patch -p1 < /tmp/boost.patch
