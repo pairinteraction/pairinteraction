@@ -43,7 +43,7 @@ for file in *.h *.cpp unit_test/*.cpp; do
     clang-format -i -style=file "${file}"
 done
 
-# TODO: Apply PEP8 to Python files
+# Apply PEP8 to Python files
 cd "${SRC}/testsuite"
 for file in *.py; do
     echo "PEP8: $(realpath ${file})"
@@ -63,20 +63,29 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
     # Post link as a comment on GitHub
     if ! [ -z "$GH_TOKEN" ] && command -v curl > /dev/null; then
         # Upload diff
-        DIFF=$(git --no-pager diff | nc termbin.com 9999 | tr -d '\0')
-        echo "You can download the diff from here: ${DIFF}"
+        DIFF_URL=$(git --no-pager diff | nc termbin.com 9999 | tr -d '\0')
+        echo "You can download the diff from here: ${DIFF_URL}"
 
+        # Post a comment with link to diff
         echo "Posting GitHub comment on commit ${TRAVIS_COMMIT}"
         curl --silent --show-error --output /dev/null --request POST \
-             --data "{\"body\":\"Your changes have some formatting issues. You can download the diff from here: ${DIFF}\n\nTo apply the diff directly use \`curl ${DIFF} | git apply -\`\"}" \
+             --data "{\"body\":\"Your changes have some formatting issues. You can download the diff from here: ${DIFF_URL}\n\nTo apply the diff directly use \`curl ${DIFF_URL} | git apply -\`\"}" \
              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/commits/${TRAVIS_COMMIT}/comments?access_token=${GH_TOKEN}"
+
+        # Post failure status
+        curl --silent --show-error --output /dev/null --request POST \
+             --data "{\"state\": \"failed\", \"context\": \"Style check\", \"target_url\": \"${DIFF_URL}\"}" \
+             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
     else
         echo "Skipping GitHub comment."
     fi
-
-    # Go back and exit
-    cd $PWD
-    exit 1
+else
+    # Post success status
+    if ! [ -z "$GH_TOKEN" ] && command -v curl > /dev/null; then
+        curl --silent --show-error --output /dev/null --request POST \
+             --data "{\"state\": \"success\", \"context\": \"Style check\"}" \
+             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
+    fi
 fi
 
 cd $PWD
