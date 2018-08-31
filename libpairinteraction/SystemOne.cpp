@@ -547,11 +547,11 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
                                  "systems."); // implies that efield_spherical is the same, too
     }
     if (bfield != dynamic_cast<SystemOne &>(system).bfield) {
-        throw std::runtime_error(
-            "The value of the variable 'angle' must be the same for both systems."); // implies that
-                                                                                     // bfield_spherical
-                                                                                     // is the same,
-                                                                                     // too
+        throw std::runtime_error("The value of the variable 'angle' must be the same for both "
+                                 "systems."); // implies that
+                                              // bfield_spherical
+                                              // is the same,
+                                              // too
     }
     if (diamagnetism != dynamic_cast<SystemOne &>(system).diamagnetism) {
         throw std::runtime_error(
@@ -626,8 +626,8 @@ void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t 
                            const size_t c_idx, const scalar_t val) {
     triplets.emplace_back(r_idx, c_idx, val);
     // if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val)));
-    // // triangular matrix is not sufficient because of basis change // TODO with interaction_bfield
-    // one sometimes has to add a minus sign instead of taking the conjugate
+    // // triangular matrix is not sufficient because of basis change // TODO with
+    // interaction_bfield one sometimes has to add a minus sign instead of taking the conjugate
 }
 
 void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,

@@ -3,6 +3,7 @@ import unittest
 
 import @LIBNAME@.picomplex as pi
 
+
 class TestState(unittest.TestCase):
 
     def test_instantiation(self):
@@ -23,6 +24,7 @@ class TestState(unittest.TestCase):
         self.assertEqual(s.j, 2)
         self.assertEqual(s.getM(), 0)
         self.assertEqual(s.m, 0)
+
 
 class TestPairState(unittest.TestCase):
 
@@ -59,6 +61,7 @@ class TestPairState(unittest.TestCase):
         np.testing.assert_equal(s.getM(), [0, 0])
         self.assertEqual(s.m[0], 0)
         self.assertEqual(s.m[1], 0)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -696,7 +696,8 @@ public:
 
         size_t idx_new = 0;
         for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
-            if (indices_of_unwanted_basisvectors.find(idx) == indices_of_unwanted_basisvectors.end()) {
+            if (indices_of_unwanted_basisvectors.find(idx) ==
+                indices_of_unwanted_basisvectors.end()) {
                 triplets_transformator.emplace_back(idx, idx_new++, 1);
             }
         }
@@ -730,7 +731,8 @@ public:
         // Projector on the selected basis vectors (typically low-energy subspace)
         // TODO
 
-        // Reflection operator which change signes of the selectes basis vectors but act trivially on others
+        // Reflection operator which change signes of the selectes basis vectors but act trivially
+        // on others
         // TODO
 
         // Direct rotator from eigvecs_restricted to eigvecs0_restricted

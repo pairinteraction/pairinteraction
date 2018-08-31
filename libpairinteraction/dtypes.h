@@ -66,7 +66,7 @@ constexpr const double electron_rest_mass = au2G * au2G * au2GHz / au2Vcm / au2V
 constexpr const double elementary_charge = au2GHz / au2um / au2Vcm;
 constexpr const double bohr_magneton = 0.5 * au2GHz / au2G;
 constexpr const double reduced_planck_constant = au2GHz * au2um * au2G / au2Vcm;
-constexpr const double speed_of_light =  137.035999139 * au2Vcm / au2G;
+constexpr const double speed_of_light = 137.035999139 * au2Vcm / au2G;
 
 constexpr const double muB = 0.5; // in atomic units
 constexpr const double gS = 2.0023192;

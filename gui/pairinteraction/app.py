@@ -55,9 +55,11 @@ from .loader import Eigensystem
 from .version import *
 
 if getattr(sys, 'frozen', False):
-    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
+    sys.path.append(os.path.join(os.path.dirname(
+        os.path.realpath(sys.executable)), ".."))
 else:
-    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+    sys.path.append(os.path.join(
+        os.path.dirname(os.path.realpath(__file__)), ".."))
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -385,13 +387,14 @@ class SystemDict(GuiDict):
                                    "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle", "deltaEPair", "deltaLPair", "deltaJPair", "deltaMPair", "deltaNPair",
                                    "samebasis", "steps", "precision", "missingCalc", "missingWhittaker", "exponent",
                                    "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism", "minR", "maxR",
-                                   "invE","invO","perE","perO","refE","refO", "conserveM", "sametrafo"]
+                                   "invE", "invO", "perE", "perO", "refE", "refO", "conserveM", "sametrafo"]
 
     # field map of atom 1 and atom 2 (samebasis == True)
     keys_for_cprogram_field12 = ["species1", "n1", "l1", "j1", "m1", "species2", "n2", "l2", "j2", "m2",
                                  "deltaESingle", "deltaLSingle", "deltaJSingle", "deltaMSingle", "deltaNSingle",
                                  "samebasis", "steps", "precision", "missingCalc", "missingWhittaker",
                                  "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
+
 
 class AboutDialog(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -409,7 +412,7 @@ class AboutDialog(QtGui.QDialog):
             "<p>Program version: {}</p>" +
             "<p>Settings version: {}</p>" +
             "<p>Cache version: {}</p>"
-        ).format(version_program,version_settings,version_cache))
+        ).format(version_program, version_settings, version_cache))
         self.versionLabel.setAlignment(QtCore.Qt.AlignHCenter)
 
         self.vLayout = QtGui.QVBoxLayout(self)
@@ -417,6 +420,7 @@ class AboutDialog(QtGui.QDialog):
                                alignment=QtCore.Qt.AlignCenter)
         self.vLayout.addWidget(self.okButton,
                                alignment=QtCore.Qt.AlignCenter)
+
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -504,16 +508,19 @@ class MainWindow(QtGui.QMainWindow):
         if os.path.exists(os.path.join(self.path_base, "conf", "example.sconf")):
             self.path_configurationdir = os.path.join(self.path_base, "conf")
         elif os.path.exists(os.path.join(self.path_base, "../conf", "example.sconf")):
-            self.path_configurationdir = os.path.join(self.path_base, "../conf")
+            self.path_configurationdir = os.path.join(
+                self.path_base, "../conf")
         else:
             raise Exception('Directory containing configurations not found.')
 
         if os.path.exists(os.path.join(self.path_base, "pairinteraction-real"+ext)):
             self.path_workingdir = self.path_base
         elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction", "pairinteraction-real"+ext)):
-            self.path_workingdir = os.path.join(self.path_base, "../../libpairinteraction")
+            self.path_workingdir = os.path.join(
+                self.path_base, "../../libpairinteraction")
         elif os.path.exists(os.path.join(self.path_base, "../libpairinteraction", "pairinteraction-real"+ext)):
-            self.path_workingdir = os.path.join(self.path_base, "../libpairinteraction")
+            self.path_workingdir = os.path.join(
+                self.path_base, "../libpairinteraction")
         else:
             raise Exception('Directory containing executables not found.')
 
@@ -566,7 +573,8 @@ class MainWindow(QtGui.QMainWindow):
         conn = sqlite3.connect(self.path_quantumdefects)
         c = conn.cursor()
         c.execute('SELECT DISTINCT element FROM rydberg_ritz')
-        elements = [e[0] for e in c.fetchall() if not e[0] in ["Sr1", "Sr3"]] # TODO
+        elements = [e[0]
+                    for e in c.fetchall() if not e[0] in ["Sr1", "Sr3"]]  # TODO
         conn.close()
 
         for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
@@ -766,10 +774,13 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.combobox_system_species2.currentIndexChanged[
             str].connect(self.forbidSamebasis)
 
-        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
-        self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
+        self.ui.radiobutton_system_pairbasisDefined.toggled.connect(
+            self.togglePairbasis)
+        self.ui.radiobutton_plot_overlapDefined.toggled.connect(
+            self.toggleOverlapstate)
         self.ui.radiobutton_plot_log.toggled.connect(self.toggleYScale)
-        self.ui.radiobutton_symManual.toggled.connect(self.toggleSymmetrization)
+        self.ui.radiobutton_symManual.toggled.connect(
+            self.toggleSymmetrization)
 
         self.ui.checkbox_plot_antialiasing.toggled.connect(
             self.toggleAntialiasing)
@@ -828,24 +839,40 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.graphicsview_potential_plot.sigYRangeChanged.connect(
             self.detectManualRangeY)
 
-        self.ui.spinbox_system_exponent.valueChanged.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBx.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBx.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBy.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBy.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minBz.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxBz.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEx.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEx.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEy.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEy.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_minEz.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_maxEz.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.lineedit_system_theta.editingFinished.connect(self.autosetSymmetrization)
-        self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
-        self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
-        self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
-
+        self.ui.spinbox_system_exponent.valueChanged.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minBx.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBx.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minBy.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBy.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minBz.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxBz.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minEx.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEx.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minEy.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEy.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_minEz.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_maxEz.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.lineedit_system_theta.editingFinished.connect(
+            self.autosetSymmetrization)
+        self.ui.spinbox_system_m1.valueChanged.connect(
+            self.autosetSymmetrization)
+        self.ui.spinbox_system_m2.valueChanged.connect(
+            self.autosetSymmetrization)
+        self.ui.checkbox_system_samebasis.stateChanged.connect(
+            self.autosetSymmetrization)
 
         # Load cache directory
         if os.path.isfile(self.path_cache_last):
@@ -1229,12 +1256,14 @@ class MainWindow(QtGui.QMainWindow):
                         # calculate overlap states
                         if self.angle != 0:  # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
                             if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2]] != -1
+                                boolarr = self.overlapstate[idx][[
+                                    0, 1, 2]] != -1
                                 stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
                                                     idx][None, [0, 1, 2]][:, boolarr], axis=-1))[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(
+                                    stateidx, dtype=np.float)
                                 m1 = self.overlapstate[idx][3]
                                 if m1 != -1:
                                     for j in np.unique(relevantBasis[:, 3]):
@@ -1302,7 +1331,8 @@ class MainWindow(QtGui.QMainWindow):
                                     else:
                                         stateamount2 = np.zeros_like(stateidx2)
 
-                                    statecoeff = np.append(statecoeff, statecoeff2)
+                                    statecoeff = np.append(
+                                        statecoeff, statecoeff2)
                                     stateidx = np.append(stateidx, stateidx2)
                                     stateamount = np.append(
                                         stateamount, stateamount2)
@@ -1327,12 +1357,14 @@ class MainWindow(QtGui.QMainWindow):
                                     stateidx = np.append(stateidx, stateidx_second)
                                     stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
                             elif idx == 1:
-                                boolarr = self.overlapstate[idx][[4, 5, 6]] != -1
+                                boolarr = self.overlapstate[idx][[
+                                    4, 5, 6]] != -1
                                 stateidx = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
                                                     idx][None, [4, 5, 6]][:, boolarr], axis=-1))[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(
+                                    stateidx, dtype=np.float)
                                 m1 = self.overlapstate[idx][7]
                                 if m1 != -1:
                                     for j in np.unique(relevantBasis[:, 3]):
@@ -1378,7 +1410,8 @@ class MainWindow(QtGui.QMainWindow):
                                                     idx][None, [0, 1, 2, 4, 5, 6]][:, boolarr], axis=-1))[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(
+                                    stateidx, dtype=np.float)
                                 for selector in [0, 4]:
                                     m1 = self.overlapstate[idx][3 + selector]
                                     if m1 != -1:
@@ -1398,7 +1431,8 @@ class MainWindow(QtGui.QMainWindow):
                                 boolarr = self.overlapstate[idx][
                                     [0, 1, 2, 3, 4, 5, 6, 7]] == -1
                                 if sum(boolarr) > 0:
-                                    undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
+                                    undeterminedQuantumNumbers = relevantBasis[:, [
+                                        1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
                                     sorter = np.lexsort(
                                         undeterminedQuantumNumbers.T[::-1])
                                     diff = np.append([False], np.diff(
@@ -1426,17 +1460,25 @@ class MainWindow(QtGui.QMainWindow):
 
                         else:
                             if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != -1
-                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [0, 1, 2, 3]][:, boolarr], axis=-1))[0]
+                                boolarr = self.overlapstate[idx][[
+                                    0, 1, 2, 3]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [
+                                                    0, 1, 2, 3]][:, boolarr], axis=-1))[0]
                                 if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
-                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
-                                    stateidx = np.append(stateidx, np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0])
+                                    boolarr = self.overlapstate[idx][[
+                                        4, 5, 6, 7]] != -1
+                                    stateidx = np.append(stateidx, np.where(np.all(basis[:, [
+                                                         1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0])
                             elif idx == 1:
-                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
-                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr], axis=-1))[0]
+                                boolarr = self.overlapstate[idx][[
+                                    4, 5, 6, 7]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [
+                                                    4, 5, 6, 7]][:, boolarr], axis=-1))[0]
                             elif idx == 2:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != -1
-                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr] == self.overlapstate[idx][None, [0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr], axis=-1))[0]
+                                boolarr = self.overlapstate[idx][[
+                                    0, 1, 2, 3, 4, 5, 6, 7]] != -1
+                                stateidx = np.where(np.all(basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr] == self.overlapstate[idx][None, [
+                                                    0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr], axis=-1))[0]
 
                             statecoeff = np.ones_like(stateidx)
                             stateamount = np.arange(len(stateidx))
@@ -1558,22 +1600,29 @@ class MainWindow(QtGui.QMainWindow):
                         symmetrycolor = []
 
                         if eigensystem.params["inversion"] == "1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
                         elif eigensystem.params["inversion"] == "-1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
 
                         if eigensystem.params["permutation"] == "1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
                         elif eigensystem.params["permutation"] == "-1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
 
                         if eigensystem.params["reflection"] == "1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
                         elif eigensystem.params["reflection"] == "-1":
-                            symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
+                            symmetrycolor.append(
+                                self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
 
                         if len(symmetrycolor) > 0:
-                            symmetrycolor = tuple(np.mean(symmetrycolor, axis=0).astype(int))
+                            symmetrycolor = tuple(
+                                np.mean(symmetrycolor, axis=0).astype(int))
                         else:
                             symmetrycolor = (40, 40, 40)
 
@@ -1783,7 +1832,8 @@ class MainWindow(QtGui.QMainWindow):
 
                         # calculate overlap
                         if self.stateidx_field[idx] is not None:
-                            overlap = np.abs(self.stateidx_field[idx].conjugate() * basis)
+                            overlap = np.abs(
+                                self.stateidx_field[idx].conjugate() * basis)
                             overlap.data **= 2
                             overlap = overlap.sum(axis=0).getA1()
 
@@ -2152,7 +2202,8 @@ class MainWindow(QtGui.QMainWindow):
                         looprange = len(self.momentumcolors)
                     elif idx == 2:
                         s = np.array(s)
-                        uniquesymmetrycolors = np.unique(s.view(np.dtype((np.void, s.dtype.itemsize*s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
+                        uniquesymmetrycolors = np.unique(s.view(np.dtype(
+                            (np.void, s.dtype.itemsize*s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
                         looprange = len(uniquesymmetrycolors)
 
                     # loop over momenta
@@ -2169,7 +2220,8 @@ class MainWindow(QtGui.QMainWindow):
                         elif idx == 2:
                             # determine which basis elements have the current
                             # symmetry
-                            boolarr = np.all(s == uniquesymmetrycolors[i], axis=1)
+                            boolarr = np.all(
+                                s == uniquesymmetrycolors[i], axis=1)
                             if (np.sum(boolarr) == 0):
                                 continue
 
@@ -2431,9 +2483,12 @@ class MainWindow(QtGui.QMainWindow):
 
         angle = self.systemdict["theta"].magnitude
 
-        arrlabels = [["minEx", "minEy", "minEz"], ["maxEx", "maxEy", "maxEz"], ["minBx", "minBy", "minBz"], ["maxBx", "maxBy", "maxBz"]]
-        rotator = np.array([[np.cos(angle), 0, -np.sin(angle)], [0, 1, 0], [np.sin(angle), 0, np.cos(angle)]])
-        fields_unrotated = [np.array([self.systemdict[l].magnitude for l in ls]) for ls in arrlabels]
+        arrlabels = [["minEx", "minEy", "minEz"], ["maxEx", "maxEy", "maxEz"], [
+            "minBx", "minBy", "minBz"], ["maxBx", "maxBy", "maxBz"]]
+        rotator = np.array([[np.cos(angle), 0, -np.sin(angle)],
+                            [0, 1, 0], [np.sin(angle), 0, np.cos(angle)]])
+        fields_unrotated = [
+            np.array([self.systemdict[l].magnitude for l in ls]) for ls in arrlabels]
         fields = [np.dot(rotator, f).flatten() for f in fields_unrotated]
 
         higherOrder = self.systemdict["exponent"].magnitude > 3
@@ -2443,13 +2498,17 @@ class MainWindow(QtGui.QMainWindow):
         magneticX = fields[2][0] != 0 or fields[3][0] != 0
         magneticY = fields[2][1] != 0 or fields[3][1] != 0
         magneticZ = fields[2][2] != 0 or fields[3][2] != 0
-        nonzeroM = self.systemdict["m1"].magnitude + self.systemdict["m2"].magnitude != 0
+        nonzeroM = self.systemdict["m1"].magnitude + \
+            self.systemdict["m2"].magnitude != 0
         heteronuclear = not self.systemdict["samebasis"].magnitude
 
-        sym_inversion = (not electricZ) and (not electricX) and (not electricY) and (not heteronuclear)
+        sym_inversion = (not electricZ) and (not electricX) and (
+            not electricY) and (not heteronuclear)
         sym_permutation = (not higherOrder) and (not heteronuclear)
-        sym_reflection = (not magneticZ) and (not magneticX) and (not magneticY) and (not electricX) and (not electricY) and (not nonzeroM)
-        sym_rotation = (not magneticX) and (not magneticY) and (not electricX) and (not electricY)
+        sym_reflection = (not magneticZ) and (not magneticX) and (
+            not magneticY) and (not electricX) and (not electricY) and (not nonzeroM)
+        sym_rotation = (not magneticX) and (not magneticY) and (
+            not electricX) and (not electricY)
 
         self.ui.checkbox_system_invE.setChecked(sym_inversion)
         self.ui.checkbox_system_invO.setChecked(sym_inversion)
@@ -2727,7 +2786,8 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'B'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Magnetic field (' + str(Units.bfield) + ')')
-                        self.converter_x[idx] = 1 #Quantity(1, Units.au_bfield).toUU().magnitude
+                        # Quantity(1, Units.au_bfield).toUU().magnitude
+                        self.converter_x[idx] = 1
                         posMin = self.get1DPosition([self.systemdict['minBx'].magnitude, self.systemdict[
                                                     'minBy'].magnitude, self.systemdict['minBz'].magnitude])
                         posMax = self.get1DPosition([self.systemdict['maxBx'].magnitude, self.systemdict[
@@ -2736,7 +2796,8 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'E'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Electric field (' + str(Units.efield) + ')')
-                        self.converter_x[idx] = 1 #Quantity(1, Units.au_efield).toUU().magnitude
+                        # Quantity(1, Units.au_efield).toUU().magnitude
+                        self.converter_x[idx] = 1
                         posMin = self.get1DPosition([self.systemdict['minEx'].magnitude, self.systemdict[
                                                     'minEy'].magnitude, self.systemdict['minEz'].magnitude])
                         posMax = self.get1DPosition([self.systemdict['maxEx'].magnitude, self.systemdict[
@@ -2745,7 +2806,8 @@ class MainWindow(QtGui.QMainWindow):
                         self.xAxis[idx] = 'R'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Interatomic distance (' + str(Units.length) + ')')
-                        self.converter_x[idx] = 1 #Quantity(1, Units.au_length).toUU().magnitude
+                        # Quantity(1, Units.au_length).toUU().magnitude
+                        self.converter_x[idx] = 1
                         posMin = self.systemdict['minR'].magnitude
                         posMax = self.systemdict['maxR'].magnitude
 
@@ -2770,7 +2832,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.linesO[idx] = {}
                     self.linesSender[idx] = None
 
-                self.converter_y = 1 #Quantity(1, Units.au_energy).toUU().magnitude
+                # Quantity(1, Units.au_energy).toUU().magnitude
+                self.converter_y = 1
 
                 # save configuration to json file
                 with open(self.path_config, 'w') as f:
@@ -2864,7 +2927,8 @@ class MainWindow(QtGui.QMainWindow):
                 # integers; the value specified the number of threads
                 # to use for the corresponding nested level.  If
                 # undefined one thread per CPU is used.
-                ompthreads = {} if self.numprocessors == 0 else {'OMP_NUM_THREADS': str(self.numprocessors)}
+                ompthreads = {} if self.numprocessors == 0 else {
+                    'OMP_NUM_THREADS': str(self.numprocessors)}
 
                 self.proc = subprocess.Popen([path_cpp, "-c", self.path_config, "-o", self.path_cache],
                                              stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=self.path_workingdir, env=dict(os.environ, **ompthreads))
@@ -2917,10 +2981,10 @@ class MainWindow(QtGui.QMainWindow):
 
         # TODO sicherstellen, dass die Funktion auch ohne Plot / mit leerem
         # Plotwindow nicht abst?rzt
-        
+
         minE = self.systemdict["minE_storage"].magnitude
         maxE = self.systemdict["maxE_storage"].magnitude
-        
+
         try:
             # save plot
             plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot,
@@ -2937,7 +3001,7 @@ class MainWindow(QtGui.QMainWindow):
                 1500, 1500, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
             image.save(buffer, "PNG")
             ziparchive.writestr('plot.png', buffer.data())
-            
+
             # save configuration
             ziparchive.writestr(
                 'settings.sconf', self.storage_configuration[idx][0])
@@ -2993,9 +3057,12 @@ class MainWindow(QtGui.QMainWindow):
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
-            self.converter_bfield = 1#Quantity(1, Units.au_bfield).toUU().magnitude
-            self.converter_efield = 1#Quantity(1, Units.au_efield).toUU().magnitude
-            self.converter_length = 1#Quantity(1, Units.au_length).toUU().magnitude
+            # Quantity(1, Units.au_bfield).toUU().magnitude
+            self.converter_bfield = 1
+            # Quantity(1, Units.au_efield).toUU().magnitude
+            self.converter_efield = 1
+            # Quantity(1, Units.au_length).toUU().magnitude
+            self.converter_length = 1
 
             rotator = np.array([[np.cos(-self.angle), 0, -np.sin(-self.angle)],
                                 [0, 1, 0],
@@ -3028,36 +3095,51 @@ class MainWindow(QtGui.QMainWindow):
                     if idx == 2:
                         data['distances'].append(
                             float(eigensystem.params["R"]) * self.converter_length)
-                        
+
                     if minE is None and maxE is None:
                         data['eigenvectors'].append(basis)
                         data['eigenvalues'].append(energies)
-                        if self.stateidx_field[idx] is not None: data['overlaps'].append(overlaps)
+                        if self.stateidx_field[idx] is not None:
+                            data['overlaps'].append(overlaps)
                     else:
                         # Select which eigenpairs should be saved
-                        if minE is None: selector = energies < maxE
-                        elif maxE is None: selector = energies > minE
-                        else: selector = (energies < maxE) & (energies > minE)
-                        
-                        data['eigenvectors'].append(basis[:,selector])
+                        if minE is None:
+                            selector = energies < maxE
+                        elif maxE is None:
+                            selector = energies > minE
+                        else:
+                            selector = (energies < maxE) & (energies > minE)
+
+                        data['eigenvectors'].append(basis[:, selector])
                         data['eigenvalues'].append(energies[selector])
-                        if self.stateidx_field[idx] is not None: data['overlaps'].append(overlaps[selector])
-                        
+                        if self.stateidx_field[idx] is not None:
+                            data['overlaps'].append(overlaps[selector])
+
                 else:  # new block
                     if minE is None and maxE is None:
                         csc_happend(data['eigenvectors'][-1], basis)
-                        data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1], energies)
-                        if self.stateidx_field[idx] is not None: data['overlaps'][-1] = np.append(data['overlaps'][-1], overlaps)
+                        data['eigenvalues'][-1] = np.append(
+                            data['eigenvalues'][-1], energies)
+                        if self.stateidx_field[idx] is not None:
+                            data['overlaps'][-1] = np.append(
+                                data['overlaps'][-1], overlaps)
                     else:
                         # Select which eigenpairs should be saved
                         selector = energies
-                        if minE is None: selector = energies < maxE
-                        elif maxE is None: selector = energies > minE
-                        else: selector = (energies < maxE) & (energies > minE)
-                        
-                        csc_happend(data['eigenvectors'][-1], basis[:,selector])
-                        data['eigenvalues'][-1] = np.append(data['eigenvalues'][-1], energies[selector])
-                        if self.stateidx_field[idx] is not None: data['overlaps'][-1] = np.append(data['overlaps'][-1], overlaps[selector])
+                        if minE is None:
+                            selector = energies < maxE
+                        elif maxE is None:
+                            selector = energies > minE
+                        else:
+                            selector = (energies < maxE) & (energies > minE)
+
+                        csc_happend(data['eigenvectors']
+                                    [-1], basis[:, selector])
+                        data['eigenvalues'][-1] = np.append(
+                            data['eigenvalues'][-1], energies[selector])
+                        if self.stateidx_field[idx] is not None:
+                            data['overlaps'][-1] = np.append(
+                                data['overlaps'][-1], overlaps[selector])
 
                 filestep_last = filestep
 
@@ -3297,7 +3379,8 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetSConf(self):
         conf_used = self.path_system_last
-        conf_original = os.path.join(self.path_configurationdir, "example.sconf")
+        conf_original = os.path.join(
+            self.path_configurationdir, "example.sconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)
@@ -3307,7 +3390,8 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def resetPConf(self):
         conf_used = self.path_plot_last
-        conf_original = os.path.join(self.path_configurationdir, "example.pconf")
+        conf_original = os.path.join(
+            self.path_configurationdir, "example.pconf")
 
         if os.path.isfile(conf_used):
             os.remove(conf_used)
@@ -3897,6 +3981,7 @@ class MainWindow(QtGui.QMainWindow):
 
         # Close everything
         super().closeEvent(event)
+
 
 def main():
     app = QtGui.QApplication(sys.argv)
