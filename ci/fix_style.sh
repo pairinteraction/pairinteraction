@@ -52,12 +52,12 @@ done
 cd "${SRC}/testsuite"
 for file in *.py; do
     echo "PEP8: $(realpath ${file})"
-    autopep8 --in-place ${file}
+    autopep8 --max-line-length 120 --aggressive --in-place ${file}
 done
 cd "${SRC}/gui/pairinteraction"
 for file in *.py; do
     echo "PEP8: $(realpath ${file})"
-    autopep8 --in-place ${file}
+    autopep8 --max-line-length 120 --aggressive --in-place ${file}
 done
 
 # Check if things have changed and print an error
