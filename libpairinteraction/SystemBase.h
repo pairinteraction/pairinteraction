@@ -793,23 +793,43 @@ public:
     /// Methods to manipulate entries of the Hamiltonian ///////////////
     ////////////////////////////////////////////////////////////////////
 
-    size_t getStateindex(const T &state) {
+    size_t getStateIndex(const T &searched_state) {
         this->buildBasis();
 
-        auto state_iter = states.template get<1>().find(state);
+        auto state_iter = states.template get<1>().find(searched_state);
 
         if (state_iter == states.template get<1>().end()) {
             throw std::runtime_error(
-                "The method getStateindex() is called on a non-existing state.");
+                "The method getStateIndex() is called on a non-existing state.");
         }
 
         return state_iter->idx;
     }
 
+    std::vector<size_t> getStateIndex(const std::vector<T> &searched_states) { // TODO !!!
+        this->buildBasis();
+
+        std::vector<size_t> indices;
+        indices.reserve(searched_states.size());
+
+        for (const auto &state : searched_states) {
+            auto state_iter = states.template get<1>().find(state);
+
+            if (state_iter == states.template get<1>().end()) {
+                throw std::runtime_error(
+                    "The method getStateIndex() is called on a non-existing state.");
+            }
+
+            indices.push_back(state_iter->idx);
+        }
+
+        return indices;
+    }
+
     size_t getVectorindex(const T &state) {
         this->buildBasis();
 
-        size_t stateidx = this->getStateindex(state);
+        size_t stateidx = this->getStateIndex(state);
 
         double maxval = -1;
         size_t col_with_maxval = -1;
@@ -861,8 +881,8 @@ public:
     scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
         this->buildHamiltonian();
 
-        size_t idx_row = this->getStateindex(state_row);
-        size_t idx_col = this->getStateindex(state_col);
+        size_t idx_row = this->getStateIndex(state_row);
+        size_t idx_col = this->getStateIndex(state_col);
 
         eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
             coefficients
@@ -876,8 +896,8 @@ public:
     void setHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
 
-        size_t idx_row = this->getStateindex(state_row);
-        size_t idx_col = this->getStateindex(state_col);
+        size_t idx_row = this->getStateIndex(state_row);
+        size_t idx_col = this->getStateIndex(state_col);
 
         eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
             coefficients
@@ -893,8 +913,8 @@ public:
     void addHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
 
-        size_t idx_row = this->getStateindex(state_row);
-        size_t idx_col = this->getStateindex(state_col);
+        size_t idx_row = this->getStateIndex(state_row);
+        size_t idx_col = this->getStateIndex(state_col);
 
         eigen_sparse_t tmp(states.size(), states.size());
         tmp.reserve(2);
