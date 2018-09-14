@@ -494,9 +494,7 @@ public:
         }
 
         // Diagonalize hamiltonianmatrix
-        eigen_dense_t densemat(hamiltonianmatrix);
-        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(densemat);
-        // TODO improve storage management, e.g. delete densemat right away
+        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonianmatrix);
 
         // Get eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
