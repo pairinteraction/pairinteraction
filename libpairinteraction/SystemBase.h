@@ -799,8 +799,7 @@ public:
         auto state_iter = states.template get<1>().find(searched_state);
 
         if (state_iter == states.template get<1>().end()) {
-            throw std::runtime_error(
-                "The method getStateIndex() is called on a non-existing state.");
+            throw std::runtime_error("The method is called on a non-existing state.");
         }
 
         return state_iter->idx;
@@ -816,8 +815,7 @@ public:
             auto state_iter = states.template get<1>().find(state);
 
             if (state_iter == states.template get<1>().end()) {
-                throw std::runtime_error(
-                    "The method getStateIndex() is called on a non-existing state.");
+                throw std::runtime_error("The method is called on a non-existing state.");
             }
 
             indices.push_back(state_iter->idx);
@@ -826,10 +824,10 @@ public:
         return indices;
     }
 
-    size_t getVectorindex(const T &state) {
+    size_t getBasisvectorIndex(const T &searched_state) {
         this->buildBasis();
 
-        size_t stateidx = this->getStateIndex(state);
+        size_t stateidx = this->getStateIndex(searched_state);
 
         double maxval = -1;
         size_t col_with_maxval = -1;
@@ -845,12 +843,54 @@ public:
             }
         }
 
-        if (col_with_maxval == -1) {
-            throw std::runtime_error(
-                "The method getVectorindex() is called on a non-occuring state.");
+        return col_with_maxval;
+    }
+
+    std::vector<size_t> getBasisvectorIndex(const std::vector<T> &searched_states) {
+        this->buildBasis();
+
+        // Construct canonical basis vectors
+        std::vector<size_t> state_indices = this->getStateIndex(searched_states);
+        std::vector<eigen_triplet_t> canonicalbasis_triplets;
+        canonicalbasis_triplets.reserve(searched_states.size());
+        for (size_t i = 0; i < state_indices.size(); ++i) {
+            canonicalbasis_triplets.emplace_back(state_indices[i], i, 1);
+        }
+        eigen_sparse_t canonicalbasis(states.size(), searched_states.size());
+        canonicalbasis.setFromTriplets(canonicalbasis_triplets.begin(),
+                                       canonicalbasis_triplets.end());
+        canonicalbasis_triplets.clear();
+
+        // Get overlaps between basis vectors
+        eigen_sparse_double_t overlap = (canonicalbasis.adjoint() * coefficients).cwiseAbs2();
+        eigen_vector_double_t overlap_total =
+            eigen_vector_double_t::Ones(canonicalbasis.cols()).transpose() * overlap;
+
+        // Get indices of the canonicalbasis.cols() largest entries
+        std::vector<size_t> indices_available(coefficients.cols());
+        std::iota(indices_available.begin(), indices_available.end(), 0);
+        std::nth_element(
+            indices_available.begin(), indices_available.begin() + canonicalbasis.cols(),
+            indices_available.end(),
+            [&overlap_total](size_t a, size_t b) { return overlap_total[a] > overlap_total[b]; });
+        indices_available.resize(canonicalbasis.cols());
+
+        // Resort the indices to match the order of searched_states, TODO use Hungarian algorithm
+        std::vector<size_t> indices(canonicalbasis.cols(), std::numeric_limits<size_t>::max());
+        for (const auto &k : indices_available) {
+            size_t row_with_maxval;
+            double maxval = -1;
+            for (eigen_iterator_double_t triple(overlap, k); triple; ++triple) {
+                if (indices[triple.row()] == std::numeric_limits<size_t>::max() &&
+                    triple.value() > maxval) {
+                    row_with_maxval = triple.row();
+                    maxval = triple.value();
+                }
+            }
+            indices[row_with_maxval] = k;
         }
 
-        return col_with_maxval;
+        return indices;
     }
 
     void forgetStatemixing() {
