@@ -326,7 +326,7 @@ eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states
     return C3_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeInteraction::getEnergies(std::vector<StateTwo> states) {
+eigen_dense_double_t PerturbativeInteraction::getEnergy(std::vector<StateTwo> states) {
     eigen_dense_double_t energies_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     for (size_t idx = 0; idx < states.size(); ++idx) {
