@@ -623,7 +623,7 @@ public:
                 newidx = state_iter->idx;
             }
 
-            transformator_triplets.push_back(eigen_triplet_t(newidx, entry.idx, 1));
+            transformator_triplets.emplace_back(newidx, entry.idx, 1);
         }
 
         eigen_sparse_t transformator(states.size(), system.coefficients.rows());
@@ -657,7 +657,7 @@ public:
         shifter_triplets.reserve(system.hamiltonianmatrix.rows());
 
         for (size_t idx = 0; idx < system.hamiltonianmatrix.rows(); ++idx) {
-            shifter_triplets.push_back(eigen_triplet_t(hamiltonianmatrix.rows() + idx, idx, 1));
+            shifter_triplets.emplace_back(hamiltonianmatrix.rows() + idx, idx, 1);
         }
 
         eigen_sparse_t shifter(hamiltonianmatrix.rows() + system.hamiltonianmatrix.rows(),
@@ -689,7 +689,7 @@ public:
         }
     }
 
-    void removeBasisvectors(std::set<int> indices_of_unwanted_basisvectors) {
+    void confineBasisvectors(std::set<int> indices_of_wanted_basisvectors) {
         this->buildHamiltonian();
 
         // Build transformator and remove vectors
@@ -698,56 +698,15 @@ public:
 
         size_t idx_new = 0;
         for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
-            if (indices_of_unwanted_basisvectors.find(idx) ==
-                indices_of_unwanted_basisvectors.end()) {
+            if (indices_of_wanted_basisvectors.find(idx) != indices_of_wanted_basisvectors.end()) {
                 triplets_transformator.emplace_back(idx, idx_new++, 1);
             }
         }
 
         this->applyRightsideTransformator(triplets_transformator);
-
-        /*// Remove states that barely occur
-        std::vector<double> sqnorm_list(this->getNumStates(), 0);
-        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
-                sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
-            }
-        }
-        removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
-            return sqnorm_list[entry.idx] > 0.05;
-        });*/
     }
 
-    void keepBasisvectors(std::set<int> indices_of_wanted_basisvectors) {
-        this->buildHamiltonian();
-
-        // Build transformator and remove vectors
-        std::vector<eigen_triplet_t> triplets_transformator;
-        triplets_transformator.reserve(coefficients.cols());
-
-        size_t idx_new = 0;
-        for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
-            if (indices_of_wanted_basisvectors.find(idx) !=
-                indices_of_wanted_basisvectors.end()) {
-                triplets_transformator.emplace_back(idx, idx_new++, 1);
-            }
-        }
-
-        this->applyRightsideTransformator(triplets_transformator);
-
-        /*// Remove states that barely occur
-        std::vector<double> sqnorm_list(this->getNumStates(), 0);
-        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
-                sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
-            }
-        }
-        removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
-            return sqnorm_list[entry.idx] > 0.05;
-        });*/
-    }
-
-    void applySchriefferWolffTransformation(SystemBase<T> &system0) { // TODO const // TODO let the user directly specify the subspace
+    void applySchriefferWolffTransformation(SystemBase<T> &system0) {
         this->diagonalize();
 
         // Check that system0, i.e. the unperturbed system, is diagonal
@@ -758,6 +717,11 @@ public:
 
         // --- Express the basis vectors of system0 as a linearcombination of all states ---
 
+        // Check number of states
+        if (this->getNumStates() != system0.getNumStates()) {
+            throw std::runtime_error("The unperturbed system owns a different number of states.");
+        }
+
         // Combine states and build transformators
         std::vector<eigen_triplet_t> transformator_triplets;
         transformator_triplets.reserve(system0.getNumStates());
@@ -765,21 +729,21 @@ public:
         for (const auto &entry : system0.states) { // TODO system0.getStates()
             auto state_iter = states.template get<1>().find(entry.state);
 
-            // Check that all the states of system0 occur
+            // Check that all the states of system0 occur (since we already checked that the number
+            // of states is the same, this ensures that all the states are the same)
             if (state_iter == states.template get<1>().end()) {
-                throw std::runtime_error(
-                    "The unperturbed system owns a state which cannot be found.");
+                throw std::runtime_error("The unperturbed system owns different states.");
             }
             size_t newidx = state_iter->idx;
 
-            transformator_triplets.push_back(eigen_triplet_t(newidx, entry.idx, 1));
+            transformator_triplets.emplace_back(newidx, entry.idx, 1);
         }
 
         eigen_sparse_t transformator(states.size(), system0.getNumStates());
         transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
         transformator_triplets.clear();
 
-        // Transformed basisvectors of system0
+        // Get basisvectors of system0
         eigen_sparse_t low_energy_basis0 = transformator * system0.getBasisvectors();
 
         // --- Find basisvectors which corresponds to the basis vectors of system0 ---
@@ -796,7 +760,7 @@ public:
 
         transformator_triplets.reserve(low_energy_basis0.cols());
         for (int i = 0; i < low_energy_basis0.cols(); ++i) {
-            transformator_triplets.push_back(eigen_triplet_t(indices[i], i, 1));
+            transformator_triplets.emplace_back(indices[i], i, 1);
         }
 
         transformator.resize(coefficients.cols(), low_energy_basis0.cols());
@@ -806,7 +770,7 @@ public:
         // Get corresponding basis vectors
         eigen_sparse_t low_energy_basis = coefficients * transformator;
 
-        // --- Perform Schrieffer Wolff transformation ---
+        // --- Perform the Schrieffer Wolff transformation ---
 
         // Projector on the selected basis vectors (typically low-energy subspace)
         eigen_sparse_t projector0 = low_energy_basis0 * low_energy_basis0.adjoint();
@@ -819,8 +783,7 @@ public:
         eigen_dense_t reflection =
             eigen_dense_t::Identity(states.size(), states.size()) - 2 * projector;
 
-        // Direct rotator from low_energy_basis to low_energy_basis0 // TODO use specifiable
-        // tolerance for sparseView
+        // Direct rotator from low_energy_basis to low_energy_basis0
         eigen_sparse_t rotator = (reflection0 * reflection).sqrt().sparseView();
 
         // Calculate the effective Hamiltonian
@@ -1124,7 +1087,7 @@ protected:
         for (const auto &entry : states) {
             if (checkIsValidEntry(entry)) {
                 states_new.push_back(enumerated_state<T>(idx_new, entry.state));
-                triplets_transformator.push_back(eigen_triplet_t(idx_new, entry.idx, 1));
+                triplets_transformator.emplace_back(idx_new, entry.idx, 1);
                 ++idx_new;
             }
         }
