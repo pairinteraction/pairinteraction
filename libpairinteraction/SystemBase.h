@@ -7,7 +7,7 @@
 #include "dtypes.h"
 #include "serialization_eigen.h"
 #include "serialization_path.h"
-#include <eigen/unsupported/Eigen/MatrixFunctions>
+#include <unsupported/Eigen/MatrixFunctions>
 
 #include <algorithm>
 #include <boost/filesystem.hpp>
