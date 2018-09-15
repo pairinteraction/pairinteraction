@@ -684,18 +684,28 @@ public:
         }
     }
 
-    void confineBasisvectors(std::set<int> indices_of_wanted_basisvectors) {
+    void constrainBasisvectors(std::vector<size_t> indices_of_wanted_basisvectors) {
         this->buildHamiltonian();
+
+        // Check if indices are unique
+        std::set<size_t> tmp(indices_of_wanted_basisvectors.begin(),
+                             indices_of_wanted_basisvectors.end());
+        if (tmp.size() < indices_of_wanted_basisvectors.size()) {
+            throw std::runtime_error("Indices are occuring multiple times.");
+        }
 
         // Build transformator and remove vectors
         std::vector<eigen_triplet_t> triplets_transformator;
-        triplets_transformator.reserve(coefficients.cols());
+        triplets_transformator.reserve(indices_of_wanted_basisvectors.size());
 
         size_t idx_new = 0;
-        for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
-            if (indices_of_wanted_basisvectors.find(idx) != indices_of_wanted_basisvectors.end()) {
-                triplets_transformator.emplace_back(idx, idx_new++, 1);
+        for (const auto &idx : indices_of_wanted_basisvectors) {
+            std::cout << idx << std::endl;
+            if (idx >= coefficients.cols()) {
+                throw std::runtime_error("A basis vector with index " + std::to_string(idx) +
+                                         " could not be found.");
             }
+            triplets_transformator.emplace_back(idx, idx_new++, 1);
         }
 
         this->applyRightsideTransformator(triplets_transformator);
