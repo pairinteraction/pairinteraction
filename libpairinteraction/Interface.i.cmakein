@@ -188,7 +188,9 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %attribute(StateTwo, double, energy, getEnergy);
 
 %boost_picklable(StateOne);
+%boost_picklable(StateOneArtificial);
 %boost_picklable(StateTwo);
+%boost_picklable(StateTwoArtificial);
 
 %extend StateOne {
   __STR__();
@@ -199,7 +201,25 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
   %}
 }
 
+%extend StateOneArtificial {
+  __STR__();
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
+
 %extend StateTwo {
+  __STR__();
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
+
+%extend StateTwoArtificial {
   __STR__();
   %pythoncode %{
     def __setstate__(self, sState):

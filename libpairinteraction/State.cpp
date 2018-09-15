@@ -55,7 +55,7 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 StateOne::StateOne(std::string element, int n, int l, float j, float m)
-    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m) {
+    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m) { // TODO remove State(0)
     this->analyzeSpecies();
 }
 
@@ -136,6 +136,33 @@ void StateOne::analyzeSpecies() {
         element = species.substr(0, species.size() - 1);
     }
 }
+
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/// Implementation of StateOneArtificial +++++++++++++++++++++++++++
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+StateOneArtificial::StateOneArtificial() : label("") {}
+
+StateOneArtificial::StateOneArtificial(std::string label) : label(std::move(label)) {}
+
+std::ostream &operator<<(std::ostream &out, const StateOneArtificial &state) {
+    out << "|" << state.label << ">";
+    return out;
+}
+
+bool StateOneArtificial::operator==(StateOneArtificial const &rhs) const {
+    return label == rhs.label;
+}
+
+bool StateOneArtificial::operator!=(StateOneArtificial const &rhs) const {
+    return label != rhs.label;
+}
+
+bool StateOneArtificial::operator<(const StateOneArtificial &rhs) const {
+    return label < rhs.label;
+}
+
+std::string StateOneArtificial::getLabel() const { return label; }
 
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 /// Implementation of StateTwo +++++++++++++++++++++++++++++++++++++
@@ -286,4 +313,41 @@ void StateTwo::analyzeSpecies() {
             element[i] = species[i].substr(0, species[i].size() - 1);
         }
     }
+}
+
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+/// Implementation of StateTwoArtificial +++++++++++++++++++++++++++
+///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+StateTwoArtificial::StateTwoArtificial() : label({{"", ""}}) {}
+
+StateTwoArtificial::StateTwoArtificial(std::array<std::string, 2> label)
+    : label(std::move(label)) {}
+
+std::ostream &operator<<(std::ostream &out, const StateTwoArtificial &state) {
+    out << "|" << state.label[0] << "; " << state.label[1] << ">";
+    return out;
+}
+
+bool StateTwoArtificial::operator==(StateTwoArtificial const &rhs) const {
+    return (label[0] == rhs.label[0]) && (label[1] == rhs.label[1]);
+}
+
+bool StateTwoArtificial::operator!=(StateTwoArtificial const &rhs) const {
+    return (label[0] != rhs.label[0]) || (label[1] != rhs.label[1]);
+}
+
+bool StateTwoArtificial::operator<(const StateTwoArtificial &rhs) const {
+    return ((this->getFirstState() < rhs.getFirstState()) ||
+            ((this->getFirstState() == rhs.getFirstState()) &&
+             (this->getSecondState() < rhs.getSecondState())));
+}
+
+std::array<std::string, 2> StateTwoArtificial::getLabel() const { return label; }
+
+StateOneArtificial StateTwoArtificial::getFirstState() const {
+    return StateOneArtificial(label[0]);
+}
+StateOneArtificial StateTwoArtificial::getSecondState() const {
+    return StateOneArtificial(label[1]);
 }

@@ -32,7 +32,7 @@
 /** \brief %Base class for states
  *
  * This class is the base class for states specified in the fine structure basis.
- */ // TODO [dummystate]
+ */
 class State {
 public:
     State(idx_t idx) : idx(idx) {}
@@ -42,7 +42,7 @@ public:
 /** \brief %One-atom Rydberg state
  *
  * This class implements a one-atom Rydberg state.
- */ // TODO [dummystate]
+ */
 class StateOne : public State {
 public:
     // These are public to allow direct access.  This violates the
@@ -96,10 +96,35 @@ private:
     }
 };
 
+/** \brief %Artificial one-atom Rydberg state
+ *
+ * This class implements an artificial one-atom Rydberg state.
+ */
+class StateOneArtificial : private StateOne { // TODO private StateOne, StateArtificial
+public:
+    StateOneArtificial();
+    StateOneArtificial(std::string label);
+    friend std::ostream &operator<<(std::ostream &out, const StateOneArtificial &state);
+    bool operator==(StateOneArtificial const &rhs) const;
+    bool operator!=(StateOneArtificial const &rhs) const;
+    bool operator<(const StateOneArtificial &rhs) const;
+    std::string getLabel() const;
+
+private:
+    std::string label;
+
+    // Method for serialization
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &label;
+    }
+};
+
 /** \brief %Two-atom Rydberg state
  *
  * This class implements a two-atom Rydberg state.
- */ // TODO [dummystate]
+ */
 class StateTwo
     : public State { // TODO define getters and setters, save a pair state as two single atom states
 public:
@@ -166,6 +191,33 @@ private:
     }
 };
 
+/** \brief %Artificial two-atom Rydberg state
+ *
+ * This class implements an artificial two-atom Rydberg state.
+ */
+class StateTwoArtificial : private StateTwo {
+public:
+    StateTwoArtificial();
+    StateTwoArtificial(std::array<std::string, 2> label);
+    friend std::ostream &operator<<(std::ostream &out, const StateTwoArtificial &state);
+    bool operator==(StateTwoArtificial const &rhs) const;
+    bool operator!=(StateTwoArtificial const &rhs) const;
+    bool operator<(const StateTwoArtificial &rhs) const;
+    std::array<std::string, 2> getLabel() const;
+    StateOneArtificial getFirstState() const;
+    StateOneArtificial getSecondState() const;
+
+private:
+    std::array<std::string, 2> label;
+
+    // Method for serialization
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &label;
+    }
+};
+
 #ifndef SWIG
 namespace std {
 
@@ -182,6 +234,11 @@ struct hash<StateOne> {
 };
 
 template <>
+struct hash<StateOneArtificial> {
+    size_t operator()(const StateOneArtificial &s) const { return boost::hash_value(s.getLabel()); }
+};
+
+template <>
 struct hash<StateTwo> {
     size_t operator()(const StateTwo &s) const {
         std::size_t seed = 0;
@@ -191,6 +248,11 @@ struct hash<StateTwo> {
         boost::hash_combine(seed, s.m);
         return seed;
     }
+};
+
+template <>
+struct hash<StateTwoArtificial> {
+    size_t operator()(const StateTwoArtificial &s) const { return boost::hash_value(s.getLabel()); }
 };
 
 } // namespace std
