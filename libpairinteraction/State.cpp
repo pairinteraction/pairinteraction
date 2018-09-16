@@ -50,21 +50,26 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 
 } // namespace
 
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+std::ostream &operator<<(std::ostream &out, const State &state) {
+    state.printState(out);
+    return out;
+}
 
+////////////////////////////////////////////////////////////////////
+/// Implementation of StateOne /////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+// Constructors
+StateOne::StateOne() : species("") { this->analyzeSpecies(); }
 StateOne::StateOne(std::string species, int n, int l, float j, float m)
     : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
-
-StateOne::StateOne() : species("") { this->analyzeSpecies(); }
-
 StateOne::StateOne(int n, int l, float j, float m) : n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
+// Method for printing the state
 void StateOne::printState(std::ostream &out) const {
     out << "|" << species << ", ";
 
@@ -81,6 +86,7 @@ void StateOne::printState(std::ostream &out) const {
     }
 }
 
+// Comparators
 bool StateOne::operator==(StateOne const &rhs) const {
     // TODO use elements, too?
     return (n == rhs.n) && (l == rhs.l) && (j == rhs.j) && (m == rhs.m);
@@ -103,6 +109,7 @@ bool StateOne::operator<(const StateOne &rhs) const {
              ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m)))))));
 }
 
+// Getters
 double StateOne::getEnergy() const { return energy_level(species, n, l, j); }
 double StateOne::getNStar() const { return nstar(species, n, l, j); }
 std::string StateOne::getSpecies() const { return species; }
@@ -113,10 +120,7 @@ float StateOne::getJ() const { return j; }
 float StateOne::getM() const { return m; }
 float StateOne::getS() const { return s; }
 
-////////////////////////////////////////////////////////////////////
-/// Utility methods ////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
+// Utility methods
 void StateOne::analyzeSpecies() {
     s = 0.5;
     element = species;
@@ -127,16 +131,18 @@ void StateOne::analyzeSpecies() {
     }
 }
 
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/// Implementation of StateOneArtificial +++++++++++++++++++++++++++
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+////////////////////////////////////////////////////////////////////
+/// Implementation of StateOneArtificial ///////////////////////////
+////////////////////////////////////////////////////////////////////
 
+// Constructors
 StateOneArtificial::StateOneArtificial() : label("") {}
-
 StateOneArtificial::StateOneArtificial(std::string label) : label(std::move(label)) {}
 
+// Method for printing the state
 void StateOneArtificial::printState(std::ostream &out) const { out << "|" << label << ">"; }
 
+// Comparators
 bool StateOneArtificial::operator==(StateOneArtificial const &rhs) const {
     return label == rhs.label;
 }
@@ -149,32 +155,29 @@ bool StateOneArtificial::operator<(const StateOneArtificial &rhs) const {
     return label < rhs.label;
 }
 
+// Getters
 std::string StateOneArtificial::getLabel() const { return label; }
 
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/// Implementation of StateTwo +++++++++++++++++++++++++++++++++++++
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+////////////////////////////////////////////////////////////////////
+/// Implementation of StateTwo /////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 
+// Constructors
 StateTwo::StateTwo() : species({{"", ""}}), n({{0, 0}}), l({{0, 0}}), j({{0, 0}}), m({{0, 0}}) {
     this->analyzeSpecies();
 }
-
 StateTwo::StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
                    std::array<float, 2> j, std::array<float, 2> m)
     : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
-
 StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
     : species({{s1.getSpecies(), s2.getSpecies()}}), n({{s1.getN(), s2.getN()}}),
       l({{s1.getL(), s2.getL()}}), j({{s1.getJ(), s2.getJ()}}), m({{s1.getM(), s2.getM()}}) {
     this->analyzeSpecies();
 }
 
-StateOne StateTwo::getFirstState() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
-
-StateOne StateTwo::getSecondState() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
-
+// Method for printing the state
 void StateTwo::printState(std::ostream &out) const {
     out << "|";
     for (size_t i = 0; i < 2; ++i) {
@@ -199,6 +202,7 @@ void StateTwo::printState(std::ostream &out) const {
     out << ">";
 }
 
+// Comparators
 bool StateTwo::operator==(const StateTwo &rhs) const {
     return (n[0] == rhs.n[0]) && (l[0] == rhs.l[0]) && (j[0] == rhs.j[0]) && (m[0] == rhs.m[0]) &&
         (n[1] == rhs.n[1]) && (l[1] == rhs.l[1]) && (j[1] == rhs.j[1]) && (m[1] == rhs.m[1]);
@@ -223,14 +227,13 @@ bool StateTwo::operator<(const StateTwo &rhs) const {
              (this->getSecondState() < rhs.getSecondState())));
 }
 
+// Getters
 double StateTwo::getEnergy() const {
     return this->getFirstState().getEnergy() + this->getSecondState().getEnergy();
 }
-
 std::array<double, 2> StateTwo::getNStar() const {
     return {{this->getFirstState().getNStar(), this->getSecondState().getNStar()}};
 }
-
 std::array<std::string, 2> StateTwo::getSpecies() const { return species; }
 std::array<std::string, 2> StateTwo::getElement() const { return element; }
 std::array<int, 2> StateTwo::getN() const { return n; }
@@ -238,11 +241,10 @@ std::array<int, 2> StateTwo::getL() const { return l; }
 std::array<float, 2> StateTwo::getJ() const { return j; }
 std::array<float, 2> StateTwo::getM() const { return m; }
 std::array<float, 2> StateTwo::getS() const { return s; }
+StateOne StateTwo::getFirstState() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
+StateOne StateTwo::getSecondState() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
 
-////////////////////////////////////////////////////////////////////
-/// Utility methods ////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
+// Utility methods
 void StateTwo::analyzeSpecies() {
     for (size_t i = 0; i < 2; ++i) {
         s[i] = 0.5;
@@ -255,19 +257,21 @@ void StateTwo::analyzeSpecies() {
     }
 }
 
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-/// Implementation of StateTwoArtificial +++++++++++++++++++++++++++
-///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+////////////////////////////////////////////////////////////////////
+/// Implementation of StateTwoArtificial ///////////////////////////
+////////////////////////////////////////////////////////////////////
 
+// Constructors
 StateTwoArtificial::StateTwoArtificial() : label({{"", ""}}) {}
-
 StateTwoArtificial::StateTwoArtificial(std::array<std::string, 2> label)
     : label(std::move(label)) {}
 
+// Method for printing the state
 void StateTwoArtificial::printState(std::ostream &out) const {
     out << "|" << label[0] << "; " << label[1] << ">";
 }
 
+// Comparators
 bool StateTwoArtificial::operator==(StateTwoArtificial const &rhs) const {
     return (label[0] == rhs.label[0]) && (label[1] == rhs.label[1]);
 }
@@ -282,6 +286,7 @@ bool StateTwoArtificial::operator<(const StateTwoArtificial &rhs) const {
              (this->getSecondState() < rhs.getSecondState())));
 }
 
+// Getters
 std::array<std::string, 2> StateTwoArtificial::getLabel() const { return label; }
 StateOneArtificial StateTwoArtificial::getFirstState() const {
     return StateOneArtificial(label[0]);

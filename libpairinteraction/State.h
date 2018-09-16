@@ -37,10 +37,7 @@
 class State {
 public:
     State() = default;
-    friend std::ostream &operator<<(std::ostream &out, const State &state) {
-        state.printState(out);
-        return out;
-    }
+    friend std::ostream &operator<<(std::ostream &out, const State &state);
     virtual ~State() = default;
 
 protected:
