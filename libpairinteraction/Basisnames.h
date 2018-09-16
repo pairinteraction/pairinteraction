@@ -19,7 +19,7 @@
 
 #include "ConfParser.h"
 #include "Iter.h"
-#include "State.h"
+#include "StateOld.h"
 #include "dtypes.h"
 
 #include <fstream>
@@ -66,48 +66,48 @@ protected:
 
 class BasisnamesTwo;
 
-class BasisnamesOne : public Basisnames<StateOne> {
+class BasisnamesOne : public Basisnames<StateOneOld> {
 public:
     /*BasisnamesOne(const Configuration &config, const StateOne &startstate);
     BasisnamesOne(const Configuration &config, const StateTwo &startstate);*/
-    static BasisnamesOne fromStates(const std::vector<StateOne> &names); // TODO
+    static BasisnamesOne fromStates(const std::vector<StateOneOld> &names); // TODO
     static BasisnamesOne fromFirst(const Configuration &config);
     static BasisnamesOne fromFirst(const std::shared_ptr<const BasisnamesTwo> &basis_two);
     static BasisnamesOne fromSecond(const Configuration &config);
     static BasisnamesOne fromSecond(const std::shared_ptr<const BasisnamesTwo> &basis_two);
     static BasisnamesOne fromBoth(const Configuration &config);
-    const std::vector<StateOne> &initial() const;
+    const std::vector<StateOneOld> &initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &is_necessary);
     bool constructedFromFirst();
     void save(const std::string &path);
 
 private:
     BasisnamesOne();
-    void build(StateOne startstate, const std::string &species);
-    void build(StateOne startstate, const std::string &species,
+    void build(StateOneOld startstate, const std::string &species);
+    void build(StateOneOld startstate, const std::string &species,
                const std::shared_ptr<const BasisnamesTwo> &basis_two, int i);
-    void build(StateTwo startstate, const std::string &species);
-    std::vector<StateOne> states_initial;
+    void build(StateTwoOld startstate, const std::string &species);
+    std::vector<StateOneOld> states_initial;
     bool _constructedFromFirst;
 };
 
-class BasisnamesTwo : public Basisnames<StateTwo> {
+class BasisnamesTwo : public Basisnames<StateTwoOld> {
 public:
     BasisnamesTwo(const std::shared_ptr<const BasisnamesOne> &basis_one1,
                   const std::shared_ptr<const BasisnamesOne> &basis_one2);
     BasisnamesTwo(const std::shared_ptr<const BasisnamesOne> &basis_one1);
-    const StateTwo &initial() const;
+    const StateTwoOld &initial() const;
     void removeUnnecessaryStates(const std::vector<bool> &is_necessary);
     void removeUnnecessaryStatesKeepIdx(const std::vector<bool> &is_necessary);
     void save(const std::string &path);
 
 protected:
-    void build(StateTwo startstate, std::array<std::string, 2> species,
+    void build(StateTwoOld startstate, std::array<std::string, 2> species,
                const std::shared_ptr<const BasisnamesOne> &basis_one1,
                const std::shared_ptr<const BasisnamesOne> &basis_one2);
 
 private:
-    StateTwo state_initial;
+    StateTwoOld state_initial;
 };
 
 #endif

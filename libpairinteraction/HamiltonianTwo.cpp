@@ -180,7 +180,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // === Restrict states of atom 1 ===
 
     auto basis_one1 = hamiltonian_one1->names();
-    std::vector<StateOne> initial1 = basis_one1->initial();
+    std::vector<StateOneOld> initial1 = basis_one1->initial();
     std::vector<bool> necessary1(basis_one1->size(), false);
 
     for (const auto &state : *basis_one1) {
@@ -215,7 +215,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
     if (!samebasis) {
         auto basis_one2 = hamiltonian_one2->names();
-        std::vector<StateOne> initial2 = basis_one2->initial();
+        std::vector<StateOneOld> initial2 = basis_one2->initial();
         std::vector<bool> necessary2(basis_one2->size(), false);
 
         for (const auto &state : *basis_one2) {
@@ -268,7 +268,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // === Determine necessary symmetries ===
     std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
 
-    StateTwo initial = basis->initial();
+    StateTwoOld initial = basis->initial();
     parity_t initalParityL = (std::pow(-1, initial.l[0] + initial.l[1]) > 0) ? EVEN : ODD;
     int initalM = initial.m[0] + initial.m[1];
     int initalJ = initial.j[0] + initial.j[1];

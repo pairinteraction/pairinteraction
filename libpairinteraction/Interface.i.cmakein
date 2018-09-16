@@ -39,7 +39,15 @@ import_array();
 %include "std_string.i"
 %include "std_vector.i"
 %include "std_set.i"
+%include "std_shared_ptr.i"
 
+//%shared_ptr(State);
+//%shared_ptr(StateOneBase);
+//%shared_ptr(StateOne);
+//%shared_ptr(StateOneArtificial);
+//%shared_ptr(StateTwoBase);
+//%shared_ptr(StateTwo);
+//%shared_ptr(StateTwoArtificial);
 
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions
@@ -139,6 +147,10 @@ namespace std {
   %template(SetFloat) set<float>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
+  //%template(VectorSharedStateOneBase) vector<shared_ptr<StateOneBase>>;
+  //%template(VectorSharedStateOne) vector<shared_ptr<StateOne>>;
+  //%template(VectorSharedStateOneArtificial) vector<shared_ptr<StateOneArtificial>>;
+  //%template(VectorSharedStateTwo) vector<shared_ptr<StateTwoBase>>;
 };
 
 MAKE_NUMPY_TYPEMAP_OUT(std::vector<int>)
@@ -187,10 +199,21 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %attribute(StateOne, double, energy, getEnergy);
 %attribute(StateTwo, double, energy, getEnergy);
 
+%boost_picklable(StateOneBase);
 %boost_picklable(StateOne);
 %boost_picklable(StateOneArtificial);
 %boost_picklable(StateTwo);
 %boost_picklable(StateTwoArtificial);
+
+
+%extend StateOneBase {
+  __STR__();
+  %pythoncode %{
+    def __setstate__(self, sState):
+      self.__init__()
+      self.__setstate_internal(sState)
+  %}
+}
 
 %extend StateOne {
   __STR__();
@@ -234,8 +257,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemOne.h and SystemTwo.h
-%template(_SystemStateOne) SystemBase<StateOne>;
-%template(_SystemStateTwo) SystemBase<StateTwo>;
+%template(_SystemStateOne) SystemBase<StateOne>; // TODO StateOneBase
+%template(_SystemStateTwo) SystemBase<StateTwo>; // TODO StateTwoBase
 
 %copyctor SystemOne;
 %copyctor SystemTwo;

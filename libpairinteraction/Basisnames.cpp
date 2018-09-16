@@ -18,14 +18,14 @@
 #include <stdexcept>
 
 BasisnamesOne::BasisnamesOne() = default;
-BasisnamesOne BasisnamesOne::fromStates(const std::vector<StateOne> &names) {
+BasisnamesOne BasisnamesOne::fromStates(const std::vector<StateOneOld> &names) {
     BasisnamesOne basisnames;
     basisnames.names_ = names;
     basisnames.dim_ = names.size();
     return basisnames;
 }
 BasisnamesOne BasisnamesOne::fromFirst(const Configuration &config) {
-    StateOne startstate;
+    StateOneOld startstate;
     config["n1"] >> startstate.n;
     config["l1"] >> startstate.l;
     config["j1"] >> startstate.j;
@@ -39,7 +39,7 @@ BasisnamesOne BasisnamesOne::fromFirst(const Configuration &config) {
 }
 BasisnamesOne BasisnamesOne::fromFirst(const std::shared_ptr<const BasisnamesTwo> &basis_two) {
     Configuration config = basis_two->getConf();
-    StateOne startstate;
+    StateOneOld startstate;
     config["n1"] >> startstate.n;
     config["l1"] >> startstate.l;
     config["j1"] >> startstate.j;
@@ -52,7 +52,7 @@ BasisnamesOne BasisnamesOne::fromFirst(const std::shared_ptr<const BasisnamesTwo
     return basisnames;
 }
 BasisnamesOne BasisnamesOne::fromSecond(const Configuration &config) {
-    StateOne startstate;
+    StateOneOld startstate;
     config["n2"] >> startstate.n;
     config["l2"] >> startstate.l;
     config["j2"] >> startstate.j;
@@ -66,7 +66,7 @@ BasisnamesOne BasisnamesOne::fromSecond(const Configuration &config) {
 }
 BasisnamesOne BasisnamesOne::fromSecond(const std::shared_ptr<const BasisnamesTwo> &basis_two) {
     Configuration config = basis_two->getConf();
-    StateOne startstate;
+    StateOneOld startstate;
     config["n2"] >> startstate.n;
     config["l2"] >> startstate.l;
     config["j2"] >> startstate.j;
@@ -79,7 +79,7 @@ BasisnamesOne BasisnamesOne::fromSecond(const std::shared_ptr<const BasisnamesTw
     return basisnames;
 }
 BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
-    StateTwo startstate;
+    StateTwoOld startstate;
     config["n1"] >> startstate.n[0];
     config["l1"] >> startstate.l[0];
     config["j1"] >> startstate.j[0];
@@ -113,7 +113,7 @@ BasisnamesOne BasisnamesOne::fromBoth(const Configuration &config) {
 
     }*/ // TODO
 }
-void BasisnamesOne::build(StateTwo startstate, const std::string &species) {
+void BasisnamesOne::build(StateTwoOld startstate, const std::string &species) {
     states_initial.push_back(startstate.first());  // TODO correct for idx
     states_initial.push_back(startstate.second()); // TODO correct for idx
 
@@ -130,7 +130,7 @@ void BasisnamesOne::build(StateTwo startstate, const std::string &species) {
     conf["j2"] << startstate.j[1];
     conf["m2"] << startstate.m[1];
 
-    std::unordered_set<StateOne> names_set;
+    std::unordered_set<StateOneOld> names_set;
 
     idx_t idx = 0;
 
@@ -155,7 +155,7 @@ void BasisnamesOne::build(StateTwo startstate, const std::string &species) {
                  j <= fmin(l + 0.5, startstate.j[0] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[0] - delta_m);
                      m <= fmin(j, startstate.m[0] + delta_m); ++m) {
-                    auto result = names_set.insert(StateOne(idx, n, l, j, m));
+                    auto result = names_set.insert(StateOneOld(idx, n, l, j, m));
                     if (result.second) {
                         idx++;
                     }
@@ -172,7 +172,7 @@ void BasisnamesOne::build(StateTwo startstate, const std::string &species) {
                  j <= fmin(l + 0.5, startstate.j[1] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[1] - delta_m);
                      m <= fmin(j, startstate.m[1] + delta_m); ++m) {
-                    auto result = names_set.insert(StateOne(idx, n, l, j, m));
+                    auto result = names_set.insert(StateOneOld(idx, n, l, j, m));
                     if (result.second) {
                         idx++;
                     }
@@ -181,12 +181,12 @@ void BasisnamesOne::build(StateTwo startstate, const std::string &species) {
         }
     }
 
-    std::set<StateOne> names_ordered(names_set.begin(), names_set.end());
-    names_ = std::vector<StateOne>(names_ordered.begin(), names_ordered.end());
+    std::set<StateOneOld> names_ordered(names_set.begin(), names_set.end());
+    names_ = std::vector<StateOneOld>(names_ordered.begin(), names_ordered.end());
 
     dim_ = idx;
 }
-void BasisnamesOne::build(StateOne startstate, const std::string &species) {
+void BasisnamesOne::build(StateOneOld startstate, const std::string &species) {
     states_initial.push_back(startstate); // TODO correct for idx
 
     conf["species1"] << species;
@@ -227,7 +227,7 @@ void BasisnamesOne::build(StateOne startstate, const std::string &species) {
 
     dim_ = idx;
 }
-void BasisnamesOne::build(StateOne startstate, const std::string &species,
+void BasisnamesOne::build(StateOneOld startstate, const std::string &species,
                           const std::shared_ptr<const BasisnamesTwo> &basis_two, int i) {
     states_initial.push_back(startstate); // TODO correct for idx
 
@@ -241,25 +241,25 @@ void BasisnamesOne::build(StateOne startstate, const std::string &species,
     conf["j2"] << "";
     conf["m2"] << "";
 
-    std::unordered_set<StateOne> names_set;
+    std::unordered_set<StateOneOld> names_set;
 
     idx_t idx = 0;
 
     // loop over quantum numbers
     for (auto state : *basis_two) {
         auto result =
-            names_set.insert(StateOne(idx, state.n[i], state.l[i], state.j[i], state.m[i]));
+            names_set.insert(StateOneOld(idx, state.n[i], state.l[i], state.j[i], state.m[i]));
         if (result.second) {
             idx++;
         }
     }
 
-    std::set<StateOne> names_ordered(names_set.begin(), names_set.end());
-    names_ = std::vector<StateOne>(names_ordered.begin(), names_ordered.end());
+    std::set<StateOneOld> names_ordered(names_set.begin(), names_set.end());
+    names_ = std::vector<StateOneOld>(names_ordered.begin(), names_ordered.end());
 
     dim_ = idx;
 }
-const std::vector<StateOne> &BasisnamesOne::initial() const { return states_initial; }
+const std::vector<StateOneOld> &BasisnamesOne::initial() const { return states_initial; }
 void BasisnamesOne::removeUnnecessaryStates(const std::vector<bool> &is_necessary) {
     auto tmp = names_;
     names_.clear();
@@ -303,7 +303,7 @@ BasisnamesTwo::BasisnamesTwo(const std::shared_ptr<const BasisnamesOne> &basis_o
     configure(conf1);
     conf["combined"] << 1;
 
-    StateTwo startstate;
+    StateTwoOld startstate;
     conf1["n1"] >> startstate.n[0];
     conf1["l1"] >> startstate.l[0];
     conf1["j1"] >> startstate.j[0];
@@ -332,7 +332,7 @@ BasisnamesTwo::BasisnamesTwo(const std::shared_ptr<const BasisnamesOne> &basis_o
     configure(conf1);
     conf["combined"] << 0;
 
-    StateTwo startstate;
+    StateTwoOld startstate;
     conf1["n1"] >> startstate.n[0];
     conf1["l1"] >> startstate.l[0];
     conf1["j1"] >> startstate.j[0];
@@ -348,7 +348,7 @@ BasisnamesTwo::BasisnamesTwo(const std::shared_ptr<const BasisnamesOne> &basis_o
     build(startstate, species, basis_one1, basis_one2);
 }
 
-const StateTwo &BasisnamesTwo::initial() const { return state_initial; }
+const StateTwoOld &BasisnamesTwo::initial() const { return state_initial; }
 
 void BasisnamesTwo::removeUnnecessaryStates(const std::vector<bool> &is_necessary) {
     auto tmp = names_;
@@ -390,7 +390,7 @@ void BasisnamesTwo::removeUnnecessaryStatesKeepIdx(const std::vector<bool> &is_n
     names_.shrink_to_fit();
 }
 
-void BasisnamesTwo::build(StateTwo startstate, std::array<std::string, 2> species,
+void BasisnamesTwo::build(StateTwoOld startstate, std::array<std::string, 2> species,
                           const std::shared_ptr<const BasisnamesOne> &basis_one1,
                           const std::shared_ptr<const BasisnamesOne> &basis_one2) {
     state_initial = startstate;

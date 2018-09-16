@@ -55,36 +55,30 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 StateOne::StateOne(std::string element, int n, int l, float j, float m)
-    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m) { // TODO remove State(0)
+    : species(std::move(element)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
-StateOne::StateOne() : State(0), species("") { this->analyzeSpecies(); }
+StateOne::StateOne() : species("") { this->analyzeSpecies(); }
 
-StateOne::StateOne(idx_t idx, int n, int l, float j, float m) : State(idx), n(n), l(l), j(j), m(m) {
+StateOne::StateOne(int n, int l, float j, float m) : n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
-StateOne::StateOne(int n, int l, float j, float m) : State(0), n(n), l(l), j(j), m(m) {
-    this->analyzeSpecies();
-}
+void StateOne::printState(std::ostream &out) const {
+    out << "|" << species << ", ";
 
-std::ostream &operator<<(std::ostream &out, const StateOne &state) {
-    out << "|" << state.species << ", ";
+    out << n << " ";
 
-    out << state.n << " ";
+    out << getMomentumLabel(l) << "_";
 
-    out << getMomentumLabel(state.l) << "_";
-
-    if (std::ceil(state.j) == state.j) {
-        out << state.j << ", ";
-        out << "mj=" << state.m << ">";
+    if (std::ceil(j) == j) {
+        out << j << ", ";
+        out << "mj=" << m << ">";
     } else {
-        out << 2 * state.j << "/2, ";
-        out << "mj=" << 2 * state.m << "/2>";
+        out << 2 * j << "/2, ";
+        out << "mj=" << 2 * m << "/2>";
     }
-
-    return out;
 }
 
 bool StateOne::operator==(StateOne const &rhs) const {
@@ -145,10 +139,7 @@ StateOneArtificial::StateOneArtificial() : label("") {}
 
 StateOneArtificial::StateOneArtificial(std::string label) : label(std::move(label)) {}
 
-std::ostream &operator<<(std::ostream &out, const StateOneArtificial &state) {
-    out << "|" << state.label << ">";
-    return out;
-}
+void StateOneArtificial::printState(std::ostream &out) const { out << "|" << label << ">"; }
 
 bool StateOneArtificial::operator==(StateOneArtificial const &rhs) const {
     return label == rhs.label;
@@ -168,37 +159,25 @@ std::string StateOneArtificial::getLabel() const { return label; }
 /// Implementation of StateTwo +++++++++++++++++++++++++++++++++++++
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-StateTwo::StateTwo()
-    : State(0), species({{"", ""}}), n({{0, 0}}), l({{0, 0}}), j({{0, 0}}), m({{0, 0}}) {
+StateTwo::StateTwo() : species({{"", ""}}), n({{0, 0}}), l({{0, 0}}), j({{0, 0}}), m({{0, 0}}) {
     this->analyzeSpecies();
 }
 
 StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l,
                    std::array<float, 2> j, std::array<float, 2> m)
-    : State(0), species(std::move(element)), n(n), l(l), j(j), m(m) {
+    : species(std::move(element)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
 StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
-    : State(0), species({{s1.species, s2.species}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}),
-      j({{s1.j, s2.j}}), m({{s1.m, s2.m}}) {
-    this->analyzeSpecies();
-}
-
-StateTwo::StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
-                   std::array<float, 2> m)
-    : State(idx), n(n), l(l), j(j), m(m) {
+    : species({{s1.species, s2.species}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}),
+      m({{s1.m, s2.m}}) {
     this->analyzeSpecies();
 }
 
 StateTwo::StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
                    std::array<float, 2> m)
-    : State(0), n(n), l(l), j(j), m(m) {
-    this->analyzeSpecies();
-}
-
-StateTwo::StateTwo(idx_t idx, const StateOne &a, const StateOne &b)
-    : State(idx), n({{a.n, b.n}}), l({{a.l, b.l}}), j({{a.j, b.j}}), m({{a.m, b.m}}) {
+    : n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
@@ -223,21 +202,21 @@ void StateTwo::setSecondState(StateOne const &s) {
 StateOne StateTwo::first() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
 StateOne StateTwo::second() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
 
-std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
+void StateTwo::printState(std::ostream &out) const {
     out << "|";
     for (size_t i = 0; i < 2; ++i) {
-        out << state.species[i] << ", ";
+        out << species[i] << ", ";
 
-        out << state.n[i] << " ";
+        out << n[i] << " ";
 
-        out << getMomentumLabel(state.l[i]) << "_";
+        out << getMomentumLabel(l[i]) << "_";
 
-        if (std::ceil(state.j[i]) == state.j[i]) {
-            out << state.j[i] << ", ";
-            out << "mj=" << state.m[i] << ">";
+        if (std::ceil(j[i]) == j[i]) {
+            out << j[i] << ", ";
+            out << "mj=" << m[i] << ">";
         } else {
-            out << 2 * state.j[i] << "/2, ";
-            out << "mj=" << 2 * state.m[i] << "/2";
+            out << 2 * j[i] << "/2, ";
+            out << "mj=" << 2 * m[i] << "/2";
         }
 
         if (i == 0) {
@@ -245,7 +224,6 @@ std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
         }
     }
     out << ">";
-    return out;
 }
 
 bool StateTwo::operator==(const StateTwo &rhs) const {
@@ -324,9 +302,8 @@ StateTwoArtificial::StateTwoArtificial() : label({{"", ""}}) {}
 StateTwoArtificial::StateTwoArtificial(std::array<std::string, 2> label)
     : label(std::move(label)) {}
 
-std::ostream &operator<<(std::ostream &out, const StateTwoArtificial &state) {
-    out << "|" << state.label[0] << "; " << state.label[1] << ">";
-    return out;
+void StateTwoArtificial::printState(std::ostream &out) const {
+    out << "|" << label[0] << "; " << label[1] << ">";
 }
 
 bool StateTwoArtificial::operator==(StateTwoArtificial const &rhs) const {

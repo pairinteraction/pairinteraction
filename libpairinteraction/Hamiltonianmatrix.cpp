@@ -488,7 +488,7 @@ Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix 
 
     std::vector<size_t> mapping(num_coordinates, -1);
     if (sym.reflection != NA) { // NOLINT
-        std::unordered_map<StateTwo, size_t> buffer;
+        std::unordered_map<StateTwoOld, size_t> buffer;
         for (auto state : *basis_two) {
             if (state.m[0] < 0) {
                 continue;

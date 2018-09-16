@@ -18,6 +18,7 @@
 #define MATRIXELEMENTCACHE_H
 
 #include "Basisnames.h"
+#include "State.h"
 #include "Wavefunction.h"
 #include "dtypes.h"
 #include "utils.h"

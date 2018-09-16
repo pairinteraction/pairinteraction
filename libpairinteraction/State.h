@@ -26,8 +26,32 @@
 #include <string>
 
 #include <boost/serialization/array.hpp>
+#include <boost/serialization/export.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/variant.hpp>
+
+/*void test3(std::shared_ptr<StateOneBase> &s) {
+    std::cout << std::dynamic_pointer_cast<StateOneArtificial>(s) << std::endl;
+    std::cout << *s << std::endl;
+}
+
+std::shared_ptr<StateOneBase> test4(std::shared_ptr<StateOneBase> s) {
+    // s = std::dynamic_pointer_cast<StateOne>(s);
+    return s;
+}
+
+std::vector<std::shared_ptr<StateOneBase>> test10(std::shared_ptr<StateOneBase> s) {
+    // s = std::dynamic_pointer_cast<StateOne>(s);
+    std::vector<std::shared_ptr<StateOneBase>> tmp(2, s);
+    return tmp;
+}
+
+std::vector<std::shared_ptr<StateOneBase>>
+test20(std::vector<std::shared_ptr<StateOneBase>> tmp) {
+    return tmp;
+}
+
+StateOne test5(std::shared_ptr<StateOne> s) { return *s; }*/
 
 /** \brief %Base class for states
  *
@@ -35,15 +59,39 @@
  */
 class State {
 public:
-    State(idx_t idx) : idx(idx) {}
-    idx_t idx;
+    State() = default;
+    friend std::ostream &operator<<(std::ostream &out, const State &state) {
+        state.printState(out);
+        return out;
+    }
+    virtual ~State(){};
+
+protected:
+    // Method for printing the state
+    virtual void printState(std::ostream &out) const = 0;
+
+private:
+    // Method for serialization
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & /*ar*/, const unsigned int /*version*/) {}
+};
+
+class StateOneBase : public State {
+public:
+    StateOneBase() = default;
+};
+
+class StateTwoBase : public State {
+public:
+    StateTwoBase() = default;
 };
 
 /** \brief %One-atom Rydberg state
  *
  * This class implements a one-atom Rydberg state.
  */
-class StateOne : public State {
+class StateOne : public StateOneBase {
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
@@ -56,10 +104,7 @@ public:
 
     StateOne();
     StateOne(std::string element, int n, int l, float j, float m);
-    StateOne(idx_t idx, int n, int l, float j, float m);
     StateOne(int n, int l, float j, float m);
-
-    friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
 
     bool operator==(StateOne const & /*rhs*/) const;
     bool operator^(StateOne const & /*rhs*/) const; // subset
@@ -75,23 +120,18 @@ public:
     float getJ() const;
     float getM() const;
 
-private:
-    ////////////////////////////////////////////////////////////////////
-    /// Utility methods ////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+protected:
+    // Method for printing the state
+    void printState(std::ostream &out) const;
 
+private:
+    // Utility methods
     void analyzeSpecies();
 
-    ////////////////////////////////////////////////////////////////////
-    /// Method for serialization ///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
+    // Method for serialization
     friend class boost::serialization::access;
-
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
+    void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &species &element &s &n &l &j &m;
     }
 };
@@ -100,15 +140,18 @@ private:
  *
  * This class implements an artificial one-atom Rydberg state.
  */
-class StateOneArtificial : private StateOne { // TODO private StateOne, StateArtificial
+class StateOneArtificial : public StateOneBase { // TODO private StateOne, StateArtificial
 public:
     StateOneArtificial();
     StateOneArtificial(std::string label);
-    friend std::ostream &operator<<(std::ostream &out, const StateOneArtificial &state);
     bool operator==(StateOneArtificial const &rhs) const;
     bool operator!=(StateOneArtificial const &rhs) const;
     bool operator<(const StateOneArtificial &rhs) const;
     std::string getLabel() const;
+
+protected:
+    // Method for printing the state
+    void printState(std::ostream &out) const;
 
 private:
     std::string label;
@@ -125,8 +168,8 @@ private:
  *
  * This class implements a two-atom Rydberg state.
  */
-class StateTwo
-    : public State { // TODO define getters and setters, save a pair state as two single atom states
+class StateTwo : public StateTwoBase { // TODO define getters and setters, save a pair state as two
+                                       // single atom states
 public:
     // These are public to allow direct access.  This violates the
     // open/closed principle and is a sign of code smell.
@@ -138,11 +181,8 @@ public:
     StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l,
              std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(const StateOne &s1, const StateOne &s2);
-    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
-             std::array<float, 2> m);
     StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
              std::array<float, 2> m);
-    StateTwo(idx_t idx, const StateOne &a, const StateOne &b);
 
     StateOne getFirstState() const;
     StateOne getSecondState() const;
@@ -151,8 +191,6 @@ public:
 
     StateOne first() const;
     StateOne second() const;
-
-    friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
 
     bool operator==(StateTwo const & /*rhs*/) const;
     bool operator^(StateTwo const & /*rhs*/) const; // subset
@@ -170,23 +208,18 @@ public:
     std::array<float, 2> getJ() const;
     std::array<float, 2> getM() const;
 
-private:
-    ////////////////////////////////////////////////////////////////////
-    /// Utility methods ////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+protected:
+    // Method for printing the state
+    void printState(std::ostream &out) const;
 
+private:
+    // Utility methods
     void analyzeSpecies();
 
-    ////////////////////////////////////////////////////////////////////
-    /// Method for serialization ///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
+    // Method for serialization
     friend class boost::serialization::access;
-
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
+    void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &species &element &s &n &l &j &m;
     }
 };
@@ -195,17 +228,20 @@ private:
  *
  * This class implements an artificial two-atom Rydberg state.
  */
-class StateTwoArtificial : private StateTwo {
+class StateTwoArtificial : public StateTwoBase {
 public:
     StateTwoArtificial();
     StateTwoArtificial(std::array<std::string, 2> label);
-    friend std::ostream &operator<<(std::ostream &out, const StateTwoArtificial &state);
     bool operator==(StateTwoArtificial const &rhs) const;
     bool operator!=(StateTwoArtificial const &rhs) const;
     bool operator<(const StateTwoArtificial &rhs) const;
     std::array<std::string, 2> getLabel() const;
     StateOneArtificial getFirstState() const;
     StateOneArtificial getSecondState() const;
+
+protected:
+    // Method for printing the state
+    void printState(std::ostream &out) const;
 
 private:
     std::array<std::string, 2> label;
@@ -218,7 +254,18 @@ private:
     }
 };
 
+// TODO https://stackoverflow.com/questions/30204189/boost-serialize-polymorphic-class
+// https://www.boost.org/doc/libs/1_67_0/libs/serialization/doc/traits.html
+// BOOST_SERIALIZATION_ASSUME_ABSTRACT(State)
+// BOOST_SERIALIZATION_ASSUME_ABSTRACT(StateOneBase)
+// BOOST_SERIALIZATION_ASSUME_ABSTRACT(StateTwoBase)
+// BOOST_CLASS_EXPORT(StateOne)
+// BOOST_CLASS_EXPORT(StateTwo)
+// BOOST_CLASS_EXPORT(StateOneArtificial)
+// BOOST_CLASS_EXPORT(StateTwoArtificial)
+
 #ifndef SWIG
+
 namespace std {
 
 template <>
