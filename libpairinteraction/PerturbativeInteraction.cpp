@@ -34,7 +34,7 @@ PerturbativeInteraction::PerturbativeInteraction(double angle, double weak_bfiel
     initializeAngleTerms(angle);
 }
 
-double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
+double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
     double C6 = 0;
 
     for (int n0 = state.getN()[0] - deltaN; n0 <= state.getN()[0] + deltaN; ++n0) {
@@ -128,7 +128,7 @@ double PerturbativeInteraction::getC6(StateTwo state, double deltaN) {
     return C6;
 }
 
-eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states, double deltaN) {
+eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> &states, double deltaN) {
     eigen_dense_double_t C6_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     std::unordered_set<StateTwo> set_states(states.begin(), states.end());
@@ -315,7 +315,7 @@ eigen_dense_double_t PerturbativeInteraction::getC6(std::vector<StateTwo> states
     return C6_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states) {
+eigen_dense_double_t PerturbativeInteraction::getC3(const std::vector<StateTwo> &states) {
     eigen_dense_double_t C3_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     for (size_t idx_row = 0; idx_row < states.size(); ++idx_row) {
@@ -344,7 +344,7 @@ eigen_dense_double_t PerturbativeInteraction::getC3(std::vector<StateTwo> states
     return C3_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeInteraction::getEnergy(std::vector<StateTwo> states) {
+eigen_dense_double_t PerturbativeInteraction::getEnergy(const std::vector<StateTwo> &states) {
     eigen_dense_double_t energies_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     for (size_t idx = 0; idx < states.size(); ++idx) {
