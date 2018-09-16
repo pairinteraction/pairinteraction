@@ -82,10 +82,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.species, cache);
+    SystemOne system_one(state_one.getSpecies(), cache);
     system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
-    system_one.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1);
+    system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1);
     system_one.setEfield({{0, 0, 0.1}});
     system_one.setBfield({{0, 0, 1}});
 
@@ -140,10 +140,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     // eigenvectors)
     // system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot
     // be assigned because its copy assignment operator is implicitly deleted
-    SystemOne system_one_new(state_one.species, cache);
+    SystemOne system_one_new(state_one.getSpecies(), cache);
     system_one_new.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
-    system_one_new.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one_new.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one_new.restrictN(state_one.getN() - 1, state_one.getN() + 1);
+    system_one_new.restrictL(state_one.getL() - 1, state_one.getL() + 1);
 
     // Build two-atom system
     SystemTwo system_two(system_one_new, system_one_new, cache);

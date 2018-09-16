@@ -28,10 +28,10 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.species, self.cache)
-        system_one.restrictEnergy(state_one.energy-40, state_one.energy+40)
-        system_one.restrictN(state_one.n-1, state_one.n+1)
-        system_one.restrictL(state_one.l-1, state_one.l+1)
+        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one.restrictEnergy(state_one.getEnergy()-40, state_one.getEnergy()+40)
+        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
+        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
         system_one.setEfield([0, 0, 1])
         system_one.buildInteraction()  # will save time in the following
 
@@ -45,7 +45,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             tmp = pi.SystemOne(system_one)
             tmp.setEfield([0, 0, field])
             tmp.diagonalize()
-            tmp.restrictEnergy(state_one.energy-20, state_one.energy+20)
+            tmp.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp
 
@@ -106,7 +106,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         # Build two atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
-        system_two.restrictEnergy(state_two.energy-2, state_two.energy+2)
+        system_two.restrictEnergy(state_two.getEnergy()-2, state_two.getEnergy()+2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(1)
         system_two.buildInteraction()  # will save time in the following
@@ -121,7 +121,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             tmp = pi.SystemTwo(system_two)
             tmp.setDistance(distance)
             tmp.diagonalize()
-            tmp.restrictEnergy(state_two.energy-0.1, state_two.energy+0.1)
+            tmp.restrictEnergy(state_two.getEnergy()-0.1, state_two.getEnergy()+0.1)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp
 

@@ -54,8 +54,8 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 /// Implementation of StateOne +++++++++++++++++++++++++++++++++++++
 ///+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-StateOne::StateOne(std::string element, int n, int l, float j, float m)
-    : species(std::move(element)), n(n), l(l), j(j), m(m) {
+StateOne::StateOne(std::string species, int n, int l, float j, float m)
+    : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
@@ -104,18 +104,14 @@ bool StateOne::operator<(const StateOne &rhs) const {
 }
 
 double StateOne::getEnergy() const { return energy_level(species, n, l, j); }
-
 double StateOne::getNStar() const { return nstar(species, n, l, j); }
-
 std::string StateOne::getSpecies() const { return species; }
-
+std::string StateOne::getElement() const { return element; }
 int StateOne::getN() const { return n; }
-
 int StateOne::getL() const { return l; }
-
 float StateOne::getJ() const { return j; }
-
 float StateOne::getM() const { return m; }
+float StateOne::getS() const { return s; }
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
@@ -163,44 +159,21 @@ StateTwo::StateTwo() : species({{"", ""}}), n({{0, 0}}), l({{0, 0}}), j({{0, 0}}
     this->analyzeSpecies();
 }
 
-StateTwo::StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l,
+StateTwo::StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
                    std::array<float, 2> j, std::array<float, 2> m)
-    : species(std::move(element)), n(n), l(l), j(j), m(m) {
+    : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
 StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
-    : species({{s1.species, s2.species}}), n({{s1.n, s2.n}}), l({{s1.l, s2.l}}), j({{s1.j, s2.j}}),
-      m({{s1.m, s2.m}}) {
-    this->analyzeSpecies();
-}
-
-StateTwo::StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
-                   std::array<float, 2> m)
-    : n(n), l(l), j(j), m(m) {
+    : species({{s1.getSpecies(), s2.getSpecies()}}), n({{s1.getN(), s2.getN()}}),
+      l({{s1.getL(), s2.getL()}}), j({{s1.getJ(), s2.getJ()}}), m({{s1.getM(), s2.getM()}}) {
     this->analyzeSpecies();
 }
 
 StateOne StateTwo::getFirstState() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
-void StateTwo::setFirstState(StateOne const &s) {
-    species[0] = s.species;
-    n[0] = s.n;
-    l[0] = s.l;
-    j[0] = s.j;
-    m[0] = s.m;
-}
 
 StateOne StateTwo::getSecondState() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
-void StateTwo::setSecondState(StateOne const &s) {
-    species[1] = s.species;
-    n[1] = s.n;
-    l[1] = s.l;
-    j[1] = s.j;
-    m[1] = s.m;
-}
-
-StateOne StateTwo::first() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
-StateOne StateTwo::second() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
 
 void StateTwo::printState(std::ostream &out) const {
     out << "|";
@@ -245,37 +218,26 @@ bool StateTwo::operator!=(const StateTwo &rhs) const {
 }
 
 bool StateTwo::operator<(const StateTwo &rhs) const {
-    return ((this->first() < rhs.first()) ||
-            ((this->first() == rhs.first()) && (this->second() < rhs.second())));
-}
-
-StateTwo StateTwo::order() { // TODO use element, too?
-    if ((n[0] < n[1]) ||
-        ((n[0] == n[1]) &&
-         ((l[0] < l[1]) ||
-          ((l[0] == l[1]) && ((j[0] < j[1]) || ((j[0] == j[1]) && (m[0] <= m[1]))))))) {
-        return *this;
-    }
-    return StateTwo(this->second(), this->first());
+    return ((this->getFirstState() < rhs.getFirstState()) ||
+            ((this->getFirstState() == rhs.getFirstState()) &&
+             (this->getSecondState() < rhs.getSecondState())));
 }
 
 double StateTwo::getEnergy() const {
-    return this->first().getEnergy() + this->second().getEnergy();
+    return this->getFirstState().getEnergy() + this->getSecondState().getEnergy();
 }
 
 std::array<double, 2> StateTwo::getNStar() const {
-    return {{this->first().getNStar(), this->second().getNStar()}};
+    return {{this->getFirstState().getNStar(), this->getSecondState().getNStar()}};
 }
 
 std::array<std::string, 2> StateTwo::getSpecies() const { return species; }
-
+std::array<std::string, 2> StateTwo::getElement() const { return element; }
 std::array<int, 2> StateTwo::getN() const { return n; }
-
 std::array<int, 2> StateTwo::getL() const { return l; }
-
 std::array<float, 2> StateTwo::getJ() const { return j; }
-
 std::array<float, 2> StateTwo::getM() const { return m; }
+std::array<float, 2> StateTwo::getS() const { return s; }
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
@@ -321,7 +283,6 @@ bool StateTwoArtificial::operator<(const StateTwoArtificial &rhs) const {
 }
 
 std::array<std::string, 2> StateTwoArtificial::getLabel() const { return label; }
-
 StateOneArtificial StateTwoArtificial::getFirstState() const {
     return StateOneArtificial(label[0]);
 }

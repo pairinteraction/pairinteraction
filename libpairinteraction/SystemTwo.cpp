@@ -206,9 +206,9 @@ void SystemTwo::initializeBasis() {
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
-                    int M = state_1.m + state_2.m;
-                    int parityL = std::pow(-1, state_1.l + state_2.l);
-                    int parityJ = std::pow(-1, state_1.j + state_2.j);
+                    int M = state_1.getM() + state_2.getM();
+                    int parityL = std::pow(-1, state_1.getL() + state_2.getL());
+                    int parityJ = std::pow(-1, state_1.getJ() + state_2.getJ());
                     int parityM = std::pow(-1, M);
 
                     // Consider rotation symmetry
@@ -232,9 +232,12 @@ void SystemTwo::initializeBasis() {
                         // inversion or permutation symmetric state is already reflection symmetric
                         if ((sym_inversion != NA || sym_permutation != NA) &&
                             sym_reflection != NA &&
-                            StateTwo({{state_1.species, state_2.species}}, {{state_1.n, state_2.n}},
-                                     {{state_1.l, state_2.l}}, {{state_1.j, state_2.j}},
-                                     {{-state_1.m, -state_2.m}}) == StateTwo(state_2, state_1)) {
+                            StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
+                                     {{state_1.getN(), state_2.getN()}},
+                                     {{state_1.getL(), state_2.getL()}},
+                                     {{state_1.getJ(), state_2.getJ()}},
+                                     {{-state_1.getM(), -state_2.getM()}}) ==
+                                StateTwo(state_2, state_1)) {
                             if (sym_inversion != NA) {
                                 if (((sym_inversion == EVEN) ? -parityL : parityL) !=
                                     ((sym_reflection == EVEN) ? parityL * parityJ * parityM
@@ -295,9 +298,11 @@ void SystemTwo::initializeBasis() {
                         v *= (sym_reflection == EVEN) ? parityL * parityJ * parityM
                                                       : -parityL * parityJ * parityM;
                         this->addCoefficient(
-                            StateTwo({{state_1.species, state_2.species}}, {{state_1.n, state_2.n}},
-                                     {{state_1.l, state_2.l}}, {{state_1.j, state_2.j}},
-                                     {{-state_1.m, -state_2.m}}),
+                            StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
+                                     {{state_1.getN(), state_2.getN()}},
+                                     {{state_1.getL(), state_2.getL()}},
+                                     {{state_1.getJ(), state_2.getJ()}},
+                                     {{-state_1.getM(), -state_2.getM()}}),
                             col_new, v, coefficients_triplets, sqnorm_list);
 
                         if (col_1 != col_2) {
@@ -307,9 +312,11 @@ void SystemTwo::initializeBasis() {
                                                               : -parityL * parityJ * parityM;
                                 v *= (sym_inversion == EVEN) ? -parityL : parityL;
                                 this->addCoefficient(
-                                    StateTwo({{state_2.species, state_1.species}},
-                                             {{state_2.n, state_1.n}}, {{state_2.l, state_1.l}},
-                                             {{state_2.j, state_1.j}}, {{-state_2.m, -state_1.m}}),
+                                    StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
+                                             {{state_2.getN(), state_1.getN()}},
+                                             {{state_2.getL(), state_1.getL()}},
+                                             {{state_2.getJ(), state_1.getJ()}},
+                                             {{-state_2.getM(), -state_1.getM()}}),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
                                 scalar_t v = value_new;
@@ -317,9 +324,11 @@ void SystemTwo::initializeBasis() {
                                                               : -parityL * parityJ * parityM;
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
                                 this->addCoefficient(
-                                    StateTwo({{state_2.species, state_1.species}},
-                                             {{state_2.n, state_1.n}}, {{state_2.l, state_1.l}},
-                                             {{state_2.j, state_1.j}}, {{-state_2.m, -state_1.m}}),
+                                    StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
+                                             {{state_2.getN(), state_1.getN()}},
+                                             {{state_2.getL(), state_1.getL()}},
+                                             {{state_2.getJ(), state_1.getJ()}},
+                                             {{-state_2.getM(), -state_1.getM()}}),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             }
                         }
@@ -498,41 +507,48 @@ void SystemTwo::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
-        if (c.state.species.empty()) {
+        if (c.state.getSpecies().empty()) {
             continue; // TODO artifical states TODO [dummystates]
         }
 
         // Loop over row entries
         for (const auto &r : states) {
 
-            if (r.state.species.empty()) {
+            if (r.state.getSpecies().empty()) {
                 continue; // TODO artifical states TODO [dummystates]
             }
             if (r.idx < c.idx) {
                 continue;
             }
 
-            int q1 = r.state.first().m - c.state.first().m;
-            int q2 = r.state.second().m - c.state.second().m;
+            int q1 = r.state.getFirstState().getM() -
+                c.state.getFirstState().getM(); // TODO vectorize this
+            int q2 = r.state.getSecondState().getM() - c.state.getSecondState().getM();
 
             if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur
                               // for other interaction than dipole-dipole
 
                 // Angular dependent dipole-dipole interaction
-                if (selectionRulesMultipoleNew(r.state.first(), c.state.first(), 1) &&
-                    selectionRulesMultipoleNew(r.state.second(), c.state.second(), 1)) {
+                if (selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),
+                                               1) &&
+                    selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),
+                                               1)) {
                     if (q1 == 0 && q2 == 0 && calculation_required[1]) {
                         scalar_t val = coulombs_constant *
-                            cache.getElectricDipole(r.state.first(), c.state.first()) *
-                            cache.getElectricDipole(r.state.second(), c.state.second());
+                            cache.getElectricDipole(r.state.getFirstState(),
+                                                    c.state.getFirstState()) *
+                            cache.getElectricDipole(r.state.getSecondState(),
+                                                    c.state.getSecondState());
 
                         this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
                     } else if (q1 != 0 && q2 != 0 && q1 + q2 == 0 &&
                                (calculation_required[0] || calculation_required[2])) {
                         scalar_t val = coulombs_constant *
-                            cache.getElectricDipole(r.state.first(), c.state.first()) *
-                            cache.getElectricDipole(r.state.second(), c.state.second());
+                            cache.getElectricDipole(r.state.getFirstState(),
+                                                    c.state.getFirstState()) *
+                            cache.getElectricDipole(r.state.getSecondState(),
+                                                    c.state.getSecondState());
 
                         if (calculation_required[0]) {
                             this->addTriplet(interaction_angulardipole_triplets[0], r.idx, c.idx,
@@ -545,8 +561,10 @@ void SystemTwo::initializeInteraction() {
 
                     } else if (std::abs(q1 + q2) == 1 && calculation_required[3]) {
                         scalar_t val = coulombs_constant *
-                            cache.getElectricDipole(r.state.first(), c.state.first()) *
-                            cache.getElectricDipole(r.state.second(), c.state.second());
+                            cache.getElectricDipole(r.state.getFirstState(),
+                                                    c.state.getFirstState()) *
+                            cache.getElectricDipole(r.state.getSecondState(),
+                                                    c.state.getSecondState());
 
                         if (q1 == 1 || q2 == 1) {
                             this->addTriplet(interaction_angulardipole_triplets[3], r.idx, c.idx,
@@ -558,8 +576,10 @@ void SystemTwo::initializeInteraction() {
 
                     } else if (std::abs(q1 + q2) == 2 && calculation_required[2]) {
                         scalar_t val = coulombs_constant *
-                            cache.getElectricDipole(r.state.first(), c.state.first()) *
-                            cache.getElectricDipole(r.state.second(), c.state.second());
+                            cache.getElectricDipole(r.state.getFirstState(),
+                                                    c.state.getFirstState()) *
+                            cache.getElectricDipole(r.state.getSecondState(),
+                                                    c.state.getSecondState());
 
                         this->addTriplet(interaction_angulardipole_triplets[2], r.idx, c.idx, val);
                     }
@@ -573,20 +593,20 @@ void SystemTwo::initializeInteraction() {
                         double val = 0;
                         for (int kappa1 = 1; kappa1 <= order - 2; ++kappa1) {
                             int kappa2 = order - 1 - kappa1;
-                            if (selectionRulesMultipoleNew(r.state.first(), c.state.first(),
-                                                           kappa1) &&
-                                selectionRulesMultipoleNew(r.state.second(), c.state.second(),
-                                                           kappa2)) {
+                            if (selectionRulesMultipoleNew(r.state.getFirstState(),
+                                                           c.state.getFirstState(), kappa1) &&
+                                selectionRulesMultipoleNew(r.state.getSecondState(),
+                                                           c.state.getSecondState(), kappa2)) {
                                 double binomials = boost::math::binomial_coefficient<double>(
                                                        kappa1 + kappa2, kappa1 + q1) *
                                     boost::math::binomial_coefficient<double>(kappa1 + kappa2,
                                                                               kappa2 - q2);
                                 val += coulombs_constant * std::pow(-1, kappa2) *
                                     std::sqrt(binomials) *
-                                    cache.getElectricMultipole(r.state.first(), c.state.first(),
-                                                               kappa1) *
-                                    cache.getElectricMultipole(r.state.second(), c.state.second(),
-                                                               kappa2);
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), kappa1) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), kappa2);
                             }
                         }
 

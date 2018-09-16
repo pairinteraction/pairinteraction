@@ -1073,10 +1073,10 @@ protected:
     }
 
     bool checkIsQuantumstateValid(const T &state) {
-        return checkIsQuantumnumberValid(state.n, range_n) &&
-            checkIsQuantumnumberValid(state.l, range_l) &&
-            checkIsQuantumnumberValid(state.j, range_j) &&
-            checkIsQuantumnumberValid(state.m, range_m);
+        return checkIsQuantumnumberValid(state.getN(), range_n) &&
+            checkIsQuantumnumberValid(state.getL(), range_l) &&
+            checkIsQuantumnumberValid(state.getJ(), range_j) &&
+            checkIsQuantumnumberValid(state.getM(), range_m);
     }
 
     bool checkIsEnergyValid(double e) {

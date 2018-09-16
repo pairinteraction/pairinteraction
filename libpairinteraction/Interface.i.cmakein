@@ -196,9 +196,6 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "State.h"
 
-%attribute(StateOne, double, energy, getEnergy);
-%attribute(StateTwo, double, energy, getEnergy);
-
 %boost_picklable(StateOneBase);
 %boost_picklable(StateOne);
 %boost_picklable(StateOneArtificial);

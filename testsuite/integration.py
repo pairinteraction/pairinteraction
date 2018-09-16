@@ -33,11 +33,11 @@ class IntegrationTest(unittest.TestCase):
 
     def test_integration(self):
         # Build one-atom system
-        system_one = pi.SystemOne(self.state_one.species, self.cache)
+        system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(
             self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
-        system_one.restrictN(self.state_one.n - 1, self.state_one.n + 1)
-        system_one.restrictL(self.state_one.l - 1, self.state_one.l + 1)
+        system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
+        system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
         system_one.setEfield([0, 0, 0.1])
         system_one.setBfield([0, 0, 1])
 
@@ -77,11 +77,11 @@ class IntegrationTest(unittest.TestCase):
         # Build one-atom system (for this test, system_one has to be diagonal by
         # itself because diagonalization can lead to different order of
         # eigenvectors)
-        system_one = pi.SystemOne(self.state_one.species, self.cache)
+        system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(
             self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
-        system_one.restrictN(self.state_one.n - 1, self.state_one.n + 1)
-        system_one.restrictL(self.state_one.l - 1, self.state_one.l + 1)
+        system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
+        system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
 
         # Build two-atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)

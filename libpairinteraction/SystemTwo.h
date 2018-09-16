@@ -110,24 +110,27 @@ private:
         }
 
         // Add rotated triplet entries
-        StateTwo newstate = state;
         std::vector<T> val2_vector;
-        val2_vector.reserve(2 * state.second().j + 1);
+        val2_vector.reserve(2 * state.getSecondState().getJ() + 1);
 
-        for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
+        for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ(); ++m2) {
             val2_vector.push_back(
-                convert<T>(wigner(state.second().j, state.second().m, m2, alpha, beta, gamma)));
+                convert<T>(wigner(state.getSecondState().getJ(), state.getSecondState().getM(), m2,
+                                  alpha, beta, gamma)));
         }
 
-        for (float m1 = -state.first().j; m1 <= state.first().j; ++m1) {
-            T val1 = convert<T>(wigner(state.first().j, state.first().m, m1, alpha, beta, gamma));
+        for (float m1 = -state.getFirstState().getJ(); m1 <= state.getFirstState().getJ(); ++m1) {
+            T val1 = convert<T>(wigner(state.getFirstState().getJ(), state.getFirstState().getM(),
+                                       m1, alpha, beta, gamma));
 
-            for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
-                newstate.m = {{m1, m2}};
+            for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ();
+                 ++m2) {
+                StateTwo newstate(state.getSpecies(), state.getN(), state.getL(), state.getJ(),
+                                  {{m1, m2}});
                 auto state_iter = states.get<1>().find(newstate);
 
                 if (state_iter != states.get<1>().end()) {
-                    T val = val1 * val2_vector[m2 + state.second().j];
+                    T val = val1 * val2_vector[m2 + state.getSecondState().getJ()];
                     triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
                 } else {
                     std::cerr << "Warning: Incomplete rotation because the basis is lacking some "

@@ -119,14 +119,12 @@ private:
         }
 
         // Add rotated triplet entries
-        StateOne newstate = state;
-
-        for (float m = -state.j; m <= state.j; ++m) {
-            newstate.m = m;
+        for (float m = -state.getJ(); m <= state.getJ(); ++m) {
+            StateOne newstate(state.getSpecies(), state.getN(), state.getL(), state.getJ(), m);
             auto state_iter = states.get<1>().find(newstate);
 
             if (state_iter != states.get<1>().end()) {
-                T val = convert<T>(wigner(state.j, state.m, m, alpha, beta, gamma));
+                T val = convert<T>(wigner(state.getJ(), state.getM(), m, alpha, beta, gamma));
                 triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
             } else {
                 std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
