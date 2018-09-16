@@ -246,7 +246,8 @@ template <>
 struct hash<StateOne> {
     size_t operator()(const StateOne &s) const {
         std::size_t seed = 0;
-        boost::hash_combine(seed, s.getSpecies());
+        // boost::hash_combine(seed, s.getSpecies()); // TODO why does this line cause a segfault
+        // under SUSE?
         boost::hash_combine(seed, s.getN());
         boost::hash_combine(seed, s.getL());
         boost::hash_combine(seed, s.getJ());
@@ -264,7 +265,8 @@ template <>
 struct hash<StateTwo> {
     size_t operator()(const StateTwo &s) const {
         std::size_t seed = 0;
-        boost::hash_combine(seed, s.getSpecies());
+        // boost::hash_combine(seed, s.getSpecies()); // TODO why does this line cause a segfault
+        // under SUSE?
         boost::hash_combine(seed, s.getN());
         boost::hash_combine(seed, s.getL());
         boost::hash_combine(seed, s.getJ());

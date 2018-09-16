@@ -128,7 +128,8 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
     return C6;
 }
 
-eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> &states, double deltaN) {
+eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> &states,
+                                                    double deltaN) {
     eigen_dense_double_t C6_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
 
     std::unordered_set<StateTwo> set_states(states.begin(), states.end());
