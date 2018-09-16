@@ -288,26 +288,3 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
       self.__setstate_internal(sState)
   %}
 }
-
-
-// Python specific extensions
-
-// This block has to be the last in the Interface.i file, because it
-// will be copied literally into the Python module and we want to
-// overwrite specific methods, defined before.
-
-%pythoncode %{
-
-SystemOne.coefficients = property(SystemOne.getCoefficients)
-SystemTwo.coefficients = property(SystemTwo.getCoefficients)
-SystemOne.hamiltonianmatrix = property(SystemOne.getHamiltonianmatrix)
-SystemTwo.hamiltonianmatrix = property(SystemTwo.getHamiltonianmatrix)
-SystemOne.diagonal = property(SystemOne.getDiagonal)
-SystemTwo.diagonal = property(SystemTwo.getDiagonal)
-SystemOne.states = property(SystemOne.getStates) # TODO
-SystemTwo.states = property(SystemTwo.getStates) # TODO
-
-%}
-
-
-

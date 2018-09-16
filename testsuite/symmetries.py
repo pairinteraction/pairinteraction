@@ -57,9 +57,9 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_one_combined.diagonal)
-        w2 = np.sort(system_one.diagonal)
-        w3 = np.sort(system_one_alternative.diagonal)
+        w1 = np.sort(system_one_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_one.getHamiltonian().diagonal())
+        w3 = np.sort(system_one_alternative.getHamiltonian().diagonal())
 
         maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff23 = np.abs((w3-w2)/(np.max([w3, w2], axis=0)))
@@ -133,9 +133,9 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_two_combined.diagonal)
-        w2 = np.sort(system_two.diagonal)
-        w3 = np.sort(system_two_combined_alternative.diagonal)
+        w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_two.getHamiltonian().diagonal())
+        w3 = np.sort(system_two_combined_alternative.getHamiltonian().diagonal())
 
         maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff23 = np.abs((w3-w2)/(np.max([w3, w2], axis=0)))
@@ -182,8 +182,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_one.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_one_combined.diagonal)
-        w2 = np.sort(system_one.diagonal)
+        w1 = np.sort(system_one_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_one.getHamiltonian().diagonal())
 
         maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
@@ -243,12 +243,12 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_two_combined.diagonal)
-        w2 = np.sort(system_two.diagonal)
-        w3 = np.sort(system_two_even.diagonal)
-        w4 = np.sort(system_two_odd.diagonal)
-        w5 = np.sort(system_two_even_alternative.diagonal)
-        w6 = np.sort(system_two_odd_alternative.diagonal)
+        w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_two.getHamiltonian().diagonal())
+        w3 = np.sort(system_two_even.getHamiltonian().diagonal())
+        w4 = np.sort(system_two_odd.getHamiltonian().diagonal())
+        w5 = np.sort(system_two_even_alternative.getHamiltonian().diagonal())
+        w6 = np.sort(system_two_odd_alternative.getHamiltonian().diagonal())
 
         maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff35 = np.abs((w3-w5)/(np.max([w3, w5], axis=0)))
@@ -311,8 +311,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_two_combined.diagonal)
-        w2 = np.sort(system_two.diagonal)
+        w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_two.getHamiltonian().diagonal())
 
         maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
@@ -365,8 +365,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_two_combined.diagonal)
-        w2 = np.sort(system_two.diagonal)
+        w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_two.getHamiltonian().diagonal())
 
         maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
@@ -434,8 +434,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two_combined.diagonalize()
 
         # Compare results
-        w1 = np.sort(system_two_combined.diagonal)
-        w2 = np.sort(system_two.diagonal)
+        w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
+        w2 = np.sort(system_two.getHamiltonian().diagonal())
 
         maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
         maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]

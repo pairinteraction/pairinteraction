@@ -83,7 +83,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 # Store line segments
                 line_idx += line_mapper[iFirst].tolist()
                 line_step += (i*np.ones(len(iFirst))).tolist()
-                line_val += stark_shifted_systems[i].diagonal[iSecond].tolist()
+                line_val += stark_shifted_systems[i].getHamiltonian().diagonal()[iSecond].tolist()
 
                 # Assign the line indices to iSecond, delete line indices that could not be assigned
                 tmp = line_mapper[iFirst]
@@ -161,7 +161,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 # Store line segments
                 line_idx += line_mapper[iFirst].tolist()
                 line_step += (i*np.ones(len(iFirst))).tolist()
-                line_val += dipole_interacting_systems[i].diagonal[iSecond].tolist()
+                line_val += dipole_interacting_systems[i].getHamiltonian().diagonal()[iSecond].tolist()
 
                 # Assign the line indices to iSecond, delete line indices that could not be assigned
                 tmp = line_mapper[iFirst]
