@@ -560,16 +560,18 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
 
     for (size_t idx_col = 0; idx_col < basis_one.size(); ++idx_col) {
         const auto &state_col = basis_one[idx_col];
+        if (state_col.isArtificial()) {
+            continue;
+        }
 
         for (size_t idx_row = 0; idx_row <= idx_col; ++idx_row) {
             const auto &state_row = basis_one[idx_row];
-
-            if (q != std::numeric_limits<int>::max() && state_row.getM() - state_col.getM() != q) {
+            if (state_row.isArtificial()) {
                 continue;
             }
 
-            if (state_row.getSpecies().empty() || state_col.getSpecies().empty()) {
-                continue; // TODO artifical states !!! [dummystate]
+            if (q != std::numeric_limits<int>::max() && state_row.getM() - state_col.getM() != q) {
+                continue;
             }
 
             if ((calcElectricMultipole &&

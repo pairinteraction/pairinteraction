@@ -507,16 +507,16 @@ void SystemTwo::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
-        if (c.state.getSpecies().empty()) {
-            continue; // TODO artifical states TODO [dummystates]
+        if (c.state.isArtificial(0) || c.state.isArtificial(1)) {
+            continue;
         }
 
         // Loop over row entries
         for (const auto &r : states) {
-
-            if (r.state.getSpecies().empty()) {
-                continue; // TODO artifical states TODO [dummystates]
+            if (r.state.isArtificial(0) || r.state.isArtificial(1)) {
+                continue;
             }
+
             if (r.idx < c.idx) {
                 continue;
             }

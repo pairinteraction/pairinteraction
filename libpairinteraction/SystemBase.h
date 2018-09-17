@@ -89,8 +89,8 @@ public:
 
     void setArtificialstates(
         const std::vector<T>
-            &s) { //  TODO make this function work after basis was build, too TODO make derived
-                  //  class artifical states TODO include in serialize method TODO [dummystates]
+            &s) { //  TODO make this function work after basis was build, too
+                  //  TODO include states_artifical in serialize method TODO [dummystates]
         states_artifical = s;
     }
 
@@ -456,7 +456,7 @@ public:
             this->updateEverything();
         }
 
-        // Add dummy states
+        // Add artificial states
         if (!states_artifical.empty()) { // TODO [dummystates]
             size_t row = coefficients.rows();
             size_t col = coefficients.cols();
@@ -1072,7 +1072,25 @@ protected:
             (range_q.find(q[0]) != range_q.end() && range_q.find(q[1]) != range_q.end());
     }
 
+    void checkArtificial(bool a) {
+        if (a) {
+            throw std::runtime_error(
+                "SystemBase::checkIsQuantumstateValid must not be called on an artificial state.");
+        }
+    }
+
+    void checkArtificial(std::array<bool, 2> a) {
+        if (a[0] || a[1]) {
+            throw std::runtime_error(
+                "SystemBase::checkIsQuantumstateValid must not be called on an artificial state.");
+        }
+    }
+
+    // TODO extend checkIsQuantumstateValid for artificial states [dummystate]
+
     bool checkIsQuantumstateValid(const T &state) {
+        checkArtificial(state.isArtificial());
+
         return checkIsQuantumnumberValid(state.getN(), range_n) &&
             checkIsQuantumnumberValid(state.getL(), range_l) &&
             checkIsQuantumnumberValid(state.getJ(), range_j) &&
