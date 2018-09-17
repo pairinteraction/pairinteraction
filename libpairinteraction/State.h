@@ -206,7 +206,7 @@ public:
     // Method for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
 
-    // Getters // TODO getN(idx) etc.
+    // Getters
     std::array<int, 2> getN() const;
     std::array<int, 2> getL() const;
     std::array<float, 2> getJ() const;
@@ -217,9 +217,22 @@ public:
     double getEnergy() const;
     std::array<double, 2> getNStar() const;
     std::array<std::string, 2> getLabel() const;
+    std::array<bool, 2> isArtificial() const;
+
+    const int &getN(int idx) const;
+    const int &getL(int idx) const;
+    const float &getJ(int idx) const;
+    const float &getM(int idx) const;
+    const float &getS(int idx) const;
+    const std::string &getSpecies(int idx) const;
+    const std::string &getElement(int idx) const;
+    double getEnergy(int idx) const;
+    double getNStar(int idx) const;
+    const std::string &getLabel(int idx) const;
+    bool isArtificial(int idx) const;
+
     StateOne getFirstState() const;
     StateOne getSecondState() const;
-    std::array<bool, 2> isArtificial() const;
 
     // Comparators
     bool operator==(StateTwo const &rhs) const;
@@ -243,8 +256,6 @@ private:
 /// Hashers ////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-// TODO make the hashers work with artificial states, too !!!
-
 #ifndef SWIG
 
 namespace std {
@@ -252,6 +263,9 @@ namespace std {
 template <>
 struct hash<StateOne> {
     size_t operator()(const StateOne &s) const {
+        if (s.isArtificial()) {
+            return boost::hash_value(s.getLabel());
+        }
         std::size_t seed = 0;
         boost::hash_combine(seed, s.getSpecies());
         boost::hash_combine(seed, s.getN());
@@ -266,11 +280,17 @@ template <>
 struct hash<StateTwo> {
     size_t operator()(const StateTwo &s) const {
         std::size_t seed = 0;
-        boost::hash_combine(seed, s.getSpecies());
-        boost::hash_combine(seed, s.getN());
-        boost::hash_combine(seed, s.getL());
-        boost::hash_combine(seed, s.getJ());
-        boost::hash_combine(seed, s.getM());
+        for (int idx = 0; idx < 2; ++idx) {
+            if (s.isArtificial(idx)) {
+                boost::hash_combine(seed, s.getLabel(idx));
+            } else {
+                boost::hash_combine(seed, s.getSpecies(idx));
+                boost::hash_combine(seed, s.getN(idx));
+                boost::hash_combine(seed, s.getL(idx));
+                boost::hash_combine(seed, s.getJ(idx));
+                boost::hash_combine(seed, s.getM(idx));
+            }
+        }
         return seed;
     }
 };

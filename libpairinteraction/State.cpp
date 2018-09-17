@@ -75,9 +75,8 @@ bool StateInternalBase::operator!=(StateInternalBase const &rhs) const {
 bool StateInternalBase::operator<(const StateInternalBase &rhs) const {
     if (typeid(*this) != typeid(rhs)) {
         return std::type_index(typeid(*this)) < std::type_index(typeid(rhs));
-    } else {
-        return operatorLess(rhs);
     }
+    return operatorLess(rhs);
 }
 
 // StateInternalFinestructure
@@ -235,7 +234,7 @@ StateTwo::StateTwo(std::array<std::string, 2> label)
                   std::make_shared<StateInternalArtificial>(label[1])}}) {}
 
 StateTwo::StateTwo(const StateOne &first_state, const StateOne &second_state) {
-    // TODO think of a nicer solution
+    // TODO think of a nicer solution, e.g. use array of StateOne
     if (first_state.isArtificial()) {
         state_ptr[0] = std::make_shared<StateInternalArtificial>(first_state.getLabel());
     } else {
@@ -299,28 +298,59 @@ std::array<std::string, 2> StateTwo::getLabel() const {
     return {{this->castState<StateInternalArtificial>(state_ptr[0])->getLabel(),
              this->castState<StateInternalArtificial>(state_ptr[1])->getLabel()}};
 }
+std::array<bool, 2> StateTwo::isArtificial() const {
+    return {{state_ptr[0]->isArtificial(), state_ptr[1]->isArtificial()}};
+}
+
+const int &StateTwo::getN(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getN();
+}
+const int &StateTwo::getL(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getL();
+}
+const float &StateTwo::getJ(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getJ();
+}
+const float &StateTwo::getM(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getM();
+}
+const float &StateTwo::getS(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getS();
+}
+const std::string &StateTwo::getSpecies(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getSpecies();
+}
+const std::string &StateTwo::getElement(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getElement();
+}
+double StateTwo::getEnergy(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getEnergy();
+}
+double StateTwo::getNStar(int idx) const {
+    return this->castState<StateInternalFinestructure>(state_ptr[idx])->getNStar();
+}
+const std::string &StateTwo::getLabel(int idx) const {
+    return this->castState<StateInternalArtificial>(state_ptr[idx])->getLabel();
+}
+bool StateTwo::isArtificial(int idx) const { return state_ptr[idx]->isArtificial(); }
+
 StateOne StateTwo::getFirstState() const {
     // TODO think of a nicer solution
     if (std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[0]) != nullptr) {
         auto d = std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[0]);
         return StateOne(d->getLabel());
-    } else {
-        auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[0]);
-        return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
     }
+    auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[0]);
+    return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
 }
 StateOne StateTwo::getSecondState() const {
     // TODO think of a nicer solution
     if (std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[1]) != nullptr) {
         auto d = std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[1]);
         return StateOne(d->getLabel());
-    } else {
-        auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[1]);
-        return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
     }
-}
-std::array<bool, 2> StateTwo::isArtificial() const {
-    return {{state_ptr[0]->isArtificial(), state_ptr[1]->isArtificial()}};
+    auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[1]);
+    return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
 }
 
 // Comparators
