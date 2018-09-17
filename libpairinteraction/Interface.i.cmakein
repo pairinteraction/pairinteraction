@@ -19,8 +19,13 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/serialization/export.hpp>
 #include <sstream>
 #include <string.h>
+
+BOOST_CLASS_EXPORT_GUID(StateInternalArtificial, "StateInternalArtificial")
+BOOST_CLASS_EXPORT_GUID(StateInternalFinestructure, "StateInternalFinestructure")
+
 %}
 
 
@@ -39,15 +44,6 @@ import_array();
 %include "std_string.i"
 %include "std_vector.i"
 %include "std_set.i"
-%include "std_shared_ptr.i"
-
-//%shared_ptr(State);
-//%shared_ptr(StateOneBase);
-//%shared_ptr(StateOne);
-//%shared_ptr(StateOneArtificial);
-//%shared_ptr(StateTwoBase);
-//%shared_ptr(StateTwo);
-//%shared_ptr(StateTwoArtificial);
 
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions
@@ -147,10 +143,6 @@ namespace std {
   %template(SetFloat) set<float>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
-  //%template(VectorSharedStateOneBase) vector<shared_ptr<StateOneBase>>;
-  //%template(VectorSharedStateOne) vector<shared_ptr<StateOne>>;
-  //%template(VectorSharedStateOneArtificial) vector<shared_ptr<StateOneArtificial>>;
-  //%template(VectorSharedStateTwo) vector<shared_ptr<StateTwoBase>>;
 };
 
 MAKE_NUMPY_TYPEMAP_OUT(std::vector<int>)
@@ -176,7 +168,6 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap MatrixElementCache.h
-
 %include "MatrixElementCache.h"
 
 %boost_picklable(MatrixElementCache);
@@ -196,21 +187,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "State.h"
 
-%boost_picklable(StateOneBase);
 %boost_picklable(StateOne);
-%boost_picklable(StateOneArtificial);
 %boost_picklable(StateTwo);
-%boost_picklable(StateTwoArtificial);
-
-
-%extend StateOneBase {
-  __STR__();
-  %pythoncode %{
-    def __setstate__(self, sState):
-      self.__init__()
-      self.__setstate_internal(sState)
-  %}
-}
 
 %extend StateOne {
   __STR__();
@@ -221,25 +199,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
   %}
 }
 
-%extend StateOneArtificial {
-  __STR__();
-  %pythoncode %{
-    def __setstate__(self, sState):
-      self.__init__()
-      self.__setstate_internal(sState)
-  %}
-}
 
 %extend StateTwo {
-  __STR__();
-  %pythoncode %{
-    def __setstate__(self, sState):
-      self.__init__()
-      self.__setstate_internal(sState)
-  %}
-}
-
-%extend StateTwoArtificial {
   __STR__();
   %pythoncode %{
     def __setstate__(self, sState):
@@ -254,17 +215,14 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemOne.h and SystemTwo.h
-%template(_SystemStateOne) SystemBase<StateOne>; // TODO StateOneBase
-%template(_SystemStateTwo) SystemBase<StateTwo>; // TODO StateTwoBase
+%template(_SystemStateOne) SystemBase<StateOne>;
+%template(_SystemStateTwo) SystemBase<StateTwo>;
 
 %copyctor SystemOne;
 %copyctor SystemTwo;
 
 %include "SystemOne.h"
 %include "SystemTwo.h"
-
-// %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  ); // TODO
-// %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  ); // TODO
 
 %boost_picklable(SystemOne);
 %boost_picklable(SystemTwo);

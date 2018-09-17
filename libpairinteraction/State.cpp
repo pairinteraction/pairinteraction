@@ -53,110 +53,178 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 std::ostream &operator<<(std::ostream &out, const State &state) {
     state.printState(out);
     return out;
-}
+} // TODO remove
 
 ////////////////////////////////////////////////////////////////////
-/// Implementation of StateOne /////////////////////////////////////
+/// Implementation of internally used state classes ////////////////
 ////////////////////////////////////////////////////////////////////
 
-// Constructors
-StateOne::StateOne() : species("") { this->analyzeSpecies(); }
-StateOne::StateOne(std::string species, int n, int l, float j, float m)
-    : species(std::move(species)), n(n), l(l), j(j), m(m) {
-    this->analyzeSpecies();
-}
-StateOne::StateOne(int n, int l, float j, float m) : n(n), l(l), j(j), m(m) {
-    this->analyzeSpecies();
+// StateInternalBase
+std::ostream &operator<<(std::ostream &out, const StateInternalBase &state) {
+    state.printState(out);
+    return out;
 }
 
-// Method for printing the state
-void StateOne::printState(std::ostream &out) const {
-    out << "|" << species << ", ";
+bool StateInternalBase::operator==(StateInternalBase const &rhs) const {
+    return (typeid(*this) == typeid(rhs)) && operatorEqual(rhs);
+}
 
-    out << n << " ";
+bool StateInternalBase::operator^(StateInternalBase const &rhs) const { // subset
+    return (typeid(*this) == typeid(rhs)) && operatorSubset(rhs);
+}
 
-    out << getMomentumLabel(l) << "_";
+bool StateInternalBase::operator!=(StateInternalBase const &rhs) const {
+    return (typeid(*this) != typeid(rhs)) || operatorUnequal(rhs);
+}
 
-    if (std::ceil(j) == j) {
-        out << j << ", ";
-        out << "mj=" << m << ">";
+bool StateInternalBase::operator<(const StateInternalBase &rhs) const {
+    if (typeid(*this) != typeid(rhs)) {
+        return std::type_index(typeid(*this)) < std::type_index(typeid(rhs));
     } else {
-        out << 2 * j << "/2, ";
-        out << "mj=" << 2 * m << "/2>";
+        return operatorLess(rhs);
     }
 }
 
-// Comparators
-bool StateOne::operator==(StateOne const &rhs) const {
-    // TODO use elements, too?
-    return (n == rhs.n) && (l == rhs.l) && (j == rhs.j) && (m == rhs.m);
+// StateInternalFinestructure
+StateInternalFinestructure::StateInternalFinestructure(std::string species, int n, int l, float j,
+                                                       float m)
+    : species(std::move(species)), n(n), l(l), j(j), m(m) {
+    this->analyzeSpecies();
 }
 
-bool StateOne::
-operator^(StateOne const &rhs) const { // subset // TODO is there a better operator to use?
-    return (rhs.n == ARB || n == rhs.n) && (rhs.l == ARB || l == rhs.l) &&
-        (rhs.j == ARB || j == rhs.j) && (rhs.m == ARB || m == rhs.m);
-}
+bool StateInternalFinestructure::isArtificial() const { return false; }
+const std::string &StateInternalFinestructure::getSpecies() const { return species; }
+const std::string &StateInternalFinestructure::getElement() const { return element; }
+const int &StateInternalFinestructure::getN() const { return n; }
+const int &StateInternalFinestructure::getL() const { return l; }
+const float &StateInternalFinestructure::getJ() const { return j; }
+const float &StateInternalFinestructure::getM() const { return m; }
+const float &StateInternalFinestructure::getS() const { return s; }
+double StateInternalFinestructure::getEnergy() const { return energy_level(species, n, l, j); }
+double StateInternalFinestructure::getNStar() const { return nstar(species, n, l, j); }
 
-bool StateOne::operator!=(StateOne const &rhs) const {
-    return ((n != rhs.n) || (l != rhs.l) || (j != rhs.j) || (m != rhs.m));
-}
-
-bool StateOne::operator<(const StateOne &rhs) const {
-    // TODO use elements, too?
-    return ((n < rhs.n) ||
-            ((n == rhs.n) &&
-             ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m)))))));
-}
-
-// Getters
-double StateOne::getEnergy() const { return energy_level(species, n, l, j); }
-double StateOne::getNStar() const { return nstar(species, n, l, j); }
-std::string StateOne::getSpecies() const { return species; }
-std::string StateOne::getElement() const { return element; }
-int StateOne::getN() const { return n; }
-int StateOne::getL() const { return l; }
-float StateOne::getJ() const { return j; }
-float StateOne::getM() const { return m; }
-float StateOne::getS() const { return s; }
-
-// Utility methods
-void StateOne::analyzeSpecies() {
+void StateInternalFinestructure::analyzeSpecies() {
     s = 0.5;
     element = species;
-
     if (std::isdigit(species.back()) != 0) {
         s = ((species.back() - '0') - 1) / 2.;
         element = species.substr(0, species.size() - 1);
     }
 }
 
-////////////////////////////////////////////////////////////////////
-/// Implementation of StateOneArtificial ///////////////////////////
-////////////////////////////////////////////////////////////////////
+void StateInternalFinestructure::printState(std::ostream &out) const {
+    out << species << ", " << n << " " << getMomentumLabel(l) << "_";
+    if (std::ceil(j) == j) {
+        out << j << ", ";
+        out << "mj=" << m;
+    } else {
+        out << 2 * j << "/2, ";
+        out << "mj=" << 2 * m << "/2";
+    }
+}
 
-// Constructors
-StateOneArtificial::StateOneArtificial() : label("") {}
-StateOneArtificial::StateOneArtificial(std::string label) : label(std::move(label)) {}
+bool StateInternalFinestructure::operatorEqual(StateInternalBase const &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+    return (species == rhs.species) && (n == rhs.n) && (l == rhs.l) && (j == rhs.j) && (m == rhs.m);
+}
+bool StateInternalFinestructure::operatorSubset(StateInternalBase const &rhsb) const { // subset
+    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+    return (species == rhs.species) && (rhs.n == ARB || n == rhs.n) &&
+        (rhs.l == ARB || l == rhs.l) && (rhs.j == ARB || j == rhs.j) &&
+        (rhs.m == ARB || m == rhs.m);
+}
+bool StateInternalFinestructure::operatorUnequal(StateInternalBase const &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+    return (species != rhs.species) || (n != rhs.n) || (l != rhs.l) || (j != rhs.j) || (m != rhs.m);
+}
+bool StateInternalFinestructure::operatorLess(const StateInternalBase &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+    return (
+        (species < rhs.species) ||
+        ((species == rhs.species) &&
+         ((n < rhs.n) ||
+          ((n == rhs.n) &&
+           ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m)))))))));
+}
 
-// Method for printing the state
-void StateOneArtificial::printState(std::ostream &out) const { out << "|" << label << ">"; }
+// StateInternalArtificial
+StateInternalArtificial::StateInternalArtificial(std::string label) : label(std::move(label)) {}
 
-// Comparators
-bool StateOneArtificial::operator==(StateOneArtificial const &rhs) const {
+bool StateInternalArtificial::isArtificial() const { return true; }
+const std::string &StateInternalArtificial::getLabel() const { return label; }
+
+void StateInternalArtificial::printState(std::ostream &out) const { out << label; }
+
+bool StateInternalArtificial::operatorEqual(StateInternalBase const &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
     return label == rhs.label;
 }
-
-bool StateOneArtificial::operator!=(StateOneArtificial const &rhs) const {
+bool StateInternalArtificial::operatorSubset(StateInternalBase const &rhsb) const { // subset
+    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
+    return label == rhs.label;
+}
+bool StateInternalArtificial::operatorUnequal(StateInternalBase const &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
     return label != rhs.label;
 }
-
-bool StateOneArtificial::operator<(const StateOneArtificial &rhs) const {
+bool StateInternalArtificial::operatorLess(const StateInternalBase &rhsb) const {
+    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
     return label < rhs.label;
 }
 
+////////////////////////////////////////////////////////////////////
+/// Implementation of one-atom state ///////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+StateOne::StateOne(std::string species, int n, int l, float j, float m)
+    : state_ptr(std::make_shared<StateInternalFinestructure>(species, n, l, j, m)) {}
+
+StateOne::StateOne(std::string label)
+    : state_ptr(std::make_shared<StateInternalArtificial>(label)) {}
+
+// Method for printing the state
+std::ostream &operator<<(std::ostream &out, const StateOne &state) {
+    out << "|" << *state.state_ptr << ">";
+    return out;
+}
+
 // Getters
-std::string StateOneArtificial::getLabel() const { return label; }
+const int &StateOne::getN() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getN();
+}
+const int &StateOne::getL() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getL();
+}
+const float &StateOne::getJ() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getJ();
+}
+const float &StateOne::getM() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getM();
+}
+const float &StateOne::getS() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getS();
+}
+const std::string &StateOne::getSpecies() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getSpecies();
+}
+const std::string &StateOne::getElement() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getElement();
+}
+double StateOne::getEnergy() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getEnergy();
+}
+double StateOne::getNStar() const {
+    return this->castState<StateInternalFinestructure>(state_ptr)->getNStar();
+}
+const std::string &StateOne::getLabel() const {
+    return this->castState<StateInternalArtificial>(state_ptr)->getLabel();
+}
+
+// Comparators
+bool StateOne::operator==(StateOne const &rhs) const { return *state_ptr == *rhs.state_ptr; }
+bool StateOne::operator^(StateOne const &rhs) const { return *state_ptr ^ *rhs.state_ptr; }
+bool StateOne::operator!=(StateOne const &rhs) const { return *state_ptr != *rhs.state_ptr; }
+bool StateOne::operator<(const StateOne &rhs) const { return *state_ptr < *rhs.state_ptr; }
 
 ////////////////////////////////////////////////////////////////////
 /// Implementation of StateTwo /////////////////////////////////////
@@ -255,42 +323,4 @@ void StateTwo::analyzeSpecies() {
             element[i] = species[i].substr(0, species[i].size() - 1);
         }
     }
-}
-
-////////////////////////////////////////////////////////////////////
-/// Implementation of StateTwoArtificial ///////////////////////////
-////////////////////////////////////////////////////////////////////
-
-// Constructors
-StateTwoArtificial::StateTwoArtificial() : label({{"", ""}}) {}
-StateTwoArtificial::StateTwoArtificial(std::array<std::string, 2> label)
-    : label(std::move(label)) {}
-
-// Method for printing the state
-void StateTwoArtificial::printState(std::ostream &out) const {
-    out << "|" << label[0] << "; " << label[1] << ">";
-}
-
-// Comparators
-bool StateTwoArtificial::operator==(StateTwoArtificial const &rhs) const {
-    return (label[0] == rhs.label[0]) && (label[1] == rhs.label[1]);
-}
-
-bool StateTwoArtificial::operator!=(StateTwoArtificial const &rhs) const {
-    return (label[0] != rhs.label[0]) || (label[1] != rhs.label[1]);
-}
-
-bool StateTwoArtificial::operator<(const StateTwoArtificial &rhs) const {
-    return ((this->getFirstState() < rhs.getFirstState()) ||
-            ((this->getFirstState() == rhs.getFirstState()) &&
-             (this->getSecondState() < rhs.getSecondState())));
-}
-
-// Getters
-std::array<std::string, 2> StateTwoArtificial::getLabel() const { return label; }
-StateOneArtificial StateTwoArtificial::getFirstState() const {
-    return StateOneArtificial(label[0]);
-}
-StateOneArtificial StateTwoArtificial::getSecondState() const {
-    return StateOneArtificial(label[1]);
 }

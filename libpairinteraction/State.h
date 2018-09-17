@@ -24,11 +24,167 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/export.hpp>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/variant.hpp>
+
+////////////////////////////////////////////////////////////////////
+/// Internally used state classes //////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+class StateInternalBase {
+public:
+    StateInternalBase() = default;
+    friend std::ostream &operator<<(std::ostream &out, const StateInternalBase &state);
+    virtual ~StateInternalBase() = default;
+    virtual bool isArtificial() const = 0;
+    bool operator==(StateInternalBase const &rhs) const;
+    bool operator^(StateInternalBase const &rhs) const; // subset
+    bool operator!=(StateInternalBase const &rhs) const;
+    bool operator<(StateInternalBase const &rhs) const;
+
+protected:
+    virtual void printState(std::ostream &out) const = 0;
+    virtual bool operatorEqual(StateInternalBase const &rhsb) const = 0;
+    virtual bool operatorUnequal(StateInternalBase const &rhsb) const = 0;
+    virtual bool operatorSubset(StateInternalBase const &rhsb) const = 0;
+    virtual bool operatorLess(StateInternalBase const &rhsb) const = 0;
+
+private:
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive & /*ar*/, const unsigned int /*version*/) {}
+};
+
+class StateInternalFinestructure : public StateInternalBase {
+public:
+    StateInternalFinestructure() = default;
+    StateInternalFinestructure(std::string species, int n, int l, float j, float m);
+    bool isArtificial() const override;
+    const std::string &getSpecies() const;
+    const std::string &getElement() const;
+    const int &getN() const;
+    const int &getL() const;
+    const float &getJ() const;
+    const float &getM() const;
+    const float &getS() const;
+    double getEnergy() const;
+    double getNStar() const;
+
+protected:
+    void printState(std::ostream &out) const override;
+    bool operatorEqual(StateInternalBase const &rhsb) const override;
+    bool operatorUnequal(StateInternalBase const &rhsb) const override;
+    bool operatorSubset(StateInternalBase const &rhsb) const override;
+    bool operatorLess(StateInternalBase const &rhsb) const override;
+
+private:
+    std::string species, element;
+    int n, l;
+    float j, m, s;
+
+    void analyzeSpecies();
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &boost::serialization::base_object<StateInternalBase>(*this);
+        ar &species &n &l &j &m;
+    }
+};
+
+class StateInternalArtificial : public StateInternalBase {
+public:
+    StateInternalArtificial() = default;
+    StateInternalArtificial(std::string label);
+    bool isArtificial() const override;
+    const std::string &getLabel() const;
+
+protected:
+    void printState(std::ostream &out) const override;
+    bool operatorEqual(StateInternalBase const &rhsb) const override;
+    bool operatorUnequal(StateInternalBase const &rhsb) const override;
+    bool operatorSubset(StateInternalBase const &rhsb) const override;
+    bool operatorLess(StateInternalBase const &rhsb) const override;
+
+private:
+    std::string label;
+
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &boost::serialization::base_object<StateInternalBase>(*this);
+        ar &label;
+    }
+};
+
+////////////////////////////////////////////////////////////////////
+/// Base class for all states //////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+class StateBase {
+protected:
+    // Utility methods
+    template <class D>
+    std::shared_ptr<D> castState(const std::shared_ptr<StateInternalBase> &p) const {
+        auto d = std::dynamic_pointer_cast<D>(p);
+        if (d == nullptr) {
+            throw std::runtime_error("The state does not have this property.");
+        }
+        return d;
+    }
+};
+
+ // TODO make StateInternalBase etc. a nested class of StateBase
+
+////////////////////////////////////////////////////////////////////
+/// \brief One-atom state
+/// This class implements a one-atom state. It can either be a
+/// Rydberg state in the fine structure basis or an artificial state
+/// specified by its label.
+////////////////////////////////////////////////////////////////////
+
+class StateOne : public StateBase {
+public:
+    StateOne() = default;
+    StateOne(std::string species, int n, int l, float j, float m);
+    StateOne(std::string label);
+
+    // Method for printing the state
+    friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
+
+    // Getters
+    const int &getN() const;
+    const int &getL() const;
+    const float &getJ() const;
+    const float &getM() const;
+    const float &getS() const;
+    const std::string &getSpecies() const;
+    const std::string &getElement() const;
+    double getEnergy() const;
+    double getNStar() const;
+    const std::string &getLabel() const;
+
+    // Comparators
+    bool operator==(StateOne const &rhs) const;
+    bool operator^(StateOne const &rhs) const; // subset
+    bool operator!=(StateOne const &rhs) const;
+    bool operator<(StateOne const &rhs) const;
+
+private:
+    std::shared_ptr<StateInternalBase> state_ptr;
+
+    // Method for serialization
+    friend class boost::serialization::access;
+    template <class Archive>
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &state_ptr;
+    }
+};
 
 /** \brief %Base class for states
  *
@@ -53,98 +209,11 @@ private:
 
 /** \brief %Base class for states
  *
- * This class is the base class for one-atom states.
- */
-class StateOneBase : public State {
-public:
-    StateOneBase() = default;
-};
-
-/** \brief %Base class for states
- *
  * This class is the base class for two-atom states.
  */
 class StateTwoBase : public State {
 public:
     StateTwoBase() = default;
-};
-
-/** \brief %One-atom Rydberg state
- *
- * This class implements a one-atom Rydberg state in the fine structure basis.
- */
-class StateOne : public StateOneBase {
-public:
-    StateOne();
-    StateOne(std::string species, int n, int l, float j, float m);
-    StateOne(int n, int l, float j, float m);
-
-    bool operator==(StateOne const &rhs) const;
-    bool operator^(StateOne const &rhs) const; // subset
-    bool operator!=(StateOne const &rhs) const;
-    bool operator<(StateOne const &rhs) const;
-
-    std::string getSpecies() const;
-    std::string getElement() const;
-    int getN() const;
-    int getL() const;
-    float getJ() const;
-    float getM() const;
-    float getS() const;
-    double getEnergy() const;
-    double getNStar() const;
-
-protected:
-    // Method for printing the state
-    void printState(std::ostream &out) const override;
-
-private:
-    std::string species, element;
-    int n{0};
-    int l{0};
-    float j{0};
-    float m{0};
-    float s;
-
-    // Utility methods
-    void analyzeSpecies();
-
-    // Method for serialization
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &species &element &s &n &l &j &m;
-    }
-};
-
-/** \brief %Artificial one-atom Rydberg state
- *
- * This class implements an artificial one-atom state.
- */
-class StateOneArtificial : public StateOneBase {
-public:
-    StateOneArtificial();
-    StateOneArtificial(std::string label);
-
-    bool operator==(StateOneArtificial const &rhs) const;
-    bool operator!=(StateOneArtificial const &rhs) const;
-    bool operator<(const StateOneArtificial &rhs) const;
-
-    std::string getLabel() const;
-
-protected:
-    // Method for printing the state
-    void printState(std::ostream &out) const override;
-
-private:
-    std::string label;
-
-    // Method for serialization
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &label;
-    }
 };
 
 /** \brief %Two-atom Rydberg state
@@ -196,48 +265,6 @@ private:
     }
 };
 
-/** \brief %Artificial two-atom Rydberg state
- *
- * This class implements an artificial two-atom state.
- */
-class StateTwoArtificial : public StateTwoBase {
-public:
-    StateTwoArtificial();
-    StateTwoArtificial(std::array<std::string, 2> label);
-
-    bool operator==(StateTwoArtificial const &rhs) const;
-    bool operator!=(StateTwoArtificial const &rhs) const;
-    bool operator<(const StateTwoArtificial &rhs) const;
-
-    std::array<std::string, 2> getLabel() const;
-    StateOneArtificial getFirstState() const;
-    StateOneArtificial getSecondState() const;
-
-protected:
-    // Method for printing the state
-    void printState(std::ostream &out) const override;
-
-private:
-    std::array<std::string, 2> label;
-
-    // Method for serialization
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &label;
-    }
-};
-
-// TODO https://stackoverflow.com/questions/30204189/boost-serialize-polymorphic-class
-// https://www.boost.org/doc/libs/1_67_0/libs/serialization/doc/traits.html
-// BOOST_SERIALIZATION_ASSUME_ABSTRACT(State)
-// BOOST_SERIALIZATION_ASSUME_ABSTRACT(StateOneBase)
-// BOOST_SERIALIZATION_ASSUME_ABSTRACT(StateTwoBase)
-// BOOST_CLASS_EXPORT(StateOne)
-// BOOST_CLASS_EXPORT(StateTwo)
-// BOOST_CLASS_EXPORT(StateOneArtificial)
-// BOOST_CLASS_EXPORT(StateTwoArtificial)
-
 #ifndef SWIG
 
 namespace std {
@@ -246,38 +273,26 @@ template <>
 struct hash<StateOne> {
     size_t operator()(const StateOne &s) const {
         std::size_t seed = 0;
-        // boost::hash_combine(seed, s.getSpecies()); // TODO why does this line cause a segfault
-        // under SUSE?
+        boost::hash_combine(seed, s.getSpecies());
         boost::hash_combine(seed, s.getN());
         boost::hash_combine(seed, s.getL());
         boost::hash_combine(seed, s.getJ());
         boost::hash_combine(seed, s.getM());
         return seed;
     }
-};
-
-template <>
-struct hash<StateOneArtificial> {
-    size_t operator()(const StateOneArtificial &s) const { return boost::hash_value(s.getLabel()); }
 };
 
 template <>
 struct hash<StateTwo> {
     size_t operator()(const StateTwo &s) const {
         std::size_t seed = 0;
-        // boost::hash_combine(seed, s.getSpecies()); // TODO why does this line cause a segfault
-        // under SUSE?
+        boost::hash_combine(seed, s.getSpecies());
         boost::hash_combine(seed, s.getN());
         boost::hash_combine(seed, s.getL());
         boost::hash_combine(seed, s.getJ());
         boost::hash_combine(seed, s.getM());
         return seed;
     }
-};
-
-template <>
-struct hash<StateTwoArtificial> {
-    size_t operator()(const StateTwoArtificial &s) const { return boost::hash_value(s.getLabel()); }
 };
 
 } // namespace std
