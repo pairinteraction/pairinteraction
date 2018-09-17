@@ -122,24 +122,7 @@ private:
     }
 };
 
-////////////////////////////////////////////////////////////////////
-/// Base class for all states //////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
-class StateBase {
-protected:
-    // Utility methods
-    template <class D>
-    std::shared_ptr<D> castState(const std::shared_ptr<StateInternalBase> &p) const {
-        auto d = std::dynamic_pointer_cast<D>(p);
-        if (d == nullptr) {
-            throw std::runtime_error("The state does not have this property.");
-        }
-        return d;
-    }
-};
-
-// TODO make StateInternalBase etc. a nested class of StateBase
+// TODO make StateInternalBase etc. a nested class of StateOne
 
 ////////////////////////////////////////////////////////////////////
 /// \brief One-atom state
@@ -148,7 +131,7 @@ protected:
 /// specified by a label.
 ////////////////////////////////////////////////////////////////////
 
-class StateOne : public StateBase {
+class StateOne {
 public:
     StateOne() = default;
     StateOne(std::string species, int n, int l, float j, float m);
@@ -186,6 +169,16 @@ private:
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &state_ptr;
     }
+
+    // Utility methods
+    template <class D>
+    std::shared_ptr<D> castState(const std::shared_ptr<StateInternalBase> &p) const {
+        auto d = std::dynamic_pointer_cast<D>(p);
+        if (d == nullptr) {
+            throw std::runtime_error("The state does not have this property.");
+        }
+        return d;
+    }
 };
 
 ////////////////////////////////////////////////////////////////////
@@ -195,13 +188,13 @@ private:
 /// specified by a label.
 ////////////////////////////////////////////////////////////////////
 
-class StateTwo : public StateBase {
+class StateTwo {
 public:
     StateTwo() = default;
     StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
              std::array<float, 2> j, std::array<float, 2> m);
     StateTwo(std::array<std::string, 2> label);
-    StateTwo(const StateOne &first_state, const StateOne &second_state);
+    StateTwo(StateOne first_state, StateOne second_state);
 
     // Method for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
@@ -231,8 +224,8 @@ public:
     const std::string &getLabel(int idx) const;
     bool isArtificial(int idx) const;
 
-    StateOne getFirstState() const;
-    StateOne getSecondState() const;
+    const StateOne &getFirstState() const;
+    const StateOne &getSecondState() const;
 
     // Comparators
     bool operator==(StateTwo const &rhs) const;
@@ -241,14 +234,13 @@ public:
     bool operator<(StateTwo const &rhs) const;
 
 private:
-    std::array<std::shared_ptr<StateInternalBase>, 2>
-        state_ptr; // TODO use unique_ptr (requires writing of copy constructor)
+    std::array<StateOne, 2> state_array;
 
     // Method for serialization
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &state_ptr;
+        ar &state_array;
     }
 };
 
