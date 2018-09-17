@@ -139,13 +139,13 @@ protected:
     }
 };
 
- // TODO make StateInternalBase etc. a nested class of StateBase
+// TODO make StateInternalBase etc. a nested class of StateBase
 
 ////////////////////////////////////////////////////////////////////
 /// \brief One-atom state
 /// This class implements a one-atom state. It can either be a
 /// Rydberg state in the fine structure basis or an artificial state
-/// specified by its label.
+/// specified by a label.
 ////////////////////////////////////////////////////////////////////
 
 class StateOne : public StateBase {
@@ -168,6 +168,7 @@ public:
     double getEnergy() const;
     double getNStar() const;
     const std::string &getLabel() const;
+    bool isArtificial() const;
 
     // Comparators
     bool operator==(StateOne const &rhs) const;
@@ -176,7 +177,8 @@ public:
     bool operator<(StateOne const &rhs) const;
 
 private:
-    std::shared_ptr<StateInternalBase> state_ptr;
+    std::shared_ptr<StateInternalBase>
+        state_ptr; // TODO use unique_ptr (requires writing of copy constructor)
 
     // Method for serialization
     friend class boost::serialization::access;
@@ -186,84 +188,62 @@ private:
     }
 };
 
-/** \brief %Base class for states
- *
- * This class is the base class for all states.
- */
-class State {
+////////////////////////////////////////////////////////////////////
+/// \brief Two-atom state
+/// This class implements a two-atom state. It can either be a
+/// Rydberg state in the fine structure basis or an artificial state
+/// specified by a label.
+////////////////////////////////////////////////////////////////////
+
+class StateTwo : public StateBase {
 public:
-    State() = default;
-    friend std::ostream &operator<<(std::ostream &out, const State &state);
-    virtual ~State() = default;
-
-protected:
-    // Method for printing the state
-    virtual void printState(std::ostream &out) const = 0;
-
-private:
-    // Method for serialization
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive & /*ar*/, const unsigned int /*version*/) {}
-};
-
-/** \brief %Base class for states
- *
- * This class is the base class for two-atom states.
- */
-class StateTwoBase : public State {
-public:
-    StateTwoBase() = default;
-};
-
-/** \brief %Two-atom Rydberg state
- *
- * This class implements a two-atom Rydberg state in the fine structure basis.
- */
-class StateTwo : public StateTwoBase {
-
-public:
-    StateTwo();
+    StateTwo() = default;
     StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
              std::array<float, 2> j, std::array<float, 2> m);
-    StateTwo(const StateOne &s1, const StateOne &s2);
+    StateTwo(std::array<std::string, 2> label);
+    StateTwo(const StateOne &first_state, const StateOne &second_state);
 
-    bool operator==(StateTwo const &rhs) const;
-    bool operator^(StateTwo const &rhs) const; // subset
-    bool operator!=(StateTwo const &rhs) const;
-    bool operator<(StateTwo const &rhs) const;
+    // Method for printing the state
+    friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
 
-    std::array<std::string, 2> getSpecies() const;
-    std::array<std::string, 2> getElement() const;
+    // Getters // TODO getN(idx) etc.
     std::array<int, 2> getN() const;
     std::array<int, 2> getL() const;
     std::array<float, 2> getJ() const;
     std::array<float, 2> getM() const;
     std::array<float, 2> getS() const;
+    std::array<std::string, 2> getSpecies() const;
+    std::array<std::string, 2> getElement() const;
     double getEnergy() const;
     std::array<double, 2> getNStar() const;
+    std::array<std::string, 2> getLabel() const;
     StateOne getFirstState() const;
     StateOne getSecondState() const;
+    std::array<bool, 2> isArtificial() const;
 
-protected:
-    // Method for printing the state
-    void printState(std::ostream &out) const override;
+    // Comparators
+    bool operator==(StateTwo const &rhs) const;
+    bool operator^(StateTwo const &rhs) const; // subset
+    bool operator!=(StateTwo const &rhs) const;
+    bool operator<(StateTwo const &rhs) const;
 
 private:
-    std::array<std::string, 2> species, element;
-    std::array<int, 2> n, l;
-    std::array<float, 2> j, m, s;
-
-    // Utility methods
-    void analyzeSpecies();
+    std::array<std::shared_ptr<StateInternalBase>, 2>
+        state_ptr; // TODO use unique_ptr (requires writing of copy constructor)
 
     // Method for serialization
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &species &element &s &n &l &j &m;
+        ar &state_ptr;
     }
 };
+
+////////////////////////////////////////////////////////////////////
+/// Hashers ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
+// TODO make the hashers work with artificial states, too !!!
 
 #ifndef SWIG
 

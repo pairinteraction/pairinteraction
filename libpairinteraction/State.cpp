@@ -50,11 +50,6 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 
 } // namespace
 
-std::ostream &operator<<(std::ostream &out, const State &state) {
-    state.printState(out);
-    return out;
-} // TODO remove
-
 ////////////////////////////////////////////////////////////////////
 /// Implementation of internally used state classes ////////////////
 ////////////////////////////////////////////////////////////////////
@@ -139,12 +134,11 @@ bool StateInternalFinestructure::operatorUnequal(StateInternalBase const &rhsb) 
 }
 bool StateInternalFinestructure::operatorLess(const StateInternalBase &rhsb) const {
     auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
-    return (
-        (species < rhs.species) ||
+    return (species < rhs.species) ||
         ((species == rhs.species) &&
          ((n < rhs.n) ||
           ((n == rhs.n) &&
-           ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m)))))))));
+           ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m))))))));
 }
 
 // StateInternalArtificial
@@ -219,6 +213,7 @@ double StateOne::getNStar() const {
 const std::string &StateOne::getLabel() const {
     return this->castState<StateInternalArtificial>(state_ptr)->getLabel();
 }
+bool StateOne::isArtificial() const { return state_ptr->isArtificial(); }
 
 // Comparators
 bool StateOne::operator==(StateOne const &rhs) const { return *state_ptr == *rhs.state_ptr; }
@@ -227,100 +222,118 @@ bool StateOne::operator!=(StateOne const &rhs) const { return *state_ptr != *rhs
 bool StateOne::operator<(const StateOne &rhs) const { return *state_ptr < *rhs.state_ptr; }
 
 ////////////////////////////////////////////////////////////////////
-/// Implementation of StateTwo /////////////////////////////////////
+/// Implementation of two-atom state ///////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-// Constructors
-StateTwo::StateTwo() : species({{"", ""}}), n({{0, 0}}), l({{0, 0}}), j({{0, 0}}), m({{0, 0}}) {
-    this->analyzeSpecies();
-}
 StateTwo::StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
                    std::array<float, 2> j, std::array<float, 2> m)
-    : species(std::move(species)), n(n), l(l), j(j), m(m) {
-    this->analyzeSpecies();
-}
-StateTwo::StateTwo(const StateOne &s1, const StateOne &s2)
-    : species({{s1.getSpecies(), s2.getSpecies()}}), n({{s1.getN(), s2.getN()}}),
-      l({{s1.getL(), s2.getL()}}), j({{s1.getJ(), s2.getJ()}}), m({{s1.getM(), s2.getM()}}) {
-    this->analyzeSpecies();
+    : state_ptr(
+          {{std::make_shared<StateInternalFinestructure>(species[0], n[0], l[0], j[0], m[0]),
+            std::make_shared<StateInternalFinestructure>(species[1], n[1], l[1], j[1], m[1])}}) {}
+StateTwo::StateTwo(std::array<std::string, 2> label)
+    : state_ptr({{std::make_shared<StateInternalArtificial>(label[0]),
+                  std::make_shared<StateInternalArtificial>(label[1])}}) {}
+
+StateTwo::StateTwo(const StateOne &first_state, const StateOne &second_state) {
+    // TODO think of a nicer solution
+    if (first_state.isArtificial()) {
+        state_ptr[0] = std::make_shared<StateInternalArtificial>(first_state.getLabel());
+    } else {
+        state_ptr[0] = std::make_shared<StateInternalFinestructure>(
+            first_state.getSpecies(), first_state.getN(), first_state.getL(), first_state.getJ(),
+            first_state.getM());
+    }
+    if (second_state.isArtificial()) {
+        state_ptr[1] = std::make_shared<StateInternalArtificial>(second_state.getLabel());
+    } else {
+        state_ptr[1] = std::make_shared<StateInternalFinestructure>(
+            second_state.getSpecies(), second_state.getN(), second_state.getL(),
+            second_state.getJ(), second_state.getM());
+    }
 }
 
 // Method for printing the state
-void StateTwo::printState(std::ostream &out) const {
-    out << "|";
-    for (size_t i = 0; i < 2; ++i) {
-        out << species[i] << ", ";
-
-        out << n[i] << " ";
-
-        out << getMomentumLabel(l[i]) << "_";
-
-        if (std::ceil(j[i]) == j[i]) {
-            out << j[i] << ", ";
-            out << "mj=" << m[i] << ">";
-        } else {
-            out << 2 * j[i] << "/2, ";
-            out << "mj=" << 2 * m[i] << "/2";
-        }
-
-        if (i == 0) {
-            out << "; ";
-        }
-    }
-    out << ">";
-}
-
-// Comparators
-bool StateTwo::operator==(const StateTwo &rhs) const {
-    return (n[0] == rhs.n[0]) && (l[0] == rhs.l[0]) && (j[0] == rhs.j[0]) && (m[0] == rhs.m[0]) &&
-        (n[1] == rhs.n[1]) && (l[1] == rhs.l[1]) && (j[1] == rhs.j[1]) && (m[1] == rhs.m[1]);
-}
-
-bool StateTwo::
-operator^(const StateTwo &rhs) const { // subset // TODO is there a better operator to use?
-    return (rhs.n[0] == ARB || n[0] == rhs.n[0]) && (rhs.l[0] == ARB || l[0] == rhs.l[0]) &&
-        (rhs.j[0] == ARB || j[0] == rhs.j[0]) && (rhs.m[0] == ARB || m[0] == rhs.m[0]) &&
-        (rhs.n[1] == ARB || n[1] == rhs.n[1]) && (rhs.l[1] == ARB || l[1] == rhs.l[1]) &&
-        (rhs.j[1] == ARB || j[1] == rhs.j[1]) && (rhs.m[1] == ARB || m[1] == rhs.m[1]);
-}
-
-bool StateTwo::operator!=(const StateTwo &rhs) const {
-    return (n[0] != rhs.n[0]) || (l[0] != rhs.l[0]) || (j[0] != rhs.j[0]) || (m[0] != rhs.m[0]) ||
-        (n[1] != rhs.n[1]) || (l[1] != rhs.l[1]) || (j[1] != rhs.j[1]) || (m[1] != rhs.m[1]);
-}
-
-bool StateTwo::operator<(const StateTwo &rhs) const {
-    return ((this->getFirstState() < rhs.getFirstState()) ||
-            ((this->getFirstState() == rhs.getFirstState()) &&
-             (this->getSecondState() < rhs.getSecondState())));
+std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
+    out << "|" << *state.state_ptr[0] << "; " << *state.state_ptr[1] << ">";
+    return out;
 }
 
 // Getters
+std::array<int, 2> StateTwo::getN() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getN(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getN()}};
+}
+std::array<int, 2> StateTwo::getL() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getL(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getL()}};
+}
+std::array<float, 2> StateTwo::getJ() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getJ(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getJ()}};
+}
+std::array<float, 2> StateTwo::getM() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getM(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getM()}};
+}
+std::array<float, 2> StateTwo::getS() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getS(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getS()}};
+}
+std::array<std::string, 2> StateTwo::getSpecies() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getSpecies(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getSpecies()}};
+}
+std::array<std::string, 2> StateTwo::getElement() const {
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getElement(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getElement()}};
+}
 double StateTwo::getEnergy() const {
-    return this->getFirstState().getEnergy() + this->getSecondState().getEnergy();
+    return this->castState<StateInternalFinestructure>(state_ptr[0])->getEnergy() +
+        this->castState<StateInternalFinestructure>(state_ptr[1])->getEnergy();
 }
 std::array<double, 2> StateTwo::getNStar() const {
-    return {{this->getFirstState().getNStar(), this->getSecondState().getNStar()}};
+    return {{this->castState<StateInternalFinestructure>(state_ptr[0])->getNStar(),
+             this->castState<StateInternalFinestructure>(state_ptr[1])->getNStar()}};
 }
-std::array<std::string, 2> StateTwo::getSpecies() const { return species; }
-std::array<std::string, 2> StateTwo::getElement() const { return element; }
-std::array<int, 2> StateTwo::getN() const { return n; }
-std::array<int, 2> StateTwo::getL() const { return l; }
-std::array<float, 2> StateTwo::getJ() const { return j; }
-std::array<float, 2> StateTwo::getM() const { return m; }
-std::array<float, 2> StateTwo::getS() const { return s; }
-StateOne StateTwo::getFirstState() const { return StateOne(species[0], n[0], l[0], j[0], m[0]); }
-StateOne StateTwo::getSecondState() const { return StateOne(species[1], n[1], l[1], j[1], m[1]); }
-
-// Utility methods
-void StateTwo::analyzeSpecies() {
-    for (size_t i = 0; i < 2; ++i) {
-        s[i] = 0.5;
-        element[i] = species[i];
-
-        if (std::isdigit(species[i].back()) != 0) {
-            s[i] = ((species[i].back() - '0') - 1) / 2.;
-            element[i] = species[i].substr(0, species[i].size() - 1);
-        }
+std::array<std::string, 2> StateTwo::getLabel() const {
+    return {{this->castState<StateInternalArtificial>(state_ptr[0])->getLabel(),
+             this->castState<StateInternalArtificial>(state_ptr[1])->getLabel()}};
+}
+StateOne StateTwo::getFirstState() const {
+    // TODO think of a nicer solution
+    if (std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[0]) != nullptr) {
+        auto d = std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[0]);
+        return StateOne(d->getLabel());
+    } else {
+        auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[0]);
+        return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
     }
+}
+StateOne StateTwo::getSecondState() const {
+    // TODO think of a nicer solution
+    if (std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[1]) != nullptr) {
+        auto d = std::dynamic_pointer_cast<StateInternalArtificial>(state_ptr[1]);
+        return StateOne(d->getLabel());
+    } else {
+        auto d = std::dynamic_pointer_cast<StateInternalFinestructure>(state_ptr[1]);
+        return StateOne(d->getSpecies(), d->getN(), d->getL(), d->getJ(), d->getM());
+    }
+}
+std::array<bool, 2> StateTwo::isArtificial() const {
+    return {{state_ptr[0]->isArtificial(), state_ptr[1]->isArtificial()}};
+}
+
+// Comparators
+bool StateTwo::operator==(StateTwo const &rhs) const {
+    return (*state_ptr[0] == *rhs.state_ptr[0]) && (*state_ptr[1] == *rhs.state_ptr[1]);
+}
+bool StateTwo::operator^(StateTwo const &rhs) const {
+    return (*state_ptr[0] ^ *rhs.state_ptr[0]) && (*state_ptr[1] ^ *rhs.state_ptr[1]);
+}
+bool StateTwo::operator!=(StateTwo const &rhs) const {
+    return (*state_ptr[0] != *rhs.state_ptr[0]) || (*state_ptr[1] != *rhs.state_ptr[1]);
+}
+bool StateTwo::operator<(const StateTwo &rhs) const {
+    return (*state_ptr[0] < *rhs.state_ptr[0]) ||
+        ((*state_ptr[0] == *rhs.state_ptr[0]) && (*state_ptr[1] < *rhs.state_ptr[1]));
 }
