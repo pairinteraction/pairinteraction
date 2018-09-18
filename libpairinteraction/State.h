@@ -68,6 +68,8 @@ public:
     bool operator<(StateOne const &rhs) const;
 
 private:
+    // TODO make the variables constant (requires load_construct_data, see
+    // https://stackoverflow.com/questions/50603180/serialization-of-class-with-const-members-using-boost)
     std::string species, element;
     int n, l;
     float j, m, s;
@@ -140,6 +142,8 @@ public:
     bool operator<(StateTwo const &rhs) const;
 
 private:
+    // TODO make the variables constant (requires load_construct_data, see
+    // https://stackoverflow.com/questions/50603180/serialization-of-class-with-const-members-using-boost)
     std::array<StateOne, 2> state_array;
     size_t hashvalue;
 

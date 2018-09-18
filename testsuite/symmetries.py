@@ -42,7 +42,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         for m in momenta_one:
             system_one_momentum[m] = pi.SystemOne(system_one)
             system_one_momentum[m].setConservedMomentaUnderRotation([m])
-            system_one_momentum[m].diagonalize()
+            system_one_momentum[m].diagonalize(1e-3)
 
         system_one_combined = pi.SystemOne(system_one_momentum[momenta_one[0]])
         for m in momenta_one[1:]:
@@ -51,10 +51,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize altogether
         system_one_alternative = pi.SystemOne(system_one)
         system_one_alternative.setConservedMomentaUnderRotation(momenta_one)
-        system_one_alternative.diagonalize()
+        system_one_alternative.diagonalize(1e-3)
 
         system_one.setConservedMomentaUnderRotation([pi.ARB])
-        system_one.diagonalize()
+        system_one.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_one_combined.getHamiltonian().diagonal())
@@ -100,7 +100,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         for m in momenta_two:
             system_two_momentum[m].setDistance(2)
             system_two_momentum[m].setOrder(5)
-            system_two_momentum[m].diagonalize()
+            system_two_momentum[m].diagonalize(1e-3)
 
         system_two_combined = pi.SystemTwo(system_two_momentum[momenta_two[0]])
         for m in momenta_two[1:]:
@@ -117,7 +117,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
                                                                                 int(m)])
             system_two_momentum_alternative[m].setDistance(2)
             system_two_momentum_alternative[m].setOrder(5)
-            system_two_momentum_alternative[m].diagonalize()
+            system_two_momentum_alternative[m].diagonalize(1e-3)
 
         system_two_combined_alternative = pi.SystemTwo(
             system_two_momentum_alternative[momenta_two[0]])
@@ -130,7 +130,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.restrictEnergy(state_two.getEnergy()-2, state_two.getEnergy()+2)
         system_two.setDistance(2)
         system_two.setOrder(5)
-        system_two.diagonalize()
+        system_two.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
@@ -168,18 +168,18 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize blockwise
         system_one_even = pi.SystemOne(system_one)
         system_one_even.setConservedParityUnderReflection(pi.EVEN)
-        system_one_even.diagonalize()
+        system_one_even.diagonalize(1e-3)
 
         system_one_odd = pi.SystemOne(system_one)
         system_one_odd.setConservedParityUnderReflection(pi.ODD)
-        system_one_odd.diagonalize()
+        system_one_odd.diagonalize(1e-3)
 
         system_one_combined = pi.SystemOne(system_one_even)
         system_one_combined.add(system_one_odd)
 
         # Diagonalize altogether
         system_one.setConservedParityUnderReflection(pi.NA)
-        system_one.diagonalize()
+        system_one.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_one_combined.getHamiltonian().diagonal())
@@ -208,7 +208,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_one_odd, system_one_odd, self.cache))
         system_two_odd.setDistance(2)
         system_two_odd.setOrder(5)
-        system_two_odd.diagonalize()
+        system_two_odd.diagonalize(1e-3)
 
         system_two_even = pi.SystemTwo(
             system_one_even, system_one_odd, self.cache)
@@ -216,7 +216,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_one_odd, system_one_even, self.cache))
         system_two_even.setDistance(2)
         system_two_even.setOrder(5)
-        system_two_even.diagonalize()
+        system_two_even.diagonalize(1e-3)
 
         system_two_combined = pi.SystemTwo(system_two_even)
         system_two_combined.add(system_two_odd)
@@ -230,17 +230,17 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         system_two_even_alternative = pi.SystemTwo(system_two_alternative)
         system_two_even_alternative.setConservedParityUnderReflection(pi.EVEN)
-        system_two_even_alternative.diagonalize()
+        system_two_even_alternative.diagonalize(1e-3)
 
         system_two_odd_alternative = pi.SystemTwo(system_two_alternative)
         system_two_odd_alternative.setConservedParityUnderReflection(pi.ODD)
-        system_two_odd_alternative.diagonalize()
+        system_two_odd_alternative.diagonalize(1e-3)
 
         # Diagonalize altogether
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setDistance(2)
         system_two.setOrder(5)
-        system_two.diagonalize()
+        system_two.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
@@ -297,18 +297,18 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize blockwise
         system_two_even = pi.SystemTwo(system_two)
         system_two_even.setConservedParityUnderPermutation(pi.EVEN)
-        system_two_even.diagonalize()
+        system_two_even.diagonalize(1e-3)
 
         system_two_odd = pi.SystemTwo(system_two)
         system_two_odd.setConservedParityUnderPermutation(pi.ODD)
-        system_two_odd.diagonalize()
+        system_two_odd.diagonalize(1e-3)
 
         system_two_combined = system_two_even
         system_two_combined.add(system_two_odd)
 
         # Diagonalize altogether
         system_two.setConservedParityUnderPermutation(pi.NA)
-        system_two.diagonalize()
+        system_two.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
@@ -351,18 +351,18 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize blockwise
         system_two_even = pi.SystemTwo(system_two)
         system_two_even.setConservedParityUnderInversion(pi.EVEN)
-        system_two_even.diagonalize()
+        system_two_even.diagonalize(1e-3)
 
         system_two_odd = pi.SystemTwo(system_two)
         system_two_odd.setConservedParityUnderInversion(pi.ODD)
-        system_two_odd.diagonalize()
+        system_two_odd.diagonalize(1e-3)
 
         system_two_combined = system_two_even
         system_two_combined.add(system_two_odd)
 
         # Diagonalize altogether
         system_two.setConservedParityUnderInversion(pi.NA)
-        system_two.diagonalize()
+        system_two.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
@@ -399,20 +399,20 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         system_one_combined = pi.SystemOne(system_one)
         system_one_combined.setConservedParityUnderReflection(pi.EVEN)
-        system_one_combined.diagonalize()
+        system_one_combined.diagonalize(1e-3)
         system_one_inverse = pi.SystemOne(system_one)
         system_one_inverse.setConservedParityUnderReflection(pi.ODD)
-        system_one_inverse.diagonalize()
+        system_one_inverse.diagonalize(1e-3)
         system_one_combined.add(system_one_inverse)
 
         system_one.setConservedParityUnderReflection(pi.NA)
-        system_one.diagonalize()
+        system_one.diagonalize(1e-3)
 
         # Build two atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setDistance(2)
         system_two.setOrder(3)
-        system_two.diagonalize()
+        system_two.diagonalize(1e-3)
 
         # Note: it is important to use system_one_combined
         system_two_from_combined = pi.SystemTwo(
@@ -426,12 +426,12 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_two_tmp.setConservedParityUnderReflection(sym_reflection)
             system_two_tmp.setConservedParityUnderInversion(sym_inversion)
             system_two_tmp.setConservedParityUnderPermutation(sym_permutation)
-            system_two_tmp.diagonalize()
+            system_two_tmp.diagonalize(1e-3)
             if system_two_combined is None:
                 system_two_combined = system_two_tmp
             else:
                 system_two_combined.add(system_two_tmp)
-        system_two_combined.diagonalize()
+        system_two_combined.diagonalize(1e-3)
 
         # Compare results
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())

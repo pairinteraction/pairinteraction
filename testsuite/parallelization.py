@@ -44,7 +44,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             # copy allows to restrict energy further
             tmp = pi.SystemOne(system_one)
             tmp.setEfield([0, 0, field])
-            tmp.diagonalize()
+            tmp.diagonalize(1e-3)
             tmp.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp
@@ -120,7 +120,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             # copy allows to restrict energy further
             tmp = pi.SystemTwo(system_two)
             tmp.setDistance(distance)
-            tmp.diagonalize()
+            tmp.diagonalize(1e-3)
             tmp.restrictEnergy(state_two.getEnergy()-0.1, state_two.getEnergy()+0.1)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp

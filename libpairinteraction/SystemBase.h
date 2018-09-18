@@ -516,6 +516,34 @@ public:
         coefficients = coefficients * evecs;
     }
 
+    void diagonalize(double threshold) {
+        this->buildHamiltonian();
+
+        // Check if already diagonal
+        if (checkIsDiagonal(hamiltonianmatrix)) {
+            return;
+        }
+
+        // Diagonalize hamiltonianmatrix // TODO use approximative eigensolver for sparse matrices,
+        // e.g. FEAST which requires the Intel MKL-PARDISO solver, see http://www.feast-solver.org
+        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonianmatrix);
+
+        // Get eigenvalues and eigenvectors
+        eigen_vector_double_t evals = eigensolver.eigenvalues();
+        eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
+
+        // Build the new hamiltonianmatrix
+        hamiltonianmatrix.setZero();
+        hamiltonianmatrix.reserve(evals.size());
+        for (int idx = 0; idx < evals.size(); ++idx) {
+            hamiltonianmatrix.insert(idx, idx) = evals.coeffRef(idx);
+        }
+        hamiltonianmatrix.makeCompressed();
+
+        // Transform the basis vectors
+        coefficients = (coefficients * evecs).pruned(threshold, 1);
+    }
+
     void canonicalize() {
         this->buildHamiltonian();
 
