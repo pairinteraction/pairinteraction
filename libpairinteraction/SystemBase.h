@@ -126,14 +126,19 @@ public:
     /// Methods to get properties of the system ////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    const std::vector<T> getStates() { // TODO @hmenke typemap for "const state_set<T>&"
+    std::vector<T> getStates() {
         this->buildBasis();
         std::vector<T> states_converted;
         states_converted.reserve(states.size());
-        for (const auto &s : states) {
-            states_converted.push_back(s.state);
+        for (const auto s : states) {
+            states_converted.push_back(std::move(s.state));
         }
         return states_converted;
+    }
+
+    const typename states_set<T>::type &
+    getStatesMultiIndex() { // TODO @hmenke typemap for "const typename states_set<T>::type &"
+        return states;
     }
 
     eigen_sparse_t &getBasisvectors() {
@@ -308,12 +313,11 @@ public:
         std::vector<eigen_triplet_t> triplets_transformator;
         triplets_transformator.reserve(std::min(this->getNumStates(), system_to.getNumStates()));
 
-        for (size_t idx_to = 0; idx_to < system_to.getNumStates(); ++idx_to) {
-            const T &state = system_to.getStates()[idx_to];
-            auto state_iter = states.template get<1>().find(state);
+        for (const auto &s : system_to.getStatesMultiIndex()) {
+            auto state_iter = states.template get<1>().find(s.state);
             if (state_iter != states.template get<1>().end()) {
                 size_t idx_from = state_iter->idx;
-                triplets_transformator.emplace_back(idx_from, idx_to, 1);
+                triplets_transformator.emplace_back(idx_from, s.idx, 1);
             }
         }
 
