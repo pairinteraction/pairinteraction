@@ -59,6 +59,8 @@ public:
     const std::string &getLabel() const;
     bool isArtificial() const;
 
+    const size_t &getHash() const;
+
     // Comparators
     bool operator==(StateOne const &rhs) const;
     bool operator^(StateOne const &rhs) const; // subset
@@ -69,12 +71,13 @@ private:
     std::string species, element;
     int n, l;
     float j, m, s;
+    size_t hashvalue;
 
     // Method for serialization
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &species &element &n &l &j &m &s;
+        ar &species &element &n &l &j &m &s &hashvalue;
     }
 
     // Utility methods
@@ -128,6 +131,8 @@ public:
     const StateOne &getFirstState() const;
     const StateOne &getSecondState() const;
 
+    const size_t &getHash() const;
+
     // Comparators
     bool operator==(StateTwo const &rhs) const;
     bool operator^(StateTwo const &rhs) const; // subset
@@ -136,12 +141,13 @@ public:
 
 private:
     std::array<StateOne, 2> state_array;
+    size_t hashvalue;
 
     // Method for serialization
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &state_array;
+        ar &state_array &hashvalue;
     }
 };
 
@@ -155,37 +161,12 @@ namespace std {
 
 template <>
 struct hash<StateOne> {
-    size_t operator()(const StateOne &s) const {
-        if (s.isArtificial()) {
-            return boost::hash_value(s.getLabel());
-        }
-        std::size_t seed = 0;
-        boost::hash_combine(seed, s.getSpecies());
-        boost::hash_combine(seed, s.getN());
-        boost::hash_combine(seed, s.getL());
-        boost::hash_combine(seed, s.getJ());
-        boost::hash_combine(seed, s.getM());
-        return seed;
-    }
+    size_t operator()(const StateOne &s) const { return s.getHash(); }
 };
 
 template <>
 struct hash<StateTwo> {
-    size_t operator()(const StateTwo &s) const {
-        std::size_t seed = 0;
-        for (int idx = 0; idx < 2; ++idx) {
-            if (s.isArtificial(idx)) {
-                boost::hash_combine(seed, s.getLabel(idx));
-            } else {
-                boost::hash_combine(seed, s.getSpecies(idx));
-                boost::hash_combine(seed, s.getN(idx));
-                boost::hash_combine(seed, s.getL(idx));
-                boost::hash_combine(seed, s.getJ(idx));
-                boost::hash_combine(seed, s.getM(idx));
-            }
-        }
-        return seed;
-    }
+    size_t operator()(const StateTwo &s) const { return s.getHash(); }
 };
 
 } // namespace std
