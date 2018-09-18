@@ -490,7 +490,6 @@ void SystemTwo::initializeInteraction() {
     // Precalculate matrix elements
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
-
     for (unsigned int kappa = 1; kappa <= ordermax - 2; ++kappa) {
         cache.precalculateMultipole(states1, kappa);
         cache.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
@@ -521,9 +520,8 @@ void SystemTwo::initializeInteraction() {
                 continue;
             }
 
-            int q1 = r.state.getFirstState().getM() -
-                c.state.getFirstState().getM(); // TODO vectorize this
-            int q2 = r.state.getSecondState().getM() - c.state.getSecondState().getM();
+            int q1 = r.state.getM(0) - c.state.getM(0);
+            int q2 = r.state.getM(1) - c.state.getM(1);
 
             if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur
                               // for other interaction than dipole-dipole

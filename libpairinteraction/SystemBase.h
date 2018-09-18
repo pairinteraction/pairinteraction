@@ -130,7 +130,7 @@ public:
         this->buildBasis();
         std::vector<T> states_converted;
         states_converted.reserve(states.size());
-        for (const auto s : states) {
+        for (const auto &s : states) {
             states_converted.push_back(std::move(s.state));
         }
         return states_converted;

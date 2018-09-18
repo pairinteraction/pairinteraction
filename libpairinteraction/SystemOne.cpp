@@ -304,7 +304,7 @@ void SystemOne::initializeInteraction() {
     }
 
     // Precalculate matrix elements
-    auto states_converted = this->getStates(); // TODO remove
+    auto states_converted = this->getStates();
     for (const auto &i : erange) {
         cache.precalculateElectricMomentum(states_converted, i);
     }
