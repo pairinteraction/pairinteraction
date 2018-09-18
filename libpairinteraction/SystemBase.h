@@ -146,22 +146,9 @@ public:
         return coefficients;
     }
 
-    eigen_sparse_t &getCoefficients() { // TODO remove
-        return this->getBasisvectors();
-    }
-
-    eigen_vector_double_t getDiagonal() {
-        this->buildHamiltonian();
-        return hamiltonianmatrix.diagonal().real();
-    }
-
     eigen_sparse_t &getHamiltonian() {
         this->buildHamiltonian();
         return hamiltonianmatrix;
-    }
-
-    eigen_sparse_t &getHamiltonianmatrix() { // TODO remove
-        return this->getHamiltonian();
     }
 
     size_t getNumBasisvectors() {
@@ -177,10 +164,6 @@ public:
         }
 
         return coefficients.cols();
-    }
-
-    size_t getNumVectors() { // TODO remove
-        return this->getNumBasisvectors();
     }
 
     size_t getNumStates() {
@@ -326,7 +309,7 @@ public:
 
         // Calculate overlap
         eigen_sparse_double_t overlap_sqrt =
-            (coefficients.adjoint() * transformator * system_to.getCoefficients()).cwiseAbs();
+            (coefficients.adjoint() * transformator * system_to.getBasisvectors()).cwiseAbs();
 
         // Determine the indices of the maximal values within the rows
         std::vector<size_t> rows_with_maxval;
@@ -845,7 +828,7 @@ public:
         return state_iter->idx;
     }
 
-    std::vector<size_t> getStateIndex(const std::vector<T> &searched_states) { // TODO !!!
+    std::vector<size_t> getStateIndex(const std::vector<T> &searched_states) {
         this->buildBasis();
 
         std::vector<size_t> indices;
@@ -958,7 +941,7 @@ public:
         coefficients_triplets.clear();
     }
 
-    scalar_t getHamiltonianentry(const T &state_row, const T &state_col) {
+    scalar_t getHamiltonianEntry(const T &state_row, const T &state_col) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);
@@ -973,7 +956,7 @@ public:
         return tmp.coeff(idx_row, idx_col);
     }
 
-    void setHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
+    void setHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);
@@ -990,7 +973,7 @@ public:
         hamiltonianmatrix = coefficients.adjoint() * tmp * coefficients;
     }
 
-    void addHamiltonianentry(const T &state_row, const T &state_col, scalar_t value) {
+    void addHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);

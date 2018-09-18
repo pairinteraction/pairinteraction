@@ -162,14 +162,14 @@ void SystemTwo::initializeBasis() {
     // TODO consider further symmetries and check whether they are applicable
 
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
-    hamiltonianmatrix_triplets.reserve(system1.getNumVectors() * system2.getNumVectors());
+    hamiltonianmatrix_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
     states.reserve(system1.getNumStates() * system2.getNumStates());
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
     std::vector<double> sqnorm_list(system1.getNumStates() * system2.getNumStates(), 0);
 
     size_t col_new = 0;
-    for (size_t col_1 = 0; col_1 < system1.getNumVectors(); ++col_1) {
-        for (size_t col_2 = 0; col_2 < system2.getNumVectors(); ++col_2) {
+    for (size_t col_1 = 0; col_1 < system1.getNumBasisvectors(); ++col_1) {
+        for (size_t col_2 = 0; col_2 < system2.getNumBasisvectors(); ++col_2) {
 
             // In case of inversion symmetry: skip half of the basis vector pairs
             if ((sym_inversion == EVEN && col_1 <= col_2) || // gerade
@@ -184,8 +184,8 @@ void SystemTwo::initializeBasis() {
             }
 
             // Continue if the pair statet energy is not valid
-            double energy = this->real(system1.getHamiltonianmatrix().coeff(col_1, col_1) +
-                                       system2.getHamiltonianmatrix().coeff(col_2, col_2));
+            double energy = this->real(system1.getHamiltonian().coeff(col_1, col_1) +
+                                       system2.getHamiltonian().coeff(col_2, col_2));
             if (!checkIsEnergyValid(energy)) {
                 continue;
             }
@@ -194,12 +194,12 @@ void SystemTwo::initializeBasis() {
             hamiltonianmatrix_triplets.emplace_back(col_new, col_new, energy);
 
             // Build the basis vector that corresponds to the stored pair state energy
-            for (eigen_iterator_t triple_1(system1.getCoefficients(), col_1); triple_1;
+            for (eigen_iterator_t triple_1(system1.getBasisvectors(), col_1); triple_1;
                  ++triple_1) {
                 size_t row_1 = triple_1.row();
                 StateOne state_1 = system1.getStates()[row_1]; // TODO cache states before
 
-                for (eigen_iterator_t triple_2(system2.getCoefficients(), col_2); triple_2;
+                for (eigen_iterator_t triple_2(system2.getBasisvectors(), col_2); triple_2;
                      ++triple_2) {
                     size_t row_2 = triple_2.row();
                     StateOne state_2 = system2.getStates()[row_2]; // TODO cache states before

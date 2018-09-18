@@ -69,7 +69,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 iSecond = np.array(connections[1])
 
             else:
-                iFirst = np.arange(stark_shifted_systems[i].getNumVectors())
+                iFirst = np.arange(stark_shifted_systems[i].getNumBasisvectors())
                 iSecond = iFirst
 
             if len(iFirst) > 0:
@@ -147,7 +147,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             else:
                 iFirst = np.arange(
-                    dipole_interacting_systems[i].getNumVectors())
+                    dipole_interacting_systems[i].getNumBasisvectors())
                 iSecond = iFirst
 
             if len(iFirst) > 0:

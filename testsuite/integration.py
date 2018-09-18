@@ -42,14 +42,14 @@ class IntegrationTest(unittest.TestCase):
         system_one.setBfield([0, 0, 1])
 
         # Check for correct dimensions
-        self.assertEqual(system_one.getNumVectors(), 64)
+        self.assertEqual(system_one.getNumBasisvectors(), 64)
         self.assertEqual(system_one.getNumStates(), 64)
 
         # Compare current results to the reference data (the results have to be
         # compared before diagonalization as the order of the eigenvectors is not
         # fixed)
-        hamiltonian_one = system_one.getHamiltonianmatrix()
-        basis_one = system_one.getCoefficients()
+        hamiltonian_one = system_one.getHamiltonian()
+        basis_one = system_one.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
         hamiltonian_one.data *= (abs(hamiltonian_one).data > 1e-6)
@@ -92,14 +92,14 @@ class IntegrationTest(unittest.TestCase):
         system_two.setAngle(0.9)
 
         # Check for correct dimensions
-        self.assertEqual(system_two.getNumVectors(), 239)
+        self.assertEqual(system_two.getNumBasisvectors(), 239)
         self.assertEqual(system_two.getNumStates(), 468)
 
         # Compare current results to the reference data (the results have to be
         # compared before diagonalization as the order of the eigenvectors is not
         # fixed)
-        hamiltonian_two = system_two.getHamiltonianmatrix()
-        basis_two = system_two.getCoefficients()
+        hamiltonian_two = system_two.getHamiltonian()
+        basis_two = system_two.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
         hamiltonian_two.data *= (abs(hamiltonian_two).data > 1e-6)

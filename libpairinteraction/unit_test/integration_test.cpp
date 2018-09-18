@@ -90,14 +90,14 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_one.setBfield({{0, 0, 1}});
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_one.getNumVectors(), 64);
+    BOOST_CHECK_EQUAL(system_one.getNumBasisvectors(), 64);
     BOOST_CHECK_EQUAL(system_one.getNumStates(), 64);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_one = system_one.getHamiltonianmatrix();
-    eigen_sparse_t basis_one = system_one.getCoefficients();
+    eigen_sparse_t hamiltonian_one = system_one.getHamiltonian();
+    eigen_sparse_t basis_one = system_one.getBasisvectors();
     hamiltonian_one.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
                                      // might be infinity due to division by
                                      // zero
@@ -153,14 +153,14 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_two.setAngle(0.9);
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_two.getNumVectors(), 239);
+    BOOST_CHECK_EQUAL(system_two.getNumBasisvectors(), 239);
     BOOST_CHECK_EQUAL(system_two.getNumStates(), 468);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_two = system_two.getHamiltonianmatrix();
-    eigen_sparse_t basis_two = system_two.getCoefficients();
+    eigen_sparse_t hamiltonian_two = system_two.getHamiltonian();
+    eigen_sparse_t basis_two = system_two.getBasisvectors();
     hamiltonian_two.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
                                      // might be infinity due to division by
                                      // zero
