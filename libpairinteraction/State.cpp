@@ -51,88 +51,93 @@ inline boost::variant<char, int> getMomentumLabel(int l) {
 } // namespace
 
 ////////////////////////////////////////////////////////////////////
-/// Implementation of internally used state classes ////////////////
+/// Implementation of one-atom state ///////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-// StateInternalBase
-std::ostream &operator<<(std::ostream &out, const StateInternalBase &state) {
-    state.printState(out);
-    return out;
-}
-
-bool StateInternalBase::operator==(StateInternalBase const &rhs) const {
-    return (typeid(*this) == typeid(rhs)) && operatorEqual(rhs);
-}
-
-bool StateInternalBase::operator^(StateInternalBase const &rhs) const { // subset
-    return (typeid(*this) == typeid(rhs)) && operatorSubset(rhs);
-}
-
-bool StateInternalBase::operator!=(StateInternalBase const &rhs) const {
-    return (typeid(*this) != typeid(rhs)) || operatorUnequal(rhs);
-}
-
-bool StateInternalBase::operator<(const StateInternalBase &rhs) const {
-    if (typeid(*this) != typeid(rhs)) {
-        return std::type_index(typeid(*this)) < std::type_index(typeid(rhs));
-    }
-    return operatorLess(rhs);
-}
-
-// StateInternalFinestructure
-StateInternalFinestructure::StateInternalFinestructure(std::string species, int n, int l, float j,
-                                                       float m)
+StateOne::StateOne(std::string species, int n, int l, float j, float m)
     : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
 }
 
-bool StateInternalFinestructure::isArtificial() const { return false; }
-const std::string &StateInternalFinestructure::getSpecies() const { return species; }
-const std::string &StateInternalFinestructure::getElement() const { return element; }
-const int &StateInternalFinestructure::getN() const { return n; }
-const int &StateInternalFinestructure::getL() const { return l; }
-const float &StateInternalFinestructure::getJ() const { return j; }
-const float &StateInternalFinestructure::getM() const { return m; }
-const float &StateInternalFinestructure::getS() const { return s; }
-double StateInternalFinestructure::getEnergy() const { return energy_level(species, n, l, j); }
-double StateInternalFinestructure::getNStar() const { return nstar(species, n, l, j); }
+StateOne::StateOne(std::string label)
+    : species(std::move(label)), element(""), n(0), l(0), j(0), m(0), s(0) {}
 
-void StateInternalFinestructure::analyzeSpecies() {
-    s = 0.5;
-    element = species;
-    if (std::isdigit(species.back()) != 0) {
-        s = ((species.back() - '0') - 1) / 2.;
-        element = species.substr(0, species.size() - 1);
-    }
-}
-
-void StateInternalFinestructure::printState(std::ostream &out) const {
-    out << species << ", " << n << " " << getMomentumLabel(l) << "_";
-    if (std::ceil(j) == j) {
-        out << j << ", ";
-        out << "mj=" << m;
+// Method for printing the state
+std::ostream &operator<<(std::ostream &out, const StateOne &state) {
+    out << "|";
+    if (state.isArtificial()) {
+        out << state.getLabel();
     } else {
-        out << 2 * j << "/2, ";
-        out << "mj=" << 2 * m << "/2";
+        out << state.getSpecies() << ", " << state.getN() << " " << getMomentumLabel(state.getL())
+            << "_";
+        if (std::ceil(state.getJ()) == state.getJ()) {
+            out << state.getJ() << ", ";
+            out << "mj=" << state.getM();
+        } else {
+            out << 2 * state.getJ() << "/2, ";
+            out << "mj=" << 2 * state.getM() << "/2";
+        }
     }
+    out << ">";
+    return out;
 }
 
-bool StateInternalFinestructure::operatorEqual(StateInternalBase const &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+// Getters
+const int &StateOne::getN() const {
+    this->shouldBeArtificial(false);
+    return n;
+}
+const int &StateOne::getL() const {
+    this->shouldBeArtificial(false);
+    return l;
+}
+const float &StateOne::getJ() const {
+    this->shouldBeArtificial(false);
+    return j;
+}
+const float &StateOne::getM() const {
+    this->shouldBeArtificial(false);
+    return m;
+}
+const float &StateOne::getS() const {
+    this->shouldBeArtificial(false);
+    return s;
+}
+const std::string &StateOne::getSpecies() const {
+    this->shouldBeArtificial(false);
+    return species;
+}
+const std::string &StateOne::getElement() const {
+    this->shouldBeArtificial(false);
+    return element;
+}
+double StateOne::getEnergy() const {
+    this->shouldBeArtificial(false);
+    return energy_level(species, n, l, j);
+}
+double StateOne::getNStar() const {
+    this->shouldBeArtificial(false);
+    return nstar(species, n, l, j);
+}
+const std::string &StateOne::getLabel() const {
+    this->shouldBeArtificial(true);
+    return species;
+}
+bool StateOne::isArtificial() const { return (n == 0); }
+
+// Comparators
+bool StateOne::operator==(StateOne const &rhs) const {
     return (species == rhs.species) && (n == rhs.n) && (l == rhs.l) && (j == rhs.j) && (m == rhs.m);
 }
-bool StateInternalFinestructure::operatorSubset(StateInternalBase const &rhsb) const { // subset
-    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+bool StateOne::operator^(StateOne const &rhs) const {
     return (species == rhs.species) && (rhs.n == ARB || n == rhs.n) &&
         (rhs.l == ARB || l == rhs.l) && (rhs.j == ARB || j == rhs.j) &&
         (rhs.m == ARB || m == rhs.m);
 }
-bool StateInternalFinestructure::operatorUnequal(StateInternalBase const &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+bool StateOne::operator!=(StateOne const &rhs) const {
     return (species != rhs.species) || (n != rhs.n) || (l != rhs.l) || (j != rhs.j) || (m != rhs.m);
 }
-bool StateInternalFinestructure::operatorLess(const StateInternalBase &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalFinestructure &>(rhsb);
+bool StateOne::operator<(const StateOne &rhs) const {
     return (species < rhs.species) ||
         ((species == rhs.species) &&
          ((n < rhs.n) ||
@@ -140,85 +145,20 @@ bool StateInternalFinestructure::operatorLess(const StateInternalBase &rhsb) con
            ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m))))))));
 }
 
-// StateInternalArtificial
-StateInternalArtificial::StateInternalArtificial(std::string label) : label(std::move(label)) {}
-
-bool StateInternalArtificial::isArtificial() const { return true; }
-const std::string &StateInternalArtificial::getLabel() const { return label; }
-
-void StateInternalArtificial::printState(std::ostream &out) const { out << label; }
-
-bool StateInternalArtificial::operatorEqual(StateInternalBase const &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
-    return label == rhs.label;
+// Utility methods
+void StateOne::analyzeSpecies() {
+    s = 0.5;
+    element = species;
+    if (std::isdigit(species.back()) != 0) {
+        s = ((species.back() - '0') - 1) / 2.;
+        element = species.substr(0, species.size() - 1);
+    }
 }
-bool StateInternalArtificial::operatorSubset(StateInternalBase const &rhsb) const { // subset
-    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
-    return label == rhs.label;
+void StateOne::shouldBeArtificial(bool opinion) const {
+    if (this->isArtificial() != opinion) {
+        throw std::runtime_error("The state does not have this property.");
+    }
 }
-bool StateInternalArtificial::operatorUnequal(StateInternalBase const &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
-    return label != rhs.label;
-}
-bool StateInternalArtificial::operatorLess(const StateInternalBase &rhsb) const {
-    auto rhs = dynamic_cast<const StateInternalArtificial &>(rhsb);
-    return label < rhs.label;
-}
-
-////////////////////////////////////////////////////////////////////
-/// Implementation of one-atom state ///////////////////////////////
-////////////////////////////////////////////////////////////////////
-
-StateOne::StateOne(std::string species, int n, int l, float j, float m)
-    : state_ptr(std::make_shared<StateInternalFinestructure>(species, n, l, j, m)) {}
-
-StateOne::StateOne(std::string label)
-    : state_ptr(std::make_shared<StateInternalArtificial>(label)) {}
-
-// Method for printing the state
-std::ostream &operator<<(std::ostream &out, const StateOne &state) {
-    out << "|" << *state.state_ptr << ">";
-    return out;
-}
-
-// Getters
-const int &StateOne::getN() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getN();
-}
-const int &StateOne::getL() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getL();
-}
-const float &StateOne::getJ() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getJ();
-}
-const float &StateOne::getM() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getM();
-}
-const float &StateOne::getS() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getS();
-}
-const std::string &StateOne::getSpecies() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getSpecies();
-}
-const std::string &StateOne::getElement() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getElement();
-}
-double StateOne::getEnergy() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getEnergy();
-}
-double StateOne::getNStar() const {
-    return this->castState<StateInternalFinestructure>(state_ptr)->getNStar();
-}
-const std::string &StateOne::getLabel() const {
-    return this->castState<StateInternalArtificial>(state_ptr)->getLabel();
-}
-bool StateOne::isArtificial() const { return state_ptr->isArtificial(); }
-
-// Comparators
-bool StateOne::operator==(StateOne const &rhs) const { return *state_ptr == *rhs.state_ptr; }
-bool StateOne::operator^(StateOne const &rhs) const { return *state_ptr ^ *rhs.state_ptr; }
-bool StateOne::operator!=(StateOne const &rhs) const { return *state_ptr != *rhs.state_ptr; }
-bool StateOne::operator<(const StateOne &rhs) const { return *state_ptr < *rhs.state_ptr; }
 
 ////////////////////////////////////////////////////////////////////
 /// Implementation of two-atom state ///////////////////////////////

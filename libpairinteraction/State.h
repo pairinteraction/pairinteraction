@@ -27,102 +27,8 @@
 #include <typeinfo>
 
 #include <boost/serialization/array.hpp>
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/shared_ptr.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/variant.hpp>
-
-////////////////////////////////////////////////////////////////////
-/// Internally used state classes //////////////////////////////////
-////////////////////////////////////////////////////////////////////
-
-class StateInternalBase {
-public:
-    StateInternalBase() = default;
-    friend std::ostream &operator<<(std::ostream &out, const StateInternalBase &state);
-    virtual ~StateInternalBase() = default;
-    virtual bool isArtificial() const = 0;
-    bool operator==(StateInternalBase const &rhs) const;
-    bool operator^(StateInternalBase const &rhs) const; // subset
-    bool operator!=(StateInternalBase const &rhs) const;
-    bool operator<(StateInternalBase const &rhs) const;
-
-protected:
-    virtual void printState(std::ostream &out) const = 0;
-    virtual bool operatorEqual(StateInternalBase const &rhsb) const = 0;
-    virtual bool operatorUnequal(StateInternalBase const &rhsb) const = 0;
-    virtual bool operatorSubset(StateInternalBase const &rhsb) const = 0;
-    virtual bool operatorLess(StateInternalBase const &rhsb) const = 0;
-
-private:
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive & /*ar*/, const unsigned int /*version*/) {}
-};
-
-class StateInternalFinestructure : public StateInternalBase {
-public:
-    StateInternalFinestructure() = default;
-    StateInternalFinestructure(std::string species, int n, int l, float j, float m);
-    bool isArtificial() const override;
-    const std::string &getSpecies() const;
-    const std::string &getElement() const;
-    const int &getN() const;
-    const int &getL() const;
-    const float &getJ() const;
-    const float &getM() const;
-    const float &getS() const;
-    double getEnergy() const;
-    double getNStar() const;
-
-protected:
-    void printState(std::ostream &out) const override;
-    bool operatorEqual(StateInternalBase const &rhsb) const override;
-    bool operatorUnequal(StateInternalBase const &rhsb) const override;
-    bool operatorSubset(StateInternalBase const &rhsb) const override;
-    bool operatorLess(StateInternalBase const &rhsb) const override;
-
-private:
-    std::string species, element;
-    int n, l;
-    float j, m, s;
-
-    void analyzeSpecies();
-
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &boost::serialization::base_object<StateInternalBase>(*this);
-        ar &species &n &l &j &m;
-    }
-};
-
-class StateInternalArtificial : public StateInternalBase {
-public:
-    StateInternalArtificial() = default;
-    StateInternalArtificial(std::string label);
-    bool isArtificial() const override;
-    const std::string &getLabel() const;
-
-protected:
-    void printState(std::ostream &out) const override;
-    bool operatorEqual(StateInternalBase const &rhsb) const override;
-    bool operatorUnequal(StateInternalBase const &rhsb) const override;
-    bool operatorSubset(StateInternalBase const &rhsb) const override;
-    bool operatorLess(StateInternalBase const &rhsb) const override;
-
-private:
-    std::string label;
-
-    friend class boost::serialization::access;
-    template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &boost::serialization::base_object<StateInternalBase>(*this);
-        ar &label;
-    }
-};
-
-// TODO make StateInternalBase etc. a nested class of StateOne
 
 ////////////////////////////////////////////////////////////////////
 /// \brief One-atom state
@@ -160,25 +66,20 @@ public:
     bool operator<(StateOne const &rhs) const;
 
 private:
-    std::shared_ptr<StateInternalBase>
-        state_ptr; // TODO use unique_ptr (requires writing of copy constructor)
+    std::string species, element;
+    int n, l;
+    float j, m, s;
 
     // Method for serialization
     friend class boost::serialization::access;
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &state_ptr;
+        ar &species &element &n &l &j &m &s;
     }
 
     // Utility methods
-    template <class D>
-    std::shared_ptr<D> castState(const std::shared_ptr<StateInternalBase> &p) const {
-        auto d = std::dynamic_pointer_cast<D>(p);
-        if (d == nullptr) {
-            throw std::runtime_error("The state does not have this property.");
-        }
-        return d;
-    }
+    void analyzeSpecies();
+    void shouldBeArtificial(bool opinion) const;
 };
 
 ////////////////////////////////////////////////////////////////////
