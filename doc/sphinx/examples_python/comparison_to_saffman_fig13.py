@@ -41,17 +41,17 @@ def setup_system_two(system_one, angle):
 def getEnergies(bfield, angle):
     # Set up one atom system
     system_one = setup_system_one(bfield)
-    system_one.diagonalize()
+    system_one.diagonalize(1e-3)
 
     # Calculate Zeeman shift
-    zeemanshift = 2*system_one.getDiagonal()[system_one.getVectorindex(state_one)] # GHz
+    zeemanshift = 2*system_one.getHamiltonian().diagonal()[system_one.getBasisvectorIndex(state_one)] # GHz
 
     # Set up two atom system
     system_two = setup_system_two(system_one, angle)
-    system_two.diagonalize()
+    system_two.diagonalize(1e-3)
 
     # Calculate blockade interaction
-    eigenenergies = (system_two.getDiagonal()-zeemanshift)*1e3 # MHz
+    eigenenergies = (system_two.getHamiltonian().diagonal()-zeemanshift)*1e3 # MHz
     overlaps = system_two.getOverlap(state_two)
     blockade = 1/np.sqrt(np.sum(overlaps/eigenenergies**2))
 
