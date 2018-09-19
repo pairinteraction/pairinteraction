@@ -223,36 +223,19 @@ void SystemOne::initializeBasis() {
                         continue;
                     }
 
-                    // In case of reflection symmetry, skip half of the basis vectors // TODO check
-                    // that m and -m are both contained in range_allowed_m
-                    if (sym_reflection != NA && m < 0) {
-                        continue;
+                    // Create state
+                    StateOne state(species, n, l, j, m);
+
+                    // Check whether reflection symmetry can be realized with the states available
+                    if (sym_reflection != NA && state.getM() != 0 &&
+                        range_allowed_m.count(-state.getM()) == 0) {
+                        throw std::runtime_error("The momentum " + std::to_string(-state.getM()) +
+                                                 " required by symmetries cannot be found.");
                     }
 
-                    // Store the energy of the unperturbed one atom state
-                    hamiltonianmatrix_triplets.emplace_back(idx, idx, energy);
-
-                    // Adapt the normalization if required by symmetries
-                    scalar_t value = 1;
-                    if (sym_reflection != NA && m != 0) {
-                        value /= std::sqrt(2);
-                    }
-
-                    // Add an entry to the current basis vector
-                    this->addCoefficient(StateOne(species, n, l, j, m), idx, value,
-                                         coefficients_triplets);
-
-                    // Add further entries to the current basis vector if required by symmetries
-                    if (sym_reflection != NA && m != 0) {
-                        value *= std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>();
-                        value *= (sym_reflection == EVEN) ? 1 : -1;
-                        // S_y is invariant under reflection through xz-plane
-                        // TODO is the s quantum number of importance here?
-                        this->addCoefficient(StateOne(species, n, l, j, -m), idx, value,
-                                             coefficients_triplets);
-                    }
-
-                    ++idx;
+                    // Add symmetrized basis vectors
+                    this->addSymmetrizedBasisvectors(state, idx, energy, coefficients_triplets,
+                                                     hamiltonianmatrix_triplets, sym_reflection);
                 }
             }
         }
@@ -273,6 +256,9 @@ void SystemOne::initializeBasis() {
 
     // Add user-defined states
     for (const auto &state : states_to_add) {
+        // Get energy of the state
+        double energy = state.isArtificial() ? 0 : state.getEnergy();
+
         // In case of artificial states, symmetries won't work
         auto sym_reflection_local = sym_reflection;
         auto sym_rotation_local = sym_rotation;
@@ -293,51 +279,18 @@ void SystemOne::initializeBasis() {
             continue;
         }
 
-        // Consider reflection symmetry
+        // Check whether reflection symmetry can be realized with the states available
         if (sym_reflection_local != NA && state.getM() != 0) {
-            if (state.getM() < 0) {
-                auto state_reflected = state.getReflected();
-                if (states_to_add.find(state_reflected) == states_to_add.end()) {
-                    throw std::runtime_error("The state " + state_reflected.str() +
-                                             " required by symmetries cannot be found.");
-                }
-                continue;
-            }
-        }
-
-        // Store the energy of the unperturbed one atom state
-        if (state.isArtificial()) {
-            hamiltonianmatrix_triplets.emplace_back(idx, idx, 0);
-        } else {
-            hamiltonianmatrix_triplets.emplace_back(idx, idx, state.getEnergy());
-        }
-
-        // Adapt the normalization if required by symmetries
-        scalar_t value = 1;
-        if (sym_reflection_local != NA && state.getM() != 0) {
-            value /= std::sqrt(2);
-        }
-
-        // Add an entry to the current basis vector
-        this->addCoefficient(state, idx, value, coefficients_triplets);
-
-        // Add further entries to the current basis vector if required by symmetries
-        if (sym_reflection_local != NA && state.getM() != 0) {
-            value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
-                this->imaginaryUnit<scalar_t>();
-            value *= (sym_reflection_local == EVEN) ? 1 : -1;
-            // S_y is invariant under reflection through xz-plane
-            // TODO is the s quantum number of importance here?
-
             auto state_reflected = state.getReflected();
             if (states_to_add.find(state_reflected) == states_to_add.end()) {
                 throw std::runtime_error("The state " + state_reflected.str() +
                                          " required by symmetries cannot be found.");
             }
-            this->addCoefficient(state_reflected, idx, value, coefficients_triplets);
         }
 
-        ++idx;
+        // Add symmetrized basis vectors
+        this->addSymmetrizedBasisvectors(state, idx, energy, coefficients_triplets,
+                                         hamiltonianmatrix_triplets, sym_reflection_local);
     }
 
     /// Build data /////////////////////////////////////////////////////
@@ -675,8 +628,44 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::addCoefficient(const StateOne &state, const size_t &col, const scalar_t &value,
-                               std::vector<eigen_triplet_t> &coefficients_triplets) {
+void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
+                                           std::vector<eigen_triplet_t> &coefficients_triplets,
+                                           std::vector<eigen_triplet_t> &hamiltonianmatrix_triplets,
+                                           parity_t &sym_reflection_local) {
+    // In case of reflection symmetry, skip half of the basis vectors
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        if (state.getM() < 0) {
+            return;
+        }
+    }
+
+    // Store the energy of the unperturbed one atom state
+    hamiltonianmatrix_triplets.emplace_back(idx, idx, energy);
+
+    // Adapt the normalization if required by symmetries
+    scalar_t value = 1;
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        value /= std::sqrt(2);
+    }
+
+    // Add an entry to the current basis vector
+    this->addBasisvectors(state, idx, value, coefficients_triplets);
+
+    // Add further entries to the current basis vector if required by symmetries
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
+            this->imaginaryUnit<scalar_t>();
+        value *= (sym_reflection_local == EVEN) ? 1 : -1;
+        // S_y is invariant under reflection through xz-plane
+        // TODO is the s quantum number of importance here?
+        this->addBasisvectors(state.getReflected(), idx, value, coefficients_triplets);
+    }
+
+    ++idx;
+}
+
+void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
+                                std::vector<eigen_triplet_t> &coefficients_triplets) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row;
@@ -687,7 +676,7 @@ void SystemOne::addCoefficient(const StateOne &state, const size_t &col, const s
         states.push_back(enumerated_state<StateOne>(row, state));
     }
 
-    coefficients_triplets.emplace_back(row, col, value);
+    coefficients_triplets.emplace_back(row, idx, value);
 }
 
 void SystemOne::changeToSphericalbasis(std::array<double, 3> field,
