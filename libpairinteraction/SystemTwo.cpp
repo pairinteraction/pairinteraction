@@ -193,7 +193,10 @@ void SystemTwo::initializeBasis() {
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
     std::vector<double> sqnorm_list(system1.getNumStates() * system2.getNumStates(), 0);
 
-    int M, parityL, parityJ, parityM;
+    int M = 0;
+    int parityL = 0;
+    int parityJ = 0;
+    int parityM = 0;
 
     size_t col_new = 0;
     for (size_t col_1 = 0; col_1 < system1.getNumBasisvectors(); ++col_1) {
@@ -278,11 +281,7 @@ void SystemTwo::initializeBasis() {
                         // inversion or permutation symmetric state is already reflection symmetric
                         if ((sym_inversion_local != NA || sym_permutation != NA) &&
                             sym_reflection_local != NA &&
-                            StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
-                                     {{state_1.getN(), state_2.getN()}},
-                                     {{state_1.getL(), state_2.getL()}},
-                                     {{state_1.getJ(), state_2.getJ()}},
-                                     {{-state_1.getM(), -state_2.getM()}}) ==
+                            StateTwo(state_1.getReflected(), state_2.getReflected()) ==
                                 StateTwo(state_2, state_1)) {
                             if (sym_inversion_local != NA) {
                                 if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
@@ -346,12 +345,8 @@ void SystemTwo::initializeBasis() {
                         v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                             : -parityL * parityJ * parityM;
                         this->addCoefficient(
-                            StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
-                                     {{state_1.getN(), state_2.getN()}},
-                                     {{state_1.getL(), state_2.getL()}},
-                                     {{state_1.getJ(), state_2.getJ()}},
-                                     {{-state_1.getM(), -state_2.getM()}}),
-                            col_new, v, coefficients_triplets, sqnorm_list);
+                            StateTwo(state_1.getReflected(), state_2.getReflected()), col_new, v,
+                            coefficients_triplets, sqnorm_list);
 
                         if (col_1 != col_2) {
                             if (sym_inversion_local != NA) {
@@ -360,11 +355,7 @@ void SystemTwo::initializeBasis() {
                                                                     : -parityL * parityJ * parityM;
                                 v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                                 this->addCoefficient(
-                                    StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
-                                             {{state_2.getN(), state_1.getN()}},
-                                             {{state_2.getL(), state_1.getL()}},
-                                             {{state_2.getJ(), state_1.getJ()}},
-                                             {{-state_2.getM(), -state_1.getM()}}),
+                                    StateTwo(state_2.getReflected(), state_1.getReflected()),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
                                 scalar_t v = value_new;
@@ -372,11 +363,7 @@ void SystemTwo::initializeBasis() {
                                                                     : -parityL * parityJ * parityM;
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
                                 this->addCoefficient(
-                                    StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
-                                             {{state_2.getN(), state_1.getN()}},
-                                             {{state_2.getL(), state_1.getL()}},
-                                             {{state_2.getJ(), state_1.getJ()}},
-                                             {{-state_2.getM(), -state_1.getM()}}),
+                                    StateTwo(state_2.getReflected(), state_1.getReflected()),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             }
                         }
@@ -397,16 +384,12 @@ void SystemTwo::initializeBasis() {
     // Check that the user-defined states are not already contained in the list of states
     for (const auto &state : states_to_add) {
         if (states.get<1>().find(state) != states.get<1>().end()) {
-            std::stringstream ss;
-            ss << state;
-            throw std::runtime_error("The state " + ss.str() +
+            throw std::runtime_error("The state " + state.str() +
                                      " is already contained in the list of states.");
         }
         for (int idx = 0; idx < 2; ++idx) {
             if (!state.isArtificial(idx) && state.getSpecies(idx) != species[idx]) {
-                std::stringstream ss;
-                ss << state;
-                throw std::runtime_error("The state " + ss.str() + " is of the wrong species.");
+                throw std::runtime_error("The state " + state.str() + " is of the wrong species.");
             }
         }
     }

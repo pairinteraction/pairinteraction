@@ -70,7 +70,7 @@ StateOne::StateOne(std::string label)
     hashvalue = boost::hash_value(this->getLabel());
 }
 
-// Method for printing the state
+// Methods for printing the state
 std::ostream &operator<<(std::ostream &out, const StateOne &state) {
     out << "|";
     if (state.isArtificial()) {
@@ -88,6 +88,12 @@ std::ostream &operator<<(std::ostream &out, const StateOne &state) {
     }
     out << ">";
     return out;
+}
+
+std::string StateOne::str() const {
+    std::stringstream ss;
+    ss << *this;
+    return ss.str();
 }
 
 // Getters
@@ -132,7 +138,12 @@ const std::string &StateOne::getLabel() const {
     return species;
 }
 bool StateOne::isArtificial() const { return (n == 0); }
+
 const size_t &StateOne::getHash() const { return hashvalue; }
+
+StateOne StateOne::getReflected() const {
+    return StateOne(this->getSpecies(), this->getN(), this->getL(), this->getJ(), -this->getM());
+}
 
 // Comparators
 bool StateOne::operator==(StateOne const &rhs) const {
@@ -194,10 +205,16 @@ StateTwo::StateTwo(StateOne first_state, StateOne second_state)
     boost::hash_combine(hashvalue, state_array[1].getHash());
 }
 
-// Method for printing the state
+// Methods for printing the state
 std::ostream &operator<<(std::ostream &out, const StateTwo &state) {
     out << state.state_array[0] << state.state_array[1];
     return out;
+}
+
+std::string StateTwo::str() const {
+    std::stringstream ss;
+    ss << *this;
+    return ss.str();
 }
 
 // Getters
@@ -251,6 +268,11 @@ const StateOne &StateTwo::getFirstState() const { return state_array[0]; }
 const StateOne &StateTwo::getSecondState() const { return state_array[1]; }
 
 const size_t &StateTwo::getHash() const { return hashvalue; }
+
+StateTwo StateTwo::getReflected() const {
+    return StateTwo(this->getSpecies(), this->getN(), this->getL(), this->getJ(),
+                    {{-this->getM(0), -this->getM(1)}});
+}
 
 // Comparators
 bool StateTwo::operator==(StateTwo const &rhs) const {

@@ -244,13 +244,10 @@ void SystemOne::initializeBasis() {
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (sym_reflection != NA && m != 0) {
-                        value *= (sym_reflection == EVEN)
-                            ? std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>()
-                            : -std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>();
-                        // S_y is invariant under
-                        // reflection through xz-plane //
-                        // TODO is the s quantum number of
-                        // importance here?
+                        value *= std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>();
+                        value *= (sym_reflection == EVEN) ? 1 : -1;
+                        // S_y is invariant under reflection through xz-plane
+                        // TODO is the s quantum number of importance here?
                         this->addCoefficient(StateOne(species, n, l, j, -m), idx, value,
                                              coefficients_triplets);
                     }
@@ -266,15 +263,11 @@ void SystemOne::initializeBasis() {
     // Check that the user-defined states are not already contained in the list of states
     for (const auto &state : states_to_add) {
         if (states.get<1>().find(state) != states.get<1>().end()) {
-            std::stringstream ss;
-            ss << state;
-            throw std::runtime_error("The state " + ss.str() +
+            throw std::runtime_error("The state " + state.str() +
                                      " is already contained in the list of states.");
         }
         if (!state.isArtificial() && state.getSpecies() != species) {
-            std::stringstream ss;
-            ss << state;
-            throw std::runtime_error("The state " + ss.str() + " is of the wrong species.");
+            throw std::runtime_error("The state " + state.str() + " is of the wrong species.");
         }
     }
 
@@ -303,12 +296,9 @@ void SystemOne::initializeBasis() {
         // Consider reflection symmetry
         if (sym_reflection_local != NA && state.getM() != 0) {
             if (state.getM() < 0) {
-                auto state_inverted = StateOne(state.getSpecies(), state.getN(), state.getL(),
-                                               state.getJ(), -state.getM());
-                if (states_to_add.find(state_inverted) == states_to_add.end()) {
-                    std::stringstream ss;
-                    ss << state_inverted;
-                    throw std::runtime_error("The state " + ss.str() +
+                auto state_reflected = state.getReflected();
+                if (states_to_add.find(state_reflected) == states_to_add.end()) {
+                    throw std::runtime_error("The state " + state_reflected.str() +
                                              " required by symmetries cannot be found.");
                 }
                 continue;
@@ -333,24 +323,18 @@ void SystemOne::initializeBasis() {
 
         // Add further entries to the current basis vector if required by symmetries
         if (sym_reflection_local != NA && state.getM() != 0) {
-            value *= (sym_reflection_local == EVEN)
-                ? std::pow(-1, state.getL() + state.getM() - state.getJ()) *
-                    this->imaginaryUnit<scalar_t>()
-                : -std::pow(-1, state.getL() + state.getM() - state.getJ()) *
-                    this->imaginaryUnit<scalar_t>();
-            // S_y is invariant under
-            // reflection through xz-plane //
-            // TODO is the s quantum number of
-            // importance here?
-            auto state_inverted = StateOne(state.getSpecies(), state.getN(), state.getL(),
-                                           state.getJ(), -state.getM());
-            if (states_to_add.find(state_inverted) == states_to_add.end()) {
-                std::stringstream ss;
-                ss << state_inverted;
-                throw std::runtime_error("The state " + ss.str() +
+            value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
+                this->imaginaryUnit<scalar_t>();
+            value *= (sym_reflection_local == EVEN) ? 1 : -1;
+            // S_y is invariant under reflection through xz-plane
+            // TODO is the s quantum number of importance here?
+
+            auto state_reflected = state.getReflected();
+            if (states_to_add.find(state_reflected) == states_to_add.end()) {
+                throw std::runtime_error("The state " + state_reflected.str() +
                                          " required by symmetries cannot be found.");
             }
-            this->addCoefficient(state_inverted, idx, value, coefficients_triplets);
+            this->addCoefficient(state_reflected, idx, value, coefficients_triplets);
         }
 
         ++idx;

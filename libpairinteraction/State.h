@@ -43,8 +43,9 @@ public:
     explicit StateOne(std::string species, int n, int l, float j, float m);
     explicit StateOne(std::string label);
 
-    // Method for printing the state
+    // Methods for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
+    std::string str() const;
 
     // Getters
     const int &getN() const;
@@ -60,6 +61,8 @@ public:
     bool isArtificial() const;
 
     const size_t &getHash() const;
+
+    StateOne getReflected() const;
 
     // Comparators
     bool operator==(StateOne const &rhs) const;
@@ -102,8 +105,9 @@ public:
     explicit StateTwo(std::array<std::string, 2> label); // TODO use &&label?
     explicit StateTwo(StateOne first_state, StateOne second_state);
 
-    // Method for printing the state
+    // Methods for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
+    std::string str() const;
 
     // Getters
     std::array<int, 2> getN() const;
@@ -134,6 +138,8 @@ public:
     const StateOne &getSecondState() const;
 
     const size_t &getHash() const;
+
+    StateTwo getReflected() const;
 
     // Comparators
     bool operator==(StateTwo const &rhs) const;
