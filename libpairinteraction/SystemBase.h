@@ -87,13 +87,6 @@ public:
 
     // TODO setThresholdForSqnorm()
 
-    void setArtificialstates(
-        const std::vector<T>
-            &s) { //  TODO make this function work after basis was build, too
-                  //  TODO include states_artifical in serialize method TODO [dummystates]
-        states_artifical = s;
-    }
-
     ////////////////////////////////////////////////////////////////////
     /// Methods to restrict the number of states inside the basis //////
     ////////////////////////////////////////////////////////////////////
@@ -118,6 +111,12 @@ public:
     void restrictM(float m_min, float m_max) { this->range(range_m, m_min, m_max); }
 
     void restrictM(std::set<float> m) { range_m = m; }
+
+    void addStates(const std::set<T> &s) {
+        // TODO make this function work after basis was build, too
+        // TODO check that states within s are unique
+        states_to_add = s;
+    }
 
     // TODO if restrictSomething is called, set minimal_le_roy_radius =
     // std::numeric_limits<double>::max();
@@ -424,8 +423,9 @@ public:
 
         // In case of no new basis restrictions and already initialized basis, there is nothing to
         // do
-        if (!states.empty() && range_n.empty() && range_l.empty() && range_j.empty() &&
-            range_m.empty() && energy_min == std::numeric_limits<double>::lowest() &&
+        if (!states.empty() && states_to_add.empty() && range_n.empty() && range_l.empty() &&
+            range_j.empty() && range_m.empty() &&
+            energy_min == std::numeric_limits<double>::lowest() &&
             energy_max == std::numeric_limits<double>::max()) { // TODO check for new threshold, too
             return;
         }
@@ -441,26 +441,6 @@ public:
 
         } else {
             this->updateEverything();
-        }
-
-        // Add artificial states
-        if (!states_artifical.empty()) { // TODO [dummystates]
-            size_t row = coefficients.rows();
-            size_t col = coefficients.cols();
-            hamiltonianmatrix.conservativeResize(hamiltonianmatrix.rows() + states_artifical.size(),
-                                                 hamiltonianmatrix.cols() +
-                                                     states_artifical.size());
-            coefficients.conservativeResize(coefficients.rows() + states_artifical.size(),
-                                            coefficients.cols() + states_artifical.size());
-
-            states.reserve(states.size() + states_artifical.size());
-            coefficients.reserve(coefficients.size() + states_artifical.size());
-            for (const auto &state : states_artifical) {
-                states.push_back(enumerated_state<T>(row, state));
-                coefficients.insert(row++, col++) = 1;
-            }
-            coefficients.makeCompressed();
-            states_artifical.clear();
         }
 
         // Check whether the basis is empty
@@ -872,6 +852,8 @@ public:
     std::vector<size_t> getBasisvectorIndex(const std::vector<T> &searched_states) {
         this->buildBasis();
 
+        // TODO ensure that the states with searched_states are unique
+
         // Construct canonical basis vectors
         std::vector<size_t> state_indices = this->getStateIndex(searched_states);
         std::vector<eigen_triplet_t> canonicalbasis_triplets;
@@ -1018,6 +1000,7 @@ protected:
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
+    std::set<T> states_to_add;
 
     bool memory_saving;
     bool is_interaction_already_contained;
@@ -1245,9 +1228,6 @@ protected:
     }
 
 private:
-    std::vector<T> states_artifical; // TODO think about whether one can use here real states, too
-                                     // TODO [dummystates]
-
     void forgetRestrictions() {
         energy_min = std::numeric_limits<double>::lowest();
         energy_max = std::numeric_limits<double>::max();
@@ -1255,6 +1235,7 @@ private:
         range_l.clear();
         range_j.clear();
         range_m.clear();
+        states_to_add.clear();
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -1327,6 +1308,11 @@ private:
             // TODO recalculate minimal_le_roy_radius
         }
 
+        if (!states_to_add.empty()) {
+            throw std::runtime_error(
+                "States cannot be added anymore once the basis vectors have been created.");
+        }
+
         // Forget basis restrictions as they were applied now
         this->forgetRestrictions();
     }
@@ -1340,7 +1326,7 @@ private:
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &cache;
-        ar &energy_min &energy_max &range_n &range_l &range_j &range_m;
+        ar &energy_min &energy_max &range_n &range_l &range_j &range_m &states_to_add;
         ar &memory_saving &is_interaction_already_contained &is_new_hamiltonianmatrix_required;
         ar &states &coefficients &hamiltonianmatrix;
         ar &coefficients_unperturbed_cache &hamiltonianmatrix_unperturbed_cache;

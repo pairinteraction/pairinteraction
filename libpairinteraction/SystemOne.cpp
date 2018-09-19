@@ -161,7 +161,11 @@ void SystemOne::initializeBasis() {
     std::vector<eigen_triplet_t>
         coefficients_triplets; // TODO reserve states, coefficients_triplets,
                                // hamiltonianmatrix_triplets
+
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
+
+    /// Loop over specified quantum numbers ////////////////////////////
+
     std::set<int> range_adapted_n, range_adapted_l;
     std::set<float> range_adapted_j, range_adapted_m;
 
@@ -219,7 +223,8 @@ void SystemOne::initializeBasis() {
                         continue;
                     }
 
-                    // In case of reflection symmetry, skip half of the basis vectors
+                    // In case of reflection symmetry, skip half of the basis vectors // TODO check
+                    // that m and -m are both contained in range_allowed_m
                     if (sym_reflection != NA && m < 0) {
                         continue;
                     }
@@ -229,7 +234,7 @@ void SystemOne::initializeBasis() {
 
                     // Adapt the normalization if required by symmetries
                     scalar_t value = 1;
-                    if (sym_reflection != NA) {
+                    if (sym_reflection != NA && m != 0) {
                         value /= std::sqrt(2);
                     }
 
@@ -238,12 +243,14 @@ void SystemOne::initializeBasis() {
                                          coefficients_triplets);
 
                     // Add further entries to the current basis vector if required by symmetries
-                    if (sym_reflection != NA) {
+                    if (sym_reflection != NA && m != 0) {
                         value *= (sym_reflection == EVEN)
                             ? std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>()
-                            : -std::pow(-1, l + m - j) *
-                                this->imaginaryUnit<scalar_t>(); // S_y is invariant under
-                                                                 // reflection through xz-plane
+                            : -std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>();
+                        // S_y is invariant under
+                        // reflection through xz-plane //
+                        // TODO is the s quantum number of
+                        // importance here?
                         this->addCoefficient(StateOne(species, n, l, j, -m), idx, value,
                                              coefficients_triplets);
                     }
@@ -254,7 +261,96 @@ void SystemOne::initializeBasis() {
         }
     }
 
-    // Build data
+    /// Loop over user-defined states //////////////////////////////////
+
+    // Check that the user-defined states are not already contained in the list of states
+    for (const auto &state : states_to_add) {
+        if (states.template get<1>().find(state) != states.template get<1>().end()) {
+            std::stringstream ss;
+            ss << state;
+            throw std::runtime_error("The state " + ss.str() +
+                                     " is already contained in the list of states.");
+        }
+        if (!state.isArtificial() && state.getSpecies() != species) {
+            std::stringstream ss;
+            ss << state;
+            throw std::runtime_error("The state " + ss.str() + " is of the wrong species.");
+        }
+    }
+
+    // Add user-defined states
+    for (const auto &state : states_to_add) {
+        // Consider rotation symmetry
+        if (state.isArtificial() && sym_rotation.count(static_cast<float>(ARB)) == 0) {
+            std::cerr << "WARNING: Symmetries cannot be applied to artificial states." << std::endl;
+        }
+        if (!state.isArtificial() && sym_rotation.count(static_cast<float>(ARB)) == 0) {
+            if (sym_rotation.count(state.getM()) == 0) {
+                continue;
+            }
+        }
+
+        // Consider reflection symmetry
+        if (!state.isArtificial() && sym_reflection != NA) {
+            std::cerr << "WARNING: Symmetries cannot be applied to artificial states." << std::endl;
+        }
+        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
+            if (state.getM() < 0) {
+                auto state_inverted = StateOne(state.getSpecies(), state.getN(), state.getL(),
+                                               state.getJ(), -state.getM());
+                if (states_to_add.find(state_inverted) == states_to_add.end()) {
+                    std::stringstream ss;
+                    ss << state_inverted;
+                    throw std::runtime_error("The state " + ss.str() +
+                                             " required by symmetries cannot be found.");
+                }
+                continue;
+            }
+        }
+
+        // Store the energy of the unperturbed one atom state
+        if (state.isArtificial()) {
+            hamiltonianmatrix_triplets.emplace_back(idx, idx, 0);
+        } else {
+            hamiltonianmatrix_triplets.emplace_back(idx, idx, state.getEnergy());
+        }
+
+        // Adapt the normalization if required by symmetries
+        scalar_t value = 1;
+        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
+            value /= std::sqrt(2);
+        }
+
+        // Add an entry to the current basis vector
+        this->addCoefficient(state, idx, value, coefficients_triplets);
+
+        // Add further entries to the current basis vector if required by symmetries
+        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
+            value *= (sym_reflection == EVEN)
+                ? std::pow(-1, state.getL() + state.getM() - state.getJ()) *
+                    this->imaginaryUnit<scalar_t>()
+                : -std::pow(-1, state.getL() + state.getM() - state.getJ()) *
+                    this->imaginaryUnit<scalar_t>();
+            // S_y is invariant under
+            // reflection through xz-plane //
+            // TODO is the s quantum number of
+            // importance here?
+            auto state_inverted = StateOne(state.getSpecies(), state.getN(), state.getL(),
+                                           state.getJ(), -state.getM());
+            if (states_to_add.find(state_inverted) == states_to_add.end()) {
+                std::stringstream ss;
+                ss << state_inverted;
+                throw std::runtime_error("The state " + ss.str() +
+                                         " required by symmetries cannot be found.");
+            }
+            this->addCoefficient(state_inverted, idx, value, coefficients_triplets);
+        }
+
+        ++idx;
+    }
+
+    /// Build data /////////////////////////////////////////////////////
+
     coefficients.resize(states.size(), idx);
     coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
     coefficients_triplets.clear();

@@ -136,6 +136,8 @@ namespace std {
   %template(VectorComplexDouble) vector<std::complex<double>>;
   %template(SetInt) set<int>;
   %template(SetFloat) set<float>;
+  %template(SetStateOne) set<StateOne>;
+  %template(SetStateTwo) set<StateTwo>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
 };

@@ -156,8 +156,10 @@ void SystemTwo::initializeBasis() {
     }
 
     ////////////////////////////////////////////////////////////////////
-    /// Combine one atom states ////////////////////////////////////////
+    /// Build two atom states //////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
+
+    /// Combine one atom states ////////////////////////////////////////
 
     // TODO consider further symmetries and check whether they are applicable
 
@@ -344,7 +346,33 @@ void SystemTwo::initializeBasis() {
     // system1 = SystemOne(species[0], cache); // TODO
     // system2 = SystemOne(species[1], cache); // TODO
 
-    // Build data
+    /// Loop over user-defined states //////////////////////////////////
+
+    // Check that the user-defined states are not already contained in the list of states
+    for (const auto &state : states_to_add) {
+        if (states.template get<1>().find(state) != states.template get<1>().end()) {
+            std::stringstream ss;
+            ss << state;
+            throw std::runtime_error("The state " + ss.str() +
+                                     " is already contained in the list of states.");
+        }
+        for (int idx = 0; idx < 2; ++idx) {
+            if (!state.isArtificial(idx) && state.getSpecies(idx) != species[idx]) {
+                std::stringstream ss;
+                ss << state;
+                throw std::runtime_error("The state " + ss.str() + " is of the wrong species.");
+            }
+        }
+    }
+
+    // Add user-defined states
+    for (const auto &state : states_to_add) {
+        (void) state;
+        throw std::runtime_error("Adding user-defined states to SystemTwo is not yet supported.");
+    }
+
+    /// Build data /////////////////////////////////////////////////////
+
     states.shrink_to_fit();
 
     coefficients.resize(states.size(), col_new);
