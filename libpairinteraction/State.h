@@ -40,8 +40,8 @@
 class StateOne {
 public:
     StateOne() = default;
-    StateOne(std::string species, int n, int l, float j, float m);
-    StateOne(std::string label);
+    explicit StateOne(std::string species, int n, int l, float j, float m);
+    explicit StateOne(std::string label);
 
     // Method for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
@@ -97,10 +97,10 @@ private:
 class StateTwo {
 public:
     StateTwo() = default;
-    StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std::array<int, 2> l,
-             std::array<float, 2> j, std::array<float, 2> m);
-    StateTwo(std::array<std::string, 2> label);
-    StateTwo(StateOne first_state, StateOne second_state);
+    explicit StateTwo(std::array<std::string, 2> species, std::array<int, 2> n,
+                      std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    explicit StateTwo(std::array<std::string, 2> label); // TODO use &&label?
+    explicit StateTwo(StateOne first_state, StateOne second_state);
 
     // Method for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);

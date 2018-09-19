@@ -265,7 +265,7 @@ void SystemOne::initializeBasis() {
 
     // Check that the user-defined states are not already contained in the list of states
     for (const auto &state : states_to_add) {
-        if (states.template get<1>().find(state) != states.template get<1>().end()) {
+        if (states.get<1>().find(state) != states.get<1>().end()) {
             std::stringstream ss;
             ss << state;
             throw std::runtime_error("The state " + ss.str() +
@@ -280,21 +280,28 @@ void SystemOne::initializeBasis() {
 
     // Add user-defined states
     for (const auto &state : states_to_add) {
-        // Consider rotation symmetry
-        if (state.isArtificial() && sym_rotation.count(static_cast<float>(ARB)) == 0) {
-            std::cerr << "WARNING: Symmetries cannot be applied to artificial states." << std::endl;
-        }
-        if (!state.isArtificial() && sym_rotation.count(static_cast<float>(ARB)) == 0) {
-            if (sym_rotation.count(state.getM()) == 0) {
-                continue;
+        // In case of artificial states, symmetries won't work
+        auto sym_reflection_local = sym_reflection;
+        auto sym_rotation_local = sym_rotation;
+        if (state.isArtificial()) {
+            if (sym_reflection_local != NA ||
+                sym_rotation_local.count(static_cast<float>(ARB)) == 0) {
+                std::cerr
+                    << "WARNING: Only permutation symmetry can be applied to artificial states."
+                    << std::endl;
             }
+            sym_reflection_local = NA;
+            sym_rotation_local = std::set<float>({static_cast<float>(ARB)});
+        }
+
+        // Consider rotation symmetry
+        if (sym_rotation_local.count(static_cast<float>(ARB)) == 0 &&
+            sym_rotation_local.count(state.getM()) == 0) {
+            continue;
         }
 
         // Consider reflection symmetry
-        if (!state.isArtificial() && sym_reflection != NA) {
-            std::cerr << "WARNING: Symmetries cannot be applied to artificial states." << std::endl;
-        }
-        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
+        if (sym_reflection_local != NA && state.getM() != 0) {
             if (state.getM() < 0) {
                 auto state_inverted = StateOne(state.getSpecies(), state.getN(), state.getL(),
                                                state.getJ(), -state.getM());
@@ -317,7 +324,7 @@ void SystemOne::initializeBasis() {
 
         // Adapt the normalization if required by symmetries
         scalar_t value = 1;
-        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
+        if (sym_reflection_local != NA && state.getM() != 0) {
             value /= std::sqrt(2);
         }
 
@@ -325,8 +332,8 @@ void SystemOne::initializeBasis() {
         this->addCoefficient(state, idx, value, coefficients_triplets);
 
         // Add further entries to the current basis vector if required by symmetries
-        if (!state.isArtificial() && sym_reflection != NA && state.getM() != 0) {
-            value *= (sym_reflection == EVEN)
+        if (sym_reflection_local != NA && state.getM() != 0) {
+            value *= (sym_reflection_local == EVEN)
                 ? std::pow(-1, state.getL() + state.getM() - state.getJ()) *
                     this->imaginaryUnit<scalar_t>()
                 : -std::pow(-1, state.getL() + state.getM() - state.getJ()) *

@@ -1084,7 +1084,7 @@ protected:
         }
     }
 
-    // TODO extend checkIsQuantumstateValid for artificial states [dummystate]
+    // TODO extend checkIsQuantumstateValid for artificial states [dummystate] !!!!!!
 
     bool checkIsQuantumstateValid(const T &state) {
         checkArtificial(state.isArtificial());

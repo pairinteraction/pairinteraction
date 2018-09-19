@@ -148,11 +148,37 @@ void SystemTwo::initializeBasis() {
     system2.restrictM(range_m);
 
     ////////////////////////////////////////////////////////////////////
-    /// Check wther the single atom states fit to the symmetries ///////
+    /// Check whether the single atom states fit to the symmetries /////
     ////////////////////////////////////////////////////////////////////
 
     if (sym_permutation != NA || sym_permutation != NA) {
         // TODO check system1 == system2
+    }
+
+    // TODO consider further symmetries and check whether they are applicable
+
+    ////////////////////////////////////////////////////////////////////
+    /// Check which basis vectors contain artificial states ////////////
+    ////////////////////////////////////////////////////////////////////
+
+    // TODO check whether system1 == system2
+
+    std::vector<bool> artificial1(system1.getNumBasisvectors(), false);
+    for (size_t col = 0; col < system1.getNumBasisvectors(); ++col) {
+        for (eigen_iterator_t triple(system1.getBasisvectors(), col); triple; ++triple) {
+            if (system1.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
+                artificial1[triple.col()] = true;
+            }
+        }
+    }
+
+    std::vector<bool> artificial2(system2.getNumBasisvectors(), false);
+    for (size_t col = 0; col < system2.getNumBasisvectors(); ++col) {
+        for (eigen_iterator_t triple(system2.getBasisvectors(), col); triple; ++triple) {
+            if (system2.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
+                artificial2[triple.col()] = true;
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -161,21 +187,37 @@ void SystemTwo::initializeBasis() {
 
     /// Combine one atom states ////////////////////////////////////////
 
-    // TODO consider further symmetries and check whether they are applicable
-
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
     hamiltonianmatrix_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
     states.reserve(system1.getNumStates() * system2.getNumStates());
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
     std::vector<double> sqnorm_list(system1.getNumStates() * system2.getNumStates(), 0);
 
+    int M, parityL, parityJ, parityM;
+
     size_t col_new = 0;
     for (size_t col_1 = 0; col_1 < system1.getNumBasisvectors(); ++col_1) {
         for (size_t col_2 = 0; col_2 < system2.getNumBasisvectors(); ++col_2) {
 
+            // In case of artificial states, some symmetries won't work
+            auto sym_inversion_local = sym_inversion;
+            auto sym_reflection_local = sym_reflection;
+            auto sym_rotation_local = sym_rotation;
+            if (artificial1[col_1] || artificial1[col_2]) {
+                if (sym_inversion_local != NA || sym_reflection_local != NA ||
+                    sym_rotation_local.count(ARB) == 0) {
+                    std::cerr
+                        << "WARNING: Only permutation symmetry can be applied to artificial states."
+                        << std::endl;
+                }
+                sym_inversion_local = NA;
+                sym_reflection_local = NA;
+                sym_rotation_local = std::set<int>({ARB});
+            }
+
             // In case of inversion symmetry: skip half of the basis vector pairs
-            if ((sym_inversion == EVEN && col_1 <= col_2) || // gerade
-                (sym_inversion == ODD && col_1 < col_2)) {   // ungerade
+            if ((sym_inversion_local == EVEN && col_1 <= col_2) || // gerade
+                (sym_inversion_local == ODD && col_1 < col_2)) {   // ungerade
                 continue;
             }
 
@@ -199,22 +241,24 @@ void SystemTwo::initializeBasis() {
             for (eigen_iterator_t triple_1(system1.getBasisvectors(), col_1); triple_1;
                  ++triple_1) {
                 size_t row_1 = triple_1.row();
-                StateOne state_1 = system1.getStates()[row_1]; // TODO cache states before
+                StateOne state_1 = system1.getStatesMultiIndex()[row_1].state;
 
                 for (eigen_iterator_t triple_2(system2.getBasisvectors(), col_2); triple_2;
                      ++triple_2) {
                     size_t row_2 = triple_2.row();
-                    StateOne state_2 = system2.getStates()[row_2]; // TODO cache states before
+                    StateOne state_2 = system2.getStatesMultiIndex()[row_2].state;
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
-                    int M = state_1.getM() + state_2.getM();
-                    int parityL = std::pow(-1, state_1.getL() + state_2.getL());
-                    int parityJ = std::pow(-1, state_1.getJ() + state_2.getJ());
-                    int parityM = std::pow(-1, M);
+                    if (!artificial1[col_1] && !artificial1[col_2]) {
+                        M = state_1.getM() + state_2.getM();
+                        parityL = std::pow(-1, state_1.getL() + state_2.getL());
+                        parityJ = std::pow(-1, state_1.getJ() + state_2.getJ());
+                        parityM = std::pow(-1, M);
+                    }
 
                     // Consider rotation symmetry
-                    if (sym_rotation.count(ARB) == 0 && sym_rotation.count(M) == 0) {
+                    if (sym_rotation_local.count(ARB) == 0 && sym_rotation_local.count(M) == 0) {
                         continue;
                     }
 
@@ -223,8 +267,8 @@ void SystemTwo::initializeBasis() {
                     if (col_1 != col_2) {
                         // In case of inversion and permutation symmetry: the inversion symmetric
                         // state is already permutation symmetric
-                        if (sym_inversion != NA && sym_permutation != NA) {
-                            if (((sym_inversion == EVEN) ? -parityL : parityL) !=
+                        if (sym_inversion_local != NA && sym_permutation != NA) {
+                            if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
                                 ((sym_permutation == EVEN) ? -1 : 1)) {
                                 continue; // the parity under inversion and permutation is different
                             }
@@ -232,18 +276,19 @@ void SystemTwo::initializeBasis() {
 
                         // In case of inversion or permutation and reflection symmetry: the
                         // inversion or permutation symmetric state is already reflection symmetric
-                        if ((sym_inversion != NA || sym_permutation != NA) &&
-                            sym_reflection != NA &&
+                        if ((sym_inversion_local != NA || sym_permutation != NA) &&
+                            sym_reflection_local != NA &&
                             StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
                                      {{state_1.getN(), state_2.getN()}},
                                      {{state_1.getL(), state_2.getL()}},
                                      {{state_1.getJ(), state_2.getJ()}},
                                      {{-state_1.getM(), -state_2.getM()}}) ==
                                 StateTwo(state_2, state_1)) {
-                            if (sym_inversion != NA) {
-                                if (((sym_inversion == EVEN) ? -parityL : parityL) !=
-                                    ((sym_reflection == EVEN) ? parityL * parityJ * parityM
-                                                              : -parityL * parityJ * parityM)) {
+                            if (sym_inversion_local != NA) {
+                                if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
+                                    ((sym_reflection_local == EVEN)
+                                         ? parityL * parityJ * parityM
+                                         : -parityL * parityJ * parityM)) {
                                     continue; // the parity under inversion and reflection is
                                               // different
                                 }
@@ -252,8 +297,9 @@ void SystemTwo::initializeBasis() {
 
                             } else if (sym_permutation != NA) {
                                 if (((sym_permutation == EVEN) ? -1 : 1) !=
-                                    ((sym_reflection == EVEN) ? parityL * parityJ * parityM
-                                                              : -parityL * parityJ * parityM)) {
+                                    ((sym_reflection_local == EVEN)
+                                         ? parityL * parityJ * parityM
+                                         : -parityL * parityJ * parityM)) {
                                     continue; // the parity under permutation and reflection is
                                               // different
                                 }
@@ -265,11 +311,11 @@ void SystemTwo::initializeBasis() {
 
                     // Adapt the normalization if required by symmetries
                     if (col_1 != col_2) {
-                        if (sym_inversion != NA || sym_permutation != NA) {
+                        if (sym_inversion_local != NA || sym_permutation != NA) {
                             value_new /= std::sqrt(2);
                         }
                     }
-                    if (sym_reflection != NA && !skip_reflection) {
+                    if (sym_reflection_local != NA && !skip_reflection) {
                         value_new /=
                             std::sqrt(2) *
                             std::sqrt(
@@ -282,9 +328,9 @@ void SystemTwo::initializeBasis() {
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (col_1 != col_2) {
-                        if (sym_inversion != NA) {
+                        if (sym_inversion_local != NA) {
                             scalar_t v = value_new;
-                            v *= (sym_inversion == EVEN) ? -parityL : parityL;
+                            v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                             this->addCoefficient(StateTwo(state_2, state_1), col_new, v,
                                                  coefficients_triplets, sqnorm_list);
                         } else if (sym_permutation != NA) {
@@ -295,10 +341,10 @@ void SystemTwo::initializeBasis() {
                         }
                     }
 
-                    if (sym_reflection != NA && !skip_reflection) {
+                    if (sym_reflection_local != NA && !skip_reflection) {
                         scalar_t v = value_new;
-                        v *= (sym_reflection == EVEN) ? parityL * parityJ * parityM
-                                                      : -parityL * parityJ * parityM;
+                        v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
+                                                            : -parityL * parityJ * parityM;
                         this->addCoefficient(
                             StateTwo({{state_1.getSpecies(), state_2.getSpecies()}},
                                      {{state_1.getN(), state_2.getN()}},
@@ -308,11 +354,11 @@ void SystemTwo::initializeBasis() {
                             col_new, v, coefficients_triplets, sqnorm_list);
 
                         if (col_1 != col_2) {
-                            if (sym_inversion != NA) {
+                            if (sym_inversion_local != NA) {
                                 scalar_t v = value_new;
-                                v *= (sym_reflection == EVEN) ? parityL * parityJ * parityM
-                                                              : -parityL * parityJ * parityM;
-                                v *= (sym_inversion == EVEN) ? -parityL : parityL;
+                                v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
+                                                                    : -parityL * parityJ * parityM;
+                                v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                                 this->addCoefficient(
                                     StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
                                              {{state_2.getN(), state_1.getN()}},
@@ -322,8 +368,8 @@ void SystemTwo::initializeBasis() {
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
                                 scalar_t v = value_new;
-                                v *= (sym_reflection == EVEN) ? parityL * parityJ * parityM
-                                                              : -parityL * parityJ * parityM;
+                                v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
+                                                                    : -parityL * parityJ * parityM;
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
                                 this->addCoefficient(
                                     StateTwo({{state_2.getSpecies(), state_1.getSpecies()}},
@@ -350,7 +396,7 @@ void SystemTwo::initializeBasis() {
 
     // Check that the user-defined states are not already contained in the list of states
     for (const auto &state : states_to_add) {
-        if (states.template get<1>().find(state) != states.template get<1>().end()) {
+        if (states.get<1>().find(state) != states.get<1>().end()) {
             std::stringstream ss;
             ss << state;
             throw std::runtime_error("The state " + ss.str() +
@@ -367,7 +413,7 @@ void SystemTwo::initializeBasis() {
 
     // Add user-defined states
     for (const auto &state : states_to_add) {
-        (void) state;
+        (void)state;
         throw std::runtime_error("Adding user-defined states to SystemTwo is not yet supported.");
     }
 
@@ -422,8 +468,12 @@ void SystemTwo::initializeBasis() {
     ////////////////////////////////////////////////////////////////////
 
     // Estimate minimal Le Roy radius
-    StateTwo crucial_state;
+    StateTwo crucial_state{{{"None", "None"}}};
     for (const auto &e : states) {
+        if (e.state.isArtificial(0) || e.state.isArtificial(1)) { // TODO simplify syntax
+            continue;
+        }
+
         auto n = e.state.getNStar();
         auto l = e.state.getL();
 
@@ -438,11 +488,15 @@ void SystemTwo::initializeBasis() {
     }
 
     // Calculate minimal Le Roy radius precisely
-    minimal_le_roy_radius = 2 *
-        (std::sqrt(
-             cache.getRadial(crucial_state.getFirstState(), crucial_state.getFirstState(), 2)) +
-         std::sqrt(
-             cache.getRadial(crucial_state.getSecondState(), crucial_state.getSecondState(), 2)));
+    if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) { // TODO simplify syntax
+        minimal_le_roy_radius = 0;
+    } else {
+        minimal_le_roy_radius = 2 *
+            (std::sqrt(
+                 cache.getRadial(crucial_state.getFirstState(), crucial_state.getFirstState(), 2)) +
+             std::sqrt(cache.getRadial(crucial_state.getSecondState(),
+                                       crucial_state.getSecondState(), 2)));
+    }
 
     // Check whether distances are larger than the minimal Le Roy radius
     this->checkDistance(distance);
