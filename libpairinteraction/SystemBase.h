@@ -929,13 +929,7 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
-            coefficients
-                .adjoint(); // TODO check whether canonicalization successful by calculating
-                            // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
-                            // and checking if all entries are one TODO [dummystates]
-
-        return tmp.coeff(idx_row, idx_col);
+        return (coefficients.row(idx_row) * hamiltonianmatrix).dot(coefficients.row(idx_col));
     }
 
     void setHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
@@ -944,15 +938,17 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        eigen_sparse_t tmp = coefficients * hamiltonianmatrix *
-            coefficients
-                .adjoint(); // TODO check whether canonicalization successful by calculating
-                            // checkIsDiagonal((coefficients*coefficients.adjoint()).prune())
-                            // and checking if all entries are one TODO [dummystates]
-        tmp.coeffRef(idx_row, idx_col) = value; // TODO check whether this also works if the element
-                                                // does not exist TODO [dummystates]
+        value -= (coefficients.row(idx_row) * hamiltonianmatrix).dot(coefficients.row(idx_col));
 
-        hamiltonianmatrix = coefficients.adjoint() * tmp * coefficients;
+        eigen_sparse_t tmp(states.size(), states.size());
+        tmp.reserve(2);
+        tmp.insert(idx_row, idx_col) = value;
+        if (idx_row != idx_col) {
+            tmp.insert(idx_col, idx_row) = this->conjugate(value);
+        }
+        tmp.makeCompressed();
+
+        hamiltonianmatrix += coefficients.adjoint() * tmp * coefficients;
     }
 
     void addHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
