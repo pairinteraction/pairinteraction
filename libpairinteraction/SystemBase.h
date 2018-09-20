@@ -112,14 +112,14 @@ public:
 
     void restrictM(std::set<float> m) { range_m = m; }
 
-    void addStates(const std::set<T> &s) {
-        // TODO make this function work after basis was build, too
-        // TODO check that states within s are unique
-        states_to_add = s;
-    }
-
     // TODO if restrictSomething is called, set minimal_le_roy_radius =
     // std::numeric_limits<double>::max();
+
+    ////////////////////////////////////////////////////////////////////
+    /// Method for adding user-defined states //////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    void addStates(const std::set<T> &s) { states_to_add = s; }
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
@@ -688,6 +688,7 @@ public:
         if (tmp.size() < indices_of_wanted_basisvectors.size()) {
             throw std::runtime_error("Indices are occuring multiple times.");
         }
+        tmp.clear();
 
         // Build transformator and remove vectors
         std::vector<eigen_triplet_t> triplets_transformator;
@@ -726,7 +727,7 @@ public:
         std::vector<eigen_triplet_t> transformator_triplets;
         transformator_triplets.reserve(system0.getNumStates());
 
-        for (const auto &entry : system0.states) { // TODO system0.getStates()
+        for (const auto &entry : system0.getStatesMultiIndex()) {
             auto state_iter = states.template get<1>().find(entry.state);
 
             // Check that all the states of system0 occur (since we already checked that the number
@@ -852,7 +853,12 @@ public:
     std::vector<size_t> getBasisvectorIndex(const std::vector<T> &searched_states) {
         this->buildBasis();
 
-        // TODO ensure that the states with searched_states are unique
+        // Ensure that the states within searched_states are unique
+        std::set<T> tmp(searched_states.begin(), searched_states.end());
+        if (tmp.size() < searched_states.size()) {
+            throw std::runtime_error("States are occuring multiple times.");
+        }
+        tmp.clear();
 
         // Construct canonical basis vectors
         std::vector<size_t> state_indices = this->getStateIndex(searched_states);
