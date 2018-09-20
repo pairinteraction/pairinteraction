@@ -581,6 +581,9 @@ public:
         this->buildBasis();
         system.buildBasis();
 
+        size_t size_this = coefficients.cols();
+        size_t size_other = system.coefficients.cols();
+
         // --- Combine system specific variables ---
         this->incorporate(system);
 
@@ -621,9 +624,8 @@ public:
         transformator_triplets.clear();
 
         // --- Combine coefficients and coefficients_unperturbed_cache ---
-        coefficients.conservativeResize(states.size(),
-                                        coefficients.cols() + system.coefficients.cols());
-        coefficients.rightCols(system.coefficients.cols()) = transformator * system.coefficients;
+        coefficients.conservativeResize(states.size(), size_this + size_other);
+        coefficients.rightCols(size_other) = transformator * system.coefficients;
 
         if ((coefficients_unperturbed_cache.size() != 0) !=
             (system.coefficients_unperturbed_cache.size() != 0)) {
@@ -640,7 +642,14 @@ public:
                 transformator * system.coefficients_unperturbed_cache;
         }
 
-        // TODO check if vectors are orthogonal
+        // --- Check if basis vectors are orthogonal ---
+        eigen_sparse_t tmp =
+            (coefficients.leftCols(size_this).adjoint() * coefficients.rightCols(size_other))
+                .pruned(1e-1, 1);
+        if (tmp.nonZeros() != 0) {
+            throw std::runtime_error(
+                "Two systems cannot be combined if their basis vectors are not orthogonal.");
+        }
 
         // --- Combine hamiltonianmatrix and hamiltonianmatrix_unperturbed_cache ---
         std::vector<eigen_triplet_t> shifter_triplets;
