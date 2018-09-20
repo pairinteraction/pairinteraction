@@ -87,12 +87,12 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     void addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                    std::vector<eigen_triplet_t> &coefficients_triplets,
+                                    std::vector<eigen_triplet_t> &basisvectors_triplets,
                                     std::vector<eigen_triplet_t> &hamiltonianmatrix_triplets,
                                     parity_t &sym_reflection_local);
 
     void addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
-                         std::vector<eigen_triplet_t> &coefficients_triplets);
+                         std::vector<eigen_triplet_t> &basisvectors_triplets);
 
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, double> &field_spherical);

@@ -190,7 +190,7 @@ void SystemTwo::initializeBasis() {
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
     hamiltonianmatrix_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
     states.reserve(system1.getNumStates() * system2.getNumStates() + states_to_add.size());
-    std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
+    std::vector<eigen_triplet_t> basisvectors_triplets; // TODO reserve
     std::vector<double> sqnorm_list(
         system1.getNumStates() * system2.getNumStates() + states_to_add.size(), 0);
 
@@ -315,7 +315,7 @@ void SystemTwo::initializeBasis() {
 
                     // Add an entry to the current basis vector
                     this->addBasisvectors(StateTwo(state_1, state_2), col_new, value_new,
-                                          coefficients_triplets, sqnorm_list);
+                                          basisvectors_triplets, sqnorm_list);
 
                     // Add further entries to the current basis vector if required by symmetries
                     if (different) {
@@ -323,12 +323,12 @@ void SystemTwo::initializeBasis() {
                             scalar_t v = value_new;
                             v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                             this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
-                                                  coefficients_triplets, sqnorm_list);
+                                                  basisvectors_triplets, sqnorm_list);
                         } else if (sym_permutation != NA) {
                             scalar_t v = value_new;
                             v *= (sym_permutation == EVEN) ? -1 : 1;
                             this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
-                                                  coefficients_triplets, sqnorm_list);
+                                                  basisvectors_triplets, sqnorm_list);
                         }
                     }
                     if (sym_reflection_local != NA && !skip_reflection) {
@@ -337,7 +337,7 @@ void SystemTwo::initializeBasis() {
                                                             : -parityL * parityJ * parityM;
                         this->addBasisvectors(
                             StateTwo(state_1.getReflected(), state_2.getReflected()), col_new, v,
-                            coefficients_triplets, sqnorm_list);
+                            basisvectors_triplets, sqnorm_list);
 
                         if (different) {
                             if (sym_inversion_local != NA) {
@@ -347,7 +347,7 @@ void SystemTwo::initializeBasis() {
                                 v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                                 this->addBasisvectors(
                                     StateTwo(state_2.getReflected(), state_1.getReflected()),
-                                    col_new, v, coefficients_triplets, sqnorm_list);
+                                    col_new, v, basisvectors_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
                                 scalar_t v = value_new;
                                 v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
@@ -355,7 +355,7 @@ void SystemTwo::initializeBasis() {
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
                                 this->addBasisvectors(
                                     StateTwo(state_2.getReflected(), state_1.getReflected()),
-                                    col_new, v, coefficients_triplets, sqnorm_list);
+                                    col_new, v, basisvectors_triplets, sqnorm_list);
                             }
                         }
                     }
@@ -464,7 +464,7 @@ void SystemTwo::initializeBasis() {
         }
 
         // Add an entry to the current basis vector
-        this->addBasisvectors(state, col_new, value_new, coefficients_triplets, sqnorm_list);
+        this->addBasisvectors(state, col_new, value_new, basisvectors_triplets, sqnorm_list);
 
         // Add further entries to the current basis vector if required by symmetries
         if (different) {
@@ -472,12 +472,12 @@ void SystemTwo::initializeBasis() {
                 scalar_t v = value_new;
                 v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                 this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
-                                      col_new, v, coefficients_triplets, sqnorm_list);
+                                      col_new, v, basisvectors_triplets, sqnorm_list);
             } else if (sym_permutation != NA) {
                 scalar_t v = value_new;
                 v *= (sym_permutation == EVEN) ? -1 : 1;
                 this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
-                                      col_new, v, coefficients_triplets, sqnorm_list);
+                                      col_new, v, basisvectors_triplets, sqnorm_list);
             }
         }
 
@@ -488,9 +488,9 @@ void SystemTwo::initializeBasis() {
 
     states.shrink_to_fit();
 
-    coefficients.resize(states.size(), col_new);
-    coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
-    coefficients_triplets.clear();
+    basisvectors.resize(states.size(), col_new);
+    basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
+    basisvectors_triplets.clear();
 
     hamiltonianmatrix.resize(col_new, col_new);
     hamiltonianmatrix.setFromTriplets(hamiltonianmatrix_triplets.begin(),
@@ -503,14 +503,14 @@ void SystemTwo::initializeBasis() {
 
     // Build transformator and remove vectors (if the squared norm is too small)
     std::vector<eigen_triplet_t> triplets_transformator;
-    triplets_transformator.reserve(coefficients.cols());
+    triplets_transformator.reserve(basisvectors.cols());
 
     size_t idx_new = 0;
-    for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
+    for (int idx = 0; idx < basisvectors.cols(); ++idx) { // idx = col = num basis vector
         double_t sqnorm = 0;
 
         // Calculate the square norm of the columns of the coefficient matrix
-        for (eigen_iterator_t triple(coefficients, idx); triple; ++triple) {
+        for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
             sqnorm += std::pow(std::abs(triple.value()), 2);
         }
 
@@ -582,7 +582,7 @@ void SystemTwo::initializeBasis() {
     std::sort(idx_sorted.begin(), idx_sorted.end(), [=](size_t i1, size_t i2) {return
     this->states[i1].state < this->states[i2].state;});
 
-    // Make use of the sorted indexes in order to sort the states and transform the coefficients
+    // Make use of the sorted indexes in order to sort the states and transform the basisvectors
     accordingly states_set<StateTwo> states_new; states_new.reserve(states.size());
     triplets_transformator.clear();
     triplets_transformator.reserve(states.size());
@@ -778,7 +778,7 @@ void SystemTwo::initializeInteraction() {
         interaction_angulardipole_triplets[i].clear();
 
         interaction_angulardipole[i] =
-            coefficients.adjoint() * interaction_angulardipole[i] * coefficients;
+            basisvectors.adjoint() * interaction_angulardipole[i] * basisvectors;
     }
 
     for (const auto &i : orange) {
@@ -787,7 +787,7 @@ void SystemTwo::initializeInteraction() {
                                                  interaction_multipole_triplets[i].end());
         interaction_multipole_triplets[i].clear();
 
-        interaction_multipole[i] = coefficients.adjoint() * interaction_multipole[i] * coefficients;
+        interaction_multipole[i] = basisvectors.adjoint() * interaction_multipole[i] * basisvectors;
     }
 }
 
@@ -972,7 +972,7 @@ void SystemTwo::checkDistance(double distance) {
 
 void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
                                 const scalar_t &value_new,
-                                std::vector<eigen_triplet_t> &coefficients_triplets,
+                                std::vector<eigen_triplet_t> &basisvectors_triplets,
                                 std::vector<double> &sqnorm_list) {
     auto state_iter = states.get<1>().find(state);
 
@@ -984,7 +984,7 @@ void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
         states.emplace_back(row_new, state);
     }
 
-    coefficients_triplets.emplace_back(row_new, col_new, value_new);
+    basisvectors_triplets.emplace_back(row_new, col_new, value_new);
     sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
 }
 

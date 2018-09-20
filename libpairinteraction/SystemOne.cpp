@@ -159,7 +159,7 @@ void SystemOne::initializeBasis() {
 
     size_t idx = 0;
     std::vector<eigen_triplet_t>
-        coefficients_triplets; // TODO reserve states, coefficients_triplets,
+        basisvectors_triplets; // TODO reserve states, basisvectors_triplets,
                                // hamiltonianmatrix_triplets
 
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
@@ -234,7 +234,7 @@ void SystemOne::initializeBasis() {
                     }
 
                     // Add symmetrized basis vectors
-                    this->addSymmetrizedBasisvectors(state, idx, energy, coefficients_triplets,
+                    this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
                                                      hamiltonianmatrix_triplets, sym_reflection);
                 }
             }
@@ -289,15 +289,15 @@ void SystemOne::initializeBasis() {
         }
 
         // Add symmetrized basis vectors
-        this->addSymmetrizedBasisvectors(state, idx, energy, coefficients_triplets,
+        this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
                                          hamiltonianmatrix_triplets, sym_reflection_local);
     }
 
     /// Build data /////////////////////////////////////////////////////
 
-    coefficients.resize(states.size(), idx);
-    coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
-    coefficients_triplets.clear();
+    basisvectors.resize(states.size(), idx);
+    basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
+    basisvectors_triplets.clear();
 
     hamiltonianmatrix.resize(idx, idx);
     hamiltonianmatrix.setFromTriplets(hamiltonianmatrix_triplets.begin(),
@@ -422,7 +422,7 @@ void SystemOne::initializeInteraction() {
                                               interaction_efield_triplets[i].end());
         interaction_efield_triplets[i].clear();
 
-        interaction_efield[i] = coefficients.adjoint() * interaction_efield[i] * coefficients;
+        interaction_efield[i] = basisvectors.adjoint() * interaction_efield[i] * basisvectors;
     }
 
     for (const auto &i : brange) {
@@ -431,7 +431,7 @@ void SystemOne::initializeInteraction() {
                                               interaction_bfield_triplets[i].end());
         interaction_bfield_triplets[i].clear();
 
-        interaction_bfield[i] = coefficients.adjoint() * interaction_bfield[i] * coefficients;
+        interaction_bfield[i] = basisvectors.adjoint() * interaction_bfield[i] * basisvectors;
     }
 
     for (const auto &i : drange) {
@@ -441,7 +441,7 @@ void SystemOne::initializeInteraction() {
         interaction_diamagnetism_triplets[i].clear();
 
         interaction_diamagnetism[i] =
-            coefficients.adjoint() * interaction_diamagnetism[i] * coefficients;
+            basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
     }
 }
 
@@ -629,7 +629,7 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 ////////////////////////////////////////////////////////////////////
 
 void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                           std::vector<eigen_triplet_t> &coefficients_triplets,
+                                           std::vector<eigen_triplet_t> &basisvectors_triplets,
                                            std::vector<eigen_triplet_t> &hamiltonianmatrix_triplets,
                                            parity_t &sym_reflection_local) {
     // In case of reflection symmetry, skip half of the basis vectors
@@ -649,7 +649,7 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     }
 
     // Add an entry to the current basis vector
-    this->addBasisvectors(state, idx, value, coefficients_triplets);
+    this->addBasisvectors(state, idx, value, basisvectors_triplets);
 
     // Add further entries to the current basis vector if required by symmetries
     if (sym_reflection_local != NA && state.getM() != 0) {
@@ -658,14 +658,14 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
         value *= (sym_reflection_local == EVEN) ? 1 : -1;
         // S_y is invariant under reflection through xz-plane
         // TODO is the s quantum number of importance here?
-        this->addBasisvectors(state.getReflected(), idx, value, coefficients_triplets);
+        this->addBasisvectors(state.getReflected(), idx, value, basisvectors_triplets);
     }
 
     ++idx;
 }
 
 void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
-                                std::vector<eigen_triplet_t> &coefficients_triplets) {
+                                std::vector<eigen_triplet_t> &basisvectors_triplets) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row;
@@ -676,7 +676,7 @@ void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const 
         states.push_back(enumerated_state<StateOne>(row, state));
     }
 
-    coefficients_triplets.emplace_back(row, idx, value);
+    basisvectors_triplets.emplace_back(row, idx, value);
 }
 
 void SystemOne::changeToSphericalbasis(std::array<double, 3> field,

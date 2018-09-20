@@ -142,7 +142,7 @@ public:
 
     eigen_sparse_t &getBasisvectors() {
         this->buildBasis();
-        return coefficients;
+        return basisvectors;
     }
 
     eigen_sparse_t &getHamiltonian() {
@@ -155,14 +155,14 @@ public:
         this->buildBasis();
 
         // Check variables for consistency
-        if ((coefficients.outerSize() != coefficients.cols()) ||
-            (coefficients.outerSize() != hamiltonianmatrix.rows()) ||
-            (coefficients.outerSize() != hamiltonianmatrix.cols())) {
+        if ((basisvectors.outerSize() != basisvectors.cols()) ||
+            (basisvectors.outerSize() != hamiltonianmatrix.rows()) ||
+            (basisvectors.outerSize() != hamiltonianmatrix.cols())) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
 
-        return coefficients.cols();
+        return basisvectors.cols();
     }
 
     size_t getNumStates() {
@@ -170,13 +170,13 @@ public:
         this->buildBasis();
 
         // Check variables for consistency
-        if ((coefficients.innerSize() != coefficients.rows()) ||
-            (static_cast<size_t>(coefficients.innerSize()) != states.size())) {
+        if ((basisvectors.innerSize() != basisvectors.rows()) ||
+            (static_cast<size_t>(basisvectors.innerSize()) != states.size())) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
 
-        return coefficients.rows();
+        return basisvectors.rows();
     }
 
     eigen_vector_double_t getOverlap(const T &generalizedstate) {
@@ -207,7 +207,7 @@ public:
         overlap_states_triplets.clear();
 
         // Calculate overlap
-        eigen_sparse_t product = coefficients.adjoint() * overlap_states;
+        eigen_sparse_t product = basisvectors.adjoint() * overlap_states;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
         for (int k = 0; k < product.outerSize(); ++k) {
             for (eigen_iterator_t triple(product, k); triple; ++triple) {
@@ -249,7 +249,7 @@ public:
             this->rotateStates(states_indices, alpha, beta, gamma);
 
         // Calculate overlap
-        eigen_sparse_t product = coefficients.adjoint() * overlap_states_rotated;
+        eigen_sparse_t product = basisvectors.adjoint() * overlap_states_rotated;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
         for (int k = 0; k < product.outerSize(); ++k) {
             for (eigen_iterator_t triple(product, k); triple; ++triple) {
@@ -266,13 +266,13 @@ public:
 
         // Get states with the main contribution
         std::vector<T> states_with_maxval;
-        states_with_maxval.reserve(coefficients.cols());
+        states_with_maxval.reserve(basisvectors.cols());
 
-        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
+        for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
             double maxval = -1;
             size_t row_with_maxval;
 
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
                 if (std::abs(triple.value()) > maxval) {
                     row_with_maxval = triple.row();
                     maxval = std::abs(triple.value());
@@ -309,7 +309,7 @@ public:
 
         // Calculate overlap
         eigen_sparse_double_t overlap_sqrt =
-            (coefficients.adjoint() * transformator * system_to.coefficients).cwiseAbs();
+            (basisvectors.adjoint() * transformator * system_to.basisvectors).cwiseAbs();
 
         // Determine the indices of the maximal values within the rows
         std::vector<size_t> rows_with_maxval;
@@ -373,19 +373,19 @@ public:
             if (is_interaction_already_contained) {
 
                 // Check variables for consistency
-                if (memory_saving || coefficients_unperturbed_cache.size() == 0 ||
+                if (memory_saving || basisvectors_unperturbed_cache.size() == 0 ||
                     hamiltonianmatrix_unperturbed_cache.size() == 0) {
                     throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) +
                                              ":" + std::to_string(__LINE__) + ".");
                 }
 
                 // Reset the Hamiltonian if it already contains the interaction
-                coefficients = coefficients_unperturbed_cache;
+                basisvectors = basisvectors_unperturbed_cache;
                 hamiltonianmatrix = hamiltonianmatrix_unperturbed_cache;
             } else if (!memory_saving) {
 
                 // Store the Hamiltonian without interaction
-                coefficients_unperturbed_cache = coefficients;
+                basisvectors_unperturbed_cache = basisvectors;
                 hamiltonianmatrix_unperturbed_cache = hamiltonianmatrix;
             }
 
@@ -417,7 +417,7 @@ public:
     void buildBasis() {
         // Check variables for consistency
         if (((hamiltonianmatrix.size() == 0) != states.empty()) ||
-            ((hamiltonianmatrix.size() == 0) != (coefficients.size() == 0))) {
+            ((hamiltonianmatrix.size() == 0) != (basisvectors.size() == 0))) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
@@ -445,10 +445,10 @@ public:
         }
 
         // Check whether the basis is empty
-        if (coefficients.rows() == 0) {
+        if (basisvectors.rows() == 0) {
             throw std::runtime_error("The basis contains no states.");
         }
-        if (coefficients.cols() == 0) {
+        if (basisvectors.cols() == 0) {
             throw std::runtime_error("The basis contains no vectors.");
         }
     }
@@ -477,7 +477,7 @@ public:
         hamiltonianmatrix.makeCompressed();
 
         // Transform the basis vectors
-        coefficients = coefficients * evecs;
+        basisvectors = basisvectors * evecs;
     }
 
     void diagonalize(double threshold) {
@@ -505,17 +505,17 @@ public:
         hamiltonianmatrix.makeCompressed();
 
         // Transform the basis vectors
-        coefficients = (coefficients * evecs).pruned(threshold, 1);
+        basisvectors = (basisvectors * evecs).pruned(threshold, 1);
     }
 
     void canonicalize() {
         this->buildHamiltonian();
 
         // Transform the hamiltonianmatrix
-        hamiltonianmatrix = coefficients * hamiltonianmatrix * coefficients.adjoint();
+        hamiltonianmatrix = basisvectors * hamiltonianmatrix * basisvectors.adjoint();
 
         // Transform the basis vectors
-        coefficients = coefficients * coefficients.adjoint();
+        basisvectors = basisvectors * basisvectors.adjoint();
     }
 
     void rotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
@@ -537,14 +537,14 @@ public:
         eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
 
         // Rotate basis
-        this->transformInteraction(coefficients.adjoint());
+        this->transformInteraction(basisvectors.adjoint());
 
-        coefficients = transformator * coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) {
-            coefficients_unperturbed_cache = transformator * coefficients_unperturbed_cache;
+        basisvectors = transformator * basisvectors;
+        if (basisvectors_unperturbed_cache.size() != 0) {
+            basisvectors_unperturbed_cache = transformator * basisvectors_unperturbed_cache;
         }
 
-        this->transformInteraction(coefficients);
+        this->transformInteraction(basisvectors);
     }
 
     void derotate(std::array<double, 3> to_z_axis,
@@ -567,14 +567,14 @@ public:
         eigen_sparse_t transformator = this->buildStaterotator(-alpha, -beta, -gamma);
 
         // Rotate basis
-        this->transformInteraction(coefficients.adjoint());
+        this->transformInteraction(basisvectors.adjoint());
 
-        coefficients = transformator * coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) {
-            coefficients_unperturbed_cache = transformator * coefficients_unperturbed_cache;
+        basisvectors = transformator * basisvectors;
+        if (basisvectors_unperturbed_cache.size() != 0) {
+            basisvectors_unperturbed_cache = transformator * basisvectors_unperturbed_cache;
         }
 
-        this->transformInteraction(coefficients);
+        this->transformInteraction(basisvectors);
     }
 
     void add(SystemBase<T> &system) {
@@ -582,8 +582,8 @@ public:
         this->buildBasis();
         system.buildBasis();
 
-        size_t size_this = coefficients.cols();
-        size_t size_other = system.coefficients.cols();
+        size_t size_this = basisvectors.cols();
+        size_t size_other = system.basisvectors.cols();
 
         // --- Combine system specific variables ---
         this->incorporate(system);
@@ -620,32 +620,32 @@ public:
             transformator_triplets.emplace_back(newidx, entry.idx, 1);
         }
 
-        eigen_sparse_t transformator(states.size(), system.coefficients.rows());
+        eigen_sparse_t transformator(states.size(), system.basisvectors.rows());
         transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
         transformator_triplets.clear();
 
-        // --- Combine coefficients and coefficients_unperturbed_cache ---
-        coefficients.conservativeResize(states.size(), size_this + size_other);
-        coefficients.rightCols(size_other) = transformator * system.coefficients;
+        // --- Combine basisvectors and basisvectors_unperturbed_cache ---
+        basisvectors.conservativeResize(states.size(), size_this + size_other);
+        basisvectors.rightCols(size_other) = transformator * system.basisvectors;
 
-        if ((coefficients_unperturbed_cache.size() != 0) !=
-            (system.coefficients_unperturbed_cache.size() != 0)) {
+        if ((basisvectors_unperturbed_cache.size() != 0) !=
+            (system.basisvectors_unperturbed_cache.size() != 0)) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
 
-        if (coefficients_unperturbed_cache.size() != 0) {
-            coefficients_unperturbed_cache.conservativeResize(
+        if (basisvectors_unperturbed_cache.size() != 0) {
+            basisvectors_unperturbed_cache.conservativeResize(
                 states.size(),
-                coefficients_unperturbed_cache.cols() +
-                    system.coefficients_unperturbed_cache.cols());
-            coefficients_unperturbed_cache.rightCols(system.coefficients_unperturbed_cache.cols()) =
-                transformator * system.coefficients_unperturbed_cache;
+                basisvectors_unperturbed_cache.cols() +
+                    system.basisvectors_unperturbed_cache.cols());
+            basisvectors_unperturbed_cache.rightCols(system.basisvectors_unperturbed_cache.cols()) =
+                transformator * system.basisvectors_unperturbed_cache;
         }
 
         // --- Check if basis vectors are orthogonal ---
         eigen_sparse_t tmp =
-            (coefficients.leftCols(size_this).adjoint() * coefficients.rightCols(size_other))
+            (basisvectors.leftCols(size_this).adjoint() * basisvectors.rightCols(size_other))
                 .pruned(1e-1, 1);
         if (tmp.nonZeros() != 0) {
             throw std::runtime_error(
@@ -707,7 +707,7 @@ public:
         size_t idx_new = 0;
         for (const auto &idx : indices_of_wanted_basisvectors) {
             std::cout << idx << std::endl;
-            if (idx >= coefficients.cols()) {
+            if (idx >= basisvectors.cols()) {
                 throw std::runtime_error("A basis vector with index " + std::to_string(idx) +
                                          " could not be found.");
             }
@@ -756,16 +756,16 @@ public:
         transformator_triplets.clear();
 
         // Get basisvectors of system0
-        eigen_sparse_t low_energy_basis0 = transformator * system0.coefficients;
+        eigen_sparse_t low_energy_basis0 = transformator * system0.basisvectors;
 
         // --- Find basisvectors which corresponds to the basis vectors of system0 ---
 
         // Get overlaps between basis vectors
-        eigen_vector_double_t overlap = (coefficients.adjoint() * low_energy_basis0).cwiseAbs2() *
+        eigen_vector_double_t overlap = (basisvectors.adjoint() * low_energy_basis0).cwiseAbs2() *
             eigen_vector_double_t::Ones(low_energy_basis0.cols());
 
         // Get indices of the low_energy_basis0.cols() largest entries and build transformator
-        std::vector<int> indices(coefficients.cols());
+        std::vector<int> indices(basisvectors.cols());
         std::iota(indices.begin(), indices.end(), 0);
         std::nth_element(indices.begin(), indices.begin() + low_energy_basis0.cols(), indices.end(),
                          [&overlap](int a, int b) { return overlap[a] > overlap[b]; });
@@ -775,12 +775,12 @@ public:
             transformator_triplets.emplace_back(indices[i], i, 1);
         }
 
-        transformator.resize(coefficients.cols(), low_energy_basis0.cols());
+        transformator.resize(basisvectors.cols(), low_energy_basis0.cols());
         transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
         transformator_triplets.clear();
 
         // Get corresponding basis vectors
-        eigen_sparse_t low_energy_basis = coefficients * transformator;
+        eigen_sparse_t low_energy_basis = basisvectors * transformator;
 
         // --- Perform the Schrieffer Wolff transformation ---
 
@@ -799,7 +799,7 @@ public:
         eigen_sparse_t rotator = (reflection0 * reflection).sqrt().sparseView();
 
         // Calculate the effective Hamiltonian
-        transformator = coefficients.adjoint() * rotator.adjoint() * projector0 * low_energy_basis0;
+        transformator = basisvectors.adjoint() * rotator.adjoint() * projector0 * low_energy_basis0;
 
         this->applyRightsideTransformator(transformator);
     }
@@ -846,8 +846,8 @@ public:
 
         double maxval = -1;
         size_t col_with_maxval = -1;
-        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+        for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
+            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
                 if (triple.row() == stateidx) {
                     if (std::abs(triple.value()) > maxval) {
                         col_with_maxval = triple.col();
@@ -884,12 +884,12 @@ public:
         canonicalbasis_triplets.clear();
 
         // Get overlaps between basis vectors
-        eigen_sparse_double_t overlap = (canonicalbasis.adjoint() * coefficients).cwiseAbs2();
+        eigen_sparse_double_t overlap = (canonicalbasis.adjoint() * basisvectors).cwiseAbs2();
         eigen_vector_double_t overlap_total =
             eigen_vector_double_t::Ones(canonicalbasis.cols()).transpose() * overlap;
 
         // Get indices of the canonicalbasis.cols() largest entries
-        std::vector<size_t> indices_available(coefficients.cols());
+        std::vector<size_t> indices_available(basisvectors.cols());
         std::iota(indices_available.begin(), indices_available.end(), 0);
         std::nth_element(
             indices_available.begin(), indices_available.begin() + canonicalbasis.cols(),
@@ -918,26 +918,26 @@ public:
     void forgetStatemixing() {
         this->diagonalize();
 
-        std::vector<eigen_triplet_t> coefficients_triplets;
-        coefficients_triplets.reserve(coefficients.cols());
+        std::vector<eigen_triplet_t> basisvectors_triplets;
+        basisvectors_triplets.reserve(basisvectors.cols());
         double threshold = std::sqrt(0.5);
 
-        for (int k = 0; k < coefficients.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+        for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
+            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
                 if (std::abs(triple.value()) > threshold) {
-                    coefficients_triplets.emplace_back(triple.row(), triple.col(), 1);
+                    basisvectors_triplets.emplace_back(triple.row(), triple.col(), 1);
                     break;
                 }
             }
         }
 
-        if (coefficients_triplets.size() < coefficients.cols()) {
+        if (basisvectors_triplets.size() < basisvectors.cols()) {
             throw std::runtime_error(
                 "The states are mixed too strongly for calling forgetStatemixing().");
         }
 
-        coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
-        coefficients_triplets.clear();
+        basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
+        basisvectors_triplets.clear();
     }
 
     scalar_t getHamiltonianEntry(const T &state_row, const T &state_col) {
@@ -946,7 +946,7 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        return (coefficients.row(idx_row) * hamiltonianmatrix).dot(coefficients.row(idx_col));
+        return (basisvectors.row(idx_row) * hamiltonianmatrix).dot(basisvectors.row(idx_col));
     }
 
     void setHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
@@ -955,7 +955,7 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        value -= (coefficients.row(idx_row) * hamiltonianmatrix).dot(coefficients.row(idx_col));
+        value -= (basisvectors.row(idx_row) * hamiltonianmatrix).dot(basisvectors.row(idx_col));
 
         eigen_sparse_t tmp(states.size(), states.size());
         tmp.reserve(2);
@@ -965,7 +965,7 @@ public:
         }
         tmp.makeCompressed();
 
-        hamiltonianmatrix += coefficients.adjoint() * tmp * coefficients;
+        hamiltonianmatrix += basisvectors.adjoint() * tmp * basisvectors;
     }
 
     void addHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
@@ -982,7 +982,7 @@ public:
         }
         tmp.makeCompressed();
 
-        hamiltonianmatrix += coefficients.adjoint() * tmp * coefficients;
+        hamiltonianmatrix += basisvectors.adjoint() * tmp * basisvectors;
     }
 
 protected:
@@ -1020,9 +1020,9 @@ protected:
     bool is_new_hamiltonianmatrix_required;
 
     typename states_set<T>::type states;
-    eigen_sparse_t coefficients;
+    eigen_sparse_t basisvectors;
     eigen_sparse_t hamiltonianmatrix;
-    eigen_sparse_t coefficients_unperturbed_cache;
+    eigen_sparse_t basisvectors_unperturbed_cache;
     eigen_sparse_t hamiltonianmatrix_unperturbed_cache;
 
     ////////////////////////////////////////////////////////////////////
@@ -1031,14 +1031,14 @@ protected:
 
     void onParameterChange() {
         // Check variables for consistency
-        if ((coefficients_unperturbed_cache.size() == 0) !=
+        if ((basisvectors_unperturbed_cache.size() == 0) !=
             (hamiltonianmatrix_unperturbed_cache.size() == 0)) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
 
         // Throw error if the Hamiltonian cannot be changed anymore
-        if (is_interaction_already_contained && coefficients_unperturbed_cache.size() == 0) {
+        if (is_interaction_already_contained && basisvectors_unperturbed_cache.size() == 0) {
             throw std::runtime_error("If memory saving is activated, one cannot change parameters "
                                      "after interaction was added to the Hamiltonian.");
         }
@@ -1114,7 +1114,7 @@ protected:
     ////////////////////////////////////////////////////////////////////
 
     void applyLeftsideTransformator(std::vector<eigen_triplet_t> &triplets_transformator) {
-        eigen_sparse_t transformator(triplets_transformator.size(), coefficients.rows());
+        eigen_sparse_t transformator(triplets_transformator.size(), basisvectors.rows());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyLeftsideTransformator(transformator);
@@ -1122,14 +1122,14 @@ protected:
 
     void applyLeftsideTransformator(eigen_sparse_t &transformator) {
         // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
-        coefficients = transformator * coefficients;
-        if (coefficients_unperturbed_cache.size() != 0) {
-            coefficients_unperturbed_cache = transformator * coefficients_unperturbed_cache;
+        basisvectors = transformator * basisvectors;
+        if (basisvectors_unperturbed_cache.size() != 0) {
+            basisvectors_unperturbed_cache = transformator * basisvectors_unperturbed_cache;
         }
     }
 
     void applyRightsideTransformator(std::vector<eigen_triplet_t> &triplets_transformator) {
-        eigen_sparse_t transformator(coefficients.cols(), triplets_transformator.size());
+        eigen_sparse_t transformator(basisvectors.cols(), triplets_transformator.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyRightsideTransformator(transformator);
@@ -1138,9 +1138,9 @@ protected:
     void applyRightsideTransformator(eigen_sparse_t &transformator) {
         // Apply transformator in order to remove columns from the coefficient matrix (i.e. basis
         // vectors)
-        coefficients = coefficients * transformator;
-        if (coefficients_unperturbed_cache.size() != 0) {
-            coefficients_unperturbed_cache = coefficients_unperturbed_cache * transformator;
+        basisvectors = basisvectors * transformator;
+        if (basisvectors_unperturbed_cache.size() != 0) {
+            basisvectors_unperturbed_cache = basisvectors_unperturbed_cache * transformator;
         }
 
         // Apply transformator in order to remove rows and columns from the matrices that help
@@ -1275,16 +1275,16 @@ private:
             // Build transformator and remove vectors (if their energy is not allowed or the squared
             // norm too small)
             std::vector<eigen_triplet_t> triplets_transformator;
-            triplets_transformator.reserve(coefficients.cols());
+            triplets_transformator.reserve(basisvectors.cols());
 
             size_t idx_new = 0;
-            for (int idx = 0; idx < coefficients.cols(); ++idx) { // idx = col = num basis vector
+            for (int idx = 0; idx < basisvectors.cols(); ++idx) { // idx = col = num basis vector
 
                 if (checkIsEnergyValid(this->real(hamiltonianmatrix.coeff(idx, idx)))) {
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the coefficient matrix
-                    for (eigen_iterator_t triple(coefficients, idx); triple; ++triple) {
+                    for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
                         sqnorm += std::pow(std::abs(triple.value()), 2);
                     }
                     if (sqnorm > 0.05) {
@@ -1300,9 +1300,9 @@ private:
             ////////////////////////////////////////////////////////////////////
 
             // Calculate the square norm of the rows of the coefficient matrix
-            std::vector<double> sqnorm_list(coefficients.rows(), 0);
-            for (int k = 0; k < this->coefficients.cols(); ++k) {
-                for (eigen_iterator_t triple(coefficients, k); triple; ++triple) {
+            std::vector<double> sqnorm_list(basisvectors.rows(), 0);
+            for (int k = 0; k < this->basisvectors.cols(); ++k) {
+                for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
                     sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
                 }
             }
@@ -1335,8 +1335,8 @@ private:
         ar &cache;
         ar &energy_min &energy_max &range_n &range_l &range_j &range_m &states_to_add;
         ar &memory_saving &is_interaction_already_contained &is_new_hamiltonianmatrix_required;
-        ar &states &coefficients &hamiltonianmatrix;
-        ar &coefficients_unperturbed_cache &hamiltonianmatrix_unperturbed_cache;
+        ar &states &basisvectors &hamiltonianmatrix;
+        ar &basisvectors_unperturbed_cache &hamiltonianmatrix_unperturbed_cache;
     }
 };
 
