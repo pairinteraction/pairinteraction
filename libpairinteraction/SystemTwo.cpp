@@ -453,7 +453,7 @@ void SystemTwo::initializeBasis() {
     // Estimate minimal Le Roy radius
     StateTwo crucial_state{{{"None", "None"}}};
     for (const auto &e : states) {
-        if (e.state.isArtificial(0) || e.state.isArtificial(1)) { // TODO simplify syntax
+        if (e.state.isArtificial(0) || e.state.isArtificial(1)) {
             continue;
         }
 
@@ -471,7 +471,7 @@ void SystemTwo::initializeBasis() {
     }
 
     // Calculate minimal Le Roy radius precisely
-    if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) { // TODO simplify syntax
+    if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
         minimal_le_roy_radius = 0;
     } else {
         minimal_le_roy_radius = 2 *

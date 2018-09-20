@@ -1064,35 +1064,29 @@ protected:
         return range_q.empty() || range_q.find(q) != range_q.end();
     }
 
-    template <class V>
-    bool checkIsQuantumnumberValid(std::array<V, 2> q, std::set<V> range_q) {
-        return range_q.empty() ||
-            (range_q.find(q[0]) != range_q.end() && range_q.find(q[1]) != range_q.end());
-    }
-
-    void checkArtificial(bool a) {
-        if (a) {
-            throw std::runtime_error(
-                "SystemBase::checkIsQuantumstateValid must not be called on an artificial state.");
-        }
-    }
-
-    void checkArtificial(std::array<bool, 2> a) {
-        if (a[0] || a[1]) {
-            throw std::runtime_error(
-                "SystemBase::checkIsQuantumstateValid must not be called on an artificial state.");
-        }
-    }
-
-    // TODO extend checkIsQuantumstateValid for artificial states [dummystate] !!!!!!
-
     bool checkIsQuantumstateValid(const T &state) {
-        checkArtificial(state.isArtificial());
+        return checkIsQuantumstateValid(state, state.isArtificial());
+    }
 
-        return checkIsQuantumnumberValid(state.getN(), range_n) &&
-            checkIsQuantumnumberValid(state.getL(), range_l) &&
-            checkIsQuantumnumberValid(state.getJ(), range_j) &&
-            checkIsQuantumnumberValid(state.getM(), range_m);
+    bool checkIsQuantumstateValid(const T &state, bool a) {
+        return a ||
+            (checkIsQuantumnumberValid(state.getN(), range_n) &&
+             checkIsQuantumnumberValid(state.getL(), range_l) &&
+             checkIsQuantumnumberValid(state.getJ(), range_j) &&
+             checkIsQuantumnumberValid(state.getM(), range_m));
+    }
+
+    bool checkIsQuantumstateValid(const T &state, std::array<bool, 2> a) {
+        bool valid = true;
+        for (int idx = 0; idx < 2; ++idx) {
+            valid = valid &&
+                (a[idx] ||
+                 (checkIsQuantumnumberValid(state.getN(idx), range_n) &&
+                  checkIsQuantumnumberValid(state.getL(idx), range_l) &&
+                  checkIsQuantumnumberValid(state.getJ(idx), range_j) &&
+                  checkIsQuantumnumberValid(state.getM(idx), range_m)));
+        }
+        return valid;
     }
 
     bool checkIsEnergyValid(double e) {
