@@ -78,7 +78,7 @@ public:
         : // TODO
           cache(cache), energy_min(std::numeric_limits<double>::lowest()),
           energy_max(std::numeric_limits<double>::max()), memory_saving(false),
-          is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {
+          is_interaction_already_contained(false), is_new_hamiltonian_required(false) {
         (void)states;
         throw std::runtime_error("Method yet not implemented.");
     }
@@ -147,7 +147,7 @@ public:
 
     eigen_sparse_t &getHamiltonian() {
         this->buildHamiltonian();
-        return hamiltonianmatrix;
+        return hamiltonian;
     }
 
     size_t getNumBasisvectors() {
@@ -156,8 +156,8 @@ public:
 
         // Check variables for consistency
         if ((basisvectors.outerSize() != basisvectors.cols()) ||
-            (basisvectors.outerSize() != hamiltonianmatrix.rows()) ||
-            (basisvectors.outerSize() != hamiltonianmatrix.cols())) {
+            (basisvectors.outerSize() != hamiltonian.rows()) ||
+            (basisvectors.outerSize() != hamiltonian.cols())) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
@@ -369,24 +369,24 @@ public:
         this->buildBasis();
 
         // Initialize Hamiltonian matrix with interaction if required
-        if (is_new_hamiltonianmatrix_required) {
+        if (is_new_hamiltonian_required) {
             if (is_interaction_already_contained) {
 
                 // Check variables for consistency
                 if (memory_saving || basisvectors_unperturbed_cache.size() == 0 ||
-                    hamiltonianmatrix_unperturbed_cache.size() == 0) {
+                    hamiltonian_unperturbed_cache.size() == 0) {
                     throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) +
                                              ":" + std::to_string(__LINE__) + ".");
                 }
 
                 // Reset the Hamiltonian if it already contains the interaction
                 basisvectors = basisvectors_unperturbed_cache;
-                hamiltonianmatrix = hamiltonianmatrix_unperturbed_cache;
+                hamiltonian = hamiltonian_unperturbed_cache;
             } else if (!memory_saving) {
 
                 // Store the Hamiltonian without interaction
                 basisvectors_unperturbed_cache = basisvectors;
-                hamiltonianmatrix_unperturbed_cache = hamiltonianmatrix;
+                hamiltonian_unperturbed_cache = hamiltonian;
             }
 
             // Build interaction
@@ -401,7 +401,7 @@ public:
             }
 
             is_interaction_already_contained = true;
-            is_new_hamiltonianmatrix_required = false;
+            is_new_hamiltonian_required = false;
         }
     }
 
@@ -416,8 +416,8 @@ public:
 
     void buildBasis() {
         // Check variables for consistency
-        if (((hamiltonianmatrix.size() == 0) != states.empty()) ||
-            ((hamiltonianmatrix.size() == 0) != (basisvectors.size() == 0))) {
+        if (((hamiltonian.size() == 0) != states.empty()) ||
+            ((hamiltonian.size() == 0) != (basisvectors.size() == 0))) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
@@ -457,24 +457,24 @@ public:
         this->buildHamiltonian();
 
         // Check if already diagonal
-        if (checkIsDiagonal(hamiltonianmatrix)) {
+        if (checkIsDiagonal(hamiltonian)) {
             return;
         }
 
-        // Diagonalize hamiltonianmatrix
-        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonianmatrix);
+        // Diagonalize hamiltonian
+        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonian);
 
         // Get eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
         eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
 
-        // Build the new hamiltonianmatrix
-        hamiltonianmatrix.setZero();
-        hamiltonianmatrix.reserve(evals.size());
+        // Build the new hamiltonian
+        hamiltonian.setZero();
+        hamiltonian.reserve(evals.size());
         for (int idx = 0; idx < evals.size(); ++idx) {
-            hamiltonianmatrix.insert(idx, idx) = evals.coeffRef(idx);
+            hamiltonian.insert(idx, idx) = evals.coeffRef(idx);
         }
-        hamiltonianmatrix.makeCompressed();
+        hamiltonian.makeCompressed();
 
         // Transform the basis vectors
         basisvectors = basisvectors * evecs;
@@ -484,25 +484,25 @@ public:
         this->buildHamiltonian();
 
         // Check if already diagonal
-        if (checkIsDiagonal(hamiltonianmatrix)) {
+        if (checkIsDiagonal(hamiltonian)) {
             return;
         }
 
-        // Diagonalize hamiltonianmatrix // TODO use approximative eigensolver for sparse matrices,
+        // Diagonalize hamiltonian // TODO use approximative eigensolver for sparse matrices,
         // e.g. FEAST which requires the Intel MKL-PARDISO solver, see http://www.feast-solver.org
-        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonianmatrix);
+        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonian);
 
         // Get eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
         eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
 
-        // Build the new hamiltonianmatrix
-        hamiltonianmatrix.setZero();
-        hamiltonianmatrix.reserve(evals.size());
+        // Build the new hamiltonian
+        hamiltonian.setZero();
+        hamiltonian.reserve(evals.size());
         for (int idx = 0; idx < evals.size(); ++idx) {
-            hamiltonianmatrix.insert(idx, idx) = evals.coeffRef(idx);
+            hamiltonian.insert(idx, idx) = evals.coeffRef(idx);
         }
-        hamiltonianmatrix.makeCompressed();
+        hamiltonian.makeCompressed();
 
         // Transform the basis vectors
         basisvectors = (basisvectors * evecs).pruned(threshold, 1);
@@ -511,8 +511,8 @@ public:
     void canonicalize() {
         this->buildHamiltonian();
 
-        // Transform the hamiltonianmatrix
-        hamiltonianmatrix = basisvectors * hamiltonianmatrix * basisvectors.adjoint();
+        // Transform the hamiltonian
+        hamiltonian = basisvectors * hamiltonian * basisvectors.adjoint();
 
         // Transform the basis vectors
         basisvectors = basisvectors * basisvectors.adjoint();
@@ -597,9 +597,9 @@ public:
             throw std::runtime_error("The value of the variable 'is_interaction_already_contained' "
                                      "must be the same for both systems.");
         }
-        if (is_new_hamiltonianmatrix_required != system.is_new_hamiltonianmatrix_required) {
+        if (is_new_hamiltonian_required != system.is_new_hamiltonian_required) {
             throw std::runtime_error(
-                "The value of the variable 'is_new_hamiltonianmatrix_required' must be the same "
+                "The value of the variable 'is_new_hamiltonian_required' must be the same "
                 "for both systems.");
         }
 
@@ -652,40 +652,35 @@ public:
                 "Two systems cannot be combined if their basis vectors are not orthogonal.");
         }
 
-        // --- Combine hamiltonianmatrix and hamiltonianmatrix_unperturbed_cache ---
+        // --- Combine hamiltonian and hamiltonian_unperturbed_cache ---
         std::vector<eigen_triplet_t> shifter_triplets;
-        shifter_triplets.reserve(system.hamiltonianmatrix.rows());
+        shifter_triplets.reserve(system.hamiltonian.rows());
 
-        for (size_t idx = 0; idx < system.hamiltonianmatrix.rows(); ++idx) {
-            shifter_triplets.emplace_back(hamiltonianmatrix.rows() + idx, idx, 1);
+        for (size_t idx = 0; idx < system.hamiltonian.rows(); ++idx) {
+            shifter_triplets.emplace_back(hamiltonian.rows() + idx, idx, 1);
         }
 
-        eigen_sparse_t shifter(hamiltonianmatrix.rows() + system.hamiltonianmatrix.rows(),
-                               system.hamiltonianmatrix.rows());
+        eigen_sparse_t shifter(hamiltonian.rows() + system.hamiltonian.rows(),
+                               system.hamiltonian.rows());
         shifter.setFromTriplets(shifter_triplets.begin(), shifter_triplets.end());
         shifter_triplets.clear();
 
-        hamiltonianmatrix.conservativeResize(
-            hamiltonianmatrix.rows() + system.hamiltonianmatrix.rows(),
-            hamiltonianmatrix.cols() + system.hamiltonianmatrix.cols());
-        hamiltonianmatrix.rightCols(system.hamiltonianmatrix.cols()) =
-            shifter * system.hamiltonianmatrix;
+        hamiltonian.conservativeResize(hamiltonian.rows() + system.hamiltonian.rows(),
+                                       hamiltonian.cols() + system.hamiltonian.cols());
+        hamiltonian.rightCols(system.hamiltonian.cols()) = shifter * system.hamiltonian;
 
-        if ((hamiltonianmatrix_unperturbed_cache.size() != 0) !=
-            (system.hamiltonianmatrix_unperturbed_cache.size() != 0)) {
+        if ((hamiltonian_unperturbed_cache.size() != 0) !=
+            (system.hamiltonian_unperturbed_cache.size() != 0)) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
 
-        if (hamiltonianmatrix_unperturbed_cache.size() != 0) {
-            hamiltonianmatrix_unperturbed_cache.conservativeResize(
-                hamiltonianmatrix_unperturbed_cache.rows() +
-                    system.hamiltonianmatrix_unperturbed_cache.rows(),
-                hamiltonianmatrix_unperturbed_cache.cols() +
-                    system.hamiltonianmatrix_unperturbed_cache.cols());
-            hamiltonianmatrix_unperturbed_cache.rightCols(
-                system.hamiltonianmatrix_unperturbed_cache.cols()) =
-                shifter * system.hamiltonianmatrix_unperturbed_cache;
+        if (hamiltonian_unperturbed_cache.size() != 0) {
+            hamiltonian_unperturbed_cache.conservativeResize(
+                hamiltonian_unperturbed_cache.rows() + system.hamiltonian_unperturbed_cache.rows(),
+                hamiltonian_unperturbed_cache.cols() + system.hamiltonian_unperturbed_cache.cols());
+            hamiltonian_unperturbed_cache.rightCols(system.hamiltonian_unperturbed_cache.cols()) =
+                shifter * system.hamiltonian_unperturbed_cache;
         }
     }
 
@@ -722,7 +717,7 @@ public:
         system0.buildHamiltonian();
 
         // Check that system0, i.e. the unperturbed system, is diagonal
-        if (!this->checkIsDiagonal(system0.hamiltonianmatrix)) {
+        if (!this->checkIsDiagonal(system0.hamiltonian)) {
             throw std::runtime_error("The unperturbed system passed to "
                                      "applySchriefferWolffTransformation() is not diagonal.");
         }
@@ -946,7 +941,7 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        return (basisvectors.row(idx_row) * hamiltonianmatrix).dot(basisvectors.row(idx_col));
+        return (basisvectors.row(idx_row) * hamiltonian).dot(basisvectors.row(idx_col));
     }
 
     void setHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
@@ -955,7 +950,7 @@ public:
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        value -= (basisvectors.row(idx_row) * hamiltonianmatrix).dot(basisvectors.row(idx_col));
+        value -= (basisvectors.row(idx_row) * hamiltonian).dot(basisvectors.row(idx_col));
 
         eigen_sparse_t tmp(states.size(), states.size());
         tmp.reserve(2);
@@ -965,7 +960,7 @@ public:
         }
         tmp.makeCompressed();
 
-        hamiltonianmatrix += basisvectors.adjoint() * tmp * basisvectors;
+        hamiltonian += basisvectors.adjoint() * tmp * basisvectors;
     }
 
     void addHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
@@ -982,19 +977,19 @@ public:
         }
         tmp.makeCompressed();
 
-        hamiltonianmatrix += basisvectors.adjoint() * tmp * basisvectors;
+        hamiltonian += basisvectors.adjoint() * tmp * basisvectors;
     }
 
 protected:
     SystemBase(MatrixElementCache &cache)
         : cache(cache), energy_min(std::numeric_limits<double>::lowest()),
           energy_max(std::numeric_limits<double>::max()), memory_saving(false),
-          is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {}
+          is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
 
     SystemBase(MatrixElementCache &cache, bool memory_saving)
         : cache(cache), energy_min(std::numeric_limits<double>::lowest()),
           energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving),
-          is_interaction_already_contained(false), is_new_hamiltonianmatrix_required(false) {}
+          is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
 
     virtual void initializeBasis() = 0;
     virtual void initializeInteraction() = 0;
@@ -1017,13 +1012,13 @@ protected:
 
     bool memory_saving;
     bool is_interaction_already_contained;
-    bool is_new_hamiltonianmatrix_required;
+    bool is_new_hamiltonian_required;
 
     typename states_set<T>::type states;
     eigen_sparse_t basisvectors;
-    eigen_sparse_t hamiltonianmatrix;
+    eigen_sparse_t hamiltonian;
     eigen_sparse_t basisvectors_unperturbed_cache;
-    eigen_sparse_t hamiltonianmatrix_unperturbed_cache;
+    eigen_sparse_t hamiltonian_unperturbed_cache;
 
     ////////////////////////////////////////////////////////////////////
     /// Helper method that shoul be called by the derived classes //////
@@ -1032,7 +1027,7 @@ protected:
     void onParameterChange() {
         // Check variables for consistency
         if ((basisvectors_unperturbed_cache.size() == 0) !=
-            (hamiltonianmatrix_unperturbed_cache.size() == 0)) {
+            (hamiltonian_unperturbed_cache.size() == 0)) {
             throw std::runtime_error("Inconsistent variables at " + std::string(__FILE__) + ":" +
                                      std::to_string(__LINE__) + ".");
         }
@@ -1043,7 +1038,7 @@ protected:
                                      "after interaction was added to the Hamiltonian.");
         }
 
-        is_new_hamiltonianmatrix_required = true;
+        is_new_hamiltonian_required = true;
     }
 
     void onSymmetryChange() {
@@ -1144,14 +1139,14 @@ protected:
         }
 
         // Apply transformator in order to remove rows and columns from the matrices that help
-        // constructing the total Hamiltonianmatrix
+        // constructing the total Hamiltonian
         this->transformInteraction(transformator);
 
-        // Apply transformator in order to remove rows and columns from the total Hamiltonianmatrix
-        hamiltonianmatrix = transformator.adjoint() * hamiltonianmatrix * transformator;
-        if (hamiltonianmatrix_unperturbed_cache.size() != 0) {
-            hamiltonianmatrix_unperturbed_cache =
-                transformator.adjoint() * hamiltonianmatrix_unperturbed_cache * transformator;
+        // Apply transformator in order to remove rows and columns from the total Hamiltonian
+        hamiltonian = transformator.adjoint() * hamiltonian * transformator;
+        if (hamiltonian_unperturbed_cache.size() != 0) {
+            hamiltonian_unperturbed_cache =
+                transformator.adjoint() * hamiltonian_unperturbed_cache * transformator;
         }
     }
 
@@ -1280,7 +1275,7 @@ private:
             size_t idx_new = 0;
             for (int idx = 0; idx < basisvectors.cols(); ++idx) { // idx = col = num basis vector
 
-                if (checkIsEnergyValid(this->real(hamiltonianmatrix.coeff(idx, idx)))) {
+                if (checkIsEnergyValid(this->real(hamiltonian.coeff(idx, idx)))) {
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the coefficient matrix
@@ -1334,9 +1329,9 @@ private:
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &cache;
         ar &energy_min &energy_max &range_n &range_l &range_j &range_m &states_to_add;
-        ar &memory_saving &is_interaction_already_contained &is_new_hamiltonianmatrix_required;
-        ar &states &basisvectors &hamiltonianmatrix;
-        ar &basisvectors_unperturbed_cache &hamiltonianmatrix_unperturbed_cache;
+        ar &memory_saving &is_interaction_already_contained &is_new_hamiltonian_required;
+        ar &states &basisvectors &hamiltonian;
+        ar &basisvectors_unperturbed_cache &hamiltonian_unperturbed_cache;
     }
 };
 

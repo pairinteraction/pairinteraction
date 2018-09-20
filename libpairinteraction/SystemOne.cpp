@@ -160,9 +160,9 @@ void SystemOne::initializeBasis() {
     size_t idx = 0;
     std::vector<eigen_triplet_t>
         basisvectors_triplets; // TODO reserve states, basisvectors_triplets,
-                               // hamiltonianmatrix_triplets
+                               // hamiltonian_triplets
 
-    std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
+    std::vector<eigen_triplet_t> hamiltonian_triplets;
 
     /// Loop over specified quantum numbers ////////////////////////////
 
@@ -235,7 +235,7 @@ void SystemOne::initializeBasis() {
 
                     // Add symmetrized basis vectors
                     this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
-                                                     hamiltonianmatrix_triplets, sym_reflection);
+                                                     hamiltonian_triplets, sym_reflection);
                 }
             }
         }
@@ -290,7 +290,7 @@ void SystemOne::initializeBasis() {
 
         // Add symmetrized basis vectors
         this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
-                                         hamiltonianmatrix_triplets, sym_reflection_local);
+                                         hamiltonian_triplets, sym_reflection_local);
     }
 
     /// Build data /////////////////////////////////////////////////////
@@ -299,10 +299,9 @@ void SystemOne::initializeBasis() {
     basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
     basisvectors_triplets.clear();
 
-    hamiltonianmatrix.resize(idx, idx);
-    hamiltonianmatrix.setFromTriplets(hamiltonianmatrix_triplets.begin(),
-                                      hamiltonianmatrix_triplets.end());
-    hamiltonianmatrix_triplets.clear();
+    hamiltonian.resize(idx, idx);
+    hamiltonian.setFromTriplets(hamiltonian_triplets.begin(), hamiltonian_triplets.end());
+    hamiltonian_triplets.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -454,44 +453,44 @@ void SystemOne::addInteraction() {
     double tolerance = 1e-24;
 
     if (std::abs(efield_spherical[+0]) > tolerance) {
-        hamiltonianmatrix -= interaction_efield[+0] * efield_spherical[+0];
+        hamiltonian -= interaction_efield[+0] * efield_spherical[+0];
     }
     if (std::abs(efield_spherical[-1]) > tolerance) {
-        hamiltonianmatrix += interaction_efield[+1] * efield_spherical[-1];
+        hamiltonian += interaction_efield[+1] * efield_spherical[-1];
     }
     if (std::abs(efield_spherical[+1]) > tolerance) {
-        hamiltonianmatrix += interaction_efield[-1] * efield_spherical[+1];
+        hamiltonian += interaction_efield[-1] * efield_spherical[+1];
     }
     if (std::abs(bfield_spherical[+0]) > tolerance) {
-        hamiltonianmatrix -= interaction_bfield[+0] * bfield_spherical[+0];
+        hamiltonian -= interaction_bfield[+0] * bfield_spherical[+0];
     }
     if (std::abs(bfield_spherical[-1]) > tolerance) {
-        hamiltonianmatrix += interaction_bfield[+1] * bfield_spherical[-1];
+        hamiltonian += interaction_bfield[+1] * bfield_spherical[-1];
     }
     if (std::abs(bfield_spherical[+1]) > tolerance) {
-        hamiltonianmatrix += interaction_bfield[-1] * bfield_spherical[+1];
+        hamiltonian += interaction_bfield[-1] * bfield_spherical[+1];
     }
 
     if (diamagnetism && std::abs(diamagnetism_terms[{{0, +0}}]) > tolerance) {
-        hamiltonianmatrix += interaction_diamagnetism[{{0, +0}}] * diamagnetism_terms[{{0, +0}}];
+        hamiltonian += interaction_diamagnetism[{{0, +0}}] * diamagnetism_terms[{{0, +0}}];
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +0}}]) > tolerance) {
-        hamiltonianmatrix -= interaction_diamagnetism[{{2, +0}}] * diamagnetism_terms[{{2, +0}}];
+        hamiltonian -= interaction_diamagnetism[{{2, +0}}] * diamagnetism_terms[{{2, +0}}];
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +1}}]) > tolerance) {
-        hamiltonianmatrix +=
+        hamiltonian +=
             interaction_diamagnetism[{{2, +1}}] * diamagnetism_terms[{{2, +1}}] * std::sqrt(3);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, -1}}]) > tolerance) {
-        hamiltonianmatrix +=
+        hamiltonian +=
             interaction_diamagnetism[{{2, -1}}] * diamagnetism_terms[{{2, -1}}] * std::sqrt(3);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +2}}]) > tolerance) {
-        hamiltonianmatrix -=
+        hamiltonian -=
             interaction_diamagnetism[{{2, +2}}] * diamagnetism_terms[{{2, +2}}] * std::sqrt(1.5);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, -2}}]) > tolerance) {
-        hamiltonianmatrix -=
+        hamiltonian -=
             interaction_diamagnetism[{{2, -2}}] * diamagnetism_terms[{{2, -2}}] * std::sqrt(1.5);
     }
 }
@@ -630,7 +629,7 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 
 void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
                                            std::vector<eigen_triplet_t> &basisvectors_triplets,
-                                           std::vector<eigen_triplet_t> &hamiltonianmatrix_triplets,
+                                           std::vector<eigen_triplet_t> &hamiltonian_triplets,
                                            parity_t &sym_reflection_local) {
     // In case of reflection symmetry, skip half of the basis vectors
     if (sym_reflection_local != NA && state.getM() != 0) {
@@ -640,7 +639,7 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     }
 
     // Store the energy of the unperturbed one atom state
-    hamiltonianmatrix_triplets.emplace_back(idx, idx, energy);
+    hamiltonian_triplets.emplace_back(idx, idx, energy);
 
     // Adapt the normalization if required by symmetries
     scalar_t value = 1;

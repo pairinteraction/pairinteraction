@@ -187,8 +187,8 @@ void SystemTwo::initializeBasis() {
 
     /// Combine one atom states ////////////////////////////////////////
 
-    std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
-    hamiltonianmatrix_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
+    std::vector<eigen_triplet_t> hamiltonian_triplets;
+    hamiltonian_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
     states.reserve(system1.getNumStates() * system2.getNumStates() + states_to_add.size());
     std::vector<eigen_triplet_t> basisvectors_triplets; // TODO reserve
     std::vector<double> sqnorm_list(
@@ -237,7 +237,7 @@ void SystemTwo::initializeBasis() {
             }
 
             // Store the pair state energy
-            hamiltonianmatrix_triplets.emplace_back(col_new, col_new, energy);
+            hamiltonian_triplets.emplace_back(col_new, col_new, energy);
 
             // Build the basis vector that corresponds to the stored pair state energy
             for (eigen_iterator_t triple_1(system1.getBasisvectors(), col_1); triple_1;
@@ -455,7 +455,7 @@ void SystemTwo::initializeBasis() {
         }
 
         // Store the energy of the two atom state
-        hamiltonianmatrix_triplets.emplace_back(col_new, col_new, energy);
+        hamiltonian_triplets.emplace_back(col_new, col_new, energy);
 
         // Adapt the normalization if required by symmetries
         scalar_t value_new = 1;
@@ -492,10 +492,9 @@ void SystemTwo::initializeBasis() {
     basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
     basisvectors_triplets.clear();
 
-    hamiltonianmatrix.resize(col_new, col_new);
-    hamiltonianmatrix.setFromTriplets(hamiltonianmatrix_triplets.begin(),
-                                      hamiltonianmatrix_triplets.end());
-    hamiltonianmatrix_triplets.clear();
+    hamiltonian.resize(col_new, col_new);
+    hamiltonian.setFromTriplets(hamiltonian_triplets.begin(), hamiltonian_triplets.end());
+    hamiltonian_triplets.clear();
 
     ////////////////////////////////////////////////////////////////////
     /// Remove vectors with too small norm /////////////////////////////
@@ -809,7 +808,7 @@ void SystemTwo::addInteraction() {
         double powerlaw = 1. / std::pow(distance, 3);
         for (size_t i = 0; i < 4; ++i) {
             if (std::abs(angle_terms[i]) > tolerance) {
-                hamiltonianmatrix += interaction_angulardipole[i] * angle_terms[i] * powerlaw;
+                hamiltonian += interaction_angulardipole[i] * angle_terms[i] * powerlaw;
             }
         }
 
@@ -817,7 +816,7 @@ void SystemTwo::addInteraction() {
 
         for (unsigned int order = 3; order <= ordermax; ++order) {
             double powerlaw = 1. / std::pow(distance, order);
-            hamiltonianmatrix += interaction_multipole[order] * powerlaw;
+            hamiltonian += interaction_multipole[order] * powerlaw;
         }
     }
 }
