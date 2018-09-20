@@ -34,7 +34,7 @@ public:
     SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
               bool memory_saving);
 
-    const std::array<std::string, 2> &getElement(); // TODO rename to getSpecies
+    const std::array<std::string, 2> &getSpecies();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);

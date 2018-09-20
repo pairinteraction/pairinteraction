@@ -36,7 +36,7 @@ SystemOne::SystemOne(std::string species, MatrixElementCache &cache, bool memory
       diamagnetism(false), species(std::move(species)), sym_reflection(NA),
       sym_rotation({static_cast<float>(ARB)}) {}
 
-const std::string &SystemOne::getElement() const { return species; }
+const std::string &SystemOne::getSpecies() const { return species; }
 
 void SystemOne::setEfield(std::array<double, 3> field) {
     this->onParameterChange();

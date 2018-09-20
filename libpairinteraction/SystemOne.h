@@ -43,7 +43,7 @@ public:
     SystemOne(std::string species, MatrixElementCache &cache);
     SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving);
 
-    const std::string &getElement() const; // TODO rename to getSpecies
+    const std::string &getSpecies() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
     void setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
