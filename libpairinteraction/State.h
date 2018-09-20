@@ -69,6 +69,7 @@ public:
     bool operator^(StateOne const &rhs) const; // subset
     bool operator!=(StateOne const &rhs) const;
     bool operator<(StateOne const &rhs) const;
+    bool operator<=(StateOne const &rhs) const;
 
 private:
     // TODO make the variables constant (requires load_construct_data, see
@@ -146,6 +147,7 @@ public:
     bool operator^(StateTwo const &rhs) const; // subset
     bool operator!=(StateTwo const &rhs) const;
     bool operator<(StateTwo const &rhs) const;
+    bool operator<=(StateTwo const &rhs) const;
 
 private:
     // TODO make the variables constant (requires load_construct_data, see

@@ -189,9 +189,10 @@ void SystemTwo::initializeBasis() {
 
     std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
     hamiltonianmatrix_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
-    states.reserve(system1.getNumStates() * system2.getNumStates());
+    states.reserve(system1.getNumStates() * system2.getNumStates() + states_to_add.size());
     std::vector<eigen_triplet_t> coefficients_triplets; // TODO reserve
-    std::vector<double> sqnorm_list(system1.getNumStates() * system2.getNumStates(), 0);
+    std::vector<double> sqnorm_list(
+        system1.getNumStates() * system2.getNumStates() + states_to_add.size(), 0);
 
     int M = 0;
     int parityL = 0;
@@ -218,13 +219,11 @@ void SystemTwo::initializeBasis() {
                 sym_rotation_local = std::set<int>({ARB});
             }
 
-            // In case of inversion symmetry: skip half of the basis vector pairs
+            // In case of inversion or permutation symmetry: skip half of the basis vector pairs
             if ((sym_inversion_local == EVEN && col_1 <= col_2) || // gerade
                 (sym_inversion_local == ODD && col_1 < col_2)) {   // ungerade
                 continue;
             }
-
-            // In case of permutation symmetry: skip half of the basis vector pairs
             if ((sym_permutation == EVEN && col_1 <= col_2) || // sym
                 (sym_permutation == ODD && col_1 < col_2)) {   // asym
                 continue;
@@ -260,6 +259,8 @@ void SystemTwo::initializeBasis() {
                         parityM = std::pow(-1, M);
                     }
 
+                    bool different = col_1 != col_2;
+
                     // Consider rotation symmetry
                     if (sym_rotation_local.count(ARB) == 0 && sym_rotation_local.count(M) == 0) {
                         continue;
@@ -267,94 +268,84 @@ void SystemTwo::initializeBasis() {
 
                     // Combine symmetries
                     bool skip_reflection = false;
-                    if (col_1 != col_2) {
+                    if (different) {
                         // In case of inversion and permutation symmetry: the inversion symmetric
                         // state is already permutation symmetric
                         if (sym_inversion_local != NA && sym_permutation != NA) {
                             if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
                                 ((sym_permutation == EVEN) ? -1 : 1)) {
-                                continue; // the parity under inversion and permutation is different
+                                continue; // parity under inversion and permutation is different
                             }
                         }
 
                         // In case of inversion or permutation and reflection symmetry: the
                         // inversion or permutation symmetric state is already reflection symmetric
-                        if ((sym_inversion_local != NA || sym_permutation != NA) &&
-                            sym_reflection_local != NA &&
+                        if (sym_inversion_local != NA && sym_reflection_local != NA &&
                             StateTwo(state_1.getReflected(), state_2.getReflected()) ==
                                 StateTwo(state_2, state_1)) {
-                            if (sym_inversion_local != NA) {
-                                if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
-                                    ((sym_reflection_local == EVEN)
-                                         ? parityL * parityJ * parityM
-                                         : -parityL * parityJ * parityM)) {
-                                    continue; // the parity under inversion and reflection is
-                                              // different
-                                }
-                                skip_reflection =
-                                    true; // the parity under inversion and reflection is the same
-
-                            } else if (sym_permutation != NA) {
-                                if (((sym_permutation == EVEN) ? -1 : 1) !=
-                                    ((sym_reflection_local == EVEN)
-                                         ? parityL * parityJ * parityM
-                                         : -parityL * parityJ * parityM)) {
-                                    continue; // the parity under permutation and reflection is
-                                              // different
-                                }
-                                skip_reflection =
-                                    true; // the parity under permutation and reflection is the same
+                            if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
+                                ((sym_reflection_local == EVEN) ? parityL * parityJ * parityM
+                                                                : -parityL * parityJ * parityM)) {
+                                continue; // parity under inversion and reflection is different
                             }
+                            skip_reflection =
+                                true; // parity under inversion and reflection is the same
+
+                        } else if (sym_permutation != NA && sym_reflection_local != NA &&
+                                   StateTwo(state_1.getReflected(), state_2.getReflected()) ==
+                                       StateTwo(state_2, state_1)) {
+                            if (((sym_permutation == EVEN) ? -1 : 1) !=
+                                ((sym_reflection_local == EVEN) ? parityL * parityJ * parityM
+                                                                : -parityL * parityJ * parityM)) {
+                                continue; // parity under permutation and reflection is different
+                            }
+                            skip_reflection =
+                                true; // parity under permutation and reflection is the same
                         }
                     }
 
                     // Adapt the normalization if required by symmetries
-                    if (col_1 != col_2) {
-                        if (sym_inversion_local != NA || sym_permutation != NA) {
-                            value_new /= std::sqrt(2);
-                        }
+                    if ((sym_inversion_local != NA || sym_permutation != NA) && different) {
+                        value_new /= std::sqrt(2);
                     }
                     if (sym_reflection_local != NA && !skip_reflection) {
-                        value_new /=
-                            std::sqrt(2) *
-                            std::sqrt(
-                                2); // the second factor std::sqrt(2) is because of double counting
+                        value_new /= std::sqrt(2) * std::sqrt(2);
+                        // the second factor std::sqrt(2) is because of double counting
                     }
 
                     // Add an entry to the current basis vector
-                    this->addCoefficient(StateTwo(state_1, state_2), col_new, value_new,
-                                         coefficients_triplets, sqnorm_list);
+                    this->addBasisvectors(StateTwo(state_1, state_2), col_new, value_new,
+                                          coefficients_triplets, sqnorm_list);
 
                     // Add further entries to the current basis vector if required by symmetries
-                    if (col_1 != col_2) {
+                    if (different) {
                         if (sym_inversion_local != NA) {
                             scalar_t v = value_new;
                             v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
-                            this->addCoefficient(StateTwo(state_2, state_1), col_new, v,
-                                                 coefficients_triplets, sqnorm_list);
+                            this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
+                                                  coefficients_triplets, sqnorm_list);
                         } else if (sym_permutation != NA) {
                             scalar_t v = value_new;
                             v *= (sym_permutation == EVEN) ? -1 : 1;
-                            this->addCoefficient(StateTwo(state_2, state_1), col_new, v,
-                                                 coefficients_triplets, sqnorm_list);
+                            this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
+                                                  coefficients_triplets, sqnorm_list);
                         }
                     }
-
                     if (sym_reflection_local != NA && !skip_reflection) {
                         scalar_t v = value_new;
                         v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                             : -parityL * parityJ * parityM;
-                        this->addCoefficient(
+                        this->addBasisvectors(
                             StateTwo(state_1.getReflected(), state_2.getReflected()), col_new, v,
                             coefficients_triplets, sqnorm_list);
 
-                        if (col_1 != col_2) {
+                        if (different) {
                             if (sym_inversion_local != NA) {
                                 scalar_t v = value_new;
                                 v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                                     : -parityL * parityJ * parityM;
                                 v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
-                                this->addCoefficient(
+                                this->addBasisvectors(
                                     StateTwo(state_2.getReflected(), state_1.getReflected()),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             } else if (sym_permutation != NA) {
@@ -362,7 +353,7 @@ void SystemTwo::initializeBasis() {
                                 v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                                     : -parityL * parityJ * parityM;
                                 v *= (sym_permutation == EVEN) ? -1 : 1;
-                                this->addCoefficient(
+                                this->addBasisvectors(
                                     StateTwo(state_2.getReflected(), state_1.getReflected()),
                                     col_new, v, coefficients_triplets, sqnorm_list);
                             }
@@ -394,10 +385,105 @@ void SystemTwo::initializeBasis() {
         }
     }
 
+    // Warn if reflection symmetry is selected
+    if (!states_to_add.empty() && sym_reflection != NA) {
+        std::cerr << "WARNING: Reflection symmetry cannot be handled for user-defined states."
+                  << std::endl;
+    }
+
     // Add user-defined states
     for (const auto &state : states_to_add) {
-        (void)state;
-        throw std::runtime_error("Adding user-defined states to SystemTwo is not yet supported.");
+        bool different = state.getFirstState() != state.getSecondState();
+
+        // Get energy of the state
+        double energy = 0;
+        for (int idx = 0; idx < 2; ++idx) {
+            if (!state.isArtificial(idx)) {
+                energy += state.getEnergy(idx);
+            }
+        }
+
+        // In case of artificial states, some symmetries won't work
+        auto sym_inversion_local = sym_inversion;
+        auto sym_rotation_local = sym_rotation;
+        if (state.isArtificial(0) || state.isArtificial(1)) {
+            if (sym_inversion_local != NA || sym_rotation_local.count(ARB) == 0) {
+                std::cerr
+                    << "WARNING: Only permutation symmetry can be applied to artificial states."
+                    << std::endl;
+            }
+            sym_inversion_local = NA;
+            sym_rotation_local = std::set<int>({ARB});
+        } else {
+            M = state.getM(0) + state.getM(1);
+            parityL = std::pow(-1, state.getL(0) + state.getL(1));
+            parityJ = std::pow(-1, state.getJ(0) + state.getJ(1));
+            parityM = std::pow(-1, M);
+        }
+
+        // Consider rotation symmetry
+        if (sym_rotation_local.count(ARB) == 0 && sym_rotation_local.count(M) == 0) {
+            continue;
+        }
+
+        // Combine symmetries (in case of inversion and permutation symmetry: the inversion
+        // symmetric state is already permutation symmetric)
+        if (sym_inversion_local != NA && sym_permutation != NA && different) {
+            if (((sym_inversion_local == EVEN) ? -parityL : parityL) !=
+                ((sym_permutation == EVEN) ? -1 : 1)) {
+                continue; // parity under inversion and permutation is different
+            }
+        }
+
+        // Check whether the symmetries can be realized with the states available
+        if ((sym_inversion_local != NA || sym_permutation != NA) && different) {
+            auto state_changed = StateTwo(state.getSecondState(), state.getFirstState());
+            if (states_to_add.find(state_changed) == states_to_add.end()) {
+                throw std::runtime_error("The state " + state_changed.str() +
+                                         " required by symmetries cannot be found.");
+            }
+        }
+
+        // In case of inversion or permutation symmetry: skip half of the states
+        if ((sym_inversion_local == EVEN &&
+             state.getFirstState() <= state.getSecondState()) || // gerade
+            (sym_inversion_local == ODD &&
+             state.getFirstState() < state.getSecondState())) { // ungerade
+            continue;
+        }
+        if ((sym_permutation == EVEN && state.getFirstState() <= state.getSecondState()) || // sym
+            (sym_permutation == ODD && state.getFirstState() < state.getSecondState())) {   // asym
+            continue;
+        }
+
+        // Store the energy of the two atom state
+        hamiltonianmatrix_triplets.emplace_back(col_new, col_new, energy);
+
+        // Adapt the normalization if required by symmetries
+        scalar_t value_new = 1;
+        if ((sym_inversion_local != NA || sym_permutation != NA) && different) {
+            value_new /= std::sqrt(2);
+        }
+
+        // Add an entry to the current basis vector
+        this->addBasisvectors(state, col_new, value_new, coefficients_triplets, sqnorm_list);
+
+        // Add further entries to the current basis vector if required by symmetries
+        if (different) {
+            if (sym_inversion_local != NA) {
+                scalar_t v = value_new;
+                v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
+                this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
+                                      col_new, v, coefficients_triplets, sqnorm_list);
+            } else if (sym_permutation != NA) {
+                scalar_t v = value_new;
+                v *= (sym_permutation == EVEN) ? -1 : 1;
+                this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
+                                      col_new, v, coefficients_triplets, sqnorm_list);
+            }
+        }
+
+        ++col_new;
     }
 
     /// Build data /////////////////////////////////////////////////////
@@ -886,10 +972,10 @@ void SystemTwo::checkDistance(double distance) {
     }
 }
 
-void SystemTwo::addCoefficient(const StateTwo &state, const size_t &col_new,
-                               const scalar_t &value_new,
-                               std::vector<eigen_triplet_t> &coefficients_triplets,
-                               std::vector<double> &sqnorm_list) {
+void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
+                                const scalar_t &value_new,
+                                std::vector<eigen_triplet_t> &coefficients_triplets,
+                                std::vector<double> &sqnorm_list) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row_new;
@@ -897,7 +983,7 @@ void SystemTwo::addCoefficient(const StateTwo &state, const size_t &col_new,
         row_new = state_iter->idx;
     } else {
         row_new = states.size();
-        states.push_back(enumerated_state<StateTwo>(row_new, state));
+        states.emplace_back(row_new, state);
     }
 
     coefficients_triplets.emplace_back(row_new, col_new, value_new);

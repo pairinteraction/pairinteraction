@@ -83,9 +83,9 @@ private:
 
     void checkDistance(double distance);
 
-    void addCoefficient(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
-                        std::vector<eigen_triplet_t> &coefficients_triplets,
-                        std::vector<double> &sqnorm_list);
+    void addBasisvectors(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
+                         std::vector<eigen_triplet_t> &coefficients_triplets,
+                         std::vector<double> &sqnorm_list);
 
     void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
                     scalar_t val);

@@ -164,6 +164,7 @@ bool StateOne::operator<(const StateOne &rhs) const {
           ((n == rhs.n) &&
            ((l < rhs.l) || ((l == rhs.l) && ((j < rhs.j) || ((j == rhs.j) && (m < rhs.m))))))));
 }
+bool StateOne::operator<=(const StateOne &rhs) const { return (*this < rhs) || (*this == rhs); }
 
 // Utility methods
 void StateOne::analyzeSpecies() {
@@ -288,3 +289,4 @@ bool StateTwo::operator<(const StateTwo &rhs) const {
     return (state_array[0] < rhs.state_array[0]) ||
         ((state_array[0] == rhs.state_array[0]) && (state_array[1] < rhs.state_array[1]));
 }
+bool StateTwo::operator<=(const StateTwo &rhs) const { return (*this < rhs) || (*this == rhs); }
