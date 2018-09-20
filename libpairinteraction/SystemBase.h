@@ -288,14 +288,15 @@ public:
     std::array<std::vector<size_t>, 2> getConnections(SystemBase<T> &system_to, double threshold) {
         // Build basis
         this->buildBasis();
+        system_to.buildBasis();
 
         double threshold_sqrt = std::sqrt(threshold);
 
         // Calculate transformator between the set of states
         std::vector<eigen_triplet_t> triplets_transformator;
-        triplets_transformator.reserve(std::min(this->getNumStates(), system_to.getNumStates()));
+        triplets_transformator.reserve(std::min(states.size(), system_to.states.size()));
 
-        for (const auto &s : system_to.getStatesMultiIndex()) {
+        for (const auto &s : system_to.states) {
             auto state_iter = states.template get<1>().find(s.state);
             if (state_iter != states.template get<1>().end()) {
                 size_t idx_from = state_iter->idx;
@@ -303,12 +304,12 @@ public:
             }
         }
 
-        eigen_sparse_t transformator(this->getNumStates(), system_to.getNumStates());
+        eigen_sparse_t transformator(states.size(), system_to.states.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         // Calculate overlap
         eigen_sparse_double_t overlap_sqrt =
-            (coefficients.adjoint() * transformator * system_to.getBasisvectors()).cwiseAbs();
+            (coefficients.adjoint() * transformator * system_to.coefficients).cwiseAbs();
 
         // Determine the indices of the maximal values within the rows
         std::vector<size_t> rows_with_maxval;
@@ -718,9 +719,10 @@ public:
 
     void applySchriefferWolffTransformation(SystemBase<T> &system0) {
         this->diagonalize();
+        system0.buildHamiltonian();
 
         // Check that system0, i.e. the unperturbed system, is diagonal
-        if (!this->checkIsDiagonal(system0.getHamiltonian())) {
+        if (!this->checkIsDiagonal(system0.hamiltonianmatrix)) {
             throw std::runtime_error("The unperturbed system passed to "
                                      "applySchriefferWolffTransformation() is not diagonal.");
         }
@@ -728,15 +730,15 @@ public:
         // --- Express the basis vectors of system0 as a linearcombination of all states ---
 
         // Check number of states
-        if (this->getNumStates() != system0.getNumStates()) {
+        if (states.size() != system0.states.size()) {
             throw std::runtime_error("The unperturbed system owns a different number of states.");
         }
 
         // Combine states and build transformators
         std::vector<eigen_triplet_t> transformator_triplets;
-        transformator_triplets.reserve(system0.getNumStates());
+        transformator_triplets.reserve(system0.states.size());
 
-        for (const auto &entry : system0.getStatesMultiIndex()) {
+        for (const auto &entry : system0.states) {
             auto state_iter = states.template get<1>().find(entry.state);
 
             // Check that all the states of system0 occur (since we already checked that the number
@@ -749,12 +751,12 @@ public:
             transformator_triplets.emplace_back(newidx, entry.idx, 1);
         }
 
-        eigen_sparse_t transformator(states.size(), system0.getNumStates());
+        eigen_sparse_t transformator(states.size(), system0.states.size());
         transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
         transformator_triplets.clear();
 
         // Get basisvectors of system0
-        eigen_sparse_t low_energy_basis0 = transformator * system0.getBasisvectors();
+        eigen_sparse_t low_energy_basis0 = transformator * system0.coefficients;
 
         // --- Find basisvectors which corresponds to the basis vectors of system0 ---
 
