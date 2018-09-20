@@ -22,6 +22,12 @@ if(CMAKE_BUILD_TYPE MATCHES Release)
   endif()
 endif()
 
+# Set /bigobj flag which is required for interface_[...]PYTHON_wrap.cxx
+
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
+endif()
+
 # Add current directory to search path
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -49,7 +55,7 @@ add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 target_link_libraries(pairinteraction-real    pireal)
 target_link_libraries(pairinteraction-complex picomplex)
 if(MSVC)
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN /bigobj")
+  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN")
 else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
 endif()
