@@ -112,9 +112,6 @@ public:
 
     void restrictM(std::set<float> m) { range_m = m; }
 
-    // TODO if restrictSomething is called, set minimal_le_roy_radius =
-    // std::numeric_limits<double>::max();
-
     ////////////////////////////////////////////////////////////////////
     /// Method for adding user-defined states //////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -1003,6 +1000,8 @@ protected:
     virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
     virtual void incorporate(SystemBase<T> &system) = 0;
 
+    virtual void onStatesChange(){};
+
     MatrixElementCache &cache;
 
     double energy_min, energy_max;
@@ -1256,6 +1255,9 @@ private:
             removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
                 return this->checkIsQuantumstateValid(entry.state);
             });
+
+            // Comunicate that the list of states has changed
+            this->onStatesChange();
         }
 
         if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() ||
@@ -1307,7 +1309,8 @@ private:
                 return sqnorm_list[entry.idx] > 0.05;
             });
 
-            // TODO recalculate minimal_le_roy_radius
+            // Comunicate that the list of states has changed
+            this->onStatesChange();
         }
 
         if (!states_to_add.empty()) {

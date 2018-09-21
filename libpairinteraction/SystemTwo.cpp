@@ -63,7 +63,6 @@ const std::array<std::string, 2> &SystemTwo::getSpecies() { return species; }
 void SystemTwo::setDistance(double d) {
     this->onParameterChange();
     distance = d;
-    this->checkDistance(d);
 }
 
 void SystemTwo::setAngle(double a) {
@@ -529,44 +528,6 @@ void SystemTwo::initializeBasis() {
         return sqnorm_list[entry.idx] > 0.05;
     });
 
-    ////////////////////////////////////////////////////////////////////
-    /// Get minimal Le Roy radius //////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
-    // Estimate minimal Le Roy radius
-    StateTwo crucial_state{{{"None", "None"}}};
-    for (const auto &e : states) {
-        if (e.state.isArtificial(0) || e.state.isArtificial(1)) {
-            continue;
-        }
-
-        auto n = e.state.getNStar();
-        auto l = e.state.getL();
-
-        double le_roy_radius = 2 * au2um *
-            (std::sqrt(0.5 * n[0] * n[0] * (5 * n[0] * n[0] + 1 - 3 * l[0] * (l[0] + 1))) +
-             std::sqrt(0.5 * n[1] * n[1] * (5 * n[1] * n[1] + 1 - 3 * l[1] * (l[1] + 1))));
-
-        if (le_roy_radius < minimal_le_roy_radius) {
-            minimal_le_roy_radius = le_roy_radius;
-            crucial_state = e.state;
-        }
-    }
-
-    // Calculate minimal Le Roy radius precisely
-    if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
-        minimal_le_roy_radius = 0;
-    } else {
-        minimal_le_roy_radius = 2 *
-            (std::sqrt(
-                 cache.getRadial(crucial_state.getFirstState(), crucial_state.getFirstState(), 2)) +
-             std::sqrt(cache.getRadial(crucial_state.getSecondState(),
-                                       crucial_state.getSecondState(), 2)));
-    }
-
-    // Check whether distances are larger than the minimal Le Roy radius
-    this->checkDistance(distance);
-
     /*////////////////////////////////////////////////////////////////////
     /// Sort states ////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -605,8 +566,6 @@ void SystemTwo::initializeInteraction() {
     if (distance == std::numeric_limits<double>::max()) {
         return;
     }
-
-    // TODO Calculate minimal Le Roy radius here
 
     ////////////////////////////////////////////////////////////////////
     /// Prepare the calculation of the interaction /////////////////////
@@ -802,6 +761,9 @@ void SystemTwo::addInteraction() {
         return;
     }
 
+    // Check whether distance is larger than the minimal Le Roy radius
+    this->checkDistance(distance);
+
     // Build the total Hamiltonian
     double tolerance = 1e-24;
 
@@ -960,12 +922,53 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
 }
 
 ////////////////////////////////////////////////////////////////////
+/// Methods that allows base class to communicate with subclass ////
+////////////////////////////////////////////////////////////////////
+
+void SystemTwo::onStatesChange() { minimal_le_roy_radius = std::numeric_limits<double>::max(); }
+
+////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::checkDistance(double distance) {
-    if (minimal_le_roy_radius != std::numeric_limits<double>::max() &&
-        distance < minimal_le_roy_radius) {
+void SystemTwo::checkDistance(const double &distance) {
+
+    // Get the minimal Le Roy radius
+    if (minimal_le_roy_radius == std::numeric_limits<double>::max()) {
+
+        // Estimate minimal Le Roy radius
+        StateTwo crucial_state{{{"None", "None"}}};
+        for (const auto &e : states) {
+            if (e.state.isArtificial(0) || e.state.isArtificial(1)) {
+                continue;
+            }
+
+            auto n = e.state.getNStar();
+            auto l = e.state.getL();
+
+            double le_roy_radius = 2 * au2um *
+                (std::sqrt(0.5 * n[0] * n[0] * (5 * n[0] * n[0] + 1 - 3 * l[0] * (l[0] + 1))) +
+                 std::sqrt(0.5 * n[1] * n[1] * (5 * n[1] * n[1] + 1 - 3 * l[1] * (l[1] + 1))));
+
+            if (le_roy_radius < minimal_le_roy_radius) {
+                minimal_le_roy_radius = le_roy_radius;
+                crucial_state = e.state;
+            }
+        }
+
+        // Calculate minimal Le Roy radius precisely
+        if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
+            minimal_le_roy_radius = 0;
+        } else {
+            minimal_le_roy_radius = 2 *
+                (std::sqrt(cache.getRadial(crucial_state.getFirstState(),
+                                           crucial_state.getFirstState(), 2)) +
+                 std::sqrt(cache.getRadial(crucial_state.getSecondState(),
+                                           crucial_state.getSecondState(), 2)));
+        }
+    }
+
+    if (distance < minimal_le_roy_radius) {
         std::cerr << "WARNING: The distance " << distance
                   << " um is smaller than the Le Roy radius " << minimal_le_roy_radius << " um."
                   << std::endl;

@@ -56,6 +56,7 @@ protected:
                                 double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateTwo> &system) override;
+    void onStatesChange() override;
 
 private:
     std::array<std::string, 2> species;
@@ -81,7 +82,7 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void checkDistance(double distance);
+    void checkDistance(const double &distance);
 
     void addBasisvectors(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
                          std::vector<eigen_triplet_t> &basisvectors_triplets,
