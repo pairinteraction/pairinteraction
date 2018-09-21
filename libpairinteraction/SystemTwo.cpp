@@ -606,6 +606,8 @@ void SystemTwo::initializeInteraction() {
         return;
     }
 
+    // TODO Calculate minimal Le Roy radius here
+
     ////////////////////////////////////////////////////////////////////
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -776,8 +778,8 @@ void SystemTwo::initializeInteraction() {
                                                      interaction_angulardipole_triplets[i].end());
         interaction_angulardipole_triplets[i].clear();
 
-        interaction_angulardipole[i] =
-            basisvectors.adjoint() * interaction_angulardipole[i] * basisvectors;
+        interaction_angulardipole[i] = basisvectors.adjoint() *
+            interaction_angulardipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
 
     for (const auto &i : orange) {
@@ -786,7 +788,8 @@ void SystemTwo::initializeInteraction() {
                                                  interaction_multipole_triplets[i].end());
         interaction_multipole_triplets[i].clear();
 
-        interaction_multipole[i] = basisvectors.adjoint() * interaction_multipole[i] * basisvectors;
+        interaction_multipole[i] = basisvectors.adjoint() *
+            interaction_multipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
 }
 
@@ -990,11 +993,6 @@ void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
 void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
                            const size_t c_idx, const scalar_t val) {
     triplets.emplace_back(r_idx, c_idx, val);
-    if (r_idx != c_idx) {
-        triplets.emplace_back(
-            c_idx, r_idx,
-            this->conjugate(val)); // triangular matrix is not sufficient because of basis change
-    }
 }
 
 template <>

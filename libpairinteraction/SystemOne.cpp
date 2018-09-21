@@ -320,18 +320,27 @@ void SystemOne::initializeInteraction() {
     std::vector<std::array<int, 2>> drange;
 
     for (const auto &entry : efield_spherical) {
+        if (entry.first < 0) {
+            continue;
+        }
         if (std::abs(entry.second) > tolerance &&
             interaction_efield.find(-entry.first) == interaction_efield.end()) {
-            erange.push_back(-entry.first); // TODO use entry.first without a minus
+            erange.push_back(entry.first);
         }
     }
     for (const auto &entry : bfield_spherical) {
+        if (entry.first < 0) {
+            continue;
+        }
         if (std::abs(entry.second) > tolerance &&
             interaction_bfield.find(-entry.first) == interaction_bfield.end()) {
-            brange.push_back(-entry.first); // TODO use entry.first without a minus
+            brange.push_back(entry.first);
         }
     }
     for (const auto &entry : diamagnetism_terms) {
+        if (entry.first[1] < 0) {
+            continue;
+        }
         if (diamagnetism && std::abs(entry.second) > tolerance &&
             interaction_diamagnetism.find(entry.first) == interaction_diamagnetism.end()) {
             drange.push_back(entry.first);
@@ -346,12 +355,21 @@ void SystemOne::initializeInteraction() {
     auto states_converted = this->getStates();
     for (const auto &i : erange) {
         cache.precalculateElectricMomentum(states_converted, i);
+        if (i != 0) {
+            cache.precalculateElectricMomentum(states_converted, -i);
+        }
     }
     for (const auto &i : brange) {
         cache.precalculateMagneticMomentum(states_converted, i);
+        if (i != 0) {
+            cache.precalculateMagneticMomentum(states_converted, -i);
+        }
     }
     for (const auto &i : drange) {
         cache.precalculateDiamagnetism(states_converted, i[0], i[1]);
+        if (i[1] != 0) {
+            cache.precalculateDiamagnetism(states_converted, i[0], -i[1]);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -377,11 +395,12 @@ void SystemOne::initializeInteraction() {
                 continue;
             }
 
-            // if (r.idx < c.idx) continue; // TODO modify addTriplet so that skipping half of the
-            // entries work
-
             // E-field interaction
             for (const auto &i : erange) {
+                if (i == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
                     scalar_t value = cache.getElectricDipole(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
@@ -392,6 +411,10 @@ void SystemOne::initializeInteraction() {
 
             // B-field interaction
             for (const auto &i : brange) {
+                if (i == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
                     scalar_t value = cache.getMagneticDipole(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
@@ -402,6 +425,10 @@ void SystemOne::initializeInteraction() {
 
             // Diamagnetic interaction
             for (const auto &i : drange) {
+                if (i[1] == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
                     scalar_t value = 1. / (8 * electron_rest_mass) *
                         cache.getDiamagnetism(r.state, c.state, i[0]);
@@ -421,7 +448,13 @@ void SystemOne::initializeInteraction() {
                                               interaction_efield_triplets[i].end());
         interaction_efield_triplets[i].clear();
 
-        interaction_efield[i] = basisvectors.adjoint() * interaction_efield[i] * basisvectors;
+        if (i == 0) {
+            interaction_efield[i] = basisvectors.adjoint() *
+                interaction_efield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_efield[i] = basisvectors.adjoint() * interaction_efield[i] * basisvectors;
+            interaction_efield[-i] = std::pow(-1, i) * interaction_efield[i].adjoint();
+        }
     }
 
     for (const auto &i : brange) {
@@ -430,7 +463,13 @@ void SystemOne::initializeInteraction() {
                                               interaction_bfield_triplets[i].end());
         interaction_bfield_triplets[i].clear();
 
-        interaction_bfield[i] = basisvectors.adjoint() * interaction_bfield[i] * basisvectors;
+        if (i == 0) {
+            interaction_bfield[i] = basisvectors.adjoint() *
+                interaction_bfield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_bfield[i] = basisvectors.adjoint() * interaction_bfield[i] * basisvectors;
+            interaction_bfield[-i] = std::pow(-1, i) * interaction_bfield[i].adjoint();
+        }
     }
 
     for (const auto &i : drange) {
@@ -439,8 +478,15 @@ void SystemOne::initializeInteraction() {
                                                     interaction_diamagnetism_triplets[i].end());
         interaction_diamagnetism_triplets[i].clear();
 
-        interaction_diamagnetism[i] =
-            basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
+        if (i[1] == 0) {
+            interaction_diamagnetism[i] = basisvectors.adjoint() *
+                interaction_diamagnetism[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_diamagnetism[i] =
+                basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
+            interaction_diamagnetism[{{i[0], -i[1]}}] =
+                std::pow(-1, i[1]) * interaction_diamagnetism[i].adjoint();
+        }
     }
 }
 
@@ -699,9 +745,6 @@ void SystemOne::changeToSphericalbasis(
 void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
                            const size_t c_idx, const scalar_t val) {
     triplets.emplace_back(r_idx, c_idx, val);
-    // if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val)));
-    // // triangular matrix is not sufficient because of basis change // TODO with
-    // interaction_bfield one sometimes has to add a minus sign instead of taking the conjugate
 }
 
 void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
