@@ -206,7 +206,7 @@ void SystemTwo::initializeBasis() {
             auto sym_inversion_local = sym_inversion;
             auto sym_reflection_local = sym_reflection;
             auto sym_rotation_local = sym_rotation;
-            if (artificial1[col_1] || artificial1[col_2]) {
+            if (artificial1[col_1] || artificial2[col_2]) {
                 if (sym_inversion_local != NA || sym_reflection_local != NA ||
                     sym_rotation_local.count(ARB) == 0) {
                     std::cerr
@@ -251,7 +251,7 @@ void SystemTwo::initializeBasis() {
 
                     scalar_t value_new = triple_1.value() * triple_2.value();
 
-                    if (!artificial1[col_1] && !artificial1[col_2]) {
+                    if (!artificial1[col_1] && !artificial2[col_2]) {
                         M = state_1.getM() + state_2.getM();
                         parityL = std::pow(-1, state_1.getL() + state_2.getL());
                         parityJ = std::pow(-1, state_1.getJ() + state_2.getJ());

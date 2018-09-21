@@ -553,8 +553,8 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
                                       int q, int kappa_radial, bool calcElectricMultipole,
                                       bool calcMagneticMomentum, bool calcRadial) {
 
-    const std::string &species = basis_one[0].getSpecies();
-    const float &s = basis_one[0].getS();
+    std::string species;
+    float s = std::numeric_limits<float>::max();
 
     // --- Determine elements ---
 
@@ -562,6 +562,11 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
         const auto &state_col = basis_one[idx_col];
         if (state_col.isArtificial()) {
             continue;
+        }
+
+        if (species.empty()) {
+            species = state_col.getSpecies();
+            s = state_col.getS();
         }
 
         for (size_t idx_row = 0; idx_row <= idx_col; ++idx_row) {
