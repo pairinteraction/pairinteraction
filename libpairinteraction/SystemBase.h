@@ -116,7 +116,9 @@ public:
     /// Method for adding user-defined states //////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addStates(const std::set<T> &s) { states_to_add = s; }
+    void addStates(const T &s) { states_to_add.insert(s); }
+
+    void addStates(const std::set<T> &s) { states_to_add.insert(s.begin(), s.end()); }
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
