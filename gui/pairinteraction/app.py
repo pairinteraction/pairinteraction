@@ -513,12 +513,12 @@ class MainWindow(QtGui.QMainWindow):
         else:
             raise Exception('Directory containing configurations not found.')
 
-        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real"+ext)):
+        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real" + ext)):
             self.path_workingdir = self.path_base
-        elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction", "pairinteraction-real"+ext)):
+        elif os.path.exists(os.path.join(self.path_base, "../../libpairinteraction", "pairinteraction-real" + ext)):
             self.path_workingdir = os.path.join(
                 self.path_base, "../../libpairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../libpairinteraction", "pairinteraction-real"+ext)):
+        elif os.path.exists(os.path.join(self.path_base, "../libpairinteraction", "pairinteraction-real" + ext)):
             self.path_workingdir = os.path.join(
                 self.path_base, "../libpairinteraction")
         else:
@@ -1293,7 +1293,8 @@ class MainWindow(QtGui.QMainWindow):
                                 else:
                                     stateamount = np.zeros_like(stateidx)
 
-                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
+                                if self.thread.samebasis and np.any(
+                                        self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
                                     boolarr = self.overlapstate[
                                         idx][[4, 5, 6]] != -1
                                     stateidx2 = np.where(np.all(basis[:, [1, 2, 3]][:, boolarr] == self.overlapstate[
@@ -1464,7 +1465,8 @@ class MainWindow(QtGui.QMainWindow):
                                     0, 1, 2, 3]] != -1
                                 stateidx = np.where(np.all(basis[:, [1, 2, 3, 4]][:, boolarr] == self.overlapstate[idx][None, [
                                                     0, 1, 2, 3]][:, boolarr], axis=-1))[0]
-                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
+                                if self.thread.samebasis and np.any(
+                                        self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]):
                                     boolarr = self.overlapstate[idx][[
                                         4, 5, 6, 7]] != -1
                                     stateidx = np.append(stateidx, np.where(np.all(basis[:, [
@@ -1855,7 +1857,8 @@ class MainWindow(QtGui.QMainWindow):
                             # collected
                             # TODO ensure that this also works if numBlocks
                             # changes with the step
-                            if 0 in self.buffer_overlapMap[idx].keys() and len(self.buffer_overlapMap[idx][0]) == numBlocks:
+                            if 0 in self.buffer_overlapMap[idx].keys() and len(
+                                    self.buffer_overlapMap[idx][0]) == numBlocks:
                                 # make limits
                                 if self.yMin_field[idx] is None:
                                     self.yMin_field[idx] = np.nanmin(
@@ -1892,7 +1895,8 @@ class MainWindow(QtGui.QMainWindow):
                                     np.zeros_like(energies[boolarr]))
 
                         # extract line to fit C3 or C6
-                        if self.stateidx_field[idx] is not None and len(overlap) > 0 and (blocknumber not in self.linesO[idx].keys() or np.max(overlap) > 0.5 * np.max(self.linesO[idx][blocknumber])):
+                        if self.stateidx_field[idx] is not None and len(overlap) > 0 and (
+                                blocknumber not in self.linesO[idx].keys() or np.max(overlap) > 0.5 * np.max(self.linesO[idx][blocknumber])):
                             idxSelected = np.argmax(overlap)
                             xSelected = position
                             eSelected = energies[idxSelected]
@@ -1928,7 +1932,8 @@ class MainWindow(QtGui.QMainWindow):
 
                             # not start
                             if self.colormap_buffer_minIdx_field[idx] != 0:
-                                if self.colormap_buffer_minIdx_field[idx] - 1 not in self.buffer_positionsMap[idx].keys():
+                                if self.colormap_buffer_minIdx_field[idx] - \
+                                        1 not in self.buffer_positionsMap[idx].keys():
                                     break
                                 bufferidx.append(-1)
 
@@ -1938,7 +1943,8 @@ class MainWindow(QtGui.QMainWindow):
 
                             # not end
                             if self.colormap_buffer_minIdx_field[idx] != self.steps - 1:
-                                if self.colormap_buffer_minIdx_field[idx] + 1 not in self.buffer_positionsMap[idx].keys():
+                                if self.colormap_buffer_minIdx_field[idx] + \
+                                        1 not in self.buffer_positionsMap[idx].keys():
                                     break
                                 bufferidx.append(1)
 
@@ -1946,7 +1952,8 @@ class MainWindow(QtGui.QMainWindow):
                             # yet
                             tobreak = False
                             for i in bufferidx:
-                                if len(self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] + i]) < numBlocks:
+                                if len(self.buffer_energiesMap[idx]
+                                       [self.colormap_buffer_minIdx_field[idx] + i]) < numBlocks:
                                     tobreak = True
                             if tobreak:
                                 break
@@ -2087,7 +2094,8 @@ class MainWindow(QtGui.QMainWindow):
                             style = pg.PlotDataItem(pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
                             graphicsview_plot[idx].plotItem.legend.addItem(style, "asym")"""
 
-                        while self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys() and self.lines_buffer_minIdx_field[blocknumber] + 1 in self.buffer_basis[blocknumber].keys():
+                        while self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys(
+                        ) and self.lines_buffer_minIdx_field[blocknumber] + 1 in self.buffer_basis[blocknumber].keys():
                             # determine the data to plot
                             overlap = np.abs(self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]].conj(
                             ).T * self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1])  # nBasis first, nBasis second
@@ -2180,7 +2188,7 @@ class MainWindow(QtGui.QMainWindow):
                         if idx == 0 or idx == 1:
                             l = np.append(l, momentum)
                         elif idx == 2:
-                            s += [symmetrycolor]*len(energies)
+                            s += [symmetrycolor] * len(energies)
 
                         dataamount += len(x)
 
@@ -2203,7 +2211,7 @@ class MainWindow(QtGui.QMainWindow):
                     elif idx == 2:
                         s = np.array(s)
                         uniquesymmetrycolors = np.unique(s.view(np.dtype(
-                            (np.void, s.dtype.itemsize*s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
+                            (np.void, s.dtype.itemsize * s. shape[1])))).view(s.dtype).reshape(-1, s.shape[1])
                         looprange = len(uniquesymmetrycolors)
 
                     # loop over momenta
@@ -2238,7 +2246,8 @@ class MainWindow(QtGui.QMainWindow):
                 graphicsview_plot[idx].repaint()
 
         # check if thread has finished
-        if self.thread.isFinished() and self.thread.dataqueue_field1.empty() and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_potential.empty():
+        if self.thread.isFinished() and self.thread.dataqueue_field1.empty(
+        ) and self.thread.dataqueue_field2.empty() and self.thread.dataqueue_potential.empty():
             # Delete buffers
             self.buffer_basis = [{}, {}, {}]
             self.buffer_energies = [{}, {}, {}]
@@ -2284,7 +2293,8 @@ class MainWindow(QtGui.QMainWindow):
 
             # Toggle antialiasing # HACK
             if self.ui.checkbox_plot_antialiasing.isChecked():
-                for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
+                for plotarea in [self.ui.graphicsview_field1_plot,
+                                 self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
                     plotarea.setAntialiasing(False)
                     plotarea.setAntialiasing(True)
 
@@ -2451,7 +2461,8 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot(bool)  # TODO
     def toggleAntialiasing(self):
         checked = self.ui.checkbox_plot_antialiasing.isChecked()
-        for plotarea in [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
+        for plotarea in [self.ui.graphicsview_field1_plot,
+                         self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot]:
             plotarea.setAntialiasing(checked)
         pg.setConfigOptions(antialias=checked)  # TODO
 
@@ -2673,12 +2684,14 @@ class MainWindow(QtGui.QMainWindow):
             else:
                 self.senderbutton = self.sender()
 
-                if self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_field2_calc] and self.systemdict["theta"].toAU().magnitude != 0:
+                if self.senderbutton in [self.ui.pushbutton_field1_calc,
+                                         self.ui.pushbutton_field2_calc] and self.systemdict["theta"].toAU().magnitude != 0:
                     QtGui.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. " +
                                               "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " +
                                               "axis equals the interatomic axis. This slows down calculations.")
 
-                if self.systemdict["theta"].magnitude != 0 and (self.systemdict["deltaMSingle"].magnitude >= 0 or (self.ui.radiobutton_system_pairbasisDefined.isChecked() and self.systemdict["deltaMPair"].magnitude >= 0)):
+                if self.systemdict["theta"].magnitude != 0 and (self.systemdict["deltaMSingle"].magnitude >= 0 or (
+                        self.ui.radiobutton_system_pairbasisDefined.isChecked() and self.systemdict["deltaMPair"].magnitude >= 0)):
                     QtGui.QMessageBox.warning(
                         self, "Warning", "For non-zero interaction angles, it is recommended not to restrict the magnetic quantum number.")
 
@@ -2782,7 +2795,8 @@ class MainWindow(QtGui.QMainWindow):
                     self.graphicviews_plot[idx].setLimits(yMax=self.maxE[idx])
 
                     # set up step axis
-                    if (idx in [0, 1] and constEField and not constBField) or (idx == 2 and constDistance and not constBField):
+                    if (idx in [0, 1] and constEField and not constBField) or (
+                            idx == 2 and constDistance and not constBField):
                         self.xAxis[idx] = 'B'
                         self.graphicviews_plot[idx].setLabel(
                             'bottom', 'Magnetic field (' + str(Units.bfield) + ')')

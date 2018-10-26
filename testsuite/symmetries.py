@@ -28,14 +28,14 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-40, state_one.getEnergy()+40)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
-        system_one.restrictJ(state_one.getJ()-1, state_one.getJ()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+        system_one.restrictJ(state_one.getJ() - 1, state_one.getJ() + 1)
         system_one.setBfield([0, 0, 100])
         system_one.setEfield([0, 0, 1])
 
-        momenta_one = np.arange(-(state_one.getJ()+1), (state_one.getJ()+1)+1)
+        momenta_one = np.arange(-(state_one.getJ() + 1), (state_one.getJ() + 1) + 1)
 
         # Diagonalize blockwise
         system_one_momentum = {}
@@ -61,10 +61,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w2 = np.sort(system_one.getHamiltonian().diagonal())
         w3 = np.sort(system_one_alternative.getHamiltonian().diagonal())
 
-        maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff23 = np.abs((w3-w2)/(np.max([w3, w2], axis=0)))
-        maxdiff12[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
-        maxdiff23[np.abs(w3-w2) < 1e-14] = np.abs(w3-w2)[np.abs(w3-w2) < 1e-14]
+        maxdiff12 = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff23 = np.abs((w3 - w2) / (np.max([w3, w2], axis=0)))
+        maxdiff12[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
+        maxdiff23[np.abs(w3 - w2) < 1e-14] = np.abs(w3 - w2)[np.abs(w3 - w2) < 1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
         print("One-atom system with rotation symmetry, relative maximum deviation: ",
@@ -84,16 +84,16 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         for m1 in momenta_one:
             for m2 in momenta_one:
-                if m1+m2 in system_two_momentum:
+                if m1 + m2 in system_two_momentum:
                     tmp = pi.SystemTwo(
                         system_one_momentum[m1], system_one_momentum[m2], self.cache)
-                    tmp.restrictEnergy(state_two.getEnergy()-2, state_two.getEnergy()+2)
-                    system_two_momentum[m1+m2].add(tmp)
+                    tmp.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
+                    system_two_momentum[m1 + m2].add(tmp)
                 else:
-                    system_two_momentum[m1+m2] = pi.SystemTwo(
+                    system_two_momentum[m1 + m2] = pi.SystemTwo(
                         system_one_momentum[m1], system_one_momentum[m2], self.cache)
-                    system_two_momentum[m1+m2].restrictEnergy(
-                        state_two.getEnergy()-2, state_two.getEnergy()+2)
+                    system_two_momentum[m1 + m2].restrictEnergy(
+                        state_two.getEnergy() - 2, state_two.getEnergy() + 2)
 
         momenta_two = list(system_two_momentum.keys())
 
@@ -112,7 +112,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
             system_two_momentum_alternative[m] = pi.SystemTwo(
                 system_one, system_one, self.cache)
             system_two_momentum_alternative[m].restrictEnergy(
-                state_two.getEnergy()-2, state_two.getEnergy()+2)
+                state_two.getEnergy() - 2, state_two.getEnergy() + 2)
             system_two_momentum_alternative[m].setConservedMomentaUnderRotation([
                                                                                 int(m)])
             system_two_momentum_alternative[m].setDistance(2)
@@ -127,7 +127,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Diagonalize altogether
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
-        system_two.restrictEnergy(state_two.getEnergy()-2, state_two.getEnergy()+2)
+        system_two.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
         system_two.setDistance(2)
         system_two.setOrder(5)
         system_two.diagonalize(1e-3)
@@ -137,10 +137,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w2 = np.sort(system_two.getHamiltonian().diagonal())
         w3 = np.sort(system_two_combined_alternative.getHamiltonian().diagonal())
 
-        maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff23 = np.abs((w3-w2)/(np.max([w3, w2], axis=0)))
-        maxdiff12[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
-        maxdiff23[np.abs(w3-w2) < 1e-14] = np.abs(w3-w2)[np.abs(w3-w2) < 1e-14]
+        maxdiff12 = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff23 = np.abs((w3 - w2) / (np.max([w3, w2], axis=0)))
+        maxdiff12[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
+        maxdiff23[np.abs(w3 - w2) < 1e-14] = np.abs(w3 - w2)[np.abs(w3 - w2) < 1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
         print("Two-atom system with rotation symmetry, relative maximum deviation: ",
@@ -158,10 +158,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
-        system_one.restrictJ(state_one.getJ()-1, state_one.getJ()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+        system_one.restrictJ(state_one.getJ() - 1, state_one.getJ() + 1)
         system_one.setBfield([0, 100, 0])
         system_one.setEfield([1, 0, 2])
 
@@ -185,8 +185,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w1 = np.sort(system_one_combined.getHamiltonian().diagonal())
         w2 = np.sort(system_one.getHamiltonian().diagonal())
 
-        maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
+        maxdiff = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
         maxdiff = np.max(maxdiff)
         print("One-atom system with reflection symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
@@ -250,12 +250,12 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w5 = np.sort(system_two_even_alternative.getHamiltonian().diagonal())
         w6 = np.sort(system_two_odd_alternative.getHamiltonian().diagonal())
 
-        maxdiff12 = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff35 = np.abs((w3-w5)/(np.max([w3, w5], axis=0)))
-        maxdiff46 = np.abs((w4-w6)/(np.max([w4, w6], axis=0)))
-        maxdiff12[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
-        maxdiff35[np.abs(w3-w5) < 1e-14] = np.abs(w3-w5)[np.abs(w3-w5) < 1e-14]
-        maxdiff46[np.abs(w4-w6) < 1e-14] = np.abs(w4-w6)[np.abs(w4-w6) < 1e-14]
+        maxdiff12 = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff35 = np.abs((w3 - w5) / (np.max([w3, w5], axis=0)))
+        maxdiff46 = np.abs((w4 - w6) / (np.max([w4, w6], axis=0)))
+        maxdiff12[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
+        maxdiff35[np.abs(w3 - w5) < 1e-14] = np.abs(w3 - w5)[np.abs(w3 - w5) < 1e-14]
+        maxdiff46[np.abs(w4 - w6) < 1e-14] = np.abs(w4 - w6)[np.abs(w4 - w6) < 1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff35 = np.max(maxdiff35)
         maxdiff46 = np.max(maxdiff46)
@@ -281,10 +281,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
-        system_one.restrictJ(state_one.getJ()-1, state_one.getJ()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+        system_one.restrictJ(state_one.getJ() - 1, state_one.getJ() + 1)
         system_one.setBfield([100, 200, 300])
         system_one.setEfield([1, 2, 3])
 
@@ -314,8 +314,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
         w2 = np.sort(system_two.getHamiltonian().diagonal())
 
-        maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
+        maxdiff = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
         maxdiff = np.max(maxdiff)
         print("Two-atom system with permutation symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
@@ -336,10 +336,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
-        system_one.restrictJ(state_one.getJ()-1, state_one.getJ()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+        system_one.restrictJ(state_one.getJ() - 1, state_one.getJ() + 1)
         system_one.setBfield([100, 200, 300])
 
         # Build two atom system
@@ -368,8 +368,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
         w2 = np.sort(system_two.getHamiltonian().diagonal())
 
-        maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
+        maxdiff = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
         maxdiff = np.max(maxdiff)
         print(
             "Two-atom system with inversion symmetry, relative maximum deviation: ", maxdiff)
@@ -391,10 +391,10 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
-        system_one.restrictJ(state_one.getJ()-1, state_one.getJ()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
+        system_one.restrictJ(state_one.getJ() - 1, state_one.getJ() + 1)
         system_one.setBfield([0, 100, 0])
 
         system_one_combined = pi.SystemOne(system_one)
@@ -421,7 +421,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two_from_combined.setOrder(3)
 
         system_two_combined = None
-        for sym_reflection, sym_inversion, sym_permutation in product([pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD]):
+        for sym_reflection, sym_inversion, sym_permutation in product(
+                [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD]):
             system_two_tmp = pi.SystemTwo(system_two_from_combined)
             system_two_tmp.setConservedParityUnderReflection(sym_reflection)
             system_two_tmp.setConservedParityUnderInversion(sym_inversion)
@@ -437,8 +438,8 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         w1 = np.sort(system_two_combined.getHamiltonian().diagonal())
         w2 = np.sort(system_two.getHamiltonian().diagonal())
 
-        maxdiff = np.abs((w1-w2)/(np.max([w1, w2], axis=0)))
-        maxdiff[np.abs(w1-w2) < 1e-14] = np.abs(w1-w2)[np.abs(w1-w2) < 1e-14]
+        maxdiff = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
+        maxdiff[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
         maxdiff = np.max(maxdiff)
         print("Two-atom system with combined binary symmetries, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)

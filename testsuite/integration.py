@@ -21,7 +21,7 @@ class IntegrationTest(unittest.TestCase):
     def tearDown(self):
         try:
             shutil.rmtree(self.cache_path)
-        except:
+        except BaseException:
             pass
 
         if self.dump_new_reference_data:

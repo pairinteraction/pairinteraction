@@ -29,9 +29,9 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(state_one.getEnergy()-40, state_one.getEnergy()+40)
-        system_one.restrictN(state_one.getN()-1, state_one.getN()+1)
-        system_one.restrictL(state_one.getL()-1, state_one.getL()+1)
+        system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40)
+        system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
+        system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
         system_one.setEfield([0, 0, 1])
         system_one.buildInteraction()  # will save time in the following
 
@@ -45,7 +45,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             tmp = pi.SystemOne(system_one)
             tmp.setEfield([0, 0, field])
             tmp.diagonalize(1e-3)
-            tmp.restrictEnergy(state_one.getEnergy()-20, state_one.getEnergy()+20)
+            tmp.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp
 
@@ -63,7 +63,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
-                connections = stark_shifted_systems[i-1].getConnections(
+                connections = stark_shifted_systems[i - 1].getConnections(
                     stark_shifted_systems[i], 0.001)
                 iFirst = np.array(connections[0])
                 iSecond = np.array(connections[1])
@@ -74,24 +74,24 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             if len(iFirst) > 0:
                 # Enlarge the mapper of line indices so that every iFirst is mapped to a line index
-                line_mapper.resize(np.max(iFirst)+1)
+                line_mapper.resize(np.max(iFirst) + 1)
                 boolarr = line_mapper[iFirst] == 0
                 tmp = line_mapper[iFirst]
-                tmp[boolarr] = np.max(line_mapper)+1+np.arange(np.sum(boolarr))
+                tmp[boolarr] = np.max(line_mapper) + 1 + np.arange(np.sum(boolarr))
                 line_mapper[iFirst] = tmp
 
                 # Store line segments
                 line_idx += line_mapper[iFirst].tolist()
-                line_step += (i*np.ones(len(iFirst))).tolist()
+                line_step += (i * np.ones(len(iFirst))).tolist()
                 line_val += stark_shifted_systems[i].getHamiltonian().diagonal()[iSecond].tolist()
 
                 # Assign the line indices to iSecond, delete line indices that could not be assigned
                 tmp = line_mapper[iFirst]
-                line_mapper = np.zeros(np.max(iSecond)+1)
+                line_mapper = np.zeros(np.max(iSecond) + 1)
                 line_mapper[iSecond] = tmp
 
         lines_energies = coo_matrix(
-            (line_val, (np.array(line_idx)-1, line_step))).toarray()
+            (line_val, (np.array(line_idx) - 1, line_step))).toarray()
         lines_energies[lines_energies == 0] = np.nan
 
         self.assertEqual(len(lines_energies), 30)
@@ -106,7 +106,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         # Build two atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
-        system_two.restrictEnergy(state_two.getEnergy()-2, state_two.getEnergy()+2)
+        system_two.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(1)
         system_two.buildInteraction()  # will save time in the following
@@ -121,7 +121,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             tmp = pi.SystemTwo(system_two)
             tmp.setDistance(distance)
             tmp.diagonalize(1e-3)
-            tmp.restrictEnergy(state_two.getEnergy()-0.1, state_two.getEnergy()+0.1)
+            tmp.restrictEnergy(state_two.getEnergy() - 0.1, state_two.getEnergy() + 0.1)
             tmp.buildHamiltonian()  # has to be called to apply the new restriction in energy
             return tmp
 
@@ -140,7 +140,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
-                connections = dipole_interacting_systems[i-1].getConnections(
+                connections = dipole_interacting_systems[i - 1].getConnections(
                     dipole_interacting_systems[i], 0.001)
                 iFirst = np.array(connections[0])
                 iSecond = np.array(connections[1])
@@ -152,24 +152,24 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             if len(iFirst) > 0:
                 # Enlarge the mapper of line indices so that every iFirst is mapped to a line index
-                line_mapper.resize(np.max(iFirst)+1)
+                line_mapper.resize(np.max(iFirst) + 1)
                 boolarr = line_mapper[iFirst] == 0
                 tmp = line_mapper[iFirst]
-                tmp[boolarr] = np.max(line_mapper)+1+np.arange(np.sum(boolarr))
+                tmp[boolarr] = np.max(line_mapper) + 1 + np.arange(np.sum(boolarr))
                 line_mapper[iFirst] = tmp
 
                 # Store line segments
                 line_idx += line_mapper[iFirst].tolist()
-                line_step += (i*np.ones(len(iFirst))).tolist()
+                line_step += (i * np.ones(len(iFirst))).tolist()
                 line_val += dipole_interacting_systems[i].getHamiltonian().diagonal()[iSecond].tolist()
 
                 # Assign the line indices to iSecond, delete line indices that could not be assigned
                 tmp = line_mapper[iFirst]
-                line_mapper = np.zeros(np.max(iSecond)+1)
+                line_mapper = np.zeros(np.max(iSecond) + 1)
                 line_mapper[iSecond] = tmp
 
         lines_energies = coo_matrix(
-            (line_val, (np.array(line_idx)-1, line_step))).toarray()
+            (line_val, (np.array(line_idx) - 1, line_step))).toarray()
         lines_energies[lines_energies == 0] = np.nan
 
         self.assertEqual(len(lines_energies), 10)

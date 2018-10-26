@@ -76,7 +76,7 @@ class TestCompute(unittest.TestCase):
         try:
             os.remove(self.path_config)
             shutil.rmtree(self.path_cache)
-        except:
+        except BaseException:
             pass
 
 
