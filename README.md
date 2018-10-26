@@ -15,9 +15,7 @@ Visit the official website at https://pairinteraction.github.io/ for documentati
 
 ## License
 
-Pairinteraction is released under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  The Apache License 2.0 has been approved by the Free Software Foundation and the Open Source Initiative and is [compatible with the GNU General Public License version 3 (GPLv3)](https://www.gnu.org/licenses/license-list.html#apache2).
-
-Note that not all files in this repository belong to the pairinteraction project.  The submodules link to their host repositories.  The individual licenses apply.
+Pairinteraction is released under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0). Note that not all files in this repository belong to the pairinteraction project.  The submodules link to their host repositories.  The individual licenses apply.
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
