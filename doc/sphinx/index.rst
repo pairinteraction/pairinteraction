@@ -18,11 +18,13 @@ Pairinteraction - A Rydberg Interaction Calculator
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
 For usage examples visit the `tutorials`_ section of the documentation.
-Stay tuned by signing up for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. To subscribe click `here`_.
+Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an `issue`_.
 
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
 
-.. _here: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
+.. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
+
+.. _issue: https://github.com/pairinteraction/pairinteraction/issues
 
 Please cite us
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
