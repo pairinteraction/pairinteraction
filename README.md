@@ -1,36 +1,17 @@
-# pairinteraction
+# Pairinteraction - A Rydberg Interaction Calculator
 
 [![Build status][travis-svg]][travis-link]
 [![AppVeyor build status][appveyor-svg]][appveyor-link]
 [![Code coverage report][codecov-svg]][codecov-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
-[![Documentation][docs-svg]][sphinx-link]
 
-*A Rydberg Interaction Calculator*
+The *pairinteraction* software calculates properties of Rydberg systems. The software consists of a C++/Python library and a graphical user interface for pair potential calculations. Binaries are made available for download through the [releases section](https://github.com/pairinteraction/pairinteraction/releases).
 
-Visit the official website at https://pairinteraction.github.io/
+Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
 
-## Please Cite Us
+## Please cite us
 
-> **Tutorial: Calculation of Rydberg interaction potentials**
->
-> *Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth*
->
-> [arXiv:1612.08053][arXiv-link], J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017), DOI: [10.1088/1361-6455/aa743a][journal-link]
-
-## Build Status
-
-We are using [Travis CI](https://travis-ci.org) and [AppVeyor](https://www.appveyor.com) as hosted continuous integration services to build pairinteraction against various toolchains.
-
-## Support
-
-Documentation for pairinteraction is located on GitHub pages: [Python interface][sphinx-link], [C++ interface][doxygen-link].
-
-If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an [issue][issue-tracker].
-
-## Downloads
-
-Binaries are available for many systems, including several GNU/Linux distributions, Mac OS X, and Microsoft Windows.  These are made available through the [releases section](https://github.com/pairinteraction/pairinteraction/releases).
+> Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
 
 ## License
 
@@ -47,7 +28,3 @@ Note that not all files in this repository belong to the pairinteraction project
 [arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
-[docs-svg]: https://pairinteraction.github.io/images/docs-badge.svg
-[sphinx-link]: https://pairinteraction.github.io/pairinteraction/sphinx/html/index.html
-[doxygen-link]: https://pairinteraction.github.io/pairinteraction/doxygen/html/index.html
-[issue-tracker]: https://github.com/pairinteraction/pairinteraction/issues
