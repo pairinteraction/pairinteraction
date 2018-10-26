@@ -700,7 +700,6 @@ public:
 
         size_t idx_new = 0;
         for (const auto &idx : indices_of_wanted_basisvectors) {
-            std::cout << idx << std::endl;
             if (idx >= basisvectors.cols()) {
                 throw std::runtime_error("A basis vector with index " + std::to_string(idx) +
                                          " could not be found.");
