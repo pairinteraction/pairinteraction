@@ -18,19 +18,12 @@
 
 #include <unordered_set>
 
-PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache)
-    : cache(cache), bfield(0) { // TODO remove this constructor
+PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache) : cache(cache) {
     initializeAngleTerms(0);
 }
 
 PerturbativeInteraction::PerturbativeInteraction(double angle, MatrixElementCache &cache)
-    : cache(cache), bfield(0) {
-    initializeAngleTerms(angle);
-}
-
-PerturbativeInteraction::PerturbativeInteraction(double angle, double weak_bfield_along_z,
-                                                 MatrixElementCache &cache)
-    : cache(cache), bfield(weak_bfield_along_z) {
+    : cache(cache) {
     initializeAngleTerms(angle);
 }
 
@@ -95,17 +88,6 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
                                              {{m0, m1}});
 
                                 double energydiff = state.getEnergy() - state_virtual.getEnergy();
-                                if (bfield != 0) {
-                                    energydiff += -bfield *
-                                        (cache.getMagneticDipole(state.getFirstState(),
-                                                                 state.getFirstState()) +
-                                         cache.getMagneticDipole(state.getSecondState(),
-                                                                 state.getSecondState()) -
-                                         cache.getMagneticDipole(state_virtual.getFirstState(),
-                                                                 state_virtual.getFirstState()) -
-                                         cache.getMagneticDipole(state_virtual.getSecondState(),
-                                                                 state_virtual.getSecondState()));
-                                }
 
                                 C6 +=
                                     std::pow(
@@ -250,39 +232,9 @@ eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> 
 
                                         double energydiff_row =
                                             state_row.getEnergy() - state_virtual.getEnergy();
-                                        if (bfield != 0) {
-                                            energydiff_row += -bfield *
-                                                (cache.getMagneticDipole(
-                                                     state_row.getFirstState(),
-                                                     state_row.getFirstState()) +
-                                                 cache.getMagneticDipole(
-                                                     state_row.getSecondState(),
-                                                     state_row.getSecondState()) -
-                                                 cache.getMagneticDipole(
-                                                     state_virtual.getFirstState(),
-                                                     state_virtual.getFirstState()) -
-                                                 cache.getMagneticDipole(
-                                                     state_virtual.getSecondState(),
-                                                     state_virtual.getSecondState()));
-                                        }
 
                                         double energydiff_col =
                                             state_col.getEnergy() - state_virtual.getEnergy();
-                                        if (bfield != 0) {
-                                            energydiff_col += -bfield *
-                                                (cache.getMagneticDipole(
-                                                     state_col.getFirstState(),
-                                                     state_col.getFirstState()) +
-                                                 cache.getMagneticDipole(
-                                                     state_col.getSecondState(),
-                                                     state_col.getSecondState()) -
-                                                 cache.getMagneticDipole(
-                                                     state_virtual.getFirstState(),
-                                                     state_virtual.getFirstState()) -
-                                                 cache.getMagneticDipole(
-                                                     state_virtual.getSecondState(),
-                                                     state_virtual.getSecondState()));
-                                        }
 
                                         C6 += coulombs_constant *
                                             array_angle_term[3 * (q0_back + 1) + (q1_back + 1)] *
@@ -351,11 +303,6 @@ eigen_dense_double_t PerturbativeInteraction::getEnergy(const std::vector<StateT
         auto &state = states[idx];
 
         double energy = state.getEnergy();
-        if (bfield != 0) {
-            energy += -bfield *
-                (cache.getMagneticDipole(state.getFirstState(), state.getFirstState()) +
-                 cache.getMagneticDipole(state.getSecondState(), state.getSecondState()));
-        }
         energies_matrix(idx, idx) = energy;
     }
 
