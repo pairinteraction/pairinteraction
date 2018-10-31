@@ -28,12 +28,12 @@
 #include <vector>
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache)
-    : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(false),
+    : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(true),
       species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
     : SystemBase(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
-      diamagnetism(false), species(std::move(species)), sym_reflection(NA),
+      diamagnetism(true), species(std::move(species)), sym_reflection(NA),
       sym_rotation({static_cast<float>(ARB)}) {}
 
 const std::string &SystemOne::getSpecies() const { return species; }

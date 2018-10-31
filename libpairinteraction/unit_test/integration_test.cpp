@@ -98,17 +98,15 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     // fixed)
     eigen_sparse_t hamiltonian_one = system_one.getHamiltonian();
     eigen_sparse_t basis_one = system_one.getBasisvectors();
-    hamiltonian_one.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
-    basis_one.prune(1e-16, 1);       // without pruning, max_diff_basis might be
-                                     // infinity due to division by zero
 
     eigen_sparse_double_t diff;
     double max_diff_hamiltonian, max_diff_basis;
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_one - hamiltonian_one_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(hamiltonian_one.cwiseMin(hamiltonian_one_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -119,6 +117,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
 
         diff = (basis_one - basis_one_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(basis_one.cwiseMin(basis_one_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
@@ -161,14 +162,12 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     // fixed)
     eigen_sparse_t hamiltonian_two = system_two.getHamiltonian();
     eigen_sparse_t basis_two = system_two.getBasisvectors();
-    hamiltonian_two.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
-    basis_two.prune(1e-16, 1);       // without pruning, max_diff_basis might be
-                                     // infinity due to division by zero
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_two - hamiltonian_two_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(hamiltonian_two.cwiseMin(hamiltonian_two_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -179,6 +178,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
 
         diff = (basis_two - basis_two_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(basis_two.cwiseMin(basis_two_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
