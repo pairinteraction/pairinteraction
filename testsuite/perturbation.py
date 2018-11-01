@@ -7,7 +7,7 @@ import unittest
 from @LIBNAME@ import pireal as pi
 
 
-class IntegrationTest(unittest.TestCase):
+class PerturbationTest(unittest.TestCase):
 
     def setUp(self):
         self.cache_path = tempfile.mkdtemp()
