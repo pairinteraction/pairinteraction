@@ -203,6 +203,12 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         oa << hamiltonian_one << basis_one << hamiltonian_two << basis_two;
         ofs.close();
 
+        // ATTENTION
+        // After generating integration_test_referencedata.txt, we possibly have to manually modify
+        // the Boost serialization library version - the beginning of the file should read "22
+        // serialization::archive 12". Otherwise, unsupported version exceptions are thrown with
+        // older versions of Boost even though they are compatible.
+
         // We deliberately crash the test in case we are dumping new
         // data because we want to prevent accidentally dumping new
         // data when running in Travis CI.
