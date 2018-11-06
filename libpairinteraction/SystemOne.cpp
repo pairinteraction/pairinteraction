@@ -347,6 +347,7 @@ void SystemOne::initializeInteraction() {
         }
     }
 
+    // Return if there is nothing to do
     if (erange.empty() && brange.empty() && drange.empty()) {
         return;
     }

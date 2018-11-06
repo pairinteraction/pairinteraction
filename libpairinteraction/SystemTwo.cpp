@@ -596,6 +596,13 @@ void SystemTwo::initializeInteraction() {
         }
     }
 
+    // Return if there is nothing to do
+    if (std::all_of(calculation_required.begin(), calculation_required.end(),
+                    [](bool i) { return !i; }) &&
+        orange.empty()) {
+        return;
+    }
+
     // Precalculate matrix elements
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
