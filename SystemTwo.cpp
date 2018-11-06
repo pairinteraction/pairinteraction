@@ -565,7 +565,7 @@ void SystemTwo::initializeInteraction() {
 		SystemTwo::DipoleVector vec2;
 		vec1.fillDipole(r.state.first(),c.state.first());
 		vec2.fillDipole(r.state.second(),c.state.second());
-		dipolematrix[r.idx,c.idx] = {{vec1[0],vec1[1],vec1[2]},{vec2[0],vec2[1],vec2[2]}}; //Is this a valid way? should it be more nested in the declaration?
+		dipolematrix[r.idx,c.idx] = {{vec1.dipole[0],vec1.dipole[1],vec1.dipole[2]},{vec2.dipole[0],vec2.dipole[1],vec2.dipole[2]}}; //Is this a valid way? should it be more nested in the declaration?
 		
 	    }
             else {

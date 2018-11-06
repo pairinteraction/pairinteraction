@@ -565,7 +565,20 @@ void SystemTwo::initializeInteraction() {
 		SystemTwo::DipoleVector vec2;
 		vec1.fillDipole(r.state.first(),c.state.first());
 		vec2.fillDipole(r.state.second(),c.state.second());
-		dipolematrix[r.idx,c.idx] = {{vec1[0],vec1[1],vec1[2]},{vec2[0],vec2[1],vec2[2]}}; //Is this a valid way? should it be more nested in the declaration?
+		dipolematrix[r.idx,c.idx] = {{vec1[0],vec1[1],vec1[2]},{vec2[0],vec2[1],vec2[2]}}; //Kann das funktionieren?
+		
+// 		Alternative
+// 		std::vector< std::array<std::array<eigen_sparse_t, 3>, 3> > tripletListDipole;
+// 		tripletListDipole.push_back(r.idx,c.idx, {{{vec1[0],vec1[1],vec1[2]},{vec2[0],vec2[1],vec2[2]}}});
+		
+		
+// 		for(int i =0;i<3;i++){
+// 		  for(int j =0;j<3;j++){
+// 		    
+// 		    val = dipolevec1[i]*(greentensor0[i][j]+greentensor_plate[i][j])*dipolevec2[j];
+// 		    tripletListGT.push_back(i,j,val);
+// 		  }
+// 		}
 		
 	    }
             else {
@@ -727,21 +740,21 @@ void SystemTwo::DipoleVector{
     //cache.getElectricMultipole(r.state.first(), c.state.first(),kappa1)
     std::complex<double> dipole[3];
     
-    void fillDipole(double m, double mp){ //Hier r.state.first/second und c.state.first/second als Argument?
-      double dipolemoment = 2; //Dementsprechend gewinnen
-      //   dipolemoment = coulombs_constant*cache.getElectricDipole(r.state, c.state);
-      std::complex<double> imagunit = std::complex<double> (0.,1.);
-      if(m - mp == -1.){
+    void fillDipole(StateOne dipoleState, StateOne dipoleStateP){ //Hier r.state.first/second und c.state.first/second als Argument? P == Prime == columns(?)
+//        double dipolemoment = 2; //Dementsprechend gewinnen
+      std::complex<double> dipolemoment = coulombs_constant*cache.getElectricDipole(dipolState, dipoleStateP); //TODO Alle Vorfaktoren beachten!
+      
+      if(dipoleState.m - dipoleStateP.m == -1.){
 	dipole[0] = (std::sqrt(1./2.)*(-dipolemoment));
 	dipole[1] = (std::sqrt(1./2.)*imagunit*dipolemoment);
 	dipole[2] = 0.;
       }
-      if(m - mp == -1.){
+      if(dipoleState.m - dipoleStateP.m == -1.){
 	dipole[0] = (std::sqrt(1./2.)*(-dipolemoment));
 	dipole[1] = (std::sqrt(1./2.)*imagunit*dipolemoment);
 	dipole[2] = (0.);
       }
-      if(m - mp == 0.){
+      if(dipoleState.m - dipoleStateP.m == 0.){
 	dipole[0] = 0.;
 	dipole[1] = 0.;
 	dipole[2] = std::sqrt(1.)*dipolemoment;
