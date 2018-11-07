@@ -8,23 +8,29 @@ Pairinteraction - A Rydberg Interaction Calculator
 .. image:: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
    :target: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
    :alt: AppVeyor Build Status
+.. image:: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/pairinteraction/pairinteraction
+   :alt: Code Coverage Report
 .. image:: images/arXiv-badge.svg
    :target: https://arxiv.org/abs/1612.08053
    :alt: arXiv:1612.08053
 .. image:: images/license-badge.svg
-  :target: https://opensource.org/licenses/Apache-2.0
-  :alt: License
+   :target: https://opensource.org/licenses/Apache-2.0
+   :alt: License
 
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
 For usage examples visit the `tutorials`_ section of the documentation.
-Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an `issue`_.
+Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you.
+If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an `issue`_ on `GitHub`_.
 
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
 
 .. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
 
 .. _issue: https://github.com/pairinteraction/pairinteraction/issues
+
+.. _GitHub: https://github.com/pairinteraction/pairinteraction
 
 Please cite us
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
