@@ -103,18 +103,6 @@ namespace std {
   %template(VectorStateTwo) vector<StateTwo>;
   %template(VectorSizeT) vector<size_t>;
   %template(VectorComplexDouble) vector<std::complex<double>>;
-  %template(ArrayBoolTwo) array<bool,2>;
-  %template(ArrayStringTwo) array<string,2>;
-  %template(ArrayIntTwo) array<int,2>;
-  %template(ArrayFloatTwo) array<float,2>;
-  %template(ArrayDoubleTwo) array<double,2>;
-  %template(ArrayDoubleThree) array<double,3>;
-  %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
-  %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
-  %template(SetInt) set<int>;
-  %template(SetFloat) set<float>;
-  %template(SetStateOne) set<StateOne>;
-  %template(SetStateTwo) set<StateTwo>;
 };
 
 // Make numpy wrappers
@@ -153,6 +141,22 @@ MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
+
+ // Instantiate often used STL templates
+namespace std {
+  %template(ArrayBoolTwo) array<bool,2>;
+  %template(ArrayStringTwo) array<string,2>;
+  %template(ArrayIntTwo) array<int,2>;
+  %template(ArrayFloatTwo) array<float,2>;
+  %template(ArrayDoubleTwo) array<double,2>;
+  %template(ArrayDoubleThree) array<double,3>;
+  %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
+  %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
+  %template(SetInt) set<int>;
+  %template(SetFloat) set<float>;
+  %template(SetStateOne) set<StateOne>;
+  %template(SetStateTwo) set<StateTwo>;
+};
 
 MAKE_NUMPY_TYPEMAP_OUT(std::vector<int>)
 MAKE_NUMPY_TYPEMAP_OUT(std::vector<float>)
