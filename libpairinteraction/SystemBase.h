@@ -1,3 +1,19 @@
+/*
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 #ifndef SYSTEMBASE_H
 #define SYSTEMBASE_H
 
@@ -59,6 +75,17 @@ private:
     }
 };
 
+#ifndef SWIG
+
+namespace boost {
+template <class T>
+struct hash<enumerated_state<T>> {
+    size_t operator()(enumerated_state<T> const &s) const { return std::hash<T>{}(s.state); }
+};
+} // namespace boost
+
+#endif
+
 template <class T>
 struct states_set {
     typedef typename boost::multi_index_container<
@@ -74,18 +101,9 @@ struct states_set {
 template <class T>
 class SystemBase {
 public:
-    SystemBase(std::vector<T> states, MatrixElementCache &cache)
-        : // TODO
-          cache(cache), energy_min(std::numeric_limits<double>::lowest()),
-          energy_max(std::numeric_limits<double>::max()), memory_saving(false),
-          is_interaction_already_contained(false), is_new_hamiltonian_required(false) {
-        (void)states;
-        throw std::runtime_error("Method yet not implemented.");
-    }
-
     virtual ~SystemBase() = default;
 
-    // TODO setThresholdForSqnorm()
+    void setMinimalNorm(const double &threshold) { threshold_for_sqnorm = threshold; }
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to restrict the number of states inside the basis //////
@@ -119,6 +137,9 @@ public:
     void addStates(const T &s) { states_to_add.insert(s); }
 
     void addStates(const std::set<T> &s) { states_to_add.insert(s.begin(), s.end()); }
+
+    // TODO make it possible to just use added states, i.e. use no restrictions on quantum numbers
+    // and energies
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
@@ -477,6 +498,8 @@ public:
 
         // Transform the basis vectors
         basisvectors = basisvectors * evecs;
+
+        // TODO call transformInteraction (see applyRightsideTransformator), perhaps not?
     }
 
     void diagonalize(double threshold) {
@@ -505,6 +528,8 @@ public:
 
         // Transform the basis vectors
         basisvectors = (basisvectors * evecs).pruned(threshold, 1);
+
+        // TODO call transformInteraction (see applyRightsideTransformator), perhaps not?
     }
 
     void canonicalize() {
@@ -515,6 +540,47 @@ public:
 
         // Transform the basis vectors
         basisvectors = basisvectors * basisvectors.adjoint();
+
+        // TODO call transformInteraction (see applyRightsideTransformator), perhaps yes?
+    }
+
+    void unitarize() {
+        this->buildHamiltonian();
+
+        // Determine hash of the list of states
+        size_t hashvalue_states =
+            boost::hash_range(states.template get<0>().begin(), states.template get<0>().end());
+
+        // Loop over basisvectors
+        states.clear();
+        size_t idx_new = 0;
+        for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
+            size_t hashvalue = hashvalue_states;
+            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+                boost::hash_combine(hashvalue, triple.row());
+                boost::hash_combine(hashvalue, triple.value());
+            }
+
+            // Rewrite basisvectors as states
+            std::stringstream ss;
+            ss << std::hex << hashvalue;
+            states.push_back(
+                enumerated_state<T>(idx_new++, this->createStateFromLabel<T>(ss.str())));
+        }
+        states.shrink_to_fit();
+
+        // Adapt basisvectors
+        basisvectors.resize(states.size(), states.size());
+        basisvectors.setZero();
+        basisvectors.reserve(states.size());
+        for (int idx = 0; idx < states.size(); ++idx) {
+            basisvectors.insert(idx, idx) = 1;
+        }
+        basisvectors.makeCompressed();
+
+        // Delete caches as they are no longer meaningful
+        basisvectors_unperturbed_cache.resize(0, 0);
+        hamiltonian_unperturbed_cache.resize(0, 0);
     }
 
     void rotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
@@ -645,7 +711,7 @@ public:
         // --- Check if basis vectors are orthogonal ---
         eigen_sparse_t tmp =
             (basisvectors.leftCols(size_this).adjoint() * basisvectors.rightCols(size_other))
-                .pruned(1e-1, 1);
+                .pruned(1e-12, 1);
         if (tmp.nonZeros() != 0) {
             throw std::runtime_error(
                 "Two systems cannot be combined if their basis vectors are not orthogonal.");
@@ -714,18 +780,26 @@ public:
         this->diagonalize();
         system0.buildHamiltonian();
 
-        // Check that system0, i.e. the unperturbed system, is diagonal
+        // Check that system, on which applySchriefferWolffTransformation() is called, is unitary
+        if (!this->checkIsUnitary(basisvectors)) {
+            throw std::runtime_error("The system, on which applySchriefferWolffTransformation() is "
+                                     "called, is not unitary. Call unitarize() on the system.");
+        }
+
+        // Check that system0, i.e. the unperturbed system, is unitary
+        if (!this->checkIsUnitary(system0.basisvectors)) {
+            throw std::runtime_error(
+                "The unperturbed system passed to applySchriefferWolffTransformation() is not "
+                "unitary. Call unitarize() on the system.");
+        }
+
+        // Check that the unperturbed system is diagonal
         if (!this->checkIsDiagonal(system0.hamiltonian)) {
             throw std::runtime_error("The unperturbed system passed to "
                                      "applySchriefferWolffTransformation() is not diagonal.");
         }
 
         // --- Express the basis vectors of system0 as a linearcombination of all states ---
-
-        // Check number of states
-        if (states.size() != system0.states.size()) {
-            throw std::runtime_error("The unperturbed system owns a different number of states.");
-        }
 
         // Combine states and build transformators
         std::vector<eigen_triplet_t> transformator_triplets;
@@ -737,7 +811,8 @@ public:
             // Check that all the states of system0 occur (since we already checked that the number
             // of states is the same, this ensures that all the states are the same)
             if (state_iter == states.template get<1>().end()) {
-                throw std::runtime_error("The unperturbed system owns different states.");
+                throw std::runtime_error(
+                    "The unperturbed system contains states that are not occuring.");
             }
             size_t newidx = state_iter->idx;
 
@@ -980,12 +1055,14 @@ public:
 
 protected:
     SystemBase(MatrixElementCache &cache)
-        : cache(cache), energy_min(std::numeric_limits<double>::lowest()),
+        : cache(cache), threshold_for_sqnorm(0.05),
+          energy_min(std::numeric_limits<double>::lowest()),
           energy_max(std::numeric_limits<double>::max()), memory_saving(false),
           is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
 
     SystemBase(MatrixElementCache &cache, bool memory_saving)
-        : cache(cache), energy_min(std::numeric_limits<double>::lowest()),
+        : cache(cache), threshold_for_sqnorm(0.05),
+          energy_min(std::numeric_limits<double>::lowest()),
           energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving),
           is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
 
@@ -1004,6 +1081,8 @@ protected:
     virtual void onStatesChange(){};
 
     MatrixElementCache &cache;
+
+    double threshold_for_sqnorm;
 
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
@@ -1034,8 +1113,9 @@ protected:
 
         // Throw error if the Hamiltonian cannot be changed anymore
         if (is_interaction_already_contained && basisvectors_unperturbed_cache.size() == 0) {
-            throw std::runtime_error("If memory saving is activated, one cannot change parameters "
-                                     "after interaction was added to the Hamiltonian.");
+            throw std::runtime_error(
+                "If memory saving is activated or unitarize() has been called, one cannot change "
+                "parameters after interaction was added to the Hamiltonian.");
         }
 
         is_new_hamiltonian_required = true;
@@ -1049,13 +1129,37 @@ protected:
     }
 
     ////////////////////////////////////////////////////////////////////
-    /// Helper method to check diagonality of a matrix /////////////////
+    /// Helper methods to check diagonality and unitarity of a matrix //
     ////////////////////////////////////////////////////////////////////
 
     bool checkIsDiagonal(const eigen_sparse_t &mat) {
-        for (int k = 0; k < mat.outerSize(); ++k) {
-            for (eigen_iterator_t triple(mat, k); triple; ++triple) {
+        eigen_sparse_t tmp = mat;
+        tmp.prune(1e-12, 1);
+
+        for (int k = 0; k < tmp.outerSize(); ++k) {
+            for (eigen_iterator_t triple(tmp, k); triple; ++triple) {
                 if (triple.row() != triple.col()) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    bool checkIsUnitary(const eigen_sparse_t &mat) {
+        eigen_sparse_t tmp = (mat.adjoint() * mat).pruned(1e-12, 1);
+
+        if (tmp.nonZeros() != tmp.outerSize()) {
+            return false;
+        }
+
+        for (int k = 0; k < tmp.outerSize(); ++k) {
+            for (eigen_iterator_t triple(tmp, k); triple; ++triple) {
+                if (triple.row() != triple.col()) {
+                    return false;
+                }
+                if (std::abs(std::real(triple.value()) - 1) > 1e-12 ||
+                    std::abs(std::imag(triple.value())) > 1e-12) {
                     return false;
                 }
             }
@@ -1116,7 +1220,7 @@ protected:
     }
 
     void applyLeftsideTransformator(eigen_sparse_t &transformator) {
-        // Apply transformator in order to remove rows from the coefficient matrix (i.e. states)
+        // Apply transformator in order to remove rows from the basisvector matrix (i.e. states)
         basisvectors = transformator * basisvectors;
         if (basisvectors_unperturbed_cache.size() != 0) {
             basisvectors_unperturbed_cache = transformator * basisvectors_unperturbed_cache;
@@ -1131,7 +1235,7 @@ protected:
     }
 
     void applyRightsideTransformator(eigen_sparse_t &transformator) {
-        // Apply transformator in order to remove columns from the coefficient matrix (i.e. basis
+        // Apply transformator in order to remove columns from the basisvector matrix (i.e. basis
         // vectors)
         basisvectors = basisvectors * transformator;
         if (basisvectors_unperturbed_cache.size() != 0) {
@@ -1192,6 +1296,9 @@ protected:
     double real(const double &val) { return val; }
 
     double real(const std::complex<double> &val) { return val.real(); }
+
+    template <class S>
+    S createStateFromLabel(std::string label);
 
     template <class V>
     void range(std::set<V> &rset, V rmin, V rmax) {
@@ -1263,8 +1370,7 @@ private:
 
         if (!range_n.empty() || !range_l.empty() || !range_j.empty() || !range_m.empty() ||
             energy_min != std::numeric_limits<double>::lowest() ||
-            energy_max != std::numeric_limits<double>::max()) { // TODO also check for a new value
-                                                                // of threshold_for_sqnorm
+            energy_max != std::numeric_limits<double>::max()) {
 
             ////////////////////////////////////////////////////////////////////
             /// Remove vectors with restricted energies or too small norm //////
@@ -1281,11 +1387,11 @@ private:
                 if (checkIsEnergyValid(this->real(hamiltonian.coeff(idx, idx)))) {
                     double_t sqnorm = 0;
 
-                    // Calculate the square norm of the columns of the coefficient matrix
+                    // Calculate the square norm of the columns of the basisvector matrix
                     for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
                         sqnorm += std::pow(std::abs(triple.value()), 2);
                     }
-                    if (sqnorm > 0.05) {
+                    if (sqnorm > threshold_for_sqnorm) {
                         triplets_transformator.emplace_back(idx, idx_new++, 1);
                     }
                 }
@@ -1297,7 +1403,7 @@ private:
             /// Remove states that barely occur within the vectors /////////////
             ////////////////////////////////////////////////////////////////////
 
-            // Calculate the square norm of the rows of the coefficient matrix
+            // Calculate the square norm of the rows of the basisvector matrix
             std::vector<double> sqnorm_list(basisvectors.rows(), 0);
             for (int k = 0; k < this->basisvectors.cols(); ++k) {
                 for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
@@ -1307,7 +1413,7 @@ private:
 
             // Remove states if the squared norm is to small
             removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
-                return sqnorm_list[entry.idx] > 0.05;
+                return sqnorm_list[entry.idx] > threshold_for_sqnorm;
             });
 
             // Comunicate that the list of states has changed
@@ -1331,7 +1437,7 @@ private:
 
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &cache;
+        ar &cache &threshold_for_sqnorm;
         ar &energy_min &energy_max &range_n &range_l &range_j &range_m &states_to_add;
         ar &memory_saving &is_interaction_already_contained &is_new_hamiltonian_required;
         ar &states &basisvectors &hamiltonian;

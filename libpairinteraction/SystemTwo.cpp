@@ -507,12 +507,12 @@ void SystemTwo::initializeBasis() {
     for (int idx = 0; idx < basisvectors.cols(); ++idx) { // idx = col = num basis vector
         double_t sqnorm = 0;
 
-        // Calculate the square norm of the columns of the coefficient matrix
+        // Calculate the square norm of the columns of the basisvector matrix
         for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
             sqnorm += std::pow(std::abs(triple.value()), 2);
         }
 
-        if (sqnorm > 0.05) {
+        if (sqnorm > threshold_for_sqnorm) {
             triplets_transformator.emplace_back(idx, idx_new++, 1);
         }
     }
@@ -525,7 +525,7 @@ void SystemTwo::initializeBasis() {
 
     // Build transformator and remove states if the squared norm is to small
     removeRestrictedStates([=](const enumerated_state<StateTwo> &entry) -> bool {
-        return sqnorm_list[entry.idx] > 0.05;
+        return sqnorm_list[entry.idx] > threshold_for_sqnorm;
     });
 
     /*////////////////////////////////////////////////////////////////////

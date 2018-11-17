@@ -67,7 +67,7 @@ StateOne::StateOne(std::string species, int n, int l, float j, float m)
 
 StateOne::StateOne(std::string label)
     : species(std::move(label)), element(""), n(0), l(0), j(0), m(0), s(0) {
-    hashvalue = boost::hash_value(this->getLabel());
+    hashvalue = std::hash<std::string>{}(this->getLabel());
 }
 
 // Methods for printing the state
