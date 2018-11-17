@@ -1298,7 +1298,7 @@ protected:
     double real(const std::complex<double> &val) { return val.real(); }
 
     template <class S>
-    S createStateFromLabel(std::string label);
+    S createStateFromLabel(const std::string &label) const;
 
     template <class V>
     void range(std::set<V> &rset, V rmin, V rmax) {

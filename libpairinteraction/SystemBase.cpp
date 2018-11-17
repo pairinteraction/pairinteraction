@@ -20,12 +20,12 @@
 
 template <>
 template <>
-StateOne SystemBase<StateOne>::createStateFromLabel(std::string label) {
+StateOne SystemBase<StateOne>::createStateFromLabel(const std::string &label) const {
     return StateOne(label);
 }
 
 template <>
 template <>
-StateTwo SystemBase<StateTwo>::createStateFromLabel(std::string label) {
-    return StateTwo({{"0_" + label, "1_" + label}});
+StateTwo SystemBase<StateTwo>::createStateFromLabel(const std::string &label) const {
+    return StateTwo(std::array<std::string, 2>({{"0_" + label, "1_" + label}}));
 }
