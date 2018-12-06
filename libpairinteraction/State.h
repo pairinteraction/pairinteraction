@@ -59,6 +59,7 @@ public:
     double getNStar() const;
     const std::string &getLabel() const;
     bool isArtificial() const;
+    bool isGeneralized() const;
 
     const size_t &getHash() const;
 
@@ -122,6 +123,7 @@ public:
     std::array<double, 2> getNStar() const;
     std::array<std::string, 2> getLabel() const;
     std::array<bool, 2> isArtificial() const;
+    std::array<bool, 2> isGeneralized() const;
 
     const int &getN(int idx) const;
     const int &getL(int idx) const;
@@ -134,6 +136,7 @@ public:
     double getNStar(int idx) const;
     const std::string &getLabel(int idx) const;
     bool isArtificial(int idx) const;
+    bool isGeneralized(int idx) const;
 
     const StateOne &getFirstState() const;
     const StateOne &getSecondState() const;

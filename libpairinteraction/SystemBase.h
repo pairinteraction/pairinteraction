@@ -142,6 +142,130 @@ public:
     // and energies
 
     ////////////////////////////////////////////////////////////////////
+    /// Methods to get overlaps ////////////////////////////////////////
+    ////////////////////////////////////////////////////////////////////
+
+    eigen_vector_double_t getOverlap(const T &generalizedstate) {
+        return this->getOverlap(generalizedstate, 0, 0, 0);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates) {
+        return this->getOverlap(generalizedstates, 0, 0, 0);
+    }
+
+    eigen_vector_double_t getOverlap(const size_t &state_index) {
+        return this->getOverlap(state_index, 0, 0, 0);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices) {
+        return this->getOverlap(states_indices, 0, 0, 0);
+    }
+
+    eigen_vector_double_t getOverlap(const T &generalizedstate, std::array<double, 3> to_z_axis,
+                                     std::array<double, 3> to_y_axis) {
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        return this->getOverlap(generalizedstate, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates,
+                                     std::array<double, 3> to_z_axis,
+                                     std::array<double, 3> to_y_axis) {
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        return this->getOverlap(generalizedstates, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
+    }
+
+    eigen_vector_double_t getOverlap(const size_t &state_index, std::array<double, 3> to_z_axis,
+                                     std::array<double, 3> to_y_axis) {
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        return this->getOverlap(state_index, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices,
+                                     std::array<double, 3> to_z_axis,
+                                     std::array<double, 3> to_y_axis) {
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        return this->getOverlap(states_indices, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
+    }
+
+    eigen_vector_double_t getOverlap(const T &generalizedstate, double alpha, double beta,
+                                     double gamma) {
+        std::vector<T> generalizedstates({generalizedstate});
+        return this->getOverlap(generalizedstates, alpha, beta, gamma);
+    }
+
+    eigen_vector_double_t getOverlap(const size_t &state_index, double alpha, double beta,
+                                     double gamma) {
+        std::vector<size_t> states_indices({state_index});
+        return this->getOverlap(states_indices, alpha, beta, gamma);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates, double alpha,
+                                     double beta, double gamma) {
+        // Build basis
+        this->buildBasis();
+
+        // Determine indices of the specified states
+        std::vector<size_t> states_indices;
+        states_indices.reserve(generalizedstates.size());
+
+        for (const auto &searched_state : generalizedstates) {
+            if (this->isTrue(searched_state.isGeneralized())) {
+                for (const auto &state : states) {
+                    if (state.state ^ searched_state) { // Check whether state.state is contained in
+                                                        // searched_state
+                        states_indices.push_back(state.idx);
+                    }
+                }
+            } else {
+                auto state_iter = states.template get<1>().find(searched_state);
+                if (state_iter != states.template get<1>().end()) {
+                    states_indices.push_back(state_iter->idx);
+                }
+            }
+        }
+
+        // Get the overlap
+        return this->getOverlap(states_indices, alpha, beta, gamma);
+    }
+
+    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices, double alpha,
+                                     double beta, double gamma) {
+        // Build basis
+        this->buildBasis();
+
+        // Build state vectors
+        eigen_sparse_t overlap_states;
+        if (alpha == 0 && beta == 0 && gamma == 0) {
+
+            std::vector<eigen_triplet_t> overlap_states_triplets;
+            overlap_states_triplets.reserve(states_indices.size());
+
+            size_t current = 0;
+            for (auto const &idx : states_indices) {
+                overlap_states_triplets.emplace_back(idx, current++, 1);
+            }
+
+            overlap_states.resize(states.size(), states_indices.size());
+            overlap_states.setFromTriplets(overlap_states_triplets.begin(),
+                                           overlap_states_triplets.end());
+            overlap_states_triplets.clear();
+        } else {
+            eigen_sparse_t overlap_states = this->rotateStates(states_indices, alpha, beta, gamma);
+        }
+
+        // Calculate overlap
+        eigen_sparse_t product = basisvectors.adjoint() * overlap_states;
+        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
+        for (int k = 0; k < product.outerSize(); ++k) {
+            for (eigen_iterator_t triple(product, k); triple; ++triple) {
+                overlap[triple.row()] += std::pow(std::abs(triple.value()), 2);
+            }
+        }
+
+        return overlap;
+    }
+
+    ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////
     ////////////////////////////////////////////////////////////////////
 
@@ -197,87 +321,6 @@ public:
         }
 
         return basisvectors.rows();
-    }
-
-    eigen_vector_double_t getOverlap(const T &generalizedstate) {
-        // Build basis
-        this->buildBasis();
-
-        // Determine indices of the specified states
-        std::vector<size_t> states_indices;
-        for (const auto &state : states) {
-            if (state.state ^
-                generalizedstate) { // Check whether state.state is contained in generalizedstate
-                states_indices.push_back(state.idx);
-            }
-        }
-
-        // Build state vectors
-        std::vector<eigen_triplet_t> overlap_states_triplets;
-        overlap_states_triplets.reserve(states_indices.size());
-
-        size_t current = 0;
-        for (auto const &idx : states_indices) {
-            overlap_states_triplets.emplace_back(idx, current++, 1);
-        }
-
-        eigen_sparse_t overlap_states(states.size(), states_indices.size());
-        overlap_states.setFromTriplets(overlap_states_triplets.begin(),
-                                       overlap_states_triplets.end());
-        overlap_states_triplets.clear();
-
-        // Calculate overlap
-        eigen_sparse_t product = basisvectors.adjoint() * overlap_states;
-        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
-        for (int k = 0; k < product.outerSize(); ++k) {
-            for (eigen_iterator_t triple(product, k); triple; ++triple) {
-                overlap[triple.row()] += std::pow(std::abs(triple.value()), 2);
-            }
-        }
-
-        return overlap;
-    }
-
-    eigen_vector_double_t getOverlap(const T &state, std::array<double, 3> to_z_axis,
-                                     std::array<double, 3> to_y_axis) {
-        // Get Euler angles
-        Eigen::Matrix<double, 3, 3> rotator = this->buildRotator(to_z_axis, to_y_axis);
-        Eigen::Matrix<double, 3, 1> euler_zyz = rotator.eulerAngles(2, 1, 2);
-        double alpha = euler_zyz[0];
-        double beta = euler_zyz[1];
-        double gamma = euler_zyz[2];
-
-        return this->getOverlap(state, alpha, beta, gamma);
-    }
-
-    eigen_vector_double_t getOverlap(const T &generalizedstate, double alpha, double beta,
-                                     double gamma) {
-        // Build basis
-        this->buildBasis();
-
-        // Determine indices of the specified states
-        std::vector<size_t> states_indices;
-        for (const auto &state : states) {
-            if (state.state ^
-                generalizedstate) { // Check whether state.state is contained in generalizedstate
-                states_indices.push_back(state.idx);
-            }
-        }
-
-        // Build rotated state vectors
-        eigen_sparse_t overlap_states_rotated =
-            this->rotateStates(states_indices, alpha, beta, gamma);
-
-        // Calculate overlap
-        eigen_sparse_t product = basisvectors.adjoint() * overlap_states_rotated;
-        eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
-        for (int k = 0; k < product.outerSize(); ++k) {
-            for (eigen_iterator_t triple(product, k); triple; ++triple) {
-                overlap[triple.row()] += std::pow(std::abs(triple.value()), 2);
-            }
-        }
-
-        return overlap;
     }
 
     std::vector<T> getMainStates() {
@@ -584,14 +627,8 @@ public:
     }
 
     void rotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
-        // Get Euler angles
-        Eigen::Matrix<double, 3, 3> rotator = this->buildRotator(to_z_axis, to_y_axis);
-        Eigen::Matrix<double, 3, 1> euler_zyz = rotator.eulerAngles(2, 1, 2);
-        double alpha = euler_zyz[0];
-        double beta = euler_zyz[1];
-        double gamma = euler_zyz[2];
-
-        this->rotate(alpha, beta, gamma);
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        this->rotate(euler_zyz[0], euler_zyz[1], euler_zyz[2]);
     }
 
     void rotate(double alpha, double beta, double gamma) { // TODO applyRightsideTransformator ?
@@ -612,19 +649,12 @@ public:
         this->transformInteraction(basisvectors);
     }
 
-    void derotate(std::array<double, 3> to_z_axis,
-                  std::array<double, 3> to_y_axis) { // TODO applyRightsideTransformator ?
-        // Get Euler angles
-        Eigen::Matrix<double, 3, 3> rotator = this->buildRotator(to_z_axis, to_y_axis);
-        Eigen::Matrix<double, 3, 1> euler_zyz = rotator.eulerAngles(2, 1, 2);
-        double alpha = euler_zyz[0];
-        double beta = euler_zyz[1];
-        double gamma = euler_zyz[2];
-
-        this->derotate(alpha, beta, gamma);
+    void derotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
+        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
+        this->derotate(euler_zyz[0], euler_zyz[1], euler_zyz[2]);
     }
 
-    void derotate(double alpha, double beta, double gamma) {
+    void derotate(double alpha, double beta, double gamma) { // TODO applyRightsideTransformator ?
         // Build basis
         this->buildBasis();
 
@@ -879,8 +909,11 @@ public:
     size_t getStateIndex(const T &searched_state) {
         this->buildBasis();
 
-        auto state_iter = states.template get<1>().find(searched_state);
+        if (this->isTrue(searched_state.isGeneralized())) {
+            throw std::runtime_error("The method must not be called on a generalized state.");
+        }
 
+        auto state_iter = states.template get<1>().find(searched_state);
         if (state_iter == states.template get<1>().end()) {
             throw std::runtime_error("The method is called on a non-existing state.");
         }
@@ -895,12 +928,14 @@ public:
         indices.reserve(searched_states.size());
 
         for (const auto &state : searched_states) {
-            auto state_iter = states.template get<1>().find(state);
+            if (this->isTrue(state.isGeneralized())) {
+                throw std::runtime_error("The method must not be called on a generalized state.");
+            }
 
+            auto state_iter = states.template get<1>().find(state);
             if (state_iter == states.template get<1>().end()) {
                 throw std::runtime_error("The method is called on a non-existing state.");
             }
-
             indices.push_back(state_iter->idx);
         }
 
@@ -1293,9 +1328,11 @@ protected:
 
     double conjugate(const double &val) { return val; }
 
-    double real(const double &val) { return val; }
+    bool isTrue(const bool &value) { return value; }
 
-    double real(const std::complex<double> &val) { return val.real(); }
+    bool isTrue(const std::array<bool, 2> &values) {
+        return std::all_of(values.begin(), values.end(), [](bool i) { return i; });
+    }
 
     template <class S>
     S createStateFromLabel(const std::string &label) const;
@@ -1308,8 +1345,8 @@ protected:
         }
     }
 
-    Eigen::Matrix<double, 3, 3> buildRotator(std::array<double, 3> &to_z_axis,
-                                             std::array<double, 3> &to_y_axis) {
+    Eigen::Matrix<double, 3, 3> buildRotator(std::array<double, 3> to_z_axis,
+                                             std::array<double, 3> to_y_axis) {
         auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&to_z_axis[0]).normalized();
         auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&to_y_axis[0]).normalized();
 
@@ -1334,6 +1371,13 @@ protected:
             Eigen::AngleAxisd(gamma, Eigen::Matrix<double, 3, 1>::UnitZ());
 
         return transformator;
+    }
+
+    Eigen::Matrix<double, 3, 1> getEulerAngles(const std::array<double, 3> &to_z_axis,
+                                               const std::array<double, 3> &to_y_axis) {
+        Eigen::Matrix<double, 3, 3> rotator = this->buildRotator(to_z_axis, to_y_axis);
+        Eigen::Matrix<double, 3, 1> euler_zyz = rotator.eulerAngles(2, 1, 2);
+        return euler_zyz; // alpha, beta, gamma
     }
 
 private:
@@ -1384,7 +1428,7 @@ private:
             size_t idx_new = 0;
             for (int idx = 0; idx < basisvectors.cols(); ++idx) { // idx = col = num basis vector
 
-                if (checkIsEnergyValid(this->real(hamiltonian.coeff(idx, idx)))) {
+                if (checkIsEnergyValid(std::real(hamiltonian.coeff(idx, idx)))) {
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the basisvector matrix

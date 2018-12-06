@@ -138,6 +138,9 @@ const std::string &StateOne::getLabel() const {
     return species;
 }
 bool StateOne::isArtificial() const { return (n == 0); }
+bool StateOne::isGeneralized() const {
+    return (n == ARB) || (l == ARB) || (j == ARB) || (m == ARB);
+}
 
 const size_t &StateOne::getHash() const { return hashvalue; }
 
@@ -252,6 +255,9 @@ std::array<std::string, 2> StateTwo::getLabel() const {
 std::array<bool, 2> StateTwo::isArtificial() const {
     return {{state_array[0].isArtificial(), state_array[1].isArtificial()}};
 }
+std::array<bool, 2> StateTwo::isGeneralized() const {
+    return {{state_array[0].isGeneralized(), state_array[1].isGeneralized()}};
+}
 
 const int &StateTwo::getN(int idx) const { return state_array[idx].getN(); }
 const int &StateTwo::getL(int idx) const { return state_array[idx].getL(); }
@@ -264,6 +270,7 @@ double StateTwo::getEnergy(int idx) const { return state_array[idx].getEnergy();
 double StateTwo::getNStar(int idx) const { return state_array[idx].getNStar(); }
 const std::string &StateTwo::getLabel(int idx) const { return state_array[idx].getLabel(); }
 bool StateTwo::isArtificial(int idx) const { return state_array[idx].isArtificial(); }
+bool StateTwo::isGeneralized(int idx) const { return state_array[idx].isGeneralized(); }
 
 const StateOne &StateTwo::getFirstState() const { return state_array[0]; }
 const StateOne &StateTwo::getSecondState() const { return state_array[1]; }

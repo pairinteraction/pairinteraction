@@ -229,7 +229,7 @@ void SystemTwo::initializeBasis() {
             }
 
             // Continue if the pair statet energy is not valid
-            double energy = this->real(system1.getHamiltonian().coeff(col_1, col_1) +
+            double energy = std::real(system1.getHamiltonian().coeff(col_1, col_1) +
                                        system2.getHamiltonian().coeff(col_2, col_2));
             if (!checkIsEnergyValid(energy)) {
                 continue;
