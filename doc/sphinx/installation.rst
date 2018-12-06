@@ -12,7 +12,7 @@ architectures:
 
 - ``deb`` package: Ubuntu 16.04 amd64
 - ``rpm`` package: OpenSUSE Leap x86_64
-- Mac OS X ``dmg``: Mac OS X 10.11
+- Mac OS X ``dmg``: Mac OS X 10.12
 - Windows ``exe``: Compiled with Visual Studio 2015
 
 The binary builds come with a Python and C++ library. The library can be used
@@ -85,7 +85,7 @@ for compiling the source code.
 Git
     Git is a version control system used to track changes.
 
-CMake
+CMake 3.2 or later
     The build system is based on CMake.
 
 C++ Backend and Python Interface
@@ -104,7 +104,7 @@ Boost
 GSL
     The GNU Scientific Library (GSL) is a numerical library.
 
-SWIG
+SWIG 3.0 or later
     Simplified Wrapper and Interface Generator to generate a Python
     interface from the C++ code.
 
@@ -133,7 +133,7 @@ Sphinx
 Build options
 ^^^^^^^^^^^^^
 
-The build system uses CMake and has some configuration switches.  These are
+The build system uses CMake and has some configuration switches. These are
 
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
@@ -144,7 +144,8 @@ The build system uses CMake and has some configuration switches.  These are
 +---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_DATABASE``   | Generate the quantum defect database | ON      |
+| ``WITH_DATABASE``   | Store the quantum defect database so | ON      |
+|                     | that it can be accessed by the GUI   |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_DOCS``       | Generate documentation               | ON      |
 +---------------------+--------------------------------------+---------+
@@ -159,9 +160,9 @@ These options can be passed directly to ``cmake``, i.e.
 
 .. code-block:: bash
 
-    $ cmake -DWITH_GUI=OFF -DWITH_DATABASE=OFF ..
+    $ cmake -DWITH_GUI=OFF -DWITH_DATABASE=OFF -DWITH_DOCS=OFF ..
 
-This way we can only build the C++ backend.
+This way we can only build the C++ backend with the Python interface.
 
 Ubuntu 16.04
 ^^^^^^^^^^^^

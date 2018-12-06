@@ -119,7 +119,7 @@ if(WITH_PYTHON)
   set( DATATYPE "complex" )
   configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
 
-  find_package(SWIG REQUIRED)
+  find_package(SWIG 3.0 REQUIRED)
   find_package(PythonInterp 3 REQUIRED)
   find_package(PythonLibs 3 REQUIRED)
   find_package(Numpy REQUIRED)
