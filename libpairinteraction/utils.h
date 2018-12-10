@@ -33,9 +33,9 @@
 namespace utils {
 
 template <typename T>
-struct is_complex : public std::false_type {};
+struct is_complex : std::false_type {};
 template <typename S>
-struct is_complex<std::complex<S>> : public std::true_type {};
+struct is_complex<std::complex<S>> : std::true_type {};
 
 template <typename T>
 inline T conjugate(const T &val) {
@@ -50,19 +50,15 @@ template <typename T>
 inline bool is_true(const T &val) {
     return std::all_of(val.begin(), val.end(), [](bool i) { return i; });
 }
-template <>
-inline bool is_true(const bool &val) {
-    return val;
-}
+inline bool is_true(bool val) { return val; }
 
 template <typename T>
-inline T imaginary_unit() {
+inline typename std::enable_if<!is_complex<T>::value, T>::type imaginary_unit() {
     throw std::runtime_error(
         "For operations that invoke the imaginary number, a complex data type is needed.");
 }
-template <>
-inline std::complex<double>
-imaginary_unit() { // TODO Why is template <S> together with std::complex<S> not working?
+template <typename T>
+inline typename std::enable_if<is_complex<T>::value, T>::type imaginary_unit() {
     return {0, 1};
 }
 
