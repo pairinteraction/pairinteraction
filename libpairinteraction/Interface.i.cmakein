@@ -232,6 +232,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemBase.h
+%warnfilter(509) SystemBase::getOverlap;
+
 %include "SystemBase.h"
 
 
