@@ -116,13 +116,14 @@ private:
 
         for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ(); ++m2) {
             val2_vector.push_back(
-                convert<T>(wigner(state.getSecondState().getJ(), state.getSecondState().getM(), m2,
-                                  alpha, beta, gamma)));
+                utils::convert<T>(wigner(state.getSecondState().getJ(),
+                                         state.getSecondState().getM(), m2, alpha, beta, gamma)));
         }
 
         for (float m1 = -state.getFirstState().getJ(); m1 <= state.getFirstState().getJ(); ++m1) {
-            T val1 = convert<T>(wigner(state.getFirstState().getJ(), state.getFirstState().getM(),
-                                       m1, alpha, beta, gamma));
+            auto val1 =
+                utils::convert<T>(wigner(state.getFirstState().getJ(), state.getFirstState().getM(),
+                                         m1, alpha, beta, gamma));
 
             for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ();
                  ++m2) {
@@ -131,7 +132,7 @@ private:
                 auto state_iter = states.get<1>().find(newstate);
 
                 if (state_iter != states.get<1>().end()) {
-                    T val = val1 * val2_vector[m2 + state.getSecondState().getJ()];
+                    auto val = val1 * val2_vector[m2 + state.getSecondState().getJ()];
                     triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
                 } else {
                     std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
@@ -140,11 +141,6 @@ private:
                 }
             }
         }
-    }
-
-    template <class T, class S>
-    T convert(const S &val) {
-        return val;
     }
 
     bool isRefelectionAndRotationCompatible();

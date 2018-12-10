@@ -230,7 +230,7 @@ void SystemTwo::initializeBasis() {
 
             // Continue if the pair statet energy is not valid
             double energy = std::real(system1.getHamiltonian().coeff(col_1, col_1) +
-                                       system2.getHamiltonian().coeff(col_2, col_2));
+                                      system2.getHamiltonian().coeff(col_2, col_2));
             if (!checkIsEnergyValid(energy)) {
                 continue;
             }
@@ -1003,11 +1003,6 @@ void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
 void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
                            const size_t c_idx, const scalar_t val) {
     triplets.emplace_back(r_idx, c_idx, val);
-}
-
-template <>
-double SystemTwo::convert(const std::complex<double> &val) {
-    return val.real();
 }
 
 bool SystemTwo::isRefelectionAndRotationCompatible() {

@@ -209,7 +209,7 @@ public:
         states_indices.reserve(generalizedstates.size());
 
         for (const auto &searched_state : generalizedstates) {
-            if (this->isTrue(searched_state.isGeneralized())) {
+            if (utils::is_true(searched_state.isGeneralized())) {
                 for (const auto &state : states) {
                     if (state.state ^ searched_state) { // Check whether state.state is contained in
                                                         // searched_state
@@ -909,7 +909,7 @@ public:
     size_t getStateIndex(const T &searched_state) {
         this->buildBasis();
 
-        if (this->isTrue(searched_state.isGeneralized())) {
+        if (utils::is_true(searched_state.isGeneralized())) {
             throw std::runtime_error("The method must not be called on a generalized state.");
         }
 
@@ -928,7 +928,7 @@ public:
         indices.reserve(searched_states.size());
 
         for (const auto &state : searched_states) {
-            if (this->isTrue(state.isGeneralized())) {
+            if (utils::is_true(state.isGeneralized())) {
                 throw std::runtime_error("The method must not be called on a generalized state.");
             }
 
@@ -1064,7 +1064,7 @@ public:
         tmp.reserve(2);
         tmp.insert(idx_row, idx_col) = value;
         if (idx_row != idx_col) {
-            tmp.insert(idx_col, idx_row) = this->conjugate(value);
+            tmp.insert(idx_col, idx_row) = utils::conjugate(value);
         }
         tmp.makeCompressed();
 
@@ -1081,7 +1081,7 @@ public:
         tmp.reserve(2);
         tmp.insert(idx_row, idx_col) = value;
         if (idx_row != idx_col) {
-            tmp.insert(idx_col, idx_row) = this->conjugate(value);
+            tmp.insert(idx_col, idx_row) = utils::conjugate(value);
         }
         tmp.makeCompressed();
 
@@ -1323,16 +1323,6 @@ protected:
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
-
-    std::complex<double> conjugate(const std::complex<double> &val) { return std::conj(val); }
-
-    double conjugate(const double &val) { return val; }
-
-    bool isTrue(const bool &value) { return value; }
-
-    bool isTrue(const std::array<bool, 2> &values) {
-        return std::all_of(values.begin(), values.end(), [](bool i) { return i; });
-    }
 
     template <class S>
     S createStateFromLabel(const std::string &label) const;

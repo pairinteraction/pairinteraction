@@ -17,6 +17,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <algorithm>
 #include <complex>
 #include <functional>
 #include <random>
@@ -33,8 +34,46 @@ namespace utils {
 
 template <typename T>
 struct is_complex : public std::false_type {};
+template <typename S>
+struct is_complex<std::complex<S>> : public std::true_type {};
+
 template <typename T>
-struct is_complex<std::complex<T>> : public std::true_type {};
+inline T conjugate(const T &val) {
+    return val;
+}
+template <typename S>
+inline std::complex<S> conjugate(const std::complex<S> &val) {
+    return std::conj(val);
+}
+
+template <typename T>
+inline bool is_true(const T &val) {
+    return std::all_of(val.begin(), val.end(), [](bool i) { return i; });
+}
+template <>
+inline bool is_true(const bool &val) {
+    return val;
+}
+
+template <typename T>
+inline T imaginary_unit() {
+    throw std::runtime_error(
+        "For operations that invoke the imaginary number, a complex data type is needed.");
+}
+template <>
+inline std::complex<double>
+imaginary_unit() { // TODO Why is template <S> together with std::complex<S> not working?
+    return {0, 1};
+}
+
+template <typename T, typename U>
+inline T convert(const U &val) {
+    return val;
+}
+template <typename S>
+inline S convert(const std::complex<S> &val) {
+    return std::real(val);
+}
 
 /** \brief Thread-local static random engine
  *

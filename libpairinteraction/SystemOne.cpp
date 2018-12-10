@@ -113,26 +113,6 @@ void SystemOne::setConservedMomentaUnderRotation(const std::set<float> &momenta)
 }
 
 ////////////////////////////////////////////////////////////////////
-/// Explicit template specializations (has to be at the beginning) /
-////////////////////////////////////////////////////////////////////
-
-template <>
-double SystemOne::imaginaryUnit() {
-    throw std::runtime_error(
-        "For operations that invoke the imaginary number, a complex data type is needed.");
-}
-
-template <>
-std::complex<double> SystemOne::imaginaryUnit() {
-    return {0, 1};
-}
-
-template <>
-double SystemOne::convert(const std::complex<double> &val) {
-    return val.real();
-}
-
-////////////////////////////////////////////////////////////////////
 /// Method that allows base class to initialize Basis //////////////
 ////////////////////////////////////////////////////////////////////
 
@@ -700,7 +680,7 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     // Add further entries to the current basis vector if required by symmetries
     if (sym_reflection_local != NA && state.getM() != 0) {
         value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
-            this->imaginaryUnit<scalar_t>();
+            utils::imaginary_unit<scalar_t>();
         value *= (sym_reflection_local == EVEN) ? 1 : -1;
         // S_y is invariant under reflection through xz-plane
         // TODO is the s quantum number of importance here?

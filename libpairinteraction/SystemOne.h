@@ -129,7 +129,8 @@ private:
             auto state_iter = states.get<1>().find(newstate);
 
             if (state_iter != states.get<1>().end()) {
-                T val = convert<T>(wigner(state.getJ(), state.getM(), m, alpha, beta, gamma));
+                auto val =
+                    utils::convert<T>(wigner(state.getJ(), state.getM(), m, alpha, beta, gamma));
                 triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
             } else {
                 std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
@@ -138,14 +139,6 @@ private:
             }
         }
     }
-
-    template <class T, class S>
-    T convert(const S &val) {
-        return val;
-    }
-
-    template <class U>
-    U imaginaryUnit();
 
     bool isRefelectionAndRotationCompatible();
 
