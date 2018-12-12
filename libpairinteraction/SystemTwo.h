@@ -38,9 +38,13 @@ public:
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
+    void setDistanceX(double xAB);
+    void setDistanceZA(double za);
+    void setDistanceZB(double zb);
+    void setGTbool(bool GTboolean);
     void setAngle(double a);
     void setOrder(double o);
-
+    
     void setConservedParityUnderPermutation(parity_t parity);
     void setConservedParityUnderInversion(parity_t parity);
     void setConservedParityUnderReflection(parity_t parity);
@@ -56,6 +60,7 @@ protected:
                                 double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateTwo> &system) override;
+    void DipoleVector();
 
 private:
     std::array<std::string, 2> species;
@@ -66,9 +71,19 @@ private:
     std::unordered_map<int, eigen_sparse_t> interaction_multipole;
 
     double distance;
+    double x;
+    double zA;
+    double zB;
+    bool GTbool;
     double angle;
     unsigned int ordermax;
-
+    
+    std::vector<eigen_triplet_complex_t> xxGTmatrix;
+    std::vector<eigen_triplet_complex_t> yyGTmatrix;
+    std::vector<eigen_triplet_complex_t> zzGTmatrix;
+    std::vector<eigen_triplet_complex_t> xzGTmatrix;
+    std::vector<eigen_triplet_complex_t> zxGTmatrix;
+    
     parity_t sym_permutation;
     parity_t sym_inversion;
     parity_t sym_reflection;
@@ -86,6 +101,8 @@ private:
 
     void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
                     scalar_t val);
+    void addTripletC(std::vector<eigen_triplet_complex_t> &triplets, size_t r_idx, size_t c_idx,
+                    std::complex<double> val);
 
     template <class T>
     void addRotated(const StateTwo &state, const size_t &idx,

@@ -16,6 +16,7 @@
 
 #include "SystemTwo.h"
 #include "dtypes.h"
+#include "greentensor.h"
 
 #include <algorithm>
 #include <cmath>
@@ -64,18 +65,22 @@ void SystemTwo::setDistance(double d) {
     distance = d;
 }
 
-void SystemTwo::setDistanceX(double x) {
+void SystemTwo::setDistanceX(double xAB) {
     this->onParameterChange();
-    xsystem = x;
+    x = xAB;
 }
 
-void SystemTwo::setDistanceZA(double z) {
+void SystemTwo::setDistanceZA(double za) {
     this->onParameterChange();
-    zA = z;
+    zA = za;
 }
-void SystemTwo::setDistanceZB(double z) {
+void SystemTwo::setDistanceZB(double zb) {
     this->onParameterChange();
-    zB = z;
+    zB = zb;
+}
+void SystemTwo::setGTbool(bool GTboolean) {
+    this->onParameterChange();
+    GTbool = GTboolean;
 }
 
 
@@ -481,12 +486,78 @@ void SystemTwo::initializeInteraction() {
         interaction_angulardipole_triplets; // TODO reserve
     std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_multipole_triplets; // TODO reserve
-//     //create GreenTensor before looping //=> 21.11. : moved to addInteraction.
-//     if(GreenTensor==True){
-//       SystemTwo::GreenTensor();
-//       std::vector< Eigen::Triplet< complex<double> > > tripletListGT;
-//     }
-    // Loop over column entries
+        
+        
+    if(GTbool){
+        //matrix definitions in SystemTwo.h
+
+      double dipolemoment1,dipolemoment2;
+      std::complex<double> imagunit = std::complex<double> (0.,1.);
+      std::complex<double> vec1[3];
+      std::complex<double> vec2[3];
+      std::complex<double> value;
+      for (const auto &c : states) {
+	for (const auto &r : states) {
+	  
+          dipolemoment1 = coulombs_constant*cache.getElectricDipole(r.state.first(), c.state.first());
+          dipolemoment2 = coulombs_constant*cache.getElectricDipole(r.state.second(), c.state.second());     
+            if(r.state.first().m - c.state.first().m == -1.){
+                vec1[0] = (std::sqrt(1./2.)*(-dipolemoment1));
+                vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
+                vec1[2] = 0.;
+            }
+            if(r.state.second().m - c.state.second().m == -1.){
+                vec2[0] = (std::sqrt(1./2.)*(-dipolemoment2));
+                vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
+                vec2[2] = 0.;
+            }
+            if(r.state.first().m - c.state.first().m == -1.){
+                vec1[0] = (std::sqrt(1./2.)*(-dipolemoment1));
+                vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
+                vec1[2] = (0.);
+            }
+            if(r.state.second().m - c.state.second().m== -1.){
+                vec2[0] = (std::sqrt(1./2.)*(-dipolemoment2));
+                vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
+                vec2[2] = (0.);
+            }
+            if(r.state.first().m - c.state.first().m == 0.){
+                vec1[0] = 0.;
+                vec1[1] = 0.;
+                vec1[2] = std::sqrt(1.)*dipolemoment1;
+            }
+            if(r.state.second().m - c.state.second().m == 0.){
+                vec2[0] = 0.;
+                vec2[1] = 0.;
+                vec2[2] = std::sqrt(1.)*dipolemoment2;
+            }
+            if(vec1[0]*vec2[0]!=0.){
+                value = vec1[0]*vec2[0];
+//                 value = vec1[0]*vec2[0]*GT.tensor(0,0); // => Dann für jeden GT alles neu ausrechenn. Das ist zu langwierig. Dieser Schritt wird in andere Funktion ausgelagert.
+                this->addTripletC(xxGTmatrix,r.idx,c.idx,value);
+            }
+            if(vec1[1]*vec2[1]!=0.){
+                value = vec1[1]*vec2[1];
+                this->addTripletC(yyGTmatrix,r.idx,c.idx,value);
+            }
+            if(vec1[2]*vec2[2]!=0.){
+                value = vec1[2]*vec2[2];
+                this->addTripletC(zzGTmatrix,r.idx,c.idx,value);
+            }
+            if(vec1[0]*vec2[2]!=0.){
+                value = vec1[0]*vec2[2];
+                this->addTripletC(xzGTmatrix,r.idx,c.idx,value);
+            }
+            if(vec1[2]*vec2[0]!=0.){
+                value = vec1[2]*vec2[0];
+                this->addTripletC(zxGTmatrix,r.idx,c.idx,value);
+            }
+        }
+      }
+		
+	    
+    }
+    
     for (const auto &c : states) { // TODO parallelization
         if (c.state.species.empty()) {
             continue; // TODO artifical states TODO [dummystates]
@@ -494,7 +565,6 @@ void SystemTwo::initializeInteraction() {
 
         // Loop over row entries
         for (const auto &r : states) {
-
             if (r.state.species.empty()) {
                 continue; // TODO artifical states TODO [dummystates]
             }
@@ -556,18 +626,7 @@ void SystemTwo::initializeInteraction() {
                 }
 
             } 
-            else if(GT!=0){
-		//Call DipoleVector to create interaction as \vec{d}_{r1c1} \cdot G \cdot \vec{d}_{r2c2}
-// 		SystemTwo::DipoleVector();
-		int NumStates = system1.getNumStates() * system2.getNumStates(); //TODO: correct? Move to front. Assumes that Hamiltonian matrix will be of size NumStates*NumStates (or r.idx,c.idx<=NumStates)
-		std::array<std::array<eigen_sparse_t, NumStates>, NumStates> dipolematrix;
-		SystemTwo::DipoleVector vec1;
-		SystemTwo::DipoleVector vec2;
-		vec1.fillDipole(r.state.first(),c.state.first());
-		vec2.fillDipole(r.state.second(),c.state.second());
-		dipolematrix[r.idx,c.idx] = {{vec1[0],vec1[1],vec1[2]},{vec2[0],vec2[1],vec2[2]}}; //Is this a valid way? should it be more nested in the declaration?
-		
-	    }
+            
             else {
                 // Multipole interaction
                 if (q1 + q2 == 0) { // total momentum conserved
@@ -638,21 +697,31 @@ void SystemTwo::addInteraction() {
 
     // Build the total Hamiltonian
     double tolerance = 1e-24;
-    if (GT!=0){
-      SystemTwo::GreenTensor Gtensor;
-      tensor.vacEntry(x,zA-zB);
-      tensor.plateEntry(x,zA,zB);
-      for(const auto &c : states){
-	for(const auto &r : states){
-	  for(int i = 0;i<3;i++{
-	    for(int j = 0;j<3;j++){
-	      hamiltonianmatrix[r.idx,c.idx] += dipolematrix[r.idx,c.idx,i,j]*(Gtensor.vac(i,j)+Gtensor.plate(i,j));
-	    }
-	  }
-	  
-	}
-      }
+    
+    if(GTbool){
+      //Ganz umständlich?:
+      GreenTensor GT(x,zA,zB);
+      Eigen::SparseMatrix<std::complex<double> > dummy;
+      Eigen::SparseMatrix<std::complex<double> > GThamiltonian;
+      dummy.setFromTriplets(xxGTmatrix.begin(),xxGTmatrix.end());
+      dummy = dummy*GT.tensor(0,0);
+      GThamiltonian = dummy;
+      dummy.setFromTriplets(yyGTmatrix.begin(),yyGTmatrix.end());
+      dummy = dummy*GT.tensor(1,1);
+      GThamiltonian += dummy;
+      dummy.setFromTriplets(zzGTmatrix.begin(),zzGTmatrix.end());
+      dummy = dummy*GT.tensor(2,2);
+      GThamiltonian += dummy;
+      dummy.setFromTriplets(xzGTmatrix.begin(),xzGTmatrix.end());
+      dummy = dummy*GT.tensor(0,2);
+      GThamiltonian += dummy;
+      dummy.setFromTriplets(zxGTmatrix.begin(),zxGTmatrix.end());
+      dummy = dummy*GT.tensor(2,0);
+      GThamiltonian += dummy;
     }
+
+
+
     else if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for
                       // other interaction than dipole-dipole
 
@@ -676,128 +745,13 @@ void SystemTwo::addInteraction() {
 /// Method that allows base class to construct Hamiltonian using GreenTensor /////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::GreenTensor() {
-   //GreenTensor nur einmal für gegebenes x, zA, zB erstellen, dann alle Matrixelemente durchrechnen (siehe unten).
-    if (distance == std::numeric_limits<double>::max()) {
-        return;
-    }
-    
-    //Construct GreenTensor
-    public:
-    Eigen::Matrix<std::complex<double>, 3, 3> vac;
-    Eigen::Matrix<std::complex<double>, 3, 3> plate;
-  
-    void vacEntry(double x, double z){
-      double distance = std::sqrt(x*x + z*z);
-      double Kdelta;
-      double vecrho[3];
-      vecrho[0] = x;
-      vecrho[1] = 0.;
-      vecrho[2] = z;
-      for(int i=0;i<3;i++){
-	for(int j=0;j<3;j++){
-	  Kdelta = 0.;
-	  if(i==j){
-	    Kdelta = 1.;
-	  }
-	  vac(i,j) = (Kdelta - 3.*vecrho[i]*vecrho[j])/std::pow(distance,3.);
-	}
-      }
-    }  
-    
-    
-    void plateEntry(double x, double zA, double zB){
-      double zp = zA+zB;
-      double rp = std::sqrt(x*x+zp*zp);
-      for(int i =0;i<3;i++){
-	for(int j = 0;j<3;j++){
-	  plate(i,j) = 0.;
-	}
-      }
-      plate(0,0) = (1. - (3.*x*x)/(rp*rp))*std::pow(rp,-3.);
-      plate(0,2) =  ((3.*x*zp)/(rp*rp))*std::pow(rp,-3.);
-      plate(1,1) = 1.*std::pow(rp,-3.);
-      plate(2,0) = (- 3.*x*zp/(rp*rp))*std::pow(rp,-3.);
-      plate(2,2) = (2. - 3.*x*x/(rp*rp))*std::pow(rp,-3.);
-    }
-}
 
-void SystemTwo::DipoleVector{
-    //Dipolvektor
-    //cache.getElectricMultipole(r.state.first(), c.state.first(),kappa1)
-    std::complex<double> dipole[3];
-    
-    void fillDipole(double m, double mp){ //Hier r.state.first/second und c.state.first/second als Argument?
-      double dipolemoment = 2; //Dementsprechend gewinnen
-      //   dipolemoment = coulombs_constant*cache.getElectricDipole(r.state, c.state);
-      std::complex<double> imagunit = std::complex<double> (0.,1.);
-      if(m - mp == -1.){
-	dipole[0] = (std::sqrt(1./2.)*(-dipolemoment));
-	dipole[1] = (std::sqrt(1./2.)*imagunit*dipolemoment);
-	dipole[2] = 0.;
-      }
-      if(m - mp == -1.){
-	dipole[0] = (std::sqrt(1./2.)*(-dipolemoment));
-	dipole[1] = (std::sqrt(1./2.)*imagunit*dipolemoment);
-	dipole[2] = (0.);
-      }
-      if(m - mp == 0.){
-	dipole[0] = 0.;
-	dipole[1] = 0.;
-	dipole[2] = std::sqrt(1.)*dipolemoment;
-      }
-    }
-    
+
+void SystemTwo::DipoleVector(){
+    //just empty, everything moved to other place. Leave it as place holder for now.
     
 }
 
-// void SystemTwo::DipoleVector{
-//     //Dipolvektor
-//     //cache.getElectricMultipole(r.state.first(), c.state.first(),kappa1)
-//     std::complex<double> dipolevec1[3];
-//     std::complex<double> dipolevec2[3];
-//     dipolemoment1 = coulombs_constant*cache.getElectricDipole(r.state.first(), c.state.first());
-//     dipolemoment2 = coulombs_constant*cache.getElectricDipole(r.state.second(), c.state.second());
-//     if(r.state.first().m - c.state.first().m == -1.){
-//       dipolevec1[0] = std::sqrt(1./2.)*(-dipolemoment1);
-//       dipolevec1[1] = std::sqrt(1./2.)*imagunit*dipolemoment1;
-//       dipolevec1[2] = 0.;
-//     }
-//     if(r.state.first().m - c.state.first().m == 0.){
-//       dipolevec1[0] = 0.;
-//       dipolevec1[1] = 0.;
-//       dipolevec1[2] = std::sqrt(1.)*dipolemoment1;
-//     }
-//     if(r.state.first().m - c.state.first().m == 1.){
-//       dipolevec1[0] = std::sqrt(1./2.)*dipolemoment1;
-//       dipolevec1[1] = std::sqrt(1./2.)*imagunit*dipolemoment1;
-//       dipolevec1[2] = 0.;
-//     }
-//     if(r.state.second().m - c.state.second().m == -1.){
-//       dipolevec2[0] = std::sqrt(1./2.)*(-dipolemoment2);
-//       dipolevec2[1] = std::sqrt(1./2.)*imagunit*(dipolemoment2);
-//       dipolevec2[2] = 0.;
-//     }
-//     if(r.state.second().m - c.state.second().m == 0.){
-//       dipolevec2[0] = 0.;
-//       dipolevec2[1] = 0.;
-//       dipolevec2[2] = std::sqrt(1.)*dipolemoment2;
-//     }
-//     if(r.state.second().m - c.state.second().m == 1.){
-//       dipolevec2[0] = std::sqrt(1./2.)*dipolemoment2;
-//       dipolevec2[1] = std::sqrt(1./2.)*imagunit*dipolemoment2;
-//       dipolevec2[2] = 0.;
-//     }
-//     
-// //     for(int i=0;i<3;i++){
-// //       for(int j=0;j<3;j++){
-// // 	hamiltonianmatrixelement += dipolevec1[i]*(greentensor0[i][j]+greentensor_plate[i][j])*dipolevec2[j];
-// //       }
-// //     }
-//     //hamiltonianmatrixelement ist jetzt ein Element der Matrix <r1r2|\hat{H}_{dipol-dipol}|c1c2> --> wie komplette Matrix abspeichern? 
-//     //hamiltonianmatrix = hamiltonianmatrixelement; //Wird hamiltonianmatrix von SystemBase.h so als Eintrag für r.idx(),c.idx() gelesen? Laut Mail vom 06.11.: Nein!
-//     
-// }
 
 ////////////////////////////////////////////////////////////////////
 /// Method that allows base class to transform the interaction /////
@@ -958,6 +912,16 @@ void SystemTwo::addCoefficient(const StateTwo &state, const size_t &col_new,
 
 void SystemTwo::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
                            const size_t c_idx, const scalar_t val) {
+    triplets.emplace_back(r_idx, c_idx, val);
+    if (r_idx != c_idx) {
+        triplets.emplace_back(
+            c_idx, r_idx,
+            this->conjugate(val)); // triangular matrix is not sufficient because of basis change
+    }
+}
+
+void SystemTwo::addTripletC(std::vector<eigen_triplet_complex_t> &triplets, const size_t r_idx,
+                           const size_t c_idx, const std::complex<double> val) {
     triplets.emplace_back(r_idx, c_idx, val);
     if (r_idx != c_idx) {
         triplets.emplace_back(
