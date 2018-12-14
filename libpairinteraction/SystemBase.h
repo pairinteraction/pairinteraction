@@ -1025,6 +1025,11 @@ public:
                 }
             }
 
+            if (maxval == -1) {
+                throw std::runtime_error(
+                    "There is a state for which no basis vector could be found.");
+            }
+
             indices[row_with_maxval] = k;
         }
 
