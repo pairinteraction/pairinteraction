@@ -572,7 +572,7 @@ void SystemTwo::initializeInteraction() {
     ////////////////////////////////////////////////////////////////////
 
     // Check if something to do
-    double tolerance = 1e-24;
+    double angle_tolerance = 1e-14;
 
     std::vector<bool> calculation_required(4, false);
     std::vector<int> orange;
@@ -581,7 +581,7 @@ void SystemTwo::initializeInteraction() {
                       // other interaction than dipole-dipole
 
         for (size_t i = 0; i < 4; ++i) {
-            if (std::abs(angle_terms[i]) > tolerance &&
+            if (std::abs(angle_terms[i]) > angle_tolerance &&
                 interaction_angulardipole.find(i) == interaction_angulardipole.end()) {
                 calculation_required[i] = true;
             }
@@ -620,6 +620,29 @@ void SystemTwo::initializeInteraction() {
     std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_multipole_triplets; // TODO reserve
 
+    /*// Categorize states // TODO
+    std::unordered_map<ljm_t, std::vector<enumerated_state>> states_ordered;
+    for (const auto &s : states) {
+        states_categorized[ljm_t(s.getL(), s.getJ(), s.getM())].push_back(s)
+    }
+
+    // Reserve vectors // TODO
+    for (const auto &state : states) {
+        for (const auto &order : orange) {
+            auto list_of_coupled_ljm = getCoupled(state, order); //, q, kappa
+            for (const auto &coupled : list_of_coupled_ljm) {
+                num_elements[order] += states_categorized[coupled].size();
+            }
+        }
+    }
+    for (const auto &order : orange) {
+        interaction_multipole_triplets[order].reserve(num_elements[order]);
+    }
+    // TODO
+    for (size_t i = 0; i < calculation_required.size(); ++i) {
+        // TODO
+    }*/
+
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
         if (c.state.isArtificial(0) || c.state.isArtificial(1)) {
@@ -647,7 +670,7 @@ void SystemTwo::initializeInteraction() {
                                                1) &&
                     selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),
                                                1)) {
-                    if (q1 == 0 && q2 == 0 && calculation_required[1]) {
+                    if (q1 == 0 && q2 == 0 && calculation_required[1]) { // total momentum conserved
                         scalar_t val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
@@ -657,7 +680,8 @@ void SystemTwo::initializeInteraction() {
                         this->addTriplet(interaction_angulardipole_triplets[1], r.idx, c.idx, val);
 
                     } else if (q1 != 0 && q2 != 0 && q1 + q2 == 0 &&
-                               (calculation_required[0] || calculation_required[2])) {
+                               (calculation_required[0] ||
+                                calculation_required[2])) { // total momentum conserved
                         scalar_t val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
@@ -673,7 +697,8 @@ void SystemTwo::initializeInteraction() {
                                              -val);
                         }
 
-                    } else if (std::abs(q1 + q2) == 1 && calculation_required[3]) {
+                    } else if (std::abs(q1 + q2) == 1 &&
+                               calculation_required[3]) { // change in total momentum  = 1
                         scalar_t val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
@@ -688,7 +713,8 @@ void SystemTwo::initializeInteraction() {
                                              val);
                         }
 
-                    } else if (std::abs(q1 + q2) == 2 && calculation_required[2]) {
+                    } else if (std::abs(q1 + q2) == 2 &&
+                               calculation_required[2]) { // change in total momentum  = 2
                         scalar_t val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
@@ -772,14 +798,14 @@ void SystemTwo::addInteraction() {
     this->checkDistance(distance);
 
     // Build the total Hamiltonian
-    double tolerance = 1e-24;
+    double angle_tolerance = 1e-14;
 
     if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for
                       // other interaction than dipole-dipole
 
         double powerlaw = 1. / std::pow(distance, 3);
         for (size_t i = 0; i < 4; ++i) {
-            if (std::abs(angle_terms[i]) > tolerance) {
+            if (std::abs(angle_terms[i]) > angle_tolerance) {
                 hamiltonian += interaction_angulardipole[i] * angle_terms[i] * powerlaw;
             }
         }
