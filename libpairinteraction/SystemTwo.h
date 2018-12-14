@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ public:
     void setGTbool(bool GTboolean);
     void setAngle(double a);
     void setOrder(double o);
-    
+
     void setConservedParityUnderPermutation(parity_t parity);
     void setConservedParityUnderInversion(parity_t parity);
     void setConservedParityUnderReflection(parity_t parity);
@@ -77,13 +77,13 @@ private:
     bool GTbool;
     double angle;
     unsigned int ordermax;
-    
+
     std::vector<eigen_triplet_complex_t> xxGTmatrix;
     std::vector<eigen_triplet_complex_t> yyGTmatrix;
     std::vector<eigen_triplet_complex_t> zzGTmatrix;
     std::vector<eigen_triplet_complex_t> xzGTmatrix;
     std::vector<eigen_triplet_complex_t> zxGTmatrix;
-    
+
     parity_t sym_permutation;
     parity_t sym_inversion;
     parity_t sym_reflection;
@@ -102,7 +102,7 @@ private:
     void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
                     scalar_t val);
     void addTripletC(std::vector<eigen_triplet_complex_t> &triplets, size_t r_idx, size_t c_idx,
-                    std::complex<double> val);
+                     std::complex<double> val);
 
     template <class T>
     void addRotated(const StateTwo &state, const size_t &idx,

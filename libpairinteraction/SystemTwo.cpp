@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
  */
 
 #include "SystemTwo.h"
+#include "GreenTensor.h"
 #include "dtypes.h"
-#include "greentensor.h"
 
 #include <algorithm>
 #include <cmath>
