@@ -595,6 +595,8 @@ public:
             boost::hash_range(states.template get<0>().begin(), states.template get<0>().end());
 
         // Loop over basisvectors
+        size_t num_basisvectors = basisvectors.outerSize();
+
         states.clear();
         size_t idx_new = 0;
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
@@ -611,6 +613,10 @@ public:
                 enumerated_state<T>(idx_new++, this->createStateFromLabel<T>(ss.str())));
         }
         states.shrink_to_fit();
+
+        if (num_basisvectors != states.size()) {
+            throw std::runtime_error("A hash collision occurred.");
+        }
 
         // Adapt basisvectors
         basisvectors.resize(states.size(), states.size());
