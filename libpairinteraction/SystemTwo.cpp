@@ -993,11 +993,7 @@ void SystemTwo::checkDistance(const double &distance) {
         if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
             minimal_le_roy_radius = 0;
         } else {
-            minimal_le_roy_radius = 2 *
-                (std::sqrt(cache.getRadial(crucial_state.getFirstState(),
-                                           crucial_state.getFirstState(), 2)) +
-                 std::sqrt(cache.getRadial(crucial_state.getSecondState(),
-                                           crucial_state.getSecondState(), 2)));
+            minimal_le_roy_radius = cache.getLeRoyRadius(crucial_state);
         }
     }
 

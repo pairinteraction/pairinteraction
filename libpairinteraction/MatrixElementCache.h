@@ -58,7 +58,8 @@ public:
     getElectricMultipole(StateOne const &state_row, StateOne const &state_col, int kappa_radial,
                          int kappa_angular); // return value in GHz/(V/cm)*um^(kappa_radial-1)
     double getRadial(StateOne const &state_row, StateOne const &state_col,
-                     int kappa); // return value in um^kappa
+                     int kappa);                  // return value in um^kappa
+    double getLeRoyRadius(StateTwo const &state); // return value in um
 
     void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
     void precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q);

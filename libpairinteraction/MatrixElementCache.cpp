@@ -499,6 +499,12 @@ double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &
     return iter1->second;
 }
 
+double MatrixElementCache::getLeRoyRadius(const StateTwo &state) {
+    return 2 *
+        (std::sqrt(this->getRadial(state.getFirstState(), state.getFirstState(), 2)) +
+         std::sqrt(this->getRadial(state.getSecondState(), state.getSecondState(), 2)));
+}
+
 ////////////////////////////////////////////////////////////////////
 /// Precalculate matrix elements ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////
