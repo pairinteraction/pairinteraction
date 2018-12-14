@@ -902,6 +902,12 @@ public:
         // Direct rotator from low_energy_basis to low_energy_basis0
         eigen_sparse_t rotator = (reflection0 * reflection).sqrt().sparseView();
 
+        if (std::isnan(std::abs(rotator.coeffRef(0, 0)))) {
+            throw std::runtime_error(
+                "Error in calculating the matrix square root. Try to use the picomplex module or "
+                "increase accuracy by choosing smaller thresholds.");
+        }
+
         // Calculate the effective Hamiltonian
         transformator = basisvectors.adjoint() * rotator.adjoint() * projector0 * low_energy_basis0;
 
@@ -1018,6 +1024,7 @@ public:
                     maxval = triple.value();
                 }
             }
+
             indices[row_with_maxval] = k;
         }
 
