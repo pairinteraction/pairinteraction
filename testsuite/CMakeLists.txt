@@ -33,6 +33,7 @@ endfunction(PYTHON_TEST)
 add_dependencies(check _pireal _picomplex)
 
 # Add Python test cases
+python_test(TARGET greentensor SOURCE greentensor.py)
 python_test(TARGET states SOURCE state.py)
 python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
