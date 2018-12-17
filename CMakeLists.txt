@@ -18,6 +18,18 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
+# Enable link-time optimization if available
+if(POLICY CMP0069)
+  cmake_policy(SET CMP0069 NEW)
+  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
+  if(CHECK_IPO_SUPPORTED)
+    check_ipo_supported(RESULT IPO_SUPPORTED)
+    if(IPO_SUPPORTED)
+      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+  endif()
+endif()
+
 set(LIBNAME "libpairinteraction")
 
 # set version of settings and cache
