@@ -181,6 +181,7 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "PerturbativeInteraction.h"
 
+%include "WignerD.h"
 
 // Wrap MatrixElementCache.h
 %include "MatrixElementCache.h"
