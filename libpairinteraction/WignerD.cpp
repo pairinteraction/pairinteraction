@@ -28,9 +28,9 @@ double WignerD::operator()(float j, float m, float mp, double beta) {
 
 std::complex<double> WignerD::operator()(float j, float m, float mp, double alpha, double beta,
                                          double gamma) {
-    return std::complex<double>(std::cos(-mp * alpha), std::sin(-mp * alpha)) *
+    return std::complex<double>(std::cos(-m * alpha), std::sin(-m * alpha)) *
         this->operator()(j, m, mp, beta) *
-        std::complex<double>(std::cos(-m * gamma), std::sin(-m * gamma));
+        std::complex<double>(std::cos(-mp * gamma), std::sin(-mp * gamma));
 }
 
 double WignerD::evalWignerdPiHalf(float j, float m, float mp) {

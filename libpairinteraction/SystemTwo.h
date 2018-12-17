@@ -116,14 +116,14 @@ private:
 
         for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ(); ++m2) {
             val2_vector.push_back(
-                utils::convert<T>(wigner(state.getSecondState().getJ(),
-                                         state.getSecondState().getM(), m2, alpha, beta, gamma)));
+                utils::convert<T>(wigner(state.getSecondState().getJ(), m2,
+                                         state.getSecondState().getM(), -gamma, -beta, -alpha)));
         }
 
         for (float m1 = -state.getFirstState().getJ(); m1 <= state.getFirstState().getJ(); ++m1) {
             auto val1 =
-                utils::convert<T>(wigner(state.getFirstState().getJ(), state.getFirstState().getM(),
-                                         m1, alpha, beta, gamma));
+                utils::convert<T>(wigner(state.getFirstState().getJ(), m1,
+                                         state.getFirstState().getM(), -gamma, -beta, -alpha));
 
             for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ();
                  ++m2) {

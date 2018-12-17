@@ -129,8 +129,11 @@ private:
             auto state_iter = states.get<1>().find(newstate);
 
             if (state_iter != states.get<1>().end()) {
+                // We calculate the matrix element <m|d_mM|state.getM()>|m>. Note that we must
+                // invert the angles since they are given for a passive rotation, i.e. rotation of
+                // the coordinate system, and the WignerD matrix is for an active rotation of spins.
                 auto val =
-                    utils::convert<T>(wigner(state.getJ(), state.getM(), m, alpha, beta, gamma));
+                    utils::convert<T>(wigner(state.getJ(), m, state.getM(), -gamma, -beta, -alpha));
                 triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
             } else {
                 std::cerr << "Warning: Incomplete rotation because the basis is lacking some "

@@ -250,7 +250,7 @@ public:
                                            overlap_states_triplets.end());
             overlap_states_triplets.clear();
         } else {
-            eigen_sparse_t overlap_states = this->rotateStates(states_indices, alpha, beta, gamma);
+            overlap_states = this->rotateStates(states_indices, alpha, beta, gamma);
         }
 
         // Calculate overlap
@@ -638,34 +638,11 @@ public:
     }
 
     void rotate(double alpha, double beta, double gamma) { // TODO applyRightsideTransformator ?
-        // Build basis
-        this->buildBasis();
+        // Build Hamiltonian and basis
+        this->buildHamiltonian();
 
         // Get the rotator for the basis states
         eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
-
-        // Rotate basis
-        this->transformInteraction(basisvectors.adjoint());
-
-        basisvectors = transformator * basisvectors;
-        if (basisvectors_unperturbed_cache.size() != 0) {
-            basisvectors_unperturbed_cache = transformator * basisvectors_unperturbed_cache;
-        }
-
-        this->transformInteraction(basisvectors);
-    }
-
-    void derotate(std::array<double, 3> to_z_axis, std::array<double, 3> to_y_axis) {
-        auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
-        this->derotate(euler_zyz[0], euler_zyz[1], euler_zyz[2]);
-    }
-
-    void derotate(double alpha, double beta, double gamma) { // TODO applyRightsideTransformator ?
-        // Build basis
-        this->buildBasis();
-
-        // Get the rotator for the basis states
-        eigen_sparse_t transformator = this->buildStaterotator(-alpha, -beta, -gamma);
 
         // Rotate basis
         this->transformInteraction(basisvectors.adjoint());
