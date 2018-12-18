@@ -52,7 +52,7 @@ unit_test(TARGET conf_parser_test
   SOURCE conf_parser_test ../ConfParser.cpp)
 unit_test(TARGET integration_test
   SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp
-  ../WignerD.cpp ../MatrixElementCache.cpp ../SystemOne.cpp ../SystemTwo.cpp)
+  ../WignerD.cpp ../MatrixElementCache.cpp ../SystemOne.cpp ../SystemTwo.cpp ../GreenTensor.cpp)
 unit_test(TARGET cache_test SOURCE cache_test.cpp)
 unit_test(TARGET utils_test SOURCE utils_test.cpp)
 
