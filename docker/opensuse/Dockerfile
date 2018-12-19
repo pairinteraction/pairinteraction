@@ -1,4 +1,4 @@
-FROM opensuse:leap
+FROM opensuse/leap:42.3
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install \
