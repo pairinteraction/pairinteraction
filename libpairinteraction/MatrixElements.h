@@ -18,6 +18,7 @@
 #define MATRIXELEMENTS_H
 
 #include "Basisnames.h"
+#include "StateOld.h"
 #include "Wavefunction.h"
 #include "dtypes.h"
 #include "wignerSymbols/include/wignerSymbols/wignerSymbols-cpp.h"
@@ -27,10 +28,11 @@
 #include <string>
 #include <unordered_map>
 
-bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2, int q);
-bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2);
-bool selectionRulesMultipole(StateOne const &state1, StateOne const &state2, int kappa, int q);
-bool selectionRulesMultipole(StateOne const &state1, StateOne const &state2, int kappa);
+bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2, int q);
+bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2);
+bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state2, int kappa,
+                             int q);
+bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state2, int kappa);
 
 class MatrixElements { // TODO use one single buffer, initialiezed at the start of the program
 public:
@@ -43,17 +45,17 @@ public:
                                   int q);
     void precalculateMultipole(std::shared_ptr<const BasisnamesOne> const &basis_one, int k);
     void precalculateRadial(std::shared_ptr<const BasisnamesOne> const &basis_one, int k);
-    double getElectricMomentum(StateOne const &state_row, StateOne const &state_col);
-    double getMagneticMomentum(StateOne const &state_row, StateOne const &state_col);
-    double getDiamagnetism(StateOne const &state_row, StateOne const &state_col, int k);
-    double getMultipole(StateOne const &state_row, StateOne const &state_col, int k);
-    double getRadial(StateOne const &state_row, StateOne const &state_col, int k);
+    double getElectricMomentum(StateOneOld const &state_row, StateOneOld const &state_col);
+    double getMagneticMomentum(StateOneOld const &state_row, StateOneOld const &state_col);
+    double getDiamagnetism(StateOneOld const &state_row, StateOneOld const &state_col, int k);
+    double getMultipole(StateOneOld const &state_row, StateOneOld const &state_col, int k);
+    double getRadial(StateOneOld const &state_row, StateOneOld const &state_col, int k);
 
-    void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
-    void precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q);
-    void precalculateDiamagnetism(const std::vector<StateOne> &basis_one, int k, int q);
-    void precalculateMultipole(const std::vector<StateOne> &basis_one, int k);
-    void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
+    void precalculateElectricMomentum(const std::vector<StateOneOld> &basis_one, int q);
+    void precalculateMagneticMomentum(const std::vector<StateOneOld> &basis_one, int q);
+    void precalculateDiamagnetism(const std::vector<StateOneOld> &basis_one, int k, int q);
+    void precalculateMultipole(const std::vector<StateOneOld> &basis_one, int k);
+    void precalculateRadial(const std::vector<StateOneOld> &basis_one, int k);
 
 private:
     void precalculate(const std::shared_ptr<const BasisnamesOne> &basis_one, int kappa, int q,
@@ -63,17 +65,17 @@ private:
     std::string method;
     std::string species;
     std::string dbname;
-    std::unordered_map<int, std::unordered_map<StateTwo, double>> cache_radial;
-    std::unordered_map<int, std::unordered_map<StateTwo, double>> cache_angular;
-    std::unordered_map<int, std::unordered_map<StateTwo, double>> cache_reduced_commutes_s;
-    std::unordered_map<int, std::unordered_map<StateTwo, double>> cache_reduced_commutes_l;
-    std::unordered_map<int, std::unordered_map<StateTwo, double>> cache_reduced_multipole;
+    std::unordered_map<int, std::unordered_map<StateTwoOld, double>> cache_radial;
+    std::unordered_map<int, std::unordered_map<StateTwoOld, double>> cache_angular;
+    std::unordered_map<int, std::unordered_map<StateTwoOld, double>> cache_reduced_commutes_s;
+    std::unordered_map<int, std::unordered_map<StateTwoOld, double>> cache_reduced_commutes_l;
+    std::unordered_map<int, std::unordered_map<StateTwoOld, double>> cache_reduced_multipole;
     double muB; // TODO define them in constants.h
     double gS;
     double gL;
     double s;
 
-    void precalculate(const std::vector<StateOne> &basis_one, int kappa, int q, int kappar,
+    void precalculate(const std::vector<StateOneOld> &basis_one, int kappa, int q, int kappar,
                       bool calcElectricMultipole, bool calcMagneticMomentum, bool calcRadial);
 };
 

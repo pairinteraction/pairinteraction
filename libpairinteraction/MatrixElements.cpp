@@ -27,7 +27,7 @@
 
 #include <boost/format.hpp>
 
-bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2, int q) {
+bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2, int q) {
     bool validL = state1.l == state2.l;
     bool validJ = fabs(state1.j - state2.j) <= 1;
     bool validM = state1.m == state2.m + q;
@@ -35,14 +35,15 @@ bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2, int 
     return validL && validJ && validM && validQ;
 }
 
-bool selectionRulesMomentum(StateOne const &state1, StateOne const &state2) {
+bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2) {
     bool validL = state1.l == state2.l;
     bool validJ = fabs(state1.j - state2.j) <= 1;
     bool validM = (fabs(state1.m - state2.m) <= 1);
     return validL && validJ && validM;
 }
 
-bool selectionRulesMultipole(StateOne const &state1, StateOne const &state2, int kappa, int q) {
+bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state2, int kappa,
+                             int q) {
     bool validL =
         (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
     bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
@@ -53,7 +54,7 @@ bool selectionRulesMultipole(StateOne const &state1, StateOne const &state2, int
     return validL && validJ && validM && validQ && noZero;
 }
 
-bool selectionRulesMultipole(StateOne const &state1, StateOne const &state2, int kappa) {
+bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state2, int kappa) {
     bool validL =
         (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
     bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
@@ -116,26 +117,27 @@ void MatrixElements::precalculateDiamagnetism(std::shared_ptr<const BasisnamesOn
 }
 
 double MatrixElements::getElectricMomentum(
-    StateOne const &state_row,
-    StateOne const &
+    StateOneOld const &state_row,
+    StateOneOld const &
         state_col) { // TODO remove this method and use directly getMultipole(state_row,state_col,1)
     return getMultipole(state_row, state_col, 1);
 }
 
-double MatrixElements::getMagneticMomentum(StateOne const &state_row, StateOne const &state_col) {
+double MatrixElements::getMagneticMomentum(StateOneOld const &state_row,
+                                           StateOneOld const &state_col) {
     double val = au2GHz / au2G * muB *
-        cache_radial[0][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+        cache_radial[0][StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order()] *
-        cache_angular[1][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
-                                  {{state_row.m, state_col.m}})] *
+        cache_angular[1][StateTwoOld({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
+                                     {{state_row.m, state_col.m}})] *
         (gL *
-             cache_reduced_commutes_s[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                  {{state_row.j, state_col.j}}, {{0, 0}})] *
+             cache_reduced_commutes_s[1][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                     {{state_row.j, state_col.j}}, {{0, 0}})] *
              sqrt(state_row.l * (state_row.l + 1) * (2 * state_row.l + 1)) +
          gS *
-             cache_reduced_commutes_l[1][StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                  {{state_row.j, state_col.j}}, {{0, 0}})] *
+             cache_reduced_commutes_l[1][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                     {{state_row.j, state_col.j}}, {{0, 0}})] *
              sqrt(
                  0.5 * (0.5 + 1) *
                  (2 * 0.5 +
@@ -144,17 +146,17 @@ double MatrixElements::getMagneticMomentum(StateOne const &state_row, StateOne c
     return val;
 }
 
-double MatrixElements::getDiamagnetism(StateOne const &state_row, StateOne const &state_col,
+double MatrixElements::getDiamagnetism(StateOneOld const &state_row, StateOneOld const &state_col,
                                        int k) {
     double val = inverse_electron_rest_mass * 1. / 12. *
-        cache_radial[2][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+        cache_radial[2][StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order()] *
-        cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
-                                  {{state_row.m, state_col.m}})] *
-        cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                             {{state_row.j, state_col.j}}, {{0, 0}})] *
-        cache_reduced_multipole[k][StateTwo(
+        cache_angular[k][StateTwoOld({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
+                                     {{state_row.m, state_col.m}})] *
+        cache_reduced_commutes_s[k][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                {{state_row.j, state_col.j}}, {{0, 0}})] *
+        cache_reduced_multipole[k][StateTwoOld(
             {{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}},
             {{0, 0}})]; // TODO do the multiplication with inverse_electron_rest_mass outside this
                         // class // TODO remove this method and use directly
@@ -162,24 +164,26 @@ double MatrixElements::getDiamagnetism(StateOne const &state_row, StateOne const
     return val;
 }
 
-double MatrixElements::getMultipole(StateOne const &state_row, StateOne const &state_col, int k) {
+double MatrixElements::getMultipole(StateOneOld const &state_row, StateOneOld const &state_col,
+                                    int k) {
     double val =
-        cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+        cache_radial[k][StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order()] *
-        cache_angular[k][StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
-                                  {{state_row.m, state_col.m}})] *
-        cache_reduced_commutes_s[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                             {{state_row.j, state_col.j}}, {{0, 0}})] *
-        cache_reduced_multipole[k][StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}},
-                                            {{0, 0}})];
+        cache_angular[k][StateTwoOld({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
+                                     {{state_row.m, state_col.m}})] *
+        cache_reduced_commutes_s[k][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                {{state_row.j, state_col.j}}, {{0, 0}})] *
+        cache_reduced_multipole[k][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}},
+                                               {{0, 0}})];
     return val;
 }
 
-double MatrixElements::getRadial(StateOne const &state_row, StateOne const &state_col, int k) {
+double MatrixElements::getRadial(StateOneOld const &state_row, StateOneOld const &state_col,
+                                 int k) {
     double val =
-        cache_radial[k][StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+        cache_radial[k][StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order()];
     return val;
 }
@@ -259,9 +263,9 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col)) ||
                 calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-                    StateTwo state_nlj =
-                        StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+                    StateTwoOld state_nlj =
+                        StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order();
                     auto missing_cache_radial = cache_radial[kappar].insert(
                         {state_nlj, std::numeric_limits<double>::max()});
@@ -276,8 +280,9 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
-                                                 {{state_row.m, state_col.m}});
+                    StateTwoOld state_jm =
+                        StateTwoOld({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
+                                    {{state_row.m, state_col.m}});
                     auto missing_cache_angular =
                         cache_angular[kappa].insert({state_jm, std::numeric_limits<double>::max()});
                     if (missing_cache_angular.second) {
@@ -290,8 +295,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                 {{state_row.j, state_col.j}}, {{0, 0}});
+                    StateTwoOld state_lj = StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                       {{state_row.j, state_col.j}}, {{0, 0}});
                     auto missing_cache_reduced_commutes_s = cache_reduced_commutes_s[kappa].insert(
                         {state_lj, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_commutes_s.second) {
@@ -304,8 +309,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 }
 
                 if (calcMagneticMomentum) {
-                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                 {{state_row.j, state_col.j}}, {{0, 0}});
+                    StateTwoOld state_lj = StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                       {{state_row.j, state_col.j}}, {{0, 0}});
                     auto missing_cache_reduced_commutes_l = cache_reduced_commutes_l[kappa].insert(
                         {state_lj, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_commutes_l.second) {
@@ -318,8 +323,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 }
 
                 if (calcElectricMultipole) {
-                    StateTwo state_l =
-                        StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
+                    StateTwoOld state_l =
+                        StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
                     auto missing_cache_reduced_multipole = cache_reduced_multipole[kappa].insert(
                         {state_l, std::numeric_limits<double>::max()});
                     if (missing_cache_reduced_multipole.second) {
@@ -359,7 +364,7 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             l2 = stmt.get<decltype(l2)>(4);
             j2 = stmt.get<decltype(j2)>(5);
             value = stmt.get<decltype(value)>(6);
-            cache_radial[kappar][StateTwo({{n1, n2}}, {{l1, l2}}, {{j1, j2}}, {{0, 0}})] = value;
+            cache_radial[kappar][StateTwoOld({{n1, n2}}, {{l1, l2}}, {{j1, j2}}, {{0, 0}})] = value;
         }
     }
 
@@ -377,7 +382,7 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             j2 = stmt.get<decltype(j2)>(2);
             m2 = stmt.get<decltype(m2)>(3);
             value = stmt.get<decltype(value)>(4);
-            cache_angular[kappa][StateTwo({{0, 0}}, {{0, 0}}, {{j1, j2}}, {{m1, m2}})] = value;
+            cache_angular[kappa][StateTwoOld({{0, 0}}, {{0, 0}}, {{j1, j2}}, {{m1, m2}})] = value;
         }
     }
 
@@ -395,8 +400,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             l2 = stmt.get<decltype(l2)>(2);
             j2 = stmt.get<decltype(j2)>(3);
             value = stmt.get<decltype(value)>(4);
-            cache_reduced_commutes_s[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0, 0}})] =
-                value;
+            cache_reduced_commutes_s[kappa][StateTwoOld({{0, 0}}, {{l1, l2}}, {{j1, j2}},
+                                                        {{0, 0}})] = value;
         }
     }
 
@@ -414,8 +419,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             l2 = stmt.get<decltype(l2)>(2);
             j2 = stmt.get<decltype(j2)>(3);
             value = stmt.get<decltype(value)>(4);
-            cache_reduced_commutes_l[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{j1, j2}}, {{0, 0}})] =
-                value;
+            cache_reduced_commutes_l[kappa][StateTwoOld({{0, 0}}, {{l1, l2}}, {{j1, j2}},
+                                                        {{0, 0}})] = value;
         }
     }
 
@@ -431,7 +436,7 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             l1 = stmt.get<decltype(l1)>(0);
             l2 = stmt.get<decltype(l2)>(1);
             value = stmt.get<decltype(value)>(2);
-            cache_reduced_multipole[kappa][StateTwo({{0, 0}}, {{l1, l2}}, {{0, 0}}, {{0, 0}})] =
+            cache_reduced_multipole[kappa][StateTwoOld({{0, 0}}, {{l1, l2}}, {{0, 0}}, {{0, 0}})] =
                 value;
         }
     }
@@ -556,30 +561,32 @@ double MatrixElements::calcRadialElement(const QuantumDefect &qd1, int power,
     throw std::runtime_error(msg);
 }
 
-void MatrixElements::precalculateMultipole(const std::vector<StateOne> &basis_one, int k) {
+void MatrixElements::precalculateMultipole(const std::vector<StateOneOld> &basis_one, int k) {
     int q = std::numeric_limits<int>::max();
     precalculate(basis_one, k, q, k, true, false, false);
 }
 
-void MatrixElements::precalculateRadial(const std::vector<StateOne> &basis_one, int k) {
+void MatrixElements::precalculateRadial(const std::vector<StateOneOld> &basis_one, int k) {
     int q = std::numeric_limits<int>::max();
     precalculate(basis_one, k, q, k, false, false, true);
 }
 
-void MatrixElements::precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q) {
+void MatrixElements::precalculateElectricMomentum(const std::vector<StateOneOld> &basis_one,
+                                                  int q) {
     precalculate(basis_one, 1, q, 1, true, false, false);
 }
 
-void MatrixElements::precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q) {
+void MatrixElements::precalculateMagneticMomentum(const std::vector<StateOneOld> &basis_one,
+                                                  int q) {
     precalculate(basis_one, 1, q, 0, false, true, false);
 }
 
-void MatrixElements::precalculateDiamagnetism(const std::vector<StateOne> &basis_one, int k,
+void MatrixElements::precalculateDiamagnetism(const std::vector<StateOneOld> &basis_one, int k,
                                               int q) {
     precalculate(basis_one, k, q, 2, true, false, false);
 }
 
-void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int kappa, int q,
+void MatrixElements::precalculate(const std::vector<StateOneOld> &basis_one, int kappa, int q,
                                   int kappar, bool calcElectricMultipole, bool calcMagneticMomentum,
                                   bool calcRadial) {
     sqlite::handle db(dbname);
@@ -648,9 +655,9 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 (calcMagneticMomentum && selectionRulesMomentum(state_row, state_col)) ||
                 calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-                    StateTwo state_nlj =
-                        StateTwo({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
-                                 {{state_row.j, state_col.j}}, {{0, 0}})
+                    StateTwoOld state_nlj =
+                        StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
+                                    {{state_row.j, state_col.j}}, {{0, 0}})
                             .order();
                     cache_radial[kappar].insert(
                         {state_nlj,
@@ -658,28 +665,29 @@ void MatrixElements::precalculate(const std::vector<StateOne> &basis_one, int ka
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    StateTwo state_jm = StateTwo({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
-                                                 {{state_row.m, state_col.m}});
+                    StateTwoOld state_jm =
+                        StateTwoOld({{0, 0}}, {{0, 0}}, {{state_row.j, state_col.j}},
+                                    {{state_row.m, state_col.m}});
                     cache_angular[kappa].insert({state_jm, std::numeric_limits<double>::max()});
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                 {{state_row.j, state_col.j}}, {{0, 0}});
+                    StateTwoOld state_lj = StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                       {{state_row.j, state_col.j}}, {{0, 0}});
                     cache_reduced_commutes_s[kappa].insert(
                         {state_lj, std::numeric_limits<double>::max()});
                 }
 
                 if (calcMagneticMomentum) {
-                    StateTwo state_lj = StateTwo({{0, 0}}, {{state_row.l, state_col.l}},
-                                                 {{state_row.j, state_col.j}}, {{0, 0}});
+                    StateTwoOld state_lj = StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
+                                                       {{state_row.j, state_col.j}}, {{0, 0}});
                     cache_reduced_commutes_l[kappa].insert(
                         {state_lj, std::numeric_limits<double>::max()});
                 }
 
                 if (calcElectricMultipole) {
-                    StateTwo state_l =
-                        StateTwo({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
+                    StateTwoOld state_l =
+                        StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}}, {{0, 0}}, {{0, 0}});
                     cache_reduced_multipole[kappa].insert(
                         {state_l, std::numeric_limits<double>::max()});
                 }

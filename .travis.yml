@@ -6,40 +6,12 @@ matrix:
       sudo: required
       services: docker
       env:
-        - image=debian
-    - os: linux
-      sudo: required
-      services: docker
-      env:
         - image=ubuntu:static-analysis
     - os: linux
       sudo: required
       services: docker
       env:
-        - image=ubuntu
-        - package=pairinteraction-install-ubuntu-xenial.deb
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-    - os: linux
-      sudo: required
-      services: docker
-      env:
-        - image=ubuntu:bionic
-        - package=pairinteraction-install-ubuntu-bionic.deb
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-    - os: linux
-      sudo: required
-      services: docker
-      env:
-        - image=ubuntu:artful
-        - package=pairinteraction-install-ubuntu-artful.deb
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-    - os: linux
-      sudo: required
-      services: docker
-      env:
-        - image=opensuse
-        - package=pairinteraction-install-opensuse.rpm
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+        - image=debian
     - os: osx
       osx_image: xcode9
       env:
@@ -59,9 +31,30 @@ matrix:
       before_script:
         - export CXX=/usr/local/opt/llvm@3.9/bin/clang++
         - export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=ubuntu
+        - package=pairinteraction-install-ubuntu-xenial.deb
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=ubuntu:bionic
+        - package=pairinteraction-install-ubuntu-bionic.deb
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
+    - os: linux
+      sudo: required
+      services: docker
+      env:
+        - image=opensuse
+        - package=pairinteraction-install-opensuse.rpm
+      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
 
 script:
-  - docker/build_docker.sh
+  - travis_wait 30 sleep infinity & ci/build_docker.sh
 
 deploy:
   provider: releases

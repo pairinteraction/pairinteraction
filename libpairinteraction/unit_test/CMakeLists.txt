@@ -37,26 +37,26 @@ function(UNIT_TEST)
   target_link_libraries(${UT_TARGET} ${LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the root directory
-  add_test(NAME ${UT_TARGET} COMMAND ${UT_TARGET}
+  add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
   add_dependencies(check ${UT_TARGET})
 endfunction(UNIT_TEST)
 
 # Add the tests
-unit_test(TARGET sqlite_test SOURCE sqlite_test.cpp)
-unit_test(TARGET quantum_defect_test
+unit_test(TARGET sqlite SOURCE sqlite_test.cpp)
+unit_test(TARGET quantum_defect
   SOURCE quantum_defect_test.cpp ../QuantumDefect.cpp)
-unit_test(TARGET wavefunction_test
+unit_test(TARGET wavefunction
   SOURCE wavefunction_test.cpp ../QuantumDefect.cpp ../Wavefunction.cpp)
-unit_test(TARGET conf_parser_test
+unit_test(TARGET conf_parser
   SOURCE conf_parser_test ../ConfParser.cpp)
-unit_test(TARGET integration_test
-  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp
-  ../WignerD.cpp ../MatrixElementCache.cpp ../SystemOne.cpp ../SystemTwo.cpp ../GreenTensor.cpp)
-unit_test(TARGET cache_test SOURCE cache_test.cpp)
-unit_test(TARGET utils_test SOURCE utils_test.cpp)
+unit_test(TARGET integration
+  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp ../WignerD.cpp ../MatrixElementCache.cpp ../SystemOne.cpp ../SystemTwo.cpp ../GreenTensor.cpp)
+unit_test(TARGET cache SOURCE cache_test.cpp)
+unit_test(TARGET utils SOURCE utils_test.cpp)
+
 
 # Copy test dependencies
-add_custom_command(TARGET integration_test PRE_BUILD
+add_custom_command(TARGET integration PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_test_referencedata.txt ${CMAKE_CURRENT_BINARY_DIR}/integration_test_referencedata.txt
 )

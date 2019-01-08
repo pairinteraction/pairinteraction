@@ -50,7 +50,7 @@ def setup_system_two(system_one, distance):
 def getSystems(distance, system_one, fieldshift):
     # Set up two atom system
     system_two = setup_system_two(system_one, distance)
-    system_two.diagonalize()
+    system_two.diagonalize(1e-3)
     
     # Restrict the calculated eigenenergies
     system_two.restrictEnergy(fieldshift-0.015, fieldshift+0.015)
@@ -65,8 +65,8 @@ if __name__ ==  '__main__':
     for ax, efield in zip(axes, efields):
         # Set up one atom systems
         system_one = setup_system_one(efield)
-        system_one.diagonalize()
-        fieldshift = 2*system_one.getDiagonal()[system_one.getVectorindex(state_one)]
+        system_one.diagonalize(1e-3)
+        fieldshift = 2*system_one.getHamiltonian().diagonal()[system_one.getBasisvectorIndex(state_one)]
     
         # Get diagonalized two atom systems
         def fct(distance): return getSystems(distance, system_one, fieldshift)
@@ -82,8 +82,8 @@ if __name__ ==  '__main__':
         for i1, i2 in zip(range(0, len(systems_two)-1), range(1, len(systems_two))):
             c1, c2 = np.array(systems_two[i1].getConnections(systems_two[i2], 0.001))
             segment_distances = [distances[i1],distances[i2]]
-            segment_energies = (np.array([systems_two[i1].getDiagonal()[c1],
-                                          systems_two[i2].getDiagonal()[c2]])-fieldshift)*1e3 #MHz
+            segment_energies = (np.array([systems_two[i1].getHamiltonian().diagonal()[c1],
+                                          systems_two[i2].getHamiltonian().diagonal()[c2]])-fieldshift)*1e3 #MHz
             segment_overlap = np.mean([systems_two[i1].getOverlap(state_two)[c1],
                                        systems_two[i2].getOverlap(state_two)[c2]], axis = 0)
             segment_color = plt.cm.viridis_r(segment_overlap)

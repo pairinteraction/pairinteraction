@@ -28,15 +28,15 @@
 #include <vector>
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache)
-    : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(false),
+    : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(true),
       species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
     : SystemBase(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
-      diamagnetism(false), species(std::move(species)), sym_reflection(NA),
+      diamagnetism(true), species(std::move(species)), sym_reflection(NA),
       sym_rotation({static_cast<float>(ARB)}) {}
 
-const std::string &SystemOne::getElement() const { return species; }
+const std::string &SystemOne::getSpecies() const { return species; }
 
 void SystemOne::setEfield(std::array<double, 3> field) {
     this->onParameterChange();
@@ -113,26 +113,6 @@ void SystemOne::setConservedMomentaUnderRotation(const std::set<float> &momenta)
 }
 
 ////////////////////////////////////////////////////////////////////
-/// Explicit template specializations (has to be at the beginning) /
-////////////////////////////////////////////////////////////////////
-
-template <>
-double SystemOne::imaginaryUnit() {
-    throw std::runtime_error(
-        "For operations that invoke the imaginary number, a complex data type is needed.");
-}
-
-template <>
-std::complex<double> SystemOne::imaginaryUnit() {
-    return {0, 1};
-}
-
-template <>
-double SystemOne::convert(const std::complex<double> &val) {
-    return val.real();
-}
-
-////////////////////////////////////////////////////////////////////
 /// Method that allows base class to initialize Basis //////////////
 ////////////////////////////////////////////////////////////////////
 
@@ -159,9 +139,13 @@ void SystemOne::initializeBasis() {
 
     size_t idx = 0;
     std::vector<eigen_triplet_t>
-        coefficients_triplets; // TODO reserve states, coefficients_triplets,
-                               // hamiltonianmatrix_triplets
-    std::vector<eigen_triplet_t> hamiltonianmatrix_triplets;
+        basisvectors_triplets; // TODO reserve states, basisvectors_triplets,
+                               // hamiltonian_triplets
+
+    std::vector<eigen_triplet_t> hamiltonian_triplets;
+
+    /// Loop over specified quantum numbers ////////////////////////////
+
     std::set<int> range_adapted_n, range_adapted_l;
     std::set<float> range_adapted_j, range_adapted_m;
 
@@ -219,50 +203,85 @@ void SystemOne::initializeBasis() {
                         continue;
                     }
 
-                    // In case of reflection symmetry, skip half of the basis vectors
-                    if (sym_reflection != NA && m < 0) {
-                        continue;
+                    // Create state
+                    StateOne state(species, n, l, j, m);
+
+                    // Check whether reflection symmetry can be realized with the states available
+                    if (sym_reflection != NA && state.getM() != 0 &&
+                        range_allowed_m.count(-state.getM()) == 0) {
+                        throw std::runtime_error("The momentum " + std::to_string(-state.getM()) +
+                                                 " required by symmetries cannot be found.");
                     }
 
-                    // Store the energy of the unperturbed one atom state
-                    hamiltonianmatrix_triplets.emplace_back(idx, idx, energy);
-
-                    // Adapt the normalization if required by symmetries
-                    scalar_t value = 1;
-                    if (sym_reflection != NA) {
-                        value /= std::sqrt(2);
-                    }
-
-                    // Add an entry to the current basis vector
-                    this->addCoefficient(StateOne(species, n, l, j, m), idx, value,
-                                         coefficients_triplets);
-
-                    // Add further entries to the current basis vector if required by symmetries
-                    if (sym_reflection != NA) {
-                        value *= (sym_reflection == EVEN)
-                            ? std::pow(-1, l + m - j) * this->imaginaryUnit<scalar_t>()
-                            : -std::pow(-1, l + m - j) *
-                                this->imaginaryUnit<scalar_t>(); // S_y is invariant under
-                                                                 // reflection through xz-plane
-                        this->addCoefficient(StateOne(species, n, l, j, -m), idx, value,
-                                             coefficients_triplets);
-                    }
-
-                    ++idx;
+                    // Add symmetrized basis vectors
+                    this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
+                                                     hamiltonian_triplets, sym_reflection);
                 }
             }
         }
     }
 
-    // Build data
-    coefficients.resize(states.size(), idx);
-    coefficients.setFromTriplets(coefficients_triplets.begin(), coefficients_triplets.end());
-    coefficients_triplets.clear();
+    /// Loop over user-defined states //////////////////////////////////
 
-    hamiltonianmatrix.resize(idx, idx);
-    hamiltonianmatrix.setFromTriplets(hamiltonianmatrix_triplets.begin(),
-                                      hamiltonianmatrix_triplets.end());
-    hamiltonianmatrix_triplets.clear();
+    // Check that the user-defined states are not already contained in the list of states
+    for (const auto &state : states_to_add) {
+        if (states.get<1>().find(state) != states.get<1>().end()) {
+            throw std::runtime_error("The state " + state.str() +
+                                     " is already contained in the list of states.");
+        }
+        if (!state.isArtificial() && state.getSpecies() != species) {
+            throw std::runtime_error("The state " + state.str() + " is of the wrong species.");
+        }
+    }
+
+    // Add user-defined states
+    for (const auto &state : states_to_add) {
+        // Get energy of the state
+        double energy = state.isArtificial() ? 0 : state.getEnergy();
+
+        // In case of artificial states, symmetries won't work
+        auto sym_reflection_local = sym_reflection;
+        auto sym_rotation_local = sym_rotation;
+        if (state.isArtificial()) {
+            if (sym_reflection_local != NA ||
+                sym_rotation_local.count(static_cast<float>(ARB)) == 0) {
+                std::cerr
+                    << "WARNING: Only permutation symmetry can be applied to artificial states."
+                    << std::endl;
+            }
+            sym_reflection_local = NA;
+            sym_rotation_local = std::set<float>({static_cast<float>(ARB)});
+        }
+
+        // Consider rotation symmetry
+        if (sym_rotation_local.count(static_cast<float>(ARB)) == 0 &&
+            sym_rotation_local.count(state.getM()) == 0) {
+            continue;
+        }
+
+        // Check whether reflection symmetry can be realized with the states available
+        if (sym_reflection_local != NA && state.getM() != 0) {
+            auto state_reflected = state.getReflected();
+            if (states_to_add.find(state_reflected) == states_to_add.end()) {
+                throw std::runtime_error("The state " + state_reflected.str() +
+                                         " required by symmetries cannot be found.");
+            }
+        }
+
+        // Add symmetrized basis vectors
+        this->addSymmetrizedBasisvectors(state, idx, energy, basisvectors_triplets,
+                                         hamiltonian_triplets, sym_reflection_local);
+    }
+
+    /// Build data /////////////////////////////////////////////////////
+
+    basisvectors.resize(states.size(), idx);
+    basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
+    basisvectors_triplets.clear();
+
+    hamiltonian.resize(idx, idx);
+    hamiltonian.setFromTriplets(hamiltonian_triplets.begin(), hamiltonian_triplets.end());
+    hamiltonian_triplets.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -281,38 +300,57 @@ void SystemOne::initializeInteraction() {
     std::vector<std::array<int, 2>> drange;
 
     for (const auto &entry : efield_spherical) {
+        if (entry.first < 0) {
+            continue;
+        }
         if (std::abs(entry.second) > tolerance &&
             interaction_efield.find(-entry.first) == interaction_efield.end()) {
-            erange.push_back(-entry.first); // TODO use entry.first without a minus
+            erange.push_back(entry.first);
         }
     }
     for (const auto &entry : bfield_spherical) {
+        if (entry.first < 0) {
+            continue;
+        }
         if (std::abs(entry.second) > tolerance &&
             interaction_bfield.find(-entry.first) == interaction_bfield.end()) {
-            brange.push_back(-entry.first); // TODO use entry.first without a minus
+            brange.push_back(entry.first);
         }
     }
     for (const auto &entry : diamagnetism_terms) {
+        if (entry.first[1] < 0) {
+            continue;
+        }
         if (diamagnetism && std::abs(entry.second) > tolerance &&
             interaction_diamagnetism.find(entry.first) == interaction_diamagnetism.end()) {
             drange.push_back(entry.first);
         }
     }
 
+    // Return if there is nothing to do
     if (erange.empty() && brange.empty() && drange.empty()) {
         return;
     }
 
     // Precalculate matrix elements
-    auto states_converted = this->getStates(); // TODO remove
+    auto states_converted = this->getStates();
     for (const auto &i : erange) {
         cache.precalculateElectricMomentum(states_converted, i);
+        if (i != 0) {
+            cache.precalculateElectricMomentum(states_converted, -i);
+        }
     }
     for (const auto &i : brange) {
         cache.precalculateMagneticMomentum(states_converted, i);
+        if (i != 0) {
+            cache.precalculateMagneticMomentum(states_converted, -i);
+        }
     }
     for (const auto &i : drange) {
         cache.precalculateDiamagnetism(states_converted, i[0], i[1]);
+        if (i[1] != 0) {
+            cache.precalculateDiamagnetism(states_converted, i[0], -i[1]);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -328,22 +366,22 @@ void SystemOne::initializeInteraction() {
 
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
-
-        if (c.state.species.empty()) {
-            continue; // TODO artifical states TODO [dummystates]
+        if (c.state.isArtificial()) {
+            continue;
         }
 
         // Loop over row entries
         for (const auto &r : states) {
-
-            if (r.state.species.empty()) {
-                continue; // TODO artifical states TODO [dummystates]
+            if (r.state.isArtificial()) {
+                continue;
             }
-            // if (r.idx < c.idx) continue; // TODO modify addTriplet so that skipping half of the
-            // entries work
 
             // E-field interaction
             for (const auto &i : erange) {
+                if (i == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
                     scalar_t value = cache.getElectricDipole(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
@@ -354,6 +392,10 @@ void SystemOne::initializeInteraction() {
 
             // B-field interaction
             for (const auto &i : brange) {
+                if (i == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
                     scalar_t value = cache.getMagneticDipole(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
@@ -364,6 +406,10 @@ void SystemOne::initializeInteraction() {
 
             // Diamagnetic interaction
             for (const auto &i : drange) {
+                if (i[1] == 0 && r.idx < c.idx) {
+                    continue;
+                }
+
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
                     scalar_t value = 1. / (8 * electron_rest_mass) *
                         cache.getDiamagnetism(r.state, c.state, i[0]);
@@ -383,7 +429,13 @@ void SystemOne::initializeInteraction() {
                                               interaction_efield_triplets[i].end());
         interaction_efield_triplets[i].clear();
 
-        interaction_efield[i] = coefficients.adjoint() * interaction_efield[i] * coefficients;
+        if (i == 0) {
+            interaction_efield[i] = basisvectors.adjoint() *
+                interaction_efield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_efield[i] = basisvectors.adjoint() * interaction_efield[i] * basisvectors;
+            interaction_efield[-i] = std::pow(-1, i) * interaction_efield[i].adjoint();
+        }
     }
 
     for (const auto &i : brange) {
@@ -392,7 +444,13 @@ void SystemOne::initializeInteraction() {
                                               interaction_bfield_triplets[i].end());
         interaction_bfield_triplets[i].clear();
 
-        interaction_bfield[i] = coefficients.adjoint() * interaction_bfield[i] * coefficients;
+        if (i == 0) {
+            interaction_bfield[i] = basisvectors.adjoint() *
+                interaction_bfield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_bfield[i] = basisvectors.adjoint() * interaction_bfield[i] * basisvectors;
+            interaction_bfield[-i] = std::pow(-1, i) * interaction_bfield[i].adjoint();
+        }
     }
 
     for (const auto &i : drange) {
@@ -401,8 +459,15 @@ void SystemOne::initializeInteraction() {
                                                     interaction_diamagnetism_triplets[i].end());
         interaction_diamagnetism_triplets[i].clear();
 
-        interaction_diamagnetism[i] =
-            coefficients.adjoint() * interaction_diamagnetism[i] * coefficients;
+        if (i[1] == 0) {
+            interaction_diamagnetism[i] = basisvectors.adjoint() *
+                interaction_diamagnetism[i].selfadjointView<Eigen::Lower>() * basisvectors;
+        } else {
+            interaction_diamagnetism[i] =
+                basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
+            interaction_diamagnetism[{{i[0], -i[1]}}] =
+                std::pow(-1, i[1]) * interaction_diamagnetism[i].adjoint();
+        }
     }
 }
 
@@ -415,44 +480,44 @@ void SystemOne::addInteraction() {
     double tolerance = 1e-24;
 
     if (std::abs(efield_spherical[+0]) > tolerance) {
-        hamiltonianmatrix -= interaction_efield[+0] * efield_spherical[+0];
+        hamiltonian -= interaction_efield[+0] * efield_spherical[+0];
     }
     if (std::abs(efield_spherical[-1]) > tolerance) {
-        hamiltonianmatrix += interaction_efield[+1] * efield_spherical[-1];
+        hamiltonian += interaction_efield[+1] * efield_spherical[-1];
     }
     if (std::abs(efield_spherical[+1]) > tolerance) {
-        hamiltonianmatrix += interaction_efield[-1] * efield_spherical[+1];
+        hamiltonian += interaction_efield[-1] * efield_spherical[+1];
     }
     if (std::abs(bfield_spherical[+0]) > tolerance) {
-        hamiltonianmatrix -= interaction_bfield[+0] * bfield_spherical[+0];
+        hamiltonian -= interaction_bfield[+0] * bfield_spherical[+0];
     }
     if (std::abs(bfield_spherical[-1]) > tolerance) {
-        hamiltonianmatrix += interaction_bfield[+1] * bfield_spherical[-1];
+        hamiltonian += interaction_bfield[+1] * bfield_spherical[-1];
     }
     if (std::abs(bfield_spherical[+1]) > tolerance) {
-        hamiltonianmatrix += interaction_bfield[-1] * bfield_spherical[+1];
+        hamiltonian += interaction_bfield[-1] * bfield_spherical[+1];
     }
 
     if (diamagnetism && std::abs(diamagnetism_terms[{{0, +0}}]) > tolerance) {
-        hamiltonianmatrix += interaction_diamagnetism[{{0, +0}}] * diamagnetism_terms[{{0, +0}}];
+        hamiltonian += interaction_diamagnetism[{{0, +0}}] * diamagnetism_terms[{{0, +0}}];
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +0}}]) > tolerance) {
-        hamiltonianmatrix -= interaction_diamagnetism[{{2, +0}}] * diamagnetism_terms[{{2, +0}}];
+        hamiltonian -= interaction_diamagnetism[{{2, +0}}] * diamagnetism_terms[{{2, +0}}];
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +1}}]) > tolerance) {
-        hamiltonianmatrix +=
+        hamiltonian +=
             interaction_diamagnetism[{{2, +1}}] * diamagnetism_terms[{{2, +1}}] * std::sqrt(3);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, -1}}]) > tolerance) {
-        hamiltonianmatrix +=
+        hamiltonian +=
             interaction_diamagnetism[{{2, -1}}] * diamagnetism_terms[{{2, -1}}] * std::sqrt(3);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, +2}}]) > tolerance) {
-        hamiltonianmatrix -=
+        hamiltonian -=
             interaction_diamagnetism[{{2, +2}}] * diamagnetism_terms[{{2, +2}}] * std::sqrt(1.5);
     }
     if (diamagnetism && std::abs(diamagnetism_terms[{{2, -2}}]) > tolerance) {
-        hamiltonianmatrix -=
+        hamiltonian -=
             interaction_diamagnetism[{{2, -2}}] * diamagnetism_terms[{{2, -2}}] * std::sqrt(1.5);
     }
 }
@@ -547,11 +612,11 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
                                  "systems."); // implies that efield_spherical is the same, too
     }
     if (bfield != dynamic_cast<SystemOne &>(system).bfield) {
-        throw std::runtime_error(
-            "The value of the variable 'angle' must be the same for both systems."); // implies that
-                                                                                     // bfield_spherical
-                                                                                     // is the same,
-                                                                                     // too
+        throw std::runtime_error("The value of the variable 'angle' must be the same for both "
+                                 "systems."); // implies that
+                                              // bfield_spherical
+                                              // is the same,
+                                              // too
     }
     if (diamagnetism != dynamic_cast<SystemOne &>(system).diamagnetism) {
         throw std::runtime_error(
@@ -589,8 +654,44 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::addCoefficient(const StateOne &state, const size_t &col, const scalar_t &value,
-                               std::vector<eigen_triplet_t> &coefficients_triplets) {
+void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
+                                           std::vector<eigen_triplet_t> &basisvectors_triplets,
+                                           std::vector<eigen_triplet_t> &hamiltonian_triplets,
+                                           parity_t &sym_reflection_local) {
+    // In case of reflection symmetry, skip half of the basis vectors
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        if (state.getM() < 0) {
+            return;
+        }
+    }
+
+    // Store the energy of the unperturbed one atom state
+    hamiltonian_triplets.emplace_back(idx, idx, energy);
+
+    // Adapt the normalization if required by symmetries
+    scalar_t value = 1;
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        value /= std::sqrt(2);
+    }
+
+    // Add an entry to the current basis vector
+    this->addBasisvectors(state, idx, value, basisvectors_triplets);
+
+    // Add further entries to the current basis vector if required by symmetries
+    if (sym_reflection_local != NA && state.getM() != 0) {
+        value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
+            utils::imaginary_unit<scalar_t>();
+        value *= (sym_reflection_local == EVEN) ? 1 : -1;
+        // S_y is invariant under reflection through xz-plane
+        // TODO is the s quantum number of importance here?
+        this->addBasisvectors(state.getReflected(), idx, value, basisvectors_triplets);
+    }
+
+    ++idx;
+}
+
+void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
+                                std::vector<eigen_triplet_t> &basisvectors_triplets) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row;
@@ -601,7 +702,7 @@ void SystemOne::addCoefficient(const StateOne &state, const size_t &col, const s
         states.push_back(enumerated_state<StateOne>(row, state));
     }
 
-    coefficients_triplets.emplace_back(row, col, value);
+    basisvectors_triplets.emplace_back(row, idx, value);
 }
 
 void SystemOne::changeToSphericalbasis(std::array<double, 3> field,
@@ -625,9 +726,6 @@ void SystemOne::changeToSphericalbasis(
 void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
                            const size_t c_idx, const scalar_t val) {
     triplets.emplace_back(r_idx, c_idx, val);
-    // if (r_idx != c_idx) triplets.push_back(eigen_triplet_t(c_idx, r_idx, this->conjugate(val)));
-    // // triangular matrix is not sufficient because of basis change // TODO with interaction_bfield
-    // one sometimes has to add a minus sign instead of taking the conjugate
 }
 
 void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,

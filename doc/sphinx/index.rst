@@ -8,26 +8,48 @@ Pairinteraction - A Rydberg Interaction Calculator
 .. image:: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
    :target: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
    :alt: AppVeyor Build Status
+.. image:: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
+   :target: https://codecov.io/gh/pairinteraction/pairinteraction
+   :alt: Code Coverage Report
 .. image:: images/arXiv-badge.svg
    :target: https://arxiv.org/abs/1612.08053
    :alt: arXiv:1612.08053
 .. image:: images/license-badge.svg
-  :target: https://opensource.org/licenses/Apache-2.0
-  :alt: License
+   :target: https://opensource.org/licenses/Apache-2.0
+   :alt: License
 
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
 For usage examples visit the `tutorials`_ section of the documentation.
-Stay tuned by signing up for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you. To subscribe click `here`_.
+Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you.
+If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an `issue`_ on `GitHub`_.
 
 .. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
 
-.. _here: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
+.. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
+
+.. _issue: https://github.com/pairinteraction/pairinteraction/issues
+
+.. _GitHub: https://github.com/pairinteraction/pairinteraction
 
 Please cite us
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
     *Tutorial: Calculation of Rydberg interaction potentials*,
     `J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017) <https://doi.org/10.1088/1361-6455/aa743a>`_, `arXiv:1612.08053 <https://arxiv.org/abs/1612.08053>`_
+
+    .. code-block:: bibtex
+
+        @article{Weber2017,
+          author = {Weber, Sebastian and Tresp, Christoph and Menke, Henri and Urvoy, Alban and Firstenberg, Ofer and B{\"u}chler, Hans Peter and Hofferberth, Sebastian},
+          title = {{Tutorial: Calculation of Rydberg interaction potentials}},
+          journal = {J. Phys. B: At. Mol. Opt. Phys.},
+          volume = {50},
+          number = {13},
+          pages = {133001},
+          year = {2017},
+          doi = {10.1088/1361-6455/aa743a},
+          url = {https://doi.org/10.1088/1361-6455/aa743a}
+        }
 
 See works citing pairinteraction on `Google Scholar`_ and the `ADS Digital Library`_.
 

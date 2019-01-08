@@ -82,33 +82,31 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.species, cache);
+    SystemOne system_one(state_one.getSpecies(), cache);
     system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
-    system_one.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1);
+    system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1);
     system_one.setEfield({{0, 0, 0.1}});
     system_one.setBfield({{0, 0, 1}});
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_one.getNumVectors(), 64);
+    BOOST_CHECK_EQUAL(system_one.getNumBasisvectors(), 64);
     BOOST_CHECK_EQUAL(system_one.getNumStates(), 64);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_one = system_one.getHamiltonianmatrix();
-    eigen_sparse_t basis_one = system_one.getCoefficients();
-    hamiltonian_one.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
-    basis_one.prune(1e-16, 1);       // without pruning, max_diff_basis might be
-                                     // infinity due to division by zero
+    eigen_sparse_t hamiltonian_one = system_one.getHamiltonian();
+    eigen_sparse_t basis_one = system_one.getBasisvectors();
 
     eigen_sparse_double_t diff;
     double max_diff_hamiltonian, max_diff_basis;
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_one - hamiltonian_one_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(hamiltonian_one.cwiseMin(hamiltonian_one_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -119,6 +117,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
 
         diff = (basis_one - basis_one_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(basis_one.cwiseMin(basis_one_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
@@ -140,10 +141,10 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     // eigenvectors)
     // system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot
     // be assigned because its copy assignment operator is implicitly deleted
-    SystemOne system_one_new(state_one.species, cache);
+    SystemOne system_one_new(state_one.getSpecies(), cache);
     system_one_new.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
-    system_one_new.restrictN(state_one.n - 1, state_one.n + 1);
-    system_one_new.restrictL(state_one.l - 1, state_one.l + 1);
+    system_one_new.restrictN(state_one.getN() - 1, state_one.getN() + 1);
+    system_one_new.restrictL(state_one.getL() - 1, state_one.getL() + 1);
 
     // Build two-atom system
     SystemTwo system_two(system_one_new, system_one_new, cache);
@@ -153,22 +154,20 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_two.setAngle(0.9);
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_two.getNumVectors(), 239);
+    BOOST_CHECK_EQUAL(system_two.getNumBasisvectors(), 239);
     BOOST_CHECK_EQUAL(system_two.getNumStates(), 468);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_two = system_two.getHamiltonianmatrix();
-    eigen_sparse_t basis_two = system_two.getCoefficients();
-    hamiltonian_two.prune(1e-16, 1); // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
-    basis_two.prune(1e-16, 1);       // without pruning, max_diff_basis might be
-                                     // infinity due to division by zero
+    eigen_sparse_t hamiltonian_two = system_two.getHamiltonian();
+    eigen_sparse_t basis_two = system_two.getBasisvectors();
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_two - hamiltonian_two_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(hamiltonian_two.cwiseMin(hamiltonian_two_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -179,6 +178,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
 
         diff = (basis_two - basis_two_reference)
+                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
+                                     // might be infinity due to division by
+                                     // zero
                    .cwiseQuotient(basis_two.cwiseMin(basis_two_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
@@ -200,6 +202,12 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         boost::archive::text_oarchive oa(ofs);
         oa << hamiltonian_one << basis_one << hamiltonian_two << basis_two;
         ofs.close();
+
+        // ATTENTION
+        // After generating integration_test_referencedata.txt, we possibly have to manually modify
+        // the Boost serialization library version - the beginning of the file should read "22
+        // serialization::archive 12". Otherwise, unsupported version exceptions are thrown with
+        // older versions of Boost even though they are compatible.
 
         // We deliberately crash the test in case we are dumping new
         // data because we want to prevent accidentally dumping new

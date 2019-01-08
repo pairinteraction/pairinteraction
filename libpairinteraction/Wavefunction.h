@@ -265,7 +265,7 @@ double IntegrateRadialElement(QuantumDefect const &qd1, int power, QuantumDefect
 
     auto const &xy1 = N1.integrate();
     auto const &xy2 = N2.integrate();
-    auto const dx = N1.dx;
+    auto const dx = T::dx;
 
     auto const xmin = xy1(0, 0) >= xy2(0, 0) ? xy1(0, 0) : xy2(0, 0);
     auto const xmax = xy1(xy1.rows() - 1, 0) <= xy2(xy2.rows() - 1, 0) ? xy1(xy1.rows() - 1, 0)

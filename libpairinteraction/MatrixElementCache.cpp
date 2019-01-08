@@ -19,6 +19,7 @@
 #include "SQLite.h"
 #include "version.h"
 
+#include <boost/tokenizer.hpp>
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -28,38 +29,40 @@
 #include <string>
 
 bool selectionRulesMomentumNew(StateOne const &state1, StateOne const &state2, int q) {
-    bool validL = state1.l == state2.l;
-    bool validJ = fabs(state1.j - state2.j) <= 1;
-    bool validM = state1.m == state2.m + q;
+    bool validL = state1.getL() == state2.getL();
+    bool validJ = fabs(state1.getJ() - state2.getJ()) <= 1;
+    bool validM = state1.getM() == state2.getM() + q;
     bool validQ = abs(q) <= 1;
     return validL && validJ && validM && validQ;
 }
 
 bool selectionRulesMomentumNew(StateOne const &state1, StateOne const &state2) {
-    bool validL = state1.l == state2.l;
-    bool validJ = fabs(state1.j - state2.j) <= 1;
-    bool validM = (fabs(state1.m - state2.m) <= 1);
+    bool validL = state1.getL() == state2.getL();
+    bool validJ = fabs(state1.getJ() - state2.getJ()) <= 1;
+    bool validM = (fabs(state1.getM() - state2.getM()) <= 1);
     return validL && validJ && validM;
 }
 
 bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, int kappa, int q) {
-    bool validL =
-        (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
-    bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
-    bool validM = state1.m == state2.m + q;
+    bool validL = (abs(state1.getL() - state2.getL()) <= kappa) &&
+        (kappa % 2 == abs(state1.getL() - state2.getL()) % 2);
+    bool validJ =
+        (fabs(state1.getJ() - state2.getJ()) <= kappa) && (state1.getJ() + state2.getJ() >= kappa);
+    bool validM = state1.getM() == state2.getM() + q;
     bool validQ = abs(q) <= kappa;
-    bool noZero = !(kappa == 2 && state1.j == state2.j && state2.j == 1.5 &&
-                    state1.m == -state2.m && fabs(state1.m - state2.m) == 1);
+    bool noZero = !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
+                    state1.getM() == -state2.getM() && fabs(state1.getM() - state2.getM()) == 1);
     return validL && validJ && validM && validQ && noZero;
 }
 
 bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, int kappa) {
-    bool validL =
-        (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
-    bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
-    bool validM = (fabs(state1.m - state2.m) <= kappa);
-    bool noZero = !(kappa == 2 && state1.j == state2.j && state2.j == 1.5 &&
-                    state1.m == -state2.m && fabs(state1.m - state2.m) == 1);
+    bool validL = (abs(state1.getL() - state2.getL()) <= kappa) &&
+        (kappa % 2 == abs(state1.getL() - state2.getL()) % 2);
+    bool validJ =
+        (fabs(state1.getJ() - state2.getJ()) <= kappa) && (state1.getJ() + state2.getJ() >= kappa);
+    bool validM = (fabs(state1.getM() - state2.getM()) <= kappa);
+    bool noZero = !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
+                    state1.getM() == -state2.getM() && fabs(state1.getM() - state2.getM()) == 1);
     return validL && validJ && validM && noZero;
 }
 
@@ -118,7 +121,79 @@ void MatrixElementCache::setDefectDB(std::string const &path) {
     dbname = "";
 }
 
-void MatrixElementCache::setMethod(method_t const &m) { method = m; }
+void MatrixElementCache::setMethod(method_t const &m) {
+    // Set method for calculating the radial matrix element
+    method = m;
+}
+
+void MatrixElementCache::loadElectricDipoleDB(std::string const &path, std::string const &species) {
+    int kappa_angular = 1;
+    float s = 0.5;
+    if (std::isdigit(species.back()) != 0) {
+        s = ((species.back() - '0') - 1) / 2.;
+    }
+
+    // Get the radial matrix elements from the CSV file
+    boost::escaped_list_separator<char> els("", ";", "\"\'");
+    std::vector<std::pair<CacheKey_cache_radial, double>> radial_raw_data;
+    std::ifstream ifs(path.c_str());
+    std::string line;
+    bool firstline = true;
+    while (std::getline(ifs, line)) {
+        boost::tokenizer<boost::escaped_list_separator<char>> tk(line, els);
+        std::vector<std::string> tk_vec(tk.begin(), tk.end());
+
+        try {
+            int n1 = std::stoi(tk_vec[0]);
+            int l1 = std::stoi(tk_vec[1]);
+            float j1 = std::stof(tk_vec[2]);
+            int n2 = std::stoi(tk_vec[3]);
+            int l2 = std::stoi(tk_vec[4]);
+            float j2 = std::stof(tk_vec[5]);
+            double val = std::stod(tk_vec[6]);
+
+            // Convert the radial matrix element to um
+            val *= au2um;
+
+            // Store the radial matrix element
+            auto key1 =
+                CacheKey_cache_radial(method, species, kappa_angular, n1, n2, l1, l2, j1, j2);
+            radial_raw_data.emplace_back(key1, val);
+
+            // Store which expressions are needed for converting the radial matrix element to a
+            // reduced radial matrix element
+            auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, l1, l2, j1, j2);
+            cache_reduced_commutes_s_missing.insert(key3);
+            auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, l1, l2);
+            cache_reduced_multipole_missing.insert(key4);
+
+        } catch (std::invalid_argument &e) {
+            if (!firstline) { // Skip header
+                std::cerr << "WARNING: During loading the electric dipole database, the error '"
+                          << e.what() << "' occured." << std::endl;
+            }
+        }
+
+        firstline = false;
+    }
+    ifs.close();
+
+    // Precaculate the expressions
+    this->update();
+
+    // Calculate the reduced radial matrix element and save it to the in-memory cache (it's not
+    // saved to the sqlite database)
+    for (auto const &pair : radial_raw_data) {
+        auto key1 = pair.first;
+        auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, key1.l[0], key1.l[1],
+                                                    key1.j[0], key1.j[1]);
+        auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, key1.l[0], key1.l[1]);
+        double val = pair.second /
+            (key3.sgn * cache_reduced_commutes_s[key3] * key4.sgn * cache_reduced_multipole[key4]);
+
+        cache_radial[key1] = val;
+    }
+}
 
 ////////////////////////////////////////////////////////////////////
 /// Keys ///////////////////////////////////////////////////////////
@@ -279,36 +354,38 @@ double MatrixElementCache::getDiamagnetism(StateOne const &state_row, StateOne c
 }
 
 double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne const &state_col) {
-    if (state_row.species != state_col.species) {
+    if (state_row.getSpecies() != state_col.getSpecies()) {
         throw std::runtime_error("The species must be the same for the final and initial state.");
     }
 
-    const std::string &species = state_row.species;
-    const float &s = state_row.s;
+    const std::string &species = state_row.getSpecies();
+    const float &s = state_row.getS();
 
     // Search cache for constituents of the matrix element
-    auto key1 = CacheKey_cache_radial(method, species, 0, state_row.n, state_col.n, state_row.l,
-                                      state_col.l, state_row.j, state_col.j);
+    auto key1 = CacheKey_cache_radial(method, species, 0, state_row.getN(), state_col.getN(),
+                                      state_row.getL(), state_col.getL(), state_row.getJ(),
+                                      state_col.getJ());
     auto iter1 = cache_radial.find(key1);
     if (iter1 == cache_radial.end()) {
         cache_radial_missing.insert(key1);
     }
 
-    auto key2 = CacheKey_cache_angular(1, state_row.j, state_col.j, state_row.m, state_col.m);
+    auto key2 = CacheKey_cache_angular(1, state_row.getJ(), state_col.getJ(), state_row.getM(),
+                                       state_col.getM());
     auto iter2 = cache_angular.find(key2);
     if (iter2 == cache_angular.end()) {
         cache_angular_missing.insert(key2);
     }
 
-    auto key3 =
-        CacheKey_cache_reduced_commutes(s, 1, state_row.l, state_col.l, state_row.j, state_col.j);
+    auto key3 = CacheKey_cache_reduced_commutes(s, 1, state_row.getL(), state_col.getL(),
+                                                state_row.getJ(), state_col.getJ());
     auto iter3 = cache_reduced_commutes_s.find(key3);
     if (iter3 == cache_reduced_commutes_s.end()) {
         cache_reduced_commutes_s_missing.insert(key3);
     }
 
-    auto key4 =
-        CacheKey_cache_reduced_commutes(s, 1, state_row.l, state_col.l, state_row.j, state_col.j);
+    auto key4 = CacheKey_cache_reduced_commutes(s, 1, state_row.getL(), state_col.getL(),
+                                                state_row.getJ(), state_col.getJ());
     auto iter4 = cache_reduced_commutes_l.find(key4);
     if (iter4 == cache_reduced_commutes_l.end()) {
         cache_reduced_commutes_l_missing.insert(key4);
@@ -332,43 +409,44 @@ double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne
 
     return -bohr_magneton * iter1->second * key2.sgn * iter2->second *
         (gL * key3.sgn * iter3->second *
-             sqrt(state_row.l * (state_row.l + 1) * (2 * state_row.l + 1)) +
+             sqrt(state_row.getL() * (state_row.getL() + 1) * (2 * state_row.getL() + 1)) +
          gS * key4.sgn * iter4->second * sqrt(s * (s + 1) * (2 * s + 1)));
 }
 
 double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
                                                 StateOne const &state_col, int kappa_radial,
                                                 int kappa_angular) {
-    if (state_row.species != state_col.species) {
+    if (state_row.getSpecies() != state_col.getSpecies()) {
         throw std::runtime_error("The species must be the same for the final and initial state.");
     }
 
-    const std::string &species = state_row.species;
-    const float &s = state_row.s;
+    const std::string &species = state_row.getSpecies();
+    const float &s = state_row.getS();
 
     // Search cache for constituents of the matrix element
-    auto key1 = CacheKey_cache_radial(method, species, kappa_radial, state_row.n, state_col.n,
-                                      state_row.l, state_col.l, state_row.j, state_col.j);
+    auto key1 = CacheKey_cache_radial(method, species, kappa_radial, state_row.getN(),
+                                      state_col.getN(), state_row.getL(), state_col.getL(),
+                                      state_row.getJ(), state_col.getJ());
     auto iter1 = cache_radial.find(key1);
     if (iter1 == cache_radial.end()) {
         cache_radial_missing.insert(key1);
     }
 
-    auto key2 =
-        CacheKey_cache_angular(kappa_angular, state_row.j, state_col.j, state_row.m, state_col.m);
+    auto key2 = CacheKey_cache_angular(kappa_angular, state_row.getJ(), state_col.getJ(),
+                                       state_row.getM(), state_col.getM());
     auto iter2 = cache_angular.find(key2);
     if (iter2 == cache_angular.end()) {
         cache_angular_missing.insert(key2);
     }
 
-    auto key3 = CacheKey_cache_reduced_commutes(s, kappa_angular, state_row.l, state_col.l,
-                                                state_row.j, state_col.j);
+    auto key3 = CacheKey_cache_reduced_commutes(
+        s, kappa_angular, state_row.getL(), state_col.getL(), state_row.getJ(), state_col.getJ());
     auto iter3 = cache_reduced_commutes_s.find(key3);
     if (iter3 == cache_reduced_commutes_s.end()) {
         cache_reduced_commutes_s_missing.insert(key3);
     }
 
-    auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, state_row.l, state_col.l);
+    auto key4 = CacheKey_cache_reduced_multipole(kappa_angular, state_row.getL(), state_col.getL());
     auto iter4 = cache_reduced_multipole.find(key4);
     if (iter4 == cache_reduced_multipole.end()) {
         cache_reduced_multipole_missing.insert(key4);
@@ -396,15 +474,16 @@ double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
 
 double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &state_col,
                                      int kappa) {
-    if (state_row.species != state_col.species) {
+    if (state_row.getSpecies() != state_col.getSpecies()) {
         throw std::runtime_error("The species must be the same for the final and initial state.");
     }
 
-    const std::string &species = state_row.species;
+    const std::string &species = state_row.getSpecies();
 
     // Search cache for constituents of the matrix element
-    auto key1 = CacheKey_cache_radial(method, species, kappa, state_row.n, state_col.n, state_row.l,
-                                      state_col.l, state_row.j, state_col.j);
+    auto key1 = CacheKey_cache_radial(method, species, kappa, state_row.getN(), state_col.getN(),
+                                      state_row.getL(), state_col.getL(), state_row.getJ(),
+                                      state_col.getJ());
     auto iter1 = cache_radial.find(key1);
     if (iter1 == cache_radial.end()) {
         cache_radial_missing.insert(key1);
@@ -418,6 +497,12 @@ double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &
     }
 
     return iter1->second;
+}
+
+double MatrixElementCache::getLeRoyRadius(const StateTwo &state) {
+    return 2 *
+        (std::sqrt(this->getRadial(state.getFirstState(), state.getFirstState(), 2)) +
+         std::sqrt(this->getRadial(state.getSecondState(), state.getSecondState(), 2)));
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -474,23 +559,30 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
                                       int q, int kappa_radial, bool calcElectricMultipole,
                                       bool calcMagneticMomentum, bool calcRadial) {
 
-    const std::string &species = basis_one[0].species;
-    const float &s = basis_one[0].s;
+    std::string species;
+    float s = std::numeric_limits<float>::max();
 
     // --- Determine elements ---
 
     for (size_t idx_col = 0; idx_col < basis_one.size(); ++idx_col) {
         const auto &state_col = basis_one[idx_col];
+        if (state_col.isArtificial()) {
+            continue;
+        }
+
+        if (species.empty()) {
+            species = state_col.getSpecies();
+            s = state_col.getS();
+        }
 
         for (size_t idx_row = 0; idx_row <= idx_col; ++idx_row) {
             const auto &state_row = basis_one[idx_row];
-
-            if (q != std::numeric_limits<int>::max() && state_row.m - state_col.m != q) {
+            if (state_row.isArtificial()) {
                 continue;
             }
 
-            if (state_row.species.empty() || state_col.species.empty()) {
-                continue; // TODO artifical states !!!
+            if (q != std::numeric_limits<int>::max() && state_row.getM() - state_col.getM() != q) {
+                continue;
             }
 
             if ((calcElectricMultipole &&
@@ -498,41 +590,44 @@ void MatrixElementCache::precalculate(const std::vector<StateOne> &basis_one, in
                 (calcMagneticMomentum && selectionRulesMomentumNew(state_row, state_col)) ||
                 calcRadial) {
                 if (calcElectricMultipole || calcMagneticMomentum || calcRadial) {
-                    auto key = CacheKey_cache_radial(method, species, kappa_radial, state_row.n,
-                                                     state_col.n, state_row.l, state_col.l,
-                                                     state_row.j, state_col.j);
+                    auto key = CacheKey_cache_radial(
+                        method, species, kappa_radial, state_row.getN(), state_col.getN(),
+                        state_row.getL(), state_col.getL(), state_row.getJ(), state_col.getJ());
                     if (cache_radial.find(key) == cache_radial.end()) {
                         cache_radial_missing.insert(key);
                     }
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    auto key = CacheKey_cache_angular(kappa_angular, state_row.j, state_col.j,
-                                                      state_row.m, state_col.m);
+                    auto key =
+                        CacheKey_cache_angular(kappa_angular, state_row.getJ(), state_col.getJ(),
+                                               state_row.getM(), state_col.getM());
                     if (cache_angular.find(key) == cache_angular.end()) {
                         cache_angular_missing.insert(key);
                     }
                 }
 
                 if (calcElectricMultipole || calcMagneticMomentum) {
-                    auto key = CacheKey_cache_reduced_commutes(
-                        s, kappa_angular, state_row.l, state_col.l, state_row.j, state_col.j);
+                    auto key = CacheKey_cache_reduced_commutes(s, kappa_angular, state_row.getL(),
+                                                               state_col.getL(), state_row.getJ(),
+                                                               state_col.getJ());
                     if (cache_reduced_commutes_s.find(key) == cache_reduced_commutes_s.end()) {
                         cache_reduced_commutes_s_missing.insert(key);
                     }
                 }
 
                 if (calcMagneticMomentum) {
-                    auto key = CacheKey_cache_reduced_commutes(
-                        s, kappa_angular, state_row.l, state_col.l, state_row.j, state_col.j);
+                    auto key = CacheKey_cache_reduced_commutes(s, kappa_angular, state_row.getL(),
+                                                               state_col.getL(), state_row.getJ(),
+                                                               state_col.getJ());
                     if (cache_reduced_commutes_l.find(key) == cache_reduced_commutes_l.end()) {
                         cache_reduced_commutes_l_missing.insert(key);
                     }
                 }
 
                 if (calcElectricMultipole) {
-                    auto key =
-                        CacheKey_cache_reduced_multipole(kappa_angular, state_row.l, state_col.l);
+                    auto key = CacheKey_cache_reduced_multipole(kappa_angular, state_row.getL(),
+                                                                state_col.getL());
                     if (cache_reduced_multipole.find(key) == cache_reduced_multipole.end()) {
                         cache_reduced_multipole_missing.insert(key);
                     }
@@ -863,8 +958,8 @@ int MatrixElementCache::update() {
                 sqrt((2 * cached.l[0] + 1) * (2 * cached.l[1] + 1)) *
                 WignerSymbols::wigner3j(
                              cached.l[0], cached.kappa, cached.l[1], 0, 0,
-                             0); // TODO call WignerSymbols::wigner3j(cached.kappa, cached.l[1], 0,
-                                 // 0, 0) and loop over the resulting vector
+                             0); // TODO call WignerSymbols::wigner3j(cached.kappa,
+                                 // cached.l[1], 0, 0, 0) and loop over the resulting vector
             cache_reduced_multipole.insert({cached, val});
 
             if (!dbname.empty()) {

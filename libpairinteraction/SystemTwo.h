@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@
 #include <cmath>
 #include <set>
 #include <type_traits>
+#include <Eigen/Sparse>
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
@@ -34,11 +35,11 @@ public:
     SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
               bool memory_saving);
 
-    const std::array<std::string, 2> &getElement(); // TODO rename to getSpecies
+    const std::array<std::string, 2> &getSpecies();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
-    void setDistanceX(double xAB);
+    void setDistanceX(double xab);
     void setDistanceZA(double za);
     void setDistanceZB(double zb);
     void setGTbool(bool GTboolean);
@@ -60,7 +61,7 @@ protected:
                                 double beta, double gamma) override;
     eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateTwo> &system) override;
-    void DipoleVector();
+    void onStatesChange() override;
 
 private:
     std::array<std::string, 2> species;
@@ -70,6 +71,7 @@ private:
     std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
     std::unordered_map<int, eigen_sparse_t> interaction_multipole;
 
+    double minimal_le_roy_radius;
     double distance;
     double x;
     double zA;
@@ -77,12 +79,20 @@ private:
     bool GTbool;
     double angle;
     unsigned int ordermax;
-
-    std::vector<eigen_triplet_complex_t> xxGTmatrix;
-    std::vector<eigen_triplet_complex_t> yyGTmatrix;
-    std::vector<eigen_triplet_complex_t> zzGTmatrix;
-    std::vector<eigen_triplet_complex_t> xzGTmatrix;
-    std::vector<eigen_triplet_complex_t> zxGTmatrix;
+    
+//     std::vector<eigen_triplet_complex_t> xxGTmatrix;
+//     std::vector<eigen_triplet_complex_t> yyGTmatrix;
+//     std::vector<eigen_triplet_complex_t> zzGTmatrix;
+//     std::vector<eigen_triplet_complex_t> xzGTmatrix;
+//     std::vector<eigen_triplet_complex_t> zxGTmatrix;
+    
+    std::vector<eigen_triplet_t> xxGTmatrix;
+    std::vector<eigen_triplet_t> yyGTmatrix;
+    std::vector<eigen_triplet_t> zzGTmatrix;
+    std::vector<eigen_triplet_t> xzGTmatrix;
+    std::vector<eigen_triplet_t> zxGTmatrix;
+    
+    
 
     parity_t sym_permutation;
     parity_t sym_inversion;
@@ -95,14 +105,15 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addCoefficient(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
-                        std::vector<eigen_triplet_t> &coefficients_triplets,
-                        std::vector<double> &sqnorm_list);
+    void checkDistance(const double &distance);
+
+    void addBasisvectors(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
+                         std::vector<eigen_triplet_t> &basisvectors_triplets,
+                         std::vector<double> &sqnorm_list);
 
     void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
                     scalar_t val);
-    void addTripletC(std::vector<eigen_triplet_complex_t> &triplets, size_t r_idx, size_t c_idx,
-                     std::complex<double> val);
+    void addTripletC(std::vector<eigen_triplet_complex_t> &triplets, size_t r_idx, size_t c_idx, std::complex<double> val);
 
     template <class T>
     void addRotated(const StateTwo &state, const size_t &idx,
@@ -124,24 +135,28 @@ private:
         }
 
         // Add rotated triplet entries
-        StateTwo newstate = state;
         std::vector<T> val2_vector;
-        val2_vector.reserve(2 * state.second().j + 1);
+        val2_vector.reserve(2 * state.getSecondState().getJ() + 1);
 
-        for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
+        for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ(); ++m2) {
             val2_vector.push_back(
-                convert<T>(wigner(state.second().j, state.second().m, m2, alpha, beta, gamma)));
+                utils::convert<T>(wigner(state.getSecondState().getJ(), m2,
+                                         state.getSecondState().getM(), -gamma, -beta, -alpha)));
         }
 
-        for (float m1 = -state.first().j; m1 <= state.first().j; ++m1) {
-            T val1 = convert<T>(wigner(state.first().j, state.first().m, m1, alpha, beta, gamma));
+        for (float m1 = -state.getFirstState().getJ(); m1 <= state.getFirstState().getJ(); ++m1) {
+            auto val1 =
+                utils::convert<T>(wigner(state.getFirstState().getJ(), m1,
+                                         state.getFirstState().getM(), -gamma, -beta, -alpha));
 
-            for (float m2 = -state.second().j; m2 <= state.second().j; ++m2) {
-                newstate.m = {{m1, m2}};
+            for (float m2 = -state.getSecondState().getJ(); m2 <= state.getSecondState().getJ();
+                 ++m2) {
+                StateTwo newstate(state.getSpecies(), state.getN(), state.getL(), state.getJ(),
+                                  {{m1, m2}});
                 auto state_iter = states.get<1>().find(newstate);
 
                 if (state_iter != states.get<1>().end()) {
-                    T val = val1 * val2_vector[m2 + state.second().j];
+                    auto val = val1 * val2_vector[m2 + state.getSecondState().getJ()];
                     triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
                 } else {
                     std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
@@ -150,11 +165,6 @@ private:
                 }
             }
         }
-    }
-
-    template <class T, class S>
-    T convert(const S &val) {
-        return val;
     }
 
     bool isRefelectionAndRotationCompatible();

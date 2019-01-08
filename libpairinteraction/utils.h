@@ -17,6 +17,7 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <algorithm>
 #include <complex>
 #include <functional>
 #include <random>
@@ -32,9 +33,43 @@
 namespace utils {
 
 template <typename T>
-struct is_complex : public std::false_type {};
+struct is_complex : std::false_type {};
+template <typename S>
+struct is_complex<std::complex<S>> : std::true_type {};
+
 template <typename T>
-struct is_complex<std::complex<T>> : public std::true_type {};
+inline T conjugate(const T &val) {
+    return val;
+}
+template <typename S>
+inline std::complex<S> conjugate(const std::complex<S> &val) {
+    return std::conj(val);
+}
+
+template <typename T>
+inline bool is_true(const T &val) {
+    return std::all_of(val.begin(), val.end(), [](bool i) { return i; });
+}
+inline bool is_true(bool val) { return val; }
+
+template <typename T>
+inline typename std::enable_if<!is_complex<T>::value, T>::type imaginary_unit() {
+    throw std::runtime_error(
+        "For operations that invoke the imaginary number, a complex data type is needed.");
+}
+template <typename T>
+inline typename std::enable_if<is_complex<T>::value, T>::type imaginary_unit() {
+    return {0, 1};
+}
+
+template <typename T, typename U>
+inline T convert(const U &val) {
+    return val;
+}
+template <typename S>
+inline S convert(const std::complex<S> &val) {
+    return std::real(val);
+}
 
 /** \brief Thread-local static random engine
  *

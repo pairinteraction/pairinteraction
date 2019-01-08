@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,12 +14,18 @@
  * limitations under the License.
  */
 
-#include "utils.h"
-#define BOOST_TEST_MODULE Configuration parser test
-#include <boost/test/unit_test.hpp>
+#include "SystemBase.h"
 
-BOOST_AUTO_TEST_CASE(randint_test) // NOLINT
-{
-    int a = utils::randint(0, 10);
-    BOOST_CHECK(0 <= a && a <= 10);
+// Explicit template specializations
+
+template <>
+template <>
+StateOne SystemBase<StateOne>::createStateFromLabel(const std::string &label) const {
+    return StateOne(label);
+}
+
+template <>
+template <>
+StateTwo SystemBase<StateTwo>::createStateFromLabel(const std::string &label) const {
+    return StateTwo(std::array<std::string, 2>({{"0_" + label, "1_" + label}}));
 }

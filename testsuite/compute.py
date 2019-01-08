@@ -5,11 +5,12 @@ import shutil
 import tempfile
 import unittest
 
+
 class TestCompute(unittest.TestCase):
 
     def setUp(self):
-        _,self.path_config = tempfile.mkstemp()
-        self.path_cache  = tempfile.mkdtemp()
+        _, self.path_config = tempfile.mkstemp()
+        self.path_cache = tempfile.mkdtemp()
 
         with open(self.path_config, 'w') as io:
             json.dump({
@@ -75,8 +76,9 @@ class TestCompute(unittest.TestCase):
         try:
             os.remove(self.path_config)
             shutil.rmtree(self.path_cache)
-        except:
+        except BaseException:
             pass
+
 
 if __name__ == '__main__':
     unittest.main()

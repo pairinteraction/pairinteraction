@@ -35,11 +35,11 @@ case "${TRAVIS_OS_NAME}" in
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd "${SOURCE_DIR}";
+                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            /bin/bash /travis/doc/publish_documentation.sh;
-                            cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            /bin/bash /travis/ci/publish_documentation.sh;
+                            cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
                         "
@@ -52,10 +52,11 @@ case "${TRAVIS_OS_NAME}" in
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd "${SOURCE_DIR}";
+                            cd \"${SOURCE_DIR}\";
+                            /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
                         "
@@ -68,10 +69,10 @@ case "${TRAVIS_OS_NAME}" in
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd "${SOURCE_DIR}";
+                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            cmake -DCPACK_PACKAGE_FILE_NAME="${package}" ..;
+                            cmake -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
                             make -k -j 2 package;

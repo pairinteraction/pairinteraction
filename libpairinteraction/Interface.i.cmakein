@@ -1,10 +1,9 @@
+// -*- C -*-  (not really, but good for syntax highlighting)
 %module(docstring="Backend for @DATATYPE@ matrices") pi@DATATYPE@
 
 %{
 #define SWIG_FILE_WITH_INIT
 
-#include "NumpyUtils.h"
-#include "Traits.h"
 #include "dtypes.h"
 #include "Interface.h"
 #include "QuantumDefect.h"
@@ -24,22 +23,28 @@
 %}
 
 
-%init %{
-import_array();
-%}
-
-
 %feature("autodoc", "");
 
 
 %include "attribute.i"
 %include "exception.i"
-%include "std_array.i"
-%include "std_complex.i"
 %include "std_string.i"
 %include "std_vector.i"
-%include "std_set.i"
 
+#ifdef SWIGPYTHON
+%{
+#include "NumpyUtils.h"
+#include "Traits.h"
+%}
+
+%init %{
+import_array();
+%}
+
+%include "std_array.i"
+%include "std_complex.i"
+%include "std_set.i"
+#endif
 
 // Convert C++ exceptions to Python exceptions
 // http://www.swig.org/Doc1.3/Library.html#Library_stl_exceptions
@@ -54,6 +59,7 @@ import_array();
 // Make pickle work
 // https://stackoverflow.com/questions/9310053/how-to-make-my-swig-extension-module-work-with-pickle
 // remark: passing as std::stringstream does not work because swig calls the implicitly-deleted copy constructor of std::stringstream instead of the move constructor
+#ifdef SWIGPYTHON
 %define %boost_picklable(cls...)
   %extend cls {
     PyObject* __getstate__() {
@@ -74,7 +80,10 @@ import_array();
     }
   }
 %enddef
-
+#else
+%define %boost_picklable(cls...)
+%enddef
+#endif
 // Wrap the << operator
 // http://stackoverflow.com/questions/2548779/how-to-stringfy-a-swig-matrix-object-in-python
 %define __STR__()
@@ -85,7 +94,19 @@ std::string __str__() {
 }
 %enddef
 
+ // Instantiate often used STL templates
+namespace std {
+  %template(VectorInt) vector<int>;
+  %template(VectorDouble) vector<double>;
+  %template(VectorFloat) vector<float>;
+  %template(VectorStateOne) vector<StateOne>;
+  %template(VectorStateTwo) vector<StateTwo>;
+  %template(VectorSizeT) vector<size_t>;
+  %template(VectorComplexDouble) vector<std::complex<double>>;
+};
+
 // Make numpy wrappers
+#ifdef SWIGPYTHON
 %define MAKE_NUMPY_TYPEMAP_OUT(TYPE...)
   %typemap(out) TYPE        { $result = numpy::convert<numpy::copy>( $1); }
   %typemap(out) TYPE &      { $result = numpy::convert<numpy::view>(*$1); }
@@ -123,22 +144,18 @@ MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
 
  // Instantiate often used STL templates
 namespace std {
+  %template(ArrayBoolTwo) array<bool,2>;
   %template(ArrayStringTwo) array<string,2>;
   %template(ArrayIntTwo) array<int,2>;
   %template(ArrayFloatTwo) array<float,2>;
   %template(ArrayDoubleTwo) array<double,2>;
   %template(ArrayDoubleThree) array<double,3>;
-  %template(VectorInt) vector<int>;
-  %template(VectorDouble) vector<double>;
-  %template(VectorFloat) vector<float>;
-  %template(VectorStateOne) vector<StateOne>;
-  %template(VectorStateTwo) vector<StateTwo>;
-  %template(VectorSizeT) vector<size_t>;
-  %template(VectorComplexDouble) vector<std::complex<double>>;
-  %template(SetInt) set<int>;
-  %template(SetFloat) set<float>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
+  %template(SetInt) set<int>;
+  %template(SetFloat) set<float>;
+  %template(SetStateOne) set<StateOne>;
+  %template(SetStateTwo) set<StateTwo>;
 };
 
 MAKE_NUMPY_TYPEMAP_OUT(std::vector<int>)
@@ -147,6 +164,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::vector<double>)
 MAKE_NUMPY_TYPEMAP_OUT(std::array<int,2>)
 MAKE_NUMPY_TYPEMAP_OUT(std::array<float,2>)
 MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
+#endif
+
 
 %feature("autodoc", "2");
 
@@ -162,19 +181,21 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "PerturbativeInteraction.h"
 
+%include "WignerD.h"
 
 // Wrap MatrixElementCache.h
-
 %include "MatrixElementCache.h"
 
 %boost_picklable(MatrixElementCache);
 
 %extend MatrixElementCache {
+#ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       self.__init__()
       self.__setstate_internal(sState)
   %}
+#endif
 }
 
 
@@ -184,32 +205,36 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "State.h"
 
-%attribute(StateOne, double, energy, getEnergy);
-%attribute(StateTwo, double, energy, getEnergy);
-
 %boost_picklable(StateOne);
 %boost_picklable(StateTwo);
 
 %extend StateOne {
   __STR__();
+#ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       self.__init__()
       self.__setstate_internal(sState)
   %}
+#endif
 }
+
 
 %extend StateTwo {
   __STR__();
+#ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       self.__init__()
       self.__setstate_internal(sState)
   %}
+#endif
 }
 
 
 // Wrap SystemBase.h
+%warnfilter(509) SystemBase::getOverlap;
+
 %include "SystemBase.h"
 
 
@@ -223,22 +248,22 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %include "SystemOne.h"
 %include "SystemTwo.h"
 
-// %attribute(SystemOne, std::vector<StateOne>&, states  , getStates  ); // TODO
-// %attribute(SystemTwo, std::vector<StateTwo>&, states  , getStates  ); // TODO
-
 %boost_picklable(SystemOne);
 %boost_picklable(SystemTwo);
 
 %extend SystemOne {
+#ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       tmp = MatrixElementCache()
       self.__init__("", tmp)
       self.__setstate_internal(sState)
   %}
+#endif
 }
 
 %extend SystemTwo {
+#ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       tmp = MatrixElementCache()
@@ -247,27 +272,5 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
       self.__init__(s1, s2, tmp)
       self.__setstate_internal(sState)
   %}
+#endif
 }
-
-
-// Python specific extensions
-
-// This block has to be the last in the Interface.i file, because it
-// will be copied literally into the Python module and we want to
-// overwrite specific methods, defined before.
-
-%pythoncode %{
-
-SystemOne.coefficients = property(SystemOne.getCoefficients)
-SystemTwo.coefficients = property(SystemTwo.getCoefficients)
-SystemOne.hamiltonianmatrix = property(SystemOne.getHamiltonianmatrix)
-SystemTwo.hamiltonianmatrix = property(SystemTwo.getHamiltonianmatrix)
-SystemOne.diagonal = property(SystemOne.getDiagonal)
-SystemTwo.diagonal = property(SystemTwo.getDiagonal)
-SystemOne.states = property(SystemOne.getStates) # TODO
-SystemTwo.states = property(SystemTwo.getStates) # TODO
-
-%}
-
-
-

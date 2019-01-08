@@ -43,7 +43,7 @@ public:
     SystemOne(std::string species, MatrixElementCache &cache);
     SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving);
 
-    const std::string &getElement() const; // TODO rename to getSpecies
+    const std::string &getSpecies() const;
     void setEfield(std::array<double, 3> field);
     void setBfield(std::array<double, 3> field);
     void setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
@@ -86,8 +86,13 @@ private:
     /// Utility methods ////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addCoefficient(const StateOne &state, const size_t &col, const scalar_t &value,
-                        std::vector<eigen_triplet_t> &coefficients_triplets);
+    void addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
+                                    std::vector<eigen_triplet_t> &basisvectors_triplets,
+                                    std::vector<eigen_triplet_t> &hamiltonian_triplets,
+                                    parity_t &sym_reflection_local);
+
+    void addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
+                         std::vector<eigen_triplet_t> &basisvectors_triplets);
 
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, double> &field_spherical);
@@ -119,14 +124,16 @@ private:
         }
 
         // Add rotated triplet entries
-        StateOne newstate = state;
-
-        for (float m = -state.j; m <= state.j; ++m) {
-            newstate.m = m;
+        for (float m = -state.getJ(); m <= state.getJ(); ++m) {
+            StateOne newstate(state.getSpecies(), state.getN(), state.getL(), state.getJ(), m);
             auto state_iter = states.get<1>().find(newstate);
 
             if (state_iter != states.get<1>().end()) {
-                T val = convert<T>(wigner(state.j, state.m, m, alpha, beta, gamma));
+                // We calculate the matrix element <m|d_mM|state.getM()>|m>. Note that we must
+                // invert the angles since they are given for a passive rotation, i.e. rotation of
+                // the coordinate system, and the WignerD matrix is for an active rotation of spins.
+                auto val =
+                    utils::convert<T>(wigner(state.getJ(), m, state.getM(), -gamma, -beta, -alpha));
                 triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
             } else {
                 std::cerr << "Warning: Incomplete rotation because the basis is lacking some "
@@ -135,14 +142,6 @@ private:
             }
         }
     }
-
-    template <class T, class S>
-    T convert(const S &val) {
-        return val;
-    }
-
-    template <class U>
-    U imaginaryUnit();
 
     bool isRefelectionAndRotationCompatible();
 

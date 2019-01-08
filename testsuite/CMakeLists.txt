@@ -24,8 +24,8 @@ function(PYTHON_TEST)
   # Copy test to binary directory
   configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
-  add_test(NAME ${UT_TARGET} COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
-  set_tests_properties(${UT_TARGET}
+  add_test(NAME "python.${UT_TARGET}" COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
+  set_tests_properties("python.${UT_TARGET}"
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
 
@@ -34,12 +34,15 @@ add_dependencies(check _pireal _picomplex)
 
 # Add Python test cases
 python_test(TARGET greentensor SOURCE greentensor.py)
+python_test(TARGET rotation SOURCE rotation.py)
+python_test(TARGET cache SOURCE cache.py)
+python_test(TARGET perturbation SOURCE perturbation.py)
 python_test(TARGET states SOURCE state.py)
 python_test(TARGET compute SOURCE compute.py)
 python_test(TARGET quantum_defect SOURCE quantum_defect.py)
 python_test(TARGET wavefunction SOURCE wavefunction.py)
 python_test(TARGET symmetries SOURCE symmetries.py)
-python_test(TARGET integration_python SOURCE integration.py)
+python_test(TARGET integration SOURCE integration.py)
 if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
 endif()

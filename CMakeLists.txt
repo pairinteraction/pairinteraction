@@ -18,6 +18,18 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
+# Enable link-time optimization if available
+if(POLICY CMP0069)
+  cmake_policy(SET CMP0069 NEW)
+  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
+  if(CHECK_IPO_SUPPORTED)
+    check_ipo_supported(RESULT IPO_SUPPORTED)
+    if(IPO_SUPPORTED)
+      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+    endif()
+  endif()
+endif()
+
 set(LIBNAME "libpairinteraction")
 
 # set version of settings and cache
@@ -56,7 +68,6 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
-option(WITH_DATABASE "Generate the quantum defect database" ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
@@ -99,13 +110,10 @@ endif()
 
 if( WITH_BACKEND )
   add_subdirectory(${LIBNAME})
+  add_subdirectory(${LIBNAME}/databases)
   if(WITH_PYTHON)
     add_subdirectory(testsuite)
   endif()
-endif( )
-
-if( WITH_DATABASE )
-  add_subdirectory(${LIBNAME}/databases)
 endif( )
 
 if( WITH_GUI )

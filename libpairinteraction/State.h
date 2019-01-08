@@ -24,173 +24,164 @@
 #include <cmath>
 #include <iostream>
 #include <string>
+#include <typeinfo>
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/variant.hpp>
 
-/** \brief %Base class for states
- *
- * This class is the base class for states specified in the fine structure basis.
- */ // TODO [dummystate]
-class State {
+////////////////////////////////////////////////////////////////////
+/// \brief One-atom state
+/// This class implements a one-atom state. It can either be a
+/// Rydberg state in the fine structure basis or an artificial state
+/// specified by a label.
+////////////////////////////////////////////////////////////////////
+
+class StateOne {
 public:
-    State(idx_t idx) : idx(idx) {}
-    idx_t idx;
-};
+    StateOne() = default;
+    explicit StateOne(std::string species, int n, int l, float j, float m);
+    explicit StateOne(std::string label);
 
-/** \brief %One-atom Rydberg state
- *
- * This class implements a one-atom Rydberg state.
- */ // TODO [dummystate]
-class StateOne : public State {
-public:
-    // These are public to allow direct access.  This violates the
-    // open/closed principle and is a sign of code smell.
-    std::string species, element;
-    int n{0};
-    int l{0};
-    float j{0};
-    float m{0};
-    float s;
-
-    StateOne();
-    StateOne(std::string element, int n, int l, float j, float m);
-    StateOne(idx_t idx, int n, int l, float j, float m);
-    StateOne(int n, int l, float j, float m);
-
+    // Methods for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateOne &state);
+    std::string str() const;
 
-    bool operator==(StateOne const & /*rhs*/) const;
-    bool operator^(StateOne const & /*rhs*/) const; // subset
-    bool operator!=(StateOne const & /*rhs*/) const;
-    bool operator<(StateOne const & /*rhs*/) const;
-
+    // Getters
+    const int &getN() const;
+    const int &getL() const;
+    const float &getJ() const;
+    const float &getM() const;
+    const float &getS() const;
+    const std::string &getSpecies() const;
+    const std::string &getElement() const;
     double getEnergy() const;
     double getNStar() const;
+    const std::string &getLabel() const;
+    bool isArtificial() const;
+    bool isGeneralized() const;
 
-    std::string getSpecies() const;
-    int getN() const;
-    int getL() const;
-    float getJ() const;
-    float getM() const;
+    const size_t &getHash() const;
+
+    StateOne getReflected() const;
+
+    // Comparators
+    bool operator==(StateOne const &rhs) const;
+    bool operator^(StateOne const &rhs) const; // subset
+    bool operator!=(StateOne const &rhs) const;
+    bool operator<(StateOne const &rhs) const;
+    bool operator<=(StateOne const &rhs) const;
 
 private:
-    ////////////////////////////////////////////////////////////////////
-    /// Utility methods ////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+    // TODO make the variables constant (requires load_construct_data, see
+    // https://stackoverflow.com/questions/50603180/serialization-of-class-with-const-members-using-boost)
+    std::string species, element;
+    int n, l;
+    float j, m, s;
+    size_t hashvalue;
 
-    void analyzeSpecies();
-
-    ////////////////////////////////////////////////////////////////////
-    /// Method for serialization ///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
+    // Method for serialization
     friend class boost::serialization::access;
-
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
-        ar &species &element &s &n &l &j &m;
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &species &element &n &l &j &m &s &hashvalue;
     }
+
+    // Utility methods
+    void analyzeSpecies();
+    void shouldBeArtificial(bool opinion) const;
 };
 
-/** \brief %Two-atom Rydberg state
- *
- * This class implements a two-atom Rydberg state.
- */ // TODO [dummystate]
-class StateTwo
-    : public State { // TODO define getters and setters, save a pair state as two single atom states
+////////////////////////////////////////////////////////////////////
+/// \brief Two-atom state
+/// This class implements a two-atom state. It can either be a
+/// Rydberg state in the fine structure basis or an artificial state
+/// specified by a label.
+////////////////////////////////////////////////////////////////////
+
+class StateTwo {
 public:
-    // These are public to allow direct access.  This violates the
-    // open/closed principle and is a sign of code smell.
-    std::array<std::string, 2> species, element;
-    std::array<int, 2> n, l;
-    std::array<float, 2> j, m, s;
+    StateTwo() = default;
+    explicit StateTwo(std::array<std::string, 2> species, std::array<int, 2> n,
+                      std::array<int, 2> l, std::array<float, 2> j, std::array<float, 2> m);
+    explicit StateTwo(std::array<std::string, 2> label); // TODO use &&label?
+    explicit StateTwo(StateOne first_state, StateOne second_state);
 
-    StateTwo();
-    StateTwo(std::array<std::string, 2> element, std::array<int, 2> n, std::array<int, 2> l,
-             std::array<float, 2> j, std::array<float, 2> m);
-    StateTwo(const StateOne &s1, const StateOne &s2);
-    StateTwo(idx_t idx, std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
-             std::array<float, 2> m);
-    StateTwo(std::array<int, 2> n, std::array<int, 2> l, std::array<float, 2> j,
-             std::array<float, 2> m);
-    StateTwo(idx_t idx, const StateOne &a, const StateOne &b);
-
-    StateOne getFirstState() const;
-    StateOne getSecondState() const;
-    void setFirstState(StateOne const & /*s*/);
-    void setSecondState(StateOne const & /*s*/);
-
-    StateOne first() const;
-    StateOne second() const;
-
+    // Methods for printing the state
     friend std::ostream &operator<<(std::ostream &out, const StateTwo &state);
+    std::string str() const;
 
-    bool operator==(StateTwo const & /*rhs*/) const;
-    bool operator^(StateTwo const & /*rhs*/) const; // subset
-    bool operator!=(StateTwo const & /*rhs*/) const;
-    bool operator<(StateTwo const & /*rhs*/) const;
-
-    StateTwo order();
-
-    double getEnergy() const;
-    std::array<double, 2> getNStar() const;
-
-    std::array<std::string, 2> getSpecies() const;
+    // Getters
     std::array<int, 2> getN() const;
     std::array<int, 2> getL() const;
     std::array<float, 2> getJ() const;
     std::array<float, 2> getM() const;
+    std::array<float, 2> getS() const;
+    std::array<std::string, 2> getSpecies() const;
+    std::array<std::string, 2> getElement() const;
+    double getEnergy() const;
+    std::array<double, 2> getNStar() const;
+    std::array<std::string, 2> getLabel() const;
+    std::array<bool, 2> isArtificial() const;
+    std::array<bool, 2> isGeneralized() const;
+
+    const int &getN(int idx) const;
+    const int &getL(int idx) const;
+    const float &getJ(int idx) const;
+    const float &getM(int idx) const;
+    const float &getS(int idx) const;
+    const std::string &getSpecies(int idx) const;
+    const std::string &getElement(int idx) const;
+    double getEnergy(int idx) const;
+    double getNStar(int idx) const;
+    const std::string &getLabel(int idx) const;
+    bool isArtificial(int idx) const;
+    bool isGeneralized(int idx) const;
+
+    const StateOne &getFirstState() const;
+    const StateOne &getSecondState() const;
+
+    const size_t &getHash() const;
+
+    StateTwo getReflected() const;
+
+    // Comparators
+    bool operator==(StateTwo const &rhs) const;
+    bool operator^(StateTwo const &rhs) const; // subset
+    bool operator!=(StateTwo const &rhs) const;
+    bool operator<(StateTwo const &rhs) const;
+    bool operator<=(StateTwo const &rhs) const;
 
 private:
-    ////////////////////////////////////////////////////////////////////
-    /// Utility methods ////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
+    // TODO make the variables constant (requires load_construct_data, see
+    // https://stackoverflow.com/questions/50603180/serialization-of-class-with-const-members-using-boost)
+    std::array<StateOne, 2> state_array;
+    size_t hashvalue;
 
-    void analyzeSpecies();
-
-    ////////////////////////////////////////////////////////////////////
-    /// Method for serialization ///////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////
-
+    // Method for serialization
     friend class boost::serialization::access;
-
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
-        ar &species &element &s &n &l &j &m;
+    void serialize(Archive &ar, const unsigned int /*version*/) {
+        ar &state_array &hashvalue;
     }
 };
 
+////////////////////////////////////////////////////////////////////
+/// Hashers ////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
+
 #ifndef SWIG
+
 namespace std {
 
 template <>
 struct hash<StateOne> {
-    size_t operator()(const StateOne &s) const {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, s.n);
-        boost::hash_combine(seed, s.l);
-        boost::hash_combine(seed, s.j);
-        boost::hash_combine(seed, s.m);
-        return seed;
-    }
+    size_t operator()(const StateOne &s) const { return s.getHash(); }
 };
 
 template <>
 struct hash<StateTwo> {
-    size_t operator()(const StateTwo &s) const {
-        std::size_t seed = 0;
-        boost::hash_combine(seed, s.n);
-        boost::hash_combine(seed, s.l);
-        boost::hash_combine(seed, s.j);
-        boost::hash_combine(seed, s.m);
-        return seed;
-    }
+    size_t operator()(const StateTwo &s) const { return s.getHash(); }
 };
 
 } // namespace std
