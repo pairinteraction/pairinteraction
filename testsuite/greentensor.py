@@ -21,8 +21,8 @@ class GreenTensorTest(unittest.TestCase):
         # Build one-atom system
         system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
-        system_one.restrictN(self.state_one.n - 1, self.state_one.n + 1)
-        system_one.restrictL(self.state_one.l - 1, self.state_one.l + 1)
+        system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
+        system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
 
         # Build two-atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
@@ -42,6 +42,7 @@ class GreenTensorTest(unittest.TestCase):
         system_two_greentensor.setGTbool(True)
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
+
         # Prune Hamiltonians (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
         hamiltonian_standard.data *= (abs(hamiltonian_standard).data > 1e-6)
         hamiltonian_standard.eliminate_zeros()
@@ -50,7 +51,7 @@ class GreenTensorTest(unittest.TestCase):
 
         # Compare Hamiltonians
         np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)
-
+	
 
 if __name__ == '__main__':
     unittest.main()
