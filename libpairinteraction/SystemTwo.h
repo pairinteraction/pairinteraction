@@ -86,12 +86,14 @@ private:
 //     std::vector<eigen_triplet_complex_t> xzGTmatrix;
 //     std::vector<eigen_triplet_complex_t> zxGTmatrix;
     
-    std::vector<eigen_triplet_t> xxGTmatrix;
-    std::vector<eigen_triplet_t> yyGTmatrix;
-    std::vector<eigen_triplet_t> zzGTmatrix;
-    std::vector<eigen_triplet_t> xzGTmatrix;
-    std::vector<eigen_triplet_t> zxGTmatrix;
+    std::vector<eigen_triplet_t> xxGTtriplet;
+    std::vector<eigen_triplet_t> yyGTtriplet;
+    std::vector<eigen_triplet_t> zzGTtriplet;
+    std::vector<eigen_triplet_t> xzGTtriplet;
+    std::vector<eigen_triplet_t> zxGTtriplet;
     
+    std::unordered_map<std::string, std::vector<eigen_triplet_t> > dipoleTriplets;
+    std::unordered_map<std::string, eigen_sparse_t > dipoleMatrices;
     
 
     parity_t sym_permutation;

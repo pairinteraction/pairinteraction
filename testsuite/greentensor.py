@@ -31,6 +31,9 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(5)
+	#system_two.setDistanceX(0)
+	#system_two.setDistanceZA(500000)
+	#system_two.setDistanceZB(500005)
 
         # Construct the Hamiltonian using the standard approach
         system_two_standard = pi.SystemTwo(system_two)

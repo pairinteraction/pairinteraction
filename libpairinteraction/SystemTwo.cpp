@@ -682,8 +682,8 @@ void SystemTwo::initializeInteraction() {
     }*/
 
     // Loop over column entries
-    int counter = 0;
-    int notCounter = 0;
+//     int counter = 0;
+//     int notCounter = 0;
     for (const auto &c : states) { // TODO parallelization
         if (c.state.isArtificial(0) || c.state.isArtificial(1)) {
             continue;
@@ -702,27 +702,23 @@ void SystemTwo::initializeInteraction() {
             int q2 = r.state.getM(1) - c.state.getM(1);
             if(GTbool){
                 double dipolemoment1,dipolemoment2;
-//                 std::complex<double> imagunit = std::complex<double> (0.,1.);
+                std::complex<double> imagunit = std::complex<double> (0.,1.);
                 std::complex<double> vec1[3];
                 std::complex<double> vec2[3];
-//                 double vec1[3];
-//                 double vec2[3];
                 scalar_t value;
-//                 dipolemoment1 = coulombs_constant*cache.getElectricDipole(r.state.getFirstState(), c.state.getFirstState());
-//                 dipolemoment2 = coulombs_constant*cache.getElectricDipole(r.state.getSecondState(), c.state.getSecondState());     
-                dipolemoment1 = coulombs_constant*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(),1);
-                dipolemoment2 = coulombs_constant*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(),1);
+                dipolemoment1 = coulombs_constant*cache.getElectricDipole(r.state.getFirstState(), c.state.getFirstState());
+                dipolemoment2 = coulombs_constant*cache.getElectricDipole(r.state.getSecondState(), c.state.getSecondState());     
                 
                 if(q1 == -1.){
                     vec1[0] = (std::sqrt(1./2.)*(-dipolemoment1));
-//                     vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
-                    vec1[1] = (std::sqrt(1./2.)*dipolemoment1);
+                    vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
+//                     vec1[1] = (std::sqrt(1./2.)*dipolemoment1);
                     vec1[2] = 0.;
                 }                
                 else if(q1 == 1.){
                     vec1[0] = (std::sqrt(1./2.)*(dipolemoment1));
-//                     vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
-                    vec1[1] = (std::sqrt(1./2.)*dipolemoment1);
+                    vec1[1] = (std::sqrt(1./2.)*imagunit*dipolemoment1);
+//                     vec1[1] = (std::sqrt(1./2.)*dipolemoment1);
                     vec1[2] = (0.);
                 }
                 else if(q1 == 0.){
@@ -732,69 +728,65 @@ void SystemTwo::initializeInteraction() {
                 }
                 if(q2 == -1.){
                     vec2[0] = (std::sqrt(1./2.)*(-dipolemoment2));
-//                     vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
-                    vec2[1] = (std::sqrt(1./2.)*dipolemoment2);
+                    vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
+//                     vec2[1] = (std::sqrt(1./2.)*dipolemoment2);
                     vec2[2] = 0.;
                 }
                 else if(q2 == 1.){
                     vec2[0] = (std::sqrt(1./2.)*(dipolemoment2));
-//                     vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
-                    vec2[1] = (std::sqrt(1./2.)*dipolemoment2);
+                    vec2[1] = (std::sqrt(1./2.)*imagunit*dipolemoment2);
+//                     vec2[1] = (std::sqrt(1./2.)*dipolemoment2);
                     vec2[2] = (0.);
                 }
                 else if(q2 == 0.){
                     vec2[0] = 0.;
                     vec2[1] = 0.;
-                    vec2[2] = std::sqrt(1.)*dipolemoment2;
-                    
+                    vec2[2] = std::sqrt(1.)*dipolemoment2;                    
                 }
-                //Test 18.12.: use addTriplet with std::real(value) in order to obtain real Hamiltonian. => Programm kompiliert, weiter Segmentation Fault
-                //Test 18.12.: Reserve space for vectors.
-    //             int dimension = system1.getNumStates() * system2.getNumStates();
-    //             xxGTmatrix.reserve(dimension);
+                
                 double tolerance = 1e-16;
                 value = 0.;
                 
                 if(std::abs(vec1[0]*vec2[0])>tolerance){
                     value = std::real(vec1[0]*vec2[0]);
     //                 value = vec1[0]*vec2[0]*GT.tensor(0,0); // => Dann für jeden GT alles neu ausrechenn. Das ist zu langwierig. Dieser Schritt wird in andere Funktion ausgelagert.
-                    this->addTriplet(xxGTmatrix,r.idx,c.idx,value);
+                    this->addTriplet(dipoleTriplets["xx"],r.idx,c.idx,std::real(value));
                 }
                 
                 if(std::abs(vec1[1]*vec2[1])>tolerance){
                     value = std::real(vec1[1]*vec2[1]);
-                    this->addTriplet(yyGTmatrix,r.idx,c.idx,std::real(value));
+                    this->addTriplet(dipoleTriplets["yy"],r.idx,c.idx,std::real(value));
                 }
                 if(std::abs(vec1[2]*vec2[2])>tolerance){
                     value = std::real(vec1[2]*vec2[2]);
-                    this->addTriplet(zzGTmatrix,r.idx,c.idx,std::real(value));
+                    this->addTriplet(dipoleTriplets["zz"],r.idx,c.idx,std::real(value));
                 }
                 if(std::abs(vec1[0]*vec2[2])>tolerance){
                     value = std::real(vec1[0]*vec2[2]);
-                    this->addTriplet(xzGTmatrix,r.idx,c.idx,std::real(value));
+                    this->addTriplet(dipoleTriplets["xz"],r.idx,c.idx,std::real(value));
                 }
                 if(std::abs(vec1[2]*vec2[0])>tolerance){
                     value = std::real(vec1[2]*vec2[0]);
-                    this->addTriplet(zxGTmatrix,r.idx,c.idx,std::real(value));
+                    this->addTriplet(dipoleTriplets["zx"],r.idx,c.idx,std::real(value));
                 }
-                if(std::abs(value)>tolerance){
-                    counter++; 
-                    std::cout<<"counter = "<<counter<<std::endl;
-                    std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
-                    std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
-                }
-                else{
-                    notCounter++;
-                }
-                if((std::abs(value)<tolerance) && (std::abs(r.state.getL(0) - c.state.getL(0)) == 1 || std::abs(r.state.getL(1) - c.state.getL(1)) == 1) ){
-                    std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
-                    std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
-                }
-                if((std::abs(value)>tolerance) && (std::abs(r.state.getL(0) - c.state.getL(0)) != 1  || std::abs(r.state.getL(1) - c.state.getL(1)) != 1) ){
-                    std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
-                    std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
-                }
-                std::cout<<"notCounter = "<<notCounter<<std::endl;
+//                 if(std::abs(value)>tolerance){
+//                     counter++; 
+//                     std::cout<<"counter = "<<counter<<std::endl;
+//                     std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
+//                     std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
+//                 }
+//                 else{
+//                     notCounter++;
+//                 }
+//                 if((std::abs(value)<tolerance) && (std::abs(r.state.getL(0) - c.state.getL(0)) == 1 || std::abs(r.state.getL(1) - c.state.getL(1)) == 1) ){
+//                     std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
+//                     std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
+//                 }
+//                 if((std::abs(value)>tolerance) && (std::abs(r.state.getL(0) - c.state.getL(0)) != 1  || std::abs(r.state.getL(1) - c.state.getL(1)) != 1) ){
+//                     std::cout<<"r.getFirstState = "<<r.state.getFirstState()<<"\tc.getFirstState = "<<c.state.getFirstState()<<"\tdipolemoment1 = "<<dipolemoment1<<std::endl;                    
+//                     std::cout<<"r.getSecondState = "<<r.state.getSecondState()<<"\tc.getSecondState = "<<c.state.getSecondState()<<"\tdipolemoment2 = "<<dipolemoment2<<std::endl;
+//                 }
+//                 std::cout<<"notCounter = "<<notCounter<<std::endl;
             }
 
             else if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur
@@ -895,6 +887,18 @@ void SystemTwo::initializeInteraction() {
     ////////////////////////////////////////////////////////////////////
     /// Build and transform the interaction to the used basis //////////
     ////////////////////////////////////////////////////////////////////
+    if(GTbool){
+        //Go from xxGTtriplet to xxGTmatrix while switching from canonical to symmetric basis!
+        std::string component;
+        for(const auto &i : dipoleTriplets){
+            component = i.first;
+            dipoleMatrices[component].resize(states.size(), states.size());     
+            dipoleMatrices[component].setFromTriplets(i.second.begin(),i.second.end());
+            dipoleTriplets[component].clear();
+            dipoleMatrices[component] = basisvectors.adjoint() * dipoleMatrices[component].selfadjointView<Eigen::Lower>() * basisvectors;
+        }
+        //TODO check if this makes sense physically
+    }
 
     for (size_t i = 0; i < calculation_required.size(); ++i) {
         if (!calculation_required[i]) {
@@ -931,60 +935,29 @@ void SystemTwo::addInteraction() {
 
     // Check whether distance is larger than the minimal Le Roy radius
     this->checkDistance(distance);
+    this->checkDistance(std::sqrt(x*x + (zA-zB)*(zA-zB)));
 
     // Build the total Hamiltonian
     double angle_tolerance = 1e-14;
     double tolerance = 1e-16;
      if(GTbool){
-      //Ganz umständlich?:
-      GreenTensor GT(50.,1000.,1000.);
+      GreenTensor GT(0.,5.);
       
-//       int dimension = (states.size() + 1)/2;//?!?!?
-      int dimension = 0;
-      for(const auto &c: states){
-          if (c.state.isArtificial(0) || c.state.isArtificial(1)) {
-//             continue;
-          }
-          dimension +=1;
-        
-          
-    }
-//     dimension = 17;
-      eigen_sparse_t dummyhamiltonian(dimension,dimension);
-      std::cout<<"number of states = "<<system1.getNumStates() * system2.getNumStates()<<std::endl;
-//       std::cout<<"size of xx = "<<xxGTmatrix.size()<<"\tsize of yy = "<<yyGTmatrix.size()<<"\tsize of zz = "<<zzGTmatrix.size()<<std::endl;
-//       std::cout<<"size of xz = "<<xzGTmatrix.size()<<"\tsize of zx = "<<zxGTmatrix.size()<<std::endl;
       if(std::abs(GT.tensor(0,0))>tolerance){
-        dummyhamiltonian.setFromTriplets(xxGTmatrix.begin(),xxGTmatrix.end());
-        dummyhamiltonian = dummyhamiltonian*GT.tensor(0,0);
-        hamiltonian = dummyhamiltonian;
+        hamiltonian += dipoleMatrices["xx"]*std::real(GT.tensor(0,0));
       }
-      
       if(std::abs(GT.tensor(1,1))>tolerance){
-        dummyhamiltonian.setFromTriplets(yyGTmatrix.begin(),yyGTmatrix.end());
-        dummyhamiltonian = dummyhamiltonian*GT.tensor(1,1);
-        hamiltonian += dummyhamiltonian;
+        hamiltonian += dipoleMatrices["yy"]*std::real(GT.tensor(1,1));
       }
-      
       if(std::abs(GT.tensor(2,2))>tolerance){
-        dummyhamiltonian.setFromTriplets(zzGTmatrix.begin(),zzGTmatrix.end());
-        dummyhamiltonian = dummyhamiltonian*GT.tensor(2,2);
-        hamiltonian += dummyhamiltonian;
+        hamiltonian += dipoleMatrices["zz"]*std::real(GT.tensor(2,2));
       }
-      
       if(std::abs(GT.tensor(0,2))>tolerance){
-        dummyhamiltonian.setFromTriplets(xzGTmatrix.begin(),xzGTmatrix.end());
-        dummyhamiltonian = dummyhamiltonian*GT.tensor(0,2);
-        hamiltonian += dummyhamiltonian;
+        hamiltonian += dipoleMatrices["xz"]*std::real(GT.tensor(0,2));
       }
-      
       if(std::abs(GT.tensor(2,0))>tolerance){
-        dummyhamiltonian.setFromTriplets(zxGTmatrix.begin(),zxGTmatrix.end());
-        dummyhamiltonian = dummyhamiltonian*GT.tensor(2,0);
-        
-        hamiltonian += dummyhamiltonian;
+        hamiltonian += dipoleMatrices["zx"]*std::real(GT.tensor(2,0));
       }
-//       hamiltonian.prune(0.0,std::pow(10.,-10.));
     }
     
     else if (angle != 0) { // setAngle and setOrder take care that a non-zero angle cannot occur for
@@ -1005,8 +978,8 @@ void SystemTwo::addInteraction() {
         }
     }
     
-    std::cout<<"\tnumber of cols = "<<hamiltonian.cols()<<std::endl;
-    std::cout<<"\tnumber of nonzeros = "<<hamiltonian.nonZeros()<<std::endl;
+//     std::cout<<"\tnumber of cols = "<<hamiltonian.cols()<<std::endl;
+//     std::cout<<"\tnumber of nonzeros = "<<hamiltonian.nonZeros()<<std::endl;
 }
 
 ////////////////////////////////////////////////////////////////////
