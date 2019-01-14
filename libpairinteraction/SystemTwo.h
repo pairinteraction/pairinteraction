@@ -78,22 +78,9 @@ private:
     double zB;
     bool GTbool;
     double angle;
-    unsigned int ordermax;
+    unsigned int ordermax;    
     
-//     std::vector<eigen_triplet_complex_t> xxGTmatrix;
-//     std::vector<eigen_triplet_complex_t> yyGTmatrix;
-//     std::vector<eigen_triplet_complex_t> zzGTmatrix;
-//     std::vector<eigen_triplet_complex_t> xzGTmatrix;
-//     std::vector<eigen_triplet_complex_t> zxGTmatrix;
-    
-    std::vector<eigen_triplet_t> xxGTtriplet;
-    std::vector<eigen_triplet_t> yyGTtriplet;
-    std::vector<eigen_triplet_t> zzGTtriplet;
-    std::vector<eigen_triplet_t> xzGTtriplet;
-    std::vector<eigen_triplet_t> zxGTtriplet;
-    
-    std::unordered_map<std::string, std::vector<eigen_triplet_t> > dipoleTriplets;
-    std::unordered_map<std::string, eigen_sparse_t > dipoleMatrices;
+    std::unordered_map<std::string, eigen_sparse_t > dipoleMatrices; //Dipole matrices for GreenTensor method
     
 
     parity_t sym_permutation;
@@ -113,9 +100,11 @@ private:
                          std::vector<eigen_triplet_t> &basisvectors_triplets,
                          std::vector<double> &sqnorm_list);
 
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
-                    scalar_t val);
-    void addTripletC(std::vector<eigen_triplet_complex_t> &triplets, size_t r_idx, size_t c_idx, std::complex<double> val);
+    template <typename T>
+    void addTriplet(std::vector<Eigen::Triplet<T> > &triplets, size_t r_idx, size_t c_idx,
+                    T val) {
+            triplets.emplace_back(r_idx, c_idx, val);
+    }
 
     template <class T>
     void addRotated(const StateTwo &state, const size_t &idx,

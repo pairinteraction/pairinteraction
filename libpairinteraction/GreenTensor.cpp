@@ -20,10 +20,10 @@ void GreenTensor::vacuum(double x, double z) {
     double distance = std::sqrt(x * x + z * z);
     double Kdelta;
     double vecrho[3];
-    z = std::abs(z);
-    vecrho[0] = x / (distance * distance);
+//     z = std::abs(z);
+    vecrho[0] = x / (distance);
     vecrho[1] = 0.;
-    vecrho[2] = z / (distance * distance);
+    vecrho[2] = z / (distance);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             Kdelta = 0.;

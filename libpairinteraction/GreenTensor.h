@@ -34,7 +34,7 @@
 class GreenTensor {
 
 public:
-    Eigen::Matrix<std::complex<double>, 3, 3> tensor;
+    Eigen::Matrix<double, 3, 3> tensor;
 
     void vacuum(double x, double z);
     void plate(double x, double zA, double zB);
