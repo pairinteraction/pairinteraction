@@ -36,11 +36,13 @@ void GreenTensor::vacuum(double x, double z) {
 }
 
 void GreenTensor::vacuumDipoleQuadrupole(double x, double z){
-    
+    (void)x;
+    (void)z;
 }
 
 void GreenTensor::vacuumQuadrupoleDipole(double x, double z){
-    
+    (void)x;
+    (void)z;
 }
 
 //Python code (bad):

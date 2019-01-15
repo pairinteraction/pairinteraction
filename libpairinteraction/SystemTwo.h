@@ -21,13 +21,13 @@
 #include "SystemBase.h"
 #include "SystemOne.h"
 
+#include <Eigen/Sparse>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <cmath>
 #include <set>
 #include <type_traits>
-#include <Eigen/Sparse>
 
 class SystemTwo : public SystemBase<StateTwo> {
 public:
@@ -68,23 +68,22 @@ private:
 
     std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
     std::unordered_map<int, eigen_sparse_t> interaction_multipole;
+    std::unordered_map<int, eigen_sparse_t> interaction_greentensor;
 
     double minimal_le_roy_radius;
     double distance;
     bool GTbool;
     double surface_distance;
     double angle;
-    unsigned int ordermax;    
-    
-    std::unordered_map<std::string, eigen_sparse_t > dipoleMatrices; //Dipole matrices for GreenTensor method
-    
+    unsigned int ordermax;
 
     parity_t sym_permutation;
     parity_t sym_inversion;
     parity_t sym_reflection;
     std::set<int> sym_rotation;
 
-    std::array<double, 4> angle_terms;
+    std::unordered_map<int, double> angle_terms;
+    std::unordered_map<int, double> greentensor_terms;
 
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
@@ -97,9 +96,8 @@ private:
                          std::vector<double> &sqnorm_list);
 
     template <typename T>
-    void addTriplet(std::vector<Eigen::Triplet<T> > &triplets, size_t r_idx, size_t c_idx,
-                    T val) {
-            triplets.emplace_back(r_idx, c_idx, val);
+    void addTriplet(std::vector<Eigen::Triplet<T>> &triplets, size_t r_idx, size_t c_idx, T val) {
+        triplets.emplace_back(r_idx, c_idx, val);
     }
 
     template <class T>
@@ -166,9 +164,10 @@ private:
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar &species &system1 &system2;
-        ar &distance &angle &surface_distance &ordermax &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
-        ar &angle_terms; //TODO include GreenTensor, dipoleMatrices
-        ar &interaction_angulardipole &interaction_multipole;
+        ar &distance &angle &surface_distance &ordermax;
+        ar &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
+        ar &angle_terms &greentensor_terms;
+        ar &interaction_angulardipole &interaction_multipole &interaction_greentensor;
     }
 };
 

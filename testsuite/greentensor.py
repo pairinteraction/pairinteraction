@@ -64,7 +64,7 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setConservedMomentaUnderRotation([int(np.sum(self.state_two.getM()))])
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setDistance(2)
-        system_two.setOrder(4) # TODO the error message "A non-zero interaction angle can be directly used only for dipole-dipole interaction" is no longer correct if the Green tensor approach is applied
+        system_two.setOrder(4)
 
         # Construct the Hamiltonian using the standard approach
         system_two_standard = pi.SystemTwo(system_two)
@@ -82,10 +82,12 @@ class GreenTensorTest(unittest.TestCase):
         hamiltonian_greentensor.data *= (abs(hamiltonian_greentensor).data > 1e-6)
         hamiltonian_greentensor.eliminate_zeros()
 
-        """# Compare Hamiltonians
-        np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)"""
+        # Compare Hamiltonians
+        # TODO np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)
 
     def test_greentensor_surface(self):
+        com_distance_to_surface = 3
+        
         # Build one-atom system
         system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
@@ -97,15 +99,15 @@ class GreenTensorTest(unittest.TestCase):
         system_two.restrictEnergy(self.state_two.getEnergy() - 2, self.state_two.getEnergy() + 2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(5)
-        """system_two.setAngle(1.78)
-        system_two.setSurface(distance_to_atom_one)
-        system_two.setGTbool(True) # TODO enableGreenTensor, enableDiamagnetism
+        system_two.setAngle(1.78)
+        system_two.setSurfaceDistance(com_distance_to_surface)
+        system_two.setGTbool(True)
         
         # Construct the Hamiltonian
-        hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
+        hamiltonian_greentensor = system_two.getHamiltonian()
 
         # Compare the results against literature
-        # TODO"""
+        # TODO
 
 
 if __name__ == '__main__':
