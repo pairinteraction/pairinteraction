@@ -30,14 +30,14 @@
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
     : SystemBase(cache), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1), system2(b2),
       minimal_le_roy_radius(std::numeric_limits<double>::max()),
-      distance(std::numeric_limits<double>::max()), x(10.), zA(5.), zB(5.), GTbool(false), angle(0), ordermax(3), sym_permutation(NA),
+      distance(std::numeric_limits<double>::max()), GTbool(false), surface_distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA),
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
                      bool memory_saving)
     : SystemBase(cache, memory_saving), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1),
       system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
-      distance(std::numeric_limits<double>::max()), x(10.), zA(5.), zB(5.), GTbool(false), angle(0), ordermax(3), sym_permutation(NA),
+      distance(std::numeric_limits<double>::max()), GTbool(false), surface_distance(std::numeric_limits<double>::max()), angle(0), ordermax(3), sym_permutation(NA),
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 std::vector<StateOne>
@@ -67,22 +67,14 @@ void SystemTwo::setDistance(double d) {
     distance = d;
 }
 
-void SystemTwo::setDistanceX(double xAB) {
-    this->onParameterChange();
-    x = xAB;
-}
-
-void SystemTwo::setDistanceZA(double za) {
-    this->onParameterChange();
-    zA = za;
-}
-void SystemTwo::setDistanceZB(double zb) {
-    this->onParameterChange();
-    zB = zb;
-}
 void SystemTwo::setGTbool(bool GTboolean) {
     this->onParameterChange();
     GTbool = GTboolean;
+}
+
+void SystemTwo::setSurfaceDistance(double d) {
+    this->onParameterChange();
+    surface_distance = d;
 }
 
 void SystemTwo::setAngle(double a) {
@@ -921,15 +913,21 @@ void SystemTwo::addInteraction() {
 
     // Check whether distance is larger than the minimal Le Roy radius
     this->checkDistance(distance);
-    this->checkDistance(std::sqrt(x*x + (zA-zB)*(zA-zB)));
-
     // Build the total Hamiltonian
     double angle_tolerance = 1e-14;
     double tolerance = 1e-16;
      if(GTbool){
-      double GTx = distance*std::sin(angle);
-      double GTz = distance*std::cos(angle);
-      GreenTensor GT(GTx,GTz);
+      double x = distance*std::sin(angle);
+      double z = distance*std::cos(angle);
+      GreenTensor GT(x,z);
+      if(surface_distance!=std::numeric_limits<double>::max()){
+        double zA = surface_distance - z/2.;  
+        double zB = surface_distance + z/2.;
+        GT.plate(x,zA,zB);
+      }
+    //       double GTx = distance*std::sin(angle);
+//       double GTz = distance*std::cos(angle);
+      
 //       std::cout<<"GT.tensor = "<<GT.tensor*std::pow(distance,3.)<<std::endl;
       if(std::abs(GT.tensor(0,0))>tolerance){
         hamiltonian += dipoleMatrices["xx"]*std::real(GT.tensor(0,0));

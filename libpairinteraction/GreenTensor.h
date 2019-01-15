@@ -35,8 +35,13 @@ class GreenTensor {
 
 public:
     Eigen::Matrix<double, 3, 3> tensor;
+    Eigen::Matrix<double, 3, 3, 3> qd_tensor;
+    Eigen::Matrix<double, 3, 3, 3> dq_tensor;
+    Eigen::Matrix<double, 3, 3, 3, 3> qq_tensor;
 
     void vacuum(double x, double z);
+    void vacuumQuadrupoleDipole(double x, double z);
+    void vacuumDipoleQuadrupole(double x, double z); //TODO can these two functions become one? TODO or better: create vacuum(x,z,order), 
     void plate(double x, double zA, double zB);
 
     GreenTensor(double x, double z);

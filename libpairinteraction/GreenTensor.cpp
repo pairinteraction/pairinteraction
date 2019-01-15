@@ -35,6 +35,18 @@ void GreenTensor::vacuum(double x, double z) {
     }
 }
 
+void GreenTensor::vacuumDipoleQuadrupole(double x, double z){
+    
+}
+
+void GreenTensor::vacuumQuadrupoleDipole(double x, double z){
+    
+}
+
+//Python code (bad):
+// def freiraummatrixqd(rho):
+//     return np.array((3./rho**4)*np.tensordot(irv,np.eye(3),axes=0) - (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) + (3./rho**3)*np.tensordot(Amatrix,irv,axes=0) + (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
+
 void GreenTensor::plate(double x, double zA, double zB) {
     if (zA < 0. || zB < 0.) {
         std::cout << "error! z<0" << std::endl;
@@ -47,6 +59,8 @@ void GreenTensor::plate(double x, double zA, double zB) {
     tensor(2, 0) += (-3. * x * zp / (rp * rp)) * std::pow(rp, -3.);
     tensor(2, 2) += (2. - 3. * x * x / (rp * rp)) * std::pow(rp, -3.);
 }
+
+
 GreenTensor::GreenTensor(double x, double z) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {

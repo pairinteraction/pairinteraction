@@ -39,10 +39,8 @@ public:
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
-    void setDistanceX(double xab);
-    void setDistanceZA(double za);
-    void setDistanceZB(double zb);
     void setGTbool(bool GTboolean);
+    void setSurfaceDistance(double d);
     void setAngle(double a);
     void setOrder(double o);
 
@@ -73,10 +71,8 @@ private:
 
     double minimal_le_roy_radius;
     double distance;
-    double x;
-    double zA;
-    double zB;
     bool GTbool;
+    double surface_distance;
     double angle;
     unsigned int ordermax;    
     
@@ -170,8 +166,8 @@ private:
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar &species &system1 &system2;
-        ar &distance &angle &ordermax &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
-        ar &angle_terms;
+        ar &distance &angle &surface_distance &ordermax &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
+        ar &angle_terms; //TODO include GreenTensor, dipoleMatrices
         ar &interaction_angulardipole &interaction_multipole;
     }
 };
