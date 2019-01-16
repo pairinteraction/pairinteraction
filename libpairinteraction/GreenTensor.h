@@ -18,6 +18,7 @@
 #define GREENTENSOR_H
 
 #include <Eigen/Sparse>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <cmath>
 #include <complex>
 #include <cstdlib>
@@ -33,19 +34,35 @@
 
 class GreenTensor {
 
-public:
-    Eigen::Matrix<double, 3, 3> tensor;
-    Eigen::Matrix<double, 3, 3, 3> qd_tensor;
-    Eigen::Matrix<double, 3, 3, 3> dq_tensor;
-    Eigen::Matrix<double, 3, 3, 3, 3> qq_tensor;
-
-    void vacuum(double x, double z);
+public:    
+//     Eigen::Tensor<double, 3> dq_tensor(3,3,3);
+//     Eigen::Tensor<double, 4> qq_tensor(3,3,3,3);
+   
+       
     void vacuumQuadrupoleDipole(double x, double z);
-    void vacuumDipoleQuadrupole(double x, double z); //TODO can these two functions become one? TODO or better: create vacuum(x,z,order), 
+    void vacuumDipoleQuadrupole(double x, double z); //TODO can these two functions become one? TODO or better: create vacuum(x,z,order),     
+    void addSurface(double d);
+    GreenTensor(double a, double b);
+//     GreenTensor(double x, double zA, double zB);
+    const Eigen::Matrix<double, 3, 3> &getDDTensor();
+private:    
+    double x;
+    double z;
+    double angle;
+    double zA;
+    double zB;
+    
+    bool dd_tensor_calculated;
+    bool dq_tensor_calculated;
+    double surface_distance;
+    
+    double KDelta(int i, int j); 
+    void vacuum(double x, double z);
     void plate(double x, double zA, double zB);
-
-    GreenTensor(double x, double z);
-    GreenTensor(double x, double zA, double zB);
+    
+    Eigen::Matrix<double, 3, 3> dd_tensor;
+//     Eigen::Tensor<double, 3> qd_tensor;
+    
 };
 
 #endif

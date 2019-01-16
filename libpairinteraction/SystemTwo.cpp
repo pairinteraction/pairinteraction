@@ -600,17 +600,15 @@ void SystemTwo::initializeInteraction() {
         double z = distance * std::cos(angle);
         GreenTensor GT(x, z);
         if (surface_distance != std::numeric_limits<double>::max()) {
-            double zA = surface_distance - z / 2.;
-            double zB = surface_distance + z / 2.;
-            GT.plate(x, zA, zB);
+            GT.addSurface(surface_distance);
         }
-
+        const auto &dd_green_tensor = GT.getDDTensor();
         // Determine which interaction matrices have to be calculated
         greentensor_terms.clear();
         for (int i1 = 0; i1 < 3; ++i1) {
             for (int i2 = 0; i2 < 3; ++i2) {
-                if (std::abs(GT.tensor(i1, i2)) > tolerance) {
-                    greentensor_terms[3 * i2 + i1] = GT.tensor(i1, i2);
+                if (std::abs(dd_green_tensor(i1, i2)) > tolerance) {
+                    greentensor_terms[3 * i2 + i1] = dd_green_tensor(i1, i2);
                     interaction_greentensor_keys.push_back(3 * i2 + i1);
                 }
             }
