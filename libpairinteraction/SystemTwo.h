@@ -39,7 +39,7 @@ public:
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
     void setDistance(double d);
-    void setGTbool(bool GTboolean);
+    void enableGreenTensor(bool GTboolean);
     void setSurfaceDistance(double d);
     void setAngle(double a);
     void setOrder(double o);

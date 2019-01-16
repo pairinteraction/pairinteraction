@@ -69,14 +69,21 @@ void SystemTwo::setDistance(double d) {
     distance = d;
 }
 
-void SystemTwo::setGTbool(bool GTboolean) {
+void SystemTwo::enableGreenTensor(bool GTboolean) {
     this->onParameterChange();
     GTbool = GTboolean;
+    if (!GTbool && surface_distance != std::numeric_limits<double>::max()) {
+        throw std::runtime_error("If there is interaction with a surface, the Green tensor "
+                                 "approach must not be disabled.");
+    }
 }
 
 void SystemTwo::setSurfaceDistance(double d) {
     this->onParameterChange();
     surface_distance = d;
+    if (surface_distance != std::numeric_limits<double>::max()) {
+        this->enableGreenTensor(true);
+    }
 }
 
 void SystemTwo::setAngle(double a) {
@@ -763,7 +770,7 @@ void SystemTwo::initializeInteraction() {
                             vec2_entry = 1 / std::sqrt(2.) *
                                 cache.getElectricDipole(r.state.getSecondState(),
                                                         c.state.getSecondState());
-                            vec1_entry *= (q2 == 1) ? -1 : 1;
+                            vec2_entry *= (q2 == 1) ? -1 : 1;
                         } else if (i2 == 1 && std::abs(q2) == 1) { // Calculate y-entry
                             vec2_entry = 1 / std::sqrt(2.) *
                                 cache.getElectricDipole(r.state.getSecondState(),

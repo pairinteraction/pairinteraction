@@ -52,7 +52,7 @@ public:
                    std::array<double, 3> to_y_axis);
     void setEfield(std::array<double, 3> field, double alpha, double beta, double gamma);
     void setBfield(std::array<double, 3> field, double alpha, double beta, double gamma);
-    void setDiamagnetism(bool enable);
+    void enableDiamagnetism(bool enable);
 
     void setConservedParityUnderReflection(parity_t parity);
     void setConservedMomentaUnderRotation(const std::set<float> &momenta);

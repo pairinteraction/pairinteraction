@@ -85,7 +85,7 @@ void SystemOne::setBfield(std::array<double, 3> field, double alpha, double beta
     this->setBfield(field);
 }
 
-void SystemOne::setDiamagnetism(bool enable) {
+void SystemOne::enableDiamagnetism(bool enable) {
     this->onParameterChange();
     diamagnetism = enable;
 }

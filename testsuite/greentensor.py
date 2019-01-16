@@ -34,12 +34,12 @@ class GreenTensorTest(unittest.TestCase):
 
         # Construct the Hamiltonian using the standard approach
         system_two_standard = pi.SystemTwo(system_two)
-        system_two_standard.setGTbool(False)
+        system_two_standard.enableGreenTensor(False)
         hamiltonian_standard = system_two_standard.getHamiltonian()
 
         # Construct the Hamiltonian using the green tensor approach
         system_two_greentensor = pi.SystemTwo(system_two)
-        system_two_greentensor.setGTbool(True)
+        system_two_greentensor.enableGreenTensor(True)
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
         # Prune Hamiltonians (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
@@ -68,12 +68,12 @@ class GreenTensorTest(unittest.TestCase):
 
         # Construct the Hamiltonian using the standard approach
         system_two_standard = pi.SystemTwo(system_two)
-        system_two_standard.setGTbool(False)
+        system_two_standard.enableGreenTensor(False)
         hamiltonian_standard = system_two_standard.getHamiltonian()
 
         # Construct the Hamiltonian using the green tensor approach
         system_two_greentensor = pi.SystemTwo(system_two)
-        system_two_greentensor.setGTbool(True)
+        system_two_greentensor.enableGreenTensor(True)
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
         # Prune Hamiltonians (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
@@ -101,7 +101,7 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setDistance(5)
         system_two.setAngle(1.78)
         system_two.setSurfaceDistance(com_distance_to_surface)
-        system_two.setGTbool(True)
+        system_two.enableGreenTensor(True)
         
         # Construct the Hamiltonian
         hamiltonian_greentensor = system_two.getHamiltonian()
