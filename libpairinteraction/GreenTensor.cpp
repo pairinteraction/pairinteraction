@@ -55,11 +55,11 @@ void GreenTensor::plate(double x, double zA, double zB) {
     }
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
-    tensor(0, 0) += (1. - (3. * x * x) / (rp * rp)) * std::pow(rp, -3.);
-    tensor(0, 2) += ((3. * x * zp) / (rp * rp)) * std::pow(rp, -3.);
-    tensor(1, 1) += 1. * std::pow(rp, -3.);
-    tensor(2, 0) += (-3. * x * zp / (rp * rp)) * std::pow(rp, -3.);
-    tensor(2, 2) += (2. - 3. * x * x / (rp * rp)) * std::pow(rp, -3.);
+    tensor(0, 0) -= (1. - (3. * x * x) / (rp * rp)) * std::pow(rp, -3.);
+    tensor(0, 2) -= ((3. * x * zp) / (rp * rp)) * std::pow(rp, -3.);
+    tensor(1, 1) -= 1. * std::pow(rp, -3.);
+    tensor(2, 0) -= (-3. * x * zp / (rp * rp)) * std::pow(rp, -3.);
+    tensor(2, 2) -= (2. - 3. * x * x / (rp * rp)) * std::pow(rp, -3.);
 }
 
 
