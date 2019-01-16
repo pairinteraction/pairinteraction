@@ -80,9 +80,9 @@ void GreenTensor::vacuumQuadrupoleDipole(double x, double z){
 //     return np.array((3./rho**4)*np.tensordot(irv,np.eye(3),axes=0) - (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) + (3./rho**3)*np.tensordot(Amatrix,irv,axes=0) + (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
 
 void GreenTensor::plate(double x, double zA, double zB) {
-    if (zA <= 0. || zB <= 0.) {
+    if (zA < 0 || zB < 0) {
         throw std::runtime_error(
-                "zA or zB <= 0. One of the atoms is inside the plate. Plate is half-space z <= 0.");
+                "zA or zB < 0. One of the atoms is inside the plate. Plate is half-space z < 0.");
     }
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
