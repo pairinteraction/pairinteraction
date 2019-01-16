@@ -87,10 +87,10 @@ class GreenTensorTest(unittest.TestCase):
 
     def test_greentensor_surface(self):
         interatomic_distance = 20
-        distance_to_surface = np.array([0.4, 0.6, 0.8])*interatomic_distance # center of mass distance
+        distance_to_surface = np.array([2.65/6, 5.29/6, 7.9/6])*interatomic_distance # center of mass distance
         state_one1 = pi.StateOne("Rb", 69, 0, 0.5, 0.5)
         state_one2 = pi.StateOne("Rb", 72, 0, 0.5, 0.5)
-        
+    
         # Set up pair state
         state_two = pi.StateTwo(state_one1, state_one2)
 
@@ -116,22 +116,21 @@ class GreenTensorTest(unittest.TestCase):
         
         system_two.setSurfaceDistance(distance_to_surface[0])
         system_two.diagonalize()
-        C6_04 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
+        C6_1 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
         
         system_two.setSurfaceDistance(distance_to_surface[1])
         system_two.diagonalize()
-        C6_06 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
+        C6_2 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
         
         system_two.setSurfaceDistance(distance_to_surface[2])
         system_two.diagonalize()
-        C6_08 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
+        C6_3 = (system_two.getHamiltonian().diagonal()[system_two.getBasisvectorIndex(state_two)]-state_two.getEnergy())*interatomic_distance**6
 
         # Compare the results against literature
-        np.testing.assert_allclose(C6_freespace, -670, atol=10)
-        #TODO np.testing.assert_allclose(C6_04, TODO, atol=10)
-        #TODO np.testing.assert_allclose(C6_06, TODO, atol=10)
-        #TODO np.testing.assert_allclose(C6_08, TODO, atol=10)
-
+        np.testing.assert_allclose(C6_freespace, -670, atol=2)
+        np.testing.assert_allclose(C6_1, -455, atol=50)
+        np.testing.assert_allclose(C6_2, -600, atol=50)
+        np.testing.assert_allclose(C6_3, -622, atol=50)
 
 if __name__ == '__main__':
     unittest.main()
