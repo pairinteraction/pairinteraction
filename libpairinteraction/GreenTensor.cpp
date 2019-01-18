@@ -39,45 +39,57 @@ void GreenTensor::vacuum(double x, double z) {
     }
 }
 
+
 void GreenTensor::vacuumDipoleQuadrupole(double x, double z){
-    (void)x;
-    (void)z;
+    double distance = std::sqrt(x * x + z * z);
+    double vecrho[3];
+    vecrho[0] = x / (distance);
+    vecrho[1] = 0.;
+    vecrho[2] = z / (distance);
+    Eigen::Matrix<double, 3, 3> Amatrix;
+    Amatrix << z*z, 0, -x*z,
+               0, distance*distance, 0,
+               -x*z, 0, z*z;
+    Amatrix /= distance*distance;
+    for(int i = 0; i<3; i++){
+        for(int j = 0; j<3; j++){
+            for(int k = 0; k<3; k++){
+                qd_tensor(i,j,k) = 3./std::pow(distance, 4.)*(vecrho[i]*KDelta(j,k) - 3.*vecrho[i]*vecrho[j]*vecrho[k]) + 3./std::pow(distance,3.)*(Amatrix(i,j)*vecrho[k]  + Amatrix(i,k)*vecrho[j]) ;
+                
+                dq_tensor(i,j,k) = -3./std::pow(distance, 4.) * (vecrho[i]*KDelta(j,k) + 3.*vecrho[i]*vecrho[j]*vecrho[k]) + 3./std::pow(distance,3.)*(Amatrix(i,j)*vecrho[k] + Amatrix(i,k)*vecrho[j]);
+            }
+        }
+    }
 }
 
-void GreenTensor::vacuumQuadrupoleDipole(double x, double z){
-    (void)x;
-    (void)z;
+void GreenTensor::plateDipoleQuadrupole(double x, double zA, double zB) {
+    double zp = zA + zB;
+    double rp = std::sqrt(x*x + zp*zp);
+    //add something to Eigen/Tensor via << operator?
+    //TODO Check for additional 4*pi -> necessary or not? TODO Check sign!
+    qd_tensor(0,0,0) -= (-6.*x*x*x + 9.*x*zp*zp)/std::pow(rp,7.);
+    qd_tensor(0,0,2) -= (12.*x*x*zp - 3.*zp*zp*zp)/std::pow(rp,7.);
+    qd_tensor(0,1,1) -= (3.*x*x*x + 3.*x*zp*zp)/std::pow(rp,7.);
+    qd_tensor(0,2,0) -= (-12.*x*x*zp + 3.*zp*zp*zp)/std::pow(rp,7.);
+    qd_tensor(0,2,2) -= (-3.*x*x*x + 12.*x*zp*zp)/std::pow(rp,7.);
+    qd_tensor(2,0,0) -= (-12.*x*x*zp + 3.*zp*zp*zp)/std::pow(rp,7.);
+    qd_tensor(2,0,2) -= (-3.*x*x*x + 12.*x*zp*zp)/std::pow(rp,7.);
+    qd_tensor(2,1,1) -= (3.*zp*rp*rp)/std::pow(rp,7.);
+    qd_tensor(2,2,0) -= (3.*x*x*x - 12.*x*zp*zp)/std::pow(rp,7.);
+    qd_tensor(2,2,2) -= (-9.*x*x*zp + zp*zp*zp)/std::pow(rp,7.);
+    
+    dq_tensor(0,0,0) -= (6.*x*x*x - 9.*x*zp*zp)/std::pow(rp,7.);
+    dq_tensor(0,0,2) -= (-12.*x*x*zp + 3.*zp*zp*zp)/std::pow(rp,7.);
+    dq_tensor(0,2,0) -= (12.*x*x*zp - 3.*zp*zp*zp)/std::pow(rp,7.);
+    dq_tensor(0,2,2) -= (-3.*x*x*x + 12.*x*zp*zp)/std::pow(rp,7.);
+    dq_tensor(1,1,0) -= (-3.*x*x*x + -3.*x*zp*zp)/std::pow(rp,7.);
+    dq_tensor(1,1,2) -= (3.*zp*rp*rp)/std::pow(rp,7.);
+    dq_tensor(2,0,0) -= (12.*x*x*zp - 3.*zp*zp*zp)/std::pow(rp,7.);
+    dq_tensor(2,0,2) -= (3.*x*x*x - 12.*x*zp*zp)/std::pow(rp,7.); //TODO check this element, probably wrong in old code (3*x*x - 12 *x*zp*zp)
+    dq_tensor(2,2,0) -= (-3.*x*x*x + 12*x*zp*zp)/std::pow(rp,7.);
+    dq_tensor(2,2,2) -= (-9.*x*zp*zp + zp*zp*zp)/std::pow(rp,7.);
+    
 }
-
-
-
-// void GreenTensor::vacuumQuadrupoleDipole(double x, double z){
-//     double distance = std::sqrt(x * x + z * z);
-//     double vecrho[3];
-//     vecrho[0] = x / (distance);
-//     vecrho[1] = 0.;
-//     vecrho[2] = z / (distance);
-//     Eigen::Matrix<double, 3, 3> Amatrix;
-//     Amatrix << z*z, 0, -x*z,
-//                0, distance*distance, 0,
-//                -x*z, 0, z*z;
-//     Amatrix /= distance*distance;
-//     for(int i = 0; i<3; i++){
-//         for(int j = 0; j<3; j++){
-//             for(int k = 0; k<3; k++){
-//                 qd_tensor(i,j,k) = 3./std::pow(distance, 4.) * vecrho[i]*KDelta(j,k) - 9./std::pow(distance,4.)*vecrho[i]*vecrho[j]*vecrho[k] + 3./std::pow(distance,3.)*(Amatrix(i,j)*vecrho[k]  + Amatrix(i,k)*vecrho[j]) ;
-//             }
-//         }
-//     }
-// }
-
-// Amatrix = np.array([[ry*ry+rz*rz,-rx*ry,-rx*rz],[-rx*ry,rx*rx+rz*rz,-ry*rz],[-rx*rz,-ry*rz,rx*rx+ry*ry]])/(rx*rx+ry*ry+rz*rz)**(3/2)
-// Amatrix = np.array([[rz*rz,0,-rx*rz],[0,rx*rx+rz*rz,0],[-rx*rz,0,rx*rx]])/distance**3
-
-//old Python code:
-// irv = identityrvector -> normierter r vector.
-// def freiraummatrixqd(rho):
-//     return np.array((3./rho**4)*np.tensordot(irv,np.eye(3),axes=0) - (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) + (3./rho**3)*np.tensordot(Amatrix,irv,axes=0) + (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
 
 void GreenTensor::plate(double x, double zA, double zB) {
     if (zA < 0 || zB < 0) {
