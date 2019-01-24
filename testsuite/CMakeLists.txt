@@ -33,6 +33,7 @@ endfunction(PYTHON_TEST)
 add_dependencies(check _pireal _picomplex)
 
 # Add Python test cases
+python_test(TARGET feast SOURCE feast.py)
 python_test(TARGET rotation SOURCE rotation.py)
 python_test(TARGET cache SOURCE cache.py)
 python_test(TARGET perturbation SOURCE perturbation.py)
