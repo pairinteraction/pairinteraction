@@ -11,9 +11,12 @@ class IntegrationTest(unittest.TestCase):
 
     def setUp(self):
         self.dump_new_reference_data = False
+        self.tolerance = 1e-6
+
         # Set up cache
         self.cache_path = tempfile.mkdtemp()
         self.cache = pi.MatrixElementCache(self.cache_path)
+
         # Setup states
         self.state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
         self.state_two = pi.StateTwo(self.state_one, self.state_one)
@@ -52,9 +55,9 @@ class IntegrationTest(unittest.TestCase):
         basis_one = system_one.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_one.data *= (abs(hamiltonian_one).data > 1e-6)
+        hamiltonian_one.data *= (abs(hamiltonian_one).data > self.tolerance)
         hamiltonian_one.eliminate_zeros()
-        basis_one.data *= (abs(basis_one).data > 1e-6)
+        basis_one.data *= (abs(basis_one).data > self.tolerance)
         basis_one.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -66,10 +69,10 @@ class IntegrationTest(unittest.TestCase):
                     f)
                 np.testing.assert_allclose(hamiltonian_one.A,
                                            hamiltonian_one_reference.A,
-                                           rtol=1e-6)
+                                           rtol=self.tolerance)
                 np.testing.assert_allclose(basis_one.A,
                                            basis_one_reference.A,
-                                           rtol=1e-9)
+                                           rtol=self.tolerance)
 
         # Diagonalize one-atom system
         system_one.diagonalize()
@@ -102,9 +105,9 @@ class IntegrationTest(unittest.TestCase):
         basis_two = system_two.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_two.data *= (abs(hamiltonian_two).data > 1e-6)
+        hamiltonian_two.data *= (abs(hamiltonian_two).data > self.tolerance)
         hamiltonian_two.eliminate_zeros()
-        basis_two.data *= (abs(basis_two).data > 1e-6)
+        basis_two.data *= (abs(basis_two).data > self.tolerance)
         basis_two.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -116,10 +119,10 @@ class IntegrationTest(unittest.TestCase):
                     f)
                 np.testing.assert_allclose(hamiltonian_two.A,
                                            hamiltonian_two_reference.A,
-                                           rtol=1e-6)
+                                           rtol=self.tolerance)
                 np.testing.assert_allclose(basis_two.A,
                                            basis_two_reference.A,
-                                           rtol=1e-9)
+                                           rtol=self.tolerance)
 
         # Diagonalize two-atom system
         system_two.diagonalize()

@@ -53,6 +53,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 {
 
     constexpr bool dump_new_reference_data = false;
+    constexpr double tolerance = 1e-6;
 
     ////////////////////////////////////////////////////////////////////
     /// Preparations ///////////////////////////////////////////////////
@@ -104,9 +105,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_one - hamiltonian_one_reference)
-                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
+                   .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
+                                         // might be infinity due to division by
+                                         // zero
                    .cwiseQuotient(hamiltonian_one.cwiseMin(hamiltonian_one_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -114,19 +115,19 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
-        BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
+        BOOST_CHECK_SMALL(max_diff_hamiltonian, tolerance);
 
         diff = (basis_one - basis_one_reference)
-                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
+                   .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
+                                         // might be infinity due to division by
+                                         // zero
                    .cwiseQuotient(basis_one.cwiseMin(basis_one_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
-        BOOST_CHECK_SMALL(max_diff_basis, 1e-9);
+        BOOST_CHECK_SMALL(max_diff_basis, tolerance);
     }
 
     // Diagonalize one-atom system
@@ -165,9 +166,9 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_two - hamiltonian_two_reference)
-                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
+                   .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
+                                         // might be infinity due to division by
+                                         // zero
                    .cwiseQuotient(hamiltonian_two.cwiseMin(hamiltonian_two_reference))
                    .cwiseAbs();
         max_diff_hamiltonian =
@@ -175,19 +176,19 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
-        BOOST_CHECK_SMALL(max_diff_hamiltonian, 1e-6);
+        BOOST_CHECK_SMALL(max_diff_hamiltonian, tolerance);
 
         diff = (basis_two - basis_two_reference)
-                   .pruned(1e-16, 1) // without pruning, max_diff_hamiltonian
-                                     // might be infinity due to division by
-                                     // zero
+                   .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
+                                         // might be infinity due to division by
+                                         // zero
                    .cwiseQuotient(basis_two.cwiseMin(basis_two_reference))
                    .cwiseAbs();
         max_diff_basis = *std::max_element(diff.valuePtr(), diff.valuePtr() + diff.nonZeros());
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
-        BOOST_CHECK_SMALL(max_diff_basis, 1e-9);
+        BOOST_CHECK_SMALL(max_diff_basis, tolerance);
     }
 
     // Diagonalize two-atom system

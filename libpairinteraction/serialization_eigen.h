@@ -24,8 +24,7 @@ namespace serialization {
 
 template <class Archive, typename _Scalar, int _Options, typename _Index>
 void serialize(Archive &ar, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
-               const unsigned int version) {
-    (void)version;
+               const unsigned int /*version*/) {
 
     _Index innerSize;
     _Index outerSize;
@@ -51,7 +50,7 @@ void serialize(Archive &ar, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
     }
 
     ar &make_array(m.innerIndexPtr(), valuesSize);
-    ar &make_array(m.outerIndexPtr(), outerSize);
+    ar &make_array(m.outerIndexPtr(), outerSize + 1);
     ar &make_array(m.valuePtr(), valuesSize);
 
     if (Archive::is_loading::value) {
@@ -62,8 +61,7 @@ void serialize(Archive &ar, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
 template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows,
           int _MaxCols>
 void serialize(Archive &ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> &m,
-               const unsigned int version) {
-    (void)version;
+               const unsigned int /*version*/) {
 
     int rows;
     int cols;
