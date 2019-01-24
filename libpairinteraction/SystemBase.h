@@ -48,6 +48,11 @@
 #include <utility>
 #include <vector>
 
+#if __has_include(<mkl.h>)
+#define MKL_Complex16 std::complex<double>
+#include <mkl.h>
+#endif
+
 template <class T>
 class enumerated_state {
 public:
@@ -516,7 +521,129 @@ public:
         }
     }
 
-    void diagonalize() {
+    void diagonalize(double energy_lower_bound, double energy_upper_bound) {
+        this->diagonalize(energy_lower_bound, energy_upper_bound,
+                          std::numeric_limits<double>::max());
+    }
+
+    void diagonalize(double energy_lower_bound, double energy_upper_bound, double threshold) {
+#if __has_include(<mkl.h>)
+        this->buildHamiltonian();
+
+        // Check if already diagonal
+        if (checkIsDiagonal(hamiltonian)) {
+            return;
+        }
+
+        // Prepare the mkl library
+        mkl_set_threading_layer(MKL_THREADING_SEQUENTIAL);
+        mkl_set_interface_layer(MKL_INTERFACE_LP64);
+
+        // Estimate number of found eigenvalues
+        std::vector<double> diagonal_max(hamiltonian.outerSize(), 0);
+        std::vector<double> diagonal_val;
+        std::vector<int> diagonal_idx;
+        diagonal_val.reserve(hamiltonian.outerSize());
+        diagonal_idx.reserve(hamiltonian.outerSize());
+        for (int k = 0; k < hamiltonian.outerSize(); ++k) {
+            double val = 0;
+            for (eigen_iterator_t triple(hamiltonian, k); triple; ++triple) {
+                if (triple.row() == triple.col()) {
+                    val = std::real(triple.value());
+                } else if (triple.row() != triple.col()) {
+                    diagonal_max[k] = std::max(diagonal_max[k], std::abs(triple.value()));
+                }
+            }
+            diagonal_idx.push_back(k);
+            diagonal_val.push_back(val);
+        }
+
+        MKL_INT m0 =
+            std::count_if(diagonal_val.begin(), diagonal_val.end(),
+                          [&energy_lower_bound, &energy_upper_bound](const double &val) {
+                              return (val < energy_upper_bound) && (val > energy_lower_bound);
+                          }) +
+            std::count_if(diagonal_idx.begin(), diagonal_idx.end(),
+                          [&energy_lower_bound, &energy_upper_bound, &diagonal_val,
+                           &diagonal_max](const int &i) {
+                              return ((diagonal_val[i] >= energy_upper_bound) ||
+                                      (diagonal_val[i] <= energy_lower_bound)) &&
+                                  (diagonal_val[i] < energy_upper_bound + diagonal_max[i]) &&
+                                  (diagonal_val[i] > energy_lower_bound - diagonal_max[i]);
+                          });
+
+        // Inplace conversion of the Hamiltonian to CSR with one-based indexing
+        hamiltonian = hamiltonian.transpose();
+        hamiltonian.makeCompressed();
+        for (int i = 0; i < hamiltonian.rows() + 1; ++i) {
+            hamiltonian.outerIndexPtr()[i] += 1;
+        }
+        for (int i = 0; i < hamiltonian.nonZeros(); ++i) {
+            hamiltonian.innerIndexPtr()[i] += 1;
+        }
+
+        // Set default parameters for the diagonalization as described at
+        // https://software.intel.com/en-us/mkl-developer-reference-c-extended-eigensolver-input-parameters.
+        // Note that fpm[0]=1 enables terminal output and fpm[26]=1 enables a matrix checker.
+
+        MKL_INT fpm[128];
+        feastinit(fpm);
+        fpm[0] = 1;
+        fpm[1] = 6;
+        fpm[26] = 0;
+        fpm[3] = 5;
+        if (threshold != std::numeric_limits<double>::max()) {
+            fpm[2] = std::min(std::round(-std::log10(threshold)),
+                              12.); // error trace double precision stopping criteria (10-fpm[2])
+        }
+
+        // Do the diagonalization
+        char uplo = 'F';                    // full matrix is stored
+        MKL_INT n = hamiltonian.rows();     // size of the matrix
+        MKL_INT info;                       // will contain return codes
+        double epsout;                      // will contain relative error
+        MKL_INT loop;                       // will contain number of used refinement
+        MKL_INT m;                          // will contain the number of eigenvalues
+        double *res = new double[m0];       // will contain the residual errors
+        double *e = new double[m0];         // will contain the first m eigenvalues
+        scalar_t *x = new scalar_t[m0 * n]; // the first m columns will contain the eigenvectors
+
+        this->feast_csrev(&uplo, &n, hamiltonian.valuePtr(), hamiltonian.outerIndexPtr(),
+                          hamiltonian.innerIndexPtr(), fpm, &epsout, &loop, &energy_lower_bound,
+                          &energy_upper_bound, &m0, e, x, &m, res, &info);
+
+        delete[] res;
+
+        // Build the new hamiltonian
+        hamiltonian.resize(m, m);
+        hamiltonian.setZero();
+        hamiltonian.reserve(m);
+        for (int idx = 0; idx < m; ++idx) {
+            hamiltonian.insert(idx, idx) = e[idx];
+        }
+        hamiltonian.makeCompressed();
+        delete[] e;
+
+        // Transform the basis vectors
+        eigen_sparse_t evecs = Eigen::Map<eigen_dense_t>(x, n, m).sparseView();
+        if (threshold == std::numeric_limits<double>::max()) {
+            basisvectors = basisvectors * evecs;
+        } else {
+            basisvectors = (basisvectors * evecs).pruned(threshold, 1);
+        }
+        delete[] x;
+#else
+        (void)energy_lower_bound;
+        (void)energy_upper_bound;
+        (void)threshold;
+        throw std::runtime_error(
+            "The method does not work because the program was compiled without MKL support.");
+#endif
+    }
+
+    void diagonalize() { this->diagonalize(std::numeric_limits<double>::max()); }
+
+    void diagonalize(double threshold) {
         this->buildHamiltonian();
 
         // Check if already diagonal
@@ -540,37 +667,11 @@ public:
         hamiltonian.makeCompressed();
 
         // Transform the basis vectors
-        basisvectors = basisvectors * evecs;
-
-        // TODO call transformInteraction (see applyRightsideTransformator), perhaps not?
-    }
-
-    void diagonalize(double threshold) {
-        this->buildHamiltonian();
-
-        // Check if already diagonal
-        if (checkIsDiagonal(hamiltonian)) {
-            return;
+        if (threshold == std::numeric_limits<double>::max()) {
+            basisvectors = basisvectors * evecs;
+        } else {
+            basisvectors = (basisvectors * evecs).pruned(threshold, 1);
         }
-
-        // Diagonalize hamiltonian // TODO use approximative eigensolver for sparse matrices,
-        // e.g. FEAST which requires the Intel MKL-PARDISO solver, see http://www.feast-solver.org
-        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonian);
-
-        // Get eigenvalues and eigenvectors
-        eigen_vector_double_t evals = eigensolver.eigenvalues();
-        eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
-
-        // Build the new hamiltonian
-        hamiltonian.setZero();
-        hamiltonian.reserve(evals.size());
-        for (int idx = 0; idx < evals.size(); ++idx) {
-            hamiltonian.insert(idx, idx) = evals.coeffRef(idx);
-        }
-        hamiltonian.makeCompressed();
-
-        // Transform the basis vectors
-        basisvectors = (basisvectors * evecs).pruned(threshold, 1);
 
         // TODO call transformInteraction (see applyRightsideTransformator), perhaps not?
     }
@@ -1375,6 +1476,22 @@ private:
         range_m.clear();
         states_to_add.clear();
     }
+
+#if __has_include(<mkl.h>)
+    void feast_csrev(const char *uplo, const MKL_INT *n, const double *a, const MKL_INT *ia,
+                     const MKL_INT *ja, MKL_INT *fpm, double *epsout, MKL_INT *loop,
+                     const double *emin, const double *emax, MKL_INT *m0, double *e, double *x,
+                     MKL_INT *m, double *res, MKL_INT *info) {
+        dfeast_scsrev(uplo, n, a, ia, ja, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);
+    }
+
+    void feast_csrev(const char *uplo, const MKL_INT *n, const MKL_Complex16 *a, const MKL_INT *ia,
+                     const MKL_INT *ja, MKL_INT *fpm, double *epsout, MKL_INT *loop,
+                     const double *emin, const double *emax, MKL_INT *m0, double *e,
+                     MKL_Complex16 *x, MKL_INT *m, double *res, MKL_INT *info) {
+        zfeast_hcsrev(uplo, n, a, ia, ja, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);
+    }
+#endif
 
     ////////////////////////////////////////////////////////////////////
     /// Method to update the system ////////////////////////////////////

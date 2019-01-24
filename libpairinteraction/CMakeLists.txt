@@ -109,6 +109,12 @@ find_package(GSL REQUIRED)
 include_directories(${GSL_INCLUDE_DIRS})
 list(APPEND LIBRARIES ${GSL_LIBRARIES})
 
+find_package(MKL)
+if (MKL_FOUND)
+  include_directories(${MKL_INCLUDE_DIR})
+  list(APPEND LIBRARIES ${MKL_LIBRARY})
+endif()
+
 target_link_libraries(pireal ${LIBRARIES})
 target_link_libraries(picomplex ${LIBRARIES})
 
