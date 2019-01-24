@@ -18,8 +18,8 @@ RUN apt-get update \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
     intel-mkl-64bit-2019.1-053 \
-  && apt-get purge wget ca-certificates gnupg2 \
-  && apt-get autoremove --purge \
+  && apt-get purge -y wget ca-certificates gnupg2 \
+  && apt-get autoremove --purge -y \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 ENV MKLROOT="/opt/intel/compilers_and_libraries_2019/linux/mkl/"
