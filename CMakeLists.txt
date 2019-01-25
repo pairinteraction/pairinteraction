@@ -18,18 +18,6 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
-# Enable link-time optimization if available
-if(POLICY CMP0069)
-  cmake_policy(SET CMP0069 NEW)
-  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
-  if(CHECK_IPO_SUPPORTED)
-    check_ipo_supported(RESULT IPO_SUPPORTED)
-    if(IPO_SUPPORTED)
-      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    endif()
-  endif()
-endif()
-
 set(LIBNAME "libpairinteraction")
 
 # set version of settings and cache
@@ -71,8 +59,23 @@ option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
+option(WITH_LTO      "Build with link-time optimization"    OFF)
 if(CMAKE_VERSION VERSION_GREATER 3.5.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   option(WITH_CLANG_TIDY "Run Clang-Tidy during compilation" OFF)
+endif()
+
+# Enable link-time optimization if available
+if(WITH_LTO)
+  if(POLICY CMP0069)
+    cmake_policy(SET CMP0069 NEW)
+    include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
+    if(CHECK_IPO_SUPPORTED)
+      check_ipo_supported(RESULT IPO_SUPPORTED)
+      if(IPO_SUPPORTED)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+      endif()
+    endif()
+  endif()
 endif()
 
 # Mac OS X specific build instructions

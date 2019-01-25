@@ -49,6 +49,11 @@ matrix:
       sudo: required
       services: docker
       env:
+        - image=ubuntu:mkl
+    - os: linux
+      sudo: required
+      services: docker
+      env:
         - image=opensuse
         - package=pairinteraction-install-opensuse.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
