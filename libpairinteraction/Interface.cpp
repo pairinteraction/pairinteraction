@@ -21,7 +21,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <codecvt>
 #include <iostream>
 #include <locale>
 #include <memory>

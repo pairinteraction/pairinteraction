@@ -56,9 +56,28 @@ case "${TRAVIS_OS_NAME}" in
                             /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
+                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off ..;
                             make -k -j 2;
                             make -k -j 2 check;
+                        "
+                    ;;
+
+                "manylinux")
+                    docker run --env-file ${ENV_FILE} \
+                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                        --interactive --tty \
+                        pairinteraction/$image \
+                        /bin/bash -c "
+                            set -e;
+                            cd \"${SOURCE_DIR}\";
+                            mkdir -p build;
+                            cd build;
+                            cmake -DWITH_GUI=Off -DPYTHON_INCLUDE_DIR=/opt/python/cp35-cp35m/include/python3.5m/ -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
+                            make -k -j 2;
+                            make -k -j 2 check;
+                            python setup.py bdist_wheel;
+                            auditwheel repair dist/*.whl;
+                            cp wheelhouse/*.whl ${package};
                         "
                     ;;
 

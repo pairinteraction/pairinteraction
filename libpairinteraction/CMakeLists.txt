@@ -113,6 +113,7 @@ find_package(MKL)
 if (MKL_FOUND)
   include_directories(${MKL_INCLUDE_DIR})
   list(APPEND LIBRARIES ${MKL_LIBRARY})
+  add_definitions(-DWITH_INTEL_MKL)
 endif()
 
 target_link_libraries(pireal ${LIBRARIES})

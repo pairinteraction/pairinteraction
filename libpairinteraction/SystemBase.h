@@ -48,10 +48,10 @@
 #include <utility>
 #include <vector>
 
-#if __has_include(<mkl.h>)
+#ifdef WITH_INTEL_MKL
 #define MKL_Complex16 std::complex<double>
 #include <mkl.h>
-#endif
+#endif // WITH_INTEL_MKL
 
 template <class T>
 class enumerated_state {
@@ -527,7 +527,7 @@ public:
     }
 
     void diagonalize(double energy_lower_bound, double energy_upper_bound, double threshold) {
-#if __has_include(<mkl.h>)
+#ifdef WITH_INTEL_MKL
         this->buildHamiltonian();
 
         // Check if already diagonal
@@ -632,13 +632,13 @@ public:
             basisvectors = (basisvectors * evecs).pruned(threshold, 1);
         }
         delete[] x;
-#else
+#else  // WITH_INTEL_MKL
         (void)energy_lower_bound;
         (void)energy_upper_bound;
         (void)threshold;
         throw std::runtime_error(
             "The method does not work because the program was compiled without MKL support.");
-#endif
+#endif // WITH_INTEL_MKL
     }
 
     void diagonalize() { this->diagonalize(std::numeric_limits<double>::max()); }
@@ -1477,7 +1477,7 @@ private:
         states_to_add.clear();
     }
 
-#if __has_include(<mkl.h>)
+#ifdef WITH_INTEL_MKL
     void feast_csrev(const char *uplo, const MKL_INT *n, const double *a, const MKL_INT *ia,
                      const MKL_INT *ja, MKL_INT *fpm, double *epsout, MKL_INT *loop,
                      const double *emin, const double *emax, MKL_INT *m0, double *e, double *x,
@@ -1491,7 +1491,7 @@ private:
                      MKL_Complex16 *x, MKL_INT *m, double *res, MKL_INT *info) {
         zfeast_hcsrev(uplo, n, a, ia, ja, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);
     }
-#endif
+#endif // WITH_INTEL_MKL
 
     ////////////////////////////////////////////////////////////////////
     /// Method to update the system ////////////////////////////////////

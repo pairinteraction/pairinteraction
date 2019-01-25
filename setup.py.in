@@ -1,0 +1,9 @@
+import setuptools
+from distutils.core import setup
+
+setup(
+    name = "pairinteraction",
+    version = "@VERSION_WITHOUT_LEADING_V@",
+    packages = [ "libpairinteraction" ],
+    package_data = { '': [ 'libpicomplex.so', 'libpireal.so', '_picomplex.so', '_pireal.so' ] }
+)

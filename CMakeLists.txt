@@ -142,6 +142,8 @@ file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
 
+configure_file(setup.py.in ${CMAKE_BINARY_DIR}/setup.py @ONLY)
+
 if(WIN32)
 
   # NSIS installer is built externally

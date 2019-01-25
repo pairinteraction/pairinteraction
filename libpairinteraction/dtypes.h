@@ -74,11 +74,11 @@ constexpr const double gL = 1;
 
 constexpr const int ARB = 32767;
 
-#if __has_include(<mkl.h>)
+#ifdef WITH_INTEL_MKL
 constexpr const bool mkl_enabled = true;
-#else
+#else  // WITH_INTEL_MKL
 constexpr const bool mkl_enabled = false;
-#endif
+#endif // WITH_INTEL_MKL
 
 enum parity_t {
     NA = INT_MAX,
