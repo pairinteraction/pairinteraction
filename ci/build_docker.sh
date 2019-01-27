@@ -38,13 +38,11 @@ case "${TRAVIS_OS_NAME}" in
                             cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            /bin/bash /travis/ci/publish_documentation.sh;
+                            /bin/bash ../ci/prepare_documentation.sh;
                             cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
-                            lcov -q --directory . --capture --output-file coverage.info;
-                            lcov -q --remove coverage.info '/usr/*' --output-file coverage.info;
-                            lcov -q --remove coverage.info '*/doc/*' --output-file coverage.info;
+                            /bin/bash ../ci/update_documentation.sh;
                         "
                     ;;
 
