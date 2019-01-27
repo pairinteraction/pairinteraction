@@ -42,6 +42,9 @@ case "${TRAVIS_OS_NAME}" in
                             cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
+                            lcov -q --directory . --capture --output-file coverage.info;
+                            lcov -q --remove coverage.info '/usr/*' --output-file coverage.info;
+                            lcov -q --remove coverage.info '*/doc/*' --output-file coverage.info;
                         "
                     ;;
 
