@@ -73,7 +73,7 @@ case "${TRAVIS_OS_NAME}" in
                             cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_GUI=Off -DPYTHON_INCLUDE_DIR=/opt/python/cp35-cp35m/include/python3.5m/ -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
+                            cmake -DWITH_GUI=Off -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
                             make -k -j 2;
                             make -k -j 2 check;
                             python setup.py bdist_wheel;

@@ -35,12 +35,8 @@ fi;
 make -k -j 2 doc;
 
 # Get coverage report
-lcov -q --directory . --capture --output-file coverage.info;
-lcov -q --remove coverage.info '/usr/*' --output-file coverage.info;
-lcov -q --remove coverage.info '*/doc/*' --output-file coverage.info;
-lcov --remove coverage.info '*/build/*' --output-file coverage.info;
-lcov --remove coverage.info '*/Eigen/*' --output-file coverage.info;
-lcov --remove coverage.info '*/wignerSymbols/*' --output-file coverage.info;
+lcov --directory . --capture --output-file coverage.info;
+lcov --remove coverage.info '/usr/*' '*/build/*' '*/eigen/*' '*/wignerSymbols/*' --output-file coverage.info;
 genhtml coverage.info --output-directory doc/coverage/html/;
 
 cd "doc/";
