@@ -1,8 +1,9 @@
 FROM quay.io/pypa/manylinux1_x86_64
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 
-# Use Python 3.5
-ENV PATH="/opt/python/cp35-cp35m/bin/:$PATH"
+# Use Python 3.6
+ENV PATH="/opt/python/cp36-cp36m/bin/:$PATH"
+ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.6m/"
 
 # Because CentOS 5 is so ancient we have to install all kinds of
 # things by hand.
