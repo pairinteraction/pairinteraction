@@ -48,6 +48,10 @@ matrix:
     - os: linux
       sudo: required
       services: docker
+      addons:
+        apt:
+          packages:
+            - pyqt5-dev-tools
       env:
         - image=manylinux
         - package=pairinteraction-py3-none-manylinux1_x86_64.whl

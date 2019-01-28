@@ -64,6 +64,8 @@ case "${TRAVIS_OS_NAME}" in
                     ;;
 
                 "manylinux")
+                    pyuic5 --output /tmp/plotter.py gui/plotter.ui
+                    cp /tmp/plotter.py gui/plotter.ui
                     docker run --env-file ${ENV_FILE} \
                         -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
                         --interactive --tty \
@@ -73,7 +75,7 @@ case "${TRAVIS_OS_NAME}" in
                             cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_GUI=Off -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
+                            cmake -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
                             make -k -j 2;
                             make -k -j 2 check;
                             python setup.py bdist_wheel;
