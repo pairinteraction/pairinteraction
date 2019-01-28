@@ -5,5 +5,6 @@ setup(
     name = "pairinteraction",
     version = "@VERSION_WITHOUT_LEADING_V@",
     packages = [ "libpairinteraction" ],
-    package_data = { '': [ 'libpicomplex.so', 'libpireal.so', '_picomplex.so', '_pireal.so' ] }
+    packages = [ "libpairinteraction", "gui/pairinteraction" ],
+    package_data = { "libpairinteraction" : [ "_picomplex.so", "_pireal.so" ] }
 )
