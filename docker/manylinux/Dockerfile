@@ -9,10 +9,7 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp35-cp35m/include/python3.5m/"
 # things by hand.
 #
 # From pip:
-#     cmake, numpy, pyqt5, scipy
-#
-#     PyQt 5 from pip seems to be broken.  I always receive
-#         ImportError: ELF file OS ABI invalid
+#     cmake, numpy, scipy
 #
 # From the official repos:
 #     curl, gsl-devel, pcre-devel
@@ -26,7 +23,9 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp35-cp35m/include/python3.5m/"
 #     The sources and build directories are deleted after finishing to
 #     save space.
 #
-RUN pip3 install cmake numpy==1.11.0 pyqt5==5.6 scipy==0.17.0 \
+RUN pip3 install cmake numpy==1.11.0 scipy==0.17.0 \
+  && echo 'cp $3 $2' > /usr/local/bin/pyuic5 \
+  && chmod +x /usr/local/bin/pyuic5 \
   && yum install -y curl gsl-devel pcre-devel \
   && curl -LO http://prdownloads.sourceforge.net/swig/swig-3.0.12.tar.gz \
   && tar xzvf swig-3.0.12.tar.gz \
