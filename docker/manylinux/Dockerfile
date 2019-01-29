@@ -24,7 +24,7 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp35-cp35m/include/python3.5m/"
 #     save space.
 #
 RUN pip3 install cmake numpy==1.11.0 scipy==0.17.0 \
-  && echo 'cp $3 $2' > /usr/local/bin/pyuic5 \
+  && echo 'echo "pyuic5 $@"' > /usr/local/bin/pyuic5 \
   && chmod +x /usr/local/bin/pyuic5 \
   && yum install -y curl gsl-devel pcre-devel \
   && curl -LO http://prdownloads.sourceforge.net/swig/swig-3.0.12.tar.gz \
