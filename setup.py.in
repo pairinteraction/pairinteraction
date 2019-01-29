@@ -1,10 +1,25 @@
-import setuptools
-from distutils.core import setup
+from setuptools import setup, find_namespace_packages
 
 setup(
     name = "pairinteraction",
     version = "@VERSION_WITHOUT_LEADING_V@",
-    packages = [ "libpairinteraction" ],
-    packages = [ "libpairinteraction", "gui/pairinteraction" ],
-    package_data = { "libpairinteraction" : [ "_picomplex.so", "_pireal.so" ] }
+    packages = find_namespace_packages(include=[
+        "libpairinteraction", "gui", "gui.pairinteraction", "gui.pairinteraction.*"
+    ]),
+    package_data = {
+        "libpairinteraction" : [
+            "_picomplex.so", "_pireal.so",
+            "pairinteraction-complex", "pairinteraction-real",
+            "databases/quantum_defects.db"
+        ],
+        "gui" : [ "conf/example.pconf", "conf/example.sconf" ],
+    },
+    scripts = [ "pairinteraction" ],
+    install_requires=[
+        "numpy >= 1.11.0",
+        "scipy >= 0.17.0",
+        "pyqt5",
+        "pint",
+        "psutil",
+    ],
 )
