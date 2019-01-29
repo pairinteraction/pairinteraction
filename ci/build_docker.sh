@@ -3,11 +3,7 @@
 set -e;
 
 
-export ENV_FILE="`mktemp docker.XXXXXX.env`";
-export SOURCE_DIR="/travis";
-
-
-cat > ${ENV_FILE} <<EOF
+cat > /tmp/docker.env <<EOF
 # Travis variables
 TRAVIS_COMMIT=${TRAVIS_COMMIT}
 TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
@@ -18,7 +14,6 @@ TRAVIS_OS_NAME=${TRAVIS_OS_NAME}
 image=${image}
 package=${package}
 GH_TOKEN=${GH_TOKEN}
-SOURCE_DIR=${SOURCE_DIR}
 EOF
 
 
@@ -29,13 +24,12 @@ case "${TRAVIS_OS_NAME}" in
 
             case "${image}" in
                 "debian")
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
                             /bin/bash ../ci/prepare_documentation.sh;
@@ -47,13 +41,12 @@ case "${TRAVIS_OS_NAME}" in
                     ;;
 
                 "ubuntu:static-analysis")
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
@@ -64,15 +57,14 @@ case "${TRAVIS_OS_NAME}" in
                     ;;
 
                 "manylinux")
-                    pyuic5 --output /tmp/plotter.py gui/plotter.ui
-                    cp /tmp/plotter.py gui/plotter.ui
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    mkdir -p build/gui/pairinteraction
+                    pyuic5 --output build/gui/pairinteraction/plotter.py gui/plotter.ui
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
                             cmake -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
@@ -85,13 +77,12 @@ case "${TRAVIS_OS_NAME}" in
                     ;;
 
                 *)
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
                             cmake -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
@@ -118,6 +109,5 @@ case "${TRAVIS_OS_NAME}" in
 esac;
 
 if [ "${image}" = "debian" ]; then
-    cd ${TRAVIS_BUILD_DIR}
     curl -s https://codecov.io/bash | bash -
 fi
