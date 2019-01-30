@@ -241,7 +241,6 @@ public:
         // Build state vectors
         eigen_sparse_t overlap_states;
         if (alpha == 0 && beta == 0 && gamma == 0) {
-
             std::vector<eigen_triplet_t> overlap_states_triplets;
             overlap_states_triplets.reserve(states_indices.size());
 
@@ -253,7 +252,6 @@ public:
             overlap_states.resize(states.size(), states_indices.size());
             overlap_states.setFromTriplets(overlap_states_triplets.begin(),
                                            overlap_states_triplets.end());
-            overlap_states_triplets.clear();
         } else {
             overlap_states = this->rotateStates(states_indices, alpha, beta, gamma);
         }
@@ -522,8 +520,7 @@ public:
     }
 
     void diagonalize(double energy_lower_bound, double energy_upper_bound) {
-        this->diagonalize(energy_lower_bound, energy_upper_bound,
-                          std::numeric_limits<double>::max());
+        this->diagonalize(energy_lower_bound, energy_upper_bound, 0);
     }
 
     void diagonalize(double energy_lower_bound, double energy_upper_bound, double threshold) {
@@ -584,54 +581,56 @@ public:
 
         // Set default parameters for the diagonalization as described at
         // https://software.intel.com/en-us/mkl-developer-reference-c-extended-eigensolver-input-parameters.
-        // Note that fpm[0]=1 enables terminal output and fpm[26]=1 enables a matrix checker.
 
-        MKL_INT fpm[128];
-        feastinit(fpm);
-        fpm[0] = 1;
-        fpm[1] = 6;
-        fpm[26] = 0;
-        fpm[3] = 5;
-        if (threshold != std::numeric_limits<double>::max()) {
-            fpm[2] = std::min(std::round(-std::log10(threshold)),
-                              12.); // error trace double precision stopping criteria (10-fpm[2])
+        std::vector<MKL_INT> fpm(128);
+        feastinit(&fpm[0]);
+        fpm[0] = 1;  // enables terminal output
+        fpm[1] = 6;  // number of contour points
+        fpm[26] = 0; // disables matrix checker
+        fpm[3] = 5;  // maximum number of refinement loops allowed
+        if (threshold != 0) {
+            // Adapt the error trace stopping criteria (10-fpm[2])
+            fpm[2] = std::min(std::round(-std::log10(threshold)), 12.);
         }
 
         // Do the diagonalization
-        char uplo = 'F';                    // full matrix is stored
-        MKL_INT n = hamiltonian.rows();     // size of the matrix
-        MKL_INT info;                       // will contain return codes
-        double epsout;                      // will contain relative error
-        MKL_INT loop;                       // will contain number of used refinement
-        MKL_INT m;                          // will contain the number of eigenvalues
-        double *res = new double[m0];       // will contain the residual errors
-        double *e = new double[m0];         // will contain the first m eigenvalues
-        scalar_t *x = new scalar_t[m0 * n]; // the first m columns will contain the eigenvectors
+        {
+            MKL_INT n = hamiltonian.rows();  // size of the matrix
+            MKL_INT m;                       // will contain the number of eigenvalues
+            std::vector<scalar_t> x(m0 * n); // the first m columns will contain the eigenvectors
+            {
+                std::vector<double> e(m0); // will contain the first m eigenvalues
+                {
+                    char uplo = 'F';             // full matrix is stored
+                    MKL_INT info;                // will contain return codes
+                    double epsout;               // will contain relative error
+                    MKL_INT loop;                // will contain number of used refinement
+                    std::vector<double> res(m0); // will contain the residual errors
 
-        this->feast_csrev(&uplo, &n, hamiltonian.valuePtr(), hamiltonian.outerIndexPtr(),
-                          hamiltonian.innerIndexPtr(), fpm, &epsout, &loop, &energy_lower_bound,
-                          &energy_upper_bound, &m0, e, x, &m, res, &info);
+                    this->feast_csrev(&uplo, &n, hamiltonian.valuePtr(),
+                                      hamiltonian.outerIndexPtr(), hamiltonian.innerIndexPtr(),
+                                      &fpm[0], &epsout, &loop, &energy_lower_bound,
+                                      &energy_upper_bound, &m0, &e[0], &x[0], &m, &res[0], &info);
+                }
 
-        delete[] res;
+                // Build the new hamiltonian
+                hamiltonian.resize(m, m);
+                hamiltonian.setZero();
+                hamiltonian.reserve(m);
+                for (int idx = 0; idx < m; ++idx) {
+                    hamiltonian.insert(idx, idx) = e[idx];
+                }
+                hamiltonian.makeCompressed();
+            }
 
-        // Build the new hamiltonian
-        hamiltonian.resize(m, m);
-        hamiltonian.setZero();
-        hamiltonian.reserve(m);
-        for (int idx = 0; idx < m; ++idx) {
-            hamiltonian.insert(idx, idx) = e[idx];
+            // Transform the basis vectors
+            eigen_sparse_t evecs = Eigen::Map<eigen_dense_t>(&x[0], n, m).sparseView();
+            if (threshold == 0) {
+                basisvectors = basisvectors * evecs;
+            } else {
+                basisvectors = (basisvectors * evecs).pruned(threshold, 1);
+            }
         }
-        hamiltonian.makeCompressed();
-        delete[] e;
-
-        // Transform the basis vectors
-        eigen_sparse_t evecs = Eigen::Map<eigen_dense_t>(x, n, m).sparseView();
-        if (threshold == std::numeric_limits<double>::max()) {
-            basisvectors = basisvectors * evecs;
-        } else {
-            basisvectors = (basisvectors * evecs).pruned(threshold, 1);
-        }
-        delete[] x;
 #else  // WITH_INTEL_MKL
         (void)energy_lower_bound;
         (void)energy_upper_bound;
@@ -641,7 +640,7 @@ public:
 #endif // WITH_INTEL_MKL
     }
 
-    void diagonalize() { this->diagonalize(std::numeric_limits<double>::max()); }
+    void diagonalize() { this->diagonalize(0); }
 
     void diagonalize(double threshold) {
         this->buildHamiltonian();
@@ -667,7 +666,7 @@ public:
         hamiltonian.makeCompressed();
 
         // Transform the basis vectors
-        if (threshold == std::numeric_limits<double>::max()) {
+        if (threshold == 0) {
             basisvectors = basisvectors * evecs;
         } else {
             basisvectors = (basisvectors * evecs).pruned(threshold, 1);
@@ -783,25 +782,28 @@ public:
         }
 
         // --- Combine states and build transformators ---
-        std::vector<eigen_triplet_t> transformator_triplets;
-        transformator_triplets.reserve(system.states.size());
+        eigen_sparse_t transformator;
+        {
+            std::vector<eigen_triplet_t> transformator_triplets;
+            transformator_triplets.reserve(system.states.size());
 
-        for (const auto &entry : system.states) {
-            auto state_iter = states.template get<1>().find(entry.state);
+            for (const auto &entry : system.states) {
+                auto state_iter = states.template get<1>().find(entry.state);
 
-            size_t newidx = states.size();
-            if (state_iter == states.template get<1>().end()) {
-                states.push_back(enumerated_state<T>(newidx, entry.state));
-            } else {
-                newidx = state_iter->idx;
+                size_t newidx = states.size();
+                if (state_iter == states.template get<1>().end()) {
+                    states.push_back(enumerated_state<T>(newidx, entry.state));
+                } else {
+                    newidx = state_iter->idx;
+                }
+
+                transformator_triplets.emplace_back(newidx, entry.idx, 1);
             }
 
-            transformator_triplets.emplace_back(newidx, entry.idx, 1);
+            transformator.resize(states.size(), system.basisvectors.rows());
+            transformator.setFromTriplets(transformator_triplets.begin(),
+                                          transformator_triplets.end());
         }
-
-        eigen_sparse_t transformator(states.size(), system.basisvectors.rows());
-        transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
-        transformator_triplets.clear();
 
         // --- Combine basisvectors and basisvectors_unperturbed_cache ---
         basisvectors.conservativeResize(states.size(), size_this + size_other);
@@ -832,17 +834,18 @@ public:
         }
 
         // --- Combine hamiltonian and hamiltonian_unperturbed_cache ---
-        std::vector<eigen_triplet_t> shifter_triplets;
-        shifter_triplets.reserve(system.hamiltonian.rows());
-
-        for (size_t idx = 0; idx < system.hamiltonian.rows(); ++idx) {
-            shifter_triplets.emplace_back(hamiltonian.rows() + idx, idx, 1);
-        }
-
         eigen_sparse_t shifter(hamiltonian.rows() + system.hamiltonian.rows(),
                                system.hamiltonian.rows());
-        shifter.setFromTriplets(shifter_triplets.begin(), shifter_triplets.end());
-        shifter_triplets.clear();
+        {
+            std::vector<eigen_triplet_t> shifter_triplets;
+            shifter_triplets.reserve(system.hamiltonian.rows());
+
+            for (size_t idx = 0; idx < system.hamiltonian.rows(); ++idx) {
+                shifter_triplets.emplace_back(hamiltonian.rows() + idx, idx, 1);
+            }
+
+            shifter.setFromTriplets(shifter_triplets.begin(), shifter_triplets.end());
+        }
 
         hamiltonian.conservativeResize(hamiltonian.rows() + system.hamiltonian.rows(),
                                        hamiltonian.cols() + system.hamiltonian.cols());
@@ -867,12 +870,13 @@ public:
         this->buildHamiltonian();
 
         // Check if indices are unique
-        std::set<size_t> tmp(indices_of_wanted_basisvectors.begin(),
-                             indices_of_wanted_basisvectors.end());
-        if (tmp.size() < indices_of_wanted_basisvectors.size()) {
-            throw std::runtime_error("Indices are occuring multiple times.");
+        {
+            std::set<size_t> tmp(indices_of_wanted_basisvectors.begin(),
+                                 indices_of_wanted_basisvectors.end());
+            if (tmp.size() < indices_of_wanted_basisvectors.size()) {
+                throw std::runtime_error("Indices are occuring multiple times.");
+            }
         }
-        tmp.clear();
 
         // Build transformator and remove vectors
         std::vector<eigen_triplet_t> triplets_transformator;
@@ -916,26 +920,29 @@ public:
         // --- Express the basis vectors of system0 as a linearcombination of all states ---
 
         // Combine states and build transformators
-        std::vector<eigen_triplet_t> transformator_triplets;
-        transformator_triplets.reserve(system0.states.size());
+        eigen_sparse_t transformator;
+        {
+            std::vector<eigen_triplet_t> transformator_triplets;
+            transformator_triplets.reserve(system0.states.size());
 
-        for (const auto &entry : system0.states) {
-            auto state_iter = states.template get<1>().find(entry.state);
+            for (const auto &entry : system0.states) {
+                auto state_iter = states.template get<1>().find(entry.state);
 
-            // Check that all the states of system0 occur (since we already checked that the number
-            // of states is the same, this ensures that all the states are the same)
-            if (state_iter == states.template get<1>().end()) {
-                throw std::runtime_error(
-                    "The unperturbed system contains states that are not occuring.");
+                // Check that all the states of system0 occur (since we already checked that the
+                // number of states is the same, this ensures that all the states are the same)
+                if (state_iter == states.template get<1>().end()) {
+                    throw std::runtime_error(
+                        "The unperturbed system contains states that are not occuring.");
+                }
+                size_t newidx = state_iter->idx;
+
+                transformator_triplets.emplace_back(newidx, entry.idx, 1);
             }
-            size_t newidx = state_iter->idx;
 
-            transformator_triplets.emplace_back(newidx, entry.idx, 1);
+            transformator.resize(states.size(), system0.states.size());
+            transformator.setFromTriplets(transformator_triplets.begin(),
+                                          transformator_triplets.end());
         }
-
-        eigen_sparse_t transformator(states.size(), system0.states.size());
-        transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
-        transformator_triplets.clear();
 
         // Get basisvectors of system0
         eigen_sparse_t low_energy_basis0 = transformator * system0.basisvectors;
@@ -947,19 +954,24 @@ public:
             eigen_vector_double_t::Ones(low_energy_basis0.cols());
 
         // Get indices of the low_energy_basis0.cols() largest entries and build transformator
-        std::vector<int> indices(basisvectors.cols());
-        std::iota(indices.begin(), indices.end(), 0);
-        std::nth_element(indices.begin(), indices.begin() + low_energy_basis0.cols(), indices.end(),
-                         [&overlap](int a, int b) { return overlap[a] > overlap[b]; });
+        {
+            std::vector<int> indices(basisvectors.cols());
+            std::iota(indices.begin(), indices.end(), 0);
+            std::nth_element(indices.begin(), indices.begin() + low_energy_basis0.cols(),
+                             indices.end(),
+                             [&overlap](int a, int b) { return overlap[a] > overlap[b]; });
 
-        transformator_triplets.reserve(low_energy_basis0.cols());
-        for (int i = 0; i < low_energy_basis0.cols(); ++i) {
-            transformator_triplets.emplace_back(indices[i], i, 1);
+            std::vector<eigen_triplet_t> transformator_triplets;
+            transformator_triplets.reserve(low_energy_basis0.cols());
+
+            for (int i = 0; i < low_energy_basis0.cols(); ++i) {
+                transformator_triplets.emplace_back(indices[i], i, 1);
+            }
+
+            transformator.resize(basisvectors.cols(), low_energy_basis0.cols());
+            transformator.setFromTriplets(transformator_triplets.begin(),
+                                          transformator_triplets.end());
         }
-
-        transformator.resize(basisvectors.cols(), low_energy_basis0.cols());
-        transformator.setFromTriplets(transformator_triplets.begin(), transformator_triplets.end());
-        transformator_triplets.clear();
 
         // Get corresponding basis vectors
         eigen_sparse_t low_energy_basis = basisvectors * transformator;
@@ -1058,23 +1070,26 @@ public:
         this->buildBasis();
 
         // Ensure that the states within searched_states are unique
-        std::set<T> tmp(searched_states.begin(), searched_states.end());
-        if (tmp.size() < searched_states.size()) {
-            throw std::runtime_error("States are occuring multiple times.");
+        {
+            std::set<T> tmp(searched_states.begin(), searched_states.end());
+            if (tmp.size() < searched_states.size()) {
+                throw std::runtime_error("States are occuring multiple times.");
+            }
         }
-        tmp.clear();
 
         // Construct canonical basis vectors
-        std::vector<size_t> state_indices = this->getStateIndex(searched_states);
-        std::vector<eigen_triplet_t> canonicalbasis_triplets;
-        canonicalbasis_triplets.reserve(searched_states.size());
-        for (size_t i = 0; i < state_indices.size(); ++i) {
-            canonicalbasis_triplets.emplace_back(state_indices[i], i, 1);
+        eigen_sparse_t canonicalbasis;
+        {
+            std::vector<size_t> state_indices = this->getStateIndex(searched_states);
+            std::vector<eigen_triplet_t> canonicalbasis_triplets;
+            canonicalbasis_triplets.reserve(searched_states.size());
+            for (size_t i = 0; i < state_indices.size(); ++i) {
+                canonicalbasis_triplets.emplace_back(state_indices[i], i, 1);
+            }
+            canonicalbasis.resize(states.size(), searched_states.size());
+            canonicalbasis.setFromTriplets(canonicalbasis_triplets.begin(),
+                                           canonicalbasis_triplets.end());
         }
-        eigen_sparse_t canonicalbasis(states.size(), searched_states.size());
-        canonicalbasis.setFromTriplets(canonicalbasis_triplets.begin(),
-                                       canonicalbasis_triplets.end());
-        canonicalbasis_triplets.clear();
 
         // Get overlaps between basis vectors
         eigen_sparse_double_t overlap = (canonicalbasis.adjoint() * basisvectors).cwiseAbs2();
@@ -1136,7 +1151,6 @@ public:
         }
 
         basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
-        basisvectors_triplets.clear();
     }
 
     scalar_t getHamiltonianEntry(const T &state_row, const T &state_col) {

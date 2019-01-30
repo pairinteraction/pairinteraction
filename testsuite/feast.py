@@ -13,9 +13,8 @@ class FeastTest(unittest.TestCase):
         # Set up cache
         self.cache = pi.MatrixElementCache()
 
+    @unittest.skipIf(not pi.mkl_enabled, "The program was compiled without MKL support.")
     def test_diagonalization_full(self):
-        if not pi.mkl_enabled:
-            return
 
         # Setup states
         state_one = pi.StateOne("Cs", 60, 0, 0.5, 0.5)
@@ -42,9 +41,8 @@ class FeastTest(unittest.TestCase):
         np.testing.assert_allclose(overlap.diagonal(), np.ones_like(overlap.diagonal()), rtol=1e-12)
         self.assertAlmostEqual(np.sum(overlap), system_one.getNumBasisvectors(), places=6)
 
+    @unittest.skipIf(not pi.mkl_enabled, "The program was compiled without MKL support.")
     def test_diagonalization_bounded(self):
-        if not pi.mkl_enabled:
-            return
 
         # Setup states
         state_one = pi.StateOne("Cs", 60, 0, 0.5, 0.5)
