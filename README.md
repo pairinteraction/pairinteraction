@@ -22,8 +22,8 @@ Pairinteraction is released under the terms of the [Apache License 2.0][license-
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
 [codecov-svg]: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/pairinteraction/pairinteraction
-[arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
+[arXiv-svg]: doc/sphinx/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
-[license-svg]: https://pairinteraction.github.io/images/license-badge.svg
+[license-svg]: doc/sphinx/images/license-badge.svg
 [license-link]: https://opensource.org/licenses/Apache-2.0
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
