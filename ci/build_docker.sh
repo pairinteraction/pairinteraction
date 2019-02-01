@@ -72,7 +72,7 @@ case "${TRAVIS_OS_NAME}" in
                             make -k -j 2 check;
                             python setup.py bdist_wheel;
                             auditwheel repair dist/*.whl;
-                            cp wheelhouse/*.whl ${package};
+                            mv wheelhouse/*.whl ${package_whl};
                         "
                     ;;
 
@@ -104,6 +104,13 @@ case "${TRAVIS_OS_NAME}" in
         make check;
         make package;
         make license;
+        python setup.py bdist_wheel;
+        wheel unpack dist/*.whl -d wheelhouse/;
+        cd wheelhouse/*/libpairinteraction;
+        python ../../../../apple/standalone.py .libs _picomplex.so _pireal.so pairinteraction-complex pairinteraction-real;
+        cd ../../..;
+        wheel pack wheelhouse/* -d wheelhouse/;
+        mv wheelhouse/*.whl ${package_whl};
         ;;
 
 esac;

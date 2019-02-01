@@ -37,9 +37,15 @@ def standalone(file):
     out = subprocess.check_output(['otool', '-l', file]).decode('utf-8')
     p = re.compile(r"LC_RPATH\n.*\n.+path (.*?) \(")
     rpaths = [m.group(1) for m in p.finditer(out)]
-    rpaths.append(os.path.dirname(file))
+
+    # Remove rpaths from file_new
+    for rpath in rpaths:
+        cmd = ['install_name_tool', '-delete_rpath', rpath, file_new]
+        if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
+            raise Exception("Error removing rpaths.")
 
     # Patch rpaths
+    rpaths = [os.path.dirname(file)] + rpaths
     rpaths = [rpath.replace("@loader_path", os.path.dirname(file)) for rpath in rpaths]
     rpaths = [rpath.replace("@executable_path", os.path.dirname(file)) for rpath in rpaths]
 
@@ -69,43 +75,31 @@ def standalone(file):
                         break
                 if "@rpath" in libpath:
                     raise RuntimeError(
-                        "Error in making " +
-                        file +
-                        " standalone. For the library " +
-                        libpath_original +
-                        ", there is no suitable rpath in " +
-                        str(rpaths) +
-                        "!")
+                        "Error in making {} standalone. For the library {}, there is no suitable rpath in {}!".format(
+                            file, libpath_original, rpaths))
 
             if not os.path.isfile(libpath):
                 raise RuntimeError(
-                    "Error in making " +
-                    file +
-                    " standalone. Library " +
-                    libpath_original +
-                    " not found!")
+                    "Error in making {} standalone. Library {} not found!".format(
+                        file, libpath_original))
 
             libpath_abs = os.path.abspath(libpath)
 
             # If no standard library and no installed library, update path to dependency
-            if not libpath_abs.startswith(
-                    "/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
+            if (not libpath_abs.startswith(
+                    "/System/Library") and not libpath_abs.startswith("/usr/lib")) or "libsqlite" in libpath_abs:
 
                 # Update paths
-                if libpath_abs in executables:
-                    if file not in executables:
-                        libpath_new = os.path.join("@loader_path/..", os.path.basename(libpath_abs))
-                    else:
-                        libpath_new = os.path.join("@loader_path", os.path.basename(libpath_abs))
+                if libpath_abs not in executables:
+                    libpath_abs_new = os.path.relpath(os.path.join(librarypath, os.path.basename(libpath_abs)))
                 else:
-                    if file not in executables:
-                        libpath_new = os.path.join("@loader_path", os.path.basename(libpath_abs))
-                    else:
-                        libpath_new = os.path.join("@loader_path", "libraries", os.path.basename(libpath_abs))
+                    libpath_abs_new = libpath_abs
+
+                libpath_new = os.path.join("@loader_path", os.path.relpath(libpath_abs_new, os.path.dirname(file_new)))
 
                 cmd = ['install_name_tool', '-change', libpath_original, libpath_new, file_new]
                 if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
-                    raise Exception("Error in making " + file + " standalone. Error updating paths.")
+                    raise Exception("Error in making {} standalone. Error updating paths.".format(file))
 
                 # Analyze the current dependency
                 yield libpath_abs
@@ -119,6 +113,7 @@ if not os.path.exists(librarypath):
 need = set(executables)
 done = set()
 
+# Bundle libraries
 while need:
     needed = set(need)
     need = set()
