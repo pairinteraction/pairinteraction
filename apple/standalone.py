@@ -11,14 +11,13 @@ import re
 # https://github.com/Stellarium/stellarium/blob/master/util/mac_app.py
 # http://thecourtsofchaos.com/2013/09/16/how-to-copy-and-relink-binaries-on-osx/
 # https://cmake.org/Wiki/CMake_RPATH_handling
+# https://pypi.org/project/delocate/
+# https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-handling
 
 print("-- Make standalone")
 
-executables = sys.argv[1:]
-installpath = os.path.dirname(sys.argv[1])
-librarypath = os.path.join(installpath, "libraries")
-
-os.chdir(installpath)
+librarypath = os.path.abspath(sys.argv[1])
+executables = [os.path.abspath(executable) for executable in sys.argv[2:]]
 
 FNULL = open(os.devnull, 'w')
 
@@ -28,16 +27,21 @@ def standalone(file):
     # Copy dependency
     if file not in executables:
         file_new = os.path.join(librarypath, os.path.basename(file))
-        copyfile(file, file_new)
+        if not os.path.isfile(file_new):
+            copyfile(file, file_new)
         print("Dependency {} installed.".format(os.path.basename(file)))
     else:
         file_new = file
 
     # Get rpaths
     out = subprocess.check_output(['otool', '-l', file]).decode('utf-8')
-    p = re.compile("LC_RPATH\n.*\n.+path (.*?) \(")
+    p = re.compile(r"LC_RPATH\n.*\n.+path (.*?) \(")
     rpaths = [m.group(1) for m in p.finditer(out)]
-    rpaths.append(installpath)
+    rpaths.append(os.path.dirname(file))
+
+    # Patch rpaths
+    rpaths = [rpath.replace("@loader_path", os.path.dirname(file)) for rpath in rpaths]
+    rpaths = [rpath.replace("@executable_path", os.path.dirname(file)) for rpath in rpaths]
 
     # Get dependencies
     o = subprocess.Popen(['otool', '-L', file], stdout=subprocess.PIPE)
@@ -48,28 +52,44 @@ def standalone(file):
 
             # Get path of dependeny
             libpath_original = l.strip().split(' (', 1)[0]
+
+            # Continue if the library references itself
+            if os.path.basename(libpath_original) == os.path.basename(file):
+                continue
+
+            # Patch libpath
             libpath = libpath_original.replace("@loader_path", os.path.dirname(file))
+            libpath = libpath.replace("@executable_path", os.path.dirname(file))
 
             if "@rpath" in libpath:
-                if not rpaths:
-                    print(file, rpaths, libpath)
-                    raise
                 for r in rpaths:
                     testpath = libpath.replace("@rpath", r)
-                    testpath = testpath.replace("@loader_path", os.path.dirname(file))
-                    testpath = testpath.replace("@executable_path", os.path.dirname(file))
                     if os.path.isfile(testpath):
                         libpath = testpath
                         break
+                if "@rpath" in libpath:
+                    raise RuntimeError(
+                        "Error in making " +
+                        file +
+                        " standalone. For the library " +
+                        libpath_original +
+                        ", there is no suitable rpath in " +
+                        str(rpaths) +
+                        "!")
 
             if not os.path.isfile(libpath):
-                print(file, rpaths, libpath)
-                raise
+                raise RuntimeError(
+                    "Error in making " +
+                    file +
+                    " standalone. Library " +
+                    libpath_original +
+                    " not found!")
 
             libpath_abs = os.path.abspath(libpath)
 
             # If no standard library and no installed library, update path to dependency
-            if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
+            if not libpath_abs.startswith(
+                    "/System/Library") and not libpath_abs.startswith("/usr/lib") or "libsqlite" in libpath_abs:
 
                 # Update paths
                 if libpath_abs in executables:
@@ -85,10 +105,11 @@ def standalone(file):
 
                 cmd = ['install_name_tool', '-change', libpath_original, libpath_new, file_new]
                 if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
-                    raise Exception("Error updating paths.")
+                    raise Exception("Error in making " + file + " standalone. Error updating paths.")
 
                 # Analyze the current dependency
                 yield libpath_abs
+
 
 if not os.path.exists(librarypath):
     os.makedirs(librarypath)
@@ -105,9 +126,3 @@ while need:
         need.update(standalone(file))
     done.update(needed)
     need.difference_update(done)
-
-for file in executables:
-    for rpath in ["@executable_path", "@loader_path/libraries"]:
-        cmd = ['install_name_tool', '-add_rpath', rpath, file]
-        if subprocess.call(cmd, stdout=FNULL, stderr=subprocess.STDOUT):
-            raise Exception("Error adding rpath.")

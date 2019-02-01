@@ -204,7 +204,7 @@ if( WITH_DMG )
     set(bin6 \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/_picomplex.so)
   endif()
   
-  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py ${bin1} ${bin2} ${bin3} ${bin4} ${bin5} ${bin6})")
+  install(CODE "execute_process(COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/${LIBNAME}/libraries ${bin1} ${bin2} ${bin3} ${bin4} ${bin5} ${bin6})")
 
 elseif ( NOT WIN32 )
 
