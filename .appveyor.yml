@@ -30,6 +30,7 @@ install:
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
   - cmd: conda install -y -q pairinteraction-dependencies
+  - cmd: conda update -y -q setuptools wheel
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
  
 cache:
@@ -49,6 +50,10 @@ after_build:
   - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
+  - cmd: python setup.py bdist_wheel
+  - cmd: wheel unpack dist/*.whl -d wheelhouse/
+  - cmd: wheel pack wheelhouse/* -d wheelhouse/
+  - cmd: move wheelhouse/*.whl pairinteraction-py3-none-win_x86_64.whl
 
 test_script:
   - cmd: xcopy libpairinteraction\Release\* libpairinteraction
@@ -57,12 +62,14 @@ test_script:
 artifacts:
   - path: build\pairinteraction-install-windows.exe
     name: installer
+  - path: build\pairinteraction-py3-none-win_x86_64.whl
+    name: wheel
 
 deploy:
   - provider: GitHub
     release: $(APPVEYOR_REPO_TAG_NAME)
     auth_token: $(GH_TOKEN)
-    artifact:  installer
+    artifact:  installer, wheel
     prerelease: true
     force_update: true
     on:
