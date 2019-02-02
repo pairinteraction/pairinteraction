@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name = "pairinteraction",
-    version = r"@VERSION_WITHOUT_LEADING_V_WITHOUT_HASH_COMPACT_ALPHA@",
+    version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
     license = "Apache, MIT, LGPL, Boost, GPL, MPL",
     packages = find_namespace_packages(include=[
         "libpairinteraction", "gui", "gui.pairinteraction", "gui.pairinteraction.*"
