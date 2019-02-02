@@ -1,4 +1,5 @@
 from setuptools import setup, find_namespace_packages
+from pathlib import Path
 
 setup(
     name = "pairinteraction",
@@ -15,8 +16,8 @@ setup(
         ],
         "gui" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
-    data_files = [ ("", [r"@CMAKE_SOURCE_DIR@/LICENSE.txt",
-                         r"@CMAKE_SOURCE_DIR@/LICENSE-3RD-PARTY.txt"] ) ],
+    data_files = [ ("", [str(Path(r"@CMAKE_SOURCE_DIR@") / "LICENSE.txt"),
+                         str(Path(r"@CMAKE_SOURCE_DIR@") / "LICENSE-3RD-PARTY.txt")] ) ],
     scripts = [ "pairinteraction" ],
     install_requires=[
         "numpy >= 1.11.0",
