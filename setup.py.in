@@ -2,7 +2,7 @@ from setuptools import setup, find_namespace_packages
 
 setup(
     name = "pairinteraction",
-    version = "@VERSION_WITHOUT_LEADING_V_WITHOUT_HASH_COMPACT_ALPHA@",
+    version = r"@VERSION_WITHOUT_LEADING_V_WITHOUT_HASH_COMPACT_ALPHA@",
     license = "Apache, MIT, LGPL, Boost, GPL, MPL",
     packages = find_namespace_packages(include=[
         "libpairinteraction", "gui", "gui.pairinteraction", "gui.pairinteraction.*"
@@ -15,8 +15,8 @@ setup(
         ],
         "gui" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
-    data_files = [ ("", ["@CMAKE_SOURCE_DIR@/LICENSE.txt",
-                         "@CMAKE_SOURCE_DIR@/LICENSE-3RD-PARTY.txt"] ) ],
+    data_files = [ ("", [r"@CMAKE_SOURCE_DIR@/LICENSE.txt",
+                         r"@CMAKE_SOURCE_DIR@/LICENSE-3RD-PARTY.txt"] ) ],
     scripts = [ "pairinteraction" ],
     install_requires=[
         "numpy >= 1.11.0",
