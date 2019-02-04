@@ -56,3 +56,21 @@ BOOST_AUTO_TEST_CASE(qd_test) // NOLINT
     BOOST_CHECK_EQUAL(qd.a4, a4);
     BOOST_CHECK_EQUAL(qd.rc, rc);
 }
+
+BOOST_AUTO_TEST_CASE(qd_errors) // NOLINT
+{
+    BOOST_CHECK_THROW(QuantumDefect qd("nop", 0, 0, 0), std::exception);
+    BOOST_CHECK_THROW(QuantumDefect qd("Rb", 0, 10000, 0), std::exception);
+
+    try {
+        QuantumDefect qd("nop", 0, 0, 0);
+    } catch (std::exception const &e) {
+        BOOST_CHECK(e.what());
+    }
+
+    try {
+        QuantumDefect qd("Rb", 0, 10000, 0);
+    } catch (std::exception const &e) {
+        BOOST_CHECK(e.what());
+    }
+}
