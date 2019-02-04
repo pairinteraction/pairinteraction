@@ -48,7 +48,6 @@ string(REGEX REPLACE "-(pre)?alpha" "a" VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA 
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -219,3 +218,4 @@ include(CPack)
 
 include(FeatureSummary)
 feature_summary(WHAT ALL)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")

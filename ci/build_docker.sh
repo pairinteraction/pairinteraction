@@ -116,5 +116,5 @@ case "${TRAVIS_OS_NAME}" in
 esac;
 
 if [ "${image}" = "debian" ]; then
-    curl -s https://codecov.io/bash | bash -
+    curl -s https://codecov.io/bash | bash -s - -X gcov
 fi
