@@ -50,10 +50,9 @@ after_build:
   - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
-  - cmd: python setup.py bdist_wheel
-  - cmd: wheel unpack dist/*.whl -d wheelhouse/
-  - cmd: wheel pack wheelhouse/* -d wheelhouse/
-  - cmd: move wheelhouse/*.whl pairinteraction-py3-none-win_x86_64.whl
+  - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_x86_64
+  - ps: wheel unpack $(ls dist\*.whl | % {$_.FullName}) -d wheelhouse\
+  - ps: wheel pack $(ls wheelhouse\* | % {$_.FullName}) -d wheelhouse\
 
 test_script:
   - cmd: xcopy libpairinteraction\Release\* libpairinteraction
@@ -62,7 +61,7 @@ test_script:
 artifacts:
   - path: build\pairinteraction-install-windows.exe
     name: installer
-  - path: build\pairinteraction-py3-none-win_x86_64.whl
+  - path: build\wheelhouse\*.whl
     name: wheel
 
 deploy:
