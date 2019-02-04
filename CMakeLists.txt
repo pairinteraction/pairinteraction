@@ -144,6 +144,7 @@ file(WRITE "${LICENSES}" "${LICENSESTXT}")
 # Make packages for different platforms
 
 configure_file(setup.py.in ${CMAKE_BINARY_DIR}/setup.py @ONLY)
+configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 
 if(WIN32)
 

@@ -70,7 +70,7 @@ case "${TRAVIS_OS_NAME}" in
                             cmake -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
                             make -k -j 2;
                             make -k -j 2 check;
-                            python setup.py bdist_wheel --python-tag cp3 --plat-name manylinux1_x86_64;
+                            python setup.py bdist_wheel --python-tag py3 --plat-name manylinux1_x86_64;
                             auditwheel repair dist/*.whl;
                         "
                     ;;
@@ -103,12 +103,13 @@ case "${TRAVIS_OS_NAME}" in
         make check;
         make package;
         make license;
-        python setup.py bdist_wheel --python-tag cp3 --plat-name macosx_10_12_x86_64;
-        python -m wheel unpack dist/*.whl -d wheelhouse/;
+        python setup.py bdist_wheel --python-tag py3 --plat-name macosx_10_12_x86_64;
+        wheel unpack dist/*.whl -d wheelhouse/;
+        chmod +x wheelhouse/*/libpairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/pairinteraction;
         cd wheelhouse/*/libpairinteraction;
         python ../../../../apple/standalone.py .libs _picomplex.so _pireal.so pairinteraction-complex pairinteraction-real;
         cd ../../..;
-        python -m wheel pack wheelhouse/* -d wheelhouse/;
+        wheel pack wheelhouse/* -d wheelhouse/;
         ;;
 
 esac;

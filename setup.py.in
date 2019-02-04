@@ -16,8 +16,6 @@ setup(
         ],
         "gui" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
-    data_files = [ ("", [str(Path(r"@CMAKE_SOURCE_DIR@") / "LICENSE.txt"),
-                         str(Path(r"@CMAKE_SOURCE_DIR@") / "LICENSE-3RD-PARTY.txt")] ) ],
     scripts = [ "pairinteraction" ],
     install_requires=[
         "numpy >= 1.11.0",
