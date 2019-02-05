@@ -55,6 +55,7 @@ after_build:
   - cmd: wheel unpack %PATH_WHEEL_UNMODIFIED% -d wheelhouse\
   - ps: $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
   - cmd: xcopy libpairinteraction\Release\* %PATH_WHEEL_UNPACKED%\libpairinteraction\
+  - ps: Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
   - cmd: wheel pack %PATH_WHEEL_UNPACKED% -d wheelhouse\
 
 test_script:
