@@ -51,8 +51,11 @@ after_build:
   - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
   - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_x86_64
-  - cmd: powershell -command "& {wheel unpack $(ls dist\*.whl | foreach { $_.FullName }) -d wheelhouse\}"
-  - cmd: powershell -command "& {wheel pack $(ls wheelhouse\* | foreach { $_.FullName }) -d wheelhouse\}"
+  - ps: $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
+  - cmd: wheel unpack %PATH_WHEEL_UNMODIFIED% -d wheelhouse\
+  - ps: $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
+  - cmd: xcopy libpairinteraction\Release\* %PATH_WHEEL_UNPACKED%\libpairinteraction\
+  - cmd: wheel pack %PATH_WHEEL_UNPACKED% -d wheelhouse\
 
 test_script:
   - cmd: xcopy libpairinteraction\Release\* libpairinteraction
