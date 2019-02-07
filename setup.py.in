@@ -6,15 +6,15 @@ setup(
     version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
     license = "Apache, MIT, LGPL, Boost, GPL, MPL",
     packages = find_namespace_packages(include=[
-        "libpairinteraction", "gui", "gui.pairinteraction", "gui.pairinteraction.*"
+        "@LIBNAME@", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
     ]),
     package_data = {
-        "libpairinteraction" : [
+        "@LIBNAME@" : [
             "_picomplex.so", "_pireal.so",
             "pairinteraction-complex", "pairinteraction-real",
             "databases/quantum_defects.db"
         ],
-        "gui" : [ "conf/example.pconf", "conf/example.sconf" ],
+        "@GUINAME@" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
     scripts = [ "pairinteraction" ],
     install_requires=[

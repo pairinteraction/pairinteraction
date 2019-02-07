@@ -19,6 +19,7 @@ set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
 set(LIBNAME "libpairinteraction")
+set(GUINAME "gui")
 
 # set version of settings and cache
 
@@ -121,7 +122,7 @@ if( WITH_BACKEND )
 endif( )
 
 if( WITH_GUI )
-  add_subdirectory(gui)
+  add_subdirectory(${GUINAME})
 endif( )
 
 if ( WITH_DOCS )
