@@ -75,12 +75,12 @@ SectionGroup /e "${APP_NAME}"
     SectionIn RO
     SetOutPath "$INSTDIR"
     File "..\LICENSE*"
-    SetOutPath "$INSTDIR\libpairinteraction"
-    File "${BUILD_DIR}\libpairinteraction\Release\*"
-    File "${BUILD_DIR}\libpairinteraction\pireal.py"
-    File "${BUILD_DIR}\libpairinteraction\picomplex.py"
-    SetOutPath "$INSTDIR\libpairinteraction\databases"
-    File "${BUILD_DIR}\libpairinteraction\databases\*.db"
+    SetOutPath "$INSTDIR\pairinteraction"
+    File "${BUILD_DIR}\pairinteraction\Release\*"
+    File "${BUILD_DIR}\pairinteraction\pireal.py"
+    File "${BUILD_DIR}\pairinteraction\picomplex.py"
+    SetOutPath "$INSTDIR\pairinteraction\databases"
+    File "${BUILD_DIR}\pairinteraction\databases\*.db"
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 
@@ -120,7 +120,7 @@ functionEnd
 
 
 Section 'uninstall'
-  RMDir /r "$INSTDIR\libpairinteraction"
+  RMDir /r "$INSTDIR\pairinteraction"
   RMDir /r "$INSTDIR\gui"
 
   delete "$INSTDIR\LICENSE*"

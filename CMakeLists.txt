@@ -18,7 +18,7 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
-set(LIBNAME "libpairinteraction")
+set(LIBNAME "pairinteraction")
 set(GUINAME "gui")
 
 # set version of settings and cache

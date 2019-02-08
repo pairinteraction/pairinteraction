@@ -42,7 +42,7 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
 fi
 
 # Apply clang-format
-cd "${SRC}/libpairinteraction"
+cd "${SRC}/pairinteraction"
 for file in *.h *.cpp unit_test/*.cpp; do
     echo "clang-format: $(realpath ${file})"
     clang-format -i -style=file "${file}"

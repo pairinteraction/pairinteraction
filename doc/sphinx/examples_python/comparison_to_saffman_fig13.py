@@ -6,7 +6,7 @@ from functools import partial
 import sys
 if sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
 elif sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
-from libpairinteraction import pireal as pi
+from pairinteraction import pireal as pi
 
 # Parameters
 distance = 10 # um

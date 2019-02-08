@@ -16,8 +16,8 @@
 
 #include <boost/filesystem.hpp>
 #include <iostream>
-#include <libpairinteraction/State>
-#include <libpairinteraction/System>
+#include <pairinteraction/State>
+#include <pairinteraction/System>
 
 int main() {
     // Create cache directory if not already existing

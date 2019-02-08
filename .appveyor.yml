@@ -45,21 +45,21 @@ build_script:
   - cmd: cmake --build . --config "%CONFIGURATION%"
   
 after_build:
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
   - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_x86_64
   - ps: $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
   - cmd: wheel unpack %PATH_WHEEL_UNMODIFIED% -d wheelhouse\
   - ps: $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
-  - cmd: xcopy libpairinteraction\Release\* %PATH_WHEEL_UNPACKED%\libpairinteraction\
+  - cmd: xcopy pairinteraction\Release\* %PATH_WHEEL_UNPACKED%\pairinteraction\
   - ps: Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
   - cmd: wheel pack %PATH_WHEEL_UNPACKED% -d wheelhouse\
 
 test_script:
-  - cmd: xcopy libpairinteraction\Release\* libpairinteraction
+  - cmd: xcopy pairinteraction\Release\* pairinteraction
   - cmd: cmake --build . --target check --config "%CONFIGURATION%"
 
 artifacts:
