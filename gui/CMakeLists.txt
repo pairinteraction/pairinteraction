@@ -17,7 +17,7 @@ find_package(PyUIC REQUIRED)
 add_custom_target(gui ALL
   COMMAND ${CMAKE_COMMAND} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein -DOUT=${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py -DVERSION_SOFTWARE=${VERSION_SOFTWARE} -DVERSION_SETTINGS=${VERSION_SETTINGS} -DVERSION_CACHE=${VERSION_CACHE} -P ${CMAKE_MODULE_PATH}/configure.cmake
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/pairinteraction
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/start_pairinteraction_gui
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pyqtgraph/pyqtgraph ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/pyqtgraph
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
@@ -35,7 +35,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS ${CMAKE_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
+    DEPENDS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
   )
 
   add_custom_target(pyinstaller ALL
@@ -79,7 +79,7 @@ elseif( CMAKE_HOST_UNIX )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/${GUINAME})
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/${GUINAME})
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
   install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/pairinteraction ${CMAKE_BINARY_DIR}/tmp/pairinteraction)")
