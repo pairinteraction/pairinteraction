@@ -54,7 +54,7 @@ for file in *.py; do
     echo "PEP8: $(realpath ${file})"
     autopep8 --max-line-length 120 --aggressive --in-place ${file}
 done
-cd "${SRC}/gui/pairinteraction"
+cd "${SRC}/pairinteraction_gui/pairinteraction"
 for file in *.py; do
     echo "PEP8: $(realpath ${file})"
     autopep8 --max-line-length 120 --aggressive --in-place ${file}

@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import gui.pairinteraction.app
+import pairinteraction_gui.pairinteraction.app as app
 
 if __name__ == '__main__':
-    gui.pairinteraction.app.main()
+    app.main()

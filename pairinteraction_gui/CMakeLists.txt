@@ -71,7 +71,7 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
     message( FATAL_ERROR "Could not find fileicon" )
   endif( )
 
-  set(filepath \${CMAKE_INSTALL_PREFIX}/gui/pairinteraction)
+  set(filepath \${CMAKE_INSTALL_PREFIX}/${GUINAME}/pairinteraction)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 

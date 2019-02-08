@@ -15,6 +15,8 @@
 !include "MUI.nsh"
 
 !define APP_NAME "pairinteraction"
+!define LIBNAME "pairinteraction"
+!define GUINAME "pairinteraction_gui"
 !define BUILD_DIR "..\build"
 !define PROGDIR $PROGRAMFILES64
 
@@ -75,12 +77,12 @@ SectionGroup /e "${APP_NAME}"
     SectionIn RO
     SetOutPath "$INSTDIR"
     File "..\LICENSE*"
-    SetOutPath "$INSTDIR\pairinteraction"
-    File "${BUILD_DIR}\pairinteraction\Release\*"
-    File "${BUILD_DIR}\pairinteraction\pireal.py"
-    File "${BUILD_DIR}\pairinteraction\picomplex.py"
-    SetOutPath "$INSTDIR\pairinteraction\databases"
-    File "${BUILD_DIR}\pairinteraction\databases\*.db"
+    SetOutPath "$INSTDIR\${LIBNAME}"
+    File "${BUILD_DIR}\${LIBNAME}\Release\*"
+    File "${BUILD_DIR}\${LIBNAME}\pireal.py"
+    File "${BUILD_DIR}\${LIBNAME}\picomplex.py"
+    SetOutPath "$INSTDIR\${LIBNAME}\databases"
+    File "${BUILD_DIR}\${LIBNAME}\databases\*.db"
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 
@@ -91,7 +93,7 @@ SectionGroup /e "${APP_NAME}"
   SectionEnd
 
   Section 'GUI (Recommended)'
-    SetOutPath "$INSTDIR\gui"
+    SetOutPath "$INSTDIR\${GUINAME}"
     File /r "${BUILD_DIR}\dist\pairinteraction\*"
   SectionEnd
 SectionGroupEnd
@@ -102,7 +104,7 @@ Section 'Desktop Icon'
   File "pairinteraction.ico"
   FileOpen  $4 "$INSTDIR\pairinteraction.bat" w
   FileWrite $4 "@echo off$\r$\n"
-  FileWrite $4 'cmd /k ""$INSTDIR\gui\pairinteraction.exe""'
+  FileWrite $4 'cmd /k ""$INSTDIR\${GUINAME}\pairinteraction.exe""'
   FileClose $4
 
   CreateShortCut "$DESKTOP\pairinteraction.lnk" "$INSTDIR\pairinteraction.bat" "" \
@@ -120,8 +122,8 @@ functionEnd
 
 
 Section 'uninstall'
-  RMDir /r "$INSTDIR\pairinteraction"
-  RMDir /r "$INSTDIR\gui"
+  RMDir /r "$INSTDIR\${LIBNAME}"
+  RMDir /r "$INSTDIR\${GUINAME}"
 
   delete "$INSTDIR\LICENSE*"
 

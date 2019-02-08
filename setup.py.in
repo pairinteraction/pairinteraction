@@ -16,7 +16,7 @@ setup(
         ],
         "@GUINAME@" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
-    scripts = [ "pairinteraction" ],
+    scripts = [ "start_pairinteraction_gui" ],
     install_requires=[
         "numpy >= 1.11.0",
         "scipy >= 0.17.0",

@@ -57,8 +57,8 @@ case "${TRAVIS_OS_NAME}" in
                     ;;
 
                 "manylinux")
-                    mkdir -p build/gui/pairinteraction
-                    pyuic5 --output build/gui/pairinteraction/plotter.py gui/plotter.ui
+                    mkdir -p build/pairinteraction_gui/pairinteraction
+                    pyuic5 --output build/pairinteraction_gui/pairinteraction/plotter.py pairinteraction_gui/plotter.ui
                     docker run --env-file /tmp/docker.env \
                         -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
