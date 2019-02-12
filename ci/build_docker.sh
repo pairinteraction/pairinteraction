@@ -105,7 +105,7 @@ case "${TRAVIS_OS_NAME}" in
         make license;
         python setup.py bdist_wheel --python-tag py3 --plat-name macosx_10_12_x86_64;
         wheel unpack dist/*.whl -d wheelhouse/;
-        chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/pairinteraction;
+        chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/start_pairinteraction_gui;
         cd wheelhouse/*/pairinteraction;
         python ../../../../apple/standalone.py .libs _picomplex.so _pireal.so pairinteraction-complex pairinteraction-real;
         cd ../../..;
