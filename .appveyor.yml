@@ -50,7 +50,7 @@ after_build:
   - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
-  - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_x86_64
+  - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_amd64
   - ps: $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
   - cmd: wheel unpack %PATH_WHEEL_UNMODIFIED% -d wheelhouse\
   - ps: $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
