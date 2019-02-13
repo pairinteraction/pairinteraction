@@ -2,6 +2,9 @@
 
 set -e;
 
+# Gather coverage data (always has to be done for CodeCov)
+lcov --directory . --capture --output-file coverage.info;
+lcov --remove coverage.info '/usr/*' '*/build/*' '*/eigen/*' '*/wignerSymbols/*' --output-file coverage.info;
 
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
     echo "INFO: This is a PR.";
@@ -34,9 +37,7 @@ fi;
 # Build the docs
 make -k -j 2 doc;
 
-# Get coverage report
-lcov --directory . --capture --output-file coverage.info;
-lcov --remove coverage.info '/usr/*' '*/build/*' '*/eigen/*' '*/wignerSymbols/*' --output-file coverage.info;
+# Generate HTML coverage report
 genhtml coverage.info --output-directory doc/coverage/html/;
 
 cd "doc/";
