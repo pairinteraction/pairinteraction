@@ -35,7 +35,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.extlinks'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -161,3 +162,8 @@ texinfo_documents = [
 
 # Use constructor docstring as class docstring
 autoclass_content = "init"
+
+extlinks = {
+    'github': ('https://github.com/pairinteraction/pairinteraction/%s', None),
+    'gh-pages': ('https://pairinteraction.github.io/pairinteraction/%s', None)
+}

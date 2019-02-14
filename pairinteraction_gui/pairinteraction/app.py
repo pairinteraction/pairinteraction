@@ -32,8 +32,12 @@ import zipfile
 import psutil
 
 # GUI
-from PyQt5 import QtCore, QtGui
-from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
+try:
+    from PyQt5 import QtCore, QtGui
+    from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
+except ImportError:
+    raise Exception("Loading PyQt5 has failed. Is it installed?")
+
 from . import pyqtgraph as pg
 from .pyqtgraph import exporters
 from .pyqtgraph import ColorButton, GradientWidget, PlotWidget

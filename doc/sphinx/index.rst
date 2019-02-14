@@ -26,17 +26,11 @@ Pairinteraction - A Rydberg Interaction Calculator
 
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
-For usage examples visit the `tutorials`_ section of the documentation.
+For usage examples visit the :gh-pages:`tutorials <sphinx/html/tutorials.html>` section of the documentation.
 Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you.
-If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an `issue`_ on `GitHub`_.
-
-.. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
+If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an :github:`issue <issues>` on :github:`GitHub <>`.
 
 .. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
-
-.. _issue: https://github.com/pairinteraction/pairinteraction/issues
-
-.. _GitHub: https://github.com/pairinteraction/pairinteraction
 
 Please cite us
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
@@ -57,18 +51,16 @@ Please cite us
           url = {https://doi.org/10.1088/1361-6455/aa743a}
         }
 
-See works citing pairinteraction on `Google Scholar`_ and the `ADS Digital Library`_.
+See works citing pairinteraction at the `ADS Digital Library`_ and on `Google Scholar`_.
 
 .. _Google Scholar: https://scholar.google.com/scholar?cites=5795867423675717201
-.. _ADS Digital Library: http://adsabs.harvard.edu/cgi-bin/nph-ref_query?bibcode=2017JPhB...50m3001W&amp;refs=CITATIONS&amp;db_key=PHY
+.. _ADS Digital Library: https://ui.adsabs.harvard.edu/#abs/2017JPhB...50m3001W/citations
 
 Installation
 ============
 
-Binary builds are available for GNU/Linux, Mac OS X, and Windows through `GitHub Releases`_. For more information, read the `installation docs`_.
-
-.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
-.. _installation docs: https://pairinteraction.github.io/pairinteraction/sphinx/html/installation.html
+Binary builds are available for GNU/Linux, Mac OS X, and Windows through :github:`GitHub Releases <releases>`.
+For more information, read the :ref:`installation docs <Installation>`.
 
 Main Features
 =============
