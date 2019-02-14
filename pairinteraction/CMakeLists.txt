@@ -121,7 +121,9 @@ target_link_libraries(picomplex ${LIBRARIES})
 
 # Generate interface with SWIG
 if(WITH_PYTHON)
-  cmake_policy(SET CMP0078 OLD)
+  if(POLICY CMP0078)
+    cmake_policy(SET CMP0078 OLD)
+  endif()
 
   set( DATATYPE "real" )
   configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i )
