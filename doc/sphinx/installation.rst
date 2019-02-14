@@ -7,10 +7,8 @@ Binary Installer
 ----------------
 
 Builds are available for GNU/Linux, Mac OS X, and Windows through
-`GitHub Releases`_.  The different packages were built on the following
+:github:`GitHub Releases <releases>`.  The different packages were built on the following
 architectures:
-
-.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
 
 - ``deb`` package: Ubuntu 16.04 amd64
 - ``rpm`` package: OpenSUSE Leap x86_64
@@ -21,12 +19,9 @@ The binary builds come with a Python and C++ library. The library can be used
 for simulating a broad range of two-atom Rydberg systems taking into
 account electric and magnetic fields. Quantities as matrix elements,
 eigenenergies, or excitation dynamics can be calculated. For usage examples
-visit the `tutorials`_ section of the documentation or download the `Python`_
-and `C++`_ example programs.
-
-.. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
-.. _python: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python
-.. _C++: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_cpp
+visit the :ref:`tutorials <Tutorials>` section of the documentation or
+download the :github:`Python <tree/master/doc/sphinx/examples_python>`
+and :github:`C++ <tree/master/doc/sphinx/examples_cpp>` example programs.
 
 Python Library
 ^^^^^^^^^^^^^^
