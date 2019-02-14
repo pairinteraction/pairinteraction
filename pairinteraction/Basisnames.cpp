@@ -117,9 +117,6 @@ void BasisnamesOne::build(StateTwoOld startstate, const std::string &species) {
     states_initial.push_back(startstate.first());  // TODO correct for idx
     states_initial.push_back(startstate.second()); // TODO correct for idx
 
-    std::cout << startstate.first() << std::endl;
-    std::cout << startstate.second() << std::endl;
-
     conf["species1"] << species;
     conf["n1"] << startstate.n[0];
     conf["l1"] << startstate.l[0];
