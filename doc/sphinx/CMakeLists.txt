@@ -111,10 +111,13 @@ if(IPython_FOUND)
   set(NOTEBOOKS
     "introduction.ipynb"
     "matrix_elements.ipynb"
-    "wavefunctions.ipynb"
     #"comparison_to_saffman_fig13.ipynb"
     #"pair_potential_efield_sensitivity.ipynb"
     )
+
+  if(WITH_GSL)
+    list(APPEND NOTEBOOKS "wavefunctions.ipynb")
+  endif()
 
   foreach(file ${NOTEBOOKS})
     configure_file(

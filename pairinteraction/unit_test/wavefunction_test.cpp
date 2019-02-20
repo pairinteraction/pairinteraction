@@ -51,6 +51,7 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T) // NOLINT
     BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
 }
 
+#ifdef WITH_GSL
 BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T) // NOLINT
 {
     Whittaker W(T::qd);
@@ -87,3 +88,4 @@ BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T) // NOLINT
     double mu_w = IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd);
     BOOST_CHECK_CLOSE(mu_n, mu_w, 1e-3); // corresponds to 0.1% deviation
 }
+#endif

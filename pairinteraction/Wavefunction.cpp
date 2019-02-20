@@ -17,9 +17,12 @@
 #include "Wavefunction.h"
 #include "QuantumDefect.h"
 
+#include <boost/core/ignore_unused.hpp>
 #include <cctype>
 #include <cmath>
+#ifdef WITH_GSL
 #include <gsl/gsl_sf_hyperg.h>
+#endif
 #include <string>
 #include <vector>
 
@@ -111,10 +114,15 @@ eigen_dense_double_t Numerov::integrate() {
 namespace whittaker_functions {
 
 double HypergeometricU(double a, double b, double z) {
+#ifdef WITH_GSL
     if (z == 0) {
         return NAN;
     }
     return gsl_sf_hyperg_U(a, b, z);
+#else
+    boost::ignore_unused(a, b, z);
+    throw std::runtime_error("Whittaker functions require the GSL library!");
+#endif
 }
 
 double WhittakerW(double k, double m, double z) {

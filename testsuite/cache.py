@@ -57,6 +57,7 @@ class CacheTest(unittest.TestCase):
         self.assertEqual(cache.size(), cache_size)
         self.assertEqual(cache_comparison.size(), cache_comparison_size + 1)
 
+    @unittest.skipIf(not pi.gsl_enabled, "The program was compiled without GSL support.")
     def test_radial_methods(self):
         cache_numerov = pi.MatrixElementCache()
         cache_numerov.setMethod(pi.NUMEROV)

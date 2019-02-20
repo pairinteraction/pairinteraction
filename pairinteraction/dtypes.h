@@ -80,6 +80,12 @@ constexpr const bool mkl_enabled = true;
 constexpr const bool mkl_enabled = false;
 #endif // WITH_INTEL_MKL
 
+#ifdef WITH_GSL
+constexpr const bool gsl_enabled = true;
+#else  // WITH_GSL
+constexpr const bool gsl_enabled = false;
+#endif // WITH_GSL
+
 enum parity_t {
     NA = INT_MAX,
     EVEN = 1,

@@ -3,6 +3,7 @@ from @LIBNAME@ import pireal as pi
 import numpy as np
 
 
+@unittest.skipIf(not pi.gsl_enabled, "The program was compiled without GSL support.")
 class TestWavefunction(unittest.TestCase):
 
     def test_comparison(self):

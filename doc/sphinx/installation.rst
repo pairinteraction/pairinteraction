@@ -150,8 +150,17 @@ The build system uses CMake and has some configuration switches. These are
 +---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
 +---------------------+--------------------------------------+---------+
+| ``WITH_LTO``        | Build with link-time optimization    | OFF     |
++---------------------+--------------------------------------+---------+
+| ``WITH_GSL``        | Use the GNU scientific library for   | ON      |
+|                     | Whittaker functions [#]_             |         |
++---------------------+--------------------------------------+---------+
 | ``WITH_CLANG_TIDY`` | Run Clang-Tidy during compilation    | OFF     |
 +---------------------+--------------------------------------+---------+
+
+.. [#] If pairinteraction is built in this mode, any derived work has
+       to be licensed under GPL v3, because of the GSL being
+       distributed under GPL.
 
 These options can be passed directly to ``cmake``, i.e.
 
