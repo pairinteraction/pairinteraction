@@ -82,7 +82,10 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
              --data "{\"state\": \"failure\", \"context\": \"Style check\", \"target_url\": \"${DIFF_URL}\"}" \
              "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
     else
-        echo "Skipping GitHub comment."
+        echo "I can't comment on GitHub because GH_TOKEN is missing so I'm crashing the build."
+        echo "Here is what's wrong:"
+        git --no-pager diff
+        exit 1
     fi
 else
     # Post success status
