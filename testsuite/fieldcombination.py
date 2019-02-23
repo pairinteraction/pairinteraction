@@ -1,7 +1,4 @@
 import numpy as np
-import pickle
-import shutil
-import tempfile
 import unittest
 
 from @LIBNAME@ import pireal as pi

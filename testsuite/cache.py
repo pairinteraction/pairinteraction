@@ -1,5 +1,4 @@
 import numpy as np
-import pickle
 import shutil
 import tempfile
 import unittest

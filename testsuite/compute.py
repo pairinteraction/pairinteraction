@@ -1,9 +1,10 @@
-import @LIBNAME@.picomplex as pi
 import json
 import os
 import shutil
 import tempfile
 import unittest
+
+import @LIBNAME@.picomplex as pi
 
 
 class TestCompute(unittest.TestCase):

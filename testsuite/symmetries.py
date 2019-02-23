@@ -1,9 +1,10 @@
 import unittest
 import numpy as np
-from @LIBNAME@ import picomplex as pi
 import tempfile
 import shutil
 from itertools import product
+
+from @LIBNAME@ import picomplex as pi
 
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):

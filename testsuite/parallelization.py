@@ -2,9 +2,10 @@ import unittest
 import numpy as np
 from scipy.sparse import coo_matrix
 from multiprocessing import Pool
-from @LIBNAME@ import pireal as pi
 import tempfile
 import shutil
+
+from @LIBNAME@ import pireal as pi
 
 
 class TestPythoninterfaceMultiprocessing(unittest.TestCase):
