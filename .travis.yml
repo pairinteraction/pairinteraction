@@ -63,6 +63,8 @@ matrix:
         - package=pairinteraction-install-opensuse.rpm
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
 
+before_script:
+  - git fetch --unshallow --tags
 script:
   - travis_wait 30 sleep infinity & ci/build_docker.sh
 
