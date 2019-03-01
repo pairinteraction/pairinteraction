@@ -43,8 +43,7 @@ void GreenTensor::plate(double x, double zA, double zB) {
     double rp = std::sqrt(x * x + zp * zp);
     
     Eigen::Matrix<double, 3, 3> plate_tensor;
-    Eigen::Matrix<double, 3, 3> plate_tensor2;
-    plate_tensor1 <<  -2.*x*x+zp*zp, 0, -3.*x*zp,
+    plate_tensor <<  -2.*x*x+zp*zp, 0, -3.*x*zp,
                     0, x*x+zp*zp, 0,
                     3.*x*zp, 0, -x*x+2*zp*zp;    
     dd_tensor += plate_tensor*std::pow(rp,-5.);
@@ -68,7 +67,7 @@ void GreenTensor::vacuumDipoleQuadrupole(double x, double y, double z) {//TODO c
                     3. / std::pow(distance.norm(), 3.) *
                         (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
 
-                dq_tensor(i, j, k) = -3. / std::pow(distance, 4.) *
+                dq_tensor(i, j, k) = -3. / std::pow(distance.norm(), 4.) *
                         (distance(i) * Eye(j, k) + 3. * distance(i) * distance(j) * distance(k)) +
                     3. / std::pow(distance.norm(), 3.) *
                         (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
