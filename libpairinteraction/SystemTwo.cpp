@@ -814,7 +814,7 @@ void SystemTwo::initializeInteraction() {
                         }
 
                         // Combine everything
-                        double val = coulombs_constant * vec1_entry *
+                        double val = -coulombs_constant * vec1_entry *
                             vec2_entry; // TODO Why isn't there a minus in front of
                                         // coulombs_constant?
                         if (i1 == 1 && i2 == 1) {
@@ -837,7 +837,7 @@ void SystemTwo::initializeInteraction() {
                     auto key = (q1 < q2) ? 3 * (q1 + 1) + (q2 + 1) : 3 * (q2 + 1) + (q1 + 1);
 
                     if (interaction_angulardipole_keys[key]) {
-                        double val = -coulombs_constant *
+                        double val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
                             cache.getElectricDipole(r.state.getSecondState(),
