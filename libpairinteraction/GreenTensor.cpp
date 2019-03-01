@@ -50,29 +50,28 @@ void GreenTensor::plate(double x, double zA, double zB) {
     dd_tensor += plate_tensor*std::pow(rp,-5.);
 }
 
+// def freiraummatrixdq(rho):
+//     return np.array((-3./rho**4)*np.tensordot(np.eye(3),irv,axes=0) + (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) - (3./rho**3)*np.tensordot(irv,Amatrix,axes=0) - (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
+
 void GreenTensor::vacuumDipoleQuadrupole(double x, double y, double z) {//TODO check sign according to sign of dipole-dipole tensors.
-//     double distance = std::sqrt(x * x + z * z);
+    Eigen::Matrix<double, 3, 3> Eye = Eigen::Matrix<double, 3, 3>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
-//     double vecrho[3];
-//     vecrho[0] = x / (distance);
-//     vecrho[1] = 0.;
-//     vecrho[2] = z / (distance);
     Eigen::Matrix<double, 3, 3> Amatrix;
-    Amatrix << z * z, 0, -x * z, 0, distance * distance, 0, -x * z, 0, z * z;
-    Amatrix /= distance * distance*distance;
+    Amatrix << y* y + z * z, -x*y, -x * z, -x*y, x*x+z*z ,-y*z, -x * z, -y*z, y*y + z * z;
+    Amatrix = Amatrix/std::pow(distance.norm(),3);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             for (int k = 0; k < 3; k++) {
                 qd_tensor(i, j, k) = 3. / std::pow(distance.norm(), 4.) *
-                        (vecrho[i] * KDelta(j, k) - 3. * vecrho[i] * vecrho[j] * vecrho[k]) +
+                        (distance(i) *Eye(j,k)  - 3. * distance(i) * distance(j) * distance(k)) +
                     3. / std::pow(distance.norm(), 3.) *
-                        (Amatrix(i, j) * vecrho[k] + Amatrix(i, k) * vecrho[j]);
+                        (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
 
                 dq_tensor(i, j, k) = -3. / std::pow(distance, 4.) *
-                        (vecrho[i] * KDelta(j, k) + 3. * vecrho[i] * vecrho[j] * vecrho[k]) +
+                        (distance(i) * Eye(j, k) + 3. * distance(i) * distance(j) * distance(k)) +
                     3. / std::pow(distance.norm(), 3.) *
-                        (Amatrix(i, j) * vecrho[k] + Amatrix(i, k) * vecrho[j]);
+                        (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
             }
         }
     }
