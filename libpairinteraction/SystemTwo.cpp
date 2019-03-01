@@ -617,10 +617,13 @@ void SystemTwo::initializeInteraction() {
         if (surface_distance != std::numeric_limits<double>::max() && distance_y != 0) {
             throw std::runtime_error("The atoms must be in the xz-plane if a surface is present");
         }
-        if (ordermax > 4) {
+        if (ordermax > 3) {
+//             throw std::runtime_error(
+//                 "If the Green tensor approach is used, multipole interaction of higher order than "
+//                 "dipole-quadrupole cannot be considered.");
             throw std::runtime_error(
                 "If the Green tensor approach is used, multipole interaction of higher order than "
-                "dipole-quadrupole cannot be considered.");
+                "dipole-dipole cannot be considered.");
         }
 
         // Calculate Green tensor
@@ -828,7 +831,7 @@ void SystemTwo::initializeInteraction() {
                     auto key = (q1 < q2) ? 3 * (q1 + 1) + (q2 + 1) : 3 * (q2 + 1) + (q1 + 1);
 
                     if (interaction_angulardipole_keys[key]) {
-                        double val = coulombs_constant *
+                        double val = -coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
                             cache.getElectricDipole(r.state.getSecondState(),

@@ -64,7 +64,7 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setConservedMomentaUnderRotation([int(np.sum(self.state_two.getM()))])
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setDistance(2)
-        system_two.setOrder(4)
+        system_two.setOrder(3)
 
         # Construct the Hamiltonian using the standard approach
         system_two_standard = pi.SystemTwo(system_two)
