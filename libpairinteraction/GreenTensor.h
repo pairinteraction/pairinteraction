@@ -34,33 +34,34 @@
 
 class GreenTensor {
 
-public:       
-       
+public:
+
     void vacuumDipoleQuadrupole(double x, double z); // TODO create vacuum(x,z,order), include order-parameter in constructor.
     void plateDipoleQuadrupole(double x, double zA, double zB);
     void addSurface(double d);
-    GreenTensor(double a, double b);
+    GreenTensor(double x, double y, double z);
 //     GreenTensor(double x, double zA, double zB);
     const Eigen::Matrix<double, 3, 3> &getDDTensor();
-private:    
+private:
     double x;
+    double y;
     double z;
     double angle;
     double zA;
     double zB;
-    
+
     bool dd_tensor_calculated;
     bool dq_tensor_calculated;
     double surface_distance;
-    
-    double KDelta(int i, int j); 
-    void vacuum(double x, double z);
+
+    double KDelta(int i, int j);
+    void vacuum(double x, double y, double z);
     void plate(double x, double zA, double zB);
-    
+
     Eigen::Matrix<double, 3, 3> dd_tensor;
     Eigen::Tensor<double,3> qd_tensor;
     Eigen::Tensor<double,3> dq_tensor;
-    
+
 };
 
 #endif

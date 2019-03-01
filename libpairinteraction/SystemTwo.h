@@ -38,10 +38,11 @@ public:
     const std::array<std::string, 2> &getSpecies();
     std::vector<StateOne> getStatesFirst();
     std::vector<StateOne> getStatesSecond();
-    void setDistance(double d);
     void enableGreenTensor(bool GTboolean);
     void setSurfaceDistance(double d);
     void setAngle(double a);
+    void setDistance(double d);
+    void setDistanceVector(std::array<double, 3> d);
     void setOrder(double o);
 
     void setConservedParityUnderPermutation(parity_t parity);
@@ -71,10 +72,9 @@ private:
     std::unordered_map<int, eigen_sparse_t> interaction_greentensor;
 
     double minimal_le_roy_radius;
-    double distance;
+    double distance, distance_x, distance_y, distance_z;
     bool GTbool;
     double surface_distance;
-    double angle;
     unsigned int ordermax;
 
     parity_t sym_permutation;
@@ -164,7 +164,7 @@ private:
     void serialize(Archive &ar, const unsigned int /*version*/) {
         ar &boost::serialization::base_object<SystemBase<StateTwo>>(*this);
         ar &species &system1 &system2;
-        ar &distance &angle &surface_distance &ordermax;
+        ar &distance &distance_x &distance_y &distance_z &surface_distance &ordermax;
         ar &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
         ar &angle_terms &greentensor_terms;
         ar &interaction_angulardipole &interaction_multipole &interaction_greentensor;

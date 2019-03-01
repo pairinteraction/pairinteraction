@@ -30,17 +30,19 @@
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
     : SystemBase(cache), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1), system2(b2),
       minimal_le_roy_radius(std::numeric_limits<double>::max()),
-      distance(std::numeric_limits<double>::max()), GTbool(false),
-      surface_distance(std::numeric_limits<double>::max()), angle(0), ordermax(3),
-      sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
+      distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
+      distance_z(std::numeric_limits<double>::max()), GTbool(false),
+      surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
+      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
                      bool memory_saving)
     : SystemBase(cache, memory_saving), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1),
       system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
-      distance(std::numeric_limits<double>::max()), GTbool(false),
-      surface_distance(std::numeric_limits<double>::max()), angle(0), ordermax(3),
-      sym_permutation(NA), sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
+      distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
+      distance_z(std::numeric_limits<double>::max()), GTbool(false),
+      surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
+      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 std::vector<StateOne>
 SystemTwo::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
@@ -64,11 +66,6 @@ SystemTwo::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
 
 const std::array<std::string, 2> &SystemTwo::getSpecies() { return species; }
 
-void SystemTwo::setDistance(double d) {
-    this->onParameterChange();
-    distance = d;
-}
-
 void SystemTwo::enableGreenTensor(bool GTboolean) {
     this->onParameterChange();
     GTbool = GTboolean;
@@ -86,9 +83,30 @@ void SystemTwo::setSurfaceDistance(double d) {
     }
 }
 
+void SystemTwo::setDistance(double d) {
+    this->onParameterChange();
+    distance_x = distance_x / distance * d;
+    distance_y = distance_y / distance * d;
+    distance_z = distance_z / distance * d;
+    distance = d;
+}
+
+void SystemTwo::setDistanceVector(std::array<double, 3> d) {
+    this->onParameterChange();
+    distance_x = d[0];
+    distance_y = d[1];
+    distance_z = d[2];
+    distance = std::sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]);
+    if (distance_y != 0) {
+        this->enableGreenTensor(true);
+    }
+}
+
 void SystemTwo::setAngle(double a) {
     this->onParameterChange();
-    angle = a;
+    distance_x = distance * std::sin(a);
+    distance_y = 0;
+    distance_z = distance * std::cos(a);
 }
 
 void SystemTwo::setOrder(double o) {
@@ -586,23 +604,32 @@ void SystemTwo::initializeInteraction() {
 
     double tolerance = 1e-16;
 
-    if (GTbool) {
+    if (distance_y != 0 || surface_distance != std::numeric_limits<double>::max() ||
+        (distance_x != 0 && ordermax > 3) || GTbool) {
+
         // Check compatibility of settings
-        if (angle != 0 && ordermax > 4) {
+        if (!GTbool) {
             throw std::runtime_error(
-                "A non-zero interaction angle can be only used for dipole-dipole interaction (if "
-                "the Green tensor approach is not used) or dipole-quadrupole interaction (if the "
-                "Green tensor approach is used).");
+                "The Green tensor approach must be used if a) the distance vector has a non-zero "
+                "y-coordinate, b) a surface is present, or c) the interaction angle is non-zero "
+                "and interaction of higher order than dipole-dipole is considered.");
+        }
+        if (surface_distance != std::numeric_limits<double>::max() && distance_y != 0) {
+            throw std::runtime_error("The atoms must be in the xz-plane if a surface is present");
+        }
+        if (ordermax > 4) {
+            throw std::runtime_error(
+                "If the Green tensor approach is used, multipole interaction of higher order than "
+                "dipole-quadrupole cannot be considered.");
         }
 
         // Calculate Green tensor
-        double x = distance * std::sin(angle);
-        double z = distance * std::cos(angle);
-        GreenTensor GT(x, z);
+        GreenTensor GT(distance_x, distance_y, distance_z);
         if (surface_distance != std::numeric_limits<double>::max()) {
             GT.addSurface(surface_distance);
         }
         const auto &dd_green_tensor = GT.getDDTensor();
+
         // Determine which interaction matrices have to be calculated
         greentensor_terms.clear();
         for (int i1 = 0; i1 < 3; ++i1) {
@@ -614,14 +641,11 @@ void SystemTwo::initializeInteraction() {
             }
         }
 
-    } else if (angle != 0) {
-        // Check compatibility of settings
-        if (ordermax > 3) {
-            throw std::runtime_error(
-                "A non-zero interaction angle can be only used for dipole-dipole interaction (if "
-                "the Green tensor approach is not used) or dipole-quadrupole interaction (if the "
-                "Green tensor approach is used).");
-        }
+    } else if (distance_x != 0) {
+
+        // We know from before that distance_y is zero so that we can easily calculate the
+        // interaction angle
+        double angle = std::atan2(distance_x, distance_z);
 
         // Calculate angle terms
         double val = 1. - 3. * std::pow(std::cos(angle), 2); // 0,0
@@ -781,9 +805,12 @@ void SystemTwo::initializeInteraction() {
                         }
 
                         // Combine everything
-                        double val = coulombs_constant * vec1_entry * vec2_entry;
-                        if (i1 == 1 && i2 == 1)
+                        double val = coulombs_constant * vec1_entry *
+                            vec2_entry; // TODO Why isn't there a minus in front of
+                                        // coulombs_constant?
+                        if (i1 == 1 && i2 == 1) {
                             val *= -1; //"-" from i^2
+                        }
                         this->addTriplet(interaction_greentensor_triplets[3 * i2 + i1], r.idx,
                                          c.idx, val);
                     }
@@ -899,7 +926,7 @@ void SystemTwo::addInteraction() {
                 prefactor = utils::imaginary_unit<scalar_t>();
             hamiltonian += prefactor * interaction_greentensor[g.first] * g.second;
         }
-    } else if (angle != 0) {
+    } else if (distance_x != 0) {
         double powerlaw = 1. / std::pow(distance, 3);
         for (const auto &a : angle_terms) {
             hamiltonian += interaction_angulardipole[a.first] * a.second * powerlaw;
@@ -1002,13 +1029,17 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
         throw std::runtime_error(
             "The value of the variable 'element' must be the same for both systems.");
     }
-    if (distance != dynamic_cast<SystemTwo &>(system).distance) {
+    if (distance_x != dynamic_cast<SystemTwo &>(system).distance_x) {
         throw std::runtime_error(
             "The value of the variable 'distance' must be the same for both systems.");
     }
-    if (angle != dynamic_cast<SystemTwo &>(system).angle) {
+    if (distance_y != dynamic_cast<SystemTwo &>(system).distance_y) {
         throw std::runtime_error(
-            "The value of the variable 'angle' must be the same for both systems.");
+            "The value of the variable 'distance' must be the same for both systems.");
+    }
+    if (distance_z != dynamic_cast<SystemTwo &>(system).distance_z) {
+        throw std::runtime_error(
+            "The value of the variable 'distance' must be the same for both systems.");
     }
     if (ordermax != dynamic_cast<SystemTwo &>(system).ordermax) {
         throw std::runtime_error(
