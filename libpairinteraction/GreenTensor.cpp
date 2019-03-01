@@ -31,13 +31,20 @@ void GreenTensor::plate(double x, double zA, double zB) {
         throw std::runtime_error(
             "zA or zB < 0. One of the atoms is inside the plate. Plate is half-space z < 0.");
     }
+
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
 
-    Eigen::Matrix<double, 3, 3> plate_tensor;
-    plate_tensor << -2. * x * x + zp * zp, 0, -3. * x * zp, 0, x * x + zp * zp, 0, 3. * x * zp, 0,
-        -x * x + 2 * zp * zp;
-    dd_tensor += plate_tensor * std::pow(rp, -5.);
+    Eigen::Matrix<double, 3, 3> plate_tensor_second_matrix;
+    plate_tensor_second_matrix << x * x, 0, -x * zp, 0, 0, 0, x * zp, 0, x * x;
+
+    // Construct Green tensor
+    Eigen::Matrix<double, 3, 3> plate_tensor =
+        Eigen::Vector3d({1, 1, 2}).asDiagonal().toDenseMatrix() / std::pow(rp, 3) -
+        3 * plate_tensor_second_matrix / std::pow(rp, 5);
+
+    // Add Green tensor to the vacuum Green tensor
+    dd_tensor += plate_tensor;
 }
 
 // def freiraummatrixdq(rho):

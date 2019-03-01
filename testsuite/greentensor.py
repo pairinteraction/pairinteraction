@@ -131,9 +131,9 @@ class GreenTensorTest(unittest.TestCase):
 
         # Compare the results against literature
         np.testing.assert_allclose(C6_freespace, -670, atol=20)
-        # TODO np.testing.assert_allclose(C6_1, -455, atol=50)
-        # TODO np.testing.assert_allclose(C6_2, -600, atol=50)
-        # TODO np.testing.assert_allclose(C6_3, -622, atol=50)
+        np.testing.assert_allclose(C6_1, -544, atol=20)
+        np.testing.assert_allclose(C6_2, -628, atol=20)
+        np.testing.assert_allclose(C6_3, -649, atol=20)
 
 if __name__ == '__main__':
     unittest.main()
