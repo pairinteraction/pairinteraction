@@ -36,7 +36,9 @@ try:
     from PyQt5 import QtCore, QtGui
     from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 except ImportError:
-    raise Exception("Loading PyQt5 has failed. Is it installed?")
+    raise ImportError("Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
+                      "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
+                      "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'.")
 
 from . import pyqtgraph as pg
 from .pyqtgraph import exporters
