@@ -16,14 +16,6 @@
 
 #include "GreenTensor.h"
 
-double GreenTensor::KDelta(int i, int j) {
-    if (i == j) {
-        return 1.;
-    } else {
-        return 0.;
-    }
-}
-
 void GreenTensor::vacuum(double x, double y, double z) {
     // Build distance vector
     Eigen::Matrix<double, 3, 1> distance;

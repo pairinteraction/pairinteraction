@@ -46,7 +46,6 @@ private:
     bool dq_tensor_calculated;
     double surface_distance;
 
-    double KDelta(int i, int j);
     void vacuum(double x, double y, double z);
     void plate(double x, double zA, double zB);
 
