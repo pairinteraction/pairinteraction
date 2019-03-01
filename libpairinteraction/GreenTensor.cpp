@@ -41,29 +41,32 @@ void GreenTensor::plate(double x, double zA, double zB) {
     }
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
-    
+
     Eigen::Matrix<double, 3, 3> plate_tensor;
-    plate_tensor <<  -2.*x*x+zp*zp, 0, -3.*x*zp,
-                    0, x*x+zp*zp, 0,
-                    3.*x*zp, 0, -x*x+2*zp*zp;    
-    dd_tensor += plate_tensor*std::pow(rp,-5.);
+    plate_tensor << -2. * x * x + zp * zp, 0, -3. * x * zp, 0, x * x + zp * zp, 0, 3. * x * zp, 0,
+        -x * x + 2 * zp * zp;
+    dd_tensor += plate_tensor * std::pow(rp, -5.);
 }
 
 // def freiraummatrixdq(rho):
-//     return np.array((-3./rho**4)*np.tensordot(np.eye(3),irv,axes=0) + (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) - (3./rho**3)*np.tensordot(irv,Amatrix,axes=0) - (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
+//     return np.array((-3./rho**4)*np.tensordot(np.eye(3),irv,axes=0) +
+//     (9./rho**4)*np.tensordot(np.tensordot(irv,irv,axes=0),irv,axes=0) -
+//     (3./rho**3)*np.tensordot(irv,Amatrix,axes=0) - (3./rho**3)*matrixAikrhoj,dtype=np.complex64)
 
-void GreenTensor::vacuumDipoleQuadrupole(double x, double y, double z) {//TODO check sign according to sign of dipole-dipole tensors.
+void GreenTensor::vacuumDipoleQuadrupole(
+    double x, double y, double z) { // TODO check sign according to sign of dipole-dipole tensors.
     Eigen::Matrix<double, 3, 3> Eye = Eigen::Matrix<double, 3, 3>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
     Eigen::Matrix<double, 3, 3> Amatrix;
-    Amatrix << y* y + z * z, -x*y, -x * z, -x*y, x*x+z*z ,-y*z, -x * z, -y*z, y*y + z * z;
-    Amatrix = Amatrix/std::pow(distance.norm(),3);
+    Amatrix << y * y + z * z, -x * y, -x * z, -x * y, x * x + z * z, -y * z, -x * z, -y * z,
+        y * y + z * z;
+    Amatrix = Amatrix / std::pow(distance.norm(), 3);
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             for (int k = 0; k < 3; k++) {
                 qd_tensor(i, j, k) = 3. / std::pow(distance.norm(), 4.) *
-                        (distance(i) *Eye(j,k)  - 3. * distance(i) * distance(j) * distance(k)) +
+                        (distance(i) * Eye(j, k) - 3. * distance(i) * distance(j) * distance(k)) +
                     3. / std::pow(distance.norm(), 3.) *
                         (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
 
@@ -76,7 +79,8 @@ void GreenTensor::vacuumDipoleQuadrupole(double x, double y, double z) {//TODO c
     }
 }
 
-void GreenTensor::plateDipoleQuadrupole(double x, double zA, double zB) {//TODO check sign according to sign of dipole-dipole tensors.
+void GreenTensor::plateDipoleQuadrupole(
+    double x, double zA, double zB) { // TODO check sign according to sign of dipole-dipole tensors.
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
     // add something to Eigen/Tensor via << operator?
@@ -100,12 +104,11 @@ void GreenTensor::plateDipoleQuadrupole(double x, double zA, double zB) {//TODO 
     dq_tensor(1, 1, 2) -= (3. * zp * rp * rp) / std::pow(rp, 7.);
     dq_tensor(2, 0, 0) -= (12. * x * x * zp - 3. * zp * zp * zp) / std::pow(rp, 7.);
     dq_tensor(2, 0, 2) -= (3. * x * x * x - 12. * x * zp * zp) /
-        std::pow(rp,7.); // TODO check this element, probably wrong in old code (3*x*x - 12 *x*zp*zp)
+        std::pow(rp,
+                 7.); // TODO check this element, probably wrong in old code (3*x*x - 12 *x*zp*zp)
     dq_tensor(2, 2, 0) -= (-3. * x * x * x + 12 * x * zp * zp) / std::pow(rp, 7.);
     dq_tensor(2, 2, 2) -= (-9. * x * zp * zp + zp * zp * zp) / std::pow(rp, 7.);
 }
-
-
 
 const Eigen::Matrix<double, 3, 3> &GreenTensor::getDDTensor() {
     if (!dd_tensor_calculated) {
@@ -118,14 +121,13 @@ const Eigen::Matrix<double, 3, 3> &GreenTensor::getDDTensor() {
         if (surface_distance != std::numeric_limits<double>::max()) {
             x = sqrt(x * x + y * y);
             y = 0.;
-            vacuum(x,y,z);
+            vacuum(x, y, z);
             angle = std::atan(x / z);
             zA = surface_distance - z * std::sin(angle) / 2.;
             zB = surface_distance + z * std::sin(angle) / 2.;
             plate(x, zA, zB);
-        }
-        else{
-            vacuum(x,y,z);
+        } else {
+            vacuum(x, y, z);
         }
 
         dd_tensor_calculated = true;

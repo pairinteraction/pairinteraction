@@ -18,30 +18,22 @@
 #define GREENTENSOR_H
 
 #include <Eigen/Sparse>
-#include <unsupported/Eigen/CXX11/Tensor>
 #include <cmath>
 #include <complex>
-#include <cstdlib>
-#include <fstream> //um Datei zu erzeugen, zu Testzwecken
-#include <iomanip>
-#include <ios>
-#include <iostream>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <vector>
+#include <unsupported/Eigen/CXX11/Tensor>
 
 class GreenTensor {
 
 public:
-
-    void vacuumDipoleQuadrupole(double x, double y, double z); // TODO create vacuum(x,z,order), include order-parameter in constructor.
+    void vacuumDipoleQuadrupole(
+        double x, double y,
+        double z); // TODO create vacuum(x,z,order), include order-parameter in constructor.
     void plateDipoleQuadrupole(double x, double zA, double zB);
     void addSurface(double d);
     GreenTensor(double x, double y, double z);
-//     GreenTensor(double x, double zA, double zB);
+    //     GreenTensor(double x, double zA, double zB);
     const Eigen::Matrix<double, 3, 3> &getDDTensor();
+
 private:
     double x;
     double y;
@@ -59,9 +51,8 @@ private:
     void plate(double x, double zA, double zB);
 
     Eigen::Matrix<double, 3, 3> dd_tensor;
-    Eigen::Tensor<double,3> qd_tensor;
-    Eigen::Tensor<double,3> dq_tensor;
-
+    Eigen::Tensor<double, 3> qd_tensor;
+    Eigen::Tensor<double, 3> dq_tensor;
 };
 
 #endif

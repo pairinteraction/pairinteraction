@@ -618,9 +618,9 @@ void SystemTwo::initializeInteraction() {
             throw std::runtime_error("The atoms must be in the xz-plane if a surface is present");
         }
         if (ordermax > 3) {
-//             throw std::runtime_error(
-//                 "If the Green tensor approach is used, multipole interaction of higher order than "
-//                 "dipole-quadrupole cannot be considered.");
+            //             throw std::runtime_error(
+            //                 "If the Green tensor approach is used, multipole interaction of
+            //                 higher order than " "dipole-quadrupole cannot be considered.");
             throw std::runtime_error(
                 "If the Green tensor approach is used, multipole interaction of higher order than "
                 "dipole-dipole cannot be considered.");
@@ -653,23 +653,29 @@ void SystemTwo::initializeInteraction() {
         // Calculate angle terms
         double val = 1. - 3. * std::pow(std::cos(angle), 2); // 0,0
         angle_terms.clear();
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (0 + 1) + (0 + 1)] = val;
+        }
         val = -1. + 1.5 * std::pow(std::sin(angle), 2); // 1,-1; -1,1
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (-1 + 1) + (1 + 1)] = val;
+        }
         val = 3. / std::sqrt(2) * std::sin(angle) * std::cos(angle); // 1,0; 0,1
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (0 + 1) + (1 + 1)] = val;
+        }
         val = -3. / std::sqrt(2) * std::sin(angle) * std::cos(angle); // -1,0; 0,-1
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (-1 + 1) + (0 + 1)] = val;
+        }
         val = -1.5 * std::pow(std::sin(angle), 2); // 1,1
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (1 + 1) + (1 + 1)] = val;
+        }
         val = -1.5 * std::pow(std::sin(angle), 2); // -1,-1
-        if (std::abs(val) > tolerance)
+        if (std::abs(val) > tolerance) {
             angle_terms[3 * (-1 + 1) + (-1 + 1)] = val;
+        }
 
         // Determine which interaction matrices have to be calculated
         for (const auto &a : angle_terms) {
@@ -925,8 +931,9 @@ void SystemTwo::addInteraction() {
     if (GTbool) {
         for (const auto &g : greentensor_terms) {
             scalar_t prefactor = 1;
-            if (g.first == 1 || g.first == 3 || g.first == 5 || g.first == 7)
+            if (g.first == 1 || g.first == 3 || g.first == 5 || g.first == 7) {
                 prefactor = utils::imaginary_unit<scalar_t>();
+            }
             hamiltonian += prefactor * interaction_greentensor[g.first] * g.second;
         }
     } else if (distance_x != 0) {
