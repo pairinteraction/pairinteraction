@@ -7,11 +7,6 @@ from cycler import cycler
 
 # Parallel computing
 from multiprocessing import Pool
-
-# Platform specific
-import sys, os
-if sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
-elif sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
     
 # pairinteraction :-)
 from pairinteraction import pireal as pi

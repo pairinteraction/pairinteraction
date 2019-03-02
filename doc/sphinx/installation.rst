@@ -3,45 +3,43 @@
 Installation
 ============
 
-Binary Installer
-----------------
+Binary Installers
+-----------------
 
-Builds are available for GNU/Linux, Mac OS X, and Windows through
-:github:`GitHub Releases <releases>`. They come with a graphical user interface that works out-of-the-box. The different packages were built on the following
-architectures:
+All builds come with an easy-to-use graphical user interface for pair potential calculations, taking into
+account electric and magnetic fields. In addition, a Python 3 and C++ library is provided which can be used to
+write your own code and have more fine-grained control over what pairinteraction does. Quantities as matrix elements,
+eigenenergies, or excitation dynamics can be calculated. For usage examples
+visit the :ref:`tutorials <Tutorials>` section of the documentation or
+download the :github:`Python <tree/master/doc/sphinx/examples_python>`
+and :github:`C++ <tree/master/doc/sphinx/examples_cpp>` example programs.
+
+Packages are available for GNU/Linux, Mac OS X, and Windows through
+:github:`GitHub Releases <releases>`. For these packages, the graphical user interface works out-of-the-box.
+The different packages were built on the following architectures:
 
 - ``deb`` package: Ubuntu 16.04 amd64
 - ``rpm`` package: OpenSUSE Leap x86_64
 - Mac OS X ``dmg``: Mac OS X 10.12
 - Windows ``exe``: Compiled with Visual Studio 2015
 
-Alternatively, you can install pairinteraction for Python 3 from the `Python Package Index`_ using Pip from the command line.
-If the Python library PyQt5 is installed, you can execute the graphical user interface by calling ``start_pairinteraction_gui``.
+Alternatively, you can install pairinteraction from the `Python Package Index`_ via pip by calling ``pip install pairinteraction`` from the command line.
+We recommend this way of installation for using pairinteraction as a Python 3 library. To get the graphical user interface work with such an installation, the Python
+library PyQt5 must be installed as well.
 
-.. code-block:: bat
-
-    pip install pairinteraction
+If pairinteraction was installed from the command line, the graphical user interface can be started by executing ``start_pairinteraction_gui``.
 
 .. _Python Package Index: https://pypi.org/project/pairinteraction
-
-All builds come with a Python 3 and C++ library. The library can be used
-for simulating a broad range of two-atom Rydberg systems taking into
-account electric and magnetic fields. Quantities as matrix elements,
-eigenenergies, or excitation dynamics can be calculated. For usage examples
-visit the :ref:`tutorials <Tutorials>` section of the documentation or
-download the :github:`Python <tree/master/doc/sphinx/examples_python>`
-and :github:`C++ <tree/master/doc/sphinx/examples_cpp>` example programs.
 
 Python Library
 ^^^^^^^^^^^^^^
 
-For GNU/Linux, all dependencies of the pairinteraction Python 3 library are installed
-automatically and the Python library can be used right away.
+If pairinteraction was installed via pip or using a Linux package manager, all dependencies are installed
+automatically and the library can be used for Python 3 right away.
 
-For Windows or OS X, we recommend the installation of the Python 3
-distribution `Miniconda`_ or `Anaconda`_. As described above, pairinteraction can be either installed using Pip or from :github:`GitHub Releases <releases>`.
-If the later approach was taken, the dependencies of the
-pairinteraction library must be installed manually by executing
+Otherwise, the dependencies of the pairinteraction library must be installed manually. Assuming that the Python 3
+distribution `Miniconda`_ or `Anaconda`_ is used, the dependencies can be installed using conda. Note that it is
+important that the installed version of the NumPy library is up-to-date.
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/
@@ -50,10 +48,9 @@ pairinteraction library must be installed manually by executing
 
     conda install numpy scipy matplotlib
 
-and the path containing the library must be added manually to the Python package search path.
-Assuming that the pairinteraction software was installed to its default location, this
-can be done by adding the following code block to the top of a Python
-script:
+In addition, the path containing the pairinteraction library must be added manually to the Python package search path.
+If the pairinteraction software was installed to its default location, this
+can be done by adding the following code block to the top of a Python script:
 
 .. code-block:: python
 
@@ -74,12 +71,9 @@ Building from Source
 --------------------
 
 .. warning::
-   In the tutorials and examples you will often find instructions to
-   extend the Python package search path to accomodate pairinteraction. These
-   instructions only hold true if you installed pairinteraction from
-   the official binary installers.  If you built from source you
-   instead have to point the scripts to your build directory or the
-   custom location where you installed the program.
+   If you built from source, you have to extend the Python package search path to
+   accomodate pairinteraction by adding your build directory to ``PYTHONPATH``. This can be done e.g. by
+   adding ``import sys; sys.path.append("/your/path/to/pairinteraction/build")`` to the top of a Python script.
 
 Requirements
 ^^^^^^^^^^^^

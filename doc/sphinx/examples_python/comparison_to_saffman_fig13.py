@@ -3,9 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from multiprocessing import Pool
 from functools import partial
-import sys
-if sys.platform == "darwin": sys.path.append("/Applications/pairinteraction.app/Contents/Resources")
-elif sys.platform == "win32": sys.path.append("C:\Program Files\pairinteraction")
 from pairinteraction import pireal as pi
 
 # Parameters
