@@ -158,9 +158,10 @@ The build system uses CMake and has some configuration switches. These are
 | ``WITH_CLANG_TIDY`` | Run Clang-Tidy during compilation    | OFF     |
 +---------------------+--------------------------------------+---------+
 
-.. [#] If pairinteraction is built in this mode, any derived work has
-       to be licensed under GPL v3, because of the GSL being
-       distributed under GPL.
+.. [#] This mode activates the extension for calculating radial wave
+       functions using Whittaker functions. If pairinteraction
+       is built in this mode, any derived work has to be licensed under
+       GPL v3, because of the GSL being distributed under GPL. 
 
 These options can be passed directly to ``cmake``, i.e.
 

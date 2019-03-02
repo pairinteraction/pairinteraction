@@ -4,7 +4,7 @@
 [![AppVeyor Build Status][appveyor-svg]][appveyor-link]
 [![Code Coverage Report][codecov-svg]][codecov-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
-[![License][license-svg]][license-link]
+[![License][license-svg]][gpl-link]
    
 The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials. Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
 
@@ -14,7 +14,10 @@ The *pairinteraction* software calculates properties of Rydberg systems. Visit t
 
 ## License
 
-Pairinteraction is released under the terms of the [Apache License 2.0][license-link]. Note that not all files in this repository belong to the pairinteraction project.  The submodules link to their host repositories.  The individual licenses apply.
+The pairinteraction software consists of the [pairinteraction library](pairinteraction) licensed under the [LGPL v3][lgpl-link], an extension for calculating
+radial wave functions using Whittaker functions licensed under the [GPL v3][gpl-link], and the [graphical user interface](pairinteraction_gui) licensed
+under the GPL v3. The GPL v3 also applies to the combined work and all provided binary builds.  Note that not all files in this
+repository belong to the pairinteraction project. The submodules link to their host repositories. The individual licenses apply.
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
@@ -25,5 +28,6 @@ Pairinteraction is released under the terms of the [Apache License 2.0][license-
 [arXiv-svg]: doc/sphinx/images/arXiv-badge.svg
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [license-svg]: doc/sphinx/images/license-badge.svg
-[license-link]: https://opensource.org/licenses/Apache-2.0
+[gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
+[lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a

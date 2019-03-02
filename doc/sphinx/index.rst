@@ -10,7 +10,13 @@ For usage examples visit the :ref:`tutorials <Tutorials>` section of the documen
 Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you.
 If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an :github:`issue <issues>` on :github:`GitHub <>`.
 
+The pairinteraction library is licensed under the `LGPL v3`_. The extension for calculating
+radial wave functions using Whittaker functions and the graphical user interface is licensed under the `GPL v3`_.
+The GPL v3 also applies to the combined work and all provided binary builds.
+
 .. _signing up: https://goo.gl/forms/4bmz3qeuLjKfRlWJ3
+.. _LGPL v3: https://www.gnu.org/licenses/lgpl-3.0.html
+.. _GPL v3: https://www.gnu.org/licenses/gpl-3.0.html
 
 Please cite us
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,

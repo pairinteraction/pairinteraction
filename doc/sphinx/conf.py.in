@@ -182,6 +182,6 @@ rst_epilog = """
            :target: https://arxiv.org/abs/1612.08053
            :alt: arXiv:1612.08053
 .. |license| image:: images/license-badge.svg
-             :target: https://opensource.org/licenses/Apache-2.0
+             :target: https://www.gnu.org/licenses/gpl-3.0.html
              :alt: License
 """.format(repo_slug=repo_slug)
