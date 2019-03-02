@@ -14,9 +14,9 @@ The *pairinteraction* software calculates properties of Rydberg systems. Visit t
 
 ## License
 
-The pairinteraction software consists of the [pairinteraction library](pairinteraction) licensed under the [LGPL v3][lgpl-link], an extension for calculating
-radial wave functions using Whittaker functions licensed under the [GPL v3][gpl-link], and the [graphical user interface](pairinteraction_gui) licensed
-under the GPL v3. The GPL v3 also applies to the combined work and all provided binary builds.  Note that not all files in this
+The [pairinteraction library](pairinteraction) is licensed under the [LGPL v3][lgpl-link]. The extension for calculating
+radial wave functions using Whittaker functions and the [graphical user interface](pairinteraction_gui) are licensed under the [GPL v3][gpl-link].
+The GPL v3 also applies to the combined work and all provided binary builds. Note that not all files in this
 repository belong to the pairinteraction project. The submodules link to their host repositories. The individual licenses apply.
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master

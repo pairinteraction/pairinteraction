@@ -141,7 +141,7 @@ The build system uses CMake and has some configuration switches. These are
 +---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_DATABASE``   | Store the quantum defect database so | ON      |
+| ``WITH_DATABASE``   | Store quantum defect database so     | ON      |
 |                     | that it can be accessed by the GUI   |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_DOCS``       | Generate documentation               | ON      |
