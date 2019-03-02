@@ -6,7 +6,8 @@
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License][license-svg]][gpl-link]
    
-The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials. Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
+The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
+Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases) and the [Python Package Index](https://pypi.org/project/pairinteraction).
 
 ## Please cite us
 
@@ -14,10 +15,9 @@ The *pairinteraction* software calculates properties of Rydberg systems. Visit t
 
 ## License
 
-The [pairinteraction library](pairinteraction) is licensed under the [LGPL v3][lgpl-link]. The extension for calculating
-radial wave functions using Whittaker functions and the [graphical user interface](pairinteraction_gui) are licensed under the [GPL v3][gpl-link].
-The GPL v3 also applies to the combined work and all provided binary builds. Note that not all files in this
-repository belong to the pairinteraction project. The submodules link to their host repositories. The individual licenses apply.
+The pairinteraction library is licensed under the [LGPL v3][lgpl-link]. The extension for calculating
+radial wave functions using Whittaker functions and the graphical user interface are licensed under the [GPL v3][gpl-link].
+The GPL v3 also applies to the combined work and all provided binary builds.
 
 [travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction

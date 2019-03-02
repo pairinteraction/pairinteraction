@@ -1,13 +1,12 @@
 from setuptools import setup, find_namespace_packages
 from pathlib import Path
 
-with open("README.md", "r") as fh:
+with open("../README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
     name = "pairinteraction",
     version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
-    license = "GPLv3",
     author="Sebastian Weber, Henri Menke",
     description="A Rydberg Interaction Calculator",
     long_description=long_description,
@@ -15,7 +14,7 @@ setup(
     url="https://pairinteraction.github.io/",
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: GNU General Public License v3",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
     packages = find_namespace_packages(include=[
         "@LIBNAME@", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
