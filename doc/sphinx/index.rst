@@ -45,8 +45,8 @@ See works citing pairinteraction at the `ADS Digital Library`_ and on `Google Sc
 Installation
 ============
 
-Binary builds are available for GNU/Linux, Mac OS X, and Windows through :github:`GitHub Releases <releases>`.
-For more information, read the :ref:`installation docs <Installation>`.
+Binary builds are available for GNU/Linux, Mac OS X, and Windows through :github:`GitHub Releases <releases>`. Alternatively, you can install pairinteraction for Python 3
+by calling ``pip install pairinteraction`` from the command line. For more information, read the :ref:`installation docs <Installation>`.
 
 Main Features
 =============

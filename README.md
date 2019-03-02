@@ -7,7 +7,7 @@
 [![License][license-svg]][gpl-link]
    
 The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
-Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases) and the [Python Package Index](https://pypi.org/project/pairinteraction).
+Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases). For using pairinteraction as a library for Python 3, we recommend the installation via pip by calling `pip install pairinteraction`. If pairinteraction was installed from the command line, the graphical user interface can be started by executing `start_pairinteraction_gui`.
 
 ## Please cite us
 

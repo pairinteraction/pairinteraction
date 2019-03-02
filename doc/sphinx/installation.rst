@@ -7,7 +7,7 @@ Binary Installer
 ----------------
 
 Builds are available for GNU/Linux, Mac OS X, and Windows through
-:github:`GitHub Releases <releases>`.  The different packages were built on the following
+:github:`GitHub Releases <releases>`. They come with a graphical user interface that works out-of-the-box. The different packages were built on the following
 architectures:
 
 - ``deb`` package: Ubuntu 16.04 amd64
@@ -15,7 +15,16 @@ architectures:
 - Mac OS X ``dmg``: Mac OS X 10.12
 - Windows ``exe``: Compiled with Visual Studio 2015
 
-The binary builds come with a Python and C++ library. The library can be used
+Alternatively, you can install pairinteraction for Python 3 from the `Python Package Index`_ using Pip from the command line.
+If the Python library PyQt5 is installed, you can execute the graphical user interface by calling ``start_pairinteraction_gui``.
+
+.. code-block:: bat
+
+    pip install pairinteraction
+
+.. _Python Package Index: https://pypi.org/project/pairinteraction
+
+All builds come with a Python 3 and C++ library. The library can be used
 for simulating a broad range of two-atom Rydberg systems taking into
 account electric and magnetic fields. Quantities as matrix elements,
 eigenenergies, or excitation dynamics can be calculated. For usage examples
@@ -30,9 +39,9 @@ For GNU/Linux, all dependencies of the pairinteraction Python 3 library are inst
 automatically and the Python library can be used right away.
 
 For Windows or OS X, we recommend the installation of the Python 3
-distribution `Miniconda`_ or `Anaconda`_. Then, the dependencies of the
-pairinteraction Python 3 library can be installed by executing the
-following command:
+distribution `Miniconda`_ or `Anaconda`_. As described above, pairinteraction can be either installed using Pip or from :github:`GitHub Releases <releases>`.
+If the later approach was taken, the dependencies of the
+pairinteraction library must be installed manually by executing
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/
@@ -41,8 +50,7 @@ following command:
 
     conda install numpy scipy matplotlib
 
-In order to use the pairinteraction Python 3 library with Windows or
-OS X, the path containing the library has to be added manually to the Python package search path.
+and the path containing the library must be added manually to the Python package search path.
 Assuming that the pairinteraction software was installed to its default location, this
 can be done by adding the following code block to the top of a Python
 script:
@@ -67,7 +75,7 @@ Building from Source
 
 .. warning::
    In the tutorials and examples you will often find instructions to
-   extend the ``PYTHONPATH`` to accomodate pairinteraction.  These
+   extend the Python package search path to accomodate pairinteraction. These
    instructions only hold true if you installed pairinteraction from
    the official binary installers.  If you built from source you
    instead have to point the scripts to your build directory or the
