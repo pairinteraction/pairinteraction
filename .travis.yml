@@ -84,10 +84,10 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      fork: true
+      condition: $TRAVIS_REPO != "pairinteraction/pairinteraction"
   - provider: script
     script: bash ci/deploy_pypi.sh real
     skip_cleanup: true
     on:
       tags: true
-      fork: false
+      repo: $TRAVIS_REPO == "pairinteraction/pairinteraction"

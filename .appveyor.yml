@@ -29,7 +29,7 @@ install:
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
-  - cmd: conda install -y -q pairinteraction-dependencies
+  - cmd: conda install -y -q twine pairinteraction-dependencies
   - cmd: conda update -y -q setuptools wheel
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
  
@@ -65,15 +65,17 @@ test_script:
 artifacts:
   - path: build\pairinteraction-install-windows.exe
     name: installer
-  - path: build\wheelhouse\*.whl
-    name: wheel
 
 deploy:
   - provider: GitHub
     release: $(APPVEYOR_REPO_TAG_NAME)
     auth_token: $(GH_TOKEN)
-    artifact:  installer, wheel
+    artifact:  installer
     prerelease: true
     force_update: true
     on:
-      appveyor_repo_tag: true  
+      appveyor_repo_tag: true
+
+deploy_script:
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -eq "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -ne "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing --repository-url https://test.pypi.org/legacy/ $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
