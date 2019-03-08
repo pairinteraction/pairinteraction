@@ -27,9 +27,9 @@ The GPL v3 also applies to the combined work and all provided binary builds.
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
 [codecov-svg]: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/pairinteraction/pairinteraction
-[arXiv-svg]: doc/sphinx/images/arXiv-badge.svg
+[arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
-[license-svg]: doc/sphinx/images/license-badge.svg
+[license-svg]: https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat
 [gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
 [lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
