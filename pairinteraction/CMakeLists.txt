@@ -133,7 +133,7 @@ if(WITH_PYTHON)
   set( DATATYPE "complex" )
   configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
   
-  file( TOUCH ${CMAKE_CURRENT_BINARY_DIR}/__init__.py )
+  file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "" )
 
   find_package(SWIG 3.0 REQUIRED)
   find_package(PythonInterp 3 REQUIRED)
