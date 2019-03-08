@@ -21,7 +21,7 @@ The pairinteraction library is licensed under the [LGPL v3][lgpl-link]. The exte
 radial wave functions using Whittaker functions and the graphical user interface are licensed under the [GPL v3][gpl-link].
 The GPL v3 also applies to the combined work and all provided binary builds.
 
-[travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
+[travis-svg]: https://img.shields.io/travis/pairinteraction/pairinteraction.svg?branch=master&style=flat&logo=travis
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
