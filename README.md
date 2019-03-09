@@ -3,6 +3,7 @@
 [![Travis Build Status][travis-svg]][travis-link]
 [![AppVeyor Build Status][appveyor-svg]][appveyor-link]
 [![Code Coverage Report][codecov-svg]][codecov-link]
+[![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License][license-svg]][gpl-link]
    
@@ -25,6 +26,8 @@ The GPL v3 also applies to the combined work and all provided binary builds.
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
+[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg
+[pypi-link]: https://pypi.org/project/pairinteraction/
 [codecov-svg]: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/pairinteraction/pairinteraction
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat

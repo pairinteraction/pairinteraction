@@ -71,10 +71,15 @@ Building from Source
 --------------------
 
 .. warning::
-   If you built from source, you have to extend the Python package search path to
-   accomodate pairinteraction by adding your build directory to ``PYTHONPATH``. This can be done e.g. by
-   adding ``import sys; sys.path.append("/your/path/to/pairinteraction/build")`` to the top of a Python script.
+    If you built from source, you have to extend the Python package search path to
+    accomodate pairinteraction by adding your build directory to ``PYTHONPATH``. This can be done e.g. by
+    adding the following lines to the top of a Python script:
+    
+    .. code-block:: python
 
+        import sys
+        sys.path.append("/your/path/to/pairinteraction/build")
+   
 Requirements
 ^^^^^^^^^^^^
 
