@@ -69,7 +69,7 @@ private:
 
     std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
     std::unordered_map<int, eigen_sparse_t> interaction_multipole;
-    std::unordered_map<int, eigen_sparse_t> interaction_greentensor;
+    std::unordered_map<int, eigen_sparse_t> interaction_greentensor_dd;
     std::unordered_map<int, eigen_sparse_t> interaction_greentensor_dq;
     std::unordered_map<int, eigen_sparse_t> interaction_greentensor_qd;
 
@@ -85,9 +85,9 @@ private:
     std::set<int> sym_rotation;
 
     std::unordered_map<int, double> angle_terms;
-    std::unordered_map<int, double> greentensor_terms;
-    std::unordered_map<int, double> greentensor_dq_terms;
-    std::unordered_map<int, double> greentensor_qd_terms;
+    std::unordered_map<int, double> greentensor_terms_dd;
+    std::unordered_map<int, double> greentensor_terms_dq;
+    std::unordered_map<int, double> greentensor_terms_qd;
 
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
@@ -170,8 +170,9 @@ private:
         ar &species &system1 &system2;
         ar &distance &distance_x &distance_y &distance_z &surface_distance &ordermax;
         ar &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
-        ar &angle_terms &greentensor_terms &greentensor_dq_terms &greentensor_qd_terms;
-        ar &interaction_angulardipole &interaction_multipole &interaction_greentensor &interaction_greentensor_dq & interaction_greentensor_qd;
+        ar &angle_terms &greentensor_terms_dd &greentensor_terms_dq &greentensor_terms_qd;
+        ar &interaction_angulardipole &interaction_multipole &interaction_greentensor_dd
+            &interaction_greentensor_dq &interaction_greentensor_qd;
     }
 };
 
