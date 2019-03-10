@@ -90,4 +90,4 @@ deploy:
     skip_cleanup: true
     on:
       tags: true
-      repo: $TRAVIS_REPO_SLUG == "pairinteraction/pairinteraction"
+      condition: $TRAVIS_REPO_SLUG == "pairinteraction/pairinteraction"
