@@ -19,6 +19,8 @@
 #include "dtypes.h"
 
 #include <Eigen/Sparse>
+#include <unsupported/Eigen/CXX11/Tensor>
+#include <tuple>
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -600,6 +602,8 @@ void SystemTwo::initializeInteraction() {
 
     std::unordered_set<int> interaction_angulardipole_keys;
     std::vector<int> interaction_greentensor_keys;
+    std::vector<int> interaction_greentensor_dq_keys;
+    std::vector<int> interaction_greentensor_qd_keys;
     std::vector<int> interaction_multipole_keys;
 
     double tolerance = 1e-16;
@@ -617,13 +621,10 @@ void SystemTwo::initializeInteraction() {
         if (surface_distance != std::numeric_limits<double>::max() && distance_y != 0) {
             throw std::runtime_error("The atoms must be in the xz-plane if a surface is present");
         }
-        if (ordermax > 3) {
-            //             throw std::runtime_error(
-            //                 "If the Green tensor approach is used, multipole interaction of
-            //                 higher order than " "dipole-quadrupole cannot be considered.");
+        if (ordermax > 4) {
             throw std::runtime_error(
-                "If the Green tensor approach is used, multipole interaction of higher order than "
-                "dipole-dipole cannot be considered.");
+            "If the Green tensor approach is used, multipole interaction of "
+            "higher order than " "dipole-quadrupole cannot be considered.");
         }
 
         // Calculate Green tensor
@@ -635,15 +636,39 @@ void SystemTwo::initializeInteraction() {
 
         // Determine which interaction matrices have to be calculated
         greentensor_terms.clear();
-        for (int i1 = 0; i1 < 3; ++i1) {
-            for (int i2 = 0; i2 < 3; ++i2) {
-                if (std::abs(dd_green_tensor(i1, i2)) > tolerance) {
-                    greentensor_terms[3 * i2 + i1] = dd_green_tensor(i1, i2);
-                    interaction_greentensor_keys.push_back(3 * i2 + i1);
+        for(unsigned int order=3; order<=ordermax; order++){
+            if(order==3){
+                for (int i1 = 0; i1 < 3; ++i1) {
+                    for (int i2 = 0; i2 < 3; ++i2) {
+                        if (std::abs(dd_green_tensor(i1, i2)) > tolerance) {
+                            greentensor_terms[3 * i2 + i1] = dd_green_tensor(i1, i2);
+                            interaction_greentensor_keys.push_back(3 * i2 + i1);
+                        }
+                    }
+                }
+            }
+            if (order == 4){
+                const std::tuple<Eigen::Tensor<double, 3>,Eigen::Tensor<double, 3> > greentensor_tuple = GT.getDQTensor();
+                const Eigen::Tensor<double, 3> dq_green_tensor = std::get<0>(greentensor_tuple);
+                const Eigen::Tensor<double, 3> qd_green_tensor = std::get<1>(greentensor_tuple);
+                greentensor_dq_terms.clear();
+                greentensor_qd_terms.clear();
+                for (int i1 = 0; i1 < 3; ++i1) {
+                    for (int i2 = 0; i2 < 3; ++i2) {
+                        for(int i3 = 0; i3 < 3; i3++){
+                            if (std::abs(dq_green_tensor(i1, i2,i3)) > tolerance) {
+                                greentensor_dq_terms[9 * i3 + 3 * i2 + i1] = dq_green_tensor(i1, i2, i3);
+                                interaction_greentensor_dq_keys.push_back(9 * i3 + 3 * i2 + i1);
+                            }
+                            if (std::abs(qd_green_tensor(i1, i2,i3)) > tolerance) {
+                                greentensor_qd_terms[9 * i3 + 3 * i2 + i1] = qd_green_tensor(i1, i2, i3);
+                                interaction_greentensor_qd_keys.push_back(9 * i3 + 3 * i2 + i1);
+                            }
+                        }
+                    }
                 }
             }
         }
-
     } else if (distance_x != 0) {
 
         // We know from before that distance_y is zero so that we can easily calculate the
@@ -696,6 +721,8 @@ void SystemTwo::initializeInteraction() {
     // Is there something to do?
     bool interaction_multipole_uncalculated = !interaction_multipole_keys.empty();
     bool interaction_greentensor_uncalculated = !interaction_greentensor_keys.empty();
+    bool interaction_greentensor_dq_uncalculated = !interaction_greentensor_dq_keys.empty();
+    bool interaction_greentensor_qd_uncalculated = !interaction_greentensor_qd_keys.empty();
     bool interaction_angulardipole_uncalculated = !interaction_angulardipole_keys.empty();
 
     // Return if there is nothing to do
@@ -722,6 +749,10 @@ void SystemTwo::initializeInteraction() {
         interaction_multipole_triplets; // TODO reserve
     std::unordered_map<int, std::vector<eigen_triplet_double_t>>
         interaction_greentensor_triplets; // TODO reserve
+    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+        interaction_greentensor_dq_triplets; // TODO reserve
+    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+        interaction_greentensor_qd_triplets; // TODO reserve
 
     /*// Categorize states // TODO
     std::unordered_map<ljm_t, std::vector<enumerated_state>> states_ordered;
@@ -769,7 +800,7 @@ void SystemTwo::initializeInteraction() {
                 if (selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),
                                                1) &&
                     selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),
-                                               1)) { // TODO adapt this for dipole quadrupole
+                                               1)) { //dipole-dipole interaction
 
                     for (const auto &key : interaction_greentensor_keys) {
                         int i1 = key % 3;
@@ -813,8 +844,7 @@ void SystemTwo::initializeInteraction() {
 
                         // Combine everything
                         double val = -coulombs_constant * vec1_entry *
-                            vec2_entry; // TODO Why isn't there a minus in front of
-                                        // coulombs_constant?
+                            vec2_entry; 
                         if (i1 == 1 && i2 == 1) {
                             val *= -1; //"-" from i^2
                         }
@@ -822,8 +852,170 @@ void SystemTwo::initializeInteraction() {
                                          c.idx, val);
                     }
                 }
+            }//end of dipole-dipole interaction
+            if (interaction_greentensor_dq_uncalculated) {
+                if(((selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),1) &&
+                    selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),2)) ||
+                    (selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),1) &&
+                    selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),0))))
+                {//dipole-quadrupole
+                    for (const auto &key : interaction_greentensor_dq_keys) {
+                        int i1 = (key % 9) % 3;
+                        int i2 = (key % 9) / 3;
+                        int i3 = key / 9;
+                        double vec_entry = 0.;
+                        double matrix_entry = 0.;
+                        //dipole vector of atom1
+                        if(i1==0 && std::abs(q1)==1){
+                            vec_entry = 1. / std::sqrt(2.) * cache.getElectricDipole(r.state.getFirstState(),c.state.getFirstState());
+                            vec_entry *= (q1 == 1) ? -1. : 1.;
+                        } else if(i1==1 && std::abs(q1)==1){
+                            vec_entry = 1. / std::sqrt(2.) * cache.getElectricDipole(r.state.getFirstState(),c.state.getFirstState());
+                        } else if(i1==2 && q1==0){
+                            vec_entry = cache.getElectricDipole(r.state.getFirstState(),c.state.getFirstState());
+                        } else{
+                            continue;
+                        }
+                        //quadrupole matrix of atom2
+                        if(i2 == 0 && i3 == 0){
+                            if(std::abs(q2)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.); //with sqrt(2kappa +1 /4pi)
+                            } else if(q2==0){
+                                matrix_entry = -sqrt(2./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.) + sqrt(10./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 0)*sqrt(1./4.);
+                            }
+                        } else if(i2==0 && i3 ==1){
+                            if(std::abs(q2)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q2 == 2) ? -1. : 1.;
+                            }
+                        } else if(i2==0 && i3 ==2){
+                            if(std::abs(q2)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q2 == 1) ? -1. : 1.;
+                            }                            
+                        } else if(i2==1 && i3 ==0){
+                            if(std::abs(q2)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q2 == 2) ? -1. : 1.;
+                            }
+                        } else if(i2==1 && i3 ==1){
+                            if(std::abs(q2)==2){
+                                matrix_entry = -cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.); //with sqrt(2kappa +1 /4pi)
+                            } else if(q2==0){
+                                matrix_entry = -sqrt(2./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.) + sqrt(10./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 0)*sqrt(1./4.);
+                            }
+                        } else if(i2==1 && i3 ==2){
+                            if(std::abs(q2)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                            }
+                        } else if(i2==2 && i3 ==0){
+                            if(std::abs(q2)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q2 == 1) ? -1. : 1.;
+                            }  
+                            
+                        } else if(i2==2 && i3 ==1){
+                            if(std::abs(q2)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.);
+                            }
+                        } else if(i2==2 && i3 ==2){
+                            if(q2==0){
+                                matrix_entry = sqrt(8./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 2)*sqrt(5./4.)   + sqrt(10./3.)*cache.getElectricMultipole(r.state.getSecondState(), c.state.getSecondState(), 0)*sqrt(1./4.);
+                            }
+                        }
+                        if(std::abs( vec_entry * matrix_entry)>tolerance){
+                            double val = coulombs_constant * vec_entry * matrix_entry/sqrt(30.);
+                            if((i1==1) && (i2!=i3 && (i2==1  || i3==1 ))){
+                                val *= -1.; //from i^2
+                            }
+                            this->addTriplet(interaction_greentensor_dq_triplets[9 * i3 + 3 * i2 + i1], r.idx,
+                                    c.idx, val);
+                        }
+                    }
+                }
             }
-
+            if (interaction_greentensor_qd_uncalculated) {
+                if(((selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),2) &&
+                    selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),1)) ||
+                    (selectionRulesMultipoleNew(r.state.getFirstState(), c.state.getFirstState(),0) &&
+                    selectionRulesMultipoleNew(r.state.getSecondState(), c.state.getSecondState(),1))))
+                { //quadrupole dipole terms
+                    for (const auto &key : interaction_greentensor_qd_keys) {
+                        int i1 = (key % 9) % 3;
+                        int i2 = (key % 9) / 3;
+                        int i3 = key / 9;
+                        double vec_entry = 0.;
+                        double matrix_entry = 0.;
+                        
+                        //dipole vector of atom 2
+                        if(i3==0 && std::abs(q2)==1){
+                            vec_entry = 1. / std::sqrt(2.) * cache.getElectricDipole(r.state.getSecondState(),c.state.getSecondState());
+                            vec_entry *= (q2 == 1) ? -1. : 1.;
+                        } else if(i3==1 && std::abs(q2)==1){
+                            vec_entry = 1. / std::sqrt(2.) * cache.getElectricDipole(r.state.getSecondState(),c.state.getSecondState());
+                        } else if(i3==2 && q2==0){
+                            vec_entry = cache.getElectricDipole(r.state.getSecondState(),c.state.getSecondState());
+                        } else{
+                            continue;
+                        }
+                        //quadrupole matrix of atom 1
+                        if(i1 == 0 && i2 == 0){
+                            if(std::abs(q1)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.); 
+                            } else if(q1==0){
+                                matrix_entry = -sqrt(2./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.) + sqrt(10./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 0)*sqrt(1./4.);
+                            }
+                        } else if(i1==0 && i2 ==1){
+                            if(std::abs(q1)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q1 == 2) ? -1. : 1.;
+                            }
+                        } else if(i1==0 && i2 ==2){
+                            if(std::abs(q1)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q1 == 1) ? -1. : 1.;
+                            }                            
+                        } else if(i1==1 && i2 ==0){
+                            if(std::abs(q1)==2){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q1 == 2) ? -1. : 1.;
+                            }
+                        } else if(i1==1 && i2 ==1){
+                            if(std::abs(q1)==2){
+                                matrix_entry = -cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.); 
+                            } else if(q1==0){
+                                matrix_entry = -sqrt(2./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.) + sqrt(10./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 0)*sqrt(1./4.);
+                            }
+                        } else if(i1==1 && i2 ==2){
+                            if(std::abs(q1)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                            }
+                        } else if(i1==2 && i2 ==0){
+                            if(std::abs(q1)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                                matrix_entry *= (q1 == 1) ? -1. : 1.;
+                            }  
+                            
+                        } else if(i1==2 && i2 ==1){
+                            if(std::abs(q1)==1){
+                                matrix_entry = cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.);
+                            }
+                        } else if(i1==2 && i2 ==2){
+                            if(q1==0){
+                                matrix_entry = sqrt(8./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 2)*sqrt(5./4.) + sqrt(10./3.)*cache.getElectricMultipole(r.state.getFirstState(), c.state.getFirstState(), 0)*sqrt(1./4.);
+                            }
+                        }
+                        if(std::abs( vec_entry * matrix_entry)>tolerance){
+                            double val = coulombs_constant * vec_entry * matrix_entry/sqrt(30.);
+                            if((i3==1) && (i1!=i2 && (i1==1  || i2==1 ))){
+                                val *= -1.; //from i^2
+                            }
+                            this->addTriplet(interaction_greentensor_qd_triplets[9 * i3 + 3 * i2 + i1], r.idx,
+                                    c.idx, val);
+                        }
+                    }
+                }
+            }//end of dipole-quadrupole interaction
             // Angular dependent dipole-dipole interaction (setAngle and setOrder take care that
             // a non-zero angle cannot occur for other interaction than dipole-dipole if the
             // Green tensor approach is not used)
@@ -897,7 +1089,24 @@ void SystemTwo::initializeInteraction() {
         interaction_greentensor[i] = basisvectors.adjoint() *
             interaction_greentensor[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
+    for (const auto &i : interaction_greentensor_dq_keys) {
+        interaction_greentensor_dq[i].resize(states.size(), states.size());
+        interaction_greentensor_dq[i].setFromTriplets(interaction_greentensor_dq_triplets[i].begin(),
+                                                   interaction_greentensor_dq_triplets[i].end());
+        interaction_greentensor_dq_triplets[i].clear();
 
+        interaction_greentensor_dq[i] = basisvectors.adjoint() *
+            interaction_greentensor_dq[i].selfadjointView<Eigen::Lower>() * basisvectors;
+    }
+    for (const auto &i : interaction_greentensor_qd_keys) {
+        interaction_greentensor_qd[i].resize(states.size(), states.size());
+        interaction_greentensor_qd[i].setFromTriplets(interaction_greentensor_qd_triplets[i].begin(),
+                                                   interaction_greentensor_qd_triplets[i].end());
+        interaction_greentensor_qd_triplets[i].clear();
+
+        interaction_greentensor_qd[i] = basisvectors.adjoint() *
+            interaction_greentensor_qd[i].selfadjointView<Eigen::Lower>() * basisvectors;
+    }
     for (const auto &i : interaction_angulardipole_keys) {
         interaction_angulardipole[i].resize(states.size(), states.size());
         interaction_angulardipole[i].setFromTriplets(interaction_angulardipole_triplets[i].begin(),
@@ -937,6 +1146,22 @@ void SystemTwo::addInteraction() {
             }
             hamiltonian += prefactor * interaction_greentensor[g.first] * g.second;
         }
+        if(ordermax==4){//TODO is this necessary? If ordermax == 3 then no entries in greentensor_dq_terms.
+            for(const auto &g : greentensor_dq_terms){
+                scalar_t prefactor = 1;
+                if (g.first%2!=0) {
+                    prefactor = utils::imaginary_unit<scalar_t>();
+                }
+                hamiltonian += prefactor * interaction_greentensor_dq[g.first] * g.second;
+            }
+            for(const auto &g : greentensor_qd_terms){
+                scalar_t prefactor = 1;
+                if (g.first%2!=0) {
+                    prefactor = utils::imaginary_unit<scalar_t>();
+                }
+                hamiltonian += prefactor * interaction_greentensor_qd[g.first] * g.second;
+            }
+        }
     } else if (distance_x != 0) {
         double powerlaw = 1. / std::pow(distance, 3);
         for (const auto &a : angle_terms) {
@@ -973,6 +1198,8 @@ void SystemTwo::transformInteraction(const eigen_sparse_t &transformator) {
 void SystemTwo::deleteInteraction() {
     interaction_greentensor.clear();
     interaction_angulardipole.clear();
+    interaction_greentensor_dq.clear();
+    interaction_greentensor_qd.clear();
     interaction_multipole.clear();
 }
 

@@ -20,6 +20,7 @@
 #include <Eigen/Sparse>
 #include <cmath>
 #include <complex>
+#include <tuple>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 class GreenTensor {
@@ -31,8 +32,9 @@ public:
     void plateDipoleQuadrupole(double x, double zA, double zB);
     void addSurface(double d);
     GreenTensor(double x, double y, double z);
-    //     GreenTensor(double x, double zA, double zB);
     const Eigen::Matrix<double, 3, 3> &getDDTensor();
+    const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3> > &getDQTensor(); //TODO Do this by reference?
+//     const Eigen::Tensor<double, 3> &getDQTensor();
 
 private:
     double x;
@@ -52,6 +54,7 @@ private:
     Eigen::Matrix<double, 3, 3> dd_tensor;
     Eigen::Tensor<double, 3> qd_tensor;
     Eigen::Tensor<double, 3> dq_tensor;
+    std::tuple<Eigen::Tensor<double, 3>,Eigen::Tensor<double, 3> > dq_tuple;
 };
 
 #endif

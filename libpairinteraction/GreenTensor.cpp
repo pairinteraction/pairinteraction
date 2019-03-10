@@ -22,8 +22,8 @@ void GreenTensor::vacuum(double x, double y, double z) {
     distance << x, y, z;
 
     // Construct Green tensor
-    dd_tensor = -Eigen::MatrixXd::Identity(3, 3) / std::pow(distance.norm(), 3) +
-        3 * distance * distance.transpose() / std::pow(distance.norm(), 5);
+    dd_tensor = -Eigen::MatrixXd::Identity(3, 3) / std::pow(distance.norm(), 3.) +
+        3. * distance * distance.transpose() / std::pow(distance.norm(), 5.);
 }
 
 void GreenTensor::plate(double x, double zA, double zB) {
@@ -36,88 +36,15 @@ void GreenTensor::plate(double x, double zA, double zB) {
     double rp = std::sqrt(x * x + zp * zp);
 
     Eigen::Matrix<double, 3, 3> plate_tensor_second_matrix;
-    plate_tensor_second_matrix << x * x, 0, -x * zp, 0, 0, 0, x * zp, 0, x * x;
+    plate_tensor_second_matrix << x * x, 0., -x * zp, 0., 0., 0., x * zp, 0., x * x;
 
     // Construct Green tensor
     Eigen::Matrix<double, 3, 3> plate_tensor =
-        Eigen::Vector3d({1, 1, 2}).asDiagonal().toDenseMatrix() / std::pow(rp, 3) -
-        3 * plate_tensor_second_matrix / std::pow(rp, 5);
+        Eigen::Vector3d({1., 1., 2.}).asDiagonal().toDenseMatrix() / std::pow(rp, 3.) -
+        3. * plate_tensor_second_matrix / std::pow(rp, 5);
 
     // Add Green tensor to the vacuum Green tensor
     dd_tensor += plate_tensor;
-}
-
-
-void GreenTensor::vacuumDipoleQuadrupole(
-    double x, double y, double z) {
-    Eigen::Matrix<double, 3, 3> Eye = Eigen::Matrix<double, 3, 3>::Identity(3, 3);
-    Eigen::Matrix<double, 3, 1> distance;
-    distance << x, y, z; //TODO save distance.norm() as r, rho or something. Aim for consistent notation!
-    Eigen::Matrix<double, 3, 3> Amatrix;
-    Amatrix << y * y + z * z, -x * y, -x * z, -x * y, x * x + z * z, -y * z, -x * z, -y * z,
-        y * y + z * z;
-    Amatrix = Amatrix / std::pow(distance.norm(), 3);
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 3; k++) {
-                qd_tensor(i, j, k) = 3. / std::pow(distance.norm(), 4.) *
-                        (distance(i)/distance.norm() * Eye(j, k) - 3. * distance(i)/distance.norm()  * distance(j)/distance.norm()  * distance(k)/distance.norm() ) +
-                    3. / std::pow(distance.norm(), 3.) *
-                        (Amatrix(i, j) * distance(k) + Amatrix(i, k) * distance(j));
-
-                dq_tensor(i, j, k) = 3. / std::pow(distance.norm(), 4.) *
-                        ( Eye(i, j)*distance(k) + 3. * distance(i)/distance.norm() * distance(j)/distance.norm() * distance(k)/distance.norm()) -
-                    3. / std::pow(distance.norm(), 3.) *
-                        (distance(i)/distance.norm() * Amatrix(j,k) + Amatrix(i,k) * distance(j)/distance.norm() );
-            }
-        }
-    }
-}
-
-void GreenTensor::plateDipoleQuadrupole(
-    double x, double zA, double zB) {
-    double zp = zA + zB;
-    Eigen::Matrix<double, 3, 1> distanceplus1;
-    distanceplus1 << x, 0, zp;
-    Eigen::Matrix<double, 3, 1> distanceplus2;
-    distanceplus2 << -x, 0, zp;
-    double rp = distanceplus1.norm();
-    
-    Eigen::Matrix<double, 3, 3> plate_tensor_first_matrix = Eigen::Vector3d({1, 1, 2}).asDiagonal().toDenseMatrix();
-    Eigen::Matrix<double, 3, 3> plate_tensor_second_matrix;
-    plate_tensor_second_matrix << x * x, 0, -x * zp, 0, 0, 0, x * zp, 0, x * x;
-    
-    Eigen::Tensor<double, 3> gradient_plate_tensor_second;
-    gradient_plate_tensor_second(0,0,0) = 2 * x;
-    gradient_plate_tensor_second(0,2,2) = 2 * x;
-    gradient_plate_tensor_second(0,0,2) = -zp;
-    gradient_plate_tensor_second(0,2,0) = zp;
-    gradient_plate_tensor_second(2,0,2) = -x;
-    gradient_plate_tensor_second(2,2,0) = x;
-    
-    Eigen::Tensor<double, 3> plate_tensor_second_gradient;
-    plate_tensor_second_gradient(0,0,0) = -2 * x;
-    plate_tensor_second_gradient(2,2,0) = -2 * x;
-    plate_tensor_second_gradient(0,2,0) = zp;
-    plate_tensor_second_gradient(2,0,0) = -zp;
-    plate_tensor_second_gradient(0,2,2) = -x;
-    plate_tensor_second_gradient(2,0,2) = x; 
-    
-    
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 3; k++) {
-                qd_tensor(i,j,k) += -3 * distanceplus1(i)*plate_tensor_first_matrix(j,k)/std::pow(rp,5.);
-                qd_tensor(i,j,k) += 15 * distanceplus1(i)*plate_tensor_second_matrix(j,k)/std::pow(rp,7.);
-                qd_tensor(i,j,k) += -3 * gradient_plate_tensor_second(i,j,k)/std::pow(rp,5.); 
-                
-                dq_tensor(i,j,k) += -3 * plate_tensor_first_matrix(i,j)*distanceplus2(k)/std::pow(rp,5.);
-                dq_tensor(i,j,k) += 15 * plate_tensor_second_matrix(i,j)*distanceplus2(k)/std::pow(rp,7.);
-                dq_tensor(i,j,k) += -3 * plate_tensor_second_gradient(i,j,k)/std::pow(rp,5.);
-            }
-        }
-    }
-    
 }
 
 const Eigen::Matrix<double, 3, 3> &GreenTensor::getDDTensor() {
@@ -140,6 +67,103 @@ const Eigen::Matrix<double, 3, 3> &GreenTensor::getDDTensor() {
     }
 
     return dd_tensor;
+}
+
+void GreenTensor::vacuumDipoleQuadrupole(
+    double x, double y, double z) {
+    Eigen::Matrix<double, 3, 3> Eye = Eigen::Matrix<double, 3, 3>::Identity(3, 3);
+    Eigen::Matrix<double, 3, 1> distance;
+    distance << x, y, z; 
+    double dist = sqrt(x*x + y*y + z*z);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                dq_tensor(i,j,k) = -3/std::pow(dist,5.) * (Eye(i,j)*distance(k) + distance(i)*Eye(j,k) + distance(j)*Eye(i,k)) + 15./std::pow(dist,7.) * distance(i)*distance(j)*distance(k);
+                
+                qd_tensor(i,j,k) = 3/std::pow(dist,5.) * (distance(i)*Eye(j,k) + Eye(i,j)*distance(k) + Eye(i,k)*distance(j)) - 15./std::pow(dist,7.) * distance(i)*distance(j)*distance(k);
+            }
+        }
+    }
+}
+
+void GreenTensor::plateDipoleQuadrupole(
+    double x, double zA, double zB) {
+    double zp = zA + zB;
+    Eigen::Matrix<double, 3, 1> distanceplus1;
+    distanceplus1 << x, 0., zp;
+    Eigen::Matrix<double, 3, 1> distanceplus2;
+    distanceplus2 << -x, 0., zp;
+    double rp = distanceplus1.norm();
+    
+    Eigen::Matrix<double, 3, 3> plate_tensor_first_matrix = Eigen::Vector3d({1., 1., 2.}).asDiagonal().toDenseMatrix();
+    Eigen::Matrix<double, 3, 3> plate_tensor_second_matrix;
+    plate_tensor_second_matrix << x * x, 0., -x * zp, 0., 0., 0., x * zp, 0., x * x;
+    
+    Eigen::Tensor<double, 3> gradient_plate_tensor_second;
+    gradient_plate_tensor_second.setZero();
+    gradient_plate_tensor_second(0,0,0) = 2. * x;
+    gradient_plate_tensor_second(0,2,2) = 2. * x;
+    gradient_plate_tensor_second(0,0,2) = -zp;
+    gradient_plate_tensor_second(0,2,0) = zp;
+    gradient_plate_tensor_second(2,0,2) = -x;
+    gradient_plate_tensor_second(2,2,0) = x;
+    
+    Eigen::Tensor<double, 3> plate_tensor_second_gradient;
+    plate_tensor_second_gradient.setZero();
+    plate_tensor_second_gradient(0,0,0) = -2. * x;
+    plate_tensor_second_gradient(2,2,0) = -2. * x;
+    plate_tensor_second_gradient(0,2,0) = zp;
+    plate_tensor_second_gradient(2,0,0) = -zp;
+    plate_tensor_second_gradient(0,2,2) = -x;
+    plate_tensor_second_gradient(2,0,2) = x; 
+    
+    
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            for (int k = 0; k < 3; k++) {
+                qd_tensor(i,j,k) += -3. * distanceplus1(i)*plate_tensor_first_matrix(j,k)/std::pow(rp,5.);
+                qd_tensor(i,j,k) += 15. * distanceplus1(i)*plate_tensor_second_matrix(j,k)/std::pow(rp,7.);
+                qd_tensor(i,j,k) += -3. * gradient_plate_tensor_second(i,j,k)/std::pow(rp,5.); 
+                
+                dq_tensor(i,j,k) += -3. * plate_tensor_first_matrix(i,j)*distanceplus2(k)/std::pow(rp,5.);
+                dq_tensor(i,j,k) += 15. * plate_tensor_second_matrix(i,j)*distanceplus2(k)/std::pow(rp,7.);
+                dq_tensor(i,j,k) += -3. * plate_tensor_second_gradient(i,j,k)/std::pow(rp,5.);
+            }
+        }
+    }
+    
+}
+
+
+const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3> > &GreenTensor::getDQTensor(){ //TODO Do this by reference like getDDTensor?
+// const Eigen::Matrix<double, 3, 3> &GreenTensor::getDDTensor() 
+// const Eigen::Tensor<double, 3> &GreenTensor::getDQTensor(){
+    if(!dq_tensor_calculated){
+        
+        dq_tensor = Eigen::Tensor<double, 3>(3,3,3);
+        qd_tensor = Eigen::Tensor<double, 3>(3,3,3);
+        dq_tensor.setZero();
+        qd_tensor.setZero();
+        if(surface_distance==std::numeric_limits<double>::max()){
+            vacuumDipoleQuadrupole(x, y, z);
+        }
+        if(surface_distance!=std::numeric_limits<double>::max()){
+            x = sqrt(x * x + y * y);
+            y = 0.;
+            vacuumDipoleQuadrupole(x, y, z);
+            angle = std::atan(x / z);
+            zA = surface_distance - z*std::sin(angle)/2.;
+            zB = surface_distance + z*std::sin(angle)/2.;
+            plateDipoleQuadrupole(x, zA, zB);
+        }
+        
+    dq_tensor_calculated = true;
+        
+    }
+    dq_tuple = std::make_tuple(dq_tensor,qd_tensor);
+    
+    return dq_tuple;
+//     return dq_tensor;
 }
 
 void GreenTensor::addSurface(double d) {

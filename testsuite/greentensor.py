@@ -51,7 +51,7 @@ class GreenTensorTest(unittest.TestCase):
         # Compare Hamiltonians
         np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)
     
-    """def test_greentensor_dipolequadrupole(self):
+    def test_greentensor_dipolequadrupole(self):
         # Build one-atom system
         system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
@@ -83,7 +83,7 @@ class GreenTensorTest(unittest.TestCase):
         hamiltonian_greentensor.eliminate_zeros()
 
         # Compare Hamiltonians
-        np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)""" # TODO
+        np.testing.assert_allclose(hamiltonian_standard.A, hamiltonian_greentensor.A, rtol=1e-6)
 
     def test_greentensor_surface(self):
         theta = np.pi/2
