@@ -598,7 +598,7 @@ void SystemTwo::initializeInteraction() {
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    std::vector<bool> interaction_angulardipole_keys(9, false);
+    std::unordered_set<int> interaction_angulardipole_keys;
     std::vector<int> interaction_greentensor_keys;
     std::vector<int> interaction_multipole_keys;
 
@@ -680,7 +680,7 @@ void SystemTwo::initializeInteraction() {
         // Determine which interaction matrices have to be calculated
         for (const auto &a : angle_terms) {
             if (interaction_angulardipole.find(a.first) == interaction_angulardipole.end()) {
-                interaction_angulardipole_keys[a.first] = true;
+                interaction_angulardipole_keys.insert(a.first);
             }
         }
 
@@ -696,9 +696,7 @@ void SystemTwo::initializeInteraction() {
     // Is there something to do?
     bool interaction_multipole_uncalculated = !interaction_multipole_keys.empty();
     bool interaction_greentensor_uncalculated = !interaction_greentensor_keys.empty();
-    bool interaction_angulardipole_uncalculated =
-        !std::all_of(interaction_angulardipole_keys.begin(), interaction_angulardipole_keys.end(),
-                     [](bool i) { return !i; });
+    bool interaction_angulardipole_uncalculated = !interaction_angulardipole_keys.empty();
 
     // Return if there is nothing to do
     if (!interaction_multipole_uncalculated && !interaction_greentensor_uncalculated &&
@@ -836,7 +834,7 @@ void SystemTwo::initializeInteraction() {
                                                1)) {
                     auto key = (q1 < q2) ? 3 * (q1 + 1) + (q2 + 1) : 3 * (q2 + 1) + (q1 + 1);
 
-                    if (interaction_angulardipole_keys[key]) {
+                    if (interaction_angulardipole_keys.count(key)) {
                         double val = coulombs_constant *
                             cache.getElectricDipole(r.state.getFirstState(),
                                                     c.state.getFirstState()) *
@@ -890,31 +888,34 @@ void SystemTwo::initializeInteraction() {
 
     // Build the interaction and change it from the canonical to the symmetrized basis
 
-    for (auto &i : interaction_greentensor_triplets) {
-        interaction_greentensor[i.first].resize(states.size(), states.size());
-        interaction_greentensor[i.first].setFromTriplets(i.second.begin(), i.second.end());
-        i.second.clear();
+    for (const auto &i : interaction_greentensor_keys) {
+        interaction_greentensor[i].resize(states.size(), states.size());
+        interaction_greentensor[i].setFromTriplets(interaction_greentensor_triplets[i].begin(),
+                                                   interaction_greentensor_triplets[i].end());
+        interaction_greentensor_triplets[i].clear();
 
-        interaction_greentensor[i.first] = basisvectors.adjoint() *
-            interaction_greentensor[i.first].selfadjointView<Eigen::Lower>() * basisvectors;
+        interaction_greentensor[i] = basisvectors.adjoint() *
+            interaction_greentensor[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
 
-    for (auto &i : interaction_angulardipole_triplets) {
-        interaction_angulardipole[i.first].resize(states.size(), states.size());
-        interaction_angulardipole[i.first].setFromTriplets(i.second.begin(), i.second.end());
-        i.second.clear();
+    for (const auto &i : interaction_angulardipole_keys) {
+        interaction_angulardipole[i].resize(states.size(), states.size());
+        interaction_angulardipole[i].setFromTriplets(interaction_angulardipole_triplets[i].begin(),
+                                                     interaction_angulardipole_triplets[i].end());
+        interaction_angulardipole_triplets[i].clear();
 
-        interaction_angulardipole[i.first] = basisvectors.adjoint() *
-            interaction_angulardipole[i.first].selfadjointView<Eigen::Lower>() * basisvectors;
+        interaction_angulardipole[i] = basisvectors.adjoint() *
+            interaction_angulardipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
 
-    for (auto &i : interaction_multipole_triplets) {
-        interaction_multipole[i.first].resize(states.size(), states.size());
-        interaction_multipole[i.first].setFromTriplets(i.second.begin(), i.second.end());
-        i.second.clear();
+    for (const auto &i : interaction_multipole_keys) {
+        interaction_multipole[i].resize(states.size(), states.size());
+        interaction_multipole[i].setFromTriplets(interaction_multipole_triplets[i].begin(),
+                                                 interaction_multipole_triplets[i].end());
+        interaction_multipole_triplets[i].clear();
 
-        interaction_multipole[i.first] = basisvectors.adjoint() *
-            interaction_multipole[i.first].selfadjointView<Eigen::Lower>() * basisvectors;
+        interaction_multipole[i] = basisvectors.adjoint() *
+            interaction_multipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
     }
 }
 
