@@ -22,9 +22,9 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
-#include <unsupported/Eigen/CXX11/Tensor>
 #include <array>
 #include <cmath>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
 typedef std::complex<double> complex_t;
