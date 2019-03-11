@@ -20,6 +20,7 @@ import os
 import sys
 sys.path.insert(0, '@CMAKE_BINARY_DIR@/@LIBNAME@')
 
+repo_slug = os.getenv('TRAVIS_REPO_SLUG', "pairinteraction/pairinteraction")
 
 # -- General configuration ------------------------------------------------
 
@@ -35,7 +36,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.mathjax',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',
+    'sphinx.ext.extlinks'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -161,3 +163,28 @@ texinfo_documents = [
 
 # Use constructor docstring as class docstring
 autoclass_content = "init"
+
+extlinks = {
+    'github': ('https://github.com/{repo_slug}/%s'.format(repo_slug=repo_slug), None),
+}
+
+rst_epilog = """
+.. |travis| image:: https://img.shields.io/travis/{repo_slug}.svg?branch=master&style=flat&logo=travis
+            :target: https://travis-ci.org/{repo_slug}
+            :alt: Travis Build Status
+.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/{repo_slug}?branch=master&svg=true
+              :target: https://ci.appveyor.com/project/{repo_slug}/branch/master
+              :alt: AppVeyor Build Status
+.. |codecov| image:: https://codecov.io/gh/{repo_slug}/branch/master/graph/badge.svg
+             :target: https://codecov.io/gh/{repo_slug}
+             :alt: Code Coverage Report
+.. |pypi| image:: https://img.shields.io/pypi/v/pairinteraction.svg
+          :target: https://pypi.org/project/pairinteraction/
+          :alt: PyPI Package
+.. |arxiv| image:: images/arXiv-badge.svg
+           :target: https://arxiv.org/abs/1612.08053
+           :alt: arXiv:1612.08053
+.. |license| image:: images/license-badge.svg
+             :target: https://www.gnu.org/licenses/gpl-3.0.html
+             :alt: License
+""".format(repo_slug=repo_slug)

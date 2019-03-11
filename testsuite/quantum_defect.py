@@ -1,5 +1,6 @@
 import unittest
 import sqlite3
+
 from @LIBNAME@ import picomplex as pi
 
 

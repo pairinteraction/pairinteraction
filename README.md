@@ -3,10 +3,14 @@
 [![Travis Build Status][travis-svg]][travis-link]
 [![AppVeyor Build Status][appveyor-svg]][appveyor-link]
 [![Code Coverage Report][codecov-svg]][codecov-link]
+[![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
-[![License][license-svg]][license-link]
+[![License][license-svg]][gpl-link]
    
-The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials. Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
+The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
+Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
+
+For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling `pip install pairinteraction`. If pairinteraction was installed from the command line, the graphical user interface can be started by executing `start_pairinteraction_gui`.
 
 ## Please cite us
 
@@ -14,16 +18,21 @@ The *pairinteraction* software calculates properties of Rydberg systems. Visit t
 
 ## License
 
-Pairinteraction is released under the terms of the [Apache License 2.0][license-link]. Note that not all files in this repository belong to the pairinteraction project.  The submodules link to their host repositories.  The individual licenses apply.
+The pairinteraction library is licensed under the [LGPL v3][lgpl-link]. The extension for calculating
+radial wave functions using Whittaker functions and the graphical user interface are licensed under the [GPL v3][gpl-link].
+The GPL v3 also applies to the combined work and all provided binary builds.
 
-[travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction.svg?branch=master
+[travis-svg]: https://img.shields.io/travis/pairinteraction/pairinteraction.svg?branch=master&style=flat&logo=travis
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
+[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg
+[pypi-link]: https://pypi.org/project/pairinteraction/
 [codecov-svg]: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/pairinteraction/pairinteraction
-[arXiv-svg]: https://pairinteraction.github.io/images/arXiv-badge.svg
+[arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
-[license-svg]: https://pairinteraction.github.io/images/license-badge.svg
-[license-link]: https://opensource.org/licenses/Apache-2.0
+[license-svg]: https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat
+[gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
+[lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a

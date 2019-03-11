@@ -1,0 +1,2 @@
+[metadata]
+license_files = @CMAKE_SOURCE_DIR@/LICENSE.txt @CMAKE_SOURCE_DIR@/LICENSE-3RD-PARTY.txt

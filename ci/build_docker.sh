@@ -3,11 +3,7 @@
 set -e;
 
 
-export ENV_FILE="`mktemp docker.XXXXXX.env`";
-export SOURCE_DIR="/travis";
-
-
-cat > ${ENV_FILE} <<EOF
+cat > /tmp/docker.env <<EOF
 # Travis variables
 TRAVIS_COMMIT=${TRAVIS_COMMIT}
 TRAVIS_PULL_REQUEST=${TRAVIS_PULL_REQUEST}
@@ -18,7 +14,6 @@ TRAVIS_OS_NAME=${TRAVIS_OS_NAME}
 image=${image}
 package=${package}
 GH_TOKEN=${GH_TOKEN}
-SOURCE_DIR=${SOURCE_DIR}
 EOF
 
 
@@ -29,47 +24,64 @@ case "${TRAVIS_OS_NAME}" in
 
             case "${image}" in
                 "debian")
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             mkdir -p build;
                             cd build;
-                            /bin/bash /travis/ci/publish_documentation.sh;
+                            /bin/bash ../ci/prepare_documentation.sh;
                             cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
+                            /bin/bash ../ci/update_documentation.sh;
                         "
                     ;;
 
                 "ubuntu:static-analysis")
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
                             /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
+                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off ..;
                             make -k -j 2;
                             make -k -j 2 check;
                         "
                     ;;
 
-                *)
-                    docker run --env-file ${ENV_FILE} \
-                        -v ${TRAVIS_BUILD_DIR}:${SOURCE_DIR} \
+                "manylinux")
+                    mkdir -p build/pairinteraction_gui/pairinteraction
+                    pyuic5 --output build/pairinteraction_gui/pairinteraction/plotter.py pairinteraction_gui/plotter.ui
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \
                         pairinteraction/$image \
                         /bin/bash -c "
                             set -e;
-                            cd \"${SOURCE_DIR}\";
+                            mkdir -p build;
+                            cd build;
+                            cmake -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
+                            make -k -j 2;
+                            make -k -j 2 check;
+                            python setup.py bdist_wheel --python-tag py3 --plat-name manylinux1_x86_64;
+                            auditwheel repair dist/*.whl;
+                        "
+                    ;;
+
+                *)
+                    docker run --env-file /tmp/docker.env \
+                        -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
+                        --interactive --tty \
+                        pairinteraction/$image \
+                        /bin/bash -c "
+                            set -e;
                             mkdir -p build;
                             cd build;
                             cmake -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
@@ -91,11 +103,17 @@ case "${TRAVIS_OS_NAME}" in
         make check;
         make package;
         make license;
+        python setup.py bdist_wheel --python-tag py3 --plat-name macosx_10_12_x86_64;
+        wheel unpack dist/*.whl -d wheelhouse/;
+        chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/start_pairinteraction_gui;
+        cd wheelhouse/*/pairinteraction;
+        python ../../../../apple/standalone.py .libs _picomplex.so _pireal.so pairinteraction-complex pairinteraction-real;
+        cd ../../..;
+        wheel pack wheelhouse/* -d wheelhouse/;
         ;;
 
 esac;
 
 if [ "${image}" = "debian" ]; then
-    cd ${TRAVIS_BUILD_DIR}
-    curl -s https://codecov.io/bash | bash -
+    curl -s https://codecov.io/bash | bash -s - -X gcov
 fi

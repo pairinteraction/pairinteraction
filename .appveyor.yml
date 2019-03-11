@@ -29,7 +29,8 @@ install:
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
   - cmd: call %MINICONDA_ROOT%\Scripts\activate.bat
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
-  - cmd: conda install -y -q pairinteraction-dependencies
+  - cmd: conda install -y -q twine pairinteraction-dependencies
+  - cmd: conda update -y -q setuptools wheel
   - cmd: pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
  
 cache:
@@ -44,14 +45,21 @@ build_script:
   - cmd: cmake --build . --config "%CONFIGURATION%"
   
 after_build:
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll libpairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll libpairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
+  - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_amd64
+  - ps: $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
+  - cmd: wheel unpack %PATH_WHEEL_UNMODIFIED% -d wheelhouse\
+  - ps: $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
+  - cmd: xcopy pairinteraction\Release\* %PATH_WHEEL_UNPACKED%\pairinteraction\
+  - ps: Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
+  - cmd: wheel pack %PATH_WHEEL_UNPACKED% -d wheelhouse\
 
 test_script:
-  - cmd: xcopy libpairinteraction\Release\* libpairinteraction
+  - cmd: xcopy pairinteraction\Release\* pairinteraction
   - cmd: cmake --build . --target check --config "%CONFIGURATION%"
 
 artifacts:
@@ -66,4 +74,8 @@ deploy:
     prerelease: true
     force_update: true
     on:
-      appveyor_repo_tag: true  
+      appveyor_repo_tag: true
+
+deploy_script:
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -eq "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -ne "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing --repository-url https://test.pypi.org/legacy/ $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }

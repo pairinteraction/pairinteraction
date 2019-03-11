@@ -25,12 +25,24 @@ matrix:
         - brew update
       install:
         - conda install -y -q nomkl pairinteraction-dependencies
-        - pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 without bugs in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
+        - conda update -y -q setuptools wheel
+        - pip install twine git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 without bugs in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
         - brew install gsl llvm@3.9 swig
         - npm install -g fileicon
       before_script:
         - export CXX=/usr/local/opt/llvm@3.9/bin/clang++
         - export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
+    - os: linux
+      sudo: required
+      services: docker
+      addons:
+        apt:
+          packages:
+            - python3-pip pyqt5-dev-tools
+      install:
+        - python3 -m pip install --user --upgrade setuptools twine
+      env:
+        - image=manylinux
     - os: linux
       sudo: required
       services: docker
@@ -54,17 +66,28 @@ matrix:
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
 
 script:
+  - git fetch --unshallow --tags
   - travis_wait 30 sleep infinity & ci/build_docker.sh
 
 deploy:
-  provider: releases
-  prerelease: true
-  api_key: $GH_TOKEN
-  file_glob: true
-  file: $TRAVIS_BUILD_DIR/build/$package
-  skip_cleanup: true
-  #draft: true
-  on:
-    #all_branches: true
-    tags: true
-    condition: $package != ""
+  - provider: releases
+    prerelease: true
+    api_key: $GH_TOKEN
+    file: $TRAVIS_BUILD_DIR/build/$package
+    skip_cleanup: true
+    overwrite: true
+    on:
+      tags: true
+      condition: $package != ""
+  - provider: script
+    script: bash ci/deploy_pypi.sh test
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: $TRAVIS_REPO_SLUG != "pairinteraction/pairinteraction"
+  - provider: script
+    script: bash ci/deploy_pypi.sh real
+    skip_cleanup: true
+    on:
+      tags: true
+      condition: $TRAVIS_REPO_SLUG == "pairinteraction/pairinteraction"

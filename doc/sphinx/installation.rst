@@ -1,41 +1,45 @@
+.. _Installation:
+
 Installation
 ============
 
-Binary Installer
-----------------
+Binary Installers
+-----------------
 
-Builds are available for GNU/Linux, Mac OS X, and Windows through
-`GitHub Releases`_.  The different packages were built on the following
-architectures:
+All builds come with an easy-to-use graphical user interface for pair potential calculations, taking into
+account electric and magnetic fields. In addition, a Python 3 and C++ library is provided which can be used to
+write your own code and have more fine-grained control over what pairinteraction does. Quantities as matrix elements,
+eigenenergies, or excitation dynamics can be calculated. For usage examples
+visit the :ref:`tutorials <Tutorials>` section of the documentation or
+download the :github:`Python <tree/master/doc/sphinx/examples_python>`
+and :github:`C++ <tree/master/doc/sphinx/examples_cpp>` example programs.
 
-.. _GitHub Releases: https://github.com/pairinteraction/pairinteraction/releases
+Packages are available for GNU/Linux, Mac OS X, and Windows through
+:github:`GitHub Releases <releases>`. For these packages, the graphical user interface works out-of-the-box.
+The different packages were built on the following architectures:
 
 - ``deb`` package: Ubuntu 16.04 amd64
 - ``rpm`` package: OpenSUSE Leap x86_64
 - Mac OS X ``dmg``: Mac OS X 10.12
 - Windows ``exe``: Compiled with Visual Studio 2015
 
-The binary builds come with a Python and C++ library. The library can be used
-for simulating a broad range of two-atom Rydberg systems taking into
-account electric and magnetic fields. Quantities as matrix elements,
-eigenenergies, or excitation dynamics can be calculated. For usage examples
-visit the `tutorials`_ section of the documentation or download the `Python`_
-and `C++`_ example programs.
+Alternatively, you can install pairinteraction from the `Python Package Index`_ via pip by calling ``pip install pairinteraction`` from the command line.
+We recommend this way of installation for using pairinteraction as a Python 3 library. To get the graphical user interface work with such an installation, the Python
+library PyQt5 must be installed as well.
 
-.. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
-.. _python: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_python
-.. _C++: https://github.com/pairinteraction/pairinteraction/tree/master/doc/sphinx/examples_cpp
+If pairinteraction was installed from the command line, the graphical user interface can be started by executing ``start_pairinteraction_gui``.
+
+.. _Python Package Index: https://pypi.org/project/pairinteraction
 
 Python Library
 ^^^^^^^^^^^^^^
 
-For GNU/Linux, all dependencies of the pairinteraction Python 3 library are installed
-automatically and the Python library can be used right away.
+If pairinteraction was installed via pip or using a Linux package manager, all dependencies are installed
+automatically and the library can be used for Python 3 right away.
 
-For Windows or OS X, we recommend the installation of the Python 3
-distribution `Miniconda`_ or `Anaconda`_. Then, the dependencies of the
-pairinteraction Python 3 library can be installed by executing the
-following command:
+Otherwise, the dependencies of the pairinteraction library must be installed manually. Assuming that the Python 3
+distribution `Miniconda`_ or `Anaconda`_ is used, the dependencies can be installed using conda. Note that it is
+important that the installed version of the NumPy library is up-to-date.
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/
@@ -44,11 +48,9 @@ following command:
 
     conda install numpy scipy matplotlib
 
-In order to use the pairinteraction Python 3 library with Windows or
-OS X, the path containing the library has to be added manually to the Python package search path.
-Assuming that the pairinteraction software was installed to its default location, this
-can be done by adding the following code block to the top of a Python
-script:
+In addition, the path containing the pairinteraction library must be added manually to the Python package search path.
+If the pairinteraction software was installed to its default location, this
+can be done by adding the following code block to the top of a Python script:
 
 .. code-block:: python
 
@@ -69,13 +71,15 @@ Building from Source
 --------------------
 
 .. warning::
-   In the tutorials and examples you will often find instructions to
-   extend the ``PYTHONPATH`` to accomodate pairinteraction.  These
-   instructions only hold true if you installed pairinteraction from
-   the official binary installers.  If you built from source you
-   instead have to point the scripts to your build directory or the
-   custom location where you installed the program.
+    If you built from source, you have to extend the Python package search path to
+    accomodate pairinteraction by adding your build directory to ``PYTHONPATH``. This can be done e.g. by
+    adding the following lines to the top of a Python script:
+    
+    .. code-block:: python
 
+        import sys
+        sys.path.append("/your/path/to/pairinteraction/build")
+   
 Requirements
 ^^^^^^^^^^^^
 
@@ -144,7 +148,7 @@ The build system uses CMake and has some configuration switches. These are
 +---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_DATABASE``   | Store the quantum defect database so | ON      |
+| ``WITH_DATABASE``   | Store quantum defect database so     | ON      |
 |                     | that it can be accessed by the GUI   |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_DOCS``       | Generate documentation               | ON      |
@@ -153,8 +157,18 @@ The build system uses CMake and has some configuration switches. These are
 +---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
 +---------------------+--------------------------------------+---------+
+| ``WITH_LTO``        | Build with link-time optimization    | OFF     |
++---------------------+--------------------------------------+---------+
+| ``WITH_GSL``        | Use the GNU scientific library for   | ON      |
+|                     | Whittaker functions [#]_             |         |
++---------------------+--------------------------------------+---------+
 | ``WITH_CLANG_TIDY`` | Run Clang-Tidy during compilation    | OFF     |
 +---------------------+--------------------------------------+---------+
+
+.. [#] This mode activates the extension for calculating radial wave
+       functions using Whittaker functions. If pairinteraction
+       is built in this mode, any derived work has to be licensed under
+       GPL v3, because of the GSL being distributed under GPL. 
 
 These options can be passed directly to ``cmake``, i.e.
 

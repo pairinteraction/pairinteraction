@@ -1,16 +1,19 @@
 # Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# This file is part of the pairinteraction library.
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# The pairinteraction library is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# The pairinteraction library is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
 cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 
@@ -18,19 +21,8 @@ project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 11)
 enable_testing()
 
-# Enable link-time optimization if available
-if(POLICY CMP0069)
-  cmake_policy(SET CMP0069 NEW)
-  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
-  if(CHECK_IPO_SUPPORTED)
-    check_ipo_supported(RESULT IPO_SUPPORTED)
-    if(IPO_SUPPORTED)
-      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    endif()
-  endif()
-endif()
-
-set(LIBNAME "libpairinteraction")
+set(LIBNAME "pairinteraction")
+set(GUINAME "pairinteraction_gui")
 
 # set version of settings and cache
 
@@ -43,7 +35,7 @@ find_package(Git)
 
 if(GIT_FOUND)
   execute_process(
-    COMMAND "${GIT_EXECUTABLE}" describe --tags --always
+    COMMAND "${GIT_EXECUTABLE}" describe --abbrev=0 --tags
     WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
     OUTPUT_VARIABLE VERSION_SOFTWARE
     OUTPUT_STRIP_TRAILING_WHITESPACE )
@@ -53,13 +45,13 @@ else()
 endif()
 
 string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
+string(REGEX REPLACE "-(pre)?alpha" "a" VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA ${VERSION_WITHOUT_LEADING_V})
 
 # default build type is "Release"
 
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
-message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -71,15 +63,32 @@ option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
+option(WITH_LTO      "Build with link-time optimization"    OFF)
+option(WITH_GSL      "Use the GNU scientific library for Whittaker functions" ON)
 if(CMAKE_VERSION VERSION_GREATER 3.5.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   option(WITH_CLANG_TIDY "Run Clang-Tidy during compilation" OFF)
 endif()
 
+# Enable link-time optimization if available
+if(WITH_LTO)
+  if(POLICY CMP0069)
+    cmake_policy(SET CMP0069 NEW)
+    include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
+    if(CHECK_IPO_SUPPORTED)
+      check_ipo_supported(RESULT IPO_SUPPORTED)
+      if(IPO_SUPPORTED)
+        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+      endif()
+    endif()
+  endif()
+endif()
+
 # Mac OS X specific build instructions
 
-set(CMAKE_MACOSX_RPATH 1)
+set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/apple")
 if( WITH_DMG )
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 endif( )
 
@@ -117,7 +126,7 @@ if( WITH_BACKEND )
 endif( )
 
 if( WITH_GUI )
-  add_subdirectory(gui)
+  add_subdirectory(${GUINAME})
 endif( )
 
 if ( WITH_DOCS )
@@ -138,6 +147,9 @@ endif()
 file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
+
+configure_file(setup.py.in ${CMAKE_BINARY_DIR}/setup.py @ONLY)
+configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 
 if(WIN32)
 
@@ -212,3 +224,9 @@ include(CPack)
 
 include(FeatureSummary)
 feature_summary(WHAT ALL)
+message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+if(WITH_GSL)
+  message(STATUS "License compatibility: GPL v3")
+else()
+  message(STATUS "License compatibility: LGPL v3")
+endif()

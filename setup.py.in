@@ -1,0 +1,37 @@
+from setuptools import setup, find_namespace_packages
+from pathlib import Path
+
+with open("../README.md", "r") as fh:
+    long_description = fh.read()
+
+setup(
+    name = "pairinteraction",
+    version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
+    author="Sebastian Weber, Henri Menke",
+    description="A Rydberg Interaction Calculator",
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://pairinteraction.github.io/",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    ],
+    packages = find_namespace_packages(include=[
+        "@LIBNAME@", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
+    ]),
+    package_data = {
+        "@LIBNAME@" : [
+            "_picomplex.so", "_pireal.so",
+            "pairinteraction-complex", "pairinteraction-real",
+            "databases/quantum_defects.db"
+        ],
+        "@GUINAME@" : [ "conf/example.pconf", "conf/example.sconf" ],
+    },
+    scripts = [ "start_pairinteraction_gui" ],
+    install_requires=[
+        "numpy >= 1.11.0",
+        "scipy >= 0.17.0",
+        "pint",
+        "psutil",
+    ],
+)
