@@ -21,14 +21,12 @@
 #include "GreenTensor.h"
 #include "dtypes.h"
 
-#include <Eigen/Sparse>
 #include <algorithm>
 #include <cmath>
 #include <limits>
 #include <numeric>
 #include <string>
 #include <unordered_set>
-#include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
 SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
