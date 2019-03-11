@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke. All rights reserved.
+ * Copyright (c) 2016 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@
 #include <limits>
 #include <numeric>
 #include <string>
-#include <tuple>
 #include <unordered_set>
 #include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
@@ -632,10 +631,10 @@ void SystemTwo::initializeInteraction() {
         if (surface_distance != std::numeric_limits<double>::max()) {
             GT.addSurface(surface_distance);
         }
-        const auto &dd_green_tensor = GT.getDDTensor();
 
         // Determine which interaction matrices have to be calculated
         if (ordermax >= 3) {
+            const auto &dd_green_tensor = GT.getDDTensor();
             for (int i1 = 0; i1 < 3; ++i1) {
                 for (int i2 = 0; i2 < 3; ++i2) {
                     if (std::abs(dd_green_tensor(i1, i2)) > tolerance) {
@@ -646,12 +645,8 @@ void SystemTwo::initializeInteraction() {
             }
         }
         if (ordermax >= 4) {
-//             const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> greentensor_tuple =
-//                 GT.getDQTensor();
-//             const Eigen::Tensor<double, 3> dq_green_tensor = std::get<0>(greentensor_tuple);
-//             const Eigen::Tensor<double, 3> qd_green_tensor = std::get<1>(greentensor_tuple);
-            const Eigen::Tensor<double, 3> dq_green_tensor = GT.getDQTensor();
-            const Eigen::Tensor<double, 3> qd_green_tensor = GT.getQDTensor();
+            const auto &dq_green_tensor = GT.getDQTensor();
+            const auto &qd_green_tensor = GT.getQDTensor();
             for (int i1 = 0; i1 < 3; ++i1) {
                 for (int i2 = 0; i2 < 3; ++i2) {
                     for (int i3 = 0; i3 < 3; i3++) {

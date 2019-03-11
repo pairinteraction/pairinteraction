@@ -19,6 +19,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <unsupported/Eigen/CXX11/Tensor>
 #include <array>
 #include <cmath>
 #include <vector>
@@ -51,6 +52,9 @@ typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_double_t;
 typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> eigen_vector_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1> eigen_vector_double_t;
+
+typedef Eigen::Matrix<double, 3, 3> eigen_matrix33;
+typedef Eigen::TensorFixedSize<double, Eigen::Sizes<3, 3, 3>> eigen_tensor333;
 
 constexpr const double au2GHz = 6579683.920757349;
 constexpr const double au2Vcm = 5142206707.0;

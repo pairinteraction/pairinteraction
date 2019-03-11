@@ -17,51 +17,41 @@
 #ifndef GREENTENSOR_H
 #define GREENTENSOR_H
 
-#include <Eigen/Sparse>
+#include "dtypes.h"
 #include <cmath>
 #include <complex>
-#include <tuple>
-#include <unsupported/Eigen/CXX11/Tensor>
 
 class GreenTensor {
 
 public:
-    void vacuumDipoleQuadrupole(
-        double x, double y,
-        double z);
-    void vacuumQuadrupoleDipole(
-        double x, double y,
-        double z);// TODO create vacuum(x,z,order), include order-parameter in constructor.
-    void plateDipoleQuadrupole(double x, double zA, double zB);
-    void plateQuadrupoleDipole(double x, double zA, double zB);
-    void addSurface(double d);
     GreenTensor(double x, double y, double z);
-    const Eigen::Matrix<double, 3, 3> &getDDTensor();
-//     const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> &
-//     getDQTensor(); 
-    const Eigen::Tensor<double, 3> &getDQTensor();
-    const Eigen::Tensor<double, 3> &getQDTensor();
+    void addSurface(double d);
+    const eigen_matrix33 &getDDTensor();
+    const eigen_tensor333 &getDQTensor();
+    const eigen_tensor333 &getQDTensor();
 
 private:
+    eigen_matrix33 getDDTensorVacuum(double x, double y, double z) const;
+    eigen_tensor333 getDQTensorVacuum(double x, double y, double z) const;
+    eigen_tensor333 getQDTensorVacuum(double x, double y, double z) const;
+
+    eigen_matrix33 getDDTensorPlate(double x, double zA, double zB) const;
+    eigen_tensor333 getDQTensorPlate(double x, double zA, double zB) const;
+    eigen_tensor333 getQDTensorPlate(double x, double zA, double zB) const;
+
+    eigen_matrix33 dd_tensor;
+    eigen_tensor333 qd_tensor;
+    eigen_tensor333 dq_tensor;
+
     double x;
     double y;
     double z;
-    double angle;
     double zA;
     double zB;
 
     bool dd_tensor_calculated;
     bool dq_tensor_calculated;
     bool qd_tensor_calculated;
-    double surface_distance;
-
-    void vacuum(double x, double y, double z);
-    void plate(double x, double zA, double zB);
-
-    Eigen::Matrix<double, 3, 3> dd_tensor;
-    Eigen::Tensor<double, 3> qd_tensor;
-    Eigen::Tensor<double, 3> dq_tensor;
-//     std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> dq_tuple;
 };
 
 #endif
