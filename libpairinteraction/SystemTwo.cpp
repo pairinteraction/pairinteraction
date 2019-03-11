@@ -646,10 +646,12 @@ void SystemTwo::initializeInteraction() {
             }
         }
         if (ordermax >= 4) {
-            const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> greentensor_tuple =
-                GT.getDQTensor();
-            const Eigen::Tensor<double, 3> dq_green_tensor = std::get<0>(greentensor_tuple);
-            const Eigen::Tensor<double, 3> qd_green_tensor = std::get<1>(greentensor_tuple);
+//             const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> greentensor_tuple =
+//                 GT.getDQTensor();
+//             const Eigen::Tensor<double, 3> dq_green_tensor = std::get<0>(greentensor_tuple);
+//             const Eigen::Tensor<double, 3> qd_green_tensor = std::get<1>(greentensor_tuple);
+            const Eigen::Tensor<double, 3> dq_green_tensor = GT.getDQTensor();
+            const Eigen::Tensor<double, 3> qd_green_tensor = GT.getQDTensor();
             for (int i1 = 0; i1 < 3; ++i1) {
                 for (int i2 = 0; i2 < 3; ++i2) {
                     for (int i3 = 0; i3 < 3; i3++) {

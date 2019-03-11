@@ -28,14 +28,19 @@ class GreenTensor {
 public:
     void vacuumDipoleQuadrupole(
         double x, double y,
-        double z); // TODO create vacuum(x,z,order), include order-parameter in constructor.
+        double z);
+    void vacuumQuadrupoleDipole(
+        double x, double y,
+        double z);// TODO create vacuum(x,z,order), include order-parameter in constructor.
     void plateDipoleQuadrupole(double x, double zA, double zB);
+    void plateQuadrupoleDipole(double x, double zA, double zB);
     void addSurface(double d);
     GreenTensor(double x, double y, double z);
     const Eigen::Matrix<double, 3, 3> &getDDTensor();
-    const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> &
-    getDQTensor(); // TODO Do this by reference?
-    //     const Eigen::Tensor<double, 3> &getDQTensor();
+//     const std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> &
+//     getDQTensor(); 
+    const Eigen::Tensor<double, 3> &getDQTensor();
+    const Eigen::Tensor<double, 3> &getQDTensor();
 
 private:
     double x;
@@ -47,6 +52,7 @@ private:
 
     bool dd_tensor_calculated;
     bool dq_tensor_calculated;
+    bool qd_tensor_calculated;
     double surface_distance;
 
     void vacuum(double x, double y, double z);
@@ -55,7 +61,7 @@ private:
     Eigen::Matrix<double, 3, 3> dd_tensor;
     Eigen::Tensor<double, 3> qd_tensor;
     Eigen::Tensor<double, 3> dq_tensor;
-    std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> dq_tuple;
+//     std::tuple<Eigen::Tensor<double, 3>, Eigen::Tensor<double, 3>> dq_tuple;
 };
 
 #endif
