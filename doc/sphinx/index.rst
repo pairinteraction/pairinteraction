@@ -183,9 +183,10 @@ Credits
 
 The pairinteraction software was originally developed at the `5th Institute of Physics`_ and the `Institute for Theoretical Physics III`_ of the University of Stuttgart, Germany.
 Currently it is maintained by developers at the `Institute for Theoretical Physics III`_ of the University of Stuttgart in Germany, the `Department of Physics`_ of the University of Otago in New Zealand,
-and the `Department of Physics, Chemistry and Pharmacy`_ of the University of Southern Denmark in Denmark.
+the `Institute of Physics`_ of the University of Rostock in Germany, and the `Department of Physics, Chemistry and Pharmacy`_ of the University of Southern Denmark in Denmark.
 
 .. _5th Institute of Physics: http://www.pi5.uni-stuttgart.de/
 .. _Institute for Theoretical Physics III: http://www.itp3.uni-stuttgart.de/
 .. _Department of Physics: http://www.otago.ac.nz/physics/index.html
 .. _Department of Physics, Chemistry and Pharmacy: http://www.sdu.dk/en/fkf
+.. _Institute of Physics: https://www.physik.uni-rostock.de/
