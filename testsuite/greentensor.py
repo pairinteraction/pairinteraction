@@ -132,7 +132,7 @@ class GreenTensorTest(unittest.TestCase):
         idx = np.argmax(system_two.getOverlap(state_two, 0, -theta, 0))
         C6_3 = (system_two.getHamiltonian().diagonal()[idx] - state_two.getEnergy()) * interatomic_distance**6
 
-        # Compare the results against literature
+        # Compare the results against previously calculated values
         np.testing.assert_allclose(C6_freespace, -670, atol=20)
         np.testing.assert_allclose(C6_1, -544, atol=20)
         np.testing.assert_allclose(C6_2, -628, atol=20)
