@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
+ * Copyright (c) 2019 Sebastian Weber, Henri Menke, Johannes Block. All rights reserved.
  *
  * This file is part of the pairinteraction library.
  *
