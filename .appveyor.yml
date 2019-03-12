@@ -66,6 +66,10 @@ artifacts:
   - path: build\pairinteraction-install-windows.exe
     name: installer
 
+after_test:
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -eq "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
+  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -ne "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing --repository-url https://test.pypi.org/legacy/ $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
+
 deploy:
   - provider: GitHub
     release: $(APPVEYOR_REPO_TAG_NAME)
@@ -75,7 +79,3 @@ deploy:
     force_update: true
     on:
       appveyor_repo_tag: true
-
-deploy_script:
-  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -eq "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
-  - ps: If ($env:APPVEYOR_REPO_TAG -eq "true" -And $env:APPVEYOR_REPO_NAME -ne "pairinteraction/pairinteraction") { Invoke-Expression "twine upload --username pairinteraction-slave --password $env:PYPI_TOKEN --skip-existing --repository-url https://test.pypi.org/legacy/ $env:APPVEYOR_BUILD_FOLDER\build\wheelhouse\*.whl;" }
