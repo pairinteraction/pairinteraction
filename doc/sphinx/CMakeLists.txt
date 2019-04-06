@@ -18,10 +18,11 @@
 find_package(Sphinx)
 find_package(IPython)
 
+set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
+
 if(SPHINX_FOUND)
   find_package(IPython REQUIRED)
 
-  set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
   set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
   set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/${LIBNAME}")
 
