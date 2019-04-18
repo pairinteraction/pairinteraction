@@ -195,8 +195,8 @@ private:
     method_t method{NUMEROV};
     std::string defectdbname;
     std::string dbname;
-    sqlite::handle db;
-    sqlite::statement stmt;
+    std::unique_ptr<sqlite::handle> db;
+    std::unique_ptr<sqlite::statement> stmt;
     long pid_which_created_db;
 
     ////////////////////////////////////////////////////////////////////
@@ -215,15 +215,15 @@ private:
 
         if (Archive::is_loading::value && !dbname.empty()) {
             // Open database
-            db = sqlite::handle(dbname);
-            stmt = sqlite::statement(db);
+            db.reset(new sqlite::handle(dbname));
+            stmt.reset(new sqlite::statement(*db));
             pid_which_created_db = utils::get_pid();
 
             // Speed up database access
-            stmt.exec(
+            stmt->exec(
                 "PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
-            stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
-                                                       // transaction
+            stmt->exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
+                                                        // transaction
         }
     }
 };

@@ -74,46 +74,45 @@ bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, 
 ////////////////////////////////////////////////////////////////////
 
 MatrixElementCache::MatrixElementCache()
-    : defectdbname(""), dbname(""), db(dbname), stmt(db),
-      pid_which_created_db(utils::get_pid()) { // db and stmt have to be initialized here since they
-                                               // have no default constructor
-}
+    : defectdbname(""), dbname(""), pid_which_created_db(utils::get_pid()) {}
 
 MatrixElementCache::MatrixElementCache(std::string const &cachedir)
     : defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
                                 ("cache_elements_" + version::cache() + ".db"))
                                    .string()),
-      db(dbname), stmt(db), pid_which_created_db(utils::get_pid()) {
+      db(new sqlite::handle(dbname)), stmt(new sqlite::statement(*db)),
+      pid_which_created_db(utils::get_pid()) {
 
     // Speed up database access
-    stmt.exec("PRAGMA synchronous = OFF");     // do not wait on write, hand off to OS and carry on
-    stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
+    stmt->exec("PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
+    stmt->exec(
+        "PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during transaction
 
     // Create cache tables (reduced_momentum_s and reduced_momentum_l need not to be cached since
     // they are trivial)
-    stmt.exec("create table if not exists cache_radial ("
-              "method int, species text, k integer, n1 integer, l1 integer, j1 double,"
-              "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, "
-              "n1, l1, j1, n2, l2, j2)) without rowid;");
+    stmt->exec("create table if not exists cache_radial ("
+               "method int, species text, k integer, n1 integer, l1 integer, j1 double,"
+               "n2 integer, l2 integer, j2 double, value double, primary key (method, species, k, "
+               "n1, l1, j1, n2, l2, j2)) without rowid;");
 
-    stmt.exec(
+    stmt->exec(
         "create table if not exists cache_angular ("
         "k integer, j1 double, m1 double,"
         "j2 double, m2 double, value double, primary key (k, j1, m1, j2, m2)) without rowid;");
 
-    stmt.exec(
+    stmt->exec(
         "create table if not exists cache_reduced_commutes_s ("
         "s double, k integer, l1 integer, j1 double,"
         "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
 
-    stmt.exec(
+    stmt->exec(
         "create table if not exists cache_reduced_commutes_l ("
         "s double, k integer, l1 integer, j1 double,"
         "l2 integer, j2 double, value double, primary key (s, k, l1, j1, l2, j2)) without rowid;");
 
-    stmt.exec("create table if not exists cache_reduced_multipole ("
-              "k integer, l1 integer,"
-              "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
+    stmt->exec("create table if not exists cache_reduced_multipole ("
+               "k integer, l1 integer,"
+               "l2 integer, value double, primary key (k, l1, l2)) without rowid;");
 }
 
 void MatrixElementCache::setDefectDB(std::string const &path) {
@@ -655,129 +654,129 @@ int MatrixElementCache::update() {
         // Reopen the connection to the database if it was opend by a different process (without
         // doing this, there can be problems with Python multiprocessing)
         if (pid_which_created_db != static_cast<long>(utils::get_pid())) {
-            db = sqlite::handle(dbname);
-            stmt = sqlite::statement(db);
+            db.reset(new sqlite::handle(dbname));
+            stmt.reset(new sqlite::statement(*db));
             pid_which_created_db = utils::get_pid();
 
             // Speed up database access
-            stmt.exec(
+            stmt->exec(
                 "PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
-            stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
-                                                       // transaction
+            stmt->exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
+                                                        // transaction
         }
 
         if (!cache_radial_missing.empty()) {
-            stmt.set("select value from cache_radial where `method` = ?1 and `species` = ?2 and "
-                     "`k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = "
-                     "?8 and `j2` = ?9;");
-            stmt.prepare();
+            stmt->set("select value from cache_radial where `method` = ?1 and `species` = ?2 and "
+                      "`k` = ?3 and `n1` = ?4 and `l1` = ?5 and `j1` = ?6 and `n2` = ?7 and `l2` = "
+                      "?8 and `j2` = ?9;");
+            stmt->prepare();
 
             for (auto cached = cache_radial_missing.begin();
                  cached != cache_radial_missing.end();) {
-                stmt.bind(1, cached->method);
-                stmt.bind(2, cached->species);
-                stmt.bind(3, cached->kappa);
-                stmt.bind(4, cached->n[0]);
-                stmt.bind(5, cached->l[0]);
-                stmt.bind(6, cached->j[0]);
-                stmt.bind(7, cached->n[1]);
-                stmt.bind(8, cached->l[1]);
-                stmt.bind(9, cached->j[1]);
-                if (stmt.step()) {
-                    cache_radial.insert({*cached, stmt.get<double>(0)});
+                stmt->bind(1, cached->method);
+                stmt->bind(2, cached->species);
+                stmt->bind(3, cached->kappa);
+                stmt->bind(4, cached->n[0]);
+                stmt->bind(5, cached->l[0]);
+                stmt->bind(6, cached->j[0]);
+                stmt->bind(7, cached->n[1]);
+                stmt->bind(8, cached->l[1]);
+                stmt->bind(9, cached->j[1]);
+                if (stmt->step()) {
+                    cache_radial.insert({*cached, stmt->get<double>(0)});
                     cached = cache_radial_missing.erase(cached);
                 } else {
                     ++cached;
                 }
-                stmt.reset();
+                stmt->reset();
             }
         }
 
         if (!cache_angular_missing.empty()) {
-            stmt.set("select value from cache_angular where `k` = ?1 and `j1` = ?2 and `m1` = ?3 "
-                     "and `j2` = ?4 and `m2` = ?5;");
-            stmt.prepare();
+            stmt->set("select value from cache_angular where `k` = ?1 and `j1` = ?2 and `m1` = ?3 "
+                      "and `j2` = ?4 and `m2` = ?5;");
+            stmt->prepare();
 
             for (auto cached = cache_angular_missing.begin();
                  cached != cache_angular_missing.end();) {
-                stmt.bind(1, cached->kappa);
-                stmt.bind(2, cached->j[0]);
-                stmt.bind(3, cached->m[0]);
-                stmt.bind(4, cached->j[1]);
-                stmt.bind(5, cached->m[1]);
-                if (stmt.step()) {
-                    cache_angular.insert({*cached, stmt.get<double>(0)});
+                stmt->bind(1, cached->kappa);
+                stmt->bind(2, cached->j[0]);
+                stmt->bind(3, cached->m[0]);
+                stmt->bind(4, cached->j[1]);
+                stmt->bind(5, cached->m[1]);
+                if (stmt->step()) {
+                    cache_angular.insert({*cached, stmt->get<double>(0)});
                     cached = cache_angular_missing.erase(cached);
                 } else {
                     ++cached;
                 }
-                stmt.reset();
+                stmt->reset();
             }
         }
 
         if (!cache_reduced_commutes_s_missing.empty()) {
-            stmt.set("select value from cache_reduced_commutes_s where `s` = ?1 and `k` = ?2 and "
-                     "`l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
-            stmt.prepare();
+            stmt->set("select value from cache_reduced_commutes_s where `s` = ?1 and `k` = ?2 and "
+                      "`l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
+            stmt->prepare();
 
             for (auto cached = cache_reduced_commutes_s_missing.begin();
                  cached != cache_reduced_commutes_s_missing.end();) {
-                stmt.bind(1, cached->s);
-                stmt.bind(2, cached->kappa);
-                stmt.bind(3, cached->l[0]);
-                stmt.bind(4, cached->j[0]);
-                stmt.bind(5, cached->l[1]);
-                stmt.bind(6, cached->j[1]);
-                if (stmt.step()) {
-                    cache_reduced_commutes_s.insert({*cached, stmt.get<double>(0)});
+                stmt->bind(1, cached->s);
+                stmt->bind(2, cached->kappa);
+                stmt->bind(3, cached->l[0]);
+                stmt->bind(4, cached->j[0]);
+                stmt->bind(5, cached->l[1]);
+                stmt->bind(6, cached->j[1]);
+                if (stmt->step()) {
+                    cache_reduced_commutes_s.insert({*cached, stmt->get<double>(0)});
                     cached = cache_reduced_commutes_s_missing.erase(cached);
                 } else {
                     ++cached;
                 }
-                stmt.reset();
+                stmt->reset();
             }
         }
 
         if (!cache_reduced_commutes_l_missing.empty()) {
-            stmt.set("select value from cache_reduced_commutes_l where `s` = ?1 and `k` = ?2 and "
-                     "`l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
-            stmt.prepare();
+            stmt->set("select value from cache_reduced_commutes_l where `s` = ?1 and `k` = ?2 and "
+                      "`l1` = ?3 and `j1` = ?4 and `l2` = ?5 and `j2` = ?6;");
+            stmt->prepare();
 
             for (auto cached = cache_reduced_commutes_l_missing.begin();
                  cached != cache_reduced_commutes_l_missing.end();) {
-                stmt.bind(1, cached->s);
-                stmt.bind(2, cached->kappa);
-                stmt.bind(3, cached->l[0]);
-                stmt.bind(4, cached->j[0]);
-                stmt.bind(5, cached->l[1]);
-                stmt.bind(6, cached->j[1]);
-                if (stmt.step()) {
-                    cache_reduced_commutes_l.insert({*cached, stmt.get<double>(0)});
+                stmt->bind(1, cached->s);
+                stmt->bind(2, cached->kappa);
+                stmt->bind(3, cached->l[0]);
+                stmt->bind(4, cached->j[0]);
+                stmt->bind(5, cached->l[1]);
+                stmt->bind(6, cached->j[1]);
+                if (stmt->step()) {
+                    cache_reduced_commutes_l.insert({*cached, stmt->get<double>(0)});
                     cached = cache_reduced_commutes_l_missing.erase(cached);
                 } else {
                     ++cached;
                 }
-                stmt.reset();
+                stmt->reset();
             }
         }
 
         if (!cache_reduced_multipole_missing.empty()) {
-            stmt.set("select value from cache_reduced_multipole where `k` = ?1 and `l1` = ?2 and "
-                     "`l2` = ?3;");
-            stmt.prepare();
+            stmt->set("select value from cache_reduced_multipole where `k` = ?1 and `l1` = ?2 and "
+                      "`l2` = ?3;");
+            stmt->prepare();
 
             for (auto cached = cache_reduced_multipole_missing.begin();
                  cached != cache_reduced_multipole_missing.end();) {
-                stmt.bind(1, cached->kappa);
-                stmt.bind(2, cached->l[0]);
-                stmt.bind(3, cached->l[1]);
-                if (stmt.step()) {
-                    cache_reduced_multipole.insert({*cached, stmt.get<double>(0)});
+                stmt->bind(1, cached->kappa);
+                stmt->bind(2, cached->l[0]);
+                stmt->bind(3, cached->l[1]);
+                if (stmt->step()) {
+                    cache_reduced_multipole.insert({*cached, stmt->get<double>(0)});
                     cached = cache_reduced_multipole_missing.erase(cached);
                 } else {
                     ++cached;
                 }
-                stmt.reset();
+                stmt->reset();
             }
         }
     }
@@ -785,14 +784,14 @@ int MatrixElementCache::update() {
     // --- Calculate missing elements and write them to the database --- // TODO parallelize
 
     if (!dbname.empty()) {
-        stmt.exec("begin transaction;");
+        stmt->exec("begin transaction;");
     }
 
     if (!cache_radial_missing.empty()) {
         if (!dbname.empty()) {
-            stmt.set("insert or ignore into cache_radial (method, species, k, n1, l1, j1, n2, l2, "
-                     "j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
-            stmt.prepare();
+            stmt->set("insert or ignore into cache_radial (method, species, k, n1, l1, j1, n2, l2, "
+                      "j2, value) values (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);");
+            stmt->prepare();
         }
 
         for (auto &cached : cache_radial_missing) {
@@ -812,18 +811,18 @@ int MatrixElementCache::update() {
             cache_radial.insert({cached, val});
 
             if (!dbname.empty()) {
-                stmt.bind(1, cached.method);
-                stmt.bind(2, cached.species);
-                stmt.bind(3, cached.kappa);
-                stmt.bind(4, cached.n[0]);
-                stmt.bind(5, cached.l[0]);
-                stmt.bind(6, cached.j[0]);
-                stmt.bind(7, cached.n[1]);
-                stmt.bind(8, cached.l[1]);
-                stmt.bind(9, cached.j[1]);
-                stmt.bind(10, val);
-                stmt.step();
-                stmt.reset();
+                stmt->bind(1, cached.method);
+                stmt->bind(2, cached.species);
+                stmt->bind(3, cached.kappa);
+                stmt->bind(4, cached.n[0]);
+                stmt->bind(5, cached.l[0]);
+                stmt->bind(6, cached.j[0]);
+                stmt->bind(7, cached.n[1]);
+                stmt->bind(8, cached.l[1]);
+                stmt->bind(9, cached.j[1]);
+                stmt->bind(10, val);
+                stmt->step();
+                stmt->reset();
             }
         }
 
@@ -832,9 +831,9 @@ int MatrixElementCache::update() {
 
     if (!cache_angular_missing.empty()) {
         if (!dbname.empty()) {
-            stmt.set("insert or ignore into cache_angular (k, j1, m1, j2, m2, value) values (?1, "
-                     "?2, ?3, ?4, ?5, ?6);");
-            stmt.prepare();
+            stmt->set("insert or ignore into cache_angular (k, j1, m1, j2, m2, value) values (?1, "
+                      "?2, ?3, ?4, ?5, ?6);");
+            stmt->prepare();
         }
 
         for (auto &cached : cache_angular_missing) {
@@ -846,14 +845,14 @@ int MatrixElementCache::update() {
             cache_angular.insert({cached, val});
 
             if (!dbname.empty()) {
-                stmt.bind(1, cached.kappa);
-                stmt.bind(2, cached.j[0]);
-                stmt.bind(3, cached.m[0]);
-                stmt.bind(4, cached.j[1]);
-                stmt.bind(5, cached.m[1]);
-                stmt.bind(6, val);
-                stmt.step();
-                stmt.reset();
+                stmt->bind(1, cached.kappa);
+                stmt->bind(2, cached.j[0]);
+                stmt->bind(3, cached.m[0]);
+                stmt->bind(4, cached.j[1]);
+                stmt->bind(5, cached.m[1]);
+                stmt->bind(6, val);
+                stmt->step();
+                stmt->reset();
             }
         }
 
@@ -862,9 +861,10 @@ int MatrixElementCache::update() {
 
     if (!cache_reduced_commutes_s_missing.empty()) {
         if (!dbname.empty()) {
-            stmt.set("insert or ignore into cache_reduced_commutes_s (s, k, l1, j1, l2, j2, value) "
-                     "values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
-            stmt.prepare();
+            stmt->set(
+                "insert or ignore into cache_reduced_commutes_s (s, k, l1, j1, l2, j2, value) "
+                "values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
+            stmt->prepare();
         }
 
         for (auto &cached : cache_reduced_commutes_s_missing) {
@@ -889,15 +889,15 @@ int MatrixElementCache::update() {
             cache_reduced_commutes_s.insert({cached, val});
 
             if (!dbname.empty()) {
-                stmt.bind(1, cached.s);
-                stmt.bind(2, cached.kappa);
-                stmt.bind(3, cached.l[0]);
-                stmt.bind(4, cached.j[0]);
-                stmt.bind(5, cached.l[1]);
-                stmt.bind(6, cached.j[1]);
-                stmt.bind(7, val);
-                stmt.step();
-                stmt.reset();
+                stmt->bind(1, cached.s);
+                stmt->bind(2, cached.kappa);
+                stmt->bind(3, cached.l[0]);
+                stmt->bind(4, cached.j[0]);
+                stmt->bind(5, cached.l[1]);
+                stmt->bind(6, cached.j[1]);
+                stmt->bind(7, val);
+                stmt->step();
+                stmt->reset();
             }
         }
 
@@ -906,9 +906,10 @@ int MatrixElementCache::update() {
 
     if (!cache_reduced_commutes_l_missing.empty()) {
         if (!dbname.empty()) {
-            stmt.set("insert or ignore into cache_reduced_commutes_l (s, k, l1, j1, l2, j2, value) "
-                     "values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
-            stmt.prepare();
+            stmt->set(
+                "insert or ignore into cache_reduced_commutes_l (s, k, l1, j1, l2, j2, value) "
+                "values (?1, ?2, ?3, ?4, ?5, ?6, ?7);");
+            stmt->prepare();
         }
 
         for (auto &cached : cache_reduced_commutes_l_missing) {
@@ -933,15 +934,15 @@ int MatrixElementCache::update() {
             cache_reduced_commutes_l.insert({cached, val});
 
             if (!dbname.empty()) {
-                stmt.bind(1, cached.s);
-                stmt.bind(2, cached.kappa);
-                stmt.bind(3, cached.l[0]);
-                stmt.bind(4, cached.j[0]);
-                stmt.bind(5, cached.l[1]);
-                stmt.bind(6, cached.j[1]);
-                stmt.bind(7, val);
-                stmt.step();
-                stmt.reset();
+                stmt->bind(1, cached.s);
+                stmt->bind(2, cached.kappa);
+                stmt->bind(3, cached.l[0]);
+                stmt->bind(4, cached.j[0]);
+                stmt->bind(5, cached.l[1]);
+                stmt->bind(6, cached.j[1]);
+                stmt->bind(7, val);
+                stmt->step();
+                stmt->reset();
             }
         }
 
@@ -950,9 +951,10 @@ int MatrixElementCache::update() {
 
     if (!cache_reduced_multipole_missing.empty()) {
         if (!dbname.empty()) {
-            stmt.set("insert or ignore into cache_reduced_multipole (k, l1, l2, value) values (?1, "
-                     "?2, ?3, ?4);");
-            stmt.prepare();
+            stmt->set(
+                "insert or ignore into cache_reduced_multipole (k, l1, l2, value) values (?1, "
+                "?2, ?3, ?4);");
+            stmt->prepare();
         }
 
         for (auto &cached : cache_reduced_multipole_missing) {
@@ -966,12 +968,12 @@ int MatrixElementCache::update() {
             cache_reduced_multipole.insert({cached, val});
 
             if (!dbname.empty()) {
-                stmt.bind(1, cached.kappa);
-                stmt.bind(2, cached.l[0]);
-                stmt.bind(3, cached.l[1]);
-                stmt.bind(4, val);
-                stmt.step();
-                stmt.reset();
+                stmt->bind(1, cached.kappa);
+                stmt->bind(2, cached.l[0]);
+                stmt->bind(3, cached.l[1]);
+                stmt->bind(4, val);
+                stmt->step();
+                stmt->reset();
             }
         }
 
@@ -979,7 +981,7 @@ int MatrixElementCache::update() {
     }
 
     if (!dbname.empty()) {
-        stmt.exec("commit transaction;");
+        stmt->exec("commit transaction;");
     }
 
     return 1;
