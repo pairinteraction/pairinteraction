@@ -654,8 +654,8 @@ int MatrixElementCache::update() {
         // Reopen the connection to the database if it was opend by a different process (without
         // doing this, there can be problems with Python multiprocessing)
         if (pid_which_created_db != static_cast<long>(utils::get_pid())) {
-            db.reset(new sqlite::handle(dbname));
-            stmt.reset(new sqlite::statement(*db));
+            db = std::make_unique<sqlite::handle>(dbname);
+            stmt = std::make_unique<sqlite::statement>(*db);
             pid_which_created_db = utils::get_pid();
 
             // Speed up database access

@@ -215,8 +215,8 @@ private:
 
         if (Archive::is_loading::value && !dbname.empty()) {
             // Open database
-            db.reset(new sqlite::handle(dbname));
-            stmt.reset(new sqlite::statement(*db));
+            db = std::make_unique<sqlite::handle>(dbname);
+            stmt = std::make_unique<sqlite::statement>(*db);
             pid_which_created_db = utils::get_pid();
 
             // Speed up database access
