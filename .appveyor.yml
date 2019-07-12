@@ -15,7 +15,7 @@ install:
   - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
   - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
   
-  - cmd: call %MINICONDA_ROOT%\Scripts\activate root
+  - call "%MINICONDA_ROOT%\Scripts\activate.bat" root
   - cmd: conda config --append channels conda-forge
   - cmd: conda create -y --name default --clone root
   - cmd: conda install -y -q conda-build
@@ -24,11 +24,12 @@ install:
   
 build_script:
   - cmd: conda metapackage pairinteraction-dependencies %COMMIT_TIMESTAMP% --no-anaconda-upload --dependencies pyqt numpy scipy psutil pint pyzmq
+  - cmd: conda deactivate
   
   - cmd: C:\vcpkg\vcpkg install sqlite3:x64-windows eigen3:x64-windows gsl:x64-windows zeromq:x64-windows
 
 after_build:
-  - cmd: activate default
+  - call "%MINICONDA_ROOT%\Scripts\activate.bat" default
   - cmd: conda clean -y -a
   - cmd: conda install -y -q pairinteraction-dependencies --use-local
   - cmd: md conda-export\noarch
