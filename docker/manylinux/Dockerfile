@@ -1,12 +1,11 @@
-FROM quay.io/pypa/manylinux1_x86_64
+FROM quay.io/pypa/manylinux2010_x86_64
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 
 # Use Python 3.5
 ENV PATH="/opt/python/cp35-cp35m/bin/:$PATH"
 ENV PYTHON_INCLUDE_DIR="/opt/python/cp35-cp35m/include/python3.5m/"
 
-# Because CentOS 5 is so ancient we have to install all kinds of
-# things by hand.
+# We have to install all kinds of things by hand.
 #
 # From pip:
 #     cmake, numpy, scipy
