@@ -21,6 +21,7 @@ For the contained C++ and Python libraries, the individual licenses apply.
 | Image    | Build Status                                       |
 |----------|----------------------------------------------------|
 | Debian   | [![Debian image][debian-svg]][debian-link]         |
+| manylinux| [![manylinux image][manylinux-svg]][manylinux-link]|
 | openSUSE | [![openSUSE image][opensuse-svg]][opensuse-link]   |
 | Ubuntu   | [![Ubuntu image][ubuntu-svg]][ubuntu-link]         |
 
@@ -30,9 +31,11 @@ Pairinteraction is released under the terms of the [Apache License 2.0](https://
 
 Status badges are provided by https://shields.io/
 
-[debian-svg]: https://img.shields.io/docker/build/pairinteraction/debian.svg
+[debian-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/debian.svg
 [debian-link]: https://hub.docker.com/r/pairinteraction/debian/builds/
-[opensuse-svg]: https://img.shields.io/docker/build/pairinteraction/opensuse.svg
+[manylinux-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/manylinux.svg
+[manylinux-link]: https://hub.docker.com/r/pairinteraction/manylinux/builds/
+[opensuse-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/opensuse.svg
 [opensuse-link]: https://hub.docker.com/r/pairinteraction/opensuse/builds/
-[ubuntu-svg]: https://img.shields.io/docker/build/pairinteraction/ubuntu.svg
+[ubuntu-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/ubuntu.svg
 [ubuntu-link]: https://hub.docker.com/r/pairinteraction/ubuntu/builds/
