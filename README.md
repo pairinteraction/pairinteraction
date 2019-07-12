@@ -10,7 +10,7 @@
 Build dependencies of the [Rydberg Interaction Calculator](https://github.com/pairinteraction/pairinteraction) are made available through the [releases section](https://github.com/pairinteraction/pairinteraction-build-dependencies/releases) for Windows and Mac OS X.
 For the contained C++ and Python libraries, the individual licenses apply.
 
-[travis-svg]: https://travis-ci.org/pairinteraction/pairinteraction-build-dependencies.svg?branch=master
+[travis-svg]: https://img.shields.io/travis/pairinteraction/pairinteraction-build-dependencies.svg?branch=master&style=flat&logo=travis
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction-build-dependencies
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/tgsc3sfwjk6ed9qy/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction-build-dependencies/branch/master
