@@ -22,6 +22,13 @@ sys.path.insert(0, '@CMAKE_BINARY_DIR@/@LIBNAME@')
 
 repo_slug = os.getenv('TRAVIS_REPO_SLUG', "pairinteraction/pairinteraction")
 
+if repo_slug == "pairinteraction/pairinteraction":
+    pypi_image = "https://img.shields.io/pypi/v/pairinteraction.svg?color=orange"
+    pypi_target = "https://pypi.org/project/pairinteraction/"
+else:
+    pypi_image = "https://img.shields.io/badge/pypi-TestPyPI-orange.svg?style=flat"
+    pypi_target = "https://test.pypi.org/project/pairinteraction/"
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
@@ -178,8 +185,8 @@ rst_epilog = """
 .. |codecov| image:: https://codecov.io/gh/{repo_slug}/branch/master/graph/badge.svg
              :target: https://codecov.io/gh/{repo_slug}
              :alt: Code Coverage Report
-.. |pypi| image:: https://img.shields.io/pypi/v/pairinteraction.svg
-          :target: https://pypi.org/project/pairinteraction/
+.. |pypi| image:: {pypi_image}
+          :target: {pypi_target}
           :alt: PyPI Package
 .. |arxiv| image:: images/arXiv-badge.svg
            :target: https://arxiv.org/abs/1612.08053
@@ -187,4 +194,4 @@ rst_epilog = """
 .. |license| image:: images/license-badge.svg
              :target: https://www.gnu.org/licenses/gpl-3.0.html
              :alt: License
-""".format(repo_slug=repo_slug)
+""".format(repo_slug=repo_slug, pypi_image=pypi_image, pypi_target=pypi_target)
