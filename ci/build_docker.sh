@@ -70,8 +70,8 @@ case "${TRAVIS_OS_NAME}" in
                             cmake -DPYTHON_INCLUDE_DIR=\${PYTHON_INCLUDE_DIR} -DPYTHON_LIBRARY=/make/cmake/happy/ ..;
                             make -k -j 2;
                             make -k -j 2 check;
-                            python setup.py bdist_wheel --python-tag py3 --plat-name manylinux1_x86_64;
-                            auditwheel repair dist/*.whl;
+                            python setup.py bdist_wheel --python-tag py3 --plat-name manylinux2010_x86_64;
+                            auditwheel repair dist/*.whl --plat manylinux2010_x86_64;
                         "
                     ;;
 
