@@ -9,7 +9,7 @@ environment:
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     BOOST_ROOT: C:\Libraries\boost_1_66_0
     BOOST_LIBRARYDIR: C:\Libraries\boost_1_66_0\lib64-msvc-14.0
-    PATH: "%BOOST_LIBRARYDIR%;%PATH%"
+    PATH: "%BOOST_LIBRARYDIR%;%MINICONDA_ROOT%;%MINICONDA_ROOT%\\Scripts;%MINICONDA_ROOT%\\Library\\bin;%PATH%"
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
  
 install:
@@ -27,30 +27,23 @@ install:
 
   - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1528914514/python-packages-windows-x86_64.zip'
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
-  - call "%MINICONDA_ROOT%\Scripts\activate.bat" root
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
-  - cmd: conda install -y -q twine pairinteraction-dependencies
+  - cmd: conda install -y -q pip twine pairinteraction-dependencies
   - cmd: conda update -y -q setuptools wheel
-  - cmd: pip install git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
+  - cmd: python -m pip install git+https://github.com/pyinstaller/pyinstaller.git@00f1ee519e0a23c4facc0be8239daacda5f3519f # TODO if new version that supports python 3.6 in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export 
  
 cache:
   - C:\ProgramData\chocolatey\bin -> .appveyor.yml
   - C:\ProgramData\chocolatey\lib -> .appveyor.yml
 
 before_build:
-  - cmd: conda deactivate
-  - call "%MINICONDA_ROOT%\Scripts\activate.bat" root
   - cmd: md build && cd build
   - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIGURATION%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build_script:
-  - cmd: conda deactivate
-  - call "%MINICONDA_ROOT%\Scripts\activate.bat" root
   - cmd: cmake --build . --config "%CONFIGURATION%"
   
 after_build:
-  - cmd: conda deactivate
-  - call "%MINICONDA_ROOT%\Scripts\activate.bat" root
   - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll pairinteraction\Release
   - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll pairinteraction\Release
