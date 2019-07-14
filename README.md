@@ -1,22 +1,20 @@
-# pairinteraction build dependencies
+# Pairinteraction Build Dependencies
+
+Build dependencies of the [Rydberg Interaction Calculator](https://github.com/pairinteraction/pairinteraction) are made available through the [releases section](https://github.com/pairinteraction/pairinteraction-build-dependencies/releases) for Windows and Mac OS X.
+
+## Build Dependencies
 
 | Target   | Build Status                                            |
 |----------|---------------------------------------------------------|
 | Mac OS X | [![Travis build status][travis-svg]][travis-link]       |
 | Windows  | [![AppVeyor build status][appveyor-svg]][appveyor-link] |
 
-## License
-
-Build dependencies of the [Rydberg Interaction Calculator](https://github.com/pairinteraction/pairinteraction) are made available through the [releases section](https://github.com/pairinteraction/pairinteraction-build-dependencies/releases) for Windows and Mac OS X.
-For the contained C++ and Python libraries, the individual licenses apply.
-
 [travis-svg]: https://img.shields.io/travis/pairinteraction/pairinteraction-build-dependencies.svg?branch=master&style=flat&logo=travis
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction-build-dependencies
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/tgsc3sfwjk6ed9qy/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction-build-dependencies/branch/master
 
-
-# pairinteraction docker images
+## Docker Images
 
 | Image    | Build Status                                       |
 |----------|----------------------------------------------------|
@@ -24,12 +22,6 @@ For the contained C++ and Python libraries, the individual licenses apply.
 | manylinux| [![manylinux image][manylinux-svg]][manylinux-link]|
 | openSUSE | [![openSUSE image][opensuse-svg]][opensuse-link]   |
 | Ubuntu   | [![Ubuntu image][ubuntu-svg]][ubuntu-link]         |
-
-## License
-
-Pairinteraction is released under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).  The Apache License 2.0 has been approved by the Free Software Foundation and the Open Source Initiative and is [compatible with the GNU General Public License version 3 (GPLv3)](https://www.gnu.org/licenses/license-list.html#apache2).
-
-Status badges are provided by https://shields.io/
 
 [debian-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/debian.svg
 [debian-link]: https://hub.docker.com/r/pairinteraction/debian/builds/
@@ -39,3 +31,7 @@ Status badges are provided by https://shields.io/
 [opensuse-link]: https://hub.docker.com/r/pairinteraction/opensuse/builds/
 [ubuntu-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/ubuntu.svg
 [ubuntu-link]: https://hub.docker.com/r/pairinteraction/ubuntu/builds/
+
+## License
+
+The repository is licensed under the [GPL v3](https://www.gnu.org/licenses/gpl-3.0.html). For the libraries contained in the build dependencies, the individual licenses apply. Status badges are provided by https://shields.io/.
