@@ -58,7 +58,7 @@ public:
     const float &getS() const;
     const std::string &getSpecies() const;
     const std::string &getElement() const;
-    double getEnergy() const;
+    double getEnergy(std::string const &database = "") const;
     double getNStar() const;
     const std::string &getLabel() const;
     bool isArtificial() const;

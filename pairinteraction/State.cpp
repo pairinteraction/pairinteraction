@@ -128,9 +128,9 @@ const std::string &StateOne::getElement() const {
     this->shouldBeArtificial(false);
     return element;
 }
-double StateOne::getEnergy() const {
+double StateOne::getEnergy(std::string const &database) const {
     this->shouldBeArtificial(false);
-    return energy_level(species, n, l, j);
+    return energy_level(species, n, l, j, database);
 }
 double StateOne::getNStar() const {
     this->shouldBeArtificial(false);
