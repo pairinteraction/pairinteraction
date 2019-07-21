@@ -182,7 +182,8 @@ void QuantumDefect::setup(sqlite3 *db) {
     cache.save(key, e);
 }
 
-double energy_level(std::string const &species, int n, int l, double j, std::string const &database) {
+double energy_level(std::string const &species, int n, int l, double j,
+                    std::string const &database) {
     QuantumDefect qd(species, n, l, j, database);
     return qd.energy;
 }
