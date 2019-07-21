@@ -66,7 +66,7 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j)
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
                              std::string const &database)
     : QuantumDefect(species, n, l, j, nullptr) {
-    if (database == "") {
+    if (database.empty()) {
         static thread_local EmbeddedDatabase embedded_database{};
         setup(embedded_database);
     } else {
