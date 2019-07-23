@@ -188,7 +188,7 @@ double energy_level(std::string const &species, int n, int l, double j,
     return qd.energy;
 }
 
-double nstar(std::string const &species, int n, int l, double j) {
-    QuantumDefect qd(species, n, l, j);
+double nstar(std::string const &species, int n, int l, double j, std::string const &database) {
+    QuantumDefect qd(species, n, l, j, database);
     return qd.nstar;
 }

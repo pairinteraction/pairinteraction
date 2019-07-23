@@ -169,6 +169,6 @@ public:
 double energy_level(std::string const &species, int n, int l, double j,
                     std::string const &database = "");
 
-double nstar(std::string const &species, int n, int l, double j);
+double nstar(std::string const &species, int n, int l, double j, std::string const &database = "");
 
 #endif // QUANTUM_DEFECT_H

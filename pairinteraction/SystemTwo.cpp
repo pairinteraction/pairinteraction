@@ -1459,7 +1459,7 @@ void SystemTwo::checkDistance(const double &distance) {
                 continue;
             }
 
-            auto n = e.state.getNStar();
+            auto n = e.state.getNStar(cache);
             auto l = e.state.getL();
 
             double le_roy_radius = 2 * au2um *

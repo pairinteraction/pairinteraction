@@ -140,6 +140,10 @@ double StateOne::getNStar() const {
     this->shouldBeArtificial(false);
     return nstar(species, n, l, j);
 }
+double StateOne::getNStar(MatrixElementCache &cache) const {
+    this->shouldBeArtificial(false);
+    return nstar(species, n, l, j, cache.getDefectDB());
+}
 const std::string &StateOne::getLabel() const {
     this->shouldBeArtificial(true);
     return species;
@@ -256,13 +260,16 @@ double StateTwo::getEnergy() const {
 double StateTwo::getEnergy(MatrixElementCache &cache) const {
     return state_array[0].getEnergy(cache) + state_array[1].getEnergy(cache);
 }
+std::array<double, 2> StateTwo::getNStar() const {
+    return {{state_array[0].getNStar(), state_array[1].getNStar()}};
+}
+std::array<double, 2> StateTwo::getNStar(MatrixElementCache &cache) const {
+    return {{state_array[0].getNStar(cache), state_array[1].getNStar(cache)}};
+}
 double StateTwo::getLeRoyRadius(MatrixElementCache &cache) const {
     return 2 *
         (std::sqrt(cache.getRadial(state_array[0], state_array[0], 2)) +
          std::sqrt(cache.getRadial(state_array[1], state_array[1], 2)));
-}
-std::array<double, 2> StateTwo::getNStar() const {
-    return {{state_array[0].getNStar(), state_array[1].getNStar()}};
 }
 std::array<std::string, 2> StateTwo::getLabel() const {
     return {{state_array[0].getLabel(), state_array[1].getLabel()}};
@@ -286,6 +293,9 @@ double StateTwo::getEnergy(int idx, MatrixElementCache &cache) const {
     return state_array[idx].getEnergy(cache);
 }
 double StateTwo::getNStar(int idx) const { return state_array[idx].getNStar(); }
+double StateTwo::getNStar(int idx, MatrixElementCache &cache) const {
+    return state_array[idx].getNStar(cache);
+}
 const std::string &StateTwo::getLabel(int idx) const { return state_array[idx].getLabel(); }
 bool StateTwo::isArtificial(int idx) const { return state_array[idx].isArtificial(); }
 bool StateTwo::isGeneralized(int idx) const { return state_array[idx].isGeneralized(); }
