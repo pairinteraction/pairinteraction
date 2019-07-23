@@ -128,9 +128,13 @@ const std::string &StateOne::getElement() const {
     this->shouldBeArtificial(false);
     return element;
 }
-double StateOne::getEnergy(std::string const &database) const {
+double StateOne::getEnergy() const {
     this->shouldBeArtificial(false);
-    return energy_level(species, n, l, j, database);
+    return energy_level(species, n, l, j);
+}
+double StateOne::getEnergy(MatrixElementCache &cache) const {
+    this->shouldBeArtificial(false);
+    return energy_level(species, n, l, j, cache.getDefectDB());
 }
 double StateOne::getNStar() const {
     this->shouldBeArtificial(false);
@@ -249,6 +253,14 @@ std::array<std::string, 2> StateTwo::getElement() const {
 double StateTwo::getEnergy() const {
     return state_array[0].getEnergy() + state_array[1].getEnergy();
 }
+double StateTwo::getEnergy(MatrixElementCache &cache) const {
+    return state_array[0].getEnergy(cache) + state_array[1].getEnergy(cache);
+}
+double StateTwo::getLeRoyRadius(MatrixElementCache &cache) const {
+    return 2 *
+        (std::sqrt(cache.getRadial(state_array[0], state_array[0], 2)) +
+         std::sqrt(cache.getRadial(state_array[1], state_array[1], 2)));
+}
 std::array<double, 2> StateTwo::getNStar() const {
     return {{state_array[0].getNStar(), state_array[1].getNStar()}};
 }
@@ -270,6 +282,9 @@ const float &StateTwo::getS(int idx) const { return state_array[idx].getS(); }
 const std::string &StateTwo::getSpecies(int idx) const { return state_array[idx].getSpecies(); }
 const std::string &StateTwo::getElement(int idx) const { return state_array[idx].getElement(); }
 double StateTwo::getEnergy(int idx) const { return state_array[idx].getEnergy(); }
+double StateTwo::getEnergy(int idx, MatrixElementCache &cache) const {
+    return state_array[idx].getEnergy(cache);
+}
 double StateTwo::getNStar(int idx) const { return state_array[idx].getNStar(); }
 const std::string &StateTwo::getLabel(int idx) const { return state_array[idx].getLabel(); }
 bool StateTwo::isArtificial(int idx) const { return state_array[idx].isArtificial(); }

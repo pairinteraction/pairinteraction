@@ -424,7 +424,7 @@ void SystemTwo::initializeBasis() {
         double energy = 0;
         for (int idx = 0; idx < 2; ++idx) {
             if (!state.isArtificial(idx)) {
-                energy += state.getEnergy(idx);
+                energy += state.getEnergy(idx, cache);
             }
         }
 
@@ -1476,7 +1476,7 @@ void SystemTwo::checkDistance(const double &distance) {
         if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
             minimal_le_roy_radius = 0;
         } else {
-            minimal_le_roy_radius = cache.getLeRoyRadius(crucial_state);
+            minimal_le_roy_radius = crucial_state.getLeRoyRadius(cache);
         }
     }
 

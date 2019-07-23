@@ -501,11 +501,7 @@ double MatrixElementCache::getRadial(StateOne const &state_row, StateOne const &
     return iter1->second;
 }
 
-double MatrixElementCache::getLeRoyRadius(const StateTwo &state) {
-    return 2 *
-        (std::sqrt(this->getRadial(state.getFirstState(), state.getFirstState(), 2)) +
-         std::sqrt(this->getRadial(state.getSecondState(), state.getSecondState(), 2)));
-}
+const std::string &MatrixElementCache::getDefectDB() const { return defectdbname; }
 
 ////////////////////////////////////////////////////////////////////
 /// Precalculate matrix elements ///////////////////////////////////
@@ -796,17 +792,9 @@ int MatrixElementCache::update() {
 
         for (auto &cached : cache_radial_missing) {
             double val = 0;
-            if (defectdbname.empty()) {
-                QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0]);
-                QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1]);
-                val = calcRadialElement(qd1, cached.kappa, qd2);
-            } else {
-                QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0],
-                                  defectdbname);
-                QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1],
-                                  defectdbname);
-                val = calcRadialElement(qd1, cached.kappa, qd2);
-            }
+            QuantumDefect qd1(cached.species, cached.n[0], cached.l[0], cached.j[0], defectdbname);
+            QuantumDefect qd2(cached.species, cached.n[1], cached.l[1], cached.j[1], defectdbname);
+            val = calcRadialElement(qd1, cached.kappa, qd2);
 
             cache_radial.insert({cached, val});
 
