@@ -10,5 +10,6 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     gsl-devel \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
+    julia \
     dpkg rpm-build \
   && zypper clean
