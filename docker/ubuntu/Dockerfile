@@ -1,5 +1,4 @@
-FROM ubuntu:xenial
-MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
+FROM ubuntu:bionic
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
@@ -11,6 +10,7 @@ RUN apt-get update \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
+    julia \
     dpkg-dev rpm \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*

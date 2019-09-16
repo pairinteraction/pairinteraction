@@ -1,4 +1,4 @@
-FROM debian:stretch
+FROM debian:buster
 MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 ENV DEBIAN_FRONTEND noninteractive
 RUN apt-get update \
@@ -17,6 +17,7 @@ RUN apt-get update \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
+    julia \
     dpkg rpm \
     lcov \
     doxygen graphviz ca-certificates \
