@@ -31,6 +31,8 @@ if(MSVC)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /bigobj")
 endif()
 
+add_compile_options(-Wno-unused-local-typedefs)
+
 # Add current directory to search path
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
@@ -49,14 +51,33 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 file(GLOB pairinteraction_SRCS *.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+if(WITH_JULIA)
+  execute_process(COMMAND locate JlCxxConfig.cmake OUTPUT_VARIABLE JlCxxConfig_LOC)
+  get_filename_component(JlCxx_DIR ${JlCxxConfig_LOC} DIRECTORY)
+  find_package(JlCxx REQUIRED)
+  set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+  add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS} julia_hooks_pi.cpp)
+  add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS} julia_hooks_pi.cpp)
+  set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+else()
+  add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+  add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+  set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+endif()
 
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-target_link_libraries(pairinteraction-real    pireal)
-target_link_libraries(pairinteraction-complex picomplex)
+
+if(WITH_JULIA)
+  target_link_libraries(pairinteraction-real pireal JlCxx::cxxwrap_julia)
+  target_link_libraries(pairinteraction-complex picomplex JlCxx::cxxwrap_julia)
+else()
+  target_link_libraries(pairinteraction-real    pireal)
+  target_link_libraries(pairinteraction-complex picomplex)
+endif()
+
 if(MSVC)
   add_definitions(/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN)
   #set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN")
@@ -123,8 +144,13 @@ if (MKL_FOUND)
   add_definitions(-DWITH_INTEL_MKL)
 endif()
 
-target_link_libraries(pireal ${LIBRARIES})
-target_link_libraries(picomplex ${LIBRARIES})
+if(WITH_JULIA)
+  target_link_libraries(pireal ${LIBRARIES} JlCxx::cxxwrap_julia)
+  target_link_libraries(picomplex ${LIBRARIES} JlCxx::cxxwrap_julia)
+else()
+  target_link_libraries(pireal ${LIBRARIES})
+  target_link_libraries(picomplex ${LIBRARIES})
+endif()
 
 # Generate interface with SWIG
 if(WITH_PYTHON)

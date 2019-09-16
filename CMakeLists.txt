@@ -59,6 +59,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
+option(WITH_JULIA    "Build a Julia compatible .so"         OFF)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOCS     "Generate documentation"               ON)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
