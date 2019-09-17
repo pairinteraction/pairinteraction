@@ -40,7 +40,7 @@ case "${TRAVIS_OS_NAME}" in
                         "
                     ;;
 
-                "ubuntu:static-analysis")
+                "static-analysis")
                     docker run --env-file /tmp/docker.env \
                         -v ${TRAVIS_BUILD_DIR}:/travis -w /travis \
                         --interactive --tty \

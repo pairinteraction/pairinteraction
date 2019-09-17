@@ -16,12 +16,12 @@
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
 find_package(Sphinx)
-find_package(IPython)
+find_package(JupyterNbconvert)
 
 set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 
 if(SPHINX_FOUND)
-  find_package(IPython REQUIRED)
+  find_package(JupyterNbconvert REQUIRED)
 
   set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
   set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/${LIBNAME}")
@@ -105,14 +105,13 @@ if(SPHINX_FOUND)
       "${SPHINX_BASE}/${file}"
       COPYONLY)
     add_custom_target("${file}"
-      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --to rst "${SPHINX_BASE}/${file}"
+      COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to rst "${SPHINX_BASE}/${file}"
       WORKING_DIRECTORY "${SPHINX_BASE}")
     add_dependencies(sphinx "${file}")
   endforeach()
-
 endif(SPHINX_FOUND) 
 
-if(IPython_FOUND)
+if(JupyterNbconvert_FOUND)
   # IPython notebooks to be tested
   set(NOTEBOOKS
     "introduction.ipynb"
@@ -134,9 +133,9 @@ if(IPython_FOUND)
       COPYONLY)
     string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
     add_test(NAME "notebook.${NOTEBOOK_NAME}"
-      COMMAND ${IPYTHON_EXECUTABLE} nbconvert --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
+      COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
       WORKING_DIRECTORY "${SPHINX_BASE}")
     set_tests_properties("notebook.${NOTEBOOK_NAME}"
       PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
   endforeach()
-endif(IPython_FOUND)
+endif(JupyterNbconvert_FOUND)

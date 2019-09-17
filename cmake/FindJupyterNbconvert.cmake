@@ -1,4 +1,4 @@
-# Copyright (c) 2017 Sebastian Weber, Henri Menke. All rights reserved.
+# Copyright (c) 2019 Sebastian Weber, Henri Menke. All rights reserved.
 #
 # This file is part of the pairinteraction library.
 #
@@ -15,9 +15,9 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-# Find IPython
+# Find jupyter-nbconvert
 #
-# IPYTHON_EXECUTABLE
+# JUPYTER_NBCONVERT_EXECUTABLE
 
 # Include these modules to handle the QUIETLY and REQUIRED arguments.
 include(FindPackageHandleStandardArgs)
@@ -28,12 +28,12 @@ endif()
 
 if(PYTHON_EXECUTABLE)
   # find ipython3
-  find_program(IPYTHON_EXECUTABLE NAMES ipython3 ipython)
+  find_program(JUPYTER_NBCONVERT_EXECUTABLE NAMES jupyter-nbconvert)
 
   # Get the version
   execute_process(
-    COMMAND "${IPYTHON_EXECUTABLE}" --version
-    OUTPUT_VARIABLE IPYTHON_VERSION
+    COMMAND "${JUPYTER_NBCONVERT_EXECUTABLE}" --version
+    OUTPUT_VARIABLE JUPYTER_NBCONVERT_VERSION
     OUTPUT_STRIP_TRAILING_WHITESPACE
     ERROR_QUIET)
 else()
@@ -41,9 +41,9 @@ else()
 endif()
 
 # Set the FOUND variable to TRUE if all listed variables are set.
-find_package_handle_standard_args(IPython
-  REQUIRED_VARS IPYTHON_EXECUTABLE
-  VERSION_VAR IPYTHON_VERSION
+find_package_handle_standard_args(JupyterNbconvert
+  REQUIRED_VARS JUPYTER_NBCONVERT_EXECUTABLE
+  VERSION_VAR JUPYTER_NBCONVERT_VERSION
   )
 
-mark_as_advanced(IPYTHON_EXECUTABLE)
+mark_as_advanced(JUPYTER_NBCONVERT_EXECUTABLE)
