@@ -16,12 +16,13 @@ Build dependencies of the [Rydberg Interaction Calculator](https://github.com/pa
 
 ## Docker Images
 
-| Image    | Build Status                                       |
-|----------|----------------------------------------------------|
-| Debian   | [![Debian image][debian-svg]][debian-link]         |
-| manylinux| [![manylinux image][manylinux-svg]][manylinux-link]|
-| openSUSE | [![openSUSE image][opensuse-svg]][opensuse-link]   |
-| Ubuntu   | [![Ubuntu image][ubuntu-svg]][ubuntu-link]         |
+| Image           | Build Status                                        |
+|-----------------|-----------------------------------------------------|
+| Debian          | [![Debian image][debian-svg]][debian-link]          |
+| manylinux       | [![manylinux image][manylinux-svg]][manylinux-link] |
+| openSUSE        | [![openSUSE image][opensuse-svg]][opensuse-link]    |
+| Ubuntu          | [![Ubuntu image][ubuntu-svg]][ubuntu-link]          |
+| static analysis | [![static analysis image][static-svg]][static-link] |
 
 [debian-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/debian.svg
 [debian-link]: https://hub.docker.com/r/pairinteraction/debian/builds/
@@ -31,6 +32,8 @@ Build dependencies of the [Rydberg Interaction Calculator](https://github.com/pa
 [opensuse-link]: https://hub.docker.com/r/pairinteraction/opensuse/builds/
 [ubuntu-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/ubuntu.svg
 [ubuntu-link]: https://hub.docker.com/r/pairinteraction/ubuntu/builds/
+[static-svg]: https://img.shields.io/docker/cloud/build/pairinteraction/static-analysis.svg
+[static-link]: https://hub.docker.com/r/pairinteraction/static-analysis/builds/
 
 ## License
 

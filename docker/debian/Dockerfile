@@ -17,7 +17,6 @@ RUN apt-get update \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
-    julia \
     dpkg rpm \
     lcov \
     doxygen graphviz ca-certificates \
@@ -25,6 +24,10 @@ RUN apt-get update \
     python3-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
     intel-mkl-64bit-2019.1-053 \
+  && curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
+  && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
+  && rm julia-1.0.5-linux-x86_64.tar.gz \
+  && julia -e 'using Pkg; Pkg.add("CxxWrap")' \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install sphinx_rtd_theme
