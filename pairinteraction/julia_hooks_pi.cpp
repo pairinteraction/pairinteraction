@@ -13,6 +13,14 @@ namespace jlcxx
 {
   template<> struct IsBits<method_t> : std::true_type {};
   template<> struct IsBits<parity_t> : std::true_type {};
+
+  jlcxx::Array<double> get_array_from_evd_t(eigen_vector_double_t overlap){
+    jlcxx::Array<double> ret;
+    for (unsigned i=0; i<overlap.size(); i++){
+      ret.push_back(overlap.data()[i]);
+    }
+    return ret;
+  }
 }
 
 JLCXX_MODULE define_julia_module(jlcxx::Module& pi)
@@ -347,13 +355,106 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& pi)
     })
     .method("diagonalize", static_cast<void (SystemTwo::*)()>(&SystemTwo::diagonalize))
     .method("getHamiltonian", static_cast<eigen_sparse_t& (SystemTwo::*)()>(&SystemTwo::getHamiltonian))
+    .method("getOverlap", [](SystemTwo& st, StateTwo& s){
+      eigen_vector_double_t overlap = st.getOverlap(s);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<jl_value_t*> sv){
+      std::vector<StateTwo> generalizedstates;
+      for (unsigned i=0; i<sv.size(); i++){
+        const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
+        generalizedstates.push_back(s);
+      }
+      const std::vector<StateTwo>& generalizedstates_const = generalizedstates;
+      eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, int state_index){
+      eigen_vector_double_t overlap = st.getOverlap(state_index);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<int> si){
+      std::vector<size_t> states_indices;
+      for (unsigned i=0; i<si.size(); i++){
+        const size_t s = si[i];
+        states_indices.push_back(s);
+      }
+      const std::vector<size_t>& states_indices_const = states_indices;
+      eigen_vector_double_t overlap = st.getOverlap(states_indices_const);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, StateTwo& s, jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl){
+      std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1], to_z_axis_jl[2]};
+      std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1], to_y_axis_jl[2]};
+
+      eigen_vector_double_t overlap = st.getOverlap(s, to_z_axis, to_y_axis);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<jl_value_t*> sv, jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl){
+
+      std::vector<StateTwo> generalizedstates;
+      for (unsigned i=0; i<sv.size(); i++){
+        const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
+        generalizedstates.push_back(s);
+      }
+      const std::vector<StateTwo>& generalizedstates_const = generalizedstates;
+
+      std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1], to_z_axis_jl[2]};
+      std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1], to_y_axis_jl[2]};
+
+      eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const, to_z_axis, to_y_axis);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, int state_index, jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl){
+      std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1], to_z_axis_jl[2]};
+      std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1], to_y_axis_jl[2]};
+
+      eigen_vector_double_t overlap = st.getOverlap(state_index, to_z_axis, to_y_axis);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<int> si, jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl){
+      std::vector<size_t> states_indices;
+      for (unsigned i=0; i<si.size(); i++){
+        const size_t s = si[i];
+        states_indices.push_back(s);
+      }
+      const std::vector<size_t>& states_indices_const = states_indices;
+
+      std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1], to_z_axis_jl[2]};
+      std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1], to_y_axis_jl[2]};
+
+      eigen_vector_double_t overlap = st.getOverlap(states_indices_const, to_z_axis, to_y_axis);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
     .method("getOverlap", [](SystemTwo& st, StateTwo& s, double alpha, double beta, double gamma){
       eigen_vector_double_t overlap = st.getOverlap(s, alpha, beta, gamma);
-      jlcxx::Array<double> ret;
-      for (unsigned i=0; i<overlap.size(); i++){
-        ret.push_back(overlap.data()[i]);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, int state_index, double alpha, double beta, double gamma){
+      eigen_vector_double_t overlap = st.getOverlap(state_index, alpha, beta, gamma);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<jl_value_t*> sv, double alpha, double beta, double gamma){
+      std::vector<StateTwo> generalizedstates;
+      for (unsigned i=0; i<sv.size(); i++){
+        const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
+        generalizedstates.push_back(s);
       }
-      return ret;
+      const std::vector<StateTwo>& generalizedstates_const = generalizedstates;
+
+      eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const, alpha, beta, gamma);
+      return jlcxx::get_array_from_evd_t(overlap);
+    })
+    .method("getOverlap", [](SystemTwo& st, jlcxx::ArrayRef<int> si, double alpha, double beta, double gamma){
+      std::vector<size_t> states_indices;
+      for (unsigned i=0; i<si.size(); i++){
+        const size_t s = si[i];
+        states_indices.push_back(s);
+      }
+      const std::vector<size_t>& states_indices_const = states_indices;
+
+      eigen_vector_double_t overlap = st.getOverlap(states_indices_const, alpha, beta, gamma);
+      return jlcxx::get_array_from_evd_t(overlap);
     })
     /////////////////////////////////////////////////////////////////////////////////////////////
     .method("getSpecies", [](SystemTwo& s){
