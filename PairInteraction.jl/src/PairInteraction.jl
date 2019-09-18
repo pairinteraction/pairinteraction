@@ -5,7 +5,7 @@ import Base.string
 using CxxWrap
 
 pairinteraction_dir = dirname(@__FILE__)
-build_dir = joinpath([splitpath(pairinteraction_dir)[1:end-2]..., "build/pairinteraction"]...)
+build_dir = joinpath(splitpath(pairinteraction_dir)[1:end-2]..., "build", "pairinteraction")
 
 @wrapmodule(joinpath(build_dir, "libpireal.so"))
 
