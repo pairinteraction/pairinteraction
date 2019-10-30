@@ -48,6 +48,11 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 file(GLOB pairinteraction_SRCS *.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/julia_hooks_pi.cpp)
+
+add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 if(WITH_JULIA)
   execute_process(COMMAND locate JlCxxConfig.cmake OUTPUT_VARIABLE JlCxxConfig_LOC)
@@ -56,24 +61,19 @@ if(WITH_JULIA)
   set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-  add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS} julia_hooks_pi.cpp)
-  add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS} julia_hooks_pi.cpp)
-  set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
-else()
-  add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-  add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-  set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+  target_sources(pireal PRIVATE julia_hooks_pi.cpp)
+  target_sources(picomplex PRIVATE julia_hooks_pi.cpp)
 endif()
 
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
+target_link_libraries(pairinteraction-real    pireal)
+target_link_libraries(pairinteraction-complex picomplex)
+
 if(WITH_JULIA)
-  target_link_libraries(pairinteraction-real pireal JlCxx::cxxwrap_julia)
-  target_link_libraries(pairinteraction-complex picomplex JlCxx::cxxwrap_julia)
-else()
-  target_link_libraries(pairinteraction-real    pireal)
-  target_link_libraries(pairinteraction-complex picomplex)
+  target_link_libraries(pairinteraction-real    JlCxx::cxxwrap_julia)
+  target_link_libraries(pairinteraction-complex JlCxx::cxxwrap_julia)
 endif()
 
 if(MSVC)
@@ -143,12 +143,11 @@ if (MKL_FOUND)
 endif()
 
 if(WITH_JULIA)
-  target_link_libraries(pireal ${LIBRARIES} JlCxx::cxxwrap_julia)
-  target_link_libraries(picomplex ${LIBRARIES} JlCxx::cxxwrap_julia)
-else()
-  target_link_libraries(pireal ${LIBRARIES})
-  target_link_libraries(picomplex ${LIBRARIES})
+  list(APPEND LIBRARIES JlCxx::cxxwrap_julia)
 endif()
+
+target_link_libraries(pireal ${LIBRARIES})
+target_link_libraries(picomplex ${LIBRARIES})
 
 # Generate interface with SWIG
 if(WITH_PYTHON)

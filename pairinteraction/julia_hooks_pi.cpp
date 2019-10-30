@@ -44,7 +44,6 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& pi)
     .method("getMagneticDipole", &MatrixElementCache::getMagneticDipole)
     .method("getElectricMultipole", static_cast<double (MatrixElementCache::*)(const StateOne&, const StateOne&, int, int)>(&MatrixElementCache::getElectricMultipole))
     .method("getRadial", &MatrixElementCache::getRadial)
-    .method("getLeRoyRadius", &MatrixElementCache::getLeRoyRadius)
     .method("precalculateElectricMomentum", [](MatrixElementCache& mec, jlcxx::ArrayRef<jl_value_t*> basis_one_jl, int q) {
       std::vector<StateOne> basis_one;
       for (unsigned i=0; i<basis_one_jl.size(); i++){
@@ -106,8 +105,8 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& pi)
     .method("getS", &StateOne::getS)
     .method("getSpecies", &StateOne::getSpecies)
     .method("getElement", &StateOne::getElement)
-    .method("getEnergy", &StateOne::getEnergy)
-    .method("getNStar", &StateOne::getNStar)
+    .method("getEnergy", static_cast<double (StateOne::*)() const>(&StateOne::getEnergy))
+    .method("getNStar", static_cast<double (StateOne::*)() const>(&StateOne::getNStar))
     .method("getLabel", &StateOne::getLabel)
     .method("isArtificial", &StateOne::isArtificial)
     .method("isGeneralized", &StateOne::isGeneralized)
@@ -180,6 +179,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module& pi)
       return std::make_tuple(ns_arr[0], ns_arr[1]);
     })
     .method("getNStar", static_cast<double (StateTwo::*)(int) const>(&StateTwo::getNStar))
+    .method("getLeRoyRadius", &StateTwo::getLeRoyRadius)
     .method("getLabel", [](StateTwo& s){
       std::array<std::string, 2> l_arr = s.getLabel();
       return std::make_tuple(l_arr[0], l_arr[1]);
