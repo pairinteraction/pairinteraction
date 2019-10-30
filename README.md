@@ -26,7 +26,7 @@ The GPL v3 also applies to the combined work and all provided binary builds.
 [travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
 [appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
 [appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
-[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg
+[pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?color=orange
 [pypi-link]: https://pypi.org/project/pairinteraction/
 [codecov-svg]: https://codecov.io/gh/pairinteraction/pairinteraction/branch/master/graph/badge.svg
 [codecov-link]: https://codecov.io/gh/pairinteraction/pairinteraction

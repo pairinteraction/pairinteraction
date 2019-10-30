@@ -90,7 +90,8 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
                                     StateTwo(state.getSpecies(), {{n0, n1}}, {{l0, l1}}, {{j0, j1}},
                                              {{m0, m1}});
 
-                                double energydiff = state.getEnergy() - state_virtual.getEnergy();
+                                double energydiff =
+                                    state.getEnergy(cache) - state_virtual.getEnergy(cache);
 
                                 C6 +=
                                     std::pow(
@@ -233,11 +234,11 @@ eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> 
                                             continue;
                                         }
 
-                                        double energydiff_row =
-                                            state_row.getEnergy() - state_virtual.getEnergy();
+                                        double energydiff_row = state_row.getEnergy(cache) -
+                                            state_virtual.getEnergy(cache);
 
-                                        double energydiff_col =
-                                            state_col.getEnergy() - state_virtual.getEnergy();
+                                        double energydiff_col = state_col.getEnergy(cache) -
+                                            state_virtual.getEnergy(cache);
 
                                         C6 += coulombs_constant *
                                             array_angle_term[3 * (q0_back + 1) + (q1_back + 1)] *
@@ -305,7 +306,7 @@ eigen_dense_double_t PerturbativeInteraction::getEnergy(const std::vector<StateT
     for (size_t idx = 0; idx < states.size(); ++idx) {
         auto &state = states[idx];
 
-        double energy = state.getEnergy();
+        double energy = state.getEnergy(cache);
         energies_matrix(idx, idx) = energy;
     }
 

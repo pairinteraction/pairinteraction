@@ -6,7 +6,7 @@ matrix:
       sudo: required
       services: docker
       env:
-        - image=ubuntu:static-analysis
+        - image=static-analysis
     - os: linux
       sudo: required
       services: docker
@@ -27,11 +27,11 @@ matrix:
         - conda install -y -q nomkl pairinteraction-dependencies
         - conda update -y -q setuptools wheel
         - pip install twine git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 without bugs in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
-        - brew install gsl llvm@3.9 swig
+        - brew install gsl llvm swig
         - npm install -g fileicon
       before_script:
-        - export CXX=/usr/local/opt/llvm@3.9/bin/clang++
-        - export LDFLAGS="-L/usr/local/opt/llvm@3.9/lib -Wl,-rpath,/usr/local/opt/llvm@3.9/lib,-rpath,${CONDA_PREFIX}/lib"
+        - export CXX=/usr/local/opt/llvm/bin/clang++
+        - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib,-rpath,${CONDA_PREFIX}/lib"
     - os: linux
       sudo: required
       services: docker
@@ -48,13 +48,6 @@ matrix:
       services: docker
       env:
         - image=ubuntu
-        - package=pairinteraction-install-ubuntu-xenial.deb
-      before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
-    - os: linux
-      sudo: required
-      services: docker
-      env:
-        - image=ubuntu:bionic
         - package=pairinteraction-install-ubuntu-bionic.deb
       before_deploy: sudo chown travis:travis $TRAVIS_BUILD_DIR/build/$package
     - os: linux

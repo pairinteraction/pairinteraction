@@ -37,6 +37,9 @@
 #include <tuple>
 #include <unordered_map>
 
+class StateOne;
+class StateTwo;
+
 bool selectionRulesMomentumNew(
     StateOne const &state1, StateOne const &state2,
     int q); // TODO rename, integrate into the MatrixElementCache namespace
@@ -61,8 +64,7 @@ public:
     getElectricMultipole(StateOne const &state_row, StateOne const &state_col, int kappa_radial,
                          int kappa_angular); // return value in GHz/(V/cm)*um^(kappa_radial-1)
     double getRadial(StateOne const &state_row, StateOne const &state_col,
-                     int kappa);                  // return value in um^kappa
-    double getLeRoyRadius(StateTwo const &state); // return value in um
+                     int kappa); // return value in um^kappa
 
     void precalculateElectricMomentum(const std::vector<StateOne> &basis_one, int q);
     void precalculateMagneticMomentum(const std::vector<StateOne> &basis_one, int q);
@@ -71,6 +73,7 @@ public:
     void precalculateRadial(const std::vector<StateOne> &basis_one, int k);
 
     void setDefectDB(std::string const &path);
+    const std::string &getDefectDB() const;
     void setMethod(method_t const &m);
     void loadElectricDipoleDB(std::string const &path, std::string const &species);
 
@@ -195,8 +198,8 @@ private:
     method_t method{NUMEROV};
     std::string defectdbname;
     std::string dbname;
-    sqlite::handle db;
-    sqlite::statement stmt;
+    std::unique_ptr<sqlite::handle> db;
+    std::unique_ptr<sqlite::statement> stmt;
     long pid_which_created_db;
 
     ////////////////////////////////////////////////////////////////////
@@ -215,15 +218,15 @@ private:
 
         if (Archive::is_loading::value && !dbname.empty()) {
             // Open database
-            db = sqlite::handle(dbname);
-            stmt = sqlite::statement(db);
+            db = std::make_unique<sqlite::handle>(dbname);
+            stmt = std::make_unique<sqlite::statement>(*db);
             pid_which_created_db = utils::get_pid();
 
             // Speed up database access
-            stmt.exec(
+            stmt->exec(
                 "PRAGMA synchronous = OFF"); // do not wait on write, hand off to OS and carry on
-            stmt.exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
-                                                       // transaction
+            stmt->exec("PRAGMA journal_mode = MEMORY"); // keep rollback journal in memory during
+                                                        // transaction
         }
     }
 };

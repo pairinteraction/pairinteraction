@@ -424,7 +424,7 @@ void SystemTwo::initializeBasis() {
         double energy = 0;
         for (int idx = 0; idx < 2; ++idx) {
             if (!state.isArtificial(idx)) {
-                energy += state.getEnergy(idx);
+                energy += state.getEnergy(idx, cache);
             }
         }
 
@@ -748,11 +748,11 @@ void SystemTwo::initializeInteraction() {
         interaction_angulardipole_triplets; // TODO reserve
     std::unordered_map<int, std::vector<eigen_triplet_double_t>>
         interaction_multipole_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+    std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_greentensor_dd_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+    std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_greentensor_dq_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+    std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_greentensor_qd_triplets; // TODO reserve
 
     /*// Categorize states // TODO
@@ -846,9 +846,12 @@ void SystemTwo::initializeInteraction() {
                         }
 
                         // Combine everything
-                        double val = -coulombs_constant * vec1_entry * vec2_entry;
+                        scalar_t val = -coulombs_constant * vec1_entry * vec2_entry;
                         if (i1 == 1 && i2 == 1) {
                             val *= -1; //"-" from i^2
+                        }
+                        if (key % 2 != 0) {
+                            val *= utils::imaginary_unit<scalar_t>();
                         }
                         this->addTriplet(interaction_greentensor_dd_triplets[3 * i2 + i1], r.idx,
                                          c.idx, val);
@@ -981,9 +984,12 @@ void SystemTwo::initializeInteraction() {
                             }
                         }
                         if (std::abs(vec_entry * matrix_entry) > tolerance) {
-                            double val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
+                            scalar_t val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
                             if ((i1 == 1) && (i2 != i3 && (i2 == 1 || i3 == 1))) {
                                 val *= -1.; // from i^2
+                            }
+                            if (key % 2 != 0) {
+                                val *= utils::imaginary_unit<scalar_t>();
                             }
                             this->addTriplet(
                                 interaction_greentensor_dq_triplets[9 * i3 + 3 * i2 + i1], r.idx,
@@ -1120,9 +1126,12 @@ void SystemTwo::initializeInteraction() {
                             }
                         }
                         if (std::abs(vec_entry * matrix_entry) > tolerance) {
-                            double val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
+                            scalar_t val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
                             if ((i3 == 1) && (i1 != i2 && (i1 == 1 || i2 == 1))) {
                                 val *= -1.; // from i^2
+                            }
+                            if (key % 2 != 0) {
+                                val *= utils::imaginary_unit<scalar_t>();
                             }
                             this->addTriplet(
                                 interaction_greentensor_qd_triplets[9 * i3 + 3 * i2 + i1], r.idx,
@@ -1259,25 +1268,13 @@ void SystemTwo::addInteraction() {
     // Build the total Hamiltonian
     if (GTbool) {
         for (const auto &g : greentensor_terms_dd) {
-            scalar_t prefactor = 1;
-            if (g.first == 1 || g.first == 3 || g.first == 5 || g.first == 7) {
-                prefactor = utils::imaginary_unit<scalar_t>();
-            }
-            hamiltonian += prefactor * interaction_greentensor_dd[g.first] * g.second;
+            hamiltonian += interaction_greentensor_dd[g.first] * g.second;
         }
         for (const auto &g : greentensor_terms_dq) {
-            scalar_t prefactor = 1;
-            if (g.first % 2 != 0) {
-                prefactor = utils::imaginary_unit<scalar_t>();
-            }
-            hamiltonian += prefactor * interaction_greentensor_dq[g.first] * g.second;
+            hamiltonian += interaction_greentensor_dq[g.first] * g.second;
         }
         for (const auto &g : greentensor_terms_qd) {
-            scalar_t prefactor = 1;
-            if (g.first % 2 != 0) {
-                prefactor = utils::imaginary_unit<scalar_t>();
-            }
-            hamiltonian += prefactor * interaction_greentensor_qd[g.first] * g.second;
+            hamiltonian += interaction_greentensor_qd[g.first] * g.second;
         }
     } else if (distance_x != 0) {
         double powerlaw = 1. / std::pow(distance, 3);
@@ -1462,7 +1459,7 @@ void SystemTwo::checkDistance(const double &distance) {
                 continue;
             }
 
-            auto n = e.state.getNStar();
+            auto n = e.state.getNStar(cache);
             auto l = e.state.getL();
 
             double le_roy_radius = 2 * au2um *
@@ -1479,7 +1476,7 @@ void SystemTwo::checkDistance(const double &distance) {
         if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
             minimal_le_roy_radius = 0;
         } else {
-            minimal_le_roy_radius = cache.getLeRoyRadius(crucial_state);
+            minimal_le_roy_radius = crucial_state.getLeRoyRadius(cache);
         }
     }
 

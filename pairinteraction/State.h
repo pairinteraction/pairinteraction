@@ -20,6 +20,7 @@
 #ifndef STATE_H
 #define STATE_H
 
+#include "MatrixElementCache.h"
 #include "dtypes.h"
 
 #include <array>
@@ -32,6 +33,8 @@
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/variant.hpp>
+
+class MatrixElementCache;
 
 ////////////////////////////////////////////////////////////////////
 /// \brief One-atom state
@@ -59,7 +62,9 @@ public:
     const std::string &getSpecies() const;
     const std::string &getElement() const;
     double getEnergy() const;
+    double getEnergy(MatrixElementCache &cache) const;
     double getNStar() const;
+    double getNStar(MatrixElementCache &cache) const;
     const std::string &getLabel() const;
     bool isArtificial() const;
     bool isGeneralized() const;
@@ -123,7 +128,10 @@ public:
     std::array<std::string, 2> getSpecies() const;
     std::array<std::string, 2> getElement() const;
     double getEnergy() const;
+    double getEnergy(MatrixElementCache &cache) const;
     std::array<double, 2> getNStar() const;
+    std::array<double, 2> getNStar(MatrixElementCache &cache) const;
+    double getLeRoyRadius(MatrixElementCache &cache) const;
     std::array<std::string, 2> getLabel() const;
     std::array<bool, 2> isArtificial() const;
     std::array<bool, 2> isGeneralized() const;
@@ -136,7 +144,9 @@ public:
     const std::string &getSpecies(int idx) const;
     const std::string &getElement(int idx) const;
     double getEnergy(int idx) const;
+    double getEnergy(int idx, MatrixElementCache &cache) const;
     double getNStar(int idx) const;
+    double getNStar(int idx, MatrixElementCache &cache) const;
     const std::string &getLabel(int idx) const;
     bool isArtificial(int idx) const;
     bool isGeneralized(int idx) const;

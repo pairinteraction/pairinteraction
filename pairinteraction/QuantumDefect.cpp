@@ -66,8 +66,13 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j)
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
                              std::string const &database)
     : QuantumDefect(species, n, l, j, nullptr) {
-    sqlite::handle db(database, SQLITE_OPEN_READONLY);
-    setup(db);
+    if (database.empty()) {
+        static thread_local EmbeddedDatabase embedded_database{};
+        setup(embedded_database);
+    } else {
+        sqlite::handle db(database, SQLITE_OPEN_READONLY);
+        setup(db);
+    }
 }
 
 void QuantumDefect::setup(sqlite3 *db) {
@@ -177,12 +182,13 @@ void QuantumDefect::setup(sqlite3 *db) {
     cache.save(key, e);
 }
 
-double energy_level(std::string const &species, int n, int l, double j) {
-    QuantumDefect qd(species, n, l, j);
+double energy_level(std::string const &species, int n, int l, double j,
+                    std::string const &database) {
+    QuantumDefect qd(species, n, l, j, database);
     return qd.energy;
 }
 
-double nstar(std::string const &species, int n, int l, double j) {
-    QuantumDefect qd(species, n, l, j);
+double nstar(std::string const &species, int n, int l, double j, std::string const &database) {
+    QuantumDefect qd(species, n, l, j, database);
     return qd.nstar;
 }

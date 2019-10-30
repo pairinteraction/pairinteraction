@@ -180,7 +180,7 @@ void SystemOne::initializeBasis() {
                     continue;
                 }
 
-                double energy = StateOne(species, n, l, j, s).getEnergy();
+                double energy = StateOne(species, n, l, j, s).getEnergy(cache);
                 if (!checkIsEnergyValid(energy)) {
                     continue;
                 }
@@ -240,7 +240,7 @@ void SystemOne::initializeBasis() {
     // Add user-defined states
     for (const auto &state : states_to_add) {
         // Get energy of the state
-        double energy = state.isArtificial() ? 0 : state.getEnergy();
+        double energy = state.isArtificial() ? 0 : state.getEnergy(cache);
 
         // In case of artificial states, symmetries won't work
         auto sym_reflection_local = sym_reflection;
