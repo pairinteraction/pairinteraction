@@ -30,8 +30,8 @@ matrix:
         - brew install gsl llvm@8 swig
         - npm install -g fileicon
       before_script:
-        - export CXX=/usr/local/opt/llvm/bin/clang++
-        - export LDFLAGS="-L/usr/local/opt/llvm/lib -Wl,-rpath,/usr/local/opt/llvm/lib,-rpath,${CONDA_PREFIX}/lib"
+        - export CXX=/usr/local/opt/llvm@8/bin/clang++
+        - export LDFLAGS="-L/usr/local/opt/llvm@8/lib -Wl,-rpath,/usr/local/opt/llvm@8/lib,-rpath,${CONDA_PREFIX}/lib"
     - os: linux
       sudo: required
       services: docker
