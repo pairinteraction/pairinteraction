@@ -55,8 +55,11 @@ add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 if(WITH_JULIA)
-  execute_process(COMMAND locate JlCxxConfig.cmake OUTPUT_VARIABLE JlCxxConfig_LOC)
-  get_filename_component(JlCxx_DIR ${JlCxxConfig_LOC} DIRECTORY)
+  find_package(JuliaInterp REQUIRED)
+  execute_process(
+    COMMAND "${Julia_EXECUTABLE}" -e "using CxxWrap; print(joinpath(dirname(CxxWrap.jlcxx_path), \"cmake\", \"JlCxx\"))"
+    OUTPUT_VARIABLE JlCxx_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
   find_package(JlCxx REQUIRED)
   set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
