@@ -22,10 +22,10 @@ install:
   - ps: choco install -y --no-progress --allow-empty-checksums -r sqlite --version 3.19.2
   - ps: choco install -y --no-progress --allow-empty-checksums -r pkgconfiglite # TODO can we get rid of this dependency?
   
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1528914514/cpp-libraries-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1572947154/cpp-libraries-windows-x86_64.zip'
   - cmd: 7z x -y cpp-libraries-windows-x86_64.zip > nul
 
-  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1528914514/python-packages-windows-x86_64.zip'
+  - ps: Start-FileDownload 'https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1572947154/python-packages-windows-x86_64.zip'
   - cmd: 7z x -y python-packages-windows-x86_64.zip > nul
   - cmd: conda config --prepend channels file:///%APPVEYOR_BUILD_FOLDER%/conda-export
   - cmd: conda install -y -q pip twine pairinteraction-dependencies
