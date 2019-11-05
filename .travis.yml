@@ -18,7 +18,7 @@ matrix:
 
         - source activate default
         - conda clean -y -a
-        - conda install -y -q nomkl pairinteraction-dependencies --use-local
+        - conda install -y -q pairinteraction-dependencies --use-local
         - mkdir conda-export
         - mkdir conda-export/noarch
         - mkdir conda-export/osx-64
