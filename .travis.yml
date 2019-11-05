@@ -13,7 +13,7 @@ matrix:
       env:
         - image=debian
     - os: osx
-      osx_image: xcode9
+      osx_image: xcode9.4
       env:
         - package=pairinteraction-install-osx.dmg
       before_install:
