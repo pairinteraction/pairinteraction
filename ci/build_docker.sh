@@ -33,7 +33,7 @@ case "${TRAVIS_OS_NAME}" in
                             mkdir -p build;
                             cd build;
                             /bin/bash ../ci/prepare_documentation.sh;
-                            cmake -DWITH_COVERAGE=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
+                            cmake -DWITH_COVERAGE=On -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
                             /bin/bash ../ci/update_documentation.sh;
@@ -50,7 +50,7 @@ case "${TRAVIS_OS_NAME}" in
                             /bin/bash /travis/ci/fix_style.sh;
                             mkdir -p build;
                             cd build;
-                            cmake -DWITH_CLANG_TIDY=On -DWITH_GUI=Off ..;
+                            cmake -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_GUI=Off ..;
                             make -k -j 2;
                             make -k -j 2 check;
                         "
@@ -84,7 +84,7 @@ case "${TRAVIS_OS_NAME}" in
                             set -e;
                             mkdir -p build;
                             cd build;
-                            cmake -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
+                            cmake -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME=\"${package}\" ..;
                             make -k -j 2;
                             make -k -j 2 check;
                             make -k -j 2 package;
