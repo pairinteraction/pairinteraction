@@ -18,9 +18,9 @@ Packages are available for GNU/Linux, Mac OS X, and Windows through
 :github:`GitHub Releases <releases>`. For these packages, the graphical user interface works out-of-the-box.
 The different packages were built on the following architectures:
 
-- ``deb`` package: Ubuntu 16.04 amd64
-- ``rpm`` package: OpenSUSE Leap x86_64
-- Mac OS X ``dmg``: Mac OS X 10.12
+- ``deb`` package: Ubuntu 18.04 amd64
+- ``rpm`` package: OpenSUSE Leap 15.0 x86_64
+- Mac OS X ``dmg``: Mac OS X 10.13 (Xcode 9.4)
 - Windows ``exe``: Compiled with Visual Studio 2015
 
 Alternatively, you can install pairinteraction from the `Python Package Index`_ via pip by calling ``pip install pairinteraction`` from the command line.
@@ -89,14 +89,14 @@ for compiling the source code.
 Git
     Git is a version control system used to track changes.
 
-CMake 3.2 or later
+CMake 3.9 or later
     The build system is based on CMake.
 
 C++ Backend and Python Interface
 """"""""""""""""""""""""""""""""
 
 C++ Compiler
-    C++11 capable C++ compiler (e.g., GCC 4.8.1 or later).
+    C++14 capable C++ compiler
 
 Sqlite3
    SQLite is a self-contained, high-reliability, embedded,
@@ -178,7 +178,7 @@ These options can be passed directly to ``cmake``, i.e.
 
 This way we can only build the C++ backend with the Python interface.
 
-Ubuntu 16.04
+Ubuntu 18.04
 ^^^^^^^^^^^^
 
 Dependencies
@@ -262,7 +262,7 @@ For the backend we need the following packages
 
 .. code-block:: none
 
-    patterns-openSUSE-devel_C_C++ gcc6-c++ sqlite3 sqlite3-devel boost_1_61-devel gsl-devel swig python3 python3-devel python3-numpy python3-numpy-devel python3-scipy
+    patterns-devel-C-C++-devel_C_C++ sqlite3 sqlite3-devel libboost_filesystem1_66_0-devel libboost_program_options1_66_0-devel libboost_serialization1_66_0-devel libboost_system1_66_0-devel libboost_test1_66_0-devel gsl-devel swig python3 python3-devel python3-numpy python3-numpy-devel python3-scipy
 
 The GUI builds with only ``python3-qt5-devel`` but to run it we
 additionally need
@@ -330,12 +330,7 @@ you have to install (e.g. via homebrew) the following packages
 
 .. code-block:: none
 
-    cmake git gsl swig llvm@3.9
-
-.. note::
-    The package llvm contains the Clang C++ compiler. We use this compiler as it
-    supports OpenMP with OS X. We install version 3.9 because of a bug
-    with the most recent version.
+    cmake git gsl swig libomp
 
 For the Python pairinteraction library and the Python GUI, you need a Python 3
 distribution (we recommend `Miniconda`_ or `Anaconda`_). The following Python 3
@@ -403,7 +398,7 @@ be obtained using
 
 .. code-block:: bash
 
-    sudo apt-get install doxygen graphviz python3-sphinx python3-numpydoc
+    sudo apt-get install doxygen graphviz python3-sphinx python3-numpydoc jupyter-nbconvert pandoc python3-ipykernel python3-matplotlib
 
 Then checkout the latest version of pairinteraction using `git`
 

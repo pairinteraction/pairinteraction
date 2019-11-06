@@ -101,10 +101,10 @@ list(APPEND LIBRARIES ${CMAKE_THREAD_LIBS_INIT})
 
 # Use OpenMP
 
-find_package(OpenMP)
+find_package(OpenMPCXX)
 
-if (OPENMP_FOUND AND NOT WITH_CLANG_TIDY)
-  set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+if (OpenMPCXX_FOUND AND NOT WITH_CLANG_TIDY)
+  list(APPEND LIBRARIES OpenMP::OpenMP_CXX)
 else()
   message(WARNING "Because OpenMP was not found, calculations are not be parallelized.")
 endif()

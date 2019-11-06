@@ -13,13 +13,13 @@ matrix:
       env:
         - image=debian
     - os: osx
-      osx_image: xcode9
+      osx_image: xcode9.4
       env:
         - package=pairinteraction-install-osx.dmg
       before_install:
         - wget https://repo.continuum.io/miniconda/Miniconda3-4.3.11-MacOSX-x86_64.sh -O miniconda.sh
         - chmod +x miniconda.sh && ./miniconda.sh -b -p $HOME/miniconda3 && source $HOME/miniconda3/bin/activate root
-        - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1500989872/python-packages-osx.zip
+        - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1572947154/python-packages-osx.zip
         - unzip python-packages-osx.zip
         - conda config --prepend channels file:///$TRAVIS_BUILD_DIR/conda-export
         - brew update
@@ -27,11 +27,10 @@ matrix:
         - conda install -y -q nomkl pairinteraction-dependencies
         - conda update -y -q setuptools wheel
         - pip install twine git+https://github.com/pyinstaller/pyinstaller.git@5b6288b4e6c594dd695a2bd5db67aa260b771ce5 # TODO if new version that supports python 3.6 without bugs in conda-forge, specify version of pyinstaller and include pyinstaller in conda-export
-        - brew install gsl llvm@8 swig
+        - brew install gsl swig libomp
         - npm install -g fileicon
       before_script:
-        - export CXX=/usr/local/opt/llvm@8/bin/clang++
-        - export LDFLAGS="-L/usr/local/opt/llvm@8/lib -Wl,-rpath,/usr/local/opt/llvm@8/lib,-rpath,${CONDA_PREFIX}/lib"
+        - export LDFLAGS="-Wl,-rpath,${CONDA_PREFIX}/lib"
     - os: linux
       sudo: required
       services: docker
@@ -40,7 +39,7 @@ matrix:
           packages:
             - python3-pip pyqt5-dev-tools
       install:
-        - python3 -m pip install --user --upgrade setuptools twine
+        - python3 -m pip install --user --upgrade setuptools 'twine<=1.13' # TODO if newest version of twine is working, install it
       env:
         - image=manylinux
     - os: linux
