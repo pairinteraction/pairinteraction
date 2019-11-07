@@ -66,7 +66,8 @@ if(WITH_JULIA)
 
   add_library(pireal_jl SHARED julia_hooks_pi.cpp)
   add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
-  set_target_properties(picomplex_jl PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+  set_target_properties(pireal_jl PROPERTIES CXX_CLANG_TIDY "")
+  set_target_properties(picomplex_jl PROPERTIES CXX_CLANG_TIDY "" COMPILE_DEFINITIONS "USE_COMPLEX")
 
   target_link_libraries(pireal_jl    pireal    JlCxx::cxxwrap_julia)
   target_link_libraries(picomplex_jl picomplex JlCxx::cxxwrap_julia)
