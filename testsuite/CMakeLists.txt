@@ -18,8 +18,6 @@
 # Build tests only when testing
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
 
-find_package(PythonInterp 3 REQUIRED)
-
 # To add test cases easier we use the following function
 function(PYTHON_TEST)
   # Parse arguments
@@ -32,24 +30,46 @@ function(PYTHON_TEST)
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
 
-# Build library before testing
-add_dependencies(check _pireal _picomplex)
+function(JULIA_TEST)
+  # Parse arguments
+  cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
+  # Copy test to binary directory
+  configure_file(${CMAKE_SOURCE_DIR}/PairInteraction.jl/test/${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
+  # Tests are executed in the root directory
+  add_test(NAME "julia.${UT_TARGET}" COMMAND ${Julia_EXECUTABLE} ${UT_SOURCE})
+  set_tests_properties("julia.${UT_TARGET}"
+    PROPERTIES ENVIRONMENT "JULIA_LOAD_PATH=${CMAKE_SOURCE_DIR}/PairInteraction.jl/src/:")
+endfunction()
 
 # Add Python test cases
-python_test(TARGET greentensor SOURCE greentensor.py)
-python_test(TARGET fieldcombination SOURCE fieldcombination.py)
-python_test(TARGET feast SOURCE feast.py)
-python_test(TARGET rotation SOURCE rotation.py)
-python_test(TARGET cache SOURCE cache.py)
-python_test(TARGET perturbation SOURCE perturbation.py)
-python_test(TARGET states SOURCE state.py)
-python_test(TARGET compute SOURCE compute.py)
-python_test(TARGET quantum_defect SOURCE quantum_defect.py)
-python_test(TARGET wavefunction SOURCE wavefunction.py)
-python_test(TARGET symmetries SOURCE symmetries.py)
-python_test(TARGET integration SOURCE integration.py)
-if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
+if (WITH_PYTHON)
+  add_dependencies(check _pireal _picomplex)
+  find_package(PythonInterp 3 REQUIRED)
+  python_test(TARGET greentensor SOURCE greentensor.py)
+  python_test(TARGET fieldcombination SOURCE fieldcombination.py)
+  python_test(TARGET feast SOURCE feast.py)
+  python_test(TARGET rotation SOURCE rotation.py)
+  python_test(TARGET cache SOURCE cache.py)
+  python_test(TARGET perturbation SOURCE perturbation.py)
+  python_test(TARGET states SOURCE state.py)
+  python_test(TARGET compute SOURCE compute.py)
+  python_test(TARGET quantum_defect SOURCE quantum_defect.py)
+  python_test(TARGET wavefunction SOURCE wavefunction.py)
+  python_test(TARGET symmetries SOURCE symmetries.py)
+  python_test(TARGET integration SOURCE integration.py)
+  if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
+  endif()
+endif()
+
+if (WITH_JULIA)
+  add_dependencies(check _pireal _picomplex)
+  find_package(JuliaInterp REQUIRED)
+  julia_test(TARGET field_combination SOURCE test_field_combination.jl)
+  julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
+  julia_test(TARGET pair_state SOURCE test_pair_state.jl)
+  julia_test(TARGET quantum_defect SOURCE test_quantum_defect.jl)
+  julia_test(TARGET state SOURCE test_state.jl)
 endif()
 
 configure_file(

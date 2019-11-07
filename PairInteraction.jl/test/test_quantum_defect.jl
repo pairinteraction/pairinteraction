@@ -6,7 +6,7 @@ using PairInteraction
 # test_comparison
 qd = PairInteraction.QuantumDefect("Rb", 78, 1, 0.5)
 
-sqldb = SQLite.DB("/home/alexander/pairinteraction/build/testsuite/pairinteraction/databases/quantum_defects.db")
+sqldb = SQLite.DB("pairinteraction/databases/quantum_defects.db")
 res = SQLite.Query(sqldb, 
                    "select ac,Z,a1,a2,a3,a4,rc from model_potential where ( (element = 'Rb') and (L = 1) );")
 

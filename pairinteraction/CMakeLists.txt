@@ -61,11 +61,15 @@ if(WITH_JULIA)
     OUTPUT_VARIABLE JlCxx_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE)
   find_package(JlCxx REQUIRED)
-  set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  #set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
+  #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-  target_sources(pireal PRIVATE julia_hooks_pi.cpp)
-  target_sources(picomplex PRIVATE julia_hooks_pi.cpp)
+  add_library(pireal_jl SHARED julia_hooks_pi.cpp)
+  add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
+  set_target_properties(picomplex_jl PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
+
+  target_link_libraries(pireal_jl    pireal    JlCxx::cxxwrap_julia)
+  target_link_libraries(picomplex_jl picomplex JlCxx::cxxwrap_julia)
 endif()
 
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
@@ -73,11 +77,6 @@ add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 target_link_libraries(pairinteraction-real    pireal)
 target_link_libraries(pairinteraction-complex picomplex)
-
-if(WITH_JULIA)
-  target_link_libraries(pairinteraction-real    JlCxx::cxxwrap_julia)
-  target_link_libraries(pairinteraction-complex JlCxx::cxxwrap_julia)
-endif()
 
 if(MSVC)
   add_definitions(/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN)
@@ -143,10 +142,6 @@ if (MKL_FOUND)
   include_directories(SYSTEM ${MKL_INCLUDE_DIR})
   list(APPEND LIBRARIES ${MKL_LIBRARY})
   add_definitions(-DWITH_INTEL_MKL)
-endif()
-
-if(WITH_JULIA)
-  list(APPEND LIBRARIES JlCxx::cxxwrap_julia)
 endif()
 
 target_link_libraries(pireal ${LIBRARIES})
