@@ -83,7 +83,7 @@ if(MSVC)
   add_definitions(/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN)
   #set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN")
 else()
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror -Wno-unused-local-typedefs")
+  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
 endif()
 
 # Generate coverage report

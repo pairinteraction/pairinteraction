@@ -63,7 +63,7 @@ if (WITH_PYTHON)
 endif()
 
 if (WITH_JULIA)
-  add_dependencies(check _pireal _picomplex)
+  add_dependencies(check pireal_jl picomplex_jl)
   find_package(JuliaInterp REQUIRED)
   julia_test(TARGET field_combination SOURCE test_field_combination.jl)
   julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
