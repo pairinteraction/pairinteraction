@@ -48,30 +48,10 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 
 file(GLOB pairinteraction_SRCS *.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/julia_hooks_pi.cpp)
 
 add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
 set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
-
-if(WITH_JULIA)
-  find_package(JuliaInterp REQUIRED)
-  execute_process(
-    COMMAND "${Julia_EXECUTABLE}" -e "using CxxWrap; print(joinpath(dirname(CxxWrap.jlcxx_path), \"cmake\", \"JlCxx\"))"
-    OUTPUT_VARIABLE JlCxx_DIR
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-  find_package(JlCxx REQUIRED)
-  #set(CMAKE_INSTALL_RPATH "${JlCxx_DIR}/../")
-  #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-  add_library(pireal_jl SHARED julia_hooks_pi.cpp)
-  add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
-  set_target_properties(pireal_jl PROPERTIES CXX_CLANG_TIDY "")
-  set_target_properties(picomplex_jl PROPERTIES CXX_CLANG_TIDY "" COMPILE_DEFINITIONS "USE_COMPLEX")
-
-  target_link_libraries(pireal_jl    pireal    JlCxx::cxxwrap_julia)
-  target_link_libraries(picomplex_jl picomplex JlCxx::cxxwrap_julia)
-endif()
 
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)

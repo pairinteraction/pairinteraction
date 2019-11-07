@@ -30,17 +30,6 @@ function(PYTHON_TEST)
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
 
-function(JULIA_TEST)
-  # Parse arguments
-  cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
-  # Copy test to binary directory
-  configure_file(${CMAKE_SOURCE_DIR}/PairInteraction.jl/test/${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
-  # Tests are executed in the root directory
-  add_test(NAME "julia.${UT_TARGET}" COMMAND ${Julia_EXECUTABLE} ${UT_SOURCE})
-  set_tests_properties("julia.${UT_TARGET}"
-    PROPERTIES ENVIRONMENT "JULIA_LOAD_PATH=${CMAKE_SOURCE_DIR}/PairInteraction.jl/src/:")
-endfunction()
-
 # Add Python test cases
 if (WITH_PYTHON)
   add_dependencies(check _pireal _picomplex)
@@ -60,16 +49,6 @@ if (WITH_PYTHON)
   if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
   endif()
-endif()
-
-if (WITH_JULIA)
-  add_dependencies(check pireal_jl picomplex_jl)
-  find_package(JuliaInterp REQUIRED)
-  julia_test(TARGET field_combination SOURCE test_field_combination.jl)
-  julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
-  julia_test(TARGET pair_state SOURCE test_pair_state.jl)
-  julia_test(TARGET quantum_defect SOURCE test_quantum_defect.jl)
-  julia_test(TARGET state SOURCE test_state.jl)
 endif()
 
 configure_file(
