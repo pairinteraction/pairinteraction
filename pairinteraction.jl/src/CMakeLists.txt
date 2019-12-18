@@ -30,7 +30,8 @@ set_target_properties(pireal_jl PROPERTIES CXX_CLANG_TIDY "")
 set_target_properties(picomplex_jl PROPERTIES CXX_CLANG_TIDY "" COMPILE_DEFINITIONS "USE_COMPLEX")
 
 include_directories(${CMAKE_SOURCE_DIR}/${LIBNAME})
-include_directories(${CMAKE_SOURCE_DIR}/${LIBNAME}/eigen)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/eigen)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/include)
 
 target_link_libraries(pireal_jl pireal JlCxx::cxxwrap_julia)
 target_link_libraries(picomplex_jl picomplex JlCxx::cxxwrap_julia)

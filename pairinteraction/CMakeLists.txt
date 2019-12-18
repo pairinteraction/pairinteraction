@@ -49,8 +49,8 @@ configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
 file(GLOB pairinteraction_SRCS *.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-add_library(pireal SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
-add_library(picomplex SHARED ${pairinteraction_SRCS} ${wignerSymbols_SRCS})
+add_library(pireal SHARED ${pairinteraction_SRCS})
+add_library(picomplex SHARED ${pairinteraction_SRCS})
 set_target_properties(picomplex PROPERTIES COMPILE_DEFINITIONS "USE_COMPLEX")
 
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
@@ -92,12 +92,13 @@ endif()
 # Add external libraries
 
 # Wigner Symbols
-add_library(wignerSymbols wignerSymbols/src/wignerSymbols-cpp.cpp)
+add_library(wignerSymbols ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/src/wignerSymbols-cpp.cpp)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/include)
 set_target_properties(wignerSymbols PROPERTIES CXX_CLANG_TIDY "" POSITION_INDEPENDENT_CODE ON)
 list(APPEND LIBRARIES wignerSymbols)
 
 # Include Eigen
-include_directories(SYSTEM ${CMAKE_CURRENT_SOURCE_DIR}/eigen)
+include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/eigen)
 
 find_package(Sqlite3 REQUIRED)
 include_directories(SYSTEM ${SQLITE3_INCLUDE_DIR})

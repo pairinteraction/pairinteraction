@@ -1,9 +1,9 @@
-[submodule "libpairinteraction/wignerSymbols"]
-	path = pairinteraction/wignerSymbols
+[submodule "libs/wignerSymbols"]
+	path = libs/wignerSymbols
 	url = git://github.com/valandil/wignerSymbols.git
-[submodule "gui/pyqtgraph"]
+[submodule "pairinteraction_gui/pyqtgraph"]
 	path = pairinteraction_gui/pyqtgraph
 	url = git://github.com/pyqtgraph/pyqtgraph
-[submodule "libpairinteraction/eigen"]
-	path = pairinteraction/eigen
-	url = git://github.com/eigenteam/eigen-git-mirror.git
+[submodule "libs/eigen"]
+	path = libs/eigen
+	url = https://gitlab.com/libeigen/eigen.git

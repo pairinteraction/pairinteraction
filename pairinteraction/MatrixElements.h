@@ -24,7 +24,8 @@
 #include "StateOld.h"
 #include "Wavefunction.h"
 #include "dtypes.h"
-#include "wignerSymbols/include/wignerSymbols/wignerSymbols-cpp.h"
+
+#include <wignerSymbols/wignerSymbols-cpp.h>
 
 #include <memory>
 #include <sstream>

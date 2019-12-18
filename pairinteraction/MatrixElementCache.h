@@ -25,12 +25,13 @@
 #include "Wavefunction.h"
 #include "dtypes.h"
 #include "utils.h"
-#include "wignerSymbols/include/wignerSymbols/wignerSymbols-cpp.h"
 
 #include <boost/filesystem.hpp>
 #include <boost/functional/hash.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
+#include <wignerSymbols/wignerSymbols-cpp.h>
+
 #include <memory>
 #include <sstream>
 #include <string>
