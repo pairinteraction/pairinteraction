@@ -27,7 +27,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost eigen gsl libomp
+          brew install boost eigen fmt gsl libomp
           npm install -g fileicon
 
       - name: Build

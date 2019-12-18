@@ -121,6 +121,10 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 target_link_libraries(pireal PUBLIC Eigen3::Eigen)
 target_link_libraries(picomplex PUBLIC Eigen3::Eigen)
 
+find_package(fmt REQUIRED)
+target_link_libraries(pireal PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
+target_link_libraries(picomplex PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
+
 find_package(SQLite3 REQUIRED)
 target_link_libraries(pireal PUBLIC SQLite::SQLite3)
 target_link_libraries(picomplex PUBLIC SQLite::SQLite3)

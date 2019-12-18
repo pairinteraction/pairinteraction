@@ -23,7 +23,8 @@
 #include "HamiltonianTwo.h"
 #include "filesystem.h"
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
+
 #include <iostream>
 #include <locale>
 #include <memory>
@@ -66,19 +67,19 @@ int compute(const std::string &config_name, const std::string &output_name) {
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one;
         if (existAtom1 && existAtom2) {
-            std::cout << boost::format(">>TYP%7d") % 3 << std::endl;
+            std::cout << fmt::format(">>TYP{:7d}", 3) << std::endl;
             auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
             hamiltonian_one = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one);
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
-            std::cout << boost::format(">>TYP%7d") % 2 << std::endl;
+            std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one);
         }
     } else {
         std::shared_ptr<HamiltonianOne> hamiltonian_one1;
         if (existAtom1) {
-            std::cout << boost::format(">>TYP%7d") % 0 << std::endl;
+            std::cout << fmt::format(">>TYP{:7d}", 0) << std::endl;
             auto basisnames_one1 =
                 std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
             hamiltonian_one1 =
@@ -86,7 +87,7 @@ int compute(const std::string &config_name, const std::string &output_name) {
         }
         std::shared_ptr<HamiltonianOne> hamiltonian_one2;
         if (existAtom2) {
-            std::cout << boost::format(">>TYP%7d") % 1 << std::endl;
+            std::cout << fmt::format(">>TYP{:7d}", 1) << std::endl;
             auto basisnames_one2 =
                 std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
             hamiltonian_one2 =
@@ -94,14 +95,14 @@ int compute(const std::string &config_name, const std::string &output_name) {
         }
         std::shared_ptr<HamiltonianTwo> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
-            std::cout << boost::format(">>TYP%7d") % 2 << std::endl;
+            std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
             hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1,
                                                                hamiltonian_one2);
         }
     }
 
     // === Communicate that everything has finished ===
-    std::cout << boost::format(">>END") << std::endl;
+    std::cout << ">>END" << std::endl;
 
     return 0;
 }

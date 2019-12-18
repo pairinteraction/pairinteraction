@@ -20,7 +20,7 @@
 #include "Hamiltonianmatrix.h"
 #include <stdexcept>
 
-#include <boost/format.hpp>
+#include <fmt/format.h>
 
 Hamiltonianmatrix::Hamiltonianmatrix() = default;
 
@@ -392,7 +392,7 @@ void Hamiltonianmatrix::doDeserialization() {
         (((basis_flags & complex_not_real) > 0) != utils::is_complex<scalar_t>::value)) {
         std::string msg("The data type used in the program does not fit the data type used in the "
                         "serialized objects.");
-        std::cout << boost::format(">>ERR%s") % msg.c_str() << std::endl;
+        std::cout << fmt::format(">>ERR{:s}", msg.c_str()) << std::endl;
         throw std::runtime_error(msg);
     }
 

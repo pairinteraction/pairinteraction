@@ -18,10 +18,11 @@
  */
 
 #include "HamiltonianTwo.h"
+
+#include <fmt/format.h>
+
 #include <stdexcept>
 #include <utility>
-
-#include <boost/format.hpp>
 
 HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                                const std::shared_ptr<HamiltonianOne> &hamiltonian_one)
@@ -382,7 +383,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     int numNecessary = std::count(necessary.begin(), necessary.end(), true);
     std::cout << "Two-atom Hamiltonian, basis size with restrictions: " << numNecessary
               << std::endl;
-    std::cout << boost::format(">>BAS%7d") % numNecessary << std::endl;
+    std::cout << fmt::format(">>BAS{:7d}", numNecessary) << std::endl;
 
     // === Save pair state basis ===
     std::cout << "Two-atom Hamiltonian, save pair state basis" << std::endl;
@@ -405,7 +406,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                         // also make "if (necessary) continue" unneeded; then, "combine" has to
                         // check existence of basis element and the python script has to be adapted)
 
-    std::cout << boost::format(">>STA %s") % path_basis.string() << std::endl;
+    std::cout << fmt::format(">>STA {:s}", path_basis.string()) << std::endl;
 
     ////////////////////////////////////////////////////////
     ////// Construct atom-atom interaction /////////////////
@@ -675,7 +676,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     ////// Loop through steps and symmetries ///////////////
     ////////////////////////////////////////////////////////
 
-    std::cout << boost::format(">>TOT%7d") % (nSteps_two * symmetries.size()) << std::endl;
+    std::cout << fmt::format(">>TOT{:7d}", nSteps_two * symmetries.size()) << std::endl;
 
     auto nSteps_two_i = static_cast<int>(nSteps_two);
 
@@ -834,7 +835,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 // Stdout: Hamiltonian assembled
 #pragma omp critical(textoutput)
                 {
-                    std::cout << boost::format(">>DIM%7d") % totalmatrix.num_basisvectors()
+                    std::cout << fmt::format(">>DIM{:7d}", totalmatrix.num_basisvectors())
                               << std::endl;
                     std::cout << "Two-atom Hamiltonian, " << step + 1 << ". Hamiltonian assembled"
                               << std::endl;
@@ -847,8 +848,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 // Stdout: Hamiltonian diagonalized
 #pragma omp critical(textoutput)
                 {
-                    std::cout << boost::format(">>OUT%7d%7d%7d%7d %s") % (step + 1) % step_two %
-                            symmetries.size() % idx_symmetry % path.string()
+                    std::cout << fmt::format(">>OUT{:7d}{:7d}{:7d}{:7d} {:s}", (step + 1), step_two,
+                                             symmetries.size(), idx_symmetry, path.string())
                               << std::endl;
                     std::cout << "Two-atom Hamiltonian, " << step + 1
                               << ". Hamiltonian diagonalized" << std::endl;
@@ -858,10 +859,10 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 // Stdout: Hamiltonian loaded
 #pragma omp critical(textoutput)
                 {
-                    std::cout << boost::format(">>DIM%7d") % totalmatrix.num_basisvectors()
+                    std::cout << fmt::format(">>DIM{:7d}", totalmatrix.num_basisvectors())
                               << std::endl;
-                    std::cout << boost::format(">>OUT%7d%7d%7d%7d %s") % (step + 1) % step_two %
-                            symmetries.size() % idx_symmetry % path.string()
+                    std::cout << fmt::format(">>OUT{:7d}{:7d}{:7d}{:7d} {:s}", (step + 1), step_two,
+                                             symmetries.size(), idx_symmetry, path.string())
                               << std::endl;
                     std::cout << "Two-atom Hamiltonian, " << step + 1 << ". Hamiltonian loaded"
                               << std::endl;
