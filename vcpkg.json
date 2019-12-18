@@ -4,7 +4,6 @@
     "dependencies": [
 	"boost-algorithm",
 	"boost-format",
-	"boost-functional",
 	"boost-math",
 	"boost-mpl",
 	"boost-multi-index",

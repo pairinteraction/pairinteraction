@@ -26,6 +26,7 @@
 #include "dtypes.h"
 #include "serialization_eigen.h"
 #include "serialization_path.h"
+#include "utils.h"
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include <boost/multi_index/hashed_index.hpp>
@@ -83,12 +84,12 @@ private:
 
 #ifndef SWIG
 
-namespace boost {
+namespace utils {
 template <class T>
 struct hash<enumerated_state<T>> {
     size_t operator()(enumerated_state<T> const &s) const { return std::hash<T>{}(s.state); }
 };
-} // namespace boost
+} // namespace utils
 
 #endif
 
@@ -693,7 +694,7 @@ public:
 
         // Determine hash of the list of states
         size_t hashvalue_states =
-            boost::hash_range(states.template get<0>().begin(), states.template get<0>().end());
+            utils::hash_range(states.template get<0>().begin(), states.template get<0>().end());
 
         // Loop over basisvectors
         size_t num_basisvectors = basisvectors.outerSize();
@@ -703,8 +704,8 @@ public:
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
             size_t hashvalue = hashvalue_states;
             for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
-                boost::hash_combine(hashvalue, triple.row());
-                boost::hash_combine(hashvalue, triple.value());
+                utils::hash_combine(hashvalue, triple.row());
+                utils::hash_combine(hashvalue, triple.value());
             }
 
             // Rewrite basisvectors as states

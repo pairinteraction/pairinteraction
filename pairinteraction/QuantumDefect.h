@@ -23,12 +23,12 @@
 #include "Cache.h"
 #include "SQLite.h"
 #include "dtypes.h"
+#include "utils.h"
+
 #include <mutex>
 #include <string>
 #include <tuple>
 #include <unordered_map>
-
-#include <boost/functional/hash.hpp>
 
 /** \brief Quantum defect storage
  *
@@ -71,13 +71,13 @@ private:
 
     //** \brief Hash for Key */
     struct Hash {
-        /** \brief Hash the key using boost::hash_combine */
+        /** \brief Hash the key using utils::hash_combine */
         std::size_t operator()(Key const &key) const {
             std::size_t seed = 0;
-            boost::hash_combine(seed, key.species);
-            boost::hash_combine(seed, key.n);
-            boost::hash_combine(seed, key.l);
-            boost::hash_combine(seed, key.j);
+            utils::hash_combine(seed, key.species);
+            utils::hash_combine(seed, key.n);
+            utils::hash_combine(seed, key.l);
+            utils::hash_combine(seed, key.j);
             return seed;
         }
     };

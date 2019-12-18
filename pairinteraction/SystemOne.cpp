@@ -364,7 +364,8 @@ void SystemOne::initializeInteraction() {
         interaction_efield_triplets; // TODO reserve
     std::unordered_map<int, std::vector<eigen_triplet_t>>
         interaction_bfield_triplets; // TODO reserve
-    std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>>
+    std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>,
+                       utils::hash<std::array<int, 2>>>
         interaction_diamagnetism_triplets; // TODO reserve
 
     // Loop over column entries

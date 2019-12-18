@@ -21,6 +21,7 @@
 #define UTILS_H
 
 #include <algorithm>
+#include <array>
 #include <complex>
 #include <functional>
 #include <random>
@@ -124,6 +125,71 @@ inline long get_pid() {
     return ::getpid();
 #endif
 }
+
+/// \brief Hash function
+///
+/// The `std::hash` template allows specialization but only for types that are
+/// not in the standard library.  This means that we cannot specialize
+/// `std::hash` for, e.g. `std::array`.  To this end we define a struct `hash`
+/// which just inherits from `std::hash` by default.
+///
+/// \tparam Key  type to be hashed
+template <typename Key>
+struct hash;
+
+/// \brief Combine hashes
+///
+/// The implementation of `hash_combine` is copied from Boost but simplified.
+/// It uses the custom `hash`.
+///
+/// \param seed  start hash
+/// \param v  value whose hash is to be added to \p seed
+template <typename T>
+inline void hash_combine(std::size_t &seed, T const &v) {
+    hash<T> hasher;
+    seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+}
+
+/// \brief Combine hashes of values in a range
+///
+/// \param first  forward iterator
+/// \param last  forward iterator
+/// \returns combined hash of all values in the range
+template <typename It>
+inline std::size_t hash_range(It first, It last) {
+    std::size_t seed = 0;
+    for (; first != last; ++first) {
+        hash_combine(seed, *first);
+    }
+    return seed;
+}
+
+// By default use std::hash
+template <typename T>
+struct hash : std::hash<T> {};
+
+// Specializations for other types
+template <typename T, std::size_t N>
+struct hash<std::array<T, N>> {
+    using argument_type = std::array<T, N>;
+    using result_type = std::size_t;
+    std::size_t operator()(std::array<T, N> const &a) const {
+        return hash_range(a.begin(), a.end());
+    }
+};
+
+template <typename T>
+struct hash<std::complex<T>> {
+    using argument_type = std::complex<T>;
+    using result_type = std::size_t;
+    std::size_t operator()(std::complex<T> const &c) const {
+        std::size_t seed = 0;
+        hash_combine(seed, c.real());
+        hash_combine(seed, c.imag());
+        return seed;
+    }
+};
+
 } // namespace utils
 
 #endif // UTILS_H

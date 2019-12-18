@@ -22,24 +22,15 @@
 
 #include "State.h"
 #include "SystemBase.h"
+#include "utils.h"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <boost/serialization/base_object.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <cmath>
 #include <set>
 #include <type_traits>
 #include <unordered_map>
-
-#ifndef SWIG
-namespace std {
-template <>
-struct hash<std::array<int, 2>> {
-    size_t operator()(const std::array<int, 2> &a) const { return boost::hash_value(a); }
-};
-} // namespace std
-#endif
 
 class SystemOne : public SystemBase<StateOne> {
 public:
@@ -75,12 +66,14 @@ private:
     std::array<double, 3> efield, bfield;
     std::unordered_map<int, scalar_t> efield_spherical, bfield_spherical;
     bool diamagnetism;
-    std::unordered_map<std::array<int, 2>, scalar_t> diamagnetism_terms;
+    std::unordered_map<std::array<int, 2>, scalar_t, utils::hash<std::array<int, 2>>>
+        diamagnetism_terms;
     std::string species;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
-    std::unordered_map<std::array<int, 2>, eigen_sparse_t> interaction_diamagnetism;
+    std::unordered_map<std::array<int, 2>, eigen_sparse_t, utils::hash<std::array<int, 2>>>
+        interaction_diamagnetism;
 
     parity_t sym_reflection;
     std::set<float> sym_rotation;

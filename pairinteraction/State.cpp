@@ -20,6 +20,7 @@
 #include "State.h"
 #include "QuantumDefect.h"
 #include "dtypes.h"
+#include "utils.h"
 
 #include <array>
 #include <cctype>
@@ -55,11 +56,11 @@ StateOne::StateOne(std::string species, int n, int l, float j, float m)
     : species(std::move(species)), n(n), l(l), j(j), m(m) {
     this->analyzeSpecies();
     hashvalue = 0;
-    boost::hash_combine(hashvalue, this->getSpecies());
-    boost::hash_combine(hashvalue, this->getN());
-    boost::hash_combine(hashvalue, this->getL());
-    boost::hash_combine(hashvalue, this->getJ());
-    boost::hash_combine(hashvalue, this->getM());
+    utils::hash_combine(hashvalue, this->getSpecies());
+    utils::hash_combine(hashvalue, this->getN());
+    utils::hash_combine(hashvalue, this->getL());
+    utils::hash_combine(hashvalue, this->getJ());
+    utils::hash_combine(hashvalue, this->getM());
 }
 
 StateOne::StateOne(std::string label)
@@ -198,20 +199,20 @@ StateTwo::StateTwo(std::array<std::string, 2> species, std::array<int, 2> n, std
     : state_array({{StateOne(species[0], n[0], l[0], j[0], m[0]),
                     StateOne(species[1], n[1], l[1], j[1], m[1])}}) {
     hashvalue = 0;
-    boost::hash_combine(hashvalue, state_array[0].getHash());
-    boost::hash_combine(hashvalue, state_array[1].getHash());
+    utils::hash_combine(hashvalue, state_array[0].getHash());
+    utils::hash_combine(hashvalue, state_array[1].getHash());
 }
 StateTwo::StateTwo(std::array<std::string, 2> label)
     : state_array({{StateOne(label[0]), StateOne(label[1])}}) {
     hashvalue = 0;
-    boost::hash_combine(hashvalue, state_array[0].getHash());
-    boost::hash_combine(hashvalue, state_array[1].getHash());
+    utils::hash_combine(hashvalue, state_array[0].getHash());
+    utils::hash_combine(hashvalue, state_array[1].getHash());
 }
 StateTwo::StateTwo(StateOne first_state, StateOne second_state)
     : state_array({{std::move(first_state), std::move(second_state)}}) {
     hashvalue = 0;
-    boost::hash_combine(hashvalue, state_array[0].getHash());
-    boost::hash_combine(hashvalue, state_array[1].getHash());
+    utils::hash_combine(hashvalue, state_array[0].getHash());
+    utils::hash_combine(hashvalue, state_array[1].getHash());
 }
 
 // Methods for printing the state

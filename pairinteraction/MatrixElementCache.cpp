@@ -303,39 +303,39 @@ operator==(const CacheKey_cache_reduced_multipole &rhs) const {
 std::size_t MatrixElementCache::CacheKeyHasher_cache_radial::
 operator()(const CacheKey_cache_radial &c) const {
     size_t seed = 0;
-    boost::hash_combine(seed, c.method);
-    boost::hash_combine(seed, c.species);
-    boost::hash_combine(seed, c.kappa);
-    boost::hash_combine(seed, c.n);
-    boost::hash_combine(seed, c.l);
-    boost::hash_combine(seed, c.j);
+    utils::hash_combine(seed, c.method);
+    utils::hash_combine(seed, c.species);
+    utils::hash_combine(seed, c.kappa);
+    utils::hash_combine(seed, c.n);
+    utils::hash_combine(seed, c.l);
+    utils::hash_combine(seed, c.j);
     return seed;
 }
 
 std::size_t MatrixElementCache::CacheKeyHasher_cache_angular::
 operator()(const CacheKey_cache_angular &c) const {
     size_t seed = 0;
-    boost::hash_combine(seed, c.kappa);
-    boost::hash_combine(seed, c.j);
-    boost::hash_combine(seed, c.m);
+    utils::hash_combine(seed, c.kappa);
+    utils::hash_combine(seed, c.j);
+    utils::hash_combine(seed, c.m);
     return seed;
 }
 
 std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_commutes::
 operator()(const CacheKey_cache_reduced_commutes &c) const {
     size_t seed = 0;
-    boost::hash_combine(seed, c.s);
-    boost::hash_combine(seed, c.kappa);
-    boost::hash_combine(seed, c.l);
-    boost::hash_combine(seed, c.j);
+    utils::hash_combine(seed, c.s);
+    utils::hash_combine(seed, c.kappa);
+    utils::hash_combine(seed, c.l);
+    utils::hash_combine(seed, c.j);
     return seed;
 }
 
 std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_multipole::
 operator()(const CacheKey_cache_reduced_multipole &c) const {
     size_t seed = 0;
-    boost::hash_combine(seed, c.kappa);
-    boost::hash_combine(seed, c.l);
+    utils::hash_combine(seed, c.kappa);
+    utils::hash_combine(seed, c.l);
     return seed;
 }
 

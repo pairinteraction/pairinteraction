@@ -21,9 +21,9 @@
 #define STATEOLD_H
 
 #include "dtypes.h"
+#include "utils.h"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -175,10 +175,10 @@ template <>
 struct hash<StateOneOld> {
     size_t operator()(const StateOneOld &s) const {
         std::size_t seed = 0;
-        boost::hash_combine(seed, s.n);
-        boost::hash_combine(seed, s.l);
-        boost::hash_combine(seed, s.j);
-        boost::hash_combine(seed, s.m);
+        utils::hash_combine(seed, s.n);
+        utils::hash_combine(seed, s.l);
+        utils::hash_combine(seed, s.j);
+        utils::hash_combine(seed, s.m);
         return seed;
     }
 };
@@ -187,10 +187,10 @@ template <>
 struct hash<StateTwoOld> {
     size_t operator()(const StateTwoOld &s) const {
         std::size_t seed = 0;
-        boost::hash_combine(seed, s.n);
-        boost::hash_combine(seed, s.l);
-        boost::hash_combine(seed, s.j);
-        boost::hash_combine(seed, s.m);
+        utils::hash_combine(seed, s.n);
+        utils::hash_combine(seed, s.l);
+        utils::hash_combine(seed, s.j);
+        utils::hash_combine(seed, s.m);
         return seed;
     }
 };

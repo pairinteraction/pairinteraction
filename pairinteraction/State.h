@@ -22,9 +22,9 @@
 
 #include "MatrixElementCache.h"
 #include "dtypes.h"
+#include "utils.h"
 
 #include <array>
-#include <boost/functional/hash.hpp>
 #include <cmath>
 #include <iostream>
 #include <string>
