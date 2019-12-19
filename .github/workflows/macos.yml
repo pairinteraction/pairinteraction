@@ -37,7 +37,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost doctest eigen fmt gsl lapack
+          brew install boost cereal doctest eigen fmt gsl lapack
           npm install -g fileicon
 
       - name: Configure

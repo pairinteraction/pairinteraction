@@ -26,20 +26,18 @@
 #include "WignerD.hpp"
 #include "utils.hpp"
 
+#include <cereal/types/array.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/unordered_map.hpp>
+
 #include <array>
-// clang-format off
-#if __has_include (<boost/serialization/version.hpp>)
-#    include <boost/serialization/version.hpp>
-#endif
-#if __has_include (<boost/serialization/library_version_type.hpp>)
-#    include <boost/serialization/library_version_type.hpp>
-#endif
-// clang-format on
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/unordered_map.hpp>
 #include <cmath>
 #include <set>
 #include <unordered_map>
+
+template <typename Scalar_>
+class SystemTwo;
 
 template <typename Scalar_>
 class SystemOne : public SystemBase<Scalar_, StateOne> {
@@ -163,19 +161,29 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
+    friend class SystemTwo<Scalar_>;
+    SystemOne();
 
     template <class Archive>
-    void serialize(Archive &ar, unsigned int /*version*/) {
-        ar &boost::serialization::base_object<SystemBase<Scalar_, StateOne>>(*this);
-        ar &species;
-        ar &efield &bfield &diamagnetism &sym_reflection &sym_rotation;
-        ar &efield_spherical &bfield_spherical &diamagnetism_terms;
-        ar &interaction_efield &interaction_bfield &interaction_diamagnetism;
+    void serialize(Archive &ar, unsigned int /* version */) {
+        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar_, StateOne>>(this));
+        ar &CEREAL_NVP(species);
+        ar &CEREAL_NVP(efield) & CEREAL_NVP(bfield) & CEREAL_NVP(diamagnetism) &
+            CEREAL_NVP(sym_reflection) & CEREAL_NVP(sym_rotation);
+        ar &CEREAL_NVP(efield_spherical) & CEREAL_NVP(bfield_spherical) &
+            CEREAL_NVP(diamagnetism_terms);
+        ar &CEREAL_NVP(interaction_efield) & CEREAL_NVP(interaction_bfield) &
+            CEREAL_NVP(interaction_diamagnetism);
     }
 };
 
 extern template class SystemOne<std::complex<double>>;
 extern template class SystemOne<double>;
+
+#ifndef SWIG
+CEREAL_REGISTER_TYPE(SystemOne<std::complex<double>>) // NOLINT
+CEREAL_REGISTER_TYPE(SystemOne<double>)               // NOLINT
+#endif
 
 #endif

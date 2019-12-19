@@ -245,11 +245,28 @@ endif()
 find_package(fmt REQUIRED)
 target_link_libraries(pairinteraction PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
 
+find_package(cereal CONFIG)
+if(NOT cereal_FOUND)
+  # Workaround for CMake support files missing in Ubuntu
+  # https://bugs.launchpad.net/ubuntu/+source/libcereal/+bug/1978462
+  add_library(CEREAL_TARGET INTERFACE)
+  add_library(cereal::cereal ALIAS CEREAL_TARGET)
+  find_path(CEREAL_INCLUDE_DIR cereal/cereal.hpp)
+  if(NOT CEREAL_INCLUDE_DIR)
+    message(FATAL_ERROR "Cereal could not be found")
+  endif()
+  target_include_directories(CEREAL_TARGET SYSTEM INTERFACE "${CEREAL_INCLUDE_DIR}")
+elseif(NOT TARGET cereal::cereal)
+  # Workaround for missing imported target
+  add_library(cereal::cereal ALIAS cereal)
+endif()
+target_link_libraries(pairinteraction PUBLIC cereal::cereal)
+
 find_package(SQLite3 REQUIRED)
 target_link_libraries(pairinteraction PUBLIC SQLite::SQLite3)
 
-find_package(Boost COMPONENTS serialization REQUIRED)
-target_link_libraries(pairinteraction PUBLIC Boost::boost Boost::serialization)
+find_package(Boost REQUIRED)
+target_link_libraries(pairinteraction PUBLIC Boost::boost)
 if(MSVC)
   target_link_libraries(pairinteraction PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
   target_compile_definitions(pairinteraction PUBLIC BOOST_UUID_FORCE_AUTO_LINK)

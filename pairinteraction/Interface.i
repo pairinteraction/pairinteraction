@@ -15,8 +15,7 @@
 #include "SystemTwo.hpp"
 #include "Wavefunction.hpp"
 
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include <streambuf>
 #include <sstream>
@@ -71,8 +70,8 @@ import_array();
   %extend cls {
     PyObject* __getstate__() {
       std::stringstream ss;
-      boost::archive::binary_oarchive ar(ss);
-      ar << *($self);
+      cereal::BinaryOutputArchive ar(ss);
+      ar << cereal::make_nvp(#cls, *($self));
       return PyBytes_FromStringAndSize(ss.str().data(), ss.str().length());
     }
 
@@ -82,8 +81,8 @@ import_array();
       PyBytes_AsStringAndSize(sState, &buffer, &len);
       array_source asource(buffer, static_cast<size_t>(len));
       std::istream ss(&asource);
-      boost::archive::binary_iarchive ar(ss);
-      ar >> *($self);
+      cereal::BinaryInputArchive ar(ss);
+      ar >> cereal::make_nvp(#cls, *($self));
     }
   }
 %enddef

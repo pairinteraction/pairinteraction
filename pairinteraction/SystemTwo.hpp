@@ -27,16 +27,12 @@
 #include "EigenCompat.hpp"
 #include <Eigen/SparseCore>
 #include <boost/math/special_functions/binomial.hpp>
-// clang-format off
-#if __has_include (<boost/serialization/version.hpp>)
-#    include <boost/serialization/version.hpp>
-#endif
-#if __has_include (<boost/serialization/library_version_type.hpp>)
-#    include <boost/serialization/library_version_type.hpp>
-#endif
-// clang-format on
-#include <boost/serialization/base_object.hpp>
-#include <boost/serialization/unordered_map.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/base_class.hpp>
+#include <cereal/types/polymorphic.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/unordered_map.hpp>
+
 #include <cmath>
 #include <set>
 #include <type_traits>
@@ -91,14 +87,17 @@ private:
     std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_qd;
 
     double minimal_le_roy_radius;
-    double distance, distance_x, distance_y, distance_z;
-    bool GTbool;
+    double distance;
+    double distance_x; // NOLINT
+    double distance_y; // NOLINT
+    double distance_z;
+    bool GTbool; // NOLINT
     double surface_distance;
-    unsigned int ordermax;
+    unsigned int ordermax; // NOLINT
 
-    parity_t sym_permutation;
-    parity_t sym_inversion;
-    parity_t sym_reflection;
+    parity_t sym_permutation; // NOLINT
+    parity_t sym_inversion;   // NOLINT
+    parity_t sym_reflection;  // NOLINT
     std::set<int> sym_rotation;
 
     std::unordered_map<int, double> angle_terms;
@@ -180,21 +179,31 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
+    SystemTwo();
 
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &boost::serialization::base_object<SystemBase<Scalar_, StateTwo>>(*this);
-        ar &species &system1 &system2;
-        ar &distance &distance_x &distance_y &distance_z &surface_distance &ordermax;
-        ar &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
-        ar &angle_terms &greentensor_terms_dd &greentensor_terms_dq &greentensor_terms_qd;
-        ar &interaction_angulardipole &interaction_multipole &interaction_greentensor_dd
-            &interaction_greentensor_dq &interaction_greentensor_qd;
+    void serialize(Archive &ar, unsigned int /* version */) {
+        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar_, StateTwo>>(this));
+        ar &CEREAL_NVP(species) & CEREAL_NVP(system1) & CEREAL_NVP(system2);
+        ar &CEREAL_NVP(distance) & CEREAL_NVP(distance_x) & CEREAL_NVP(distance_y) &
+            CEREAL_NVP(distance_z) & CEREAL_NVP(surface_distance) & CEREAL_NVP(ordermax);
+        ar &CEREAL_NVP(sym_permutation) & CEREAL_NVP(sym_inversion) & CEREAL_NVP(sym_reflection) &
+            CEREAL_NVP(sym_rotation);
+        ar &CEREAL_NVP(angle_terms) & CEREAL_NVP(greentensor_terms_dd) &
+            CEREAL_NVP(greentensor_terms_dq) & CEREAL_NVP(greentensor_terms_qd);
+        ar &CEREAL_NVP(interaction_angulardipole) & CEREAL_NVP(interaction_multipole) &
+            CEREAL_NVP(interaction_greentensor_dd) & CEREAL_NVP(interaction_greentensor_dq) &
+            CEREAL_NVP(interaction_greentensor_qd);
     }
 };
 
 extern template class SystemTwo<std::complex<double>>;
 extern template class SystemTwo<double>;
+
+#ifndef SWIG
+CEREAL_REGISTER_TYPE(SystemTwo<std::complex<double>>) // NOLINT
+CEREAL_REGISTER_TYPE(SystemTwo<double>)               // NOLINT
+#endif
 
 #endif

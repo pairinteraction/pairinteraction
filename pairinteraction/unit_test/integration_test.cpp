@@ -23,12 +23,11 @@
 #include "SystemTwo.hpp"
 #include "filesystem.hpp"
 
+#include <cereal/archives/json.hpp>
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>
 
 #include <algorithm>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/text_oarchive.hpp>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -64,11 +63,12 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     Eigen::SparseMatrix<Scalar> basis_one_reference, basis_two_reference;
 
     if (!dump_new_reference_data) {
-        std::ifstream ifs("./pairinteraction/unit_test/integration_test_referencedata.txt");
-        boost::archive::text_iarchive ia(ifs);
-        ia >> hamiltonian_one_reference >> basis_one_reference >> hamiltonian_two_reference >>
-            basis_two_reference;
-        ifs.close();
+        std::ifstream ifs("./pairinteraction/unit_test/integration_test_referencedata.json");
+        cereal::JSONInputArchive ia(ifs);
+        ia >> cereal::make_nvp("hamiltonian_one", hamiltonian_one_reference) >>
+            cereal::make_nvp("basis_one", basis_one_reference) >>
+            cereal::make_nvp("hamiltonian_two", hamiltonian_two_reference) >>
+            cereal::make_nvp("basis_two", basis_two_reference);
     }
 
     // Setup states
@@ -197,10 +197,12 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     ////////////////////////////////////////////////////////////////////
 
     if (dump_new_reference_data) {
-        std::ofstream ofs("../pairinteraction/unit_test/integration_test_referencedata.txt");
-        boost::archive::text_oarchive oa(ofs);
-        oa << hamiltonian_one << basis_one << hamiltonian_two << basis_two;
-        ofs.close();
+        {
+            std::ofstream ofs("../pairinteraction/unit_test/integration_test_referencedata.json");
+            cereal::JSONOutputArchive oa(ofs);
+            oa << CEREAL_NVP(hamiltonian_one) << CEREAL_NVP(basis_one)
+               << CEREAL_NVP(hamiltonian_two) << CEREAL_NVP(basis_two);
+        }
 
         // ATTENTION
         // After generating integration_test_referencedata.txt, we possibly have to manually modify

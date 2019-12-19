@@ -1290,16 +1290,19 @@ void SystemBase<Scalar, State>::addHamiltonianEntry(const State &state_row, cons
 }
 
 template <class Scalar, class State>
+SystemBase<Scalar, State>::SystemBase()
+    : energy_min(std::numeric_limits<double>::lowest()),
+      energy_max(std::numeric_limits<double>::max()) {}
+
+template <class Scalar, class State>
 SystemBase<Scalar, State>::SystemBase(MatrixElementCache &cache)
-    : cache(cache), threshold_for_sqnorm(0.05), energy_min(std::numeric_limits<double>::lowest()),
-      energy_max(std::numeric_limits<double>::max()), memory_saving(false),
-      is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
+    : m_cache(std::addressof(cache)), energy_min(std::numeric_limits<double>::lowest()),
+      energy_max(std::numeric_limits<double>::max()) {}
 
 template <class Scalar, class State>
 SystemBase<Scalar, State>::SystemBase(MatrixElementCache &cache, bool memory_saving)
-    : cache(cache), threshold_for_sqnorm(0.05), energy_min(std::numeric_limits<double>::lowest()),
-      energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving),
-      is_interaction_already_contained(false), is_new_hamiltonian_required(false) {}
+    : m_cache(std::addressof(cache)), energy_min(std::numeric_limits<double>::lowest()),
+      energy_max(std::numeric_limits<double>::max()), memory_saving(memory_saving) {}
 
 ////////////////////////////////////////////////////////////////////
 /// Helper method that shoul be called by the derived classes //////
