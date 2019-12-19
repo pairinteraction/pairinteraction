@@ -24,8 +24,6 @@
 #include <sstream>
 #include <string>
 
-#include <boost/lexical_cast.hpp>
-
 /** \brief %Configuration storage
  *
  * This class stores the system configuration.  In essence it is a
@@ -48,19 +46,69 @@ private:
 
         template <typename T>
         value &operator<<(T const &rhs) {
-            m_value = boost::lexical_cast<std::string>(rhs);
+            std::ostringstream os;
+            os << rhs;
+            m_value = os.str();
             return *this;
         }
 
-        template <typename T>
-        value &operator>>(T &rhs) {
-            rhs = boost::lexical_cast<T>(m_value);
+        value &operator<<(std::string const &rhs) {
+            m_value = rhs;
             return *this;
         }
 
-        template <typename T>
-        value const &operator>>(T &rhs) const {
-            rhs = boost::lexical_cast<T>(m_value);
+        value &operator<<(char const *rhs) {
+            m_value = std::string{rhs};
+            return *this;
+        }
+
+        value &operator>>(int &rhs) {
+            rhs = std::stoi(m_value);
+            return *this;
+        }
+
+        value &operator>>(size_t &rhs) {
+            rhs = std::stoul(m_value);
+            return *this;
+        }
+
+        value &operator>>(float &rhs) {
+            rhs = std::stof(m_value);
+            return *this;
+        }
+
+        value &operator>>(double &rhs) {
+            rhs = std::stod(m_value);
+            return *this;
+        }
+
+        value &operator>>(std::string &rhs) {
+            rhs = m_value;
+            return *this;
+        }
+
+        value const &operator>>(int &rhs) const {
+            rhs = std::stoi(m_value);
+            return *this;
+        }
+
+        value const &operator>>(size_t &rhs) const {
+            rhs = std::stoul(m_value);
+            return *this;
+        }
+
+        value const &operator>>(float &rhs) const {
+            rhs = std::stof(m_value);
+            return *this;
+        }
+
+        value const &operator>>(double &rhs) const {
+            rhs = std::stod(m_value);
+            return *this;
+        }
+
+        value const &operator>>(std::string &rhs) const {
+            rhs = m_value;
             return *this;
         }
 
