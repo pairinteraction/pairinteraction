@@ -18,12 +18,13 @@
  */
 
 #include "ConfParser.h"
-#define BOOST_TEST_MODULE Configuration parser test
-#include <boost/test/unit_test.hpp>
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
 #include <iostream>
 
-BOOST_AUTO_TEST_CASE(conf_parser_test) // NOLINT
+TEST_CASE("conf_parser_test") // NOLINT
 {
     Configuration c;
 
@@ -35,12 +36,12 @@ BOOST_AUTO_TEST_CASE(conf_parser_test) // NOLINT
     c["third"] >> c["fifth"];
 
     // Test subscript getter and str() conversion
-    BOOST_CHECK_EQUAL(c["first"].str(), "2");
-    BOOST_CHECK_EQUAL(c["second"].str(), "1.2");
-    BOOST_CHECK_EQUAL(c["third"].str(), "Hello World!");
-    BOOST_CHECK_EQUAL(c["fourth"].str(), "2");
-    BOOST_CHECK_EQUAL(c["fifth"].str(), "Hello World!");
-    BOOST_CHECK_EQUAL(c.count("first"), 1);
+    CHECK(c["first"].str() == "2");
+    CHECK(c["second"].str() == "1.2");
+    CHECK(c["third"].str() == "Hello World!");
+    CHECK(c["fourth"].str() == "2");
+    CHECK(c["fifth"].str() == "Hello World!");
+    CHECK(c.count("first") == 1);
 
     // Test subscript getter and type deduction
     int i;
@@ -49,31 +50,31 @@ BOOST_AUTO_TEST_CASE(conf_parser_test) // NOLINT
     c["first"] >> i;
     c["second"] >> d;
     c["third"] >> s;
-    BOOST_CHECK_EQUAL(i, 2);
-    BOOST_CHECK_EQUAL(d, 1.2);
-    BOOST_CHECK_EQUAL(s, "Hello World!");
+    CHECK(i == 2);
+    CHECK(d == 1.2);
+    CHECK(s == "Hello World!");
 
     // Test const methods
     Configuration const cc(c);
-    BOOST_CHECK_EQUAL(cc["first"].str(), "2");
-    BOOST_CHECK_EQUAL(cc["second"].str(), "1.2");
-    BOOST_CHECK_EQUAL(cc["third"].str(), "Hello World!");
-    BOOST_CHECK_EQUAL(cc["fourth"].str(), "2");
-    BOOST_CHECK_EQUAL(cc["fifth"].str(), "Hello World!");
-    BOOST_CHECK_THROW(cc["nonexistent"], std::out_of_range);
-    BOOST_CHECK_EQUAL(cc.count("first"), 1);
+    CHECK(cc["first"].str() == "2");
+    CHECK(cc["second"].str() == "1.2");
+    CHECK(cc["third"].str() == "Hello World!");
+    CHECK(cc["fourth"].str() == "2");
+    CHECK(cc["fifth"].str() == "Hello World!");
+    CHECK_THROWS_AS(cc["nonexistent"], std::out_of_range);
+    CHECK(cc.count("first") == 1);
 
     // Test comparison
-    BOOST_CHECK(c == cc);
+    CHECK(c == cc);
 
     // finder
     auto it = c.find("first");
-    BOOST_CHECK_EQUAL(it->first, "first");
-    BOOST_CHECK_EQUAL(it->second.str(), "2");
+    CHECK(it->first == "first");
+    CHECK(it->second.str() == "2");
 
     auto cit = cc.find("first");
-    BOOST_CHECK_EQUAL(cit->first, "first");
-    BOOST_CHECK_EQUAL(cit->second.str(), "2");
+    CHECK(cit->first == "first");
+    CHECK(cit->second.str() == "2");
 
     // iterate
     for (auto it : c) {

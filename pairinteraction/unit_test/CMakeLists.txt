@@ -18,8 +18,8 @@
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Find the Boost unit test framework
-find_package(Boost REQUIRED COMPONENTS unit_test_framework)
+# Find the doctest unit test framework
+find_package(doctest REQUIRED)
 
 # To add test cases easier we use the following function
 function(UNIT_TEST)
@@ -29,10 +29,7 @@ function(UNIT_TEST)
   add_executable(${UT_TARGET} ${UT_SOURCE})
   target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
   set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
-  target_link_libraries(${UT_TARGET} PUBLIC
-    pireal Boost::unit_test_framework
-    Boost::disable_autolinking Boost::dynamic_linking)
-  target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
+  target_link_libraries(${UT_TARGET} PRIVATE pireal doctest::doctest)
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")

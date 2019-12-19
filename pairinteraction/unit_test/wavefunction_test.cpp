@@ -20,9 +20,9 @@
 #include "QuantumDefect.h"
 #include "SQLite.h"
 #include "Wavefunction.h"
-#define BOOST_TEST_MODULE Wavefunctions test
-#include <boost/mpl/list.hpp>
-#include <boost/test/unit_test.hpp>
+
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
 #include <iostream>
 
@@ -32,63 +32,65 @@ struct Fixture {
     Fixture() : qd("Rb", 79, l, 1.5){};
 };
 
-typedef boost::mpl::list<Fixture<1>, Fixture<2>> Fixtures;
-
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(model_potentials, T, Fixtures, T) // NOLINT
+TEST_CASE_TEMPLATE("model_potentials", T, Fixture<1>, Fixture<2>) // NOLINT
 {
+    auto const qd = T{}.qd;
     // There could be better coverage
-    BOOST_CHECK(std::isnan(model_potential::V(T::qd, 0)));
-    BOOST_CHECK(std::isnan(model_potential::g(T::qd, 0)));
+    CHECK(std::isnan(model_potential::V(qd, 0)));
+    CHECK(std::isnan(model_potential::g(qd, 0)));
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(numerovs_method, T, Fixtures, T) // NOLINT
+TEST_CASE_TEMPLATE("numerovs_method", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    Numerov N(T::qd);
+    auto const qd = T{}.qd;
+    Numerov N(qd);
     auto const &xy = N.integrate();
 
     // Check for correct number of integration steps
-    BOOST_CHECK_EQUAL(xy.rows(), 12087);
+    CHECK(xy.rows() == 12087);
 
     // Check for correct upper bound and decay to zero
-    BOOST_CHECK(xy(xy.rows() - 1, 0) <= std::sqrt(2 * T::qd.n * (T::qd.n + 15)));
-    BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
+    CHECK(xy(xy.rows() - 1, 0) <= std::sqrt(2 * qd.n * (qd.n + 15)));
+    CHECK(xy(xy.rows() - 1, 1) == doctest::Approx(0.0).epsilon(1e-6));
 }
 
 #ifdef WITH_GSL
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(coulomb_functions, T, Fixtures, T) // NOLINT
+TEST_CASE_TEMPLATE("coulomb_functions", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    Whittaker W(T::qd);
+    auto const qd = T{}.qd;
+    Whittaker W(qd);
     auto const &xy = W.integrate();
 
     // Check for correct number of integration steps
-    BOOST_CHECK_EQUAL(xy.rows(), 12087);
+    CHECK(xy.rows() == 12087);
 
     // Check for correct upper bound and decay to zero
-    BOOST_CHECK(xy(xy.rows() - 1, 0) <= 2 * T::qd.n * (T::qd.n + 15));
-    BOOST_CHECK_SMALL(xy(xy.rows() - 1, 1), 1e-6);
+    CHECK(xy(xy.rows() - 1, 0) <= 2 * qd.n * (qd.n + 15));
+    CHECK(xy(xy.rows() - 1, 1) == doctest::Approx(0.0).epsilon(1e-6));
 }
 
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(method_comparison, T, Fixtures, T) // NOLINT
+TEST_CASE_TEMPLATE("method_comparison", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    Numerov N(T::qd);
-    Whittaker W(T::qd);
+    auto const qd = T{}.qd;
+    Numerov N(qd);
+    Whittaker W(qd);
     auto const &nxy = N.integrate();
     auto const &wxy = W.integrate();
 
     // Check whether both have the same number of points
-    BOOST_CHECK_EQUAL(nxy.rows(), wxy.rows());
+    CHECK(nxy.rows() == wxy.rows());
     size_t n = nxy.rows();
 
     // Compare pointwise
     for (size_t i = 0; i < n; ++i) {
-        BOOST_CHECK_SMALL(std::sqrt(nxy(i, 0)) * nxy(i, 1) - wxy(i, 1), 1e-2);
+        CHECK(std::sqrt(nxy(i, 0)) * nxy(i, 1) - wxy(i, 1) == doctest::Approx(0.0).epsilon(1e-2));
     }
 }
-
-BOOST_FIXTURE_TEST_CASE_TEMPLATE(integration, T, Fixtures, T) // NOLINT
+TEST_CASE_TEMPLATE("integration", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    double mu_n = IntegrateRadialElement<Numerov>(T::qd, 1, T::qd);
-    double mu_w = IntegrateRadialElement<Whittaker>(T::qd, 1, T::qd);
-    BOOST_CHECK_CLOSE(mu_n, mu_w, 1e-3); // corresponds to 0.1% deviation
+    auto const qd = T{}.qd;
+    double mu_n = IntegrateRadialElement<Numerov>(qd, 1, qd);
+    double mu_w = IntegrateRadialElement<Whittaker>(qd, 1, qd);
+    CHECK(mu_n == doctest::Approx(mu_w).scale(1e-3)); // corresponds to 0.1% deviation
 }
 #endif

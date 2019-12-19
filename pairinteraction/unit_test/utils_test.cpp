@@ -18,11 +18,12 @@
  */
 
 #include "utils.h"
-#define BOOST_TEST_MODULE Configuration parser test
-#include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE(randint_test) // NOLINT
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
+
+TEST_CASE("randint_test") // NOLINT
 {
     int a = utils::randint(0, 10);
-    BOOST_CHECK(0 <= a && a <= 10);
+    CHECK((0 <= a && a <= 10));
 }

@@ -20,18 +20,19 @@
 #include "EmbeddedDatabase.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
-#define BOOST_TEST_MODULE Quantum defect test
-#include <boost/test/unit_test.hpp>
 
-BOOST_AUTO_TEST_CASE(qd_test) // NOLINT
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
+
+TEST_CASE("qd_test") // NOLINT
 {
     QuantumDefect qd("Rb", 45, 1, 0.5);
 
     // Check whether the input was stored correctly
-    BOOST_CHECK_EQUAL(qd.species, "Rb");
-    BOOST_CHECK_EQUAL(qd.n, 45);
-    BOOST_CHECK_EQUAL(qd.l, 1);
-    BOOST_CHECK_EQUAL(qd.j, 0.5);
+    CHECK(qd.species == "Rb");
+    CHECK(qd.n == 45);
+    CHECK(qd.l == 1);
+    CHECK(qd.j == 0.5);
 
     // Check whether values are correctly read from the db
     EmbeddedDatabase db{};
@@ -39,8 +40,8 @@ BOOST_AUTO_TEST_CASE(qd_test) // NOLINT
     stmt.set("select ac,Z,a1,a2,a3,a4,rc from model_potential where ( (element "
              "= 'Rb') and (L = 1) );");
     // The database should be consistent
-    BOOST_CHECK_NO_THROW(stmt.prepare());
-    BOOST_CHECK_NO_THROW(stmt.step());
+    CHECK_NOTHROW(stmt.prepare());
+    CHECK_NOTHROW(stmt.step());
 
     // Check the retrieved values
     double ac = stmt.get<double>(0);
@@ -51,29 +52,29 @@ BOOST_AUTO_TEST_CASE(qd_test) // NOLINT
     double a4 = stmt.get<double>(5);
     double rc = stmt.get<double>(6);
 
-    BOOST_CHECK_EQUAL(qd.ac, ac);
-    BOOST_CHECK_EQUAL(qd.Z, Z);
-    BOOST_CHECK_EQUAL(qd.a1, a1);
-    BOOST_CHECK_EQUAL(qd.a2, a2);
-    BOOST_CHECK_EQUAL(qd.a3, a3);
-    BOOST_CHECK_EQUAL(qd.a4, a4);
-    BOOST_CHECK_EQUAL(qd.rc, rc);
+    CHECK(qd.ac == ac);
+    CHECK(qd.Z == Z);
+    CHECK(qd.a1 == a1);
+    CHECK(qd.a2 == a2);
+    CHECK(qd.a3 == a3);
+    CHECK(qd.a4 == a4);
+    CHECK(qd.rc == rc);
 }
 
-BOOST_AUTO_TEST_CASE(qd_errors) // NOLINT
+TEST_CASE("qd_errors") // NOLINT
 {
-    BOOST_CHECK_THROW(QuantumDefect qd("nop", 0, 0, 0), std::exception);
-    BOOST_CHECK_THROW(QuantumDefect qd("Rb", 0, 10000, 0), std::exception);
+    CHECK_THROWS_AS(QuantumDefect("nop", 0, 0, 0), std::exception);
+    CHECK_THROWS_AS(QuantumDefect("Rb", 0, 10000, 0), std::exception);
 
     try {
         QuantumDefect qd("nop", 0, 0, 0);
     } catch (std::exception const &e) {
-        BOOST_CHECK(e.what());
+        CHECK(e.what());
     }
 
     try {
         QuantumDefect qd("Rb", 0, 10000, 0);
     } catch (std::exception const &e) {
-        BOOST_CHECK(e.what());
+        CHECK(e.what());
     }
 }

@@ -24,8 +24,8 @@
 #include "dtypes.h"
 #include "filesystem.h"
 
-#define BOOST_TEST_MODULE Integration test
-#include <boost/test/unit_test.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
 #include <algorithm>
 #include <boost/archive/text_iarchive.hpp>
@@ -47,7 +47,7 @@ struct F {
     fs::path path_cache;
 };
 
-BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
+TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
 {
 
     constexpr bool dump_new_reference_data = false;
@@ -90,8 +90,8 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_one.enableDiamagnetism(false);
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_one.getNumBasisvectors(), 64);
-    BOOST_CHECK_EQUAL(system_one.getNumStates(), 64);
+    CHECK(system_one.getNumBasisvectors() == 64);
+    CHECK(system_one.getNumStates() == 64);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
@@ -114,7 +114,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
-        BOOST_CHECK_SMALL(max_diff_hamiltonian, tolerance);
+        CHECK(max_diff_hamiltonian == doctest::Approx(0.0).epsilon(tolerance));
 
         diff = (basis_one - basis_one_reference)
                    .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
@@ -126,7 +126,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "One-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
-        BOOST_CHECK_SMALL(max_diff_basis, tolerance);
+        CHECK(max_diff_basis == doctest::Approx(0.0).epsilon(tolerance));
     }
 
     // Diagonalize one-atom system
@@ -154,8 +154,8 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_two.setAngle(0.9);
 
     // Check for correct dimensions
-    BOOST_CHECK_EQUAL(system_two.getNumBasisvectors(), 239);
-    BOOST_CHECK_EQUAL(system_two.getNumStates(), 468);
+    CHECK(system_two.getNumBasisvectors() == 239);
+    CHECK(system_two.getNumStates() == 468);
 
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
@@ -175,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference Hamiltonian: "
                   << max_diff_hamiltonian << std::endl;
-        BOOST_CHECK_SMALL(max_diff_hamiltonian, tolerance);
+        CHECK(max_diff_hamiltonian == doctest::Approx(0.0).epsilon(tolerance));
 
         diff = (basis_two - basis_two_reference)
                    .pruned(tolerance, 1) // without pruning, max_diff_hamiltonian
@@ -187,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         std::cout << "Two-atom system, relative maximum deviation from "
                      "reference basis: "
                   << max_diff_basis << std::endl;
-        BOOST_CHECK_SMALL(max_diff_basis, tolerance);
+        CHECK(max_diff_basis == doctest::Approx(0.0).epsilon(tolerance));
     }
 
     // Diagonalize two-atom system
@@ -212,7 +212,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
         // We deliberately crash the test in case we are dumping new
         // data because we want to prevent accidentally dumping new
         // data when running in Travis CI.
-        BOOST_CHECK_MESSAGE(!dump_new_reference_data, "No tests were executed. Only dumping data!");
+        FAIL("No tests were executed. Only dumping data!");
     }
 
     // TODO call more methods to increase code covering

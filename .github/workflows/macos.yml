@@ -40,7 +40,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost eigen fmt gsl
+          brew install boost doctest eigen fmt gsl
           npm install -g fileicon
 
       - name: Configure

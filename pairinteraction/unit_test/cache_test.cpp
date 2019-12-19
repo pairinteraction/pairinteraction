@@ -18,35 +18,35 @@
  */
 
 #include "Cache.h"
-#define BOOST_TEST_MODULE Configuration parser test
-#include <boost/test/unit_test.hpp>
+#define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
+#include <doctest/doctest.h>
 
 #include <optional>
 #include <thread>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE(cache_test) // NOLINT
+TEST_CASE("cache_test") // NOLINT
 {
     Cache<std::string, int> cache;
 
-    BOOST_CHECK_NO_THROW(cache.save("Hello world!", 1));
+    CHECK_NOTHROW(cache.save("Hello world!", 1));
 
     std::optional<int> oe;
-    BOOST_CHECK_NO_THROW(oe = cache.restore("Hello world!"));
-    BOOST_CHECK_EQUAL(oe.value(), 1);
+    CHECK_NOTHROW(oe = cache.restore("Hello world!"));
+    CHECK(oe.value() == 1);
 
-    BOOST_CHECK_NO_THROW(cache.clear());
+    CHECK_NOTHROW(cache.clear());
 }
 
-BOOST_AUTO_TEST_CASE(smash_test) // NOLINT
+TEST_CASE("smash_test") // NOLINT
 {
     Cache<std::string, int> cache;
 
-    BOOST_CHECK_NO_THROW(cache.save("Hello world!", 1));
-    BOOST_CHECK_THROW(cache.save("Hello world!", 2), std::runtime_error);
+    CHECK_NOTHROW(cache.save("Hello world!", 1));
+    CHECK_THROWS_AS(cache.save("Hello world!", 2), std::runtime_error);
 }
 
-BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
+TEST_CASE("parallel_cache_test") // NOLINT
 {
     Cache<int, std::string> cache;
 
@@ -62,6 +62,6 @@ BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
     }
 
     for (std::size_t i = 0; i < 10; ++i) {
-        BOOST_CHECK_EQUAL(cache.restore(i).value(), "Hello from thread " + std::to_string(i));
+        CHECK(cache.restore(i).value() == "Hello from thread " + std::to_string(i));
     }
 }
