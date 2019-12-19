@@ -27,16 +27,8 @@
 #include <iostream>
 #include <string>
 
-// clang-format off
-#if __has_include (<boost/serialization/version.hpp>)
-#    include <boost/serialization/version.hpp>
-#endif
-#if __has_include (<boost/serialization/library_version_type.hpp>)
-#    include <boost/serialization/library_version_type.hpp>
-#endif
-// clang-format on
-#include <boost/serialization/array.hpp>
-#include <boost/serialization/string.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/string.hpp>
 
 typedef uint32_t idx_t;
 
@@ -97,13 +89,12 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
-        ar &species &element &s &n &l &j &m;
+    void serialize(Archive &ar, unsigned int /* version */) {
+        ar &CEREAL_NVP(species) & CEREAL_NVP(element) & CEREAL_NVP(s) & CEREAL_NVP(n) &
+            CEREAL_NVP(l) & CEREAL_NVP(j) & CEREAL_NVP(m);
     }
 };
 
@@ -167,13 +158,12 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
-        ar &species &element &s &n &l &j &m;
+    void serialize(Archive &ar, unsigned int /* version */) {
+        ar &CEREAL_NVP(species) & CEREAL_NVP(element) & CEREAL_NVP(s) & CEREAL_NVP(n) &
+            CEREAL_NVP(l) & CEREAL_NVP(j) & CEREAL_NVP(m);
     }
 };
 

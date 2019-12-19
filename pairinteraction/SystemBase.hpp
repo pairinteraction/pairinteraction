@@ -29,17 +29,11 @@
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>
 #include <boost/multi_index_container.hpp>
-// clang-format off
-#if __has_include (<boost/serialization/version.hpp>)
-#    include <boost/serialization/version.hpp>
-#endif
-#if __has_include (<boost/serialization/library_version_type.hpp>)
-#    include <boost/serialization/library_version_type.hpp>
-#endif
-// clang-format on
-#include <boost/serialization/complex.hpp>
-#include <boost/serialization/set.hpp>
-#include <boost/serialization/vector.hpp>
+#include <cereal/types/complex.hpp>
+#include <cereal/types/set.hpp>
+#include <cereal/types/vector.hpp>
+
+#include <algorithm>
 #include <complex>
 #include <functional>
 #include <set>
@@ -64,13 +58,11 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int version) {
-        (void)version;
-
-        ar &idx &state;
+    void serialize(Archive &ar, unsigned int /* version */) {
+        ar &CEREAL_NVP(idx) & CEREAL_NVP(state);
     }
 };
 
@@ -96,6 +88,33 @@ struct states_set {
                 std::hash<T>>>>
         type;
 };
+
+namespace cereal {
+
+template <class Archive, typename Value, typename IndexSpecifierList, typename Allocator>
+void save(
+    Archive &ar,
+    boost::multi_index::multi_index_container<Value, IndexSpecifierList, Allocator> const &vector) {
+    ar(make_size_tag(static_cast<size_type>(vector.size())));
+    for (auto &&v : vector) {
+        ar(v);
+    }
+}
+
+template <class Archive, typename Value, typename IndexSpecifierList, typename Allocator>
+void load(Archive &ar,
+          boost::multi_index::multi_index_container<Value, IndexSpecifierList, Allocator> &vector) {
+    size_type size;
+    ar(make_size_tag(size));
+    vector.reserve(static_cast<size_type>(size));
+    for (size_type i = 0; i < size; ++i) {
+        Value v;
+        ar(v);
+        vector.push_back(v);
+    }
+}
+
+} // namespace cereal
 
 template <class Scalar, class State>
 class SystemBase {
@@ -250,6 +269,8 @@ public:
     void addHamiltonianEntry(const State &state_row, const State &state_col, Scalar value);
 
 protected:
+    SystemBase();
+
     SystemBase(MatrixElementCache &cache);
 
     SystemBase(MatrixElementCache &cache, bool memory_saving);
@@ -269,18 +290,18 @@ protected:
 
     virtual void onStatesChange(){};
 
-    MatrixElementCache &cache;
+    MatrixElementCache *m_cache{nullptr};
 
-    double threshold_for_sqnorm;
+    double threshold_for_sqnorm{0.05};
 
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
     std::set<State> states_to_add;
 
-    bool memory_saving;
-    bool is_interaction_already_contained;
-    bool is_new_hamiltonian_required;
+    bool memory_saving{false};
+    bool is_interaction_already_contained{false};
+    bool is_new_hamiltonian_required{false};
 
     typename states_set<State>::type states;
     Eigen::SparseMatrix<Scalar> basisvectors;
@@ -370,15 +391,18 @@ private:
     /// Method for serialization ///////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    friend class boost::serialization::access;
+    friend class cereal::access;
 
     template <class Archive>
     void serialize(Archive &ar, unsigned int /*version*/) {
-        ar &cache &threshold_for_sqnorm;
-        ar &energy_min &energy_max &range_n &range_l &range_j &range_m &states_to_add;
-        ar &memory_saving &is_interaction_already_contained &is_new_hamiltonian_required;
-        ar &states &basisvectors &hamiltonian;
-        ar &basisvectors_unperturbed_cache &hamiltonian_unperturbed_cache;
+        ar &cereal::make_nvp("cache", *m_cache) & CEREAL_NVP(threshold_for_sqnorm);
+        ar &CEREAL_NVP(energy_min) & CEREAL_NVP(energy_max) & CEREAL_NVP(range_n) &
+            CEREAL_NVP(range_l) & CEREAL_NVP(range_j) & CEREAL_NVP(range_m) &
+            CEREAL_NVP(states_to_add);
+        ar &CEREAL_NVP(memory_saving) & CEREAL_NVP(is_interaction_already_contained) &
+            CEREAL_NVP(is_new_hamiltonian_required);
+        ar &CEREAL_NVP(states) & CEREAL_NVP(basisvectors) & CEREAL_NVP(hamiltonian);
+        ar &CEREAL_NVP(basisvectors_unperturbed_cache) & CEREAL_NVP(hamiltonian_unperturbed_cache);
     }
 };
 
