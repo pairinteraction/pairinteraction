@@ -16,10 +16,16 @@
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/stream.hpp>
+
+#include <streambuf>
 #include <sstream>
 #include <string.h>
+
+struct array_source : std::streambuf {
+    array_source(char *buffer, size_t len) {
+        this->setg(buffer, buffer, buffer + len);
+    }
+};
 %}
 
 
@@ -73,8 +79,8 @@ import_array();
       char *buffer;
       Py_ssize_t len;
       PyBytes_AsStringAndSize(sState, &buffer, &len);
-      boost::iostreams::array_source asource(buffer, static_cast<size_t>(len)); // prevents from copying
-      boost::iostreams::stream<boost::iostreams::array_source> ss(asource);
+      array_source asource(buffer, static_cast<size_t>(len));
+      std::istream ss(&asource);
       boost::archive::binary_iarchive ar(ss);
       ar >> *($self);
     }
