@@ -18,33 +18,59 @@
  */
 #include "Interface.h"
 
-#include <boost/filesystem.hpp>
-#include <boost/program_options.hpp>
 #include <iostream>
-#include <memory>
+#include <string>
 
-int main(int argc, char **argv) {
-    namespace po = boost::program_options;
+static void print_usage(std::ostream &os, int status) {
+    os << "Usage:\n"
+          "  -? [ --help ]         produce this help message\n"
+          "  -c [ --config ] arg   Path to config JSON file\n"
+          "  -o [ --output ] arg   Path to cache JSON file\n";
+    std::exit(status);
+}
 
-    po::options_description desc("Usage");
-    desc.add_options()("help,?", "produce this help message")(
-        "config,c", po::value<std::string>()->required(), "Path to config JSON file")(
-        "output,o", po::value<std::string>()->required(), "Path to cache JSON file");
-
-    po::variables_map vm;
-    po::store(po::parse_command_line(argc, argv, desc), vm);
-
-    if (vm.count("help") != 0u) {
-        std::cout << desc << std::endl;
-        return 0;
+int main(int argc, char *argv[]) {
+    if (argc == 1) {
+        print_usage(std::cout, EXIT_SUCCESS);
     }
 
-    try {
-        po::notify(vm);
-    } catch (po::required_option &e) {
-        std::cerr << "Error: " << e.what() << std::endl;
-        return 1;
+    std::string config, output;
+
+    int optind = 1;
+    while (optind < argc) {
+        std::string opt = argv[optind];
+        if (opt == "-?" || opt == "--help") {
+            print_usage(std::cout, EXIT_SUCCESS);
+        } else if (opt == "-c" || opt == "--config") {
+            ++optind;
+            if (!(optind < argc)) {
+                std::cerr << "Option " << opt << " requires an argument\n";
+                std::exit(EXIT_FAILURE);
+            }
+            config = argv[optind];
+        } else if (opt == "-o" || opt == "--output") {
+            ++optind;
+            if (!(optind < argc)) {
+                std::cerr << "Option " << opt << " requires an argument\n";
+                std::exit(EXIT_FAILURE);
+            }
+            output = argv[optind];
+        } else {
+            std::cerr << "Unknown option: " << opt << "\n";
+            print_usage(std::cerr, EXIT_FAILURE);
+        }
+        ++optind;
     }
 
-    return compute(vm["config"].as<std::string>(), vm["output"].as<std::string>());
+    if (config.empty()) {
+        std::cerr << "Option --config is required\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    if (output.empty()) {
+        std::cerr << "Option --output is required\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    return compute(config, output);
 }
