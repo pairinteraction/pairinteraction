@@ -3,7 +3,6 @@
     "version-string": "1",
     "dependencies": [
 	"boost-algorithm",
-	"boost-core",
 	"boost-filesystem",
 	"boost-format",
 	"boost-functional",

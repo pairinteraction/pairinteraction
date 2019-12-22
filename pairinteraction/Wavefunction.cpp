@@ -20,7 +20,6 @@
 #include "Wavefunction.h"
 #include "QuantumDefect.h"
 
-#include <boost/core/ignore_unused.hpp>
 #include <cctype>
 #include <cmath>
 #ifdef WITH_GSL
@@ -123,7 +122,9 @@ double HypergeometricU(double a, double b, double z) {
     }
     return gsl_sf_hyperg_U(a, b, z);
 #else
-    boost::ignore_unused(a, b, z);
+    static_cast<void>(a);
+    static_cast<void>(b);
+    static_cast<void>(z);
     throw std::runtime_error("Whittaker functions require the GSL library!");
 #endif
 }
