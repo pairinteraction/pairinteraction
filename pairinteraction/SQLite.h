@@ -28,7 +28,6 @@
 #include <thread>
 #include <type_traits>
 
-#include <boost/iterator/iterator_facade.hpp>
 #include <sqlite3.h>
 #include <utility>
 
@@ -257,36 +256,33 @@ public:
      * to the official documentation for the internal functions:
      * http://www.boost.org/libs/iterator/
      */
-    class iterator
-        : public boost::iterator_facade<iterator, statement, boost::forward_traversal_tag> {
+    class iterator {
     private:
-        friend class boost::iterator_core_access;
         statement *m_stmt;
         bool m_done;
         bool m_end;
 
-        void increment() {
-            if (!m_done) {
-                m_done = m_stmt->step();
-            } else {
-                m_end = true;
-            }
-        }
+    public:
+        iterator() : m_stmt{nullptr}, m_done{true}, m_end{true} {}
 
-        bool equal(iterator const & /*unused*/) const { return m_end; }
+        explicit iterator(statement *p) : m_stmt{p}, m_done{false}, m_end{false} { m_stmt->step(); }
 
-        statement &dereference() const {
+        statement &operator*() const {
 #ifndef NDEBUG
             if (m_end)
                 throw std::out_of_range("iterator out of range");
 #endif
             return *m_stmt;
         }
-
-    public:
-        iterator() : m_stmt{nullptr}, m_done{true}, m_end{true} {}
-
-        explicit iterator(statement *p) : m_stmt{p}, m_done{false}, m_end{false} { m_stmt->step(); }
+        iterator &operator++() {
+            if (!m_done) {
+                m_done = m_stmt->step();
+            } else {
+                m_end = true;
+            }
+            return *this;
+        }
+        bool operator!=(iterator const & /* unused */) const { return !m_end; }
     };
 
     /** \brief returns an iterator to the beginning
