@@ -60,7 +60,7 @@ SectionGroup /e "Dependencies"
     Goto next
 
     update:
-      File "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe"
+      File "${BUILD_DIR}\vcredist_x64.exe"
       ExecWait "$INSTDIR\vcredist_x64.exe"
       Delete "$INSTDIR\vcredist_x64.exe"
 
@@ -70,7 +70,7 @@ SectionGroup /e "Dependencies"
       Goto next
 
       fail:
-        MessageBox MB_OK "Redistributable for Visual Studio 2015 could not be found!"
+        MessageBox MB_OK "Redistributable for Visual Studio 2017 could not be found!"
     next:
   SectionEnd
 SectionGroupEnd
