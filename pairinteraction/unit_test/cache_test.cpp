@@ -20,6 +20,8 @@
 #include "Cache.h"
 #define BOOST_TEST_MODULE Configuration parser test
 #include <boost/test/unit_test.hpp>
+
+#include <optional>
 #include <thread>
 #include <vector>
 
@@ -29,9 +31,9 @@ BOOST_AUTO_TEST_CASE(cache_test) // NOLINT
 
     BOOST_CHECK_NO_THROW(cache.save("Hello world!", 1));
 
-    boost::optional<int> oe;
+    std::optional<int> oe;
     BOOST_CHECK_NO_THROW(oe = cache.restore("Hello world!"));
-    BOOST_CHECK_EQUAL(oe.get(), 1);
+    BOOST_CHECK_EQUAL(oe.value(), 1);
 
     BOOST_CHECK_NO_THROW(cache.clear());
 }
@@ -60,6 +62,6 @@ BOOST_AUTO_TEST_CASE(parallel_cache_test) // NOLINT
     }
 
     for (std::size_t i = 0; i < 10; ++i) {
-        BOOST_CHECK_EQUAL(cache.restore(i).get(), "Hello from thread " + std::to_string(i));
+        BOOST_CHECK_EQUAL(cache.restore(i).value(), "Hello from thread " + std::to_string(i));
     }
 }

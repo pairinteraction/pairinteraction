@@ -21,9 +21,8 @@
 #define CACHE_H
 
 #include <mutex>
+#include <optional>
 #include <unordered_map>
-
-#include <boost/optional.hpp>
 
 /** \brief Generic cache object
  *
@@ -84,13 +83,13 @@ public:
      * \param key Key
      * \returns Optional element
      */
-    boost::optional<Element> restore(Key const &key) {
+    std::optional<Element> restore(Key const &key) {
         std::lock_guard<std::mutex> lock(cache_mutex);
         auto cached_it = cache.find(key);
         if (cached_it != cache.end()) {
             return cached_it->second;
         }
-        return boost::none;
+        return std::nullopt;
     }
 
     /** \brief Clear the cache

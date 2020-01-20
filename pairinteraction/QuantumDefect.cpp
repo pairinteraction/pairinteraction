@@ -80,8 +80,8 @@ void QuantumDefect::setup(sqlite3 *db) {
 
     Key const key{species, n, l, j};
     if (auto oe = cache.restore(key)) {
-        e = oe.get(); // Restore cache
-        return;       // Return early
+        e = oe.value(); // Restore cache
+        return;         // Return early
     }
 
     std::stringstream ss;

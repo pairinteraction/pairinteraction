@@ -10,7 +10,6 @@
 	"boost-math",
 	"boost-mpl",
 	"boost-multi-index",
-	"boost-optional",
 	"boost-program-options",
 	"boost-property-tree",
 	"boost-serialization",
