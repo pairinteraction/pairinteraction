@@ -16,7 +16,6 @@
 	"boost-test",
 	"boost-tokenizer",
 	"boost-uuid",
-	"boost-variant",
 	"eigen3",
 	"gsl",
 	{

@@ -30,25 +30,19 @@
 
 namespace {
 
-inline boost::variant<char, int> getMomentumLabel(int l) {
-    switch (l) {
-    case 0:
-        return 'S';
-    case 1:
-        return 'P';
-    case 2:
-        return 'D';
-    case 3:
-        return 'F';
-    case 4:
-        return 'G';
-    case 5:
-        return 'H';
-    case 6:
-        return 'I';
-    default:
-        return l;
+struct getMomentumLabel {
+    int l;
+    getMomentumLabel(int l) : l(l) {}
+};
+
+inline std::ostream &operator<<(std::ostream &os, getMomentumLabel const &l) {
+    static constexpr std::array const letters = {'S', 'P', 'D', 'F', 'G', 'H', 'I'};
+    if (l.l < static_cast<int>(letters.size())) {
+        os << letters[l.l];
+    } else {
+        os << l.l;
     }
+    return os;
 }
 
 } // namespace

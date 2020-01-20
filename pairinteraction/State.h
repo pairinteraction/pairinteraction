@@ -32,7 +32,6 @@
 
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
-#include <boost/variant.hpp>
 
 class MatrixElementCache;
 
