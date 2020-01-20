@@ -52,10 +52,12 @@ SectionGroup /e "Dependencies"
     ReadRegDword $3 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Bld"
     IfErrors update 0
 
-    StrCmp $0 "1" 0 update 
-    IntCmp $1 14 0 update 0
-    IntCmp $2 0 0 update 0
-    IntCmp $3 24215 0 update 0
+    !getdllversion "${BUILD_DIR}\vcredist_x64.exe" RedistVer
+
+    StrCmp $0 "1" 0 update
+    IntCmp $1 "${RedistVer1}" 0 update 0
+    IntCmp $2 "${RedistVer2}" 0 update 0
+    IntCmp $3 "${RedistVer3}" 0 update 0
 
     Goto next
 
