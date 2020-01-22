@@ -20,15 +20,13 @@
 #ifndef SERIALIZATION_PATH_H
 #define SERIALIZATION_PATH_H
 
-#include <boost/filesystem.hpp>
+#include "filesystem.h"
 
 namespace boost {
 namespace serialization {
 
 template <class Archive>
-void serialize(Archive &ar, boost::filesystem::path &p, const unsigned int version) {
-    (void)version;
-
+void serialize(Archive &ar, fs::path &p, const unsigned int /* version */) {
     std::string s;
 
     if (Archive::is_saving::value) {
@@ -38,7 +36,7 @@ void serialize(Archive &ar, boost::filesystem::path &p, const unsigned int versi
     ar &s;
 
     if (Archive::is_loading::value) {
-        p = boost::filesystem::path(s);
+        p = fs::path(s);
     }
 }
 

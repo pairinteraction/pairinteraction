@@ -27,21 +27,22 @@
 #include "MatrixElements.h"
 #include "SQLite.h"
 #include "dtypes.h"
+#include "filesystem.h"
 
 #include <boost/algorithm/hex.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/math/special_functions/binomial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+
 #include <cmath>
 #include <iostream>
 #include <memory>
 
 class HamiltonianTwo : public Hamiltonian<BasisnamesTwo> {
 public:
-    HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+    HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                    const std::shared_ptr<HamiltonianOne> &hamiltonian_one);
-    HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+    HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                    std::shared_ptr<HamiltonianOne> hamiltonian_one1,
                    std::shared_ptr<HamiltonianOne> hamiltonian_one2);
     void calculate(const Configuration &conf_tot);
@@ -59,7 +60,7 @@ private:
     double min_R, max_R;
     int multipoleexponent;
     bool samebasis;
-    boost::filesystem::path path_cache;
+    fs::path path_cache;
 };
 
 #endif // HAMILTONIAN_TWO_H

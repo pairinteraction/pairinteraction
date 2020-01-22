@@ -28,8 +28,6 @@
 #include "serialization_path.h"
 #include <unsupported/Eigen/MatrixFunctions>
 
-#include <algorithm>
-#include <boost/filesystem.hpp>
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
 #include <boost/multi_index/random_access_index.hpp>

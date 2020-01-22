@@ -22,6 +22,7 @@
 #include "SystemOne.h"
 #include "SystemTwo.h"
 #include "dtypes.h"
+#include "filesystem.h"
 
 #define BOOST_TEST_MODULE Integration test
 #include <boost/test/unit_test.hpp>
@@ -29,27 +30,21 @@
 #include <algorithm>
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
-#include <boost/filesystem.hpp>
 #include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 
 struct F {
-    F() : path_cache(boost::filesystem::temp_directory_path() / boost::filesystem::unique_path()) {
-        // Create cache directory
-        if (boost::filesystem::create_directory(path_cache)) {
-            std::cout << "Cache directory " << boost::filesystem::absolute(path_cache).string()
-                      << " created." << std::endl;
-        } else {
-            throw std::runtime_error("Could not create cache directory.");
-        }
+    F() : path_cache(fs::create_temp_directory()) {
+        std::cout << "Cache directory " << fs::absolute(path_cache).string() << " created."
+                  << std::endl;
     }
     ~F() {
         // Delete cache directory
-        boost::filesystem::remove_all(path_cache);
+        fs::remove_all(path_cache);
     }
-    boost::filesystem::path path_cache;
+    fs::path path_cache;
 };
 
 BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT

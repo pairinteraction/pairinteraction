@@ -18,12 +18,14 @@
  */
 
 #include "HamiltonianOne.h"
+#include "filesystem.h"
+
 #include <stdexcept>
 #include <utility>
 
 #include <boost/format.hpp>
 
-HamiltonianOne::HamiltonianOne(const Configuration &config, boost::filesystem::path &path_cache,
+HamiltonianOne::HamiltonianOne(const Configuration &config, fs::path &path_cache,
                                std::shared_ptr<BasisnamesOne> basis_one)
     : path_cache(path_cache) {
     basis = std::move(basis_one);
@@ -88,14 +90,14 @@ void HamiltonianOne::configure(const Configuration &config) {
 }
 
 void HamiltonianOne::build() {
-    boost::filesystem::path path_cache_mat;
+    fs::path path_cache_mat;
     if (utils::is_complex<scalar_t>::value) {
         path_cache_mat = path_cache / "cache_matrix_complex";
     } else {
         path_cache_mat = path_cache / "cache_matrix_real";
     }
-    if (!boost::filesystem::exists(path_cache_mat)) {
-        boost::filesystem::create_directory(path_cache_mat);
+    if (!fs::exists(path_cache_mat)) {
+        fs::create_directory(path_cache_mat);
     }
 
     double tol = 1e-32;
@@ -155,7 +157,7 @@ void HamiltonianOne::build() {
     boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
     // save basis
-    boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
+    fs::path path_basis = fs::temp_directory_path();
     path_basis /= "basis_one_" + uuid + ".csv";
     basis->save(path_basis.string());
 
@@ -427,7 +429,7 @@ void HamiltonianOne::build() {
     std::cout << "One-atom Hamiltonian, processe Hamiltonians" << std::endl;
 
     // === Open database ===
-    boost::filesystem::path path_db;
+    fs::path path_db;
 
     if (utils::is_complex<scalar_t>::value) {
         path_db = path_cache / "cache_matrix_complex.db";
@@ -559,7 +561,7 @@ void HamiltonianOne::build() {
 
         // Check whether .mat and .json file exists and compare settings in program with settings in
         // .json file
-        boost::filesystem::path path, path_mat, path_json;
+        fs::path path, path_mat, path_json;
 
         path = path_cache_mat / ("one_" + uuid);
         path_mat = path;
@@ -568,8 +570,8 @@ void HamiltonianOne::build() {
         path_json.replace_extension(".json");
 
         bool is_existing = false;
-        if (boost::filesystem::exists(path_mat)) {
-            if (boost::filesystem::exists(path_json)) {
+        if (fs::exists(path_mat)) {
+            if (fs::exists(path_json)) {
                 Configuration params_loaded;
                 params_loaded.load_from_json(path_json.string());
                 if (conf == params_loaded) {

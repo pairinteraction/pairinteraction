@@ -20,9 +20,12 @@
 #include "MatrixElementCache.h"
 #include "QuantumDefect.h"
 #include "SQLite.h"
+#include "filesystem.h"
+#include "utils.h"
 #include "version.h"
 
 #include <boost/tokenizer.hpp>
+
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -77,9 +80,8 @@ MatrixElementCache::MatrixElementCache()
     : defectdbname(""), dbname(""), pid_which_created_db(utils::get_pid()) {}
 
 MatrixElementCache::MatrixElementCache(std::string const &cachedir)
-    : defectdbname(""), dbname((boost::filesystem::absolute(cachedir) /
-                                ("cache_elements_" + version::cache() + ".db"))
-                                   .string()),
+    : defectdbname(""),
+      dbname((fs::absolute(cachedir) / ("cache_elements_" + version::cache() + ".db")).string()),
       db(new sqlite::handle(dbname)), stmt(new sqlite::statement(*db)),
       pid_which_created_db(utils::get_pid()) {
 

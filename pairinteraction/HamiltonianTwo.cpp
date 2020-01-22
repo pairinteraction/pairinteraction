@@ -23,7 +23,7 @@
 
 #include <boost/format.hpp>
 
-HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                                const std::shared_ptr<HamiltonianOne> &hamiltonian_one)
     : hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one),
       path_cache(path_cache) { // TODO
@@ -33,7 +33,7 @@ HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::p
     calculate(config);
 }
 
-HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::path &path_cache,
+HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                                std::shared_ptr<HamiltonianOne> hamiltonian_one1,
                                std::shared_ptr<HamiltonianOne> hamiltonian_one2)
     : hamiltonian_one1(std::move(hamiltonian_one1)), hamiltonian_one2(std::move(hamiltonian_one2)),
@@ -45,14 +45,14 @@ HamiltonianTwo::HamiltonianTwo(const Configuration &config, boost::filesystem::p
 }
 
 void HamiltonianTwo::calculate(const Configuration &conf_tot) {
-    boost::filesystem::path path_cache_mat;
+    fs::path path_cache_mat;
     if (utils::is_complex<scalar_t>::value) {
         path_cache_mat = path_cache / "cache_matrix_complex";
     } else {
         path_cache_mat = path_cache / "cache_matrix_real";
     }
-    if (!boost::filesystem::exists(path_cache_mat)) {
-        boost::filesystem::create_directory(path_cache_mat);
+    if (!fs::exists(path_cache_mat)) {
+        fs::create_directory(path_cache_mat);
     }
 
     double tol = 1e-32;
@@ -396,7 +396,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
 
     // save pair state basis
-    boost::filesystem::path path_basis = boost::filesystem::temp_directory_path();
+    fs::path path_basis = fs::temp_directory_path();
     path_basis /= "basis_two_" + uuid + ".csv";
     basis->save(
         path_basis
@@ -606,7 +606,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, process Hamiltonians" << std::endl;
 
     // === Open database ===
-    boost::filesystem::path path_db;
+    fs::path path_db;
 
     if (utils::is_complex<scalar_t>::value) {
         path_db = path_cache / "cache_matrix_complex.db";
@@ -779,7 +779,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
 
             // Check whether .mat and .json file exists and compare settings in program with
             // settings in .json file
-            boost::filesystem::path path, path_mat, path_json;
+            fs::path path, path_mat, path_json;
 
             path = path_cache_mat / ("two_" + uuid);
             path_mat = path;
@@ -788,8 +788,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             path_json.replace_extension(".json");
 
             bool is_existing = false;
-            if (boost::filesystem::exists(path_mat)) {
-                if (boost::filesystem::exists(path_json)) {
+            if (fs::exists(path_mat)) {
+                if (fs::exists(path_json)) {
                     Configuration params_loaded;
                     params_loaded.load_from_json(path_json.string());
                     if (conf == params_loaded) {

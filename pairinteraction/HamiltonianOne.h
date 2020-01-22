@@ -26,18 +26,19 @@
 #include "MatrixElements.h"
 #include "SQLite.h"
 #include "dtypes.h"
+#include "filesystem.h"
 
 #include <boost/algorithm/hex.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
+
 #include <cmath>
 #include <iostream>
 #include <memory>
 
 class HamiltonianOne : public Hamiltonian<BasisnamesOne> {
 public:
-    HamiltonianOne(const Configuration &config, boost::filesystem::path &path_cache,
+    HamiltonianOne(const Configuration &config, fs::path &path_cache,
                    std::shared_ptr<BasisnamesOne> basis_one);
     const Configuration &getConf() const;
 
@@ -57,7 +58,7 @@ private:
     size_t nSteps;
     bool diamagnetism;
     std::string species;
-    boost::filesystem::path path_cache;
+    fs::path path_cache;
 };
 
 #endif // HAMILTONIAN_ONE_H

@@ -21,8 +21,8 @@
 #include "ConfParser.h"
 #include "HamiltonianOne.h"
 #include "HamiltonianTwo.h"
+#include "filesystem.h"
 
-#include <boost/filesystem.hpp>
 #include <boost/format.hpp>
 #include <iostream>
 #include <locale>
@@ -42,8 +42,8 @@ int compute(const std::string &config_name, const std::string &output_name) {
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
 
-    boost::filesystem::path path_config = boost::filesystem::absolute(config_name);
-    boost::filesystem::path path_cache = boost::filesystem::absolute(output_name);
+    fs::path path_config = fs::absolute(config_name);
+    fs::path path_cache = fs::absolute(output_name);
 
     // === Load configuration ===
     Configuration config;
