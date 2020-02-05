@@ -1,4 +1,4 @@
-os: Visual Studio 2015
+os: Visual Studio 2017
 
 platform: x64
 
@@ -8,17 +8,16 @@ environment:
     MINICONDA_ROOT: C:\Miniconda36-x64
     NSIS_ROOT: C:\Program Files (x86)\NSIS
     BOOST_ROOT: C:\Libraries\boost_1_66_0
-    BOOST_LIBRARYDIR: C:\Libraries\boost_1_66_0\lib64-msvc-14.0
+    BOOST_LIBRARYDIR: C:\Libraries\boost_1_66_0\lib64-msvc-14.1
     PATH: "%BOOST_LIBRARYDIR%;%MINICONDA_ROOT%;%MINICONDA_ROOT%\\Scripts;%MINICONDA_ROOT%\\Library\\bin;%PATH%"
     APPVEYOR_SAVE_CACHE_ON_ERROR: true
- 
+
 install:
   - git submodule update --init --recursive
 
-  - call "C:\Program Files\Microsoft SDKs\Windows\v7.1\Bin\SetEnv.cmd" /x64
-  - call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
+  - call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars64.bat"
 
-  - ps: choco install -y --no-progress --allow-empty-checksums -r swig --version 3.0.9
+  - ps: choco install -y --no-progress --allow-empty-checksums -r swig --version 4.0.1
   - ps: choco install -y --no-progress --allow-empty-checksums -r sqlite --version 3.19.2
   - ps: choco install -y --no-progress --allow-empty-checksums -r pkgconfiglite # TODO can we get rid of this dependency?
   
@@ -38,16 +37,18 @@ cache:
 
 before_build:
   - cmd: md build && cd build
-  - cmd: cmake -G "Visual Studio 14 2015 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIGURATION%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
+  - cmd: cmake -G "Visual Studio 15 2017 Win64" .. -DCMAKE_BUILD_TYPE="%CONFIGURATION%" -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE=vcpkg-export\scripts\buildsystems\vcpkg.cmake"
 
 build_script:
   - cmd: cmake --build . --config "%CONFIGURATION%"
   
 after_build:
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc140-mt-x64-*.dll pairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc140-mt-x64-*.dll pairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc140-mt-x64-*.dll pairinteraction\Release
-  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc140-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_filesystem-vc141-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_program_options-vc141-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_serialization-vc141-mt-x64-*.dll pairinteraction\Release
+  - cmd: copy %BOOST_LIBRARYDIR%\boost_system-vc141-mt-x64-*.dll pairinteraction\Release
+  - cmd: set /p RedistVersion=<"C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt"
+  - cmd: copy "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Redist\MSVC\%RedistVersion%\vcredist_x64.exe" vcredist_x64.exe
   - cmd: cmake --build . --target win32 --config "%CONFIGURATION%"
   - cmd: python setup.py bdist_wheel --python-tag py3 --plat-name win_amd64
   - ps: $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })

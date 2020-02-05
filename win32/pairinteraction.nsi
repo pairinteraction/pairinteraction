@@ -52,15 +52,17 @@ SectionGroup /e "Dependencies"
     ReadRegDword $3 HKLM "SOFTWARE\Microsoft\VisualStudio\14.0\VC\Runtimes\x64" "Bld"
     IfErrors update 0
 
-    StrCmp $0 "1" 0 update 
-    IntCmp $1 14 0 update 0
-    IntCmp $2 0 0 update 0
-    IntCmp $3 24215 0 update 0
+    !getdllversion "${BUILD_DIR}\vcredist_x64.exe" RedistVer
+
+    StrCmp $0 "1" 0 update
+    IntCmp $1 "${RedistVer1}" 0 update 0
+    IntCmp $2 "${RedistVer2}" 0 update 0
+    IntCmp $3 "${RedistVer3}" 0 update 0
 
     Goto next
 
     update:
-      File "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\redist\1033\vcredist_x64.exe"
+      File "${BUILD_DIR}\vcredist_x64.exe"
       ExecWait "$INSTDIR\vcredist_x64.exe"
       Delete "$INSTDIR\vcredist_x64.exe"
 
@@ -70,7 +72,7 @@ SectionGroup /e "Dependencies"
       Goto next
 
       fail:
-        MessageBox MB_OK "Redistributable for Visual Studio 2015 could not be found!"
+        MessageBox MB_OK "Redistributable for Visual Studio 2017 could not be found!"
     next:
   SectionEnd
 SectionGroupEnd

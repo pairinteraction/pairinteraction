@@ -22,6 +22,9 @@
 
 #include "QuantumDefect.h"
 #include "dtypes.h"
+
+#include <cstdio>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -226,21 +229,33 @@ public:
  * \throws std::runtime_error if the value can't be found
  */
 template <typename T>
-int findidx(T const &x, typename T::Scalar const &d) {
+int findidx(T const &x, typename T::Scalar const &d,
+            typename T::Scalar const eps = std::numeric_limits<typename T::Scalar>::epsilon()) {
     int L = 0;
     int R = x.rows() - 1;
     for (;;) {
         if (L > R) {
-            throw std::runtime_error("Search failed");
+            // If we were already restarted crash. It doesn't make sense to
+            // increase epsilon further.
+            if (eps > std::numeric_limits<typename T::Scalar>::epsilon()) {
+                throw std::runtime_error("Search failed");
+            }
+            // Restart search with larger epsilon
+            fprintf(stderr, "WARNING: Restarting search with %.16f\n%s:%d in %s\n", 2 * eps,
+                    __FILE__, __LINE__, __func__);
+            return findidx(x, d, 2 * eps);
         }
         int m = (L + R) / 2;
         if (x(m) < d) {
             L = m + 1;
-        }
-        if (x(m) > d) {
+        } else if (x(m) > d) {
             R = m - 1;
+        } else {
+            return m;
         }
-        if (x(m) == d) {
+        // x(m) and d might not actually be equal in the floating point sense.
+        // We do fuzzy compare to account for that.
+        if (std::abs(x(m) - d) <= std::max(std::abs(x(m)), std::abs(d)) * eps) {
             return m;
         }
     }

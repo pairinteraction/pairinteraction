@@ -21,6 +21,7 @@ import sys
 sys.path.insert(0, '@CMAKE_BINARY_DIR@/@LIBNAME@')
 
 repo_slug = os.getenv('TRAVIS_REPO_SLUG', "pairinteraction/pairinteraction")
+user, repo = repo_slug.split("/")
 
 if repo_slug == "pairinteraction/pairinteraction":
     pypi_image = "https://img.shields.io/pypi/v/pairinteraction.svg?color=orange"
@@ -182,8 +183,8 @@ rst_epilog = """
 .. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/{repo_slug}?branch=master&svg=true
               :target: https://ci.appveyor.com/project/{repo_slug}/branch/master
               :alt: AppVeyor Build Status
-.. |codecov| image:: https://codecov.io/gh/{repo_slug}/branch/master/graph/badge.svg
-             :target: https://codecov.io/gh/{repo_slug}
+.. |codecov| image:: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
+             :target: https://{user}.github.io/{repo}/coverage/html/index.html
              :alt: Code Coverage Report
 .. |pypi| image:: {pypi_image}
           :target: {pypi_target}
@@ -194,4 +195,4 @@ rst_epilog = """
 .. |license| image:: images/license-badge.svg
              :target: https://www.gnu.org/licenses/gpl-3.0.html
              :alt: License
-""".format(repo_slug=repo_slug, pypi_image=pypi_image, pypi_target=pypi_target)
+""".format(repo_slug=repo_slug, user=user, repo=repo, pypi_image=pypi_image, pypi_target=pypi_target)

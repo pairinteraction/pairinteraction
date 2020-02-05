@@ -13,7 +13,7 @@ matrix:
       env:
         - image=debian
     - os: osx
-      osx_image: xcode9.4
+      osx_image: xcode11
       env:
         - package=pairinteraction-install-osx.dmg
       before_install:
@@ -22,6 +22,7 @@ matrix:
         - wget https://github.com/pairinteraction/pairinteraction-build-dependencies/releases/download/1572947154/python-packages-osx.zip
         - unzip python-packages-osx.zip
         - conda config --prepend channels file:///$TRAVIS_BUILD_DIR/conda-export
+        - export HOMEBREW_NO_INSTALL_CLEANUP=1
         - brew update
       install:
         - conda install -y -q nomkl pairinteraction-dependencies
