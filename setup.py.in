@@ -7,7 +7,7 @@ with open("../README.md", "r") as fh:
 setup(
     name = "pairinteraction",
     version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
-    author="Sebastian Weber, Henri Menke, Johannes Block",
+    author="Sebastian Weber, Henri Menke, Johannes Block, Alexander Papageorge",
     description="A Rydberg Interaction Calculator",
     long_description=long_description,
     long_description_content_type="text/markdown",

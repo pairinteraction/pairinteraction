@@ -1,4 +1,4 @@
-# Copyright (c) 2019 Sebastian Weber, Henri Menke. All rights reserved.
+# Copyright (c) 2020 Sebastian Weber, Henri Menke, Alexander Papageorge. All rights reserved.
 #
 # This file is part of the pairinteraction library.
 #
