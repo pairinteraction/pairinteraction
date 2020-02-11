@@ -74,13 +74,15 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
         # Post a comment with link to diff
         echo "Posting GitHub comment on commit ${TRAVIS_COMMIT}"
         curl --silent --show-error --output /dev/null --request POST \
+             --header "Authorization: token ${GH_TOKEN}" \
              --data "{\"body\":\"Your changes have some formatting issues. You can download the diff from here: ${DIFF_URL}\n\nTo apply the diff directly use \`curl ${DIFF_URL} | git apply -\`\"}" \
-             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/commits/${TRAVIS_COMMIT}/comments?access_token=${GH_TOKEN}"
+             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/commits/${TRAVIS_COMMIT}/comments"
 
         # Post failure status
         curl --silent --show-error --output /dev/null --request POST \
+             --header "Authorization: token ${GH_TOKEN}" \
              --data "{\"state\": \"failure\", \"context\": \"Style check\", \"target_url\": \"${DIFF_URL}\"}" \
-             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
+             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}"
     else
         echo "I can't comment on GitHub because GH_TOKEN is missing so I'm crashing the build."
         echo "Here is what's wrong:"
@@ -91,8 +93,9 @@ else
     # Post success status
     if [ -n "$GH_TOKEN" ]; then
         curl --silent --show-error --output /dev/null --request POST \
+             --header "Authorization: token ${GH_TOKEN}" \
              --data "{\"state\": \"success\", \"context\": \"Style check\"}" \
-             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}?access_token=${GH_TOKEN}"
+             "https://api.github.com/repos/${TRAVIS_REPO_SLUG}/statuses/${TRAVIS_COMMIT}"
     fi
 fi
 
