@@ -21,6 +21,7 @@ execute_process(
   OUTPUT_VARIABLE JlCxx_DIR
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 find_package(JlCxx REQUIRED)
+set(CMAKE_CXX_STANDARD 17) # JlCxx overwrites this!
 
 add_library(pireal_jl SHARED julia_hooks_pi.cpp)
 add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
