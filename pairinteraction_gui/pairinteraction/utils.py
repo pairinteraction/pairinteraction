@@ -113,7 +113,10 @@ class Wignerd:
 
     def _eval_wignerd(self, j, m, mp, beta):
         from numpy import pi, sin, cos, sqrt
-        from scipy.misc import factorial
+        try:
+            from scipy.misc import factorial
+        except ImportError:
+            from scipy.special import factorial
         from scipy.special import binom as binomial
 
         r = 0
