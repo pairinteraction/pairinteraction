@@ -52,6 +52,7 @@ public:
     void setConservedParityUnderInversion(parity_t parity);
     void setConservedParityUnderReflection(parity_t parity);
     void setConservedMomentaUnderRotation(const std::set<int> &momenta);
+    void setOneAtomBasisvectors(const std::vector<std::array<size_t, 2>> &indices);
 
 protected:
     void initializeBasis() override;
@@ -91,6 +92,7 @@ private:
     std::unordered_map<int, double> greentensor_terms_dd;
     std::unordered_map<int, double> greentensor_terms_dq;
     std::unordered_map<int, double> greentensor_terms_qd;
+    std::vector<std::array<size_t, 2>> one_atom_basisvectors_indices;
 
     ////////////////////////////////////////////////////////////////////
     /// Utility methods ////////////////////////////////////////////////
