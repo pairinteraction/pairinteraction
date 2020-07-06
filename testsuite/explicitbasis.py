@@ -61,7 +61,7 @@ class ExplicitBasisTest(unittest.TestCase):
         system_two.setMinimalNorm(0)
         with self.assertRaises(RuntimeError) as context:
             system_two.setOneAtomBasisvectors(one_atom_basisvectors_indices)
-        self.assertTrue('The indices are not unique.' in str(context.exception))
+        self.assertTrue('not unique' in str(context.exception))
 
 
 if __name__ == '__main__':

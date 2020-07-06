@@ -153,11 +153,13 @@ void SystemTwo::setConservedMomentaUnderRotation(const std::set<int> &momenta) {
 }
 
 void SystemTwo::setOneAtomBasisvectors(const std::vector<std::array<size_t, 2>> &indices) {
-    // Check that all indices are unique
+    // Check that all pairs of indices are unique
     std::vector<std::array<size_t, 2>> tmp(indices);
     std::sort(tmp.begin(), tmp.end());
-    if (std::adjacent_find(tmp.begin(), tmp.end()) != tmp.end()) {
-        throw std::runtime_error("The indices are not unique.");
+    if (auto const it = std::adjacent_find(tmp.begin(), tmp.end()); it != tmp.end()) {
+        std::string const which =
+            "[" + std::to_string((*it)[0]) + "," + std::to_string((*it)[1]) + "]";
+        throw std::runtime_error("The pairs of indices are not unique: " + which);
     }
 
     one_atom_basisvectors_indices = indices;
@@ -251,9 +253,7 @@ void SystemTwo::initializeBasis() {
     }
 
     // Loop over the pairs
-    for (const auto &a : pairs) {
-        size_t col_1 = a[0];
-        size_t col_2 = a[1];
+    for (const auto &[col_1, col_2] : pairs) {
 
         // In case of artificial states, some symmetries won't work
         auto sym_inversion_local = sym_inversion;
