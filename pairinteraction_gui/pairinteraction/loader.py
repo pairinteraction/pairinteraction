@@ -85,7 +85,11 @@ class Eigensystem(BinaryLoader):
     def energies(self):
         if self._energies is None:
             with open(self._filename + '.mat', 'rb') as f:
-                self._energies = np.real(self.readMatrix(f).diagonal())
+                tmp = self.readMatrix(f)
+                if tmp.size:
+                    self._energies = np.real(tmp.diagonal())
+                else:
+                    self._energies = np.array([])
                 self._shift = f.tell()
         return self._energies
 
@@ -96,6 +100,10 @@ class Eigensystem(BinaryLoader):
                 if self._shift > 0:
                     f.seek(self._shift, 0)
                 else:
-                    self._energies = np.real(self.readMatrix(f).diagonal())
+                    tmp = self.readMatrix(f)
+                    if tmp.size:
+                        self._energies = np.real(tmp.diagonal())
+                    else:
+                        self._energies = np.array([])
                 self._basis = self.readMatrix(f)
         return self._basis
