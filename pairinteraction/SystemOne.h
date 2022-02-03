@@ -56,7 +56,9 @@ public:
     void setEfield(std::array<double, 3> field, double alpha, double beta, double gamma);
     void setBfield(std::array<double, 3> field, double alpha, double beta, double gamma);
     void enableDiamagnetism(bool enable);
-
+    void setIonCharge(int c);
+    void setRydIonOrder(unsigned int o);
+    void setRydIonDistance(double d);
     void setConservedParityUnderReflection(parity_t parity);
     void setConservedMomentaUnderRotation(const std::set<float> &momenta);
 
@@ -76,12 +78,16 @@ private:
     std::unordered_map<int, scalar_t> efield_spherical, bfield_spherical;
     bool diamagnetism;
     std::unordered_map<std::array<int, 2>, scalar_t> diamagnetism_terms;
+    int charge;
+    unsigned int ordermax;
+    double distance;				
     std::string species;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
     std::unordered_map<std::array<int, 2>, eigen_sparse_t> interaction_diamagnetism;
-
+    std::unordered_map<int, eigen_sparse_t> interaction_multipole;
+	
     parity_t sym_reflection;
     std::set<float> sym_rotation;
 
