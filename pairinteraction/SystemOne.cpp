@@ -32,12 +32,13 @@
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache)
     : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(true),
-      species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
+    charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
+    species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
 SystemOne::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
     : SystemBase(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
-      diamagnetism(true), species(std::move(species)), sym_reflection(NA),
-      sym_rotation({static_cast<float>(ARB)}) {}
+      diamagnetism(true), charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
+      species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
 const std::string &SystemOne::getSpecies() const { return species; }
 
@@ -91,6 +92,20 @@ void SystemOne::setBfield(std::array<double, 3> field, double alpha, double beta
 void SystemOne::enableDiamagnetism(bool enable) {
     this->onParameterChange();
     diamagnetism = enable;
+}
+void SystemOne::setIonCharge(int c) {
+  this->onParameterChange();
+  charge = c;
+}
+
+void SystemOne::setRydIonOrder(unsigned int o) {
+  this->onParameterChange();
+  ordermax = o;
+}
+
+void SystemOne::setRydIonDistance(double d) {
+  this->onParameterChange();
+  distance = d;
 }
 
 void SystemOne::setConservedParityUnderReflection(parity_t parity) {
@@ -301,7 +316,7 @@ void SystemOne::initializeInteraction() {
 
     std::vector<int> erange, brange;
     std::vector<std::array<int, 2>> drange;
-
+    std::vector<int> orange;
     for (const auto &entry : efield_spherical) {
         if (entry.first < 0) {
             continue;
@@ -330,8 +345,15 @@ void SystemOne::initializeInteraction() {
         }
     }
 
+    if (charge != 0){
+        for (unsigned int order = 1; order <= ordermax; ++order) {
+            if (interaction_multipole.find(order) == interaction_multipole.end()){
+                orange.push_back(order);
+            }
+        }
+    }
     // Return if there is nothing to do
-    if (erange.empty() && brange.empty() && drange.empty()) {
+    if (erange.empty() && brange.empty() && drange.empty() && orange.empty()) {
         return;
     }
 
@@ -355,6 +377,11 @@ void SystemOne::initializeInteraction() {
             cache.precalculateDiamagnetism(states_converted, i[0], -i[1]);
         }
     }
+    if  (charge != 0){
+        for (unsigned int order = 1; order <= ordermax; ++order){
+          cache.precalculateMultipole(states_converted, order);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////
     /// Calculate the interaction in the canonical basis ///////////////
@@ -367,7 +394,8 @@ void SystemOne::initializeInteraction() {
     std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>,
                        utils::hash<std::array<int, 2>>>
         interaction_diamagnetism_triplets; // TODO reserve
-
+    std::unordered_map<int, std::vector<eigen_triplet_t>>
+        interaction_multipole_triplets; //TODO reserve
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
         if (c.state.isArtificial()) {
@@ -420,9 +448,21 @@ void SystemOne::initializeInteraction() {
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
             }
+
+            // Multipole interaction with an ion
+            if (charge != 0){
+                int q = r.state.getM() - c.state.getM();
+                if (q== 0) { //total momentum consreved
+                    for (const auto &order : orange) {
+                        if (selectionRulesMultipoleNew(r.state, c.state, order)) {
+                            double val = -coulombs_constant * elementary_charge * cache.getElectricMultipole(r.state, c.state, order);
+                            this->addTriplet(interaction_multipole_triplets[order], r.idx, c.idx, val);
+                        }
+                    }
+                 }
+            }
         }
     }
-
     ////////////////////////////////////////////////////////////////////
     /// Build and transform the interaction to the used basis //////////
     ////////////////////////////////////////////////////////////////////
@@ -471,6 +511,19 @@ void SystemOne::initializeInteraction() {
                 basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
             interaction_diamagnetism[{{i[0], -i[1]}}] =
                 std::pow(-1, i[1]) * interaction_diamagnetism[i].adjoint();
+        }
+    }
+    if (charge != 0){
+        for (const auto &i : orange) {
+            interaction_multipole[i].resize(states.size(), states.size());
+            interaction_multipole[i].setFromTriplets(interaction_multipole_triplets[i].begin(), interaction_multipole_triplets[i].end());
+            interaction_multipole_triplets[i].clear();
+            if (i == 0) {
+                    interaction_multipole[i] = basisvectors.adjoint() * interaction_multipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
+                } else {
+                    interaction_multipole[i] = basisvectors.adjoint() * interaction_multipole[i] * basisvectors;
+                    interaction_multipole[-i] = std::pow(-1,i) * interaction_multipole[i].adjoint();
+                }
         }
     }
 }
@@ -524,6 +577,12 @@ void SystemOne::addInteraction() {
         hamiltonian -=
             interaction_diamagnetism[{{2, -2}}] * diamagnetism_terms[{{2, -2}}] * std::sqrt(1.5);
     }
+    if (charge != 0 && distance != std::numeric_limits<double>::max()){
+        for (unsigned int order = 1; order <= ordermax; ++order) {
+            double powerlaw = 1. / std::pow(distance, order+1);
+            hamiltonian += interaction_multipole[order] * charge * powerlaw;
+        }
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -540,6 +599,9 @@ void SystemOne::transformInteraction(const eigen_sparse_t &transformator) {
     for (auto &entry : interaction_diamagnetism) {
         entry.second = transformator.adjoint() * entry.second * transformator; // NOLINT
     }
+    for (auto &entry : interaction_multipole) {
+        entry.second = transformator.adjoint() * entry.second * transformator;
+    }
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -550,6 +612,7 @@ void SystemOne::deleteInteraction() {
     interaction_efield.clear();
     interaction_bfield.clear();
     interaction_diamagnetism.clear();
+    interaction_multipole.clear();
 }
 
 ////////////////////////////////////////////////////////////////////
