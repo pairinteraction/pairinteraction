@@ -1,6 +1,6 @@
 [submodule "libs/wignerSymbols"]
 	path = libs/wignerSymbols
-	url = git://github.com/valandil/wignerSymbols.git
+	url = https://github.com/valandil/wignerSymbols.git
 [submodule "libs/eigen"]
 	path = libs/eigen
 	url = https://gitlab.com/libeigen/eigen.git
