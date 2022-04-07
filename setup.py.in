@@ -33,5 +33,6 @@ setup(
         "scipy >= 0.17.0",
         "pint",
         "psutil",
+        "pyqtgraph"
     ],
 )

@@ -19,12 +19,12 @@ from PyQt5 import QtCore, QtGui
 import locale
 from abc import ABCMeta, abstractmethod
 from .unitmanagement import Quantity
-import collections
+import collections.abc
 
 
 # === Dictionary to manage the elements of the GUI ===
 
-class GuiDict(collections. MutableMapping, metaclass=ABCMeta):
+class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
     def __init__(self, ui):
         self.store = dict()

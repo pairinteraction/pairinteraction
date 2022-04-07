@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 
-from . import pyqtgraph as pg
+import pyqtgraph as pg
 import numpy as np
 
 

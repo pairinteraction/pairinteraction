@@ -43,9 +43,9 @@ except ImportError:
                       "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
                       "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'.")
 
-from . import pyqtgraph as pg
-from .pyqtgraph import exporters
-from .pyqtgraph import ColorButton, GradientWidget, PlotWidget
+import pyqtgraph as pg
+from pyqtgraph import exporters
+from pyqtgraph import ColorButton, GradientWidget, PlotWidget
 from .plotter import Ui_plotwindow
 
 # Numerics

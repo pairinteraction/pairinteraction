@@ -1,3 +1,0 @@
-[submodule "pairinteraction_gui/pyqtgraph"]
-	path = pairinteraction_gui/pyqtgraph
-	url = https://github.com/pyqtgraph/pyqtgraph
