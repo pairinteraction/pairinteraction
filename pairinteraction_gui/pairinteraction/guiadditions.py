@@ -15,16 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 
+from modulefinder import Module
 from PyQt5 import QtCore, QtGui
 import locale
 from abc import ABCMeta, abstractmethod
 from .unitmanagement import Quantity
-import collections
+try:
+    import collections.abc as collectionsABC
+except ModuleNotFoundError:
+    # compatibility for something like python < 3.3
+    import collections as collectionsABC
 
 
 # === Dictionary to manage the elements of the GUI ===
 
-class GuiDict(collections. MutableMapping, metaclass=ABCMeta):
+class GuiDict(collectionsABC. MutableMapping, metaclass=ABCMeta):
 
     def __init__(self, ui):
         self.store = dict()
