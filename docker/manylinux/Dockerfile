@@ -1,14 +1,13 @@
 FROM quay.io/pypa/manylinux2010_x86_64
-MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
 
-# Use Python 3.5
+# Use Python 3.6
 ENV PATH="/opt/python/cp36-cp36m/bin/:$PATH"
 ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.5m/"
 
 # We have to install all kinds of things by hand.
 #
 # From pip:
-#     cmake, numpy, scipy
+#     cmake, numpy, scipy, pyqt5
 #
 # From the official repos:
 #     curl, gsl-devel, pcre-devel
@@ -22,9 +21,7 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.5m/"
 #     The sources and build directories are deleted after finishing to
 #     save space.
 #
-RUN pip3 install cmake numpy==1.12.0 scipy==0.19.0 \
-  && echo 'echo "pyuic5 $@"' > /usr/local/bin/pyuic5 \
-  && chmod +x /usr/local/bin/pyuic5 \
+RUN pip3 install --only-binary=:all: cmake numpy==1.12.0 scipy==0.19.0 pyqt5==5.10.1 \
   && yum install -y curl gsl-devel pcre-devel \
   && curl -LO http://downloads.sourceforge.net/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz \
   && tar xzvf swig-3.0.12.tar.gz \
