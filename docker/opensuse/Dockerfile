@@ -1,5 +1,4 @@
-FROM opensuse/leap:15.0
-MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
+FROM opensuse/leap:15.1
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     patterns-devel-C-C++-devel_C_C++ \
