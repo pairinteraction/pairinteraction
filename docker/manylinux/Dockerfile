@@ -7,7 +7,7 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.5m/"
 # We have to install all kinds of things by hand.
 #
 # From pip:
-#     cmake, numpy, scipy, pyqt5
+#     cmake, numpy, scipy
 #
 # From the official repos:
 #     curl, gsl-devel, pcre-devel
@@ -21,7 +21,9 @@ ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.5m/"
 #     The sources and build directories are deleted after finishing to
 #     save space.
 #
-RUN pip3 install --only-binary=:all: cmake numpy==1.12.0 scipy==0.19.0 pyqt5==5.10.1 \
+RUN pip3 install --only-binary=:all: cmake numpy==1.12.0 scipy==0.19.0 \
+  && echo 'echo "pyuic5 $@"' > /usr/local/bin/pyuic5 \
+  && chmod +x /usr/local/bin/pyuic5 \
   && yum install -y curl gsl-devel pcre-devel \
   && curl -LO http://downloads.sourceforge.net/swig/swig/swig-3.0.12/swig-3.0.12.tar.gz \
   && tar xzvf swig-3.0.12.tar.gz \
