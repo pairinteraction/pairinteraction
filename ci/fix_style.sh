@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 CLANG_FORMAT_VER=6.0
 AUTOPEP8_VER=1.3.5
@@ -30,7 +30,7 @@ if ! autopep8 --version | grep -q "autopep8 ${AUTOPEP8_VER}"; then
     exit 1
 fi
 
-PWD=$(pwd)
+PREVDIR=$(pwd)
 SRC=$(git rev-parse --show-toplevel)
 
 # Check if the working tree is clean
@@ -42,23 +42,12 @@ if ! git diff --quiet HEAD -- && [ "$1" != "-f" ]; then
 fi
 
 # Apply clang-format
-cd "${SRC}/pairinteraction"
-for file in *.h *.cpp unit_test/*.cpp; do
-    echo "clang-format: $(realpath ${file})"
-    clang-format -i -style=file "${file}"
-done
+find "${SRC}/pairinteraction" -name "*.h" -or -name "*.cpp" -print0 | xargs -0 -P 0 -I '{}' -t clang-format -i -style=file "{}"
 
 # Apply PEP8 to Python files
-cd "${SRC}/testsuite"
-for file in *.py; do
-    echo "PEP8: $(realpath ${file})"
-    autopep8 --max-line-length 120 --aggressive --in-place ${file}
-done
-cd "${SRC}/pairinteraction_gui/pairinteraction"
-for file in *.py; do
-    echo "PEP8: $(realpath ${file})"
-    autopep8 --max-line-length 120 --aggressive --in-place ${file}
-done
+# FIXME: Currently ignoring E225 and E226 to prevent changing @LIBNAME@ to @ LIBNAME @
+find "${SRC}/testsuite" -name "*.py" -print0 | xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --ignore E225,E226 --in-place "{}"
+find "${SRC}/pairinteraction_gui/pairinteraction" -name "*.py" -print0 | xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
 
 # Check if things have changed and print an error
 cd "${SRC}"
@@ -99,4 +88,4 @@ else
     fi
 fi
 
-cd $PWD
+cd "$PREVDIR"
