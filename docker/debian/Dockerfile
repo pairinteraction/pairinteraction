@@ -1,14 +1,12 @@
 FROM debian:buster
-MAINTAINER Henri Menke <pairinteraction@henrimenke.de>
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update \
-  && apt-get install --no-install-recommends -y \
+RUN apt-get update -qq \
+  && apt-get install --no-install-recommends -qq \
     apt-transport-https ca-certificates curl gnupg2 \
   && curl -LO https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB \
   && apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB \
   && echo 'deb http://apt.repos.intel.com/mkl all main' > /etc/apt/sources.list.d/intel-mkl.list \
-  && apt-get update \
-  && apt-get install --no-install-recommends -y \
+  && apt-get update -qq \
+  && apt-get install --no-install-recommends -qq \
     cmake build-essential git \
     pyqt5-dev-tools \
     libboost-filesystem-dev libboost-program-options-dev \
@@ -27,8 +25,8 @@ RUN apt-get update \
   && curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
   && rm julia-1.0.5-linux-x86_64.tar.gz \
-  && JULIA_DEPOT_PATH=/usr/share/julia julia -e 'using Pkg; Pkg.add(["CxxWrap", "SparseArrays", "Test", "SQLite"])' \
-  && apt-get clean \
+  && JULIA_DEPOT_PATH=/usr/share/julia julia -e 'using Pkg; Pkg.add([Pkg.PackageSpec(name="CxxWrap",version="0.8.0"), Pkg.PackageSpec(name="SparseArrays"), Pkg.PackageSpec(name="Test"), Pkg.PackageSpec(name="SQLite")])' \
+  && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install sphinx_rtd_theme
 ENV MKLROOT="/opt/intel/compilers_and_libraries_2019/linux/mkl/"
