@@ -18,7 +18,7 @@ RUN apt-get update -qq \
   && curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
   && rm julia-1.0.5-linux-x86_64.tar.gz \
-  && JULIA_DEPOT_PATH=/usr/share/julia julia -e 'using Pkg; Pkg.add([Pkg.PackageSpec(name="CxxWrap",version="0.8.1"), Pkg.PackageSpec(name="SparseArrays"), Pkg.PackageSpec(name="Test"), Pkg.PackageSpec(name="SQLite")])'
+  && JULIA_DEPOT_PATH=/usr/share/julia julia -e 'using Pkg; Pkg.add([Pkg.PackageSpec(name="CxxWrap",version="0.8.2"), Pkg.PackageSpec(name="SparseArrays"), Pkg.PackageSpec(name="Test"), Pkg.PackageSpec(name="SQLite",version="0.8.2")])'
 
 COPY boost.patch /tmp/
 RUN cd /usr/include/boost && patch -p1 < /tmp/boost.patch
