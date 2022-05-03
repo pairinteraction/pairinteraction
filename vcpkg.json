@@ -1,0 +1,32 @@
+{
+    "name": "pairinteraction",
+    "version-string": "1",
+    "dependencies": [
+	"boost-algorithm",
+	"boost-core",
+	"boost-filesystem",
+	"boost-format",
+	"boost-functional",
+	"boost-iostreams",
+	"boost-iterator",
+	"boost-lexical-cast",
+	"boost-math",
+	"boost-mpl",
+	"boost-multi-index",
+	"boost-optional",
+	"boost-program-options",
+	"boost-property-tree",
+	"boost-serialization",
+	"boost-test",
+	"boost-tokenizer",
+	"boost-uuid",
+	"boost-variant",
+	"eigen3",
+	"gsl",
+	{
+	    "name": "sqlite3",
+	    "features": [ "tool" ]
+	},
+	"zeromq"
+    ]
+}
