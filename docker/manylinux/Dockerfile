@@ -2,7 +2,7 @@ FROM quay.io/pypa/manylinux2010_x86_64
 
 # Use Python 3.6
 ENV PATH="/opt/python/cp36-cp36m/bin/:$PATH"
-ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.5m/"
+ENV PYTHON_INCLUDE_DIR="/opt/python/cp36-cp36m/include/python3.6m/"
 
 # We have to install all kinds of things by hand.
 #
