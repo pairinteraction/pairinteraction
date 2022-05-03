@@ -17,7 +17,7 @@ RUN apt-get update -qq \
     python3-numpy python3-scipy \
     dpkg rpm \
     lcov \
-    doxygen graphviz ca-certificates \
+    doxygen graphviz ca-certificates rsync \
     python3-sphinx python3-numpydoc python3-pip \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
