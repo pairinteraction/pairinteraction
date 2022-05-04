@@ -20,7 +20,7 @@ import os
 import sys
 sys.path.insert(0, '@CMAKE_BINARY_DIR@/@LIBNAME@')
 
-repo_slug = os.getenv('TRAVIS_REPO_SLUG', "pairinteraction/pairinteraction")
+repo_slug = os.getenv('GITHUB_REPOSITORY', "pairinteraction/pairinteraction")
 user, repo = repo_slug.split("/")
 
 if repo_slug == "pairinteraction/pairinteraction":
@@ -177,12 +177,15 @@ extlinks = {
 }
 
 rst_epilog = """
-.. |travis| image:: https://img.shields.io/travis/{repo_slug}.svg?branch=master&style=flat&logo=travis
-            :target: https://travis-ci.org/{repo_slug}
-            :alt: Travis Build Status
-.. |appveyor| image:: https://ci.appveyor.com/api/projects/status/github/{repo_slug}?branch=master&svg=true
-              :target: https://ci.appveyor.com/project/{repo_slug}/branch/master
-              :alt: AppVeyor Build Status
+.. |linux| image:: https://github.com/{repo_slug}/actions/workflows/linux.yml/badge.svg
+           :target: https://github.com/{repo_slug}/actions/workflows/linux.yml
+           :alt: Linux
+.. |windows| image:: https://github.com/{repo_slug}/actions/workflows/windows.yml/badge.svg
+             :target: https://github.com/{repo_slug}/actions/workflows/windows.yml
+             :alt: Windows
+.. |macos| image:: https://github.com/{repo_slug}/actions/workflows/macos.yml/badge.svg
+           :target: https://github.com/{repo_slug}/actions/workflows/macos.yml
+           :alt: macOS
 .. |codecov| image:: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
              :target: https://{user}.github.io/{repo}/coverage/html/index.html
              :alt: Code Coverage Report

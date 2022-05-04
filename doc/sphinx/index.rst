@@ -2,7 +2,7 @@
 Pairinteraction - A Rydberg Interaction Calculator
 **************************************************
 
-|travis| |appveyor| |codecov| |pypi| |arxiv| |license|
+|linux| |windows| |macos| |codecov| |pypi| |arxiv| |license|
 
 The *pairinteraction* software calculates properties of Rydberg systems.
 The software consists of a C++/Python library and a graphical user interface for pair potential calculations.
