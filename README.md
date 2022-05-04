@@ -1,7 +1,8 @@
 # Pairinteraction - A Rydberg Interaction Calculator
 
-[![Travis Build Status][travis-svg]][travis-link]
-[![AppVeyor Build Status][appveyor-svg]][appveyor-link]
+[![Linux](https://github.com/pairinteraction/pairinteraction/actions/workflows/linux.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/linux.yml)
+[![Windows](https://github.com/pairinteraction/pairinteraction/actions/workflows/windows.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/windows.yml)
+[![macOS](https://github.com/pairinteraction/pairinteraction/actions/workflows/macos.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/macos.yml)
 [![Coverage Report][codecov-svg]][codecov-link]
 [![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
@@ -22,10 +23,6 @@ The pairinteraction library is licensed under the [LGPL v3][lgpl-link]. The exte
 radial wave functions using Whittaker functions and the graphical user interface are licensed under the [GPL v3][gpl-link].
 The GPL v3 also applies to the combined work and all provided binary builds.
 
-[travis-svg]: https://img.shields.io/travis/pairinteraction/pairinteraction.svg?branch=master&style=flat&logo=travis
-[travis-link]: https://travis-ci.org/pairinteraction/pairinteraction
-[appveyor-svg]: https://ci.appveyor.com/api/projects/status/t5l4unwt210gq3al/branch/master?svg=true
-[appveyor-link]: https://ci.appveyor.com/project/pairinteraction/pairinteraction/branch/master
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?color=orange
 [pypi-link]: https://pypi.org/project/pairinteraction/
 [codecov-svg]: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
