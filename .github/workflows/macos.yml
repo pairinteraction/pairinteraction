@@ -1,0 +1,54 @@
+name: macOS
+
+on: push
+
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 3
+  CTEST_PARALLEL_LEVEL: 3
+
+jobs:
+  macos:
+    runs-on: macos-10.15
+    env:
+      package: pairinteraction-install-osx.dmg
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.6'
+          cache: 'pip'
+      - run: pip install -r requirements.txt
+
+      - name: Install dependencies
+        run: |
+          brew install boost gsl libomp
+          npm install -g fileicon
+
+      - name: Build
+        run: |
+          cmake -S . -B build/ -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+          cmake --build build/ -- --keep-going
+          cmake --build build/ --target check -- --keep-going
+          cmake --build build/ --target package -- --keep-going
+          cmake --build build/ --target license -- --keep-going
+
+      - name: Wheel
+        run: |
+          python setup.py bdist_wheel --python-tag py3 --plat-name macosx_10_15_x86_64
+          wheel unpack dist/*.whl -d wheelhouse/
+          chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/start_pairinteraction_gui
+          cd wheelhouse/*/pairinteraction
+          python ../../../../apple/standalone.py .libs _picomplex.so _pireal.so pairinteraction-complex pairinteraction-real
+          cd ../../..
+          wheel pack wheelhouse/* -d wheelhouse/
+        working-directory: build/
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.package }}
+          path: build/${{ env.package }}
