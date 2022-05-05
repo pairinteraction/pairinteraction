@@ -52,3 +52,7 @@ jobs:
         with:
           name: ${{ env.package }}
           path: build/${{ env.package }}
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pairinteraction-macos-wheel
+          path: build/wheelhouse/

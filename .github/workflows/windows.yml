@@ -60,3 +60,7 @@ jobs:
         with:
           name: pairinteraction-install-windows.exe
           path: build/pairinteraction-install-windows.exe
+      - uses: actions/upload-artifact@v3
+        with:
+          name: pairinteraction-windows-wheel
+          path: build/wheelhouse/
