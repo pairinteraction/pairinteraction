@@ -121,7 +121,7 @@ jobs:
         name: ${{ env.package }}
         path: build/${{ env.package }}
 
-  static-analysis:
+  fix-style:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/${{ github.repository_owner }}/pairinteraction-static-analysis:master
@@ -134,8 +134,31 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Fix style
       run: |
-        ls -lah
-        bash ci/fix_style.sh
+        find pairinteraction -name "*.h" -or -name "*.cpp" -print0 |
+            xargs -0 -P 0 -I '{}' -t clang-format -i -style=file "{}"
+        # FIXME: Currently ignoring E225 and E226 to prevent changing @LIBNAME@ to @ LIBNAME @
+        find testsuite -name "*.py" -print0 |
+            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --ignore E225,E226 --in-place "{}"
+        find pairinteraction_gui/pairinteraction -name "*.py" -print0 |
+            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
+        git diff --output=format.patch --exit-code || { cat format.patch; false; }
+    - uses: actions/upload-artifact@v1
+      if: failure()
+      with:
+        name: format.patch
+        path: format.patch
+
+  static-analysis:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/${{ github.repository_owner }}/pairinteraction-static-analysis:master
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Fixup Run actions/checkout@v1
+      run: git config --global --add safe.directory '*'
     - name: Build
       run: |
         (mkdir build && cd build && cmake -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_GUI=Off ..)
