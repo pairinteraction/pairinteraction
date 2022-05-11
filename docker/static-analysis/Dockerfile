@@ -1,26 +1,33 @@
-FROM ubuntu:bionic
+FROM ubuntu:focal
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git file \
     libboost-filesystem-dev libboost-program-options-dev \
     libboost-serialization-dev libboost-system-dev libboost-test-dev \
-    libgsl-dev \
+    libeigen3-dev libgsl-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
-    clang clang-tidy \
-    clang-format python3-pip python3-setuptools \
+    clang-6.0 clang-tidy-6.0 \
+    clang-format-6.0 python3-pip python3-setuptools \
     curl ca-certificates netcat \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/* \
-  && pip3 install 'autopep8==1.3.5' \
-  && curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
+  && pip3 install 'autopep8==1.3.5'
+
+RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
   && rm julia-1.0.5-linux-x86_64.tar.gz \
   && JULIA_DEPOT_PATH=/usr/share/julia julia -e 'using Pkg; Pkg.add([Pkg.PackageSpec(name="CxxWrap",version="0.8.2"), Pkg.PackageSpec(name="SparseArrays"), Pkg.PackageSpec(name="Test"), Pkg.PackageSpec(name="SQLite",version="0.8.2")])'
 
-COPY boost.patch /tmp/
-RUN cd /usr/include/boost && patch -p1 < /tmp/boost.patch
+# https://github.com/JuliaLang/julia/issues/34276
+RUN ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/julia/libstdc++.so.6
+
+RUN ln -s /usr/bin/clang-6.0 /usr/local/bin/clang \
+ && ln -s /usr/bin/clang++-6.0 /usr/local/bin/clang++ \
+ && ln -s /usr/bin/clang-tidy-6.0 /usr/local/bin/clang-tidy \
+ && ln -s /usr/bin/clang-format-6.0 /usr/local/bin/clang-format
 
 ENV CXX=clang++
