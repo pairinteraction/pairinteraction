@@ -23,8 +23,6 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 # Find the Boost unit test framework
 find_package(Boost REQUIRED COMPONENTS unit_test_framework)
-include_directories(${Boost_INCLUDE_DIRS})
-list(APPEND LIBRARIES ${Boost_LIBRARIES})
 
 # To add test cases easier we use the following function
 function(UNIT_TEST)
@@ -34,10 +32,11 @@ function(UNIT_TEST)
   add_executable(${UT_TARGET} ${UT_SOURCE})
   if(MSVC)
     set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
+    target_link_libraries(${UT_TARGET} PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
   else()
     set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
   endif()
-  target_link_libraries(${UT_TARGET} ${LIBRARIES} ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY})
+  target_link_libraries(${UT_TARGET} PUBLIC pireal Boost::unit_test_framework)
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
@@ -47,14 +46,10 @@ endfunction(UNIT_TEST)
 
 # Add the tests
 unit_test(TARGET sqlite SOURCE sqlite_test.cpp)
-unit_test(TARGET quantum_defect
-  SOURCE quantum_defect_test.cpp ../QuantumDefect.cpp)
-unit_test(TARGET wavefunction
-  SOURCE wavefunction_test.cpp ../QuantumDefect.cpp ../Wavefunction.cpp)
-unit_test(TARGET conf_parser
-  SOURCE conf_parser_test ../ConfParser.cpp)
-unit_test(TARGET integration
-  SOURCE integration_test ../State.cpp ../QuantumDefect.cpp ../Wavefunction.cpp ../WignerD.cpp ../MatrixElementCache.cpp ../SystemOne.cpp ../SystemTwo.cpp ../GreenTensor.cpp)
+unit_test(TARGET quantum_defect SOURCE quantum_defect_test.cpp)
+unit_test(TARGET wavefunction SOURCE wavefunction_test.cpp)
+unit_test(TARGET conf_parser SOURCE conf_parser_test.cpp)
+unit_test(TARGET integration SOURCE integration_test.cpp)
 unit_test(TARGET cache SOURCE cache_test.cpp)
 unit_test(TARGET utils SOURCE utils_test.cpp)
 

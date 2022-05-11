@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-find_package(Sqlite3 REQUIRED)
+find_program(SQLITE3_BINARY NAMES sqlite3 sqlite REQUIRED)
 
 add_custom_target(database ALL)
 add_custom_command(TARGET database

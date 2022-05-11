@@ -6,6 +6,7 @@ on: [push, pull_request]
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 3
   CTEST_PARALLEL_LEVEL: 3
+  CTEST_OUTPUT_ON_FAILURE: 1
 
 jobs:
   macos:
@@ -26,12 +27,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost gsl libomp
+          brew install boost eigen gsl libomp
           npm install -g fileicon
 
       - name: Build
         run: |
-          cmake -S . -B build/ -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+          cmake -S . -B build/ -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
           cmake --build build/ -- --keep-going
           cmake --build build/ --target check -- --keep-going
           cmake --build build/ --target package -- --keep-going

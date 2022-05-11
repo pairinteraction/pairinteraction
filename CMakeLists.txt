@@ -15,7 +15,8 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
 set(CMAKE_CXX_STANDARD 17)
@@ -61,7 +62,7 @@ option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
 option(WITH_JULIA    "Build a Julia compatible .so"         OFF)
 option(WITH_GUI      "Build with Python GUI"                ON)
-option(WITH_DOCS     "Generate documentation"               ON)
+option(WITH_DOCS     "Generate documentation"               OFF)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
 option(WITH_LTO      "Build with link-time optimization"    OFF)
@@ -72,14 +73,11 @@ endif()
 
 # Enable link-time optimization if available
 if(WITH_LTO)
-  if(POLICY CMP0069)
-    cmake_policy(SET CMP0069 NEW)
-    include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
-    if(CHECK_IPO_SUPPORTED)
-      check_ipo_supported(RESULT IPO_SUPPORTED)
-      if(IPO_SUPPORTED)
-        set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-      endif()
+  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
+  if(CHECK_IPO_SUPPORTED)
+    check_ipo_supported(RESULT IPO_SUPPORTED)
+    if(IPO_SUPPORTED)
+      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
     endif()
   endif()
 endif()
@@ -161,7 +159,7 @@ if(WIN32)
 
 elseif(APPLE AND WITH_DMG)
 
-  find_package(PythonInterp 3 REQUIRED)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
   install(
     FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt
@@ -179,7 +177,7 @@ elseif(APPLE AND WITH_DMG)
   
   add_custom_target(
     license
-    COMMAND ${PYTHON_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
+    COMMAND ${Python3_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
   
 elseif(UNIX)

@@ -18,7 +18,7 @@
 #
 import os
 import sys
-sys.path.insert(0, '@CMAKE_BINARY_DIR@/@LIBNAME@')
+sys.path.insert(0, '@CMAKE_BINARY_DIR@')
 
 repo_slug = os.getenv('GITHUB_REPOSITORY', "pairinteraction/pairinteraction")
 user, repo = repo_slug.split("/")

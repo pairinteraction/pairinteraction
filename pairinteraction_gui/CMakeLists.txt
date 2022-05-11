@@ -54,9 +54,9 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
 
 else( )
 
-  find_package(PythonInterp 3 REQUIRED)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
   add_custom_command(TARGET gui POST_BUILD
-    COMMAND ${PYTHON_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
+    COMMAND ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction
   )
 

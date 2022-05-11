@@ -29,9 +29,9 @@ add_executable(basics basics.cpp)
 
 # Enable OpenMP if supported
 
-find_package(OpenMP)
-if (${OPENMP_FOUND})
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+find_package(OpenMP COMPONENTS CXX)
+if (OpenMP_CXX_FOUND})
+    target_link_libraries(basics PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
 # Set search path for CMake modules
@@ -40,7 +40,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 
 # Link the pairinteraction library and its dependencies # TODO create a FindPairinteraction.cmake file
 
-include_directories(SYSTEM TODO/pairinteractio/eigen)
+include_directories(SYSTEM TODO/pairinteraction/eigen)
 
 #target_compile_definitions(basics PRIVATE USE_COMPLEX) # if used, libpicomplex.dylib has to be linked
 include_directories(TODO/pairinteraction)

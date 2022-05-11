@@ -25,7 +25,7 @@ function(PYTHON_TEST)
   # Copy test to binary directory
   configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
-  add_test(NAME "python.${UT_TARGET}" COMMAND ${PYTHON_EXECUTABLE} ${UT_SOURCE})
+  add_test(NAME "python.${UT_TARGET}" COMMAND ${Python3_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties("python.${UT_TARGET}"
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
@@ -33,7 +33,7 @@ endfunction(PYTHON_TEST)
 # Add Python test cases
 if (WITH_PYTHON)
   add_dependencies(check _pireal _picomplex)
-  find_package(PythonInterp 3 REQUIRED)
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
   python_test(TARGET explicitbasis SOURCE explicitbasis.py)
   python_test(TARGET greentensor SOURCE greentensor.py)
   python_test(TARGET fieldcombination SOURCE fieldcombination.py)

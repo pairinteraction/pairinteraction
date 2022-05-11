@@ -6,6 +6,7 @@ on: [push, pull_request]
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
+  CTEST_OUTPUT_ON_FAILURE: 1
   CMAKE_BUILD_TYPE: Release
 
 jobs:
@@ -21,7 +22,10 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/build/vcpkg_installed
-          key: ${{ hashFiles('vcpkg.json') }}-${{ runner.os }}-cache-key-v1
+          key: ${{ runner.os }}-cache-${{ hashFiles('vcpkg.json') }}
+          restore-keys:
+            ${{ runner.os }}-cache-vcpkg-${{ hashFiles('vcpkg.json') }}
+            ${{ runner.os }}-cache-vcpkg-
 
       - uses: actions/setup-python@v3
         with:
@@ -33,7 +37,11 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cmake -S . -B build/ -G "Visual Studio 16 2019" -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE -DWITH_DOCS=FALSE -DCMAKE_TOOLCHAIN_FILE="%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake"
+          cmake -S . -B build/ -G "Visual Studio 16 2019" ^
+              -DPython3_FIND_REGISTRY=LAST ^
+              -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ^
+              -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE ^
+              -DCMAKE_TOOLCHAIN_FILE="%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake"
           cmake --build build/ --config ${{ env.CMAKE_BUILD_TYPE }}
 
       - name: After build
@@ -53,6 +61,8 @@ jobs:
       - name: Tests
         run: |
           xcopy pairinteraction\Release\* pairinteraction
+          mkdir pairinteraction\unit_test\Release\
+          xcopy pairinteraction\Release\* pairinteraction\unit_test\Release
           cmake --build . --target check --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
 
