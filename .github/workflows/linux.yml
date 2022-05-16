@@ -79,11 +79,13 @@ jobs:
       run: |
         python setup.py bdist_wheel --python-tag py3 --plat-name "$AUDITWHEEL_PLAT"
         auditwheel repair dist/*.whl --plat "$AUDITWHEEL_PLAT"
+        mkdir -p artifact/
+        cp wheelhouse/*.whl artifact/
       working-directory: build/
     - uses: actions/upload-artifact@v1
       with:
         name: pairinteraction-manylinux-wheel
-        path: build/wheelhouse/
+        path: build/artifact/
 
   opensuse:
     runs-on: ubuntu-latest

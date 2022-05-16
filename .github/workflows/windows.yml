@@ -53,16 +53,16 @@ jobs:
           $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
           wheel unpack $env:PATH_WHEEL_UNMODIFIED -d wheelhouse\
           $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
-          xcopy pairinteraction\Release\* ${env:PATH_WHEEL_UNPACKED}\pairinteraction\
+          Copy-Item pairinteraction\Release\* ${env:PATH_WHEEL_UNPACKED}\pairinteraction\ -Recurse -Force -Verbose
           Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
           wheel pack $env:PATH_WHEEL_UNPACKED -d wheelhouse\
         working-directory: build/
 
       - name: Tests
         run: |
-          xcopy pairinteraction\Release\* pairinteraction
-          mkdir pairinteraction\unit_test\Release\
-          xcopy pairinteraction\Release\* pairinteraction\unit_test\Release
+          Copy-Item pairinteraction\Release\* pairinteraction\ -Recurse -Force -Verbose
+          New-Item -Path pairinteraction\unit_test\Release\ -ItemType Directory -Force
+          Copy-Item pairinteraction\Release\* pairinteraction\unit_test\Release -Recurse -Force -Verbose
           cmake --build . --target check --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
 
@@ -73,4 +73,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: pairinteraction-windows-wheel
-          path: build/wheelhouse/
+          path: build/wheelhouse/*.whl
