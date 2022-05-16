@@ -91,9 +91,19 @@ endif()
 # Add external libraries
 
 # Wigner Symbols
-add_library(wignerSymbols ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/src/wignerSymbols-cpp.cpp)
-target_include_directories(pireal SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/include)
-target_include_directories(picomplex SYSTEM PUBLIC ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/include)
+include(FetchContent)
+FetchContent_Declare(
+  wignerSymbols
+  GIT_REPOSITORY https://github.com/joeydumont/wignerSymbols.git
+  GIT_TAG        337dd7e634f5990f432bb53c7a69ad62c009000a
+)
+FetchContent_GetProperties(wignerSymbols)
+if(NOT wignersymbols_POPULATED)
+  FetchContent_Populate(wignerSymbols)
+endif()
+add_library(wignerSymbols STATIC ${wignersymbols_SOURCE_DIR}/src/wignerSymbols-cpp.cpp)
+target_include_directories(pireal SYSTEM PUBLIC ${wignersymbols_SOURCE_DIR}/include)
+target_include_directories(picomplex SYSTEM PUBLIC ${wignersymbols_SOURCE_DIR}/include)
 set_target_properties(wignerSymbols PROPERTIES CXX_CLANG_TIDY "" POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pireal PRIVATE wignerSymbols)
 target_link_libraries(picomplex PRIVATE wignerSymbols)
