@@ -69,7 +69,7 @@ jobs:
           ${{ runner.os }}-cache-pip-
     - name: Install dependencies
       run: |
-        pip3 --cache-dir "${{ runner.temp }}/cache-pip" install --only-binary=:all: numpy scipy pyqt5
+        pip3 --cache-dir "${{ runner.temp }}/cache-pip" install -r requirements.txt
     - name: Build
       run: |
         cmake -S . -B build/

@@ -47,7 +47,7 @@ if (WITH_PYTHON)
   python_test(TARGET wavefunction SOURCE wavefunction.py)
   python_test(TARGET symmetries SOURCE symmetries.py)
   python_test(TARGET integration SOURCE integration.py)
-  if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{TRAVIS}) AND NOT WITH_CLANG_TIDY) # timeout
+  if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{CI}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
   endif()
 endif()

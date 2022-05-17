@@ -22,14 +22,14 @@ jobs:
         with:
           path: |
             ${{ github.workspace }}/build/vcpkg_installed
-          key: ${{ runner.os }}-cache-${{ hashFiles('vcpkg.json') }}
+          key: ${{ runner.os }}-cache-vcpkg-${{ hashFiles('vcpkg.json') }}
           restore-keys:
             ${{ runner.os }}-cache-vcpkg-${{ hashFiles('vcpkg.json') }}
             ${{ runner.os }}-cache-vcpkg-
 
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.6'
+          python-version: '3.8'
           cache: 'pip'
       - run: pip install -r requirements.txt
 
