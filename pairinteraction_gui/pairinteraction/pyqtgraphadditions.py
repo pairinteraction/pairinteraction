@@ -21,10 +21,10 @@ import numpy as np
 
 # === Points item (can be used with pyqtgraph) ===
 
-class PointsItem(pg.QtGui.QGraphicsItem):
+class PointsItem(pg.QtWidgets.QGraphicsItem):
 
     def __init__(self, x=None, y=None, size=1, alpha=80, color=(0, 0, 0)):
-        pg.QtGui.QGraphicsItem.__init__(self)
+        pg.QtWidgets.QGraphicsItem.__init__(self)
         self.size = size
         self.alpha = alpha
         # self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
@@ -33,7 +33,7 @@ class PointsItem(pg.QtGui.QGraphicsItem):
                             width=self.size, cosmetic=True)
         self.setData(x, y)
         # self.ItemIgnoresTransformations = True
-        # self.setFlag(QtGui.QGraphicsItem.ItemIgnoresTransformations, True)
+        # self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
 
     def setData(self, x, y):
         if x is None:
@@ -66,7 +66,7 @@ class PointsItem(pg.QtGui.QGraphicsItem):
 # === Multi line item (can be used with pyqtgraph) ===
 # see https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
 
-class MultiLine(pg.QtGui.QGraphicsPathItem):
+class MultiLine(pg.QtWidgets.QGraphicsPathItem):
 
     def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)):
         """x and y are 2D arrays of shape (Nplots, Nsamples)"""
@@ -75,13 +75,13 @@ class MultiLine(pg.QtGui.QGraphicsPathItem):
 
         self.path = pg.arrayToQPath(
             x.flatten(), y.flatten(), connections.flatten())
-        pg.QtGui.QGraphicsPathItem.__init__(self, self.path)
+        pg.QtWidgets.QGraphicsPathItem.__init__(self, self.path)
         pen = pg.mkPen(color + (alpha,), width=size, cosmetic=True)
         self.setPen(pen)
 
     # Override because QGraphicsPathItem.shape is too expensive.
     def shape(self):
-        return pg.QtGui.QGraphicsItem.shape(self)
+        return pg.QtWidgets.QGraphicsItem.shape(self)
 
     def boundingRect(self):
         return self.path.boundingRect()

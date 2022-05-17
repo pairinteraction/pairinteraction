@@ -36,7 +36,7 @@ import psutil
 
 # GUI
 try:
-    from PyQt5 import QtCore, QtGui
+    from PyQt5 import QtCore, QtGui, QtWidgets
     from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 except ImportError:
     raise ImportError("Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
@@ -405,17 +405,17 @@ class SystemDict(GuiDict):
                                  "minEx", "minEy", "minEz", "minBx", "minBy", "minBz", "maxEx", "maxEy", "maxEz", "maxBx", "maxBy", "maxBz", "diamagnetism"]
 
 
-class AboutDialog(QtGui.QDialog):
+class AboutDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(AboutDialog, self).__init__(parent)
 
         self.setWindowTitle("About")
 
-        self.okButton = QtGui.QDialogButtonBox(self)
-        self.okButton.setStandardButtons(QtGui.QDialogButtonBox.Ok)
+        self.okButton = QtWidgets.QDialogButtonBox(self)
+        self.okButton.setStandardButtons(QtWidgets.QDialogButtonBox.Ok)
         self.okButton.clicked.connect(self.close)
 
-        self.versionLabel = QtGui.QLabel(self)
+        self.versionLabel = QtWidgets.QLabel(self)
         self.versionLabel.setText((
             "<h1>pairinteraction</h1>" +
             "<p>Program version: {}</p>" +
@@ -424,14 +424,14 @@ class AboutDialog(QtGui.QDialog):
         ).format(version_program, version_settings, version_cache))
         self.versionLabel.setAlignment(QtCore.Qt.AlignHCenter)
 
-        self.vLayout = QtGui.QVBoxLayout(self)
+        self.vLayout = QtWidgets.QVBoxLayout(self)
         self.vLayout.addWidget(self.versionLabel,
                                alignment=QtCore.Qt.AlignCenter)
         self.vLayout.addWidget(self.okButton,
                                alignment=QtCore.Qt.AlignCenter)
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, parent=None):
 
@@ -661,28 +661,28 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.label_system_precision.hide()
 
         # Group up buttons
-        self.overlapgroup = QtGui.QButtonGroup()
+        self.overlapgroup = QtWidgets.QButtonGroup()
         self.overlapgroup.addButton(self.ui.radiobutton_plot_overlapDefined)
         self.overlapgroup.addButton(
             self.ui.radiobutton_plot_overlapUnperturbed)
 
-        self.missinggroup = QtGui.QButtonGroup()
+        self.missinggroup = QtWidgets.QButtonGroup()
         self.missinggroup.addButton(self.ui.radiobutton_system_missingCalc)
         self.missinggroup.addButton(
             self.ui.radiobutton_system_missingWhittaker)
         # self.missinggroup.addButton(self.ui.radiobutton_system_missingError)
 
-        self.matgroup = QtGui.QButtonGroup()
+        self.matgroup = QtWidgets.QButtonGroup()
         self.matgroup.addButton(self.ui.radiobutton_system_matCombined)
         self.matgroup.addButton(self.ui.radiobutton_system_matSeparate)
 
-        self.quantizationgroup = QtGui.QButtonGroup()
+        self.quantizationgroup = QtWidgets.QButtonGroup()
         self.quantizationgroup.addButton(
             self.ui.radiobutton_system_quantizationZ)
         self.quantizationgroup.addButton(
             self.ui.radiobutton_system_quantizationInteratomic)
 
-        self.symgroup = QtGui.QButtonGroup()
+        self.symgroup = QtWidgets.QButtonGroup()
         self.symgroup.addButton(self.ui.radiobutton_symAuto)
         self.symgroup.addButton(self.ui.radiobutton_symManual)
 
@@ -814,7 +814,7 @@ class MainWindow(QtGui.QMainWindow):
                 "https://github.com/pairinteraction/pairinteraction/issues/new"))
         self.ui.action_about.triggered.connect(self.spawnAboutDialog)
         self.ui.action_whatsthis.triggered.connect(
-            QtGui.QWhatsThis.enterWhatsThisMode)
+            QtWidgets.QWhatsThis.enterWhatsThisMode)
         self.ui.action_cache_directory.triggered.connect(
             self.changeCacheDirectory)
         self.ui.action_cache_clear.triggered.connect(self.clearCache)
@@ -902,48 +902,48 @@ class MainWindow(QtGui.QMainWindow):
 
         # Compare version
         '''if os.path.exists(self.path_out) and version_settings_saved != version_settings and version_cache_saved != version_cache: # Poblem: Cachedirectory muss nicht mehr in self.path_out liegen
-            msg = QtGui.QMessageBox()
+            msg = QtWidgets.QMessageBox()
             msg.setText('A new program version has been installed. Due to major changes, cache and settings have to be cleared. This deletes the directory {}.'.format(self.path_out))
-            msg.setIcon(QtGui.QMessageBox.Information);
-            msg.addButton(QtGui.QMessageBox.Cancel)
-            msg.addButton(QtGui.QMessageBox.Ok)
-            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            msg.setIcon(QtWidgets.QMessageBox.Information);
+            msg.addButton(QtWidgets.QMessageBox.Cancel)
+            msg.addButton(QtWidgets.QMessageBox.Ok)
+            msg.setDefaultButton(QtWidgets.QMessageBox.Ok)
             answer = msg.exec()
 
             # Delete directory
-            if answer == QtGui.QMessageBox.Ok:
+            if answer == QtWidgets.QMessageBox.Ok:
                 shutil.rmtree(self.path_out)
             else:
                 sys.exit()'''
 
         if os.path.exists(self.path_lastsettings) and version_settings_saved != version_settings:
-            msg = QtGui.QMessageBox()
+            msg = QtWidgets.QMessageBox()
             msg.setText('A new program version has been installed. Due to configuration changes, settings have to be cleared. This deletes the directory {}.'.format(
                 self.path_lastsettings))
-            msg.setIcon(QtGui.QMessageBox.Information)
-            msg.addButton(QtGui.QMessageBox.Cancel)
-            msg.addButton(QtGui.QMessageBox.Ok)
-            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.addButton(QtWidgets.QMessageBox.Cancel)
+            msg.addButton(QtWidgets.QMessageBox.Ok)
+            msg.setDefaultButton(QtWidgets.QMessageBox.Ok)
             answer = msg.exec()
 
             # Delete directory
-            if answer == QtGui.QMessageBox.Ok:
+            if answer == QtWidgets.QMessageBox.Ok:
                 shutil.rmtree(self.path_lastsettings)
             else:
                 sys.exit()
 
         if os.path.exists(self.path_cache) and version_cache_saved != version_cache:
-            msg = QtGui.QMessageBox()
+            msg = QtWidgets.QMessageBox()
             msg.setText('A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory {}.'.format(
                 self.path_cache))
-            msg.setIcon(QtGui.QMessageBox.Information)
-            msg.addButton(QtGui.QMessageBox.Cancel)
-            msg.addButton(QtGui.QMessageBox.Ok)
-            msg.setDefaultButton(QtGui.QMessageBox.Ok)
+            msg.setIcon(QtWidgets.QMessageBox.Information)
+            msg.addButton(QtWidgets.QMessageBox.Cancel)
+            msg.addButton(QtWidgets.QMessageBox.Ok)
+            msg.setDefaultButton(QtWidgets.QMessageBox.Ok)
             answer = msg.exec()
 
             # Delete directory
-            if answer == QtGui.QMessageBox.Ok:
+            if answer == QtWidgets.QMessageBox.Ok:
                 shutil.rmtree(self.path_cache)
             else:
                 sys.exit()
@@ -1209,7 +1209,7 @@ class MainWindow(QtGui.QMainWindow):
         # === check if memory consumption is to high ===
         if psutil.virtual_memory().percent > 99:  # TODO: is the virtual or swap memory the problem on rqo-donkey?
             self.abortCalculation()
-            QtGui.QMessageBox.critical(
+            QtWidgets.QMessageBox.critical(
                 self, "Message", "The program has run out of memory.")
 
         # === process field and potential maps ===
@@ -1260,7 +1260,7 @@ class MainWindow(QtGui.QMainWindow):
                                        "Pair potential: ", "Field maps: "][idxtype]
                         self.ui.statusbar.showMessage(
                             status_type + "calculate overlap states")
-                        QtGui.QApplication.processEvents()
+                        QtWidgets.QApplication.processEvents()
 
                         # calculate overlap states
                         if self.angle != 0:  # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
@@ -1502,7 +1502,7 @@ class MainWindow(QtGui.QMainWindow):
 
                         # update status bar
                         self.ui.statusbar.showMessage(message_old)
-                        QtGui.QApplication.processEvents()
+                        QtWidgets.QApplication.processEvents()
 
                     else:
                         self.stateidx_field[idx] = None
@@ -2671,23 +2671,23 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot(str)
     def showCriticalMessage(self, msg):
-        QtGui.QMessageBox.critical(self, "Message", msg)
+        QtWidgets.QMessageBox.critical(self, "Message", msg)
 
     @QtCore.pyqtSlot()
     def startCalc(self):
         if self.proc is None:
 
             # ensure that validators are called
-            focused_widget = QtGui.QApplication.focusWidget()
+            focused_widget = QtWidgets.QApplication.focusWidget()
             if focused_widget is not None:
                 focused_widget.clearFocus()
 
             if np.any(self.invalidQuantumnumbers):
-                QtGui.QMessageBox.critical(
+                QtWidgets.QMessageBox.critical(
                     self, "Message", "Invalide quantum numbers specified.")
 
             elif self.ui.radiobutton_system_missingWhittaker.isChecked() and max(self.systemdict["n1"].magnitude, self.systemdict["n1"].magnitude) + max(self.systemdict["deltaNSingle"].magnitude, self.systemdict["deltaNPair"].magnitude) > 97:
-                QtGui.QMessageBox.critical(
+                QtWidgets.QMessageBox.critical(
                     self, "Message", "If the principal quantum number exceeds 97, radial matrix elements must be calculated from model potentials.")
 
             else:
@@ -2695,13 +2695,13 @@ class MainWindow(QtGui.QMainWindow):
 
                 if self.senderbutton in [self.ui.pushbutton_field1_calc,
                                          self.ui.pushbutton_field2_calc] and self.systemdict["theta"].toAU().magnitude != 0:
-                    QtGui.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. " +
+                    QtWidgets.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. " +
                                               "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " +
                                               "axis equals the interatomic axis. This slows down calculations.")
 
                 if self.systemdict["theta"].magnitude != 0 and (self.systemdict["deltaMSingle"].magnitude >= 0 or (
                         self.ui.radiobutton_system_pairbasisDefined.isChecked() and self.systemdict["deltaMPair"].magnitude >= 0)):
-                    QtGui.QMessageBox.warning(
+                    QtWidgets.QMessageBox.warning(
                         self, "Warning", "For non-zero interaction angles, it is recommended not to restrict the magnetic quantum number.")
 
                 # save last settings
@@ -2986,7 +2986,7 @@ class MainWindow(QtGui.QMainWindow):
             description = ["field map of atom 1",
                            "field map of atom 2", "pair potential"][idx]
 
-        filename, _ = QtGui.QFileDialog.getSaveFileName(self,
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self,
                                                         "Save {}".format(description), path, "zip (*.zip)")
 
         if not filename:
@@ -3326,7 +3326,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def saveSystemConf(self):
         path = self.systemfile if self.systemfile is not None else self.filepath
-        filename, _ = QtGui.QFileDialog.getSaveFileName(
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self, "Save system configuration", path, "sconf (*.sconf)")
 
         if filename:
@@ -3337,7 +3337,7 @@ class MainWindow(QtGui.QMainWindow):
     @QtCore.pyqtSlot()
     def savePlotConf(self):
         path = self.plotfile if self.plotfile is not None else self.filepath
-        filename, _ = QtGui.QFileDialog.getSaveFileName(
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             self, "Save plot configuration", path, "pconf (*.pconf)")
 
         if filename:
@@ -3351,8 +3351,8 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):
-        text, ok = QtGui.QInputDialog.getText(self, 'Input Dialog',
-                                              'Enter new cache directory (the original directory is not deleted):', QtGui.QLineEdit.Normal, self.path_cache)
+        text, ok = QtWidgets.QInputDialog.getText(self, 'Input Dialog',
+                                              'Enter new cache directory (the original directory is not deleted):', QtWidgets.QLineEdit.Normal, self.path_cache)
 
         if ok:
             self.path_cache = text
@@ -3381,7 +3381,7 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()
     def openSystemConf(self):
-        filename, _ = QtGui.QFileDialog.getOpenFileName(self,
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Open system configuration", self.filepath, "sconf (*.sconf)")
 
         if filename:
@@ -3391,7 +3391,7 @@ class MainWindow(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()
     def openPlotConf(self):
-        filename, _ = QtGui.QFileDialog.getOpenFileName(self,
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
                                                         "Open plot configuration", self.filepath, "pconf (*.pconf)")
 
         if filename:
@@ -3986,9 +3986,9 @@ class MainWindow(QtGui.QMainWindow):
             painter.setWindow(self.imageLabel.pixmap().rect())
             painter.drawPixmap(0, 0, self.imageLabel.pixmap())"""
 
-        """if(dialog.exec_() != QtGui.QDialog.Accepted):
+        """if(dialog.exec_() != QtWidgets.QDialog.Accepted):
             return
-        printLabel = QtGui.QLabel("Hello my printer.")
+        printLabel = QtWidgets.QLabel("Hello my printer.")
         painter = QtGui.QPainter(printer)
         printLabel.render(painter)
         painter.end()"""
@@ -4007,7 +4007,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
 def main():
-    app = QtGui.QApplication(sys.argv)
+    app = QtWidgets.QApplication(sys.argv)
     form = MainWindow()
     form.show()
     rc = app.exec_()

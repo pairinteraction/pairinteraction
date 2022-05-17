@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import locale
 from abc import ABCMeta, abstractmethod
 from .unitmanagement import Quantity
@@ -42,22 +42,22 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
         unit = self.store[key]['unit']
 
         value = None
-        if isinstance(widget, QtGui.QComboBox):
+        if isinstance(widget, QtWidgets.QComboBox):
             value = str(widget.currentText())
-        elif isinstance(widget, QtGui.QSpinBox):
+        elif isinstance(widget, QtWidgets.QSpinBox):
             value = int(widget.value())
-        elif isinstance(widget, QtGui.QDoubleSpinBox):
+        elif isinstance(widget, QtWidgets.QDoubleSpinBox):
             value = float(widget.value())
-        elif isinstance(widget, QtGui.QLineEdit):
+        elif isinstance(widget, QtWidgets.QLineEdit):
             try:
                 value = locale.atof(str(widget.text()))
             except ValueError:
                 value = None
-        elif isinstance(widget, QtGui.QCheckBox):
+        elif isinstance(widget, QtWidgets.QCheckBox):
             value = widget.checkState() == QtCore.Qt.Checked
-        elif isinstance(widget, QtGui.QRadioButton):
+        elif isinstance(widget, QtWidgets.QRadioButton):
             value = widget.isChecked()
-        elif isinstance(widget, QtGui.QGroupBox):
+        elif isinstance(widget, QtWidgets.QGroupBox):
             value = widget.isChecked()
 
         return Quantity(value, unit)
@@ -71,27 +71,27 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
         value = value.toUU().magnitude
 
-        if isinstance(widget, QtGui.QComboBox):
+        if isinstance(widget, QtWidgets.QComboBox):
             index = widget.findText(value)
             if index >= 0:
                 widget.setCurrentIndex(index)
-        elif isinstance(widget, QtGui.QSpinBox):
+        elif isinstance(widget, QtWidgets.QSpinBox):
             widget.setValue(value)
-        elif isinstance(widget, QtGui.QDoubleSpinBox):
+        elif isinstance(widget, QtWidgets.QDoubleSpinBox):
             widget.setValue(value)
-        elif isinstance(widget, QtGui.QLineEdit):
+        elif isinstance(widget, QtWidgets.QLineEdit):
             if value is None:
                 widget.setText("None")
             else:
                 widget.setText(locale.str(value))
-        elif isinstance(widget, QtGui.QCheckBox):
+        elif isinstance(widget, QtWidgets.QCheckBox):
             if value:
                 widget.setCheckState(QtCore.Qt.Checked)
             else:
                 widget.setCheckState(QtCore.Qt.Unchecked)
-        elif isinstance(widget, QtGui.QRadioButton):
+        elif isinstance(widget, QtWidgets.QRadioButton):
             widget.setChecked(value)
-        elif isinstance(widget, QtGui.QGroupBox):
+        elif isinstance(widget, QtWidgets.QGroupBox):
             widget.setChecked(value)
 
     def __delitem__(self, key):
