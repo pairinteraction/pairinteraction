@@ -2696,8 +2696,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 if self.senderbutton in [self.ui.pushbutton_field1_calc,
                                          self.ui.pushbutton_field2_calc] and self.systemdict["theta"].toAU().magnitude != 0:
                     QtWidgets.QMessageBox.warning(self, "Warning", "For calculating field maps, you might like to set the interaction angle to zero. " +
-                                              "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " +
-                                              "axis equals the interatomic axis. This slows down calculations.")
+                                                  "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization " +
+                                                  "axis equals the interatomic axis. This slows down calculations.")
 
                 if self.systemdict["theta"].magnitude != 0 and (self.systemdict["deltaMSingle"].magnitude >= 0 or (
                         self.ui.radiobutton_system_pairbasisDefined.isChecked() and self.systemdict["deltaMPair"].magnitude >= 0)):
@@ -2987,7 +2987,7 @@ class MainWindow(QtWidgets.QMainWindow):
                            "field map of atom 2", "pair potential"][idx]
 
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self,
-                                                        "Save {}".format(description), path, "zip (*.zip)")
+                                                            "Save {}".format(description), path, "zip (*.zip)")
 
         if not filename:
             return
@@ -3352,7 +3352,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def changeCacheDirectory(self):
         text, ok = QtWidgets.QInputDialog.getText(self, 'Input Dialog',
-                                              'Enter new cache directory (the original directory is not deleted):', QtWidgets.QLineEdit.Normal, self.path_cache)
+                                                  'Enter new cache directory (the original directory is not deleted):', QtWidgets.QLineEdit.Normal, self.path_cache)
 
         if ok:
             self.path_cache = text
@@ -3382,7 +3382,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def openSystemConf(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
-                                                        "Open system configuration", self.filepath, "sconf (*.sconf)")
+                                                            "Open system configuration", self.filepath, "sconf (*.sconf)")
 
         if filename:
             self.loadSettingsSystem(filename)
@@ -3392,7 +3392,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def openPlotConf(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(self,
-                                                        "Open plot configuration", self.filepath, "pconf (*.pconf)")
+                                                            "Open plot configuration", self.filepath, "pconf (*.pconf)")
 
         if filename:
             self.loadSettingsPlotter(filename)
