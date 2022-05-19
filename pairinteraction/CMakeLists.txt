@@ -61,6 +61,14 @@ else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
 endif()
 
+# Set up clang-tidy
+
+if(WITH_CLANG_TIDY)
+  set(CLANG_TIDY_COMMAND_LINE "${CLANG_TIDY_EXE}" "-config=" "-warnings-as-errors=*")
+  set_target_properties(pireal PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND_LINE}")
+  set_target_properties(picomplex PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND_LINE}")
+endif()
+
 # Generate coverage report
 
 if( WITH_COVERAGE )
@@ -104,7 +112,7 @@ endif()
 add_library(wignerSymbols STATIC ${wignersymbols_SOURCE_DIR}/src/wignerSymbols-cpp.cpp)
 target_include_directories(pireal SYSTEM PUBLIC ${wignersymbols_SOURCE_DIR}/include)
 target_include_directories(picomplex SYSTEM PUBLIC ${wignersymbols_SOURCE_DIR}/include)
-set_target_properties(wignerSymbols PROPERTIES CXX_CLANG_TIDY "" POSITION_INDEPENDENT_CODE ON)
+set_target_properties(wignerSymbols PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pireal PRIVATE wignerSymbols)
 target_link_libraries(picomplex PRIVATE wignerSymbols)
 
@@ -171,7 +179,6 @@ if(WITH_PYTHON)
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTY CPLUSPLUS ON)
   swig_add_library(pireal LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)
   set_target_properties(${SWIG_MODULE_pireal_REAL_NAME} PROPERTIES
-    CXX_CLANG_TIDY ""
     SWIG_COMPILE_OPTIONS -py3
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
@@ -183,7 +190,6 @@ if(WITH_PYTHON)
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTY CPLUSPLUS ON)
   swig_add_library(picomplex LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
   set_target_properties(${SWIG_MODULE_picomplex_REAL_NAME} PROPERTIES
-    CXX_CLANG_TIDY ""
     SWIG_COMPILE_OPTIONS "-py3;-DUSE_COMPLEX"
     SWIG_GENERATED_COMPILE_DEFINITIONS USE_COMPLEX
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"

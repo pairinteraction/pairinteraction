@@ -26,8 +26,7 @@ set(CMAKE_CXX_STANDARD 17) # JlCxx overwrites this!
 add_library(pireal_jl SHARED julia_hooks_pi.cpp)
 add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
 
-set_target_properties(pireal_jl PROPERTIES CXX_CLANG_TIDY "")
-set_target_properties(picomplex_jl PROPERTIES CXX_CLANG_TIDY "" COMPILE_DEFINITIONS "USE_COMPLEX")
+target_compile_definitions(picomplex_jl PUBLIC "USE_COMPLEX")
 
 include_directories(${CMAKE_SOURCE_DIR}/${LIBNAME})
 include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/eigen)
