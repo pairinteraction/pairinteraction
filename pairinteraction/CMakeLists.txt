@@ -173,6 +173,12 @@ if(WITH_PYTHON)
     find_package(Python3 COMPONENTS Interpreter Development.Module NumPy REQUIRED)
   endif()
 
+  if(MSVC)
+    string(REPLACE "python3${Python3_VERSION_MINOR}.lib" "python3.lib" Python3_LIBRARIES_GENERALIZED ${Python3_LIBRARIES})
+    message(STATUS "Unpatched Python3 libraries: ${Python3_LIBRARIES}")
+    message(STATUS "  Patched Python3 libraries: ${Python3_LIBRARIES_GENERALIZED}")
+  endif()
+
   include(${SWIG_USE_FILE})
   set(UseSWIG_TARGET_NAME_PREFERENCE LEGACY)
 
@@ -184,8 +190,9 @@ if(WITH_PYTHON)
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
   target_link_options(${SWIG_MODULE_pireal_REAL_NAME} PUBLIC
     $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
-    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>)
-  swig_link_libraries(pireal PUBLIC pireal $<$<CXX_COMPILER_ID:MSVC>:Python3::Module>)
+    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
+    $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
+  swig_link_libraries(pireal PUBLIC pireal $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
 
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTY CPLUSPLUS ON)
   swig_add_library(picomplex LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
@@ -196,8 +203,9 @@ if(WITH_PYTHON)
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
   target_link_options(${SWIG_MODULE_picomplex_REAL_NAME} PUBLIC
     $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
-    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>)
-  swig_link_libraries(picomplex PUBLIC picomplex $<$<CXX_COMPILER_ID:MSVC>:Python3::Module>)
+    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
+    $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
+  swig_link_libraries(picomplex PUBLIC picomplex $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
 
 endif()
 
