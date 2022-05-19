@@ -7,7 +7,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     sqlite3 sqlite3-devel \
     libboost_filesystem1_66_0-devel libboost_program_options1_66_0-devel \
     libboost_serialization1_66_0-devel libboost_system1_66_0-devel libboost_test1_66_0-devel \
-    eigen3-devel gsl-devel \
+    cereal-devel eigen3-devel fmt-devel gsl-devel \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
     dpkg rpm-build \

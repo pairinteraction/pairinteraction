@@ -12,7 +12,7 @@ RUN apt-get update -qq \
     pyqt5-dev-tools \
     libboost-filesystem-dev libboost-program-options-dev \
     libboost-serialization-dev libboost-system-dev libboost-test-dev \
-    libeigen3-dev libgsl-dev \
+    doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
