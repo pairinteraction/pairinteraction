@@ -26,11 +26,6 @@ if(CMAKE_BUILD_TYPE MATCHES RELEASE)
            $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-Ofast -pipe>)
 endif()
 
-# Add current directory to search path
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # Generate in-memory database
 
 file(READ databases/quantum_defects.sql QUANTUM_DEFECT_DATABASE_CONTENT)
@@ -48,8 +43,18 @@ add_library(pireal SHARED ${pairinteraction_SRCS})
 add_library(picomplex SHARED ${pairinteraction_SRCS})
 target_compile_definitions(picomplex PUBLIC USE_COMPLEX)
 
+target_compile_features(pireal PRIVATE cxx_std_17)
+set_target_properties(pireal PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(picomplex PRIVATE cxx_std_17)
+set_target_properties(picomplex PROPERTIES CXX_EXTENSIONS OFF)
+
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+
+target_compile_features(pairinteraction-real PRIVATE cxx_std_17)
+set_target_properties(pairinteraction-real PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(pairinteraction-complex PRIVATE cxx_std_17)
+set_target_properties(pairinteraction-complex PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(pairinteraction-real    pireal)
 target_link_libraries(pairinteraction-complex picomplex)
@@ -60,6 +65,13 @@ if(MSVC)
 else()
   set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
 endif()
+
+# Add current directory to search path
+
+target_include_directories(pireal PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(picomplex PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(pireal PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
+target_include_directories(picomplex PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
 # Set up clang-tidy
 
@@ -193,8 +205,11 @@ if(WITH_PYTHON)
 
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i PROPERTY CPLUSPLUS ON)
   swig_add_library(pireal LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i)
+  target_compile_features(${SWIG_MODULE_pireal_REAL_NAME} PRIVATE cxx_std_17)
   set_target_properties(${SWIG_MODULE_pireal_REAL_NAME} PROPERTIES
+    CXX_EXTENSIONS OFF
     SWIG_COMPILE_OPTIONS -py3
+    SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
   target_link_options(${SWIG_MODULE_pireal_REAL_NAME} PUBLIC
@@ -205,8 +220,11 @@ if(WITH_PYTHON)
 
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTY CPLUSPLUS ON)
   swig_add_library(picomplex LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
+  target_compile_features(${SWIG_MODULE_picomplex_REAL_NAME} PRIVATE cxx_std_17)
   set_target_properties(${SWIG_MODULE_picomplex_REAL_NAME} PROPERTIES
+    CXX_EXTENSIONS OFF
     SWIG_COMPILE_OPTIONS "-py3;-DUSE_COMPLEX"
+    SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON
     SWIG_GENERATED_COMPILE_DEFINITIONS USE_COMPLEX
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)

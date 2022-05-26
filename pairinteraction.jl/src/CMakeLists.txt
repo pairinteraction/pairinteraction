@@ -21,18 +21,18 @@ execute_process(
   OUTPUT_VARIABLE JlCxx_DIR
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 find_package(JlCxx REQUIRED)
-set(CMAKE_CXX_STANDARD 17) # JlCxx overwrites this!
 
 add_library(pireal_jl SHARED julia_hooks_pi.cpp)
 add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
 
 target_compile_definitions(picomplex_jl PUBLIC "USE_COMPLEX")
 
-include_directories(${CMAKE_SOURCE_DIR}/${LIBNAME})
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/eigen)
-include_directories(SYSTEM ${CMAKE_SOURCE_DIR}/libs/wignerSymbols/include)
+target_compile_features(pireal_jl PRIVATE cxx_std_17)
+set_target_properties(pireal_jl PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(picomplex_jl PRIVATE cxx_std_17)
+set_target_properties(pireal_jl PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(pireal_jl pireal JlCxx::cxxwrap_julia)
-target_link_libraries(picomplex_jl picomplex JlCxx::cxxwrap_julia)
+target_link_libraries(pireal_jl PUBLIC pireal JlCxx::cxxwrap_julia)
+target_link_libraries(picomplex_jl PUBLIC picomplex JlCxx::cxxwrap_julia)
 
 configure_file(PairInteraction.jl ${CMAKE_CURRENT_BINARY_DIR}/PairInteraction.jl COPYONLY)

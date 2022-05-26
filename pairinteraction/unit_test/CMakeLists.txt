@@ -30,6 +30,8 @@ function(UNIT_TEST)
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
   # Add target for test and link with libraries
   add_executable(${UT_TARGET} ${UT_SOURCE})
+  target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
+  set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
   if(MSVC)
     set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
     target_link_libraries(${UT_TARGET} PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
