@@ -15,17 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-# Set compiler options for release builds
-
-if(CMAKE_BUILD_TYPE MATCHES RELEASE)
-  target_compile_options(pireal
-    PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/Ox>
-           $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-Ofast -pipe>)
-  target_compile_options(picomplex
-    PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/Ox>
-           $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-Ofast -pipe>)
-endif()
-
 # Generate in-memory database
 
 file(READ databases/quantum_defects.sql QUANTUM_DEFECT_DATABASE_CONTENT)
@@ -48,6 +37,9 @@ set_target_properties(pireal PROPERTIES CXX_EXTENSIONS OFF)
 target_compile_features(picomplex PRIVATE cxx_std_17)
 set_target_properties(picomplex PROPERTIES CXX_EXTENSIONS OFF)
 
+target_compile_definitions(pireal PUBLIC $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX WIN32_LEAN_AND_MEAN _USE_MATH_DEFINES>)
+target_compile_definitions(picomplex PUBLIC $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX WIN32_LEAN_AND_MEAN _USE_MATH_DEFINES>)
+
 add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 add_executable(pairinteraction-complex ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
@@ -58,13 +50,6 @@ set_target_properties(pairinteraction-complex PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(pairinteraction-real    pireal)
 target_link_libraries(pairinteraction-complex picomplex)
-
-if(MSVC)
-  add_definitions(/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN /D_USE_MATH_DEFINES)
-  #set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX /DWIN32_LEAN_AND_MEAN")
-else()
-  set_source_files_properties(${pairinteraction_SRCS} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
-endif()
 
 # Add current directory to search path
 
@@ -85,8 +70,8 @@ endif()
 
 if( WITH_COVERAGE )
   set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
-  target_compile_options(pireal PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-g -O0 --coverage -fprofile-arcs -ftest-coverage>)
-  target_compile_options(picomplex PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:-g -O0 --coverage -fprofile-arcs -ftest-coverage>)
+  target_compile_options(pireal PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
+  target_compile_options(picomplex PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
   target_link_libraries(pireal PUBLIC gcov)
   target_link_libraries(picomplex PUBLIC gcov)
 endif( )

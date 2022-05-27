@@ -28,7 +28,6 @@
 #include <type_traits>
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <Windows.h>
 #else
 #include <unistd.h>

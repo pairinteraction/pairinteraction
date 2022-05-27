@@ -32,13 +32,9 @@ function(UNIT_TEST)
   add_executable(${UT_TARGET} ${UT_SOURCE})
   target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
   set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
-  if(MSVC)
-    set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "/W3 /DNOMINMAX")
-    target_link_libraries(${UT_TARGET} PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
-  else()
-    set_source_files_properties(${UT_SOURCE} PROPERTIES COMPILE_FLAGS "-Wall -Wextra -pedantic -Werror")
-  endif()
-  target_link_libraries(${UT_TARGET} PUBLIC pireal Boost::unit_test_framework)
+  target_link_libraries(${UT_TARGET} PUBLIC
+    pireal Boost::unit_test_framework
+    Boost::disable_autolinking Boost::dynamic_linking)
   target_compile_definitions(${UT_TARGET} PRIVATE "BOOST_TEST_DYN_LINK=1")
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
