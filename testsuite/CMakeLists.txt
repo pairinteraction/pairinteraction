@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-# Build tests only when testing
-set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
-
 # To add test cases easier we use the following function
 function(PYTHON_TEST)
   # Parse arguments
@@ -26,13 +23,12 @@ function(PYTHON_TEST)
   configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
   add_test(NAME "python.${UT_TARGET}" COMMAND ${Python3_EXECUTABLE} ${UT_SOURCE})
-  set_tests_properties("python.${UT_TARGET}"
-    PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+  set_tests_properties("python.${UT_TARGET}" PROPERTIES
+    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
 endfunction(PYTHON_TEST)
 
 # Add Python test cases
 if (WITH_PYTHON)
-  add_dependencies(check _pireal _picomplex)
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
   python_test(TARGET explicitbasis SOURCE explicitbasis.py)
   python_test(TARGET greentensor SOURCE greentensor.py)

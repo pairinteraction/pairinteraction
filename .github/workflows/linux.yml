@@ -27,9 +27,9 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Build
       run: |
-        cmake -S . -B build/ -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
+        cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
         cmake --build build/ -- --keep-going
-        cmake --build build/ --target check -- --keep-going
+        cmake --build build/ --target test -- --keep-going
     - name: Documentation
       run: |
         lcov --directory . --capture --output-file coverage.info;
@@ -77,9 +77,9 @@ jobs:
         pip3 --cache-dir "${{ runner.temp }}/cache-pip" install -r requirements.txt
     - name: Build
       run: |
-        cmake -S . -B build/
+        cmake -S . -B build/ -DBUILD_TESTING=On
         cmake --build build/ -- --keep-going
-        cmake --build build/ --target check -- --keep-going
+        cmake --build build/ --target test -- --keep-going
     - name: Wheel
       run: |
         python setup.py bdist_wheel --python-tag py3 --plat-name "$AUDITWHEEL_PLAT"
@@ -107,9 +107,9 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Build
       run: |
-        cmake -S . -B build/ -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+        cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME="${package}"
         cmake --build build/ -- --keep-going
-        cmake --build build/ --target check -- --keep-going
+        cmake --build build/ --target test -- --keep-going
     - name: Package
       run: |
         cmake --build build/ --target package -- --keep-going
@@ -158,9 +158,9 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Build
       run: |
-        cmake -S . -B build/ -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_GUI=Off
+        cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_GUI=Off
         cmake --build build/ -- --keep-going
-        cmake --build build/ --target check -- --keep-going
+        cmake --build build/ --target test -- --keep-going
 
   ubuntu:
     runs-on: ubuntu-latest
@@ -177,9 +177,9 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Build
       run: |
-        cmake -S . -B build/ -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+        cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DCPACK_PACKAGE_FILE_NAME="${package}"
         cmake --build build/ -- --keep-going
-        cmake --build build/ --target check -- --keep-going
+        cmake --build build/ --target test -- --keep-going
     - name: Package
       run: |
         cmake --build build/ --target package -- --keep-going

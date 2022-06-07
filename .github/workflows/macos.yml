@@ -37,9 +37,9 @@ jobs:
 
       - name: Build
         run: |
-          cmake -S . -B build/ -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
+          cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
           cmake --build build/ -- --keep-going
-          cmake --build build/ --target check -- --keep-going
+          cmake --build build/ --target test -- --keep-going
           cmake --build build/ --target package -- --keep-going
           cmake --build build/ --target license -- --keep-going
 

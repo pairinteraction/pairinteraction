@@ -15,9 +15,6 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-# Build tests only when testing
-set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
-
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
@@ -39,7 +36,6 @@ function(UNIT_TEST)
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-  add_dependencies(check ${UT_TARGET})
 endfunction(UNIT_TEST)
 
 # Add the tests

@@ -223,7 +223,9 @@ endif()
 
 # Include test cases
 
-add_subdirectory( unit_test )
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+  add_subdirectory(unit_test)
+endif()
 
 # CPack
 

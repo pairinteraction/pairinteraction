@@ -42,7 +42,7 @@ jobs:
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          cmake -S . -B build/ -G "Visual Studio 16 2019" ^
+          cmake -S . -B build/ -G "Visual Studio 16 2019" -DBUILD_TESTING=On ^
               -DPython3_FIND_REGISTRY=LAST ^
               -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ^
               -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE ^
@@ -68,7 +68,7 @@ jobs:
           Copy-Item pairinteraction\Release\* pairinteraction\ -Recurse -Force -Verbose
           New-Item -Path pairinteraction\unit_test\Release\ -ItemType Directory -Force
           Copy-Item pairinteraction\Release\* pairinteraction\unit_test\Release -Recurse -Force -Verbose
-          cmake --build . --target check --config ${{ env.CMAKE_BUILD_TYPE }}
+          cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
 
       - uses: actions/upload-artifact@v3
