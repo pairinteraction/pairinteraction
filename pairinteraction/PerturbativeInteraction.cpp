@@ -62,6 +62,12 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
                     if (std::abs(l0 + state.getS(0) - state.getJ(0)) < 2) {
                         array_j0.insert(l0 + state.getS(0));
                     }
+                    if (array_j0.size() == 2) {
+                        for (float j0 = std::abs(l0 - state.getS(0)) + 1; j0 < l0 + state.getS(0);
+                             ++j0) {
+                            array_j0.insert(j0);
+                        }
+                    }
                     for (float j0 : array_j0) {
 
                         std::set<float> array_j1;
@@ -70,6 +76,12 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
                         }
                         if (std::abs(l1 + state.getS(1) - state.getJ(1)) < 2) {
                             array_j1.insert(l1 + state.getS(1));
+                        }
+                        if (array_j1.size() == 2) {
+                            for (float j1 = std::abs(l1 - state.getS(1)) + 1;
+                                 j1 < l1 + state.getS(1); ++j1) {
+                                array_j1.insert(j1);
+                            }
                         }
                         for (float j1 : array_j1) {
 
