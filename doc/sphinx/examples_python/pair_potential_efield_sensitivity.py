@@ -1,3 +1,5 @@
+import os
+
 # Arrays
 import numpy as np
 
