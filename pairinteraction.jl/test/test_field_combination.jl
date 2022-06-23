@@ -31,6 +31,7 @@ PairInteraction.restrictL(system_one, 0, 3)
 PairInteraction.setConservedMomentaUnderRotation(system_one, [-0.5f0])
 PairInteraction.setEfield(system_one, [0, 0, 0.7])
 PairInteraction.setBfield(system_one, [0, 0, -8.8])
+PairInteraction.enableDiamagnetism(system_one, false)
 
 # Diagonalize the system
 PairInteraction.diagonalize(system_one)
@@ -38,4 +39,4 @@ PairInteraction.diagonalize(system_one)
 # Compare results
 hamiltonian = sparse(PairInteraction.getHamiltonian(system_one))
 energies = [hamiltonian[i, i] for i in 1:size(hamiltonian)[1]]
-@test isapprox(energies[14], -1000.26793709, atol=1e-4)
+@test isapprox(energies[14], -1000.2679341660352, atol=1e-4)
