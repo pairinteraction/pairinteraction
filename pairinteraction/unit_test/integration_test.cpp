@@ -87,6 +87,7 @@ BOOST_FIXTURE_TEST_CASE(integration_test, F) // NOLINT
     system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1);
     system_one.setEfield({{0, 0, 0.1}});
     system_one.setBfield({{0, 0, 1}});
+    system_one.enableDiamagnetism(false);
 
     // Check for correct dimensions
     BOOST_CHECK_EQUAL(system_one.getNumBasisvectors(), 64);

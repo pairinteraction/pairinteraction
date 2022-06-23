@@ -17,13 +17,14 @@ class FieldCombinationTest(unittest.TestCase):
         system_one.setConservedMomentaUnderRotation([-0.5])
         system_one.setEfield((0, 0, 0.7))
         system_one.setBfield((0, 0, -8.8))
+        system_one.enableDiamagnetism(False)
 
         # Diagonalize the system
         system_one.diagonalize()
 
         # Compare results
         energies = system_one.getHamiltonian().diagonal()
-        self.assertAlmostEqual(energies[13], -1000.26793709, places=4)
+        self.assertAlmostEqual(energies[13], -1000.2679341660352, places=4)
 
 
 if __name__ == '__main__':

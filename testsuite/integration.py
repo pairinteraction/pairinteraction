@@ -43,6 +43,7 @@ class IntegrationTest(unittest.TestCase):
         system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
         system_one.setEfield([0, 0, 0.1])
         system_one.setBfield([0, 0, 1])
+        system_one.enableDiamagnetism(False)
 
         # Check for correct dimensions
         self.assertEqual(system_one.getNumBasisvectors(), 64)

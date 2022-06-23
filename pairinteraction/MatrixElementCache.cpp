@@ -281,18 +281,18 @@ bool MatrixElementCache::CacheKey_cache_radial::operator==(const CacheKey_cache_
         (n == rhs.n) && (l == rhs.l) && (j == rhs.j);
 }
 
-bool MatrixElementCache::CacheKey_cache_angular::
-operator==(const CacheKey_cache_angular &rhs) const {
+bool MatrixElementCache::CacheKey_cache_angular::operator==(
+    const CacheKey_cache_angular &rhs) const {
     return (kappa == rhs.kappa) && (j == rhs.j) && (m == rhs.m);
 }
 
-bool MatrixElementCache::CacheKey_cache_reduced_commutes::
-operator==(const CacheKey_cache_reduced_commutes &rhs) const {
+bool MatrixElementCache::CacheKey_cache_reduced_commutes::operator==(
+    const CacheKey_cache_reduced_commutes &rhs) const {
     return (s == rhs.s) && (kappa == rhs.kappa) && (l == rhs.l) && (j == rhs.j);
 }
 
-bool MatrixElementCache::CacheKey_cache_reduced_multipole::
-operator==(const CacheKey_cache_reduced_multipole &rhs) const {
+bool MatrixElementCache::CacheKey_cache_reduced_multipole::operator==(
+    const CacheKey_cache_reduced_multipole &rhs) const {
     return (kappa == rhs.kappa) && (l == rhs.l);
 }
 
@@ -300,8 +300,8 @@ operator==(const CacheKey_cache_reduced_multipole &rhs) const {
 /// Hasher /////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-std::size_t MatrixElementCache::CacheKeyHasher_cache_radial::
-operator()(const CacheKey_cache_radial &c) const {
+std::size_t
+MatrixElementCache::CacheKeyHasher_cache_radial::operator()(const CacheKey_cache_radial &c) const {
     size_t seed = 0;
     utils::hash_combine(seed, c.method);
     utils::hash_combine(seed, c.species);
@@ -312,8 +312,8 @@ operator()(const CacheKey_cache_radial &c) const {
     return seed;
 }
 
-std::size_t MatrixElementCache::CacheKeyHasher_cache_angular::
-operator()(const CacheKey_cache_angular &c) const {
+std::size_t MatrixElementCache::CacheKeyHasher_cache_angular::operator()(
+    const CacheKey_cache_angular &c) const {
     size_t seed = 0;
     utils::hash_combine(seed, c.kappa);
     utils::hash_combine(seed, c.j);
@@ -321,8 +321,8 @@ operator()(const CacheKey_cache_angular &c) const {
     return seed;
 }
 
-std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_commutes::
-operator()(const CacheKey_cache_reduced_commutes &c) const {
+std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_commutes::operator()(
+    const CacheKey_cache_reduced_commutes &c) const {
     size_t seed = 0;
     utils::hash_combine(seed, c.s);
     utils::hash_combine(seed, c.kappa);
@@ -331,8 +331,8 @@ operator()(const CacheKey_cache_reduced_commutes &c) const {
     return seed;
 }
 
-std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_multipole::
-operator()(const CacheKey_cache_reduced_multipole &c) const {
+std::size_t MatrixElementCache::CacheKeyHasher_cache_reduced_multipole::operator()(
+    const CacheKey_cache_reduced_multipole &c) const {
     size_t seed = 0;
     utils::hash_combine(seed, c.kappa);
     utils::hash_combine(seed, c.l);
@@ -354,7 +354,7 @@ double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
 
 double MatrixElementCache::getDiamagnetism(StateOne const &state_row, StateOne const &state_col,
                                            int k) {
-    return 2. / 3. * getElectricMultipole(state_row, state_col, 2, k);
+    return 2. / 3. * elementary_charge * getElectricMultipole(state_row, state_col, 2, k);
 }
 
 double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne const &state_col) {
