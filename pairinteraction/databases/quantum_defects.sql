@@ -154,5 +154,25 @@ INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'3','0.120','-2.2','120','0.0','0.0','
 INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'2','0.120','-2.2','120','0.0','0.0','109736.627');
 INSERT INTO `rydberg_ritz` VALUES('Sr3',4,'3','0.0','0.0','0.0','0.0','0.0','109736.627');
 
+-- Comput. Phys. Commun. 261, 107814 (2021), singlet states
+INSERT INTO `rydberg_ritz` VALUES('Sr1',0,'0','3.26912','-0.178','3.5','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',1,'1','2.724','-3.4','-220','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',2,'2','2.3847','-42.0','-620','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',3,'3','0.0909','-2.44','62','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr1',4,'4','0.0','0.0','0.0','0.0','0.0','109736.631');
+
+-- Comput. Phys. Commun. 45, 107814 (2021), triplet states
+INSERT INTO `rydberg_ritz` VALUES('Sr3',0,'1','3.370773','0.420','-0.4','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'2','2.882','-2.5','100','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'1','2.8826','0.39','-1.1','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',1,'0','2.8867','0.43','-1.8','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'3','2.655','-65','-13577','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'2','2.66149','-16.9','-6630','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',2,'1','2.67524','-13.23','-4420','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'4','0.120','-2.4','120','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'3','0.119','-2.0','100','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'2','0.120','-2.2','100','0.0','0.0','109736.631');
+INSERT INTO `rydberg_ritz` VALUES('Sr3',4,'3','0.0','0.0','0.0','0.0','0.0','109736.631');
+
 COMMIT;
 
