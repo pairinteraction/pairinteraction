@@ -112,7 +112,8 @@ set(NOTEBOOKS
   "comparison_to_saffman_fig13.ipynb"
   "pair_potential_efield_sensitivity.ipynb"
   "pair_potential_near_surface.ipynb"
-  "vdw_near_surface.ipynb")
+  "vdw_near_surface.ipynb"
+  "atom_ion_interaction.ipynb")
 
 foreach(file ${NOTEBOOKS})
   configure_file(
@@ -129,7 +130,8 @@ endforeach()
 set(NOTEBOOKS
   "introduction.ipynb"
   "matrix_elements.ipynb"
-  "vdw_near_surface.ipynb")
+  "vdw_near_surface.ipynb"
+  "atom_ion_interaction.ipynb")
 
 if(WITH_GSL)
   list(APPEND NOTEBOOKS "wavefunctions.ipynb")
