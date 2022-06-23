@@ -605,7 +605,7 @@ void SystemOne::transformInteraction(const eigen_sparse_t &transformator) {
         entry.second = transformator.adjoint() * entry.second * transformator; // NOLINT
     }
     for (auto &entry : interaction_multipole) {
-        entry.second = transformator.adjoint() * entry.second * transformator;
+        entry.second = transformator.adjoint() * entry.second * transformator; // NOLINT
     }
 }
 
