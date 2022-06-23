@@ -12,3 +12,4 @@ Tutorials
     pair_potential_efield_sensitivity.rst
     vdw_near_surface.rst
     pair_potential_near_surface.rst
+    atom_ion_interaction.rst

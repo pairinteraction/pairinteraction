@@ -151,7 +151,7 @@ foreach(file ${NOTEBOOKS})
     COPYONLY)
   string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
   add_test(NAME "notebook.${NOTEBOOK_NAME}"
-    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
+    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to notebook --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
     WORKING_DIRECTORY "${SPHINX_BASE}")
   set_tests_properties("notebook.${NOTEBOOK_NAME}"
     PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
