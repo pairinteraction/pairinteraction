@@ -122,14 +122,17 @@ endforeach()
 set(NOTEBOOKS
   "introduction.ipynb"
   "matrix_elements.ipynb"
-  #"comparison_to_saffman_fig13.ipynb"
-  #"pair_potential_efield_sensitivity.ipynb"
-  #"pair_potential_near_surface.ipynb"
-  "vdw_near_surface.ipynb"
-  )
+  "vdw_near_surface.ipynb")
 
 if(WITH_GSL)
   list(APPEND NOTEBOOKS "wavefunctions.ipynb")
+endif()
+
+if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+  list(APPEND NOTEBOOKS
+    "comparison_to_saffman_fig13.ipynb"
+    "pair_potential_efield_sensitivity.ipynb"
+    "pair_potential_near_surface.ipynb")
 endif()
 
 foreach(file ${NOTEBOOKS})
