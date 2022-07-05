@@ -12,6 +12,10 @@ RUN apt-get update -qq \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
     curl ca-certificates \
+    doxygen graphviz \
+    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
+    jupyter-nbconvert pandoc python3-ipykernel \
+    python3-matplotlib \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 

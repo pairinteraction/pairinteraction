@@ -11,7 +11,11 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
     dpkg rpm-build \
-    curl ca-certificates \
+    curl \
+    doxygen graphviz \
+    python3-Sphinx python3-numpydoc python3-sphinx_rtd_theme \
+    jupyter-nbconvert pandoc python3-ipykernel \
+    python3-matplotlib \
   && zypper clean
 
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \

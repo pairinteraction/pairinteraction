@@ -13,6 +13,10 @@ RUN apt-get update -qq \
     clang-6.0 clang-tidy-6.0 \
     clang-format-6.0 python3-pip python3-setuptools \
     curl ca-certificates netcat \
+    doxygen graphviz \
+    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
+    jupyter-nbconvert pandoc python3-ipykernel \
+    python3-matplotlib \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install 'autopep8==1.3.5'
