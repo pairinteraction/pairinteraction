@@ -151,7 +151,7 @@ double MatrixElements::getMagneticMomentum(StateOneOld const &state_row,
 
 double MatrixElements::getDiamagnetism(StateOneOld const &state_row, StateOneOld const &state_col,
                                        int k) {
-    double val = inverse_electron_rest_mass * 1. / 12. *
+    double val = elementary_charge * inverse_electron_rest_mass * 1. / 12. *
         cache_radial[2][StateTwoOld({{state_row.n, state_col.n}}, {{state_row.l, state_col.l}},
                                     {{state_row.j, state_col.j}}, {{0, 0}})
                             .order()] *
