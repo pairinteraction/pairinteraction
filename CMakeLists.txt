@@ -181,12 +181,11 @@ elseif(APPLE AND WITH_DMG)
   
 elseif(UNIX)
 
-  install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt
+  install(FILES ${CMAKE_SOURCE_DIR}/README.md
+    DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
+  install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
-    COMPONENT applications
-    RENAME copyright
-  )
+    RENAME copyright)
 
   set(CPACK_GENERATOR "TGZ;RPM;DEB")
 

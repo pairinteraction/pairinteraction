@@ -74,6 +74,13 @@ add_custom_target(sphinx
   DEPENDS _pireal _picomplex
   COMMENT "Building HTML documentation with Sphinx")
 
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_cpp/
+  DESTINATION share/doc/pairinteraction/examples_cpp)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_python/
+  DESTINATION share/doc/pairinteraction/examples_python)
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/
+  DESTINATION share/doc/pairinteraction/html)
+
 # Files to be copied to the build directory
 set(FILE_LIST
   "_templates/layout.html"
