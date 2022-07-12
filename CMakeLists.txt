@@ -49,10 +49,10 @@ endif()
 string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
 string(REGEX REPLACE "-(pre)?alpha" "a" VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA ${VERSION_WITHOUT_LEADING_V})
 
-# default build type is "Release"
+# default build type is "Release with debug info"
 
 IF(NOT CMAKE_BUILD_TYPE)
-   SET(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the build type" FORCE)
+   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
