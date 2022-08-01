@@ -130,8 +130,7 @@ endforeach()
 set(NOTEBOOKS
   "introduction.ipynb"
   "matrix_elements.ipynb"
-  "vdw_near_surface.ipynb"
-  "atom_ion_interaction.ipynb")
+  "vdw_near_surface.ipynb")
 
 if(WITH_GSL)
   list(APPEND NOTEBOOKS "wavefunctions.ipynb")
@@ -141,7 +140,8 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
   list(APPEND NOTEBOOKS
     "comparison_to_saffman_fig13.ipynb"
     "pair_potential_efield_sensitivity.ipynb"
-    "pair_potential_near_surface.ipynb")
+    "pair_potential_near_surface.ipynb"
+    "atom_ion_interaction.ipynb")
 endif()
 
 foreach(file ${NOTEBOOKS})
