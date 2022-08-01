@@ -44,6 +44,7 @@ if (WITH_PYTHON)
   python_test(TARGET symmetries SOURCE symmetries.py)
   python_test(TARGET integration SOURCE integration.py)
   python_test(TARGET diamagnetism SOURCE diamagnetism.py)
+  python_test(TARGET atom_ion_interaction SOURCE atom_ion_interaction.py)
   if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{CI}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
   endif()
