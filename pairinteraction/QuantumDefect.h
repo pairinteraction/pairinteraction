@@ -94,7 +94,7 @@ private:
 
     Element e;
 
-    void setup(sqlite3 * /*db*/);
+    void setup(sqlite3 * /*db*/, std::string db_name);
 
     QuantumDefect(std::string _species, int _n, int _l, double _j, std::nullptr_t);
 

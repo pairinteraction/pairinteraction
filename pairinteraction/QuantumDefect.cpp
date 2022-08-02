@@ -24,6 +24,7 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -60,7 +61,7 @@ QuantumDefect::QuantumDefect(std::string _species, int _n, int _l, double _j, st
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j)
     : QuantumDefect(species, n, l, j, nullptr) {
     static thread_local EmbeddedDatabase embedded_database{};
-    setup(embedded_database);
+    setup(embedded_database, "");
 }
 
 QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
@@ -68,15 +69,26 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
     : QuantumDefect(species, n, l, j, nullptr) {
     if (database.empty()) {
         static thread_local EmbeddedDatabase embedded_database{};
-        setup(embedded_database);
+        setup(embedded_database, database);
     } else {
-        sqlite::handle db(database, SQLITE_OPEN_READONLY);
-        setup(db);
+        static thread_local sqlite::handle db(":memory:");
+        sqlite::statement stmt(db);
+        std::ifstream ifs(database);
+        std::stringstream buffer;
+        buffer << ifs.rdbuf();
+        stmt.exec(buffer.str());
+        setup(db, database);
     }
 }
 
-void QuantumDefect::setup(sqlite3 *db) {
+void QuantumDefect::setup(sqlite3 *db, std::string db_name) {
     static Cache<Key, Element, Hash> cache;
+    static std::string used_db_name;
+
+    if (used_db_name != db_name) {
+        used_db_name = db_name;
+        cache.clear(); // Clear cache
+    }
 
     Key const key{species, n, l, j};
     if (auto oe = cache.restore(key)) {
