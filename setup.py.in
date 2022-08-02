@@ -29,7 +29,7 @@ setup(
     },
     scripts = [ "start_pairinteraction_gui" ],
     install_requires=[
-        "numpy >= 1.11.0",
+        "numpy >= 1.22.0",
         "scipy >= 0.17.0",
         "pint",
         "psutil",

@@ -29,7 +29,7 @@ set(GUINAME "pairinteraction_gui")
 # set version of settings and cache
 
 set(VERSION_SETTINGS "v17")
-set(VERSION_CACHE "v16")
+set(VERSION_CACHE "v17")
 
 # get software version info from git
 

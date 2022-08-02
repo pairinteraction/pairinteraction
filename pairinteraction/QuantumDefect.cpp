@@ -81,7 +81,7 @@ QuantumDefect::QuantumDefect(std::string const &species, int n, int l, double j,
     }
 }
 
-void QuantumDefect::setup(sqlite3 *db, std::string db_name) {
+void QuantumDefect::setup(sqlite3 *db, std::string const &db_name) {
     static Cache<Key, Element, Hash> cache;
     static std::string used_db_name;
 
