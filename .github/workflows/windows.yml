@@ -5,6 +5,12 @@ on:
   pull_request:
   schedule:
   - cron: '0 0 * * 1' # Every Monday at 00:00
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled'     
+        required: false
+        default: false
 
 # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 env:
@@ -70,6 +76,12 @@ jobs:
           Copy-Item pairinteraction\Release\* pairinteraction\unit_test\Release -Recurse -Force -Verbose
           cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
+
+      - name: Run debugging session in tmate
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
 
       - uses: actions/upload-artifact@v3
         with:
