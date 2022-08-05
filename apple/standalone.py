@@ -78,16 +78,15 @@ def standalone(file):
                         "Error in making {} standalone. For the library {}, there is no suitable rpath in {}!".format(
                             file, libpath_original, rpaths))
 
-            if not os.path.isfile(libpath):
-                raise RuntimeError(
-                    "Error in making {} standalone. Library {} not found!".format(
-                        file, libpath_original))
-
             libpath_abs = os.path.abspath(libpath)
 
             # If no standard library and no installed library, update path to dependency
-            if (not libpath_abs.startswith(
-                    "/System/Library") and not libpath_abs.startswith("/usr/lib")) or "libsqlite" in libpath_abs:
+            if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib"):
+
+                if not os.path.isfile(libpath):
+                    raise RuntimeError(
+                        "Error in making {} standalone. Library {} not found!".format(
+                            file, libpath_original))
 
                 # Update paths
                 if libpath_abs not in executables:

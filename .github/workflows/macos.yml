@@ -5,6 +5,12 @@ on:
   pull_request:
   schedule:
   - cron: '0 0 * * 1' # Every Monday at 00:00
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        description: 'Run the build with tmate debugging enabled'     
+        required: false
+        default: false
 
 # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 env:
@@ -15,7 +21,7 @@ env:
 
 jobs:
   macos:
-    runs-on: macos-10.15
+    runs-on: macos-11
     env:
       package: pairinteraction-install-osx.dmg
     steps:
@@ -32,20 +38,23 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost eigen fmt gsl libomp
+          brew install boost eigen fmt gsl
           npm install -g fileicon
 
+      - name: Configure
+        run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
       - name: Build
+        run: cmake --build build/ -- --keep-going
+      - name: Test
+        run: cmake --build build/ --target test -- --keep-going
+      - name: Package
         run: |
-          cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
-          cmake --build build/ -- --keep-going
-          cmake --build build/ --target test -- --keep-going
           cmake --build build/ --target package -- --keep-going
           cmake --build build/ --target license -- --keep-going
 
       - name: Wheel
         run: |
-          python setup.py bdist_wheel --python-tag py3 --plat-name macosx_10_15_x86_64
+          python setup.py bdist_wheel --python-tag py3 --plat-name macosx_11_0_x86_64
           wheel unpack dist/*.whl -d wheelhouse/
           chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/start_pairinteraction_gui
           cd wheelhouse/*/pairinteraction
@@ -53,6 +62,12 @@ jobs:
           cd ../../..
           wheel pack wheelhouse/* -d wheelhouse/
         working-directory: build/
+
+      - name: Run debugging session in tmate
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
 
       - uses: actions/upload-artifact@v3
         with:
