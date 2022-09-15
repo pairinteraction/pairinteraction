@@ -398,9 +398,8 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
     boost::uuids::random_generator generator;
 
     // generate uuid
-    std::string uuid;
     boost::uuids::uuid u = generator();
-    boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+    std::string uuid = boost::uuids::to_string(u);
 
     // save pair state basis
     fs::path path_basis = fs::temp_directory_path();
@@ -768,7 +767,7 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
 
             } else {
                 boost::uuids::uuid u = generator();
-                boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+                uuid = boost::uuids::to_string(u);
 
                 query.str(std::string());
                 query << "INSERT INTO cache_two (uuid";

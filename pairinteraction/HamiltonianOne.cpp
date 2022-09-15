@@ -159,9 +159,8 @@ void HamiltonianOne<Scalar>::build() {
     boost::uuids::random_generator generator;
 
     // generate uuid
-    std::string uuid;
     boost::uuids::uuid u = generator();
-    boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+    std::string uuid = boost::uuids::to_string(u);
 
     // save basis
     fs::path path_basis = fs::temp_directory_path();
@@ -547,7 +546,7 @@ void HamiltonianOne<Scalar>::build() {
 
         } else {
             boost::uuids::uuid u = generator();
-            boost::algorithm::hex(u.begin(), u.end(), std::back_inserter(uuid));
+            uuid = boost::uuids::to_string(u);
 
             query.str(std::string());
             query << "INSERT INTO cache_one (uuid";

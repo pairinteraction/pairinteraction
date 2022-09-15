@@ -2,7 +2,6 @@
     "name": "pairinteraction",
     "version-string": "1",
     "dependencies": [
-        "boost-algorithm",
         "boost-math",
         "boost-multi-index",
         "boost-tokenizer",
