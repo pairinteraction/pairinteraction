@@ -5,7 +5,6 @@
         "boost-math",
         "boost-multi-index",
         "boost-tokenizer",
-        "boost-uuid",
         "cereal",
         "doctest",
         "eigen3",

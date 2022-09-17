@@ -27,10 +27,6 @@
 #include "SQLite.hpp"
 #include "filesystem.hpp"
 
-#include <boost/uuid/uuid.hpp>
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
 #include <cmath>
 #include <iostream>
 #include <memory>

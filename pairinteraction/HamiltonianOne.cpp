@@ -19,6 +19,7 @@
 
 #include "HamiltonianOne.hpp"
 #include "filesystem.hpp"
+#include "utils.hpp"
 
 #include <fmt/format.h>
 
@@ -155,12 +156,8 @@ void HamiltonianOne<Scalar>::build() {
     // === Save single atom basis ===
     std::cout << "One-atom Hamiltonian, save single atom basis" << std::endl;
 
-    // initialize uuid generator
-    boost::uuids::random_generator generator;
-
     // generate uuid
-    boost::uuids::uuid u = generator();
-    std::string uuid = boost::uuids::to_string(u);
+    std::string uuid = utils::generateUuid();
 
     // save basis
     fs::path path_basis = fs::temp_directory_path();
@@ -545,8 +542,7 @@ void HamiltonianOne<Scalar>::build() {
             stmt.exec(query.str()); // TODO check whether this slows down the program
 
         } else {
-            boost::uuids::uuid u = generator();
-            uuid = boost::uuids::to_string(u);
+            uuid = utils::generateUuid();
 
             query.str(std::string());
             query << "INSERT INTO cache_one (uuid";

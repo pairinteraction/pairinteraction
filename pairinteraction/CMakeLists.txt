@@ -263,10 +263,6 @@ target_link_libraries(pairinteraction PUBLIC SQLite::SQLite3)
 
 find_package(Boost REQUIRED)
 target_link_libraries(pairinteraction PUBLIC Boost::boost)
-if(MSVC)
-  target_link_libraries(pairinteraction PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
-  target_compile_definitions(pairinteraction PUBLIC BOOST_UUID_FORCE_AUTO_LINK)
-endif()
 
 if(NOT MSVC AND NOT APPLE)
   set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
@@ -276,6 +272,20 @@ if(NOT MSVC AND NOT APPLE)
   if(CAN_LINK_STDCXXFS)
     target_link_libraries(pairinteraction PUBLIC stdc++fs)
   endif()
+endif()
+
+if(MSVC)
+  target_link_libraries(pairinteraction PUBLIC rpcrt4.lib)
+elseif(APPLE)
+  target_link_libraries(pairinteraction PUBLIC "-framework CoreFoundation")
+else()
+  find_library(LibUUID_LIBRARY NAMES uuid)
+  find_path(LibUUID_INCLUDE_DIRS NAMES uuid/uuid.h)
+  add_library(LibUUID::LibUUID UNKNOWN IMPORTED)
+  set_target_properties(LibUUID::LibUUID PROPERTIES
+    IMPORTED_LOCATION "${LibUUID_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${LibUUID_INCLUDE_DIRS}")
+  target_link_libraries(pairinteraction PUBLIC LibUUID::LibUUID)
 endif()
 
 if(WITH_GSL)

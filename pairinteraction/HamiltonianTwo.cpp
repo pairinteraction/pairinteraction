@@ -20,6 +20,7 @@
 #include "HamiltonianTwo.hpp"
 
 #include "Constants.hpp"
+#include "utils.hpp"
 
 #include <fmt/format.h>
 
@@ -394,12 +395,8 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
     // === Save pair state basis ===
     std::cout << "Two-atom Hamiltonian, save pair state basis" << std::endl;
 
-    // initialize uuid generator
-    boost::uuids::random_generator generator;
-
     // generate uuid
-    boost::uuids::uuid u = generator();
-    std::string uuid = boost::uuids::to_string(u);
+    std::string uuid = utils::generateUuid();
 
     // save pair state basis
     fs::path path_basis = fs::temp_directory_path();
@@ -766,8 +763,7 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
                 stmt.exec(query.str()); // TODO check whether this slows down the program
 
             } else {
-                boost::uuids::uuid u = generator();
-                uuid = boost::uuids::to_string(u);
+                uuid = utils::generateUuid();
 
                 query.str(std::string());
                 query << "INSERT INTO cache_two (uuid";
