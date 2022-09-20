@@ -72,14 +72,14 @@ private:
         diamagnetism_terms;
     int charge;
     unsigned int ordermax;
-    double distance;				
+    double distance;
     std::string species;
 
     std::unordered_map<int, eigen_sparse_t> interaction_efield;
     std::unordered_map<int, eigen_sparse_t> interaction_bfield;
     std::unordered_map<std::array<int, 2>, eigen_sparse_t, utils::hash<std::array<int, 2>>>
         interaction_diamagnetism;
-    std::unordered_map<int, eigen_sparse_t> interaction_multipole;	
+    std::unordered_map<int, eigen_sparse_t> interaction_multipole;
     parity_t sym_reflection;
     std::set<float> sym_rotation;
 

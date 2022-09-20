@@ -133,7 +133,7 @@ jobs:
       run: git config --global --add safe.directory '*'
     - name: Fix style
       run: |
-        find pairinteraction -name "*.h" -or -name "*.cpp" -print0 |
+        find pairinteraction \( -name "*.h" -or -name "*.cpp" \) -print0 |
             xargs -0 -P 0 -I '{}' -t clang-format -i -style=file "{}"
         # FIXME: Currently ignoring E225 and E226 to prevent changing @LIBNAME@ to @ LIBNAME @
         find testsuite -name "*.py" -print0 |

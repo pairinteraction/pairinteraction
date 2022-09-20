@@ -44,7 +44,7 @@ inline path create_temp_directory() {
     }
     fs::create_directory(dirname);
 #else
-    #error "Compiler does support not mkdtemp()"
+#error "Compiler does support not mkdtemp()"
 #endif
     return dirname;
 }
