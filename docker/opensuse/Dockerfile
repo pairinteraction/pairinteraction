@@ -10,6 +10,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
+    python3-psutil python3-pyqtgraph python3-Pint \
     dpkg rpm-build \
     curl \
     doxygen graphviz \

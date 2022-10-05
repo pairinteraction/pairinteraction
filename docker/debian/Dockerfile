@@ -16,6 +16,7 @@ RUN apt-get update -qq \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
+    locales python3-psutil python3-pyqtgraph python3-pint \
     dpkg rpm \
     lcov \
     doxygen graphviz ca-certificates rsync \
@@ -23,6 +24,7 @@ RUN apt-get update -qq \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
     intel-mkl-64bit-2020.0-088 \
+  && locale-gen --no-purge en_US.UTF-8 \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 

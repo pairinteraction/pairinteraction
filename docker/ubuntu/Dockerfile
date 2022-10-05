@@ -10,12 +10,14 @@ RUN apt-get update -qq \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
+    locales python3-psutil python3-pyqtgraph python3-pint \
     dpkg-dev rpm \
     curl ca-certificates \
     doxygen graphviz \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
+  && locale-gen --no-purge en_US.UTF-8 \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 
