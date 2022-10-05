@@ -24,7 +24,7 @@ RUN apt-get update -qq \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
     intel-mkl-64bit-2020.0-088 \
-  && locale-gen --no-purge en_US.UTF-8 \
+  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 

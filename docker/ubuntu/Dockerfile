@@ -17,7 +17,7 @@ RUN apt-get update -qq \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
-  && locale-gen --no-purge en_US.UTF-8 \
+  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 
