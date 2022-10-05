@@ -48,6 +48,9 @@ if (WITH_PYTHON)
   if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{CI}) AND NOT WITH_CLANG_TIDY) # timeout
     python_test(TARGET parallelization SOURCE parallelization.py)
   endif()
+  if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
+    python_test(TARGET gui SOURCE gui.py)
+  endif()
 endif()
 
 configure_file(

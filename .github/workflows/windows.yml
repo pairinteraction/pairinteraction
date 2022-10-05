@@ -19,6 +19,8 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CMAKE_BUILD_TYPE: Release
   CXXFLAGS: "/W3 /Ox"
+  QT_QPA_PLATFORM: "offscreen"
+  QT_DEBUG_PLUGINS: 1
 
 jobs:
   build:
