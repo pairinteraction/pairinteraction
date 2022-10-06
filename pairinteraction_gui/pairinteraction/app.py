@@ -447,10 +447,10 @@ class MainWindow(QtWidgets.QMainWindow):
         super().__init__(parent)
         self.AboutDialog = AboutDialog(self)
 
-        del pg.graphicsItems.GradientEditorItem.Gradients['greyclip']
-        del pg.graphicsItems.GradientEditorItem.Gradients['cyclic']
-        del pg.graphicsItems.GradientEditorItem.Gradients['spectrum']
-        del pg.graphicsItems.GradientEditorItem.Gradients['bipolar']
+        pg.graphicsItems.GradientEditorItem.Gradients.pop('greyclip', None)
+        pg.graphicsItems.GradientEditorItem.Gradients.pop('cyclic', None)
+        pg.graphicsItems.GradientEditorItem.Gradients.pop('spectrum', None)
+        pg.graphicsItems.GradientEditorItem.Gradients.pop('bipolar', None)
 
         # TODO make class, check if module exists
         """from palettable import cubehelix"""
