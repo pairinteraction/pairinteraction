@@ -11,7 +11,7 @@ RUN apt-get update -qq \
     python3-numpy python3-scipy \
     dpkg-dev rpm \
     clang-6.0 clang-tidy-6.0 \
-    clang-format-6.0 python3-pip python3-setuptools \
+    clang-format-6.0 python3-pip python3-setuptools black flake8 \
     curl ca-certificates netcat \
     doxygen graphviz \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
