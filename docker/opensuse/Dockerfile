@@ -1,5 +1,6 @@
 FROM opensuse/leap:15.2
-RUN zypper -n --gpg-auto-import-keys refresh \
+RUN zypper addrepo --check --refresh https://download.opensuse.org/repositories/server:/Kolab:/Extras/openSUSE_Leap_15.2/server:Kolab:Extras.repo \
+  && zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     patterns-devel-C-C++-devel_C_C++ \
     git cmake \

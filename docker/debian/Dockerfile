@@ -20,7 +20,7 @@ RUN apt-get update -qq \
     dpkg rpm \
     lcov \
     doxygen graphviz ca-certificates rsync \
-    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
+    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme python3-breathe \
     jupyter-nbconvert pandoc python3-ipykernel \
     python3-matplotlib \
     intel-mkl-64bit-2020.0-088 \
