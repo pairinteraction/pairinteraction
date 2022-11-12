@@ -21,11 +21,11 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
@@ -48,7 +48,7 @@ jobs:
         cp -r build/doc/coverage/html public/coverage/
     - name: Deploy pages
       if: github.ref == 'refs/heads/master'
-      uses: JamesIves/github-pages-deploy-action@v4.3.3
+      uses: JamesIves/github-pages-deploy-action@v4.4.1
       with:
         branch: gh-pages
         folder: public
@@ -59,16 +59,16 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Setup Python
       run: |
         echo "/opt/python/cp38-cp38/bin" >> $GITHUB_PATH
-    - uses: actions/cache@v1
+    - uses: actions/cache@v3
       with:
         path: ${{ runner.temp }}/cache-pip
         key: ${{ runner.os }}-cache-pip-${{ hashFiles('requirements.txt') }}
@@ -89,7 +89,7 @@ jobs:
         mkdir -p artifact/
         cp wheelhouse/*.whl artifact/
       working-directory: build/
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       with:
         name: pairinteraction-manylinux-wheel
         path: build/artifact/
@@ -101,11 +101,11 @@ jobs:
     env:
       package: pairinteraction-install-opensuse.rpm
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
@@ -117,7 +117,7 @@ jobs:
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package
       run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ env.package }}
         path: build/${{ env.package }}
@@ -127,11 +127,11 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Fix style
       run: |
@@ -143,7 +143,7 @@ jobs:
         find pairinteraction_gui/pairinteraction -name "*.py" -print0 |
             xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
         git diff --output=format.patch --exit-code || { cat format.patch; false; }
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       if: failure()
       with:
         name: format.patch
@@ -154,11 +154,11 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOCS=On -DWITH_GUI=Off
@@ -176,11 +176,11 @@ jobs:
     env:
       package: pairinteraction-install-ubuntu.deb
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
         submodules: true
-    - name: Fixup Run actions/checkout@v1
+    - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
@@ -192,7 +192,7 @@ jobs:
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package
       run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v1
+    - uses: actions/upload-artifact@v3
       with:
         name: ${{ env.package }}
         path: build/${{ env.package }}
