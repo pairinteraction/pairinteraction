@@ -1,6 +1,5 @@
-FROM opensuse/leap:15.2
-RUN zypper addrepo --check --refresh https://download.opensuse.org/repositories/server:/Kolab:/Extras/openSUSE_Leap_15.2/server:Kolab:Extras.repo \
-  && zypper -n --gpg-auto-import-keys refresh \
+FROM opensuse/leap:15.4
+RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     patterns-devel-C-C++-devel_C_C++ \
     git cmake \
@@ -8,7 +7,7 @@ RUN zypper addrepo --check --refresh https://download.opensuse.org/repositories/
     sqlite3 sqlite3-devel \
     libboost_filesystem1_66_0-devel libboost_program_options1_66_0-devel \
     libboost_serialization1_66_0-devel libboost_system1_66_0-devel libboost_test1_66_0-devel \
-    cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel \
+    doctest-devel cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
     python3-psutil python3-pyqtgraph python3-Pint \
