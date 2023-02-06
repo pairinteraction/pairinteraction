@@ -129,7 +129,7 @@ void StateOneOld::analyzeSpecies() {
     s = 0.5;
     element = species;
 
-    if (std::isdigit(species.back()) != 0) {
+    if (!species.empty() && std::isdigit(species.back()) != 0) {
         s = ((species.back() - '0') - 1) / 2.;
         element = species.substr(0, species.size() - 1);
     }
@@ -283,7 +283,7 @@ void StateTwoOld::analyzeSpecies() {
         s[i] = 0.5;
         element[i] = species[i];
 
-        if (std::isdigit(species[i].back()) != 0) {
+        if (!species[i].empty() && std::isdigit(species[i].back()) != 0) {
             s[i] = ((species[i].back() - '0') - 1) / 2.;
             element[i] = species[i].substr(0, species[i].size() - 1);
         }
