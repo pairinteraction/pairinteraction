@@ -46,7 +46,7 @@ jobs:
           cache: 'pip'
       - run: pip install -r requirements.txt
 
-      - name: Build
+      - name: Configure
         shell: cmd
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -55,7 +55,9 @@ jobs:
               -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} ^
               -DCMAKE_WINDOWS_EXPORT_ALL_SYMBOLS=TRUE ^
               -DCMAKE_TOOLCHAIN_FILE="%VCPKG_INSTALLATION_ROOT%\scripts\buildsystems\vcpkg.cmake"
-          cmake --build build/ --config ${{ env.CMAKE_BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build/ --config ${{ env.CMAKE_BUILD_TYPE }}
 
       - name: After build
         run: |
