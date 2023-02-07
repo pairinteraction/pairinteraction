@@ -701,8 +701,9 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
         sym_reflection = NA;
         ++num_different_symmetries;
     }
-    if (!std::equal(sym_rotation.begin(), sym_rotation.end(),
-                    dynamic_cast<SystemOne &>(system).sym_rotation.begin())) {
+    if (!(sym_rotation.size() == dynamic_cast<SystemOne &>(system).sym_rotation.size() &&
+          std::equal(sym_rotation.begin(), sym_rotation.end(),
+                     dynamic_cast<SystemOne &>(system).sym_rotation.begin()))) {
         if (sym_rotation.count(static_cast<float>(ARB)) != 0 ||
             dynamic_cast<SystemOne &>(system).sym_rotation.count(static_cast<float>(ARB)) != 0) {
             sym_rotation = {static_cast<float>(ARB)};
