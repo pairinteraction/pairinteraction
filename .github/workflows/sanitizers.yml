@@ -1,0 +1,119 @@
+name: Sanitizers
+
+on: [push, pull_request]
+
+
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 2
+  CTEST_OUTPUT_ON_FAILURE: 1
+  QT_QPA_PLATFORM: "offscreen"
+  QT_DEBUG_PLUGINS: 1
+
+jobs:
+  asan:
+    # AddressSanitizer (ASan) is a fast memory error detector. ASan needs full
+    # control over the memory layout and therefore has to be loaded as the very
+    # first library. In principle LD_PRELOAD is needed for Python tests but that
+    # produces false positives so we instead use verify_asan_link_order=0 which
+    # in turn might miss some actual positives.
+    # https://clang.llvm.org/docs/AddressSanitizer.html
+    #
+    # Julia tests do not run with address sanitizer due to the following errors:
+    # - When using LD_PRELOAD:
+    #     You are trying to dlopen a libpcre2-8 shared library with RTLD_DEEPBIND
+    #     flag which is incompatibe with sanitizer runtime (see
+    #     https://github.com/google/sanitizers/issues/611 for details). If you want
+    #     to run libpcre2-8 library under sanitizers please remove RTLD_DEEPBIND
+    #     from dlopen flags.
+    # - When using verify_asan_link_order=0:
+    #     free(): invalid size
+    #
+    # The following Python tests are also disabled:
+    # - python.feast
+    #   "attempting free on address which was not malloc()-ed" inside of
+    #   scipy.sparse which comes from np.dot(csc_matrix, csc_matrix) and using
+    #   suppressions doesn't seem to work
+    # - python.parallelization
+    #   Deadlocks or just takes really really long.
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Fixup Run actions/checkout
+      run: git config --global --add safe.directory '*'
+    - name: Configure
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOCS=On
+      env:
+        CXXFLAGS: "-Wall -Wextra -Wpedantic -fno-omit-frame-pointer -fsanitize=address"
+        LDFLAGS: "-fsanitize=address"
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+    - name: Test
+      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(julia|python.feast|python.parallelization)'"
+      env:
+        ASAN_OPTIONS: "symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0:verify_asan_link_order=0"
+
+  ubsan:
+    # UndefinedBehaviorSanitizer (UBSan) is a fast undefined behavior detector.
+    # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Fixup Run actions/checkout
+      run: git config --global --add safe.directory '*'
+    - name: Configure
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOCS=On
+      env:
+        CXXFLAGS: "-Wall -Wextra -Wpedantic -fsanitize=undefined"
+        LDFLAGS: "-fsanitize=undefined"
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+    - name: Test
+      run: cmake --build build/ --target test -- --keep-going
+      env:
+        UBSAN_OPTIONS: "symbolize=1:print_stacktrace=1:halt_on_error=1"
+
+  glibcxx-debug:
+    # The libstdc++ debug mode replaces all iterators by safe iterators and adds
+    # extra checks to algorithms. Since changing the size of the iterators
+    # changes the size of containers, it's not possible to pass containers
+    # between code compiled with debug mode and code compiled
+    # without. Attempting to pass containers between them anyway will segfault.
+    # https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
+    #
+    # Disabled tests:
+    # - cpp.integration
+    #   Segfaults probably because of Boost.Serialization not having debug mode.
+    # - python.parallelization
+    #   Deadlocks or just takes really really long.
+    # - julia.*
+    #   Segfaults probably because of JlCxxWrap not having debug mode.
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Fixup Run actions/checkout
+      run: git config --global --add safe.directory '*'
+    - name: Configure
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOCS=On
+      env:
+        CXXFLAGS: "-Wall -Wextra -Wpedantic -D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+    - name: Test
+      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(julia|cpp.integration|python.parallelization)'"
