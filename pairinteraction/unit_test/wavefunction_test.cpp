@@ -34,7 +34,8 @@ struct Fixture {
 
 TEST_CASE_TEMPLATE("model_potentials", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    auto const qd = T{}.qd;
+    T const fixture;
+    auto const qd = fixture.qd;
     // There could be better coverage
     CHECK(std::isnan(model_potential::V(qd, 0)));
     CHECK(std::isnan(model_potential::g(qd, 0)));
@@ -42,7 +43,8 @@ TEST_CASE_TEMPLATE("model_potentials", T, Fixture<1>, Fixture<2>) // NOLINT
 
 TEST_CASE_TEMPLATE("numerovs_method", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    auto const qd = T{}.qd;
+    T const fixture;
+    auto const qd = fixture.qd;
     Numerov N(qd);
     auto const &xy = N.integrate();
 
@@ -57,7 +59,8 @@ TEST_CASE_TEMPLATE("numerovs_method", T, Fixture<1>, Fixture<2>) // NOLINT
 #ifdef WITH_GSL
 TEST_CASE_TEMPLATE("coulomb_functions", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    auto const qd = T{}.qd;
+    T const fixture;
+    auto const qd = fixture.qd;
     Whittaker W(qd);
     auto const &xy = W.integrate();
 
@@ -71,7 +74,8 @@ TEST_CASE_TEMPLATE("coulomb_functions", T, Fixture<1>, Fixture<2>) // NOLINT
 
 TEST_CASE_TEMPLATE("method_comparison", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    auto const qd = T{}.qd;
+    T const fixture;
+    auto const qd = fixture.qd;
     Numerov N(qd);
     Whittaker W(qd);
     auto const &nxy = N.integrate();
@@ -88,7 +92,8 @@ TEST_CASE_TEMPLATE("method_comparison", T, Fixture<1>, Fixture<2>) // NOLINT
 }
 TEST_CASE_TEMPLATE("integration", T, Fixture<1>, Fixture<2>) // NOLINT
 {
-    auto const qd = T{}.qd;
+    T const fixture;
+    auto const qd = fixture.qd;
     double mu_n = IntegrateRadialElement<Numerov>(qd, 1, qd);
     double mu_w = IntegrateRadialElement<Whittaker>(qd, 1, qd);
     CHECK(mu_n == doctest::Approx(mu_w).scale(1e-3)); // corresponds to 0.1% deviation
