@@ -110,7 +110,8 @@ public:
     friend void operator<<(Serializer &s, const std::vector<T> &data) {
         s.buffer_isVector.push_back(true);
         s.buffer_types.push_back(s.type_ids[std::type_index(typeid(T))]);
-        s.buffer_pitems.push_back(reinterpret_cast<const byte_t *>(&data[0]));
+        s.buffer_pitems.push_back(
+            reinterpret_cast<const byte_t *>(!data.empty() ? &data[0] : nullptr));
         s.buffer_nums.push_back(data.size());
         s.buffer_sizes.push_back(sizeof(T));
     }
