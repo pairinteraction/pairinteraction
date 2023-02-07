@@ -57,3 +57,11 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/integration_test_referencedata.pickle
   ${CMAKE_CURRENT_BINARY_DIR}/integration_test_referencedata.pickle
   COPYONLY)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/defects.sql
+  ${CMAKE_CURRENT_BINARY_DIR}/defects.sql
+  COPYONLY)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/dipole.csv
+  ${CMAKE_CURRENT_BINARY_DIR}/dipole.csv
+  COPYONLY)

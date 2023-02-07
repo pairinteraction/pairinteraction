@@ -1,45 +1,18 @@
 import numpy as np
-import shutil
-import tempfile
 import unittest
-import ssl
-import urllib.request
-import os
 
 from @LIBNAME@ import pireal as pi
 
 
 class CacheTest(unittest.TestCase):
 
-    def setUp(self):
-        self.cache_path = tempfile.mkdtemp()
-        self.dipoledb_path = os.path.join(self.cache_path, "dipole.csv")
-        self.defectdb_path = os.path.join(self.cache_path, "defects.sql")
-
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-
-        with urllib.request.urlopen("https://raw.githubusercontent.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator/4579309f65152fa65ca4fc5796eb00d199a4dc39/arc/data/rubidium_literature_dme.csv", context=ctx) as u, \
-                open(self.dipoledb_path, 'wb') as f:
-            f.write(u.read())
-        with urllib.request.urlopen("https://raw.githubusercontent.com/pairinteraction/pairinteraction/dcd4013238984ea2f57ffc2cd1eaff2996fc8586/libpairinteraction/databases/quantum_defects.sql", context=ctx) as u, \
-                open(self.defectdb_path, 'wb') as f:
-            f.write(u.read())
-
-    def tearDown(self):
-        try:
-            shutil.rmtree(self.cache_path)
-        except BaseException:
-            pass
-
     def test_defectdb(self):
         cache = pi.MatrixElementCache()
-        cache.setDefectDB(self.defectdb_path)
+        cache.setDefectDB("defects.sql")
 
     def test_dipoledb(self):
         cache = pi.MatrixElementCache()
-        cache.loadElectricDipoleDB(self.dipoledb_path, "Rb")
+        cache.loadElectricDipoleDB("dipole.csv", "Rb")
         cache_size = cache.size()
         self.assertGreater(cache_size, 0)
 
