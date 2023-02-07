@@ -397,18 +397,10 @@ double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne
 
     // Update cache by calculate missing constituents
     if (this->update() != 0) {
-        if (iter1 == cache_radial.end()) {
-            iter1 = cache_radial.find(key1);
-        }
-        if (iter2 == cache_angular.end()) {
-            iter2 = cache_angular.find(key2);
-        }
-        if (iter3 == cache_reduced_commutes_s.end()) {
-            iter3 = cache_reduced_commutes_s.find(key3);
-        }
-        if (iter4 == cache_reduced_commutes_l.end()) {
-            iter4 = cache_reduced_commutes_l.find(key4);
-        }
+        iter1 = cache_radial.find(key1);
+        iter2 = cache_angular.find(key2);
+        iter3 = cache_reduced_commutes_s.find(key3);
+        iter4 = cache_reduced_commutes_l.find(key4);
     }
 
     return -bohr_magneton * iter1->second * key2.sgn * iter2->second *
@@ -458,18 +450,10 @@ double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
 
     // Update cache by calculate missing constituents
     if (this->update() != 0) {
-        if (iter1 == cache_radial.end()) {
-            iter1 = cache_radial.find(key1);
-        }
-        if (iter2 == cache_angular.end()) {
-            iter2 = cache_angular.find(key2);
-        }
-        if (iter3 == cache_reduced_commutes_s.end()) {
-            iter3 = cache_reduced_commutes_s.find(key3);
-        }
-        if (iter4 == cache_reduced_multipole.end()) {
-            iter4 = cache_reduced_multipole.find(key4);
-        }
+        iter1 = cache_radial.find(key1);
+        iter2 = cache_angular.find(key2);
+        iter3 = cache_reduced_commutes_s.find(key3);
+        iter4 = cache_reduced_multipole.find(key4);
     }
 
     return elementary_charge * iter1->second * key2.sgn * iter2->second * key3.sgn * iter3->second *
