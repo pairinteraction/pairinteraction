@@ -30,20 +30,29 @@ set(GUINAME "pairinteraction_gui")
 
 set(VERSION_SETTINGS "v17")
 set(VERSION_CACHE "v17")
+set(VERSION_SOFTWARE_DEFAULT "v0.0.0")
 
 # get software version info from git
 
-find_package(Git)
-
-if(GIT_FOUND)
-  execute_process(
-    COMMAND "${GIT_EXECUTABLE}" describe --abbrev=0 --tags
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-    OUTPUT_VARIABLE VERSION_SOFTWARE
-    OUTPUT_STRIP_TRAILING_WHITESPACE )
-else()
-  message(WARNING "Because Git was not found, the version of the pairinteraction software cannot be determined.")
-  set(VERSION_SOFTWARE "v0.0.0")
+if(NOT VERSION_SOFTWARE)
+  find_package(Git)
+  if(GIT_FOUND)
+    execute_process(
+      COMMAND "${GIT_EXECUTABLE}" describe --abbrev=0 --tags
+      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+      RESULT_VARIABLE GIT_DESCRIBE_RESULT
+      OUTPUT_VARIABLE GIT_DESCRIBE_OUTPUT
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
+    if(GIT_DESCRIBE_RESULT EQUAL 0)
+      set(VERSION_SOFTWARE "${GIT_DESCRIBE_OUTPUT}" CACHE STRING "Set software version" FORCE)
+    else()
+      message(WARNING "Git failed to determine the version of the pairinteraction software.")
+      set(VERSION_SOFTWARE "${VERSION_SOFTWARE_DEFAULT}" CACHE STRING "Set software version" FORCE)
+    endif()
+  else()
+    message(WARNING "Because Git was not found, the version of the pairinteraction software cannot be determined.")
+    set(VERSION_SOFTWARE "${VERSION_SOFTWARE_DEFAULT}" CACHE STRING "Set software version" FORCE)
+  endif()
 endif()
 
 string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
@@ -224,6 +233,7 @@ include(CPack)
 include(FeatureSummary)
 feature_summary(WHAT ALL)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "Software version: ${VERSION_SOFTWARE}")
 if(WITH_GSL)
   message(STATUS "License compatibility: GPL v3")
 else()
