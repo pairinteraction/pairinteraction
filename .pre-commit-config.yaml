@@ -1,0 +1,56 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+  # Formatters: hooks that re-write files
+  - repo: https://github.com/pocc/pre-commit-hooks
+    rev: v1.3.5
+    hooks:
+      - id: clang-format
+        args: ["-i", "--style=file"]
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.1.0
+    hooks:
+      - id: pyupgrade
+        args: [--py38-plus]
+  - repo: https://github.com/MarcoGorelli/absolufy-imports
+    rev: v0.3.1
+    hooks:
+      - id: absolufy-imports
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v3.9.0
+    hooks:
+      - id: reorder-python-imports
+        args: [--py38-plus]
+  - repo: https://github.com/psf/black
+    rev: 22.10.0
+    hooks:
+      - id: black
+        args: ["--line-length", "120"]
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.4.2
+    hooks:
+      - id: remove-tabs
+        exclude: ^apple/Info.plist$
+  # Linters: hooks that check but don't alter files
+  # - repo: https://github.com/PyCQA/flake8
+  #   rev: 5.0.4
+  #   hooks:
+  #     - id: flake8
+  #       additional_dependencies:
+  #         - flake8-bugbear == 22.10.27
+  #         - flake8-comprehensions == 3.10.0
+  # Jupyter notebook specific tools
+  - repo: https://github.com/nbQA-dev/nbQA
+    rev: 1.5.3
+    hooks:
+      - id: nbqa-black
+      - id: nbqa-pyupgrade
+        args: ["--py38-plus"]
+      - id: nbqa-flake8
+        args: ["--ignore=E203,W503,E402,E401"]
