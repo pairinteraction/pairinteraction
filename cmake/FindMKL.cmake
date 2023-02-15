@@ -36,7 +36,7 @@ find_library(MKL_LIBRARY
         $ENV{MKLROOT}/lib/intel64
         $ENV{INTEL}/mkl/lib/intel64
         /opt/intel/mkl/lib
-	/opt/intel/mkl/lib/intel64)
+        /opt/intel/mkl/lib/intel64)
 
 # Set the FOUND variable to TRUE if all listed variables are set.
 find_package_handle_standard_args(MKL DEFAULT_MSG MKL_INCLUDE_DIR MKL_LIBRARY)

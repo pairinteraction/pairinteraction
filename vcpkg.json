@@ -2,21 +2,21 @@
     "name": "pairinteraction",
     "version-string": "1",
     "dependencies": [
-	"boost-algorithm",
-	"boost-math",
-	"boost-multi-index",
-	"boost-property-tree",
-	"boost-serialization",
-	"boost-tokenizer",
-	"boost-uuid",
-	"doctest",
-	"eigen3",
-	"fmt",
-	"gsl",
-	{
-	    "name": "sqlite3",
-	    "features": [ "tool" ]
-	},
-	"zeromq"
+        "boost-algorithm",
+        "boost-math",
+        "boost-multi-index",
+        "boost-property-tree",
+        "boost-serialization",
+        "boost-tokenizer",
+        "boost-uuid",
+        "doctest",
+        "eigen3",
+        "fmt",
+        "gsl",
+        {
+            "name": "sqlite3",
+            "features": [ "tool" ]
+        },
+        "zeromq"
     ]
 }
