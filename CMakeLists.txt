@@ -23,8 +23,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
 endif()
 
-set(GUINAME "pairinteraction_gui")
-
 # set version of settings and cache
 
 set(VERSION_SETTINGS "v17")
@@ -134,7 +132,7 @@ if( WITH_BACKEND )
 endif( )
 
 if( WITH_GUI )
-  add_subdirectory(${GUINAME})
+  add_subdirectory(pairinteraction_gui)
 endif( )
 
 if ( WITH_DOCS )

@@ -21,7 +21,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
     packages = find_namespace_packages(include=[
-        "pairinteraction", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
+        "pairinteraction", "pairinteraction_gui", "pairinteraction_gui.pairinteraction", "pairinteraction_gui.pairinteraction.*"
     ]),
     package_data = {
         "pairinteraction" : [
@@ -29,7 +29,7 @@ setup(
             "pairinteraction-complex", "pairinteraction-real",
             "databases/quantum_defects.db"
         ],
-        "@GUINAME@" : [ "conf/example.pconf", "conf/example.sconf" ],
+        "pairinteraction_gui" : [ "conf/example.pconf", "conf/example.sconf" ],
     },
     scripts = [ "start_pairinteraction_gui" ],
     install_requires = install_requires,

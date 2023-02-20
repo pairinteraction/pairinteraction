@@ -64,8 +64,8 @@ endif( )
 
 if( CMAKE_HOST_APPLE AND WITH_DMG )
 
-  install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION ${GUINAME} PATTERN "pairinteraction" EXCLUDE)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION ${GUINAME})
+  install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION pairinteraction_gui PATTERN "pairinteraction" EXCLUDE)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION pairinteraction_gui)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
@@ -74,14 +74,14 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
     message( FATAL_ERROR "Could not find fileicon" )
   endif( )
 
-  set(filepath \${CMAKE_INSTALL_PREFIX}/${GUINAME}/pairinteraction)
+  set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction_gui/pairinteraction)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
 
 elseif( CMAKE_HOST_UNIX )
 
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/${GUINAME})
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/${GUINAME})
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/pairinteraction_gui)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/pairinteraction_gui)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/${STARTGUI} DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
