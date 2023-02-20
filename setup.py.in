@@ -10,6 +10,7 @@ with open("@CMAKE_SOURCE_DIR@/requirements.txt", "r") as fh:
 
 setup(
     name = "pairinteraction",
+    python_requires=">=3.8",
     version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
     author="Sebastian Weber, Henri Menke, Johannes Block, Alexander Papageorge",
     description="A Rydberg Interaction Calculator",
@@ -17,7 +18,10 @@ setup(
     long_description_content_type="text/markdown",
     url="https://pairinteraction.github.io/",
     classifiers=[
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
     packages = find_namespace_packages(include=[

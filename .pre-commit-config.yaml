@@ -18,7 +18,7 @@ repos:
     rev: v3.1.0
     hooks:
       - id: pyupgrade
-        args: [--py36-plus]
+        args: [--py38-plus]
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
     hooks:
@@ -27,7 +27,7 @@ repos:
     rev: v3.9.0
     hooks:
       - id: reorder-python-imports
-        args: [--py36-plus]
+        args: [--py38-plus]
   - repo: https://github.com/psf/black
     rev: 22.10.0
     hooks:
