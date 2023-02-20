@@ -55,7 +55,7 @@ class ExplicitBasisTest(unittest.TestCase):
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
         system_one.setEfield([5, 0, 0])
         system_one.diagonalize()
-        basisvectors_one = system_one.getBasisvectors().toarray()
+        _ = system_one.getBasisvectors().toarray()
 
         # Two-atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)

@@ -30,8 +30,6 @@ from datetime import timedelta
 from io import BytesIO
 from io import StringIO
 from operator import itemgetter
-from time import sleep
-from time import strftime
 from time import time
 
 import psutil
@@ -51,7 +49,6 @@ except ImportError:
 
 import pyqtgraph as pg
 from pyqtgraph import exporters
-from pyqtgraph import ColorButton, GradientWidget, PlotWidget
 from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
 
 # Numerics
@@ -73,7 +70,7 @@ from pairinteraction_gui.pairinteraction.guiadditions import (
 from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
 from pairinteraction_gui.pairinteraction.worker import Worker
 from pairinteraction_gui.pairinteraction.loader import Eigensystem
-from pairinteraction_gui.pairinteraction.version import *
+from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
@@ -782,9 +779,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 version_cache_saved = params["version_cache"]
 
         # Compare version
-        """if os.path.exists(self.path_out) and version_settings_saved != version_settings and version_cache_saved != version_cache: # Poblem: Cachedirectory muss nicht mehr in self.path_out liegen
+        """if os.path.exists(self.path_out) and version_settings_saved != version_settings and \
+            version_cache_saved != version_cache: # Poblem: Cachedirectory muss nicht mehr in self.path_out liegen
             msg = QtWidgets.QMessageBox()
-            msg.setText('A new program version has been installed. Due to major changes, cache and settings have to be cleared. This deletes the directory {}.'.format(self.path_out))
+            msg.setText('A new program version has been installed. Due to major changes, cache '
+                +'and settings have to be cleared. This deletes the directory {}.'.format(self.path_out))
             msg.setIcon(QtWidgets.QMessageBox.Information);
             msg.addButton(QtWidgets.QMessageBox.Cancel)
             msg.addButton(QtWidgets.QMessageBox.Ok)
@@ -800,9 +799,9 @@ class MainWindow(QtWidgets.QMainWindow):
         if os.path.exists(self.path_lastsettings) and version_settings_saved != version_settings:
             msg = QtWidgets.QMessageBox()
             msg.setText(
-                "A new program version has been installed. Due to configuration changes, settings have to be cleared. This deletes the directory {}.".format(
-                    self.path_lastsettings
-                )
+                "A new program version has been installed. Due to configuration "
+                + "changes, settings have to be cleared. This deletes the "
+                + f"directory {self.path_lastsettings}."
             )
             msg.setIcon(QtWidgets.QMessageBox.Information)
             msg.addButton(QtWidgets.QMessageBox.Cancel)
@@ -819,9 +818,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if os.path.exists(self.path_cache) and version_cache_saved != version_cache:
             msg = QtWidgets.QMessageBox()
             msg.setText(
-                "A new program version has been installed. Due to database changes, the cache has to be cleared. This deletes the directory {}.".format(
-                    self.path_cache
-                )
+                "A new program version has been installed. Due to database changes, the "
+                + f"cache has to be cleared. This deletes the directory {self.path_cache}."
             )
             msg.setIcon(QtWidgets.QMessageBox.Information)
             msg.addButton(QtWidgets.QMessageBox.Cancel)
@@ -991,7 +989,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def saveSettingsSystem(self, path):
         def save(f):
-            params = dict()
+            params = {}
             for k, v in self.systemdict.items():
                 params[k] = [v.magnitude, v.units]
             json.dump(params, f, indent=4, sort_keys=True)
@@ -1004,7 +1002,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def saveSettingsPlotter(self, path):
         def save(f):
-            params = dict()
+            params = {}
             for k, v in self.plotdict.items():
                 params[k] = [v.magnitude, v.units]
             params["gradientwidget"] = self.ui.gradientwidget_plot_gradient.saveState()
@@ -1018,7 +1016,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def saveSettingsView(self, path):
         def save(f):
-            params = dict()
+            params = {}
             params["config"] = self.ui.tabwidget_config.currentIndex()
             params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
             params["system"] = self.ui.toolbox_system.currentIndex()
@@ -1144,9 +1142,9 @@ class MainWindow(QtWidgets.QMainWindow):
                         QtWidgets.QApplication.processEvents()
 
                         # calculate overlap states
-                        if (
-                            self.angle != 0
-                        ):  # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion verwenden, erste Spalte aus basis entfernen
+                        if self.angle != 0:
+                            # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion
+                            # verwenden, erste Spalte aus basis entfernen
                             if idx == 0:
                                 boolarr = self.overlapstate[idx][[0, 1, 2]] != -1
                                 stateidx = np.where(
@@ -1223,7 +1221,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                     stateidx = np.append(stateidx, stateidx2)
                                     stateamount = np.append(stateamount, stateamount2)
 
-                                """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1))[0]
+                                """stateidx = np.where(
+                                    np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1)
+                                )[0]
                                 statecoeff = []
                                 j = self.overlapstate[idx][2]
                                 for state in basis[stateidx]:
@@ -1232,8 +1232,11 @@ class MainWindow(QtWidgets.QMainWindow):
                                     coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                     statecoeff.append(coeff)
                                 stateamount = np.zeros_like(stateidx)
-                                if self.thread.samebasis and np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
-                                    stateidx_second = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
+                                if self.thread.samebasis and \
+                                    np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                    stateidx_second = np.where(
+                                        np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
+                                    )[0]
                                     j = self.overlapstate[idx][6]
                                     for state in basis[stateidx_second]:
                                         m2 = state[4]
@@ -1277,7 +1280,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                 else:
                                     stateamount = np.zeros_like(stateidx)
 
-                                """stateidx = np.where(np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1))[0]
+                                """stateidx = np.where(
+                                    np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
+                                )[0]
                                 statecoeff = []
                                 j = self.overlapstate[idx][2]
                                 for state in basis[stateidx]:
@@ -1325,7 +1330,9 @@ class MainWindow(QtWidgets.QMainWindow):
                                 else:
                                     stateamount = np.zeros_like(stateidx)
 
-                                """stateidx = np.where(np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1))[0]
+                                """stateidx = np.where(
+                                    np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1)
+                                )[0]
                                 statecoeff = []
                                 j = self.overlapstate[idx][[2,6]]
                                 for state in basis[stateidx]:
@@ -2044,9 +2051,11 @@ class MainWindow(QtWidgets.QMainWindow):
                         """# legend
                         if idx == 2 and filestep == 0 and symmetry != 0:
                             graphicsview_plot[idx].addLegend()
-                            style = pg.PlotDataItem(pen = pg.mkPen(self.symmetrycolors[1]+(alpha,),width=size,cosmetic=True))
+                            style = pg.PlotDataItem(
+                                pen = pg.mkPen(self.symmetrycolors[1]+(alpha,),width=size,cosmetic=True))
                             graphicsview_plot[idx].plotItem.legend.addItem(style, "sym")
-                            style = pg.PlotDataItem(pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
+                            style = pg.PlotDataItem(
+                                pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
                             graphicsview_plot[idx].plotItem.legend.addItem(style, "asym")"""
 
                         while (
@@ -2088,14 +2097,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
                             """# track lines with the largest probability to find the overlapstate
                             if self.lines_buffer_minIdx_field[blocknumber] == 0:
-                                overlapWithOverlapstate = np.abs(self.stateidx_field[idx].conjugate()*self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
+                                overlapWithOverlapstate = np.abs(self.stateidx_field[idx].conjugate()*\
+                                    self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
                                 overlapWithOverlapstate.data **= 2
                                 overlapWithOverlapstate = overlapWithOverlapstate.sum(axis=0).getA1()
 
                                 if len(overlapWithOverlapstate) > 0:
                                     self.iSelected[blocknumber] = np.argmax(overlapWithOverlapstate)
-                                    xSelected = self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                                    eSelected = self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][self.iSelected[blocknumber]]
+                                    xSelected = self.buffer_positions[blocknumber]\
+                                        [self.lines_buffer_minIdx_field[blocknumber]]
+                                    eSelected = self.buffer_energies[blocknumber]\
+                                        [self.lines_buffer_minIdx_field[blocknumber]][self.iSelected[blocknumber]]
                                     self.linesX[idx][blocknumber].append(xSelected)
                                     self.linesY[idx][blocknumber].append(eSelected)
                                 else:
@@ -2104,8 +2116,10 @@ class MainWindow(QtWidgets.QMainWindow):
                             boolarr = iFirst == self.iSelected[blocknumber]
                             if np.sum(boolarr) == 1:
                                 self.iSelected[blocknumber] = iSecond[boolarr]
-                                xSelected = self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]+1]
-                                eSelected, = self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]+1][self.iSelected[blocknumber]]
+                                xSelected = self.buffer_positions[blocknumber]\
+                                    [self.lines_buffer_minIdx_field[blocknumber]+1]
+                                eSelected, = self.buffer_energies[blocknumber]\
+                                    [self.lines_buffer_minIdx_field[blocknumber]+1][self.iSelected[blocknumber]]
                                 self.linesX[idx][blocknumber].append(xSelected)
                                 self.linesY[idx][blocknumber].append(eSelected)
                             else:
@@ -2673,7 +2687,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 QtWidgets.QMessageBox.critical(
                     self,
                     "Message",
-                    "If the principal quantum number exceeds 97, radial matrix elements must be calculated from model potentials.",
+                    "If the principal quantum number exceeds 97, radial matrix "
+                    + "elements must be calculated from model potentials.",
                 )
 
             else:
@@ -2687,8 +2702,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         self,
                         "Warning",
                         "For calculating field maps, you might like to set the interaction angle to zero. "
-                        + "A non-zero angle makes the program compute eigenvectors in the rotated basis where the quantization "
-                        + "axis equals the interatomic axis. This slows down calculations.",
+                        + "A non-zero angle makes the program compute eigenvectors in the rotated basis where the "
+                        + "quantization axis equals the interatomic axis. This slows down calculations.",
                     )
 
                 if self.systemdict["theta"].magnitude != 0 and (
@@ -2701,7 +2716,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.warning(
                         self,
                         "Warning",
-                        "For non-zero interaction angles, it is recommended not to restrict the magnetic quantum number.",
+                        "For non-zero interaction angles, it is recommended not to restrict "
+                        + "the magnetic quantum number.",
                     )
 
                 # save last settings
@@ -2956,12 +2972,17 @@ class MainWindow(QtWidgets.QMainWindow):
                             for field, label in zip(fields, labels):
                                 params[label] = field
 
-                    """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
+                    """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or \
+                        params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or \
+                        params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
                         params["conserveM"] = False
                     else:
                         params["conserveM"] = True
 
-                    if (self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 or params["maxEz"] != 0:
+                    if (self.senderbutton == self.ui.pushbutton_potential_calc and \
+                        params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 \
+                        or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 \
+                        or params["maxEz"] != 0:
                         params["conserveParityL"] = False
                     else:
                         params["conserveParityL"] = True"""
@@ -3145,7 +3166,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
             filestep_last = None
 
-            for filestep, blocknumber, filename in sorted(self.storage_data[idx], key=itemgetter(0, 1)):
+            for filestep, _blocknumber, filename in sorted(self.storage_data[idx], key=itemgetter(0, 1)):
                 eigensystem = Eigensystem(filename)
                 energies = eigensystem.energies * self.converter_y  # nBasis
                 # nState, nBasis (stored in Compressed Sparse Column format,
@@ -3336,7 +3357,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # close zip file
             ziparchive.close()
 
-        """ symmetry = eigensystem.params["symmetry"] # TODO ausgelesene Symmetrie auch beim Plotten verwenden !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        """ symmetry = eigensystem.params["symmetry"] # TODO ausgelesene Symmetrie auch beim Plotten verwenden
 
                 # save configuration
                 if firstround:
@@ -3525,8 +3546,6 @@ class MainWindow(QtWidgets.QMainWindow):
             # printer settings
             spacer = QtCore.QRectF(painter.viewport()).height() / 40
             font = QtGui.QFont("Helvetica", 10)
-            margin = 30
-            penwidth = 30
 
             # load configuration
             sconf = json.loads(self.storage_configuration[idx][0])
@@ -3543,7 +3562,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     su[k] = f"{int(st[k])}"
             for k in [2, 3, 6, 7]:
                 if float(st[k]).is_integer():
-                    ssuo[k] = f"{int(st[k])}"
+                    su[k] = f"{int(st[k])}"
                 else:
                     su[k] = f"{int(2 * float(st[k]))}/2"
 
@@ -3639,8 +3658,10 @@ class MainWindow(QtWidgets.QMainWindow):
             text += "</tr></table>"
 
             '''text += "unperturbed state "
-            text += "| "+u1l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species1"][0],sconf["n2"][0],sconf["l1"][0],int(sconf["j1"][0]*2),int(sconf["m1"][0]*2))+u1r+"; "+\
-                u2l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species2"][0],sconf["n2"][0],sconf["l2"][0],int(sconf["j2"][0]*2),int(sconf["m2"][0]*2))+u2r+" >"'''
+            text += "| "+u1l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species1"][0],sconf["n2"][0],
+                sconf["l1"][0],int(sconf["j1"][0]*2),int(sconf["m1"][0]*2))+u1r+"; "+\
+                u2l+"{} {} {}<sub>{}/2</sub>, m={}/2".format(sconf["species2"][0],sconf["n2"][0],
+                sconf["l2"][0],int(sconf["j2"][0]*2),int(sconf["m2"][0]*2))+u2r+" >"'''
 
             # basis
             text += "<h4>Basis (use same basis for both atoms: {})</h4>".format(
@@ -3717,7 +3738,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # header
             # text += "<table cellspacing=5 width='100%' bgcolor='#f0f0f0'><tr>"
-            # text += "<td><h1>{}</h1></td>".format(["Field map of atom 1","Field map of atom 2","Pair potential","Field map of atom 1 and 2"][idx])
+            # text += "<td><h1>{}</h1></td>".format(["Field map of atom 1","Field map of atom 2",
+            #   "Pair potential","Field map of atom 1 and 2"][idx])
             # text += "</tr></table>"
 
             text += "<table width=100%><tr>"
@@ -3815,7 +3837,10 @@ class MainWindow(QtWidgets.QMainWindow):
             text += "<br>"
             text += "<table cellspacing=0 width=100%><tr>"
             if pconf["log"][0]:
-                text += "<td align=left>&lt; 0.01</td><td align=center>0.1&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td align=right>1</td>"
+                text += (
+                    "<td align=left>&lt; 0.01</td><td align=center>0.1"
+                    + "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td align=right>1</td>"
+                )
             else:
                 text += "<td align=left>0</td><td align=center>0.5</td><td align=right>1</td>"
             text += "</tr></table>"
@@ -3863,9 +3888,11 @@ class MainWindow(QtWidgets.QMainWindow):
             painter.setPen(pen)
 
 
-            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5, size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
+            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5,
+                size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
 
-            #bound = QtCore.QRectF(5, height_doc+spacer+5, size.width()+2*margin-5, size.height()+2*margin-5-penwidth/2)
+            #bound = QtCore.QRectF(5, height_doc+spacer+5, size.width()+2*margin-5,
+            #    size.height()+2*margin-5-penwidth/2)
             #painter.drawLine(bound.bottomLeft(),bound.bottomRight())
             #painter.drawLine(bound.topLeft(),bound.topRight())
 
@@ -3881,7 +3908,8 @@ class MainWindow(QtWidgets.QMainWindow):
             doc = QtGui.QTextDocument()
 
             rect_doc = QtCore.QRectF(painter.viewport())
-            rect_doc = QtCore.QRectF(0,plotheight+height_doc+2*spacer,rect_doc.width(),rect_doc.height()-plotheight-height_doc-2*spacer)
+            rect_doc = QtCore.QRectF(0,plotheight+height_doc+2*spacer,rect_doc.width(),
+                rect_doc.height()-plotheight-height_doc-2*spacer)
             #painter.drawRect(rect_doc)
 
 
@@ -3931,7 +3959,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             text += "<h4>Unperturbed state</h4>"
             text += "<table cellspacing=5 style='width:100%'><tr>"
-            text += "<td>| {} {} {}<sub>{}/2</sub>, m={}/2; {} {} {}<sub>{}/2</sub>, m={}/2 ></td>".format(s1,n1,l1,int(j1*2),int(m1*2),s2,n2,l2,int(j2*2),int(m2*2))
+            text += "<td>| {} {} {}<sub>{}/2</sub>, m={}/2; {} {} {}<sub>{}/2</sub>, m={}/2 ></td>".format(
+                s1,n1,l1,int(j1*2),int(m1*2),s2,n2,l2,int(j2*2),int(m2*2)
+            )
             text += "</tr></table>"
 
             text += "<h4>Basis</h4>"
@@ -3975,7 +4005,8 @@ class MainWindow(QtWidgets.QMainWindow):
             text += "<table cellspacing=5 style='width:100%'><tr>"
             text += "<td>interaction angle: {} {}</td>".format(theta[0], theta[1])
             text += "</tr><tr>"
-            text += "<td>interaction order: dipole-dipole, dipole-quadrupole, quadrupole-quadrupole</td>".format(theta[0], theta[1])
+            text += "<td>interaction order: dipole-dipole, dipole-quadrupole, "
+            text += "quadrupole-quadrupole</td>".format(theta[0], theta[1])
             text += "</tr><tr>"
             text += "<td>steps: {}</td>".format(steps)
             text += "</tr></table>"
@@ -4007,7 +4038,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
             painter.save()
 
-            plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot, self.ui.graphicsview_potential_plot][idx].getPlotItem()
+            plotitem = [self.ui.graphicsview_field1_plot, self.ui.graphicsview_field2_plot,
+                self.ui.graphicsview_potential_plot][idx].getPlotItem()
             exporter = pg.exporters.ImageExporter(plotitem)
             exporter.parameters()['width'] = 2000
             exporter.parameters()['height'] = 2000
@@ -4035,7 +4067,8 @@ class MainWindow(QtWidgets.QMainWindow):
             painter.setPen(pen)
 
 
-            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5, size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
+            painter.drawRect(QtCore.QRectF(penwidth/2+5, height_doc+spacer+penwidth/2+5,
+                size.width()+2*margin-penwidth/2-5, size.height()+2*margin-penwidth/2-5))
 
             #bound = QtCore.QRectF(5, height_doc+spacer+5, size.width()+2*margin-5, size.height()+2*margin-5-penwidth/2)
             #painter.drawLine(bound.bottomLeft(),bound.bottomRight())

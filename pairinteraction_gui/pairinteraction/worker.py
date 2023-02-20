@@ -76,7 +76,6 @@ class Worker(QtCore.QThread):
 
         status_type = ""
         status_progress = ""
-        status_dimension = ""
 
         for line in iter(self.stdout.readline, b""):
             if self.exiting or not line:
@@ -126,7 +125,6 @@ class Worker(QtCore.QThread):
                     dim, dim, current, total
                 )
 
-                filenumber = int(line[5:12].decode("utf-8"))
                 filestep = int(line[12:19].decode("utf-8"))
                 blocks = int(line[19:26].decode("utf-8"))
                 blocknumber = int(line[26:33].decode("utf-8"))

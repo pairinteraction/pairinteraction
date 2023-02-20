@@ -203,9 +203,6 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Remark: calling restrictEnergy() would cause a small deviation
 
-        # Define state
-        state_two = pi.StateTwo(state_one, state_one)
-
         # Diagonalize blockwise
         # Note: it is called odd in order to fit to the notion of the paper
         system_two_odd = pi.SystemTwo(system_one_even, system_one_even, self.cache)
@@ -285,7 +282,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
-        state_two = pi.StateTwo(state_one, state_one)
+        # state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
@@ -340,7 +337,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
-        state_two = pi.StateTwo(state_one, state_one)
+        # state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
@@ -394,7 +391,6 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Define states
         state_one = pi.StateOne("Rb", 61, 1, 0.5, 0.5)
-        state_two = pi.StateTwo(state_one, state_one)
 
         # Build one atom system
         system_one = pi.SystemOne(state_one.getSpecies(), self.cache)

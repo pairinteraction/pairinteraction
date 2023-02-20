@@ -31,7 +31,7 @@ from pairinteraction_gui.pairinteraction.unitmanagement import Quantity
 
 class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
     def __init__(self, ui):
-        self.store = dict()
+        self.store = {}
         self._setup(self.store, ui)
 
     @abstractmethod
@@ -71,7 +71,6 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
             raise Exception("value has to be of type quantity")
 
         widget = self.store[key]["widget"]
-        unit = self.store[key]["unit"]
 
         value = value.toUU().magnitude
 

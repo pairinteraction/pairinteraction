@@ -14,9 +14,11 @@ class RotationTest(unittest.TestCase):
 
         # Get geometric interpretation of the rotation angles
 
-        # The coordinate system is rotated by R_z(alpha)*R_y(beta)*R_z(gamma) where e.g. R_z is the elementary rotation
-        # R_z(alpha) = [[cos(alpha), -sin(alpha), 0], [sin(alpha), cos(alpha), 0], [0,0,1]]. In the following, we calculate
-        # the coordinate representations of the rotated z-axis and y-axis in the unrotated system.
+        # The coordinate system is rotated by R_z(alpha)*R_y(beta)*R_z(gamma) where e.g.
+        # R_z is the elementary rotation R_z(alpha) = [[cos(alpha), -sin(alpha), 0],
+        # [sin(alpha), cos(alpha), 0], [0,0,1]]. In the following, we calculate the
+        # coordinate representations of the rotated z-axis and y-axis in the unrotated
+        # system.
 
         s, c = np.sin(self.gamma), np.cos(self.gamma)
         self.rotator = np.array([[c, -s, 0], [s, c, 0], [0, 0, 1]])

@@ -153,11 +153,15 @@ class PerturbationTest(unittest.TestCase):
         system_two_unperturbed.constrainBasisvectors(system_two_unperturbed.getBasisvectorIndex(state_two_subspace))
 
         # IMPORTANT: Chose the states such that the basisvector matrix is a unit matrix
-        # The step is necessary because we removed from SystemTwo some irrelevant states and basis vectors which where only important to get the Stark shift
-        # right, so that the basisvector matrix is not unitary anymore. This is due to diagonalization with a non-zero threshold (SystemOne.diagonalize),
-        # setting a conserved momentum (SystemTwo.setConservedMomentaUnderRotation), and removing states that rarely occur (SystemTwo.setMinimalNorm).
-        # We solve this problem by interpreting the basis vectors a new states. In the basis of these states, the basis vector matrix is a unit matrix and
-        # thus unitary.
+        # The step is necessary because we removed from SystemTwo some irrelevant states
+        # and basis vectors which where only important to get the Stark shift right, so
+        # that the basisvector matrix is not unitary anymore. This is due to
+        # diagonalization with a non-zero threshold (SystemOne.diagonalize), setting a
+        # conserved momentum (SystemTwo.setConservedMomentaUnderRotation), and removing
+        # states that rarely occur (SystemTwo.setMinimalNorm).
+        # We solve this problem by interpreting the basis vectors a new states. In the
+        # basis of these states, the basis vector matrix is a unit matrix and thus
+        # unitary.
         system_two_unperturbed.unitarize()
         system_two_perturbed.unitarize()
 

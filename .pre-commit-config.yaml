@@ -38,13 +38,13 @@ repos:
       - id: remove-tabs
         exclude: ^apple/Info.plist$
   # Linters: hooks that check but don't alter files
-  # - repo: https://github.com/PyCQA/flake8
-  #   rev: 5.0.4
-  #   hooks:
-  #     - id: flake8
-  #       additional_dependencies:
-  #         - flake8-bugbear == 22.10.27
-  #         - flake8-comprehensions == 3.10.0
+  - repo: https://github.com/PyCQA/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        additional_dependencies:
+          - flake8-bugbear == 22.10.27
+          - flake8-comprehensions == 3.10.0
   # Jupyter notebook specific tools
   - repo: https://github.com/nbQA-dev/nbQA
     rev: 1.5.3

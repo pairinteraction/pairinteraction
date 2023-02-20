@@ -1,7 +1,6 @@
 # https://johnnado.com/pyqt-qtest-example/
 # https://github.com/jmcgeheeiv/pyqttestexample
 import sys
-import time
 import unittest
 
 from PyQt5.QtCore import Qt

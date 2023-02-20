@@ -26,8 +26,8 @@ import numpy as np
 class Wignerd:
     def __init__(self, cachedir):
         self.cachedir = cachedir
-        self.wignerdict = dict()
-        self.cachupdatedict = dict()
+        self.wignerdict = {}
+        self.cachupdatedict = {}
 
     def __del__(self):
         self.save()
@@ -60,7 +60,7 @@ class Wignerd:
                 with open(path, "rb") as f:
                     self.wignerdict[bstring] = pickle.load(f)
             else:
-                self.wignerdict[bstring] = dict()
+                self.wignerdict[bstring] = {}
             self.cachupdatedict[bstring] = False
 
         mstring = f"{j}_{m1}_{m2}"

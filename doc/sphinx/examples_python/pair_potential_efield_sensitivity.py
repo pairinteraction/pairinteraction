@@ -69,7 +69,7 @@ if __name__ == "__main__":
         fieldshift = 2 * system_one.getHamiltonian().diagonal()[system_one.getBasisvectorIndex(state_one)]
 
         # Get diagonalized two atom systems
-        def fct(distance):
+        def fct(distance, system_one=system_one, fieldshift=fieldshift):
             return getSystems(distance, system_one, fieldshift)
 
         with Pool() as pool:

@@ -1,7 +1,5 @@
 import unittest
 
-import numpy as np
-
 from pairinteraction import pireal as pi
 
 

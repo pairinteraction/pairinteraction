@@ -52,21 +52,21 @@ class Units:
 
 
 class Quantity:
-    au = dict()
+    au = {}
     au[Units.au_length] = C("atomic unit of length")
     au[Units.au_energy] = C("atomic unit of energy") / C("Planck constant")
     au[Units.au_efield] = C("atomic unit of electric field")
     au[Units.au_bfield] = C("atomic unit of mag. flux density")
     au[Units.au_angle] = Q("1")
 
-    converter_au = dict()
+    converter_au = {}
     converter_au[str(U(Units.length).dimensionality)] = [Units.au_length, au[Units.au_length]]
     converter_au[str(U(Units.energy).dimensionality)] = [Units.au_energy, au[Units.au_energy]]
     converter_au[str(U(Units.efield).dimensionality)] = [Units.au_efield, au[Units.au_efield]]
     converter_au[str(U(Units.bfield).dimensionality)] = [Units.au_bfield, au[Units.au_bfield]]
     converter_au[str(U(Units.angle).dimensionality)] = [Units.au_angle, au[Units.au_angle]]
 
-    converter_uu = dict()
+    converter_uu = {}
     converter_uu[str(U(Units.length).dimensionality)] = Units.length
     converter_uu[str(U(Units.energy).dimensionality)] = Units.energy
     converter_uu[str(U(Units.efield).dimensionality)] = Units.efield
