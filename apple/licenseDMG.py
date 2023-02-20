@@ -24,10 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+import optparse
 import os
 import sys
 import tempfile
-import optparse
 
 
 class Path(str):
@@ -38,7 +38,7 @@ class Path(str):
         os.unlink(self)
 
 
-def mktemp(dir=None, suffix=''):
+def mktemp(dir=None, suffix=""):
     (fd, filename) = tempfile.mkstemp(dir=dir, suffix=suffix)
     os.close(fd)
     return Path(filename)
@@ -46,9 +46,10 @@ def mktemp(dir=None, suffix=''):
 
 def main(options, args):
     dmgFile, license = args
-    with mktemp('.') as tmpFile:
-        with open(tmpFile, 'w') as f:
-            f.write("""data 'TMPL' (128, "LPic") {
+    with mktemp(".") as tmpFile:
+        with open(tmpFile, "w") as f:
+            f.write(
+                """data 'TMPL' (128, "LPic") {
         $"1344 6566 6175 6C74 204C 616E 6775 6167"
         $"6520 4944 4457 5244 0543 6F75 6E74 4F43"
         $"4E54 042A 2A2A 2A4C 5354 430B 7379 7320"
@@ -89,68 +90,73 @@ data 'STR#' (5002, "English") {
         $"796F 7520 646F 206E 6F74 2061 6772 6565"
         $"2C20 7072 6573 7320 2244 6973 6167 7265"
         $"6522 2E"
-};\n\n""")
-            with open(license, 'r') as l:
-                kind = 'RTF ' if license.lower().endswith('.rtf') else 'TEXT'
-                f.write('data \'%s\' (5000, "English") {\n' % kind)
+};\n\n"""
+            )
+            with open(license) as l:
+                kind = "RTF " if license.lower().endswith(".rtf") else "TEXT"
+                f.write("data '%s' (5000, \"English\") {\n" % kind)
+
                 def escape(s):
-                    return s.strip().replace('\\', '\\\\').replace('"', '\\"')
+                    return s.strip().replace("\\", "\\\\").replace('"', '\\"')
 
                 for line in l:
                     if len(line) < 1000:
                         f.write('    "' + escape(line) + '\\n"\n')
                     else:
-                        for liner in line.split('.'):
+                        for liner in line.split("."):
                             f.write('    "' + escape(liner) + '. \\n"\n')
-                f.write('};\n\n')
-            f.write("""data 'styl' (5000, "English") {
+                f.write("};\n\n")
+            f.write(
+                """data 'styl' (5000, "English") {
         $"0003 0000 0000 000C 0009 0014 0000 0000"
         $"0000 0000 0000 0000 0027 000C 0009 0014"
         $"0100 0000 0000 0000 0000 0000 002A 000C"
         $"0009 0014 0000 0000 0000 0000 0000"
-};\n""")
+};\n"""
+            )
         os.system('hdiutil unflatten -quiet "%s"' % dmgFile)
-        ret = os.system('%s -a %s -o "%s"' %
-                        (options.rez, tmpFile, dmgFile))
+        ret = os.system(f'{options.rez} -a {tmpFile} -o "{dmgFile}"')
         os.system('hdiutil flatten -quiet "%s"' % dmgFile)
         if options.compression is not None:
-            os.system('cp %s %s.temp.dmg' % (dmgFile, dmgFile))
+            os.system(f"cp {dmgFile} {dmgFile}.temp.dmg")
             os.remove(dmgFile)
             if options.compression == "bz2":
-                os.system('hdiutil convert %s.temp.dmg -format UDBZ -o %s' %
-                          (dmgFile, dmgFile))
+                os.system(f"hdiutil convert {dmgFile}.temp.dmg -format UDBZ -o {dmgFile}")
             elif options.compression == "gz":
-                os.system('hdiutil convert %s.temp.dmg -format ' % dmgFile +
-                          'UDZO -imagekey zlib-devel=9 -o %s' % dmgFile)
-            os.remove('%s.temp.dmg' % dmgFile)
+                os.system(
+                    "hdiutil convert %s.temp.dmg -format " % dmgFile + "UDZO -imagekey zlib-devel=9 -o %s" % dmgFile
+                )
+            os.remove("%s.temp.dmg" % dmgFile)
     if ret == 0:
         print("Successfully added license to '%s'" % dmgFile)
     else:
         print("Failed to add license to '%s'" % dmgFile)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     parser = optparse.OptionParser()
-    parser.set_usage("""%prog <dmgFile> <licenseFile> [OPTIONS]
+    parser.set_usage(
+        """%prog <dmgFile> <licenseFile> [OPTIONS]
   This program adds a software license agreement to a DMG file.
   It requires Xcode and either a plain ascii text <licenseFile>
   or a <licenseFile.rtf> with the RTF contents.
 
-  See --help for more details.""")
-    parser.add_option(
-        '--rez',
-        '-r',
-        action='store',
-        default='/Applications/Xcode.app/Contents/Developer/Tools/Rez',
-        help='The path to the Rez tool. Defaults to %default'
+  See --help for more details."""
     )
     parser.add_option(
-        '--compression',
-        '-c',
-        action='store',
-        choices=['bz2', 'gz'],
+        "--rez",
+        "-r",
+        action="store",
+        default="/Applications/Xcode.app/Contents/Developer/Tools/Rez",
+        help="The path to the Rez tool. Defaults to %default",
+    )
+    parser.add_option(
+        "--compression",
+        "-c",
+        action="store",
+        choices=["bz2", "gz"],
         default=None,
-        help='Optionally compress dmg using specified compression type. '
-             'Choices are bz2 and gz.'
+        help="Optionally compress dmg using specified compression type. " "Choices are bz2 and gz.",
     )
     options, args = parser.parse_args()
     cond = len(args) != 2

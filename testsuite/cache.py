@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import pireal as pi
 
 
 class CacheTest(unittest.TestCase):
-
     def test_defectdb(self):
         cache = pi.MatrixElementCache()
         cache.setDefectDB("defects.sql")
@@ -46,5 +46,5 @@ class CacheTest(unittest.TestCase):
         self.assertEqual(cache_whittaker.size(), 10)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

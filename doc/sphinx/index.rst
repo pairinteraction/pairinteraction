@@ -67,18 +67,18 @@ Screenshots
 ===========
 
 .. raw:: html
-    
+
     <style>
     .slideshow-container {
         display: block;
         position: relative
     }
-    
+
     .slide {
         max-width: 100%;
         max-height: 100%;
     }
-    
+
     .slide-text {
         position: absolute;
         font-size: .8em;
@@ -90,12 +90,12 @@ Screenshots
         background: rgba(102,102,102,0.6);
         border-radius: 2px;
     }
-    
+
     .slide-text a {
         color: #fafafa;
         text-decoration: underline;
     }
-    
+
     .slideshow-btn {
         display: inline-block;
         position: absolute;
@@ -109,36 +109,36 @@ Screenshots
         background: rgba(102,102,102,0.6);
         opacity: .3;
     }
-    
+
     .slideshow-btn:hover {
         cursor: pointer;
         opacity: 1;
     }
     </style>
-    
+
     <script>
     var slideshow = {
         idx: 0,
-    
+
         start: function () {
             this.show(0);
         },
-    
+
         step: function (n) {
             this.show(this.idx += n);
         },
-    
+
         show: function(n) {
             var slides = document.getElementsByClassName("slide");
             this.idx = Math.abs(n % slides.length);
             for (var i = 0; i < slides.length; i++) {
-                slides[i].style.display = "none"; 
+                slides[i].style.display = "none";
             }
             slides[this.idx].style.display = "block";
         }
     }
     </script>
-    
+
     <p>
     <div class="slideshow-container">
       <div class="slide">

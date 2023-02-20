@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 import pairinteraction.picomplex as pi
 
 
 class TestState(unittest.TestCase):
-
     def setUp(self):
         self.s = pi.StateOne("Sr3", 79, 1, 2, 0)
         self.s_artificial = pi.StateOne("G")
@@ -43,7 +43,6 @@ class TestState(unittest.TestCase):
 
 
 class TestPairState(unittest.TestCase):
-
     def setUp(self):
         self.s1 = pi.StateOne("Sr3", 80, 2, 1, 0)
         self.s2 = pi.StateOne("Sr3", 79, 1, 2, 0)
@@ -92,9 +91,11 @@ class TestPairState(unittest.TestCase):
         self.assertEqual(str(self.s), "|Sr3, 80 D_1, mj=0>|Sr3, 79 P_2, mj=0>")
 
     def test_reflection(self):
-        self.assertEqual(pi.StateTwo(["Sr3", "Sr3"], [80, 79], [2, 1], [1, 2], [-1, 2]
-                                     ).getReflected(), pi.StateTwo(["Sr3", "Sr3"], [80, 79], [2, 1], [1, 2], [1, -2]))
+        self.assertEqual(
+            pi.StateTwo(["Sr3", "Sr3"], [80, 79], [2, 1], [1, 2], [-1, 2]).getReflected(),
+            pi.StateTwo(["Sr3", "Sr3"], [80, 79], [2, 1], [1, 2], [1, -2]),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

@@ -1,8 +1,9 @@
-import unittest
-import numpy as np
-import tempfile
 import shutil
+import tempfile
+import unittest
 from itertools import product
+
+import numpy as np
 
 from pairinteraction import picomplex as pi
 
@@ -68,8 +69,13 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff23[np.abs(w3 - w2) < 1e-14] = np.abs(w3 - w2)[np.abs(w3 - w2) < 1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
-        print("One-atom system with rotation symmetry, relative maximum deviation: ",
-              maxdiff12, " (between alternatives: ", maxdiff23, ")")
+        print(
+            "One-atom system with rotation symmetry, relative maximum deviation: ",
+            maxdiff12,
+            " (between alternatives: ",
+            maxdiff23,
+            ")",
+        )
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff23, 0, places=9)
 
@@ -86,15 +92,14 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         for m1 in momenta_one:
             for m2 in momenta_one:
                 if m1 + m2 in system_two_momentum:
-                    tmp = pi.SystemTwo(
-                        system_one_momentum[m1], system_one_momentum[m2], self.cache)
+                    tmp = pi.SystemTwo(system_one_momentum[m1], system_one_momentum[m2], self.cache)
                     tmp.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
                     system_two_momentum[m1 + m2].add(tmp)
                 else:
                     system_two_momentum[m1 + m2] = pi.SystemTwo(
-                        system_one_momentum[m1], system_one_momentum[m2], self.cache)
-                    system_two_momentum[m1 + m2].restrictEnergy(
-                        state_two.getEnergy() - 2, state_two.getEnergy() + 2)
+                        system_one_momentum[m1], system_one_momentum[m2], self.cache
+                    )
+                    system_two_momentum[m1 + m2].restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
 
         momenta_two = list(system_two_momentum.keys())
 
@@ -110,21 +115,16 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         # Diagonalize blockwise, alternative
         system_two_momentum_alternative = {}
         for m in momenta_two:
-            system_two_momentum_alternative[m] = pi.SystemTwo(
-                system_one, system_one, self.cache)
-            system_two_momentum_alternative[m].restrictEnergy(
-                state_two.getEnergy() - 2, state_two.getEnergy() + 2)
-            system_two_momentum_alternative[m].setConservedMomentaUnderRotation([
-                                                                                int(m)])
+            system_two_momentum_alternative[m] = pi.SystemTwo(system_one, system_one, self.cache)
+            system_two_momentum_alternative[m].restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
+            system_two_momentum_alternative[m].setConservedMomentaUnderRotation([int(m)])
             system_two_momentum_alternative[m].setDistance(2)
             system_two_momentum_alternative[m].setOrder(5)
             system_two_momentum_alternative[m].diagonalize(1e-3)
 
-        system_two_combined_alternative = pi.SystemTwo(
-            system_two_momentum_alternative[momenta_two[0]])
+        system_two_combined_alternative = pi.SystemTwo(system_two_momentum_alternative[momenta_two[0]])
         for m in momenta_two[1:]:
-            system_two_combined_alternative.add(
-                system_two_momentum_alternative[m])
+            system_two_combined_alternative.add(system_two_momentum_alternative[m])
 
         # Diagonalize altogether
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
@@ -144,8 +144,13 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff23[np.abs(w3 - w2) < 1e-14] = np.abs(w3 - w2)[np.abs(w3 - w2) < 1e-14]
         maxdiff12 = np.max(maxdiff12)
         maxdiff23 = np.max(maxdiff23)
-        print("Two-atom system with rotation symmetry, relative maximum deviation: ",
-              maxdiff12, " (between alternatives: ", maxdiff23, ")")
+        print(
+            "Two-atom system with rotation symmetry, relative maximum deviation: ",
+            maxdiff12,
+            " (between alternatives: ",
+            maxdiff23,
+            ")",
+        )
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff23, 0, places=9)
 
@@ -203,18 +208,14 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Diagonalize blockwise
         # Note: it is called odd in order to fit to the notion of the paper
-        system_two_odd = pi.SystemTwo(
-            system_one_even, system_one_even, self.cache)
-        system_two_odd.add(pi.SystemTwo(
-            system_one_odd, system_one_odd, self.cache))
+        system_two_odd = pi.SystemTwo(system_one_even, system_one_even, self.cache)
+        system_two_odd.add(pi.SystemTwo(system_one_odd, system_one_odd, self.cache))
         system_two_odd.setDistance(2)
         system_two_odd.setOrder(5)
         system_two_odd.diagonalize(1e-3)
 
-        system_two_even = pi.SystemTwo(
-            system_one_even, system_one_odd, self.cache)
-        system_two_even.add(pi.SystemTwo(
-            system_one_odd, system_one_even, self.cache))
+        system_two_even = pi.SystemTwo(system_one_even, system_one_odd, self.cache)
+        system_two_even.add(pi.SystemTwo(system_one_odd, system_one_even, self.cache))
         system_two_even.setDistance(2)
         system_two_even.setOrder(5)
         system_two_even.diagonalize(1e-3)
@@ -224,8 +225,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
 
         # Diagonalize blockwise alternative
         # Note: it is important to use system_one_combined
-        system_two_alternative = pi.SystemTwo(
-            system_one_combined, system_one_combined, self.cache)
+        system_two_alternative = pi.SystemTwo(system_one_combined, system_one_combined, self.cache)
         system_two_alternative.setDistance(2)
         system_two_alternative.setOrder(5)
 
@@ -260,8 +260,15 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff12 = np.max(maxdiff12)
         maxdiff35 = np.max(maxdiff35)
         maxdiff46 = np.max(maxdiff46)
-        print("Two-atom system with reflection symmetry, relative maximum deviation: ",
-              maxdiff12, " (between alternatives: ", maxdiff35, ", ", maxdiff46, ")")
+        print(
+            "Two-atom system with reflection symmetry, relative maximum deviation: ",
+            maxdiff12,
+            " (between alternatives: ",
+            maxdiff35,
+            ", ",
+            maxdiff46,
+            ")",
+        )
         self.assertAlmostEqual(maxdiff12, 0, places=9)
         self.assertAlmostEqual(maxdiff35, 0, places=9)
         self.assertAlmostEqual(maxdiff46, 0, places=9)
@@ -372,8 +379,7 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         maxdiff = np.abs((w1 - w2) / (np.max([w1, w2], axis=0)))
         maxdiff[np.abs(w1 - w2) < 1e-14] = np.abs(w1 - w2)[np.abs(w1 - w2) < 1e-14]
         maxdiff = np.max(maxdiff)
-        print(
-            "Two-atom system with inversion symmetry, relative maximum deviation: ", maxdiff)
+        print("Two-atom system with inversion symmetry, relative maximum deviation: ", maxdiff)
         self.assertAlmostEqual(maxdiff, 0, places=9)
 
     def test_combined(self):
@@ -416,14 +422,14 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         system_two.diagonalize(1e-3)
 
         # Note: it is important to use system_one_combined
-        system_two_from_combined = pi.SystemTwo(
-            system_one_combined, system_one_combined, self.cache)
+        system_two_from_combined = pi.SystemTwo(system_one_combined, system_one_combined, self.cache)
         system_two_from_combined.setDistance(2)
         system_two_from_combined.setOrder(3)
 
         system_two_combined = None
         for sym_reflection, sym_inversion, sym_permutation in product(
-                [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD]):
+            [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD], [pi.EVEN, pi.ODD]
+        ):
             system_two_tmp = pi.SystemTwo(system_two_from_combined)
             system_two_tmp.setConservedParityUnderReflection(sym_reflection)
             system_two_tmp.setConservedParityUnderInversion(sym_inversion)
@@ -457,5 +463,5 @@ class TestPythoninterfaceSymmetries(unittest.TestCase):
         shutil.rmtree(self.path_cache)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

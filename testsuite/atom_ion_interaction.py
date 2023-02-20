@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import pireal as pi
 
 
 class AtomIonInteractionTest(unittest.TestCase):
-
     def test_atom_ion_monopole_dipole(self):
         cache = pi.MatrixElementCache()
 
@@ -13,7 +13,7 @@ class AtomIonInteractionTest(unittest.TestCase):
         state = pi.StateOne("Rb", 45, 1, 1.5, 0.5)
         system = pi.SystemOne(state.getSpecies(), cache)
         system = pi.SystemOne(state.getSpecies(), cache)
-        system.restrictEnergy(state.getEnergy()-100, state.getEnergy()+100)
+        system.restrictEnergy(state.getEnergy() - 100, state.getEnergy() + 100)
         system.restrictN(42, 48)
         system.restrictM(0.5, 0.5)
         system.setIonCharge(1)
@@ -29,5 +29,5 @@ class AtomIonInteractionTest(unittest.TestCase):
         self.assertAlmostEqual(energies[index], -61.30507832465593, places=4)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

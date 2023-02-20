@@ -4,7 +4,7 @@ WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
 FormatStyle:     none
-CheckOptions:    
+CheckOptions:
   - key:             bugprone-argument-comment.StrictMode
     value:           '0'
   - key:             bugprone-assert-side-effect.AssertMacros
@@ -158,4 +158,3 @@ CheckOptions:
   - key:             readability-static-accessed-through-instance.NameSpecifierNestingThreshold
     value:           '3'
 ...
-

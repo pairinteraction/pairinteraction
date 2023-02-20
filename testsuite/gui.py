@@ -1,12 +1,12 @@
 # https://johnnado.com/pyqt-qtest-example/
 # https://github.com/jmcgeheeiv/pyqttestexample
-
-import time
 import sys
+import time
 import unittest
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtTest import QTest
+
 from PyQt5.QtCore import Qt
+from PyQt5.QtTest import QTest
+from PyQt5.QtWidgets import QApplication
 
 import pairinteraction_gui.pairinteraction.app as piGui
 
@@ -14,7 +14,6 @@ app = QApplication(sys.argv)
 
 
 class PairinteractionGuiTest(unittest.TestCase):
-
     def setUp(self):
         self.form = piGui.MainWindow()
         self.form.ui.action_sconf_reset.trigger()

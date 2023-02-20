@@ -14,9 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
+from queue import Queue
 
 from PyQt5 import QtCore
-from queue import Queue
 
 
 class Worker(QtCore.QThread):
@@ -83,9 +83,13 @@ class Worker(QtCore.QThread):
                 break
 
             elif line[:5] == b">>TYP":
-                type = int(line[5:12].decode('utf-8'))
-                status_type = ["Field map of first atom: ",
-                               "Field map of second atom: ", "Pair potential: ", "Field maps: "][type]
+                type = int(line[5:12].decode("utf-8"))
+                status_type = [
+                    "Field map of first atom: ",
+                    "Field map of second atom: ",
+                    "Pair potential: ",
+                    "Field maps: ",
+                ][type]
                 status_progress = "construct matrices"
 
                 if type == 3:
@@ -94,12 +98,11 @@ class Worker(QtCore.QThread):
                     self.samebasis = False
 
             elif line[:5] == b">>BAS":
-                basissize = int(line[5:12].decode('utf-8'))
-                status_progress = "construct matrices using {} basis vectors".format(
-                    basissize)
+                basissize = int(line[5:12].decode("utf-8"))
+                status_progress = f"construct matrices using {basissize} basis vectors"
 
             elif line[:5] == b">>STA":
-                filename = line[6:-1].decode('utf-8').strip()
+                filename = line[6:-1].decode("utf-8").strip()
                 if type == 0 or type == 3:
                     self.basisfile_field1 = filename
                 elif type == 1:
@@ -108,44 +111,43 @@ class Worker(QtCore.QThread):
                     self.basisfile_potential = filename
 
             elif line[:5] == b">>TOT":
-                total = int(line[5:12].decode('utf-8'))
+                total = int(line[5:12].decode("utf-8"))
                 current = 0
 
             elif line[:5] == b">>DIM":
                 dim = int(line[5:12])
                 status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total)
+                    dim, dim, current, total
+                )
 
             elif line[:5] == b">>OUT":
                 current += 1
                 status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total)
+                    dim, dim, current, total
+                )
 
-                filenumber = int(line[5:12].decode('utf-8'))
-                filestep = int(line[12:19].decode('utf-8'))
-                blocks = int(line[19:26].decode('utf-8'))
-                blocknumber = int(line[26:33].decode('utf-8'))
-                filename = line[34:-1].decode('utf-8').strip()
+                filenumber = int(line[5:12].decode("utf-8"))
+                filestep = int(line[12:19].decode("utf-8"))
+                blocks = int(line[19:26].decode("utf-8"))
+                blocknumber = int(line[26:33].decode("utf-8"))
+                filename = line[34:-1].decode("utf-8").strip()
 
                 if type == 0 or type == 3:
-                    self.dataqueue_field1.put(
-                        [filestep, blocks, blocknumber, filename])
+                    self.dataqueue_field1.put([filestep, blocks, blocknumber, filename])
                 elif type == 1:
-                    self.dataqueue_field2.put(
-                        [filestep, blocks, blocknumber, filename])
+                    self.dataqueue_field2.put([filestep, blocks, blocknumber, filename])
                 elif type == 2:
-                    self.dataqueue_potential.put(
-                        [filestep, blocks, blocknumber, filename])
+                    self.dataqueue_potential.put([filestep, blocks, blocknumber, filename])
 
             elif line[:5] == b">>ERR":
-                self.criticalsignal.emit(line[5:].decode('utf-8').strip())
+                self.criticalsignal.emit(line[5:].decode("utf-8").strip())
 
             elif line[:5] == b">>END":
                 finishedgracefully = True
                 break
 
             else:
-                print(line.decode('utf-8'), end="")
+                print(line.decode("utf-8"), end="")
 
             self.message = status_type + status_progress
 

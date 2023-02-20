@@ -1,14 +1,14 @@
-import numpy as np
 import pickle
 import shutil
 import tempfile
 import unittest
 
+import numpy as np
+
 from pairinteraction import picomplex as pi
 
 
 class IntegrationTest(unittest.TestCase):
-
     def setUp(self):
         self.dump_new_reference_data = False
         self.tolerance = 1e-6
@@ -29,16 +29,14 @@ class IntegrationTest(unittest.TestCase):
 
         if self.dump_new_reference_data:
             with open("integration_test_referencedata.pickle", "wb") as f:
-                pickle.dump((self.hamiltonian_one, self.basis_one,
-                             self.hamiltonian_two, self.basis_two), f)
+                pickle.dump((self.hamiltonian_one, self.basis_one, self.hamiltonian_two, self.basis_two), f)
 
         self.assertFalse(self.dump_new_reference_data)
 
     def test_integration(self):
         # Build one-atom system
         system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(
-            self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
+        system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
         system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
         system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
         system_one.setEfield([0, 0, 0.1])
@@ -56,9 +54,9 @@ class IntegrationTest(unittest.TestCase):
         basis_one = system_one.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_one.data *= (abs(hamiltonian_one).data > self.tolerance)
+        hamiltonian_one.data *= abs(hamiltonian_one).data > self.tolerance
         hamiltonian_one.eliminate_zeros()
-        basis_one.data *= (abs(basis_one).data > self.tolerance)
+        basis_one.data *= abs(basis_one).data > self.tolerance
         basis_one.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -66,14 +64,9 @@ class IntegrationTest(unittest.TestCase):
             self.basis_one = basis_one.copy()
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
-                hamiltonian_one_reference, basis_one_reference, _, _ = pickle.load(
-                    f)
-                np.testing.assert_allclose(hamiltonian_one.A,
-                                           hamiltonian_one_reference.A,
-                                           rtol=self.tolerance)
-                np.testing.assert_allclose(basis_one.A,
-                                           basis_one_reference.A,
-                                           rtol=self.tolerance)
+                hamiltonian_one_reference, basis_one_reference, _, _ = pickle.load(f)
+                np.testing.assert_allclose(hamiltonian_one.A, hamiltonian_one_reference.A, rtol=self.tolerance)
+                np.testing.assert_allclose(basis_one.A, basis_one_reference.A, rtol=self.tolerance)
 
         # Diagonalize one-atom system
         system_one.diagonalize()
@@ -82,15 +75,13 @@ class IntegrationTest(unittest.TestCase):
         # itself because diagonalization can lead to different order of
         # eigenvectors)
         system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
-        system_one.restrictEnergy(
-            self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
+        system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
         system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
         system_one.restrictL(self.state_one.getL() - 1, self.state_one.getL() + 1)
 
         # Build two-atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
-        system_two.restrictEnergy(
-            self.state_two.getEnergy() - 2, self.state_two.getEnergy() + 2)
+        system_two.restrictEnergy(self.state_two.getEnergy() - 2, self.state_two.getEnergy() + 2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(6)
         system_two.setAngle(0.9)
@@ -106,9 +97,9 @@ class IntegrationTest(unittest.TestCase):
         basis_two = system_two.getBasisvectors()
         # without pruning, max_diff_hamiltonian might be infinity due to
         # division by zero
-        hamiltonian_two.data *= (abs(hamiltonian_two).data > self.tolerance)
+        hamiltonian_two.data *= abs(hamiltonian_two).data > self.tolerance
         hamiltonian_two.eliminate_zeros()
-        basis_two.data *= (abs(basis_two).data > self.tolerance)
+        basis_two.data *= abs(basis_two).data > self.tolerance
         basis_two.eliminate_zeros()
 
         if self.dump_new_reference_data:
@@ -116,18 +107,13 @@ class IntegrationTest(unittest.TestCase):
             self.basis_two = basis_two.copy()
         else:
             with open("integration_test_referencedata.pickle", "rb") as f:
-                _, _, hamiltonian_two_reference, basis_two_reference = pickle.load(
-                    f)
-                np.testing.assert_allclose(hamiltonian_two.A,
-                                           hamiltonian_two_reference.A,
-                                           rtol=self.tolerance)
-                np.testing.assert_allclose(basis_two.A,
-                                           basis_two_reference.A,
-                                           rtol=self.tolerance)
+                _, _, hamiltonian_two_reference, basis_two_reference = pickle.load(f)
+                np.testing.assert_allclose(hamiltonian_two.A, hamiltonian_two_reference.A, rtol=self.tolerance)
+                np.testing.assert_allclose(basis_two.A, basis_two_reference.A, rtol=self.tolerance)
 
         # Diagonalize two-atom system
         system_two.diagonalize()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

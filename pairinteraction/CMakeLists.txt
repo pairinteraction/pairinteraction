@@ -175,11 +175,11 @@ if(WITH_PYTHON)
   configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_real.i )
   set( DATATYPE "complex" )
   configure_file( Interface.i.cmakein ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i )
-  
+
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "" )
 
   find_package(SWIG 3.0 COMPONENTS python REQUIRED)
-  if(${CMAKE_VERSION} VERSION_LESS "3.18.0") 
+  if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
     find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
   else()
     find_package(Python3 COMPONENTS Interpreter Development.Module NumPy REQUIRED)
@@ -257,7 +257,7 @@ if( WITH_DMG )
     set(bin5 \${CMAKE_INSTALL_PREFIX}/pairinteraction/_pireal.so)
     set(bin6 \${CMAKE_INSTALL_PREFIX}/pairinteraction/_picomplex.so)
   endif()
-  
+
   install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/pairinteraction/libraries ${bin1} ${bin2} ${bin3} ${bin4} ${bin5} ${bin6})")
 
 elseif ( NOT WIN32 )

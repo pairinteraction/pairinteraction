@@ -174,45 +174,45 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     std::array<int, 2> n_arr = s.getN();
                     return std::make_tuple(n_arr[0], n_arr[1]);
                 })
-        .method("getN", static_cast<const int &(StateTwo::*)(int)const>(&StateTwo::getN))
+        .method("getN", static_cast<const int &(StateTwo::*)(int) const>(&StateTwo::getN))
         .method("getL",
                 [](StateTwo &s) {
                     std::array<int, 2> l_arr = s.getL();
                     return std::make_tuple(l_arr[0], l_arr[1]);
                 })
-        .method("getL", static_cast<const int &(StateTwo::*)(int)const>(&StateTwo::getL))
+        .method("getL", static_cast<const int &(StateTwo::*)(int) const>(&StateTwo::getL))
         .method("getJ",
                 [](StateTwo &s) {
                     std::array<float, 2> j_arr = s.getJ();
                     return std::make_tuple(j_arr[0], j_arr[1]);
                 })
-        .method("getJ", static_cast<const float &(StateTwo::*)(int)const>(&StateTwo::getJ))
+        .method("getJ", static_cast<const float &(StateTwo::*)(int) const>(&StateTwo::getJ))
         .method("getM",
                 [](StateTwo &s) {
                     std::array<float, 2> m_arr = s.getM();
                     return std::make_tuple(m_arr[0], m_arr[1]);
                 })
-        .method("getM", static_cast<const float &(StateTwo::*)(int)const>(&StateTwo::getM))
+        .method("getM", static_cast<const float &(StateTwo::*)(int) const>(&StateTwo::getM))
         .method("getS",
                 [](StateTwo &s) {
                     std::array<float, 2> s_arr = s.getS();
                     return std::make_tuple(s_arr[0], s_arr[1]);
                 })
-        .method("getS", static_cast<const float &(StateTwo::*)(int)const>(&StateTwo::getS))
+        .method("getS", static_cast<const float &(StateTwo::*)(int) const>(&StateTwo::getS))
         .method("getSpecies",
                 [](StateTwo &s) {
                     std::array<std::string, 2> species_arr = s.getSpecies();
                     return std::make_tuple(species_arr[0], species_arr[1]);
                 })
         .method("getSpecies",
-                static_cast<const std::string &(StateTwo::*)(int)const>(&StateTwo::getSpecies))
+                static_cast<const std::string &(StateTwo::*)(int) const>(&StateTwo::getSpecies))
         .method("getElement",
                 [](StateTwo &s) {
                     std::array<std::string, 2> el_arr = s.getElement();
                     return std::make_tuple(el_arr[0], el_arr[1]);
                 })
         .method("getElement",
-                static_cast<const std::string &(StateTwo::*)(int)const>(&StateTwo::getElement))
+                static_cast<const std::string &(StateTwo::*)(int) const>(&StateTwo::getElement))
         .method("getEnergy", static_cast<double (StateTwo::*)() const>(&StateTwo::getEnergy))
         .method("getEnergy", static_cast<double (StateTwo::*)(int) const>(&StateTwo::getEnergy))
         .method("getNStar",
@@ -228,7 +228,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return std::make_tuple(l_arr[0], l_arr[1]);
                 })
         .method("getLabel",
-                static_cast<const std::string &(StateTwo::*)(int)const>(&StateTwo::getLabel))
+                static_cast<const std::string &(StateTwo::*)(int) const>(&StateTwo::getLabel))
         .method("isArtificial",
                 [](StateTwo &s) {
                     std::array<bool, 2> b_arr = s.isArtificial();

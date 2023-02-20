@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Sebastian Weber, Henri Menke, Alexander Papageorge. All rights reserved.
-# 
+#
 # This file is part of the pairinteraction library.
 #
 # The pairinteraction library is free software: you can redistribute it and/or modify

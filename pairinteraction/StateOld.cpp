@@ -90,8 +90,8 @@ bool StateOneOld::operator==(StateOneOld const &rhs) const {
     return (n == rhs.n) && (l == rhs.l) && (j == rhs.j) && (m == rhs.m);
 }
 
-bool StateOneOld::
-operator^(StateOneOld const &rhs) const { // subset // TODO is there a better operator to use?
+bool StateOneOld::operator^(
+    StateOneOld const &rhs) const { // subset // TODO is there a better operator to use?
     return (rhs.n == ARB || n == rhs.n) && (rhs.l == ARB || l == rhs.l) &&
         (rhs.j == ARB || j == rhs.j) && (rhs.m == ARB || m == rhs.m);
 }
@@ -228,8 +228,8 @@ bool StateTwoOld::operator==(const StateTwoOld &rhs) const {
         (n[1] == rhs.n[1]) && (l[1] == rhs.l[1]) && (j[1] == rhs.j[1]) && (m[1] == rhs.m[1]);
 }
 
-bool StateTwoOld::
-operator^(const StateTwoOld &rhs) const { // subset // TODO is there a better operator to use?
+bool StateTwoOld::operator^(
+    const StateTwoOld &rhs) const { // subset // TODO is there a better operator to use?
     return (rhs.n[0] == ARB || n[0] == rhs.n[0]) && (rhs.l[0] == ARB || l[0] == rhs.l[0]) &&
         (rhs.j[0] == ARB || j[0] == rhs.j[0]) && (rhs.m[0] == ARB || m[0] == rhs.m[0]) &&
         (rhs.n[1] == ARB || n[1] == rhs.n[1]) && (rhs.l[1] == ARB || l[1] == rhs.l[1]) &&

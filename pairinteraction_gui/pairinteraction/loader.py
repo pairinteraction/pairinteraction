@@ -14,29 +14,35 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
+import json
 
 import numpy as np
 from scipy import sparse
-import json
 
 
 class BinaryLoader:
-
     def __init__(self):
         # types
-        self.typeIds = {1008: 'int8', 1016: 'int16', 1032: 'int32',
-                        1064: 'int64', 1108: 'uint8', 1116: 'uint16',
-                        1132: 'uint32', 1164: 'int64', 2032: 'float32',
-                        2064: 'float64'}
-        self.type_t = 'uint16'
+        self.typeIds = {
+            1008: "int8",
+            1016: "int16",
+            1032: "int32",
+            1064: "int64",
+            1108: "uint8",
+            1116: "uint16",
+            1132: "uint32",
+            1164: "int64",
+            2032: "float32",
+            2064: "float64",
+        }
+        self.type_t = "uint16"
 
         # bit masks
         self.csr_not_csc = 0x01  # xxx0: csc, xxx1: csr
         self.complex_not_real = 0x02  # xx0x: real, xx1x: complex
 
     def readNumber(self, f, sz=None):
-        datatype = self.typeIds[np.fromfile(
-            f, dtype=np.dtype(self.type_t), count=1)[0]]
+        datatype = self.typeIds[np.fromfile(f, dtype=np.dtype(self.type_t), count=1)[0]]
         if sz is None:
             return np.fromfile(f, dtype=np.dtype(datatype), count=1)[0]
         else:
@@ -63,7 +69,6 @@ class BinaryLoader:
 
 
 class Eigensystem(BinaryLoader):
-
     def __init__(self, filename):
         super().__init__()
 
@@ -77,14 +82,14 @@ class Eigensystem(BinaryLoader):
     @property
     def params(self):
         if self._params is None:
-            with open(self._filename + '.json', 'r') as f:
+            with open(self._filename + ".json") as f:
                 self._params = json.load(f)
         return self._params
 
     @property
     def energies(self):
         if self._energies is None:
-            with open(self._filename + '.mat', 'rb') as f:
+            with open(self._filename + ".mat", "rb") as f:
                 tmp = self.readMatrix(f)
                 if tmp.size:
                     self._energies = np.real(tmp.diagonal())
@@ -96,7 +101,7 @@ class Eigensystem(BinaryLoader):
     @property
     def basis(self):
         if self._basis is None:
-            with open(self._filename + '.mat', 'rb') as f:
+            with open(self._filename + ".mat", "rb") as f:
                 if self._shift > 0:
                     f.seek(self._shift, 0)
                 else:

@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import picomplex as pi
 
 
 class RotationTest(unittest.TestCase):
-
     def setUp(self):
         # Set up rotation angles
         self.alpha = 2.67
@@ -49,8 +49,9 @@ class RotationTest(unittest.TestCase):
         self.assertAlmostEqual(wignerd(0.5, 0.5, 0.5, np.pi / 2), np.cos(np.pi / 2 / 2))
         self.assertAlmostEqual(wignerd(0.5, 0.5, -0.5, np.pi / 2), -np.sin(np.pi / 2 / 2))
         self.assertAlmostEqual(wignerd(1.5, 1.5, 1.5, np.pi / 2), (1 + np.cos(np.pi / 2)) / 2 * np.cos(np.pi / 2 / 2))
-        self.assertAlmostEqual(wignerd(1.5, 1.5, 0.5, np.pi / 2), -np.sqrt(3) *
-                               (1 + np.cos(np.pi / 2)) / 2 * np.sin(np.pi / 2 / 2))
+        self.assertAlmostEqual(
+            wignerd(1.5, 1.5, 0.5, np.pi / 2), -np.sqrt(3) * (1 + np.cos(np.pi / 2)) / 2 * np.sin(np.pi / 2 / 2)
+        )
 
     def test_rotation_derotate(self):
         # Add interaction to the Hamiltonian and diagonalize it
@@ -75,10 +76,7 @@ class RotationTest(unittest.TestCase):
         np.testing.assert_allclose(eigenvectors1.A, eigenvectors2.A, rtol=1e-6)
 
     def test_rotation_overlap(self):
-        states_to_calculate_overlap_with = [
-            pi.StateOne("Rb", 61, 2, pi.ARB, 1.5),
-            pi.StateOne("Rb", 60, 2, 1.5, 1.5)
-        ]
+        states_to_calculate_overlap_with = [pi.StateOne("Rb", 61, 2, pi.ARB, 1.5), pi.StateOne("Rb", 60, 2, 1.5, 1.5)]
 
         # Add interaction to the Hamiltonian and diagonalize it
         system_one_interacting = pi.SystemOne(self.system_one)
@@ -103,11 +101,13 @@ class RotationTest(unittest.TestCase):
         # Overlap with rotated states
         system_one_tmp = pi.SystemOne(system_one_interacting)
         overlap_rotated_states1 = system_one_tmp.getOverlap(
-            states_to_calculate_overlap_with, -self.gamma, -self.beta, -self.alpha)
+            states_to_calculate_overlap_with, -self.gamma, -self.beta, -self.alpha
+        )
 
         system_one_tmp = pi.SystemOne(system_one_interacting)
         overlap_rotated_states2 = system_one_tmp.getOverlap(
-            states_to_calculate_overlap_with, -self.gamma + 0.8342, -self.beta, -self.alpha)
+            states_to_calculate_overlap_with, -self.gamma + 0.8342, -self.beta, -self.alpha
+        )
 
         # Check that everything is the same
         np.testing.assert_allclose(overlap_rotated_system1, overlap_rotated_system2, rtol=1e-6)
@@ -215,5 +215,5 @@ class RotationTest(unittest.TestCase):
         np.testing.assert_allclose(overlaps1, overlaps3, rtol=1e-4, atol=1e-6)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

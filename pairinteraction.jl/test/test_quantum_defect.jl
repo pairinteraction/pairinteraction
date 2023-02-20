@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Sebastian Weber, Henri Menke, Alexander Papageorge. All rights reserved.
-# 
+#
 # This file is part of the pairinteraction library.
 #
 # The pairinteraction library is free software: you can redistribute it and/or modify
@@ -24,7 +24,7 @@ using PairInteraction
 qd = PairInteraction.QuantumDefect("Rb", 78, 1, 0.5)
 
 sqldb = SQLite.DB("pairinteraction/databases/quantum_defects.db")
-res = SQLite.Query(sqldb, 
+res = SQLite.Query(sqldb,
                    "select ac,Z,a1,a2,a3,a4,rc from model_potential where ( (element = 'Rb') and (L = 1) );")
 
 res_tuple, = [res...]

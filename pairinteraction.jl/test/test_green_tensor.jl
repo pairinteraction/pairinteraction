@@ -1,5 +1,5 @@
 # Copyright (c) 2020 Sebastian Weber, Henri Menke, Alexander Papageorge. All rights reserved.
-# 
+#
 # This file is part of the pairinteraction library.
 #
 # The pairinteraction library is free software: you can redistribute it and/or modify
@@ -31,16 +31,16 @@ state_two = PairInteraction.StateTwo(state_one, state_one)
 # test_greentensor_angle
 # Build one-atom system
 system_one = PairInteraction.SystemOne(PairInteraction.getSpecies(state_one), cache)
-PairInteraction.restrictEnergy(system_one, PairInteraction.getEnergy(state_one) - 40, 
+PairInteraction.restrictEnergy(system_one, PairInteraction.getEnergy(state_one) - 40,
                                            PairInteraction.getEnergy(state_one) + 40)
-PairInteraction.restrictN(system_one, PairInteraction.getN(state_one) - 1, 
+PairInteraction.restrictN(system_one, PairInteraction.getN(state_one) - 1,
                                       PairInteraction.getN(state_one) + 1)
-PairInteraction.restrictL(system_one, PairInteraction.getL(state_one) - 2, 
+PairInteraction.restrictL(system_one, PairInteraction.getL(state_one) - 2,
                                       PairInteraction.getL(state_one) + 2)
 
 # Build two-atom system
 system_two = PairInteraction.SystemTwo(system_one, system_one, cache)
-PairInteraction.restrictEnergy(system_two, PairInteraction.getEnergy(state_two) - 5, 
+PairInteraction.restrictEnergy(system_two, PairInteraction.getEnergy(state_two) - 5,
                                            PairInteraction.getEnergy(state_two) + 5)
 PairInteraction.setConservedParityUnderInversion(system_two, PairInteraction.ODD)
 PairInteraction.setConservedParityUnderPermutation(system_two, PairInteraction.ODD)
@@ -79,12 +79,12 @@ state_two = PairInteraction.StateTwo(state_one1, state_one2)
 
 # Set up one-atom system
 system_one = PairInteraction.SystemOne(PairInteraction.getSpecies(state_one1), cache)
-PairInteraction.restrictEnergy(system_one, 
-                               min(PairInteraction.getEnergy(state_one1), 
+PairInteraction.restrictEnergy(system_one,
+                               min(PairInteraction.getEnergy(state_one1),
                                PairInteraction.getEnergy(state_one2)) - 30,
-                               max(PairInteraction.getEnergy(state_one1), 
+                               max(PairInteraction.getEnergy(state_one1),
                                    PairInteraction.getEnergy(state_one2)) + 30)
-PairInteraction.restrictN(system_one, 
+PairInteraction.restrictN(system_one,
                           min(PairInteraction.getN(state_one1), PairInteraction.getN(state_one2)) - 2,
                           max(PairInteraction.getN(state_one1), PairInteraction.getN(state_one2)) + 2)
 PairInteraction.restrictL(system_one,
@@ -93,8 +93,8 @@ PairInteraction.restrictL(system_one,
 
 # Set up two-atom system
 system_two = PairInteraction.SystemTwo(system_one, system_one, cache)
-PairInteraction.restrictEnergy(system_two, 
-                               PairInteraction.getEnergy(state_two) - 3, 
+PairInteraction.restrictEnergy(system_two,
+                               PairInteraction.getEnergy(state_two) - 3,
                                PairInteraction.getEnergy(state_two) + 3)
 
 PairInteraction.setAngle(system_two, theta)
@@ -105,25 +105,25 @@ PairInteraction.enableGreenTensor(system_two, true)
 PairInteraction.diagonalize(system_two)
 idx = argmax(PairInteraction.getOverlap(system_two, state_two, 0, -theta, 0))
 
-C6_freespace = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx] 
+C6_freespace = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx]
                 - PairInteraction.getEnergy(state_two)) * interatomic_distance^6
 
 PairInteraction.setSurfaceDistance(system_two, distance_to_surface[1])
 PairInteraction.diagonalize(system_two)
 idx = argmax(PairInteraction.getOverlap(system_two, state_two, 0, -theta, 0))
-C6_1 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx] 
+C6_1 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx]
         - PairInteraction.getEnergy(state_two)) * interatomic_distance^6
 
 PairInteraction.setSurfaceDistance(system_two, distance_to_surface[2])
 PairInteraction.diagonalize(system_two)
 idx = argmax(PairInteraction.getOverlap(system_two, state_two, 0, -theta, 0))
-C6_2 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx] 
+C6_2 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx]
         - PairInteraction.getEnergy(state_two)) * interatomic_distance^6
 
 PairInteraction.setSurfaceDistance(system_two, distance_to_surface[3])
 PairInteraction.diagonalize(system_two)
 idx = argmax(PairInteraction.getOverlap(system_two, state_two, 0, -theta, 0))
-C6_3 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx] 
+C6_3 = (sparse(PairInteraction.getHamiltonian(system_two))[idx, idx]
         - PairInteraction.getEnergy(state_two)) * interatomic_distance^6
 
 # Compare the results against previously calculated values

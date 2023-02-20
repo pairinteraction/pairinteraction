@@ -1,9 +1,10 @@
+import shutil
+import tempfile
 import unittest
+from multiprocessing import Pool
+
 import numpy as np
 from scipy.sparse import coo_matrix
-from multiprocessing import Pool
-import tempfile
-import shutil
 
 from pairinteraction import pireal as pi
 
@@ -64,8 +65,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
-                connections = stark_shifted_systems[i - 1].getConnections(
-                    stark_shifted_systems[i], 0.001)
+                connections = stark_shifted_systems[i - 1].getConnections(stark_shifted_systems[i], 0.001)
                 iFirst = np.array(connections[0])
                 iSecond = np.array(connections[1])
 
@@ -91,8 +91,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 line_mapper = np.zeros(np.max(iSecond) + 1)
                 line_mapper[iSecond] = tmp
 
-        lines_energies = coo_matrix(
-            (line_val, (np.array(line_idx) - 1, line_step))).toarray()
+        lines_energies = coo_matrix((line_val, (np.array(line_idx) - 1, line_step))).toarray()
         lines_energies[lines_energies == 0] = np.nan
 
         self.assertEqual(len(lines_energies), 30)
@@ -127,8 +126,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
             return tmp
 
         p = Pool(2)
-        dipole_interacting_systems = np.array(
-            p.map(calcEnergies_two, distances))
+        dipole_interacting_systems = np.array(p.map(calcEnergies_two, distances))
         p.close()
 
         # Get potential lines
@@ -141,14 +139,12 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
-                connections = dipole_interacting_systems[i - 1].getConnections(
-                    dipole_interacting_systems[i], 0.001)
+                connections = dipole_interacting_systems[i - 1].getConnections(dipole_interacting_systems[i], 0.001)
                 iFirst = np.array(connections[0])
                 iSecond = np.array(connections[1])
 
             else:
-                iFirst = np.arange(
-                    dipole_interacting_systems[i].getNumBasisvectors())
+                iFirst = np.arange(dipole_interacting_systems[i].getNumBasisvectors())
                 iSecond = iFirst
 
             if len(iFirst) > 0:
@@ -169,8 +165,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
                 line_mapper = np.zeros(np.max(iSecond) + 1)
                 line_mapper[iSecond] = tmp
 
-        lines_energies = coo_matrix(
-            (line_val, (np.array(line_idx) - 1, line_step))).toarray()
+        lines_energies = coo_matrix((line_val, (np.array(line_idx) - 1, line_step))).toarray()
         lines_energies[lines_energies == 0] = np.nan
 
         self.assertEqual(len(lines_energies), 10)
@@ -188,5 +183,5 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         shutil.rmtree(self.path_cache)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

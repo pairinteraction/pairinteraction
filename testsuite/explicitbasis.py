@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import picomplex as pi
 
 
 class ExplicitBasisTest(unittest.TestCase):
-
     def setUp(self):
         # Set up cache
         self.cache = pi.MatrixElementCache()
@@ -32,13 +32,14 @@ class ExplicitBasisTest(unittest.TestCase):
         system_two.setMinimalNorm(0)
         system_two.setOneAtomBasisvectors(one_atom_basisvectors_indices)
         basisvectors_two = system_two.getBasisvectors().toarray()
-        assert basisvectors_two.shape[0] == (basisvectors_one.shape[0])**2
+        assert basisvectors_two.shape[0] == (basisvectors_one.shape[0]) ** 2
         assert basisvectors_two.shape[1] == len(one_atom_basisvectors_indices)
 
         # Check results
         for n, [a, b] in enumerate(one_atom_basisvectors_indices):
             np.testing.assert_allclose(
-                np.outer(basisvectors_one[:, a], basisvectors_one[:, b]).ravel(), basisvectors_two[:, n])
+                np.outer(basisvectors_one[:, a], basisvectors_one[:, b]).ravel(), basisvectors_two[:, n]
+            )
 
     def test_exception(self):
 
@@ -61,8 +62,8 @@ class ExplicitBasisTest(unittest.TestCase):
         system_two.setMinimalNorm(0)
         with self.assertRaises(RuntimeError) as context:
             system_two.setOneAtomBasisvectors(one_atom_basisvectors_indices)
-        self.assertTrue('not unique' in str(context.exception))
+        self.assertTrue("not unique" in str(context.exception))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

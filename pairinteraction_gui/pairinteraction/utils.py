@@ -14,16 +14,16 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-
-import numpy as np
 import os
 import pickle
+
+import numpy as np
 
 
 # === Calculate and cache Wigner d-matrix elements ===
 
-class Wignerd:
 
+class Wignerd:
     def __init__(self, cachedir):
         self.cachedir = cachedir
         self.wignerdict = dict()
@@ -37,7 +37,7 @@ class Wignerd:
             if not self.cachupdatedict[k]:
                 continue
             path = os.path.join(self.cachedir, k)
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 pickle.dump(v, f, pickle.HIGHEST_PROTOCOL)
                 self.cachupdatedict[k] = False
 
@@ -47,26 +47,25 @@ class Wignerd:
         if m1 + m2 < 0:
             m1 *= -1
             m2 *= -1
-            sgn *= (-1)**(m2 - m1)
+            sgn *= (-1) ** (m2 - m1)
 
         if m1 < m2:
             m1, m2 = m2, m1
-            sgn *= (-1)**(m2 - m1)
+            sgn *= (-1) ** (m2 - m1)
 
-        bstring = "{:+013d}.pkl".format(int(np.round(beta * 1e9)))
+        bstring = f"{int(np.round(beta * 1e9)):+013d}.pkl"
         if bstring not in self.wignerdict.keys():
             path = os.path.join(self.cachedir, bstring)
             if os.path.exists(path):
-                with open(path, 'rb') as f:
+                with open(path, "rb") as f:
                     self.wignerdict[bstring] = pickle.load(f)
             else:
                 self.wignerdict[bstring] = dict()
             self.cachupdatedict[bstring] = False
 
-        mstring = "{}_{}_{}".format(j, m1, m2)
+        mstring = f"{j}_{m1}_{m2}"
         if mstring not in self.wignerdict[bstring].keys():
-            self.wignerdict[bstring][mstring] = float(
-                np.real(self._eval_wignerd(j, m2, m1, beta)))
+            self.wignerdict[bstring][mstring] = float(np.real(self._eval_wignerd(j, m2, m1, beta)))
             self.cachupdatedict[bstring] = True
 
         return sgn * self.wignerdict[bstring][mstring]
@@ -106,13 +105,12 @@ class Wignerd:
     def _m_values(self, j):
         size = 2 * j + 1
         if not size.is_integer() or not size > 0:
-            raise ValueError(
-                'Only integer or half-integer values allowed for j, got: : %r' % j
-            )
+            raise ValueError("Only integer or half-integer values allowed for j, got: : %r" % j)
         return size, [j - i for i in range(int(2 * j + 1))]
 
     def _eval_wignerd(self, j, m, mp, beta):
         from numpy import pi, sin, cos, sqrt
+
         try:
             from scipy.misc import factorial
         except ImportError:
@@ -126,11 +124,12 @@ class Wignerd:
             for k in range(int(2 * j) + 1):
                 if k > j + mp or k > j - m or k < mp - m:
                     continue
-                r += (-1)**k * binomial(j + mp, k) * \
-                    binomial(j - mp, k + m - mp)
-            r *= (-1)**(m - mp) / 2**j * \
-                sqrt(factorial(j + m) * factorial(j - m) /
-                     (factorial(j + mp) * factorial(j - mp)))
+                r += (-1) ** k * binomial(j + mp, k) * binomial(j - mp, k + m - mp)
+            r *= (
+                (-1) ** (m - mp)
+                / 2**j
+                * sqrt(factorial(j + m) * factorial(j - m) / (factorial(j + mp) * factorial(j - mp)))
+            )
         else:
             # Varshalovich Equation(5), Section 4.7.2, page 87, where we set
             # beta1=beta2=pi/2, and we get alpha=gamma=pi/2 and beta=phi+pi,
@@ -140,14 +139,16 @@ class Wignerd:
             # except that we need to substitute -mp for mp.
             size, mvals = self._m_values(j)
             for mpp in mvals:
-                r += self._eval_wignerd(j, m, mpp, pi / 2) * \
-                    (cos(-mpp * beta) + 1j * sin(-mpp * beta)) * \
-                    self._eval_wignerd(j, mpp, -mp, pi / 2)
+                r += (
+                    self._eval_wignerd(j, m, mpp, pi / 2)
+                    * (cos(-mpp * beta) + 1j * sin(-mpp * beta))
+                    * self._eval_wignerd(j, mpp, -mp, pi / 2)
+                )
             # Empirical normalization factor so results match Varshalovich
             # Tables 4.3-4.12
             # Note that this exact normalization does not follow from the
             # above equations
-            r = r * 1j**(2 * j - m - mp) * (-1)**(2 * m)
+            r = r * 1j ** (2 * j - m - mp) * (-1) ** (2 * m)
 
         return r
 
@@ -155,8 +156,9 @@ class Wignerd:
 # === Append csr matrices ===
 # see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 
+
 def csr_vappend(a, b):
-    """ Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
+    """Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
     Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
     the first matrix instead of copying it. The data, indices, and indptr still get copied."""
 
@@ -169,8 +171,9 @@ def csr_vappend(a, b):
 # === Append csc matrices ===
 # see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 
+
 def csc_happend(a, b):
-    """ Takes in 2 csc_matrices and appends the second one to the right of the first one."""
+    """Takes in 2 csc_matrices and appends the second one to the right of the first one."""
 
     a.data = np.hstack((a.data, b.data))
     a.indices = np.hstack((a.indices, b.indices))
@@ -181,6 +184,7 @@ def csc_happend(a, b):
 # === Keep only the values that are maximal within a row of a csr matrix ===
 # see http://stackoverflow.com/questions/15992857/efficient-way-to-get-the-max-of-each-row-for-large-sparse-matrix
 
+
 def csr_keepmax(a):
     boolarr = np.diff(a.indptr) > 0
     ret = np.maximum.reduceat(a.data, a.indptr[:-1][boolarr])
@@ -189,6 +193,7 @@ def csr_keepmax(a):
 
 
 # === Return a normalized image ===
+
 
 def normscale(data, cmin=None, cmax=None):
     if cmin is None:
@@ -199,6 +204,7 @@ def normscale(data, cmin=None, cmax=None):
 
 
 # === Return a byte-scaled image ===
+
 
 def bytescale(data, cmin=None, cmax=None, high=255, low=0):
     return np.array(normscale(data, cmin, cmax) * (high - low + 0.9999) + low).astype(int)

@@ -1,7 +1,7 @@
 3RD PARTY LICENSES
 
 Note that not all files in the pairinteraction repository and in the released
-software packages belong to the pairinteraction project. For 3rd party files, 
+software packages belong to the pairinteraction project. For 3rd party files,
 the individual licenses apply.
 
 * PyQtGraph (https://github.com/pyqtgraph/pyqtgraph)
@@ -41,7 +41,7 @@ the individual licenses apply.
 * psutil (https://github.com/giampaolo/psutil)
     Copyright (c) 2009, Jay Loden, Dave Daeschler, Giampaolo Rodola'
     The 3-Clause BSD License, https://opensource.org/licenses/BSD-3-Clause
-  
+
 * Anaconda (https://www.continuum.io/anaconda)
     Copyright (c) 2016, Continuum Analytics, Inc.
     The 3-Clause BSD License, https://opensource.org/licenses/BSD-3-Clause
@@ -979,7 +979,7 @@ Mozilla Public License Version 2.0
     means any form of the work other than Source Code Form.
 
 1.7. "Larger Work"
-    means a work that combines Covered Software with other material, in 
+    means a work that combines Covered Software with other material, in
     a separate file or files, that is not Covered Software.
 
 1.8. "License"

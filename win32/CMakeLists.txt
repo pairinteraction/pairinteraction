@@ -16,7 +16,7 @@
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
 
-find_program( MAKENSIS NAMES makensis 
+find_program( MAKENSIS NAMES makensis
   HINTS
   ENV NSIS_ROOT
 )

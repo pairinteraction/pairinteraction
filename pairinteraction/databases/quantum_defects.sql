@@ -155,4 +155,3 @@ INSERT INTO `rydberg_ritz` VALUES('Sr3',3,'2','0.120','-2.2','100','0.0','0.0','
 INSERT INTO `rydberg_ritz` VALUES('Sr3',4,'3','0.0','0.0','0.0','0.0','0.0','109736.631');
 
 COMMIT;
-

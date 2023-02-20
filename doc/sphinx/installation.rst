@@ -74,12 +74,12 @@ Building from Source
     If you built from source, you have to extend the Python package search path to
     accomodate pairinteraction by adding your build directory to ``PYTHONPATH``. This can be done e.g. by
     adding the following lines to the top of a Python script:
-    
+
     .. code-block:: python
 
         import sys
         sys.path.append("/your/path/to/pairinteraction/build")
-   
+
 Requirements
 ^^^^^^^^^^^^
 
@@ -168,7 +168,7 @@ The build system uses CMake and has some configuration switches. These are
 .. [#] This mode activates the extension for calculating radial wave
        functions using Whittaker functions. If pairinteraction
        is built in this mode, any derived work has to be licensed under
-       GPL v3, because of the GSL being distributed under GPL. 
+       GPL v3, because of the GSL being distributed under GPL.
 
 These options can be passed directly to ``cmake``, i.e.
 

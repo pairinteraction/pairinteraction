@@ -14,23 +14,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-
-import pyqtgraph as pg
 import numpy as np
+import pyqtgraph as pg
 
 
 # === Points item (can be used with pyqtgraph) ===
 
-class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
 
+class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
     def __init__(self, x=None, y=None, size=1, alpha=80, color=(0, 0, 0)):
         pg.Qt.QtWidgets.QGraphicsItem.__init__(self)
         self.size = size
         self.alpha = alpha
         # self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
         # self.pen.setDashPattern([1, 20, 5, 4])
-        self.pen = pg.mkPen(color + (self.alpha,),
-                            width=self.size, cosmetic=True)
+        self.pen = pg.mkPen(color + (self.alpha,), width=self.size, cosmetic=True)
         self.setData(x, y)
         # self.ItemIgnoresTransformations = True
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
@@ -45,14 +43,12 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
         self.qpoints = pg.QtGui.QPolygonF(npoints)
         vptr = self.qpoints.data()
         vptr.setsize(np.dtype(np.float).itemsize * 2 * npoints)
-        data = np.ndarray(shape=(npoints, 2), dtype=np.float,
-                          buffer=memoryview(vptr))
+        data = np.ndarray(shape=(npoints, 2), dtype=np.float, buffer=memoryview(vptr))
         data.setflags(write=True)
         data[:, 0] = x
         data[:, 1] = y
 
-        self.bounds = pg.QtCore.QRectF(
-            x.min(), y.min(), x.max() - x.min(), y.max() - y.min())
+        self.bounds = pg.QtCore.QRectF(x.min(), y.min(), x.max() - x.min(), y.max() - y.min())
         self.prepareGeometryChange()
 
     def boundingRect(self):
@@ -66,15 +62,14 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
 # === Multi line item (can be used with pyqtgraph) ===
 # see https://stackoverflow.com/questions/17103698/plotting-large-arrays-in-pyqtgraph
 
-class MultiLine(pg.Qt.QtWidgets.QGraphicsPathItem):
 
+class MultiLine(pg.Qt.QtWidgets.QGraphicsPathItem):
     def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)):
         """x and y are 2D arrays of shape (Nplots, Nsamples)"""
         connections = np.ones(x.shape, dtype=bool)
         connections[:, -1] = 0  # don't draw the segment between each trace
 
-        self.path = pg.arrayToQPath(
-            x.flatten(), y.flatten(), connections.flatten())
+        self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connections.flatten())
         pg.Qt.QtWidgets.QGraphicsPathItem.__init__(self, self.path)
         pen = pg.mkPen(color + (alpha,), width=size, cosmetic=True)
         self.setPen(pen)

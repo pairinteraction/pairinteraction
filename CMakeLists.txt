@@ -172,19 +172,19 @@ elseif(APPLE AND WITH_DMG)
   )
 
   set(CPACK_GENERATOR "Bundle")
-  
+
   set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-osx")
   set(CPACK_PACKAGE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
   set(CPACK_BUNDLE_NAME "pairinteraction")
   set(CPACK_BUNDLE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
   set(CPACK_BUNDLE_PLIST "${CMAKE_MACOSX_GOODIES_PATH}/Info.plist")
   set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
-  
+
   add_custom_target(
     license
     COMMAND ${Python3_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
-  
+
 elseif(UNIX)
 
   install(FILES ${CMAKE_SOURCE_DIR}/README.md

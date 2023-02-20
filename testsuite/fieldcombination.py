@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import pireal as pi
 
 
 class FieldCombinationTest(unittest.TestCase):
-
     def test_combined_fields(self):
         cache = pi.MatrixElementCache()
 
@@ -27,5 +27,5 @@ class FieldCombinationTest(unittest.TestCase):
         self.assertAlmostEqual(energies[13], -1000.2679341660352, places=4)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

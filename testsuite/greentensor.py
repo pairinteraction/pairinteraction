@@ -1,14 +1,14 @@
-import numpy as np
 import pickle
 import shutil
 import tempfile
 import unittest
 
+import numpy as np
+
 from pairinteraction import pireal as pi
 
 
 class GreenTensorTest(unittest.TestCase):
-
     def setUp(self):
         # Set up cache
         self.cache = pi.MatrixElementCache()
@@ -43,9 +43,9 @@ class GreenTensorTest(unittest.TestCase):
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
         # Prune Hamiltonians (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
-        hamiltonian_standard.data *= (abs(hamiltonian_standard).data > 1e-6)
+        hamiltonian_standard.data *= abs(hamiltonian_standard).data > 1e-6
         hamiltonian_standard.eliminate_zeros()
-        hamiltonian_greentensor.data *= (abs(hamiltonian_greentensor).data > 1e-6)
+        hamiltonian_greentensor.data *= abs(hamiltonian_greentensor).data > 1e-6
         hamiltonian_greentensor.eliminate_zeros()
 
         # Compare Hamiltonians
@@ -77,9 +77,9 @@ class GreenTensorTest(unittest.TestCase):
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
         # Prune Hamiltonians (without pruning, max_diff_hamiltonian might be infinity due to division by zero)
-        hamiltonian_standard.data *= (abs(hamiltonian_standard).data > 1e-6)
+        hamiltonian_standard.data *= abs(hamiltonian_standard).data > 1e-6
         hamiltonian_standard.eliminate_zeros()
-        hamiltonian_greentensor.data *= (abs(hamiltonian_greentensor).data > 1e-6)
+        hamiltonian_greentensor.data *= abs(hamiltonian_greentensor).data > 1e-6
         hamiltonian_greentensor.eliminate_zeros()
 
         # Compare Hamiltonians
@@ -97,12 +97,16 @@ class GreenTensorTest(unittest.TestCase):
 
         # Set up one-atom system
         system_one = pi.SystemOne(state_one1.getSpecies(), self.cache)
-        system_one.restrictEnergy(min(state_one1.getEnergy(), state_one2.getEnergy()) - 30,
-                                  max(state_one1.getEnergy(), state_one2.getEnergy()) + 30)
-        system_one.restrictN(min(state_one1.getN(), state_one2.getN()) - 2,
-                             max(state_one1.getN(), state_one2.getN()) + 2)
-        system_one.restrictL(min(state_one1.getL(), state_one2.getL()) - 1,
-                             max(state_one1.getL(), state_one2.getL()) + 1)
+        system_one.restrictEnergy(
+            min(state_one1.getEnergy(), state_one2.getEnergy()) - 30,
+            max(state_one1.getEnergy(), state_one2.getEnergy()) + 30,
+        )
+        system_one.restrictN(
+            min(state_one1.getN(), state_one2.getN()) - 2, max(state_one1.getN(), state_one2.getN()) + 2
+        )
+        system_one.restrictL(
+            min(state_one1.getL(), state_one2.getL()) - 1, max(state_one1.getL(), state_one2.getL()) + 1
+        )
 
         # Set up two-atom system
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
@@ -139,5 +143,5 @@ class GreenTensorTest(unittest.TestCase):
         np.testing.assert_allclose(C6_3, -649, atol=20)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

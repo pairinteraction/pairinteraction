@@ -1,13 +1,13 @@
-import numpy as np
 import shutil
 import tempfile
 import unittest
+
+import numpy as np
 
 from pairinteraction import pireal as pi
 
 
 class PerturbationTest(unittest.TestCase):
-
     def setUp(self):
         self.cache_path = tempfile.mkdtemp()
         self.cache = pi.MatrixElementCache(self.cache_path)
@@ -23,10 +23,12 @@ class PerturbationTest(unittest.TestCase):
         distance = 5
         deltaN = 2
 
-        state_two_subspace = [pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2])]
+        state_two_subspace = [
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+        ]
 
         ### Schrieffer Wolff transformation ###
 
@@ -76,10 +78,12 @@ class PerturbationTest(unittest.TestCase):
         efieldz = 0.5
         deltaN = 2
 
-        state_two_subspace = [pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2])]
+        state_two_subspace = [
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 1], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [1, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+        ]
 
         ### Exact calculation ###
 
@@ -92,10 +96,14 @@ class PerturbationTest(unittest.TestCase):
 
         system_one.diagonalize(1e-3)
 
-        fieldshift = system_one.getHamiltonian().diagonal()[
-            system_one.getBasisvectorIndex(state_two_subspace[0].getFirstState())] + \
+        fieldshift = (
             system_one.getHamiltonian().diagonal()[
-            system_one.getBasisvectorIndex(state_two_subspace[0].getSecondState())]
+                system_one.getBasisvectorIndex(state_two_subspace[0].getFirstState())
+            ]
+            + system_one.getHamiltonian().diagonal()[
+                system_one.getBasisvectorIndex(state_two_subspace[0].getSecondState())
+            ]
+        )
 
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setMinimalNorm(0.01)
@@ -105,8 +113,9 @@ class PerturbationTest(unittest.TestCase):
 
         # Get eigenenergies
         system_two.diagonalize()
-        energies_exact = system_two.getHamiltonian().diagonal(
-        )[list(system_two.getBasisvectorIndex(state_two_subspace))]
+        energies_exact = system_two.getHamiltonian().diagonal()[
+            list(system_two.getBasisvectorIndex(state_two_subspace))
+        ]
 
         ### Schrieffer Wolff transformation ###
 
@@ -119,10 +128,14 @@ class PerturbationTest(unittest.TestCase):
 
         system_one.diagonalize(1e-3)
 
-        fieldshift = system_one.getHamiltonian().diagonal()[
-            system_one.getBasisvectorIndex(state_two_subspace[0].getFirstState())] + \
+        fieldshift = (
             system_one.getHamiltonian().diagonal()[
-            system_one.getBasisvectorIndex(state_two_subspace[0].getSecondState())]
+                system_one.getBasisvectorIndex(state_two_subspace[0].getFirstState())
+            ]
+            + system_one.getHamiltonian().diagonal()[
+                system_one.getBasisvectorIndex(state_two_subspace[0].getSecondState())
+            ]
+        )
 
         system_two = pi.SystemTwo(system_one, system_one, self.cache)
         system_two.setMinimalNorm(0.01)
@@ -164,10 +177,12 @@ class PerturbationTest(unittest.TestCase):
         distance = 5
         deltaN = 2
 
-        state_two_subspace = [pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
-                              pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, 1 / 2])]
+        state_two_subspace = [
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [-1 / 2, 1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, -1 / 2]),
+            pi.StateTwo(["Rb", "Rb"], [42, 42], [0, 0], [1 / 2, 1 / 2], [1 / 2, 1 / 2]),
+        ]
 
         ### Schrieffer Wolff transformation ###
 
@@ -218,5 +233,5 @@ class PerturbationTest(unittest.TestCase):
         self.assertAlmostEqual(C6, -886.744, places=3)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

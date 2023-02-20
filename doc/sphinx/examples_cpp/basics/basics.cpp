@@ -24,9 +24,10 @@
 
 int main() {
     // Create cache directory if not already existing
-    boost::filesystem::path path_cache = boost::filesystem::current_path()/"cache";
+    boost::filesystem::path path_cache = boost::filesystem::current_path() / "cache";
     if (boost::filesystem::create_directory(path_cache)) {
-        std::cout << "Cache directory " << path_cache.string() << " created." << "\n";
+        std::cout << "Cache directory " << path_cache.string() << " created."
+                  << "\n";
     }
 
     // Set up cache

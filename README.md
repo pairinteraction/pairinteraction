@@ -7,7 +7,7 @@
 [![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License][license-svg]][gpl-link]
-   
+
 The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
 Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
 

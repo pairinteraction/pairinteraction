@@ -1,11 +1,11 @@
-import numpy as np
 import unittest
+
+import numpy as np
 
 from pairinteraction import picomplex as pi
 
 
 class FeastTest(unittest.TestCase):
-
     def setUp(self):
         # Set up cache
         self.cache = pi.MatrixElementCache()
@@ -34,7 +34,7 @@ class FeastTest(unittest.TestCase):
         evecs_feast = system_one.getBasisvectors()
 
         # Check results
-        overlap = np.abs(np.dot(evecs_standard.conj().T, evecs_feast))**2
+        overlap = np.abs(np.dot(evecs_standard.conj().T, evecs_feast)) ** 2
         np.testing.assert_allclose(overlap.diagonal(), np.ones_like(overlap.diagonal()), rtol=1e-12)
         self.assertAlmostEqual(np.sum(overlap), system_one.getNumBasisvectors(), places=6)
 
@@ -65,5 +65,5 @@ class FeastTest(unittest.TestCase):
         self.assertEqual(system_one.getNumBasisvectors(), 4)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

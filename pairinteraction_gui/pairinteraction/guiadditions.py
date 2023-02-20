@@ -14,18 +14,22 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-import locale
-from abc import ABCMeta, abstractmethod
-from .unitmanagement import Quantity
 import collections.abc
+import locale
+from abc import ABCMeta
+from abc import abstractmethod
+
+from PyQt5 import QtCore
+from PyQt5 import QtGui
+from PyQt5 import QtWidgets
+
+from pairinteraction_gui.pairinteraction.unitmanagement import Quantity
 
 
 # === Dictionary to manage the elements of the GUI ===
 
-class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
+class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
     def __init__(self, ui):
         self.store = dict()
         self._setup(self.store, ui)
@@ -38,8 +42,8 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
         return self.__getitem__(key)
 
     def __getitem__(self, key):
-        widget = self.store[key]['widget']
-        unit = self.store[key]['unit']
+        widget = self.store[key]["widget"]
+        unit = self.store[key]["unit"]
 
         value = None
         if isinstance(widget, QtWidgets.QComboBox):
@@ -66,8 +70,8 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
         if not isinstance(value, Quantity):
             raise Exception("value has to be of type quantity")
 
-        widget = self.store[key]['widget']
-        unit = self.store[key]['unit']
+        widget = self.store[key]["widget"]
+        unit = self.store[key]["unit"]
 
         value = value.toUU().magnitude
 
@@ -106,37 +110,36 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
 # === Validators ===
 
-class DoublenoneValidator(QtGui.QDoubleValidator):
 
+class DoublenoneValidator(QtGui.QDoubleValidator):
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def validate(self, s, pos):
-        if s == 'None':
+        if s == "None":
             return (QtGui.QValidator.Acceptable, s, pos)
 
         lastpos = -1
         for c in s.lower():
             try:
-                lastpos = 'none'[lastpos + 1:].index(c)
+                lastpos = "none"[lastpos + 1 :].index(c)
             except ValueError:
                 return super().validate(s, pos)
 
         return (QtGui.QValidator.Intermediate, s, pos)
 
     def fixup(self, s):
-        return 'None'
+        return "None"
 
 
 class DoublepositiveValidator(QtGui.QDoubleValidator):
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def validate(self, s, pos):
         status = super().validate(s, pos)
 
-        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == '-':
+        if status[0] == QtGui.QValidator.Intermediate and len(s) > 0 and s[0] == "-":
             return (QtGui.QValidator.Invalid, s, pos)
 
         if status[0] == QtGui.QValidator.Acceptable and locale.atof(s) < 0:
@@ -149,7 +152,6 @@ class DoublepositiveValidator(QtGui.QDoubleValidator):
 
 
 class DoubledeltaValidator(QtGui.QDoubleValidator):
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -168,7 +170,6 @@ class DoubledeltaValidator(QtGui.QDoubleValidator):
 
 
 class DoubleValidator(QtGui.QDoubleValidator):
-
     def __init__(self, parent=None):
         super().__init__(parent)
 
