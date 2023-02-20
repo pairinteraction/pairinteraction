@@ -13,3 +13,10 @@ jobs:
         with:
           python-version: "3.11"
       - uses: pre-commit/action@v3.0.0
+      - run: git diff --output=format.patch --exit-code || { cat format.patch; false; }
+        if: failure()
+      - uses: actions/upload-artifact@v3
+        if: failure()
+        with:
+          name: format.patch
+          path: format.patch

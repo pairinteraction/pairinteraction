@@ -122,32 +122,6 @@ jobs:
         name: ${{ env.package }}
         path: build/${{ env.package }}
 
-  fix-style:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - name: Fix style
-      run: |
-        find pairinteraction \( -name "*.h" -or -name "*.cpp" \) -print0 |
-            xargs -0 -P 0 -I '{}' -t clang-format -i -style=file "{}"
-        find testsuite -name "*.py" -print0 |
-            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
-        find pairinteraction_gui/pairinteraction -name "*.py" -print0 |
-            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
-        git diff --output=format.patch --exit-code || { cat format.patch; false; }
-    - uses: actions/upload-artifact@v3
-      if: failure()
-      with:
-        name: format.patch
-        path: format.patch
-
   static-analysis:
     runs-on: ubuntu-latest
     container:
