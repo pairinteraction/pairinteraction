@@ -23,7 +23,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
 endif()
 
-set(LIBNAME "pairinteraction")
 set(GUINAME "pairinteraction_gui")
 
 # set version of settings and cache
@@ -123,14 +122,14 @@ endif()
 # Build instructions
 
 if( WITH_BACKEND )
-  add_subdirectory(${LIBNAME})
-  add_subdirectory(${LIBNAME}/databases)
+  add_subdirectory(pairinteraction)
+  add_subdirectory(pairinteraction/databases)
   if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     add_subdirectory(testsuite)
   endif()
   if (WITH_JULIA)
-    add_subdirectory(${LIBNAME}.jl/src)
-    add_subdirectory(${LIBNAME}.jl/test)
+    add_subdirectory(pairinteraction.jl/src)
+    add_subdirectory(pairinteraction.jl/test)
   endif()
 endif( )
 

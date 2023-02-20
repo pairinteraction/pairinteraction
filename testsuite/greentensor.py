@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-from @LIBNAME@ import pireal as pi
+from pairinteraction import pireal as pi
 
 
 class GreenTensorTest(unittest.TestCase):

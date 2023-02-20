@@ -137,9 +137,8 @@ jobs:
       run: |
         find pairinteraction \( -name "*.h" -or -name "*.cpp" \) -print0 |
             xargs -0 -P 0 -I '{}' -t clang-format -i -style=file "{}"
-        # FIXME: Currently ignoring E225 and E226 to prevent changing @LIBNAME@ to @ LIBNAME @
         find testsuite -name "*.py" -print0 |
-            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --ignore E225,E226 --in-place "{}"
+            xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
         find pairinteraction_gui/pairinteraction -name "*.py" -print0 |
             xargs -0 -P 0 -I '{}' -t autopep8 --max-line-length 120 --aggressive --in-place "{}"
         git diff --output=format.patch --exit-code || { cat format.patch; false; }

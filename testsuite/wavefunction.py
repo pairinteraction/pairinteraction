@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 
-from @LIBNAME@ import pireal as pi
+from pairinteraction import pireal as pi
 
 
 @unittest.skipIf(not pi.gsl_enabled, "The program was compiled without GSL support.")

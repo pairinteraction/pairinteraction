@@ -4,7 +4,7 @@ import tempfile
 import shutil
 from itertools import product
 
-from @LIBNAME@ import picomplex as pi
+from pairinteraction import picomplex as pi
 
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):

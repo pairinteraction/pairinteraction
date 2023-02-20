@@ -21,10 +21,10 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
     packages = find_namespace_packages(include=[
-        "@LIBNAME@", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
+        "pairinteraction", "@GUINAME@", "@GUINAME@.pairinteraction", "@GUINAME@.pairinteraction.*"
     ]),
     package_data = {
-        "@LIBNAME@" : [
+        "pairinteraction" : [
             "_picomplex.so", "_pireal.so",
             "pairinteraction-complex", "pairinteraction-real",
             "databases/quantum_defects.db"

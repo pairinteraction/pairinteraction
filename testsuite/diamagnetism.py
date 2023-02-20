@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from @LIBNAME@ import picomplex as pi
+from pairinteraction import picomplex as pi
 
 
 class DiamagnetismTest(unittest.TestCase):

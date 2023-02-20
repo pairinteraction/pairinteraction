@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-import @LIBNAME@.picomplex as pi
+import pairinteraction.picomplex as pi
 
 
 class TestState(unittest.TestCase):

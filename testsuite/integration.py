@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-from @LIBNAME@ import picomplex as pi
+from pairinteraction import picomplex as pi
 
 
 class IntegrationTest(unittest.TestCase):

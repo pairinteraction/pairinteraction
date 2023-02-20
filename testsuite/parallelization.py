@@ -5,7 +5,7 @@ from multiprocessing import Pool
 import tempfile
 import shutil
 
-from @LIBNAME@ import pireal as pi
+from pairinteraction import pireal as pi
 
 
 class TestPythoninterfaceMultiprocessing(unittest.TestCase):

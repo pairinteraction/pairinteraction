@@ -44,7 +44,7 @@ include_directories(SYSTEM TODO/pairinteraction/eigen)
 
 #target_compile_definitions(basics PRIVATE USE_COMPLEX) # if used, libpicomplex.dylib has to be linked
 include_directories(TODO/pairinteraction)
-list(APPEND LIBRARIES "TODO/pairinteraction/build/${LIBNAME}/libpireal.dylib")
+list(APPEND LIBRARIES "TODO/pairinteraction/build/pairinteraction/libpireal.dylib")
 
 # Link boost filesystem
 

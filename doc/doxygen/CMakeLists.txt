@@ -19,6 +19,6 @@ find_package(Doxygen)
 
 add_custom_target(doxygen
   COMMAND
-  SOURCE_DIR=${CMAKE_SOURCE_DIR} LIBNAME=${LIBNAME}
+  SOURCE_DIR=${CMAKE_SOURCE_DIR}
   ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile
   COMMENT "Building HTML documentation with Doxygen")

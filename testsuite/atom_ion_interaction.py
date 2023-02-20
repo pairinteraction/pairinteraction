@@ -1,7 +1,7 @@
 import numpy as np
 import unittest
 
-from @LIBNAME@ import pireal as pi
+from pairinteraction import pireal as pi
 
 
 class AtomIonInteractionTest(unittest.TestCase):

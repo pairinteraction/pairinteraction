@@ -1,7 +1,7 @@
 import unittest
 import sqlite3
 
-from @LIBNAME@ import picomplex as pi
+from pairinteraction import picomplex as pi
 
 
 class TestQuantumDefect(unittest.TestCase):
@@ -9,7 +9,7 @@ class TestQuantumDefect(unittest.TestCase):
     def test_comparison(self):
         qd = pi.QuantumDefect("Rb", 78, 1, 0.5)
 
-        conn = sqlite3.connect("@LIBNAME@/databases/quantum_defects.db")
+        conn = sqlite3.connect("pairinteraction/databases/quantum_defects.db")
         stmt = conn.cursor()
         stmt.execute("select ac,Z,a1,a2,a3,a4,rc from model_potential"
                      + " where ( (element = 'Rb') and (L = 1) );")
