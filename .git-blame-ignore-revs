@@ -1,8 +1,17 @@
-# Let pre-commit format the code
-a3e059110584c0ed44a707e855df6adea5f70c78
+# [clang-format] Format whole code base
+b1131fbfce55d3df734411256f6bdd6992f6ec60
+
+# [core,gui] Apply suggested formatting changes
+043094c7688825f016842d1d1481103fda4ef0e2
+
+# Replace LIBNAME with its value
+70089ad298cede56869763aba105ae757a228e03
 
 # Replace GUINAME with its value
 3d96f2a209612bed70d65127b5e91c498ca0af0a
 
-# Replace LIBNAME with its value
-70089ad298cede56869763aba105ae757a228e03
+# Let pre-commit format the code
+a3e059110584c0ed44a707e855df6adea5f70c78
+
+# Fixup pre-commit formatting
+c3464ca94f536d0a7c86b5dd8157801532cbd253
