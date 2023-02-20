@@ -7,11 +7,6 @@ from cycler import cycler
 
 from pairinteraction import pireal as pi
 
-# Arrays
-# Plotting
-# Parallel computing
-# pairinteraction :-)
-
 # Parameters
 distances = np.linspace(14, 4, 200)  # µm
 efields = [0, 0.020]  # V/cm

@@ -18,7 +18,7 @@ Use and Redistribution. You may use and redistribute the software (the
 * Redistributions must reproduce the above copyright notice and the following
   terms of use in the Software and in the documentation and/or other materials
   provided with the distribution.
-* Neither the name of Intel nor the names of its suppliers may be used to
+* Neither the name of Intel nor the names of its suppliers may be used to 
   endorse or promote products derived from this Software without specific prior
   written permission.
 * No reverse engineering, decompilation, or disassembly of this Software is

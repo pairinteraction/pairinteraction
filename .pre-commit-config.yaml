@@ -1,3 +1,4 @@
+exclude: ^pairinteraction/unit_test/integration_test_referencedata.txt$|^LICENSE(.*).txt$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
@@ -17,7 +18,7 @@ repos:
     rev: v3.1.0
     hooks:
       - id: pyupgrade
-        args: [--py38-plus]
+        args: [--py36-plus]
   - repo: https://github.com/MarcoGorelli/absolufy-imports
     rev: v0.3.1
     hooks:
@@ -26,7 +27,7 @@ repos:
     rev: v3.9.0
     hooks:
       - id: reorder-python-imports
-        args: [--py38-plus]
+        args: [--py36-plus]
   - repo: https://github.com/psf/black
     rev: 22.10.0
     hooks:
