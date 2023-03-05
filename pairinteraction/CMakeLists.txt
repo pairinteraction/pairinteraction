@@ -335,6 +335,12 @@ if(WITH_PYTHON)
 
 endif()
 
+# Incude benchmarks
+
+if(WITH_BENCHS)
+  add_subdirectory(benchmarks)
+endif()
+
 # Include test cases
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)

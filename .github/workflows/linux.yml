@@ -46,10 +46,17 @@ jobs:
       working-directory: build/
     - name: Prepare pages
       run: |
-        mkdir -p public/doxygen/ public/sphinx/ public/coverage/
+        mkdir -p public/doxygen/ public/sphinx/ public/coverage/ public/dev/bench/
         cp -r build/doc/doxygen/html public/doxygen/
         cp -r build/doc/sphinx/_build/html public/sphinx/
         cp -r build/doc/coverage/html public/coverage/
+        # Preserve old benchmark data
+        if git cat-file -e origin/gh-pages:dev/bench/data.js; then
+            git show origin/gh-pages:dev/bench/data.js > public/dev/bench/data.js
+        fi
+        if git cat-file -e origin/gh-pages:dev/bench/index.html; then
+            git show origin/gh-pages:dev/bench/index.html > public/dev/bench/index.html
+        fi
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0
       with:
@@ -57,6 +64,10 @@ jobs:
         folder: public
         single-commit: true
         dry-run: ${{ !(github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) }}
+
+  benchmarks:
+    needs: debian
+    uses: ./.github/workflows/benchmarks.yml
 
   manylinux:
     runs-on: ubuntu-latest
