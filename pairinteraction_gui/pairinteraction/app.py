@@ -1156,7 +1156,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 )[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(stateidx, dtype=float)
                                 m1 = self.overlapstate[idx][3]
                                 if m1 != -1:
                                     for j in np.unique(relevantBasis[:, 3]):
@@ -1193,7 +1193,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     )[0]
                                     relevantBasis = basis[stateidx2]
 
-                                    statecoeff2 = np.ones_like(stateidx2, dtype=np.float)
+                                    statecoeff2 = np.ones_like(stateidx2, dtype=float)
                                     m1 = self.overlapstate[idx][7]
                                     if m1 != -1:
                                         for j in np.unique(relevantBasis[:, 3]):
@@ -1256,7 +1256,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 )[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(stateidx, dtype=float)
                                 m1 = self.overlapstate[idx][7]
                                 if m1 != -1:
                                     for j in np.unique(relevantBasis[:, 3]):
@@ -1302,7 +1302,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 )[0]
                                 relevantBasis = basis[stateidx]
 
-                                statecoeff = np.ones_like(stateidx, dtype=np.float)
+                                statecoeff = np.ones_like(stateidx, dtype=float)
                                 for selector in [0, 4]:
                                     m1 = self.overlapstate[idx][3 + selector]
                                     if m1 != -1:
@@ -1450,11 +1450,11 @@ class MainWindow(QtWidgets.QMainWindow):
                     # determine labels of momenta
                     if idx == 0 or idx == 1:  # TODO !!!
                         self.momentumstrings[idx] = [
-                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, 1]) + 1).astype(np.int)
+                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, 1]) + 1).astype(int)
                         ]
                     elif idx == 2:
                         self.momentumstrings[idx] = [
-                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(np.int)
+                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(int)
                         ]
                     self.momentumstrings[idx][:4] = self.momentslabels
 
@@ -1541,7 +1541,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             symmetrycolor = (40, 40, 40)
 
                     # --- determine which basis elements are within the energy range ---
-                    boolarr = np.ones(len(energies), dtype=np.bool)
+                    boolarr = np.ones(len(energies), dtype=bool)
                     boolarr[np.isnan(energies)] = False
                     energies[np.isnan(energies)] = 0
 
@@ -1580,7 +1580,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                         # store the value of this momentum
                         # -1 means no determinable momentum
-                        momentum = -np.ones(momentum_probabilty.shape[0], dtype=np.int)
+                        momentum = -np.ones(momentum_probabilty.shape[0], dtype=int)
                         momentum[momentum_probabilty.row] = momentum_probabilty.col
 
                     # --- calculate the position (x value) ---
@@ -2041,7 +2041,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 self.buffer_boolarr[blocknumber][filestep].append(boolarr)
                         elif idx == 2:
                             self.buffer_boolarr[blocknumber][filestep].append(
-                                np.ones_like(self.buffer_energies[blocknumber][filestep], dtype=np.bool)
+                                np.ones_like(self.buffer_energies[blocknumber][filestep], dtype=bool)
                             )
 
                         # get size and alpha value of points
@@ -3247,7 +3247,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if self.ui.radiobutton_system_quantizationZ.isChecked() and self.angle != 0:
 
                 # find relevant states
-                statesum = np.zeros(data["numStates"], dtype=np.float)
+                statesum = np.zeros(data["numStates"], dtype=float)
                 for s in range(data["numSteps"]):
                     statesum += np.abs(data["eigenvectors"][s]).sum(axis=1).getA1()
                 statesum += np.abs(data["overlapvectors"]).sum(axis=0).getA1()

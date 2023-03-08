@@ -42,8 +42,8 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
         # see http://stackoverflow.com/questions/20119777
         self.qpoints = pg.QtGui.QPolygonF(npoints)
         vptr = self.qpoints.data()
-        vptr.setsize(np.dtype(np.float).itemsize * 2 * npoints)
-        data = np.ndarray(shape=(npoints, 2), dtype=np.float, buffer=memoryview(vptr))
+        vptr.setsize(np.dtype(float).itemsize * 2 * npoints)
+        data = np.ndarray(shape=(npoints, 2), dtype=float, buffer=memoryview(vptr))
         data.setflags(write=True)
         data[:, 0] = x
         data[:, 1] = y
