@@ -1,0 +1,54 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - master
+
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 2
+  CTEST_OUTPUT_ON_FAILURE: 1
+  CXXFLAGS: "-Wall -Wextra -Wpedantic"
+  QT_QPA_PLATFORM: "offscreen"
+  QT_DEBUG_PLUGINS: 1
+
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+    env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: true
+      - name: Fixup Run actions/checkout
+        run: git config --global --add safe.directory '*'
+      - name: Install dependencies
+        run: |
+          apt-get update
+          apt-get install -y zip gcovr
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v1
+      - name: Configure
+        run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ -- --keep-going
+      - name: Run tests and generate coverage statistics
+        run: |
+          cmake --build build/ --target test -- --keep-going
+          gcovr --exclude-unreachable-branches --exclude-throw-branches --sonarqube > coverage.xml
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner \
+            --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}" \
+            --define sonar.coverageReportPaths=coverage.xml
