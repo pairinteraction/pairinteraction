@@ -4,8 +4,7 @@ RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git file \
     pyqt5-dev-tools \
-    libboost-filesystem-dev libboost-program-options-dev \
-    libboost-serialization-dev libboost-system-dev libboost-test-dev \
+    libboost-dev libboost-serialization-dev \
     doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
