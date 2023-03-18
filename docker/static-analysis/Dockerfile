@@ -15,7 +15,7 @@ RUN apt-get update -qq \
     curl ca-certificates netcat \
     doxygen graphviz \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
-    jupyter-nbconvert pandoc python3-ipykernel \
+    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/* \

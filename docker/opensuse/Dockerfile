@@ -15,7 +15,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     curl \
     doxygen graphviz \
     python3-Sphinx python3-numpydoc python3-sphinx_rtd_theme \
-    jupyter-nbconvert pandoc python3-ipykernel \
+    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
   && zypper clean
 

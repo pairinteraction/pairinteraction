@@ -15,7 +15,7 @@ RUN apt-get update -qq \
     curl ca-certificates \
     doxygen graphviz \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
-    jupyter-nbconvert pandoc python3-ipykernel \
+    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \

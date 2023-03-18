@@ -21,7 +21,7 @@ RUN apt-get update -qq \
     lcov \
     doxygen graphviz ca-certificates rsync \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme python3-breathe \
-    jupyter-nbconvert pandoc python3-ipykernel \
+    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
     intel-mkl-64bit-2020.0-088 \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
