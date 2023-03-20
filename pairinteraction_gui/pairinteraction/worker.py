@@ -70,7 +70,7 @@ class Worker(QtCore.QThread):
 
         # Parse stdout
         dim = 0
-        type = 0
+        _type = 0
         current = 0
         total = 0
 
@@ -78,22 +78,25 @@ class Worker(QtCore.QThread):
         status_progress = ""
 
         for line in iter(self.stdout.readline, b""):
+            if isinstance(line, str):
+                line = line.encode("utf-8")
+
             if self.exiting or not line:
                 break
 
             elif line[:5] == b">>TYP":
-                type = int(line[5:12].decode("utf-8"))
+                _type = int(line[5:12].decode("utf-8"))
                 status_type = [
                     "Field map of first atom: ",
                     "Field map of second atom: ",
                     "Pair potential: ",
                     "Field maps: ",
-                ][type]
+                ][_type]
                 status_progress = "construct matrices"
 
-                if type == 3:
+                if _type == 3:
                     self.samebasis = True
-                elif type == 0 or type == 1:
+                elif _type == 0 or _type == 1:
                     self.samebasis = False
 
             elif line[:5] == b">>BAS":
@@ -102,11 +105,11 @@ class Worker(QtCore.QThread):
 
             elif line[:5] == b">>STA":
                 filename = line[6:-1].decode("utf-8").strip()
-                if type == 0 or type == 3:
+                if _type == 0 or _type == 3:
                     self.basisfile_field1 = filename
-                elif type == 1:
+                elif _type == 1:
                     self.basisfile_field2 = filename
-                elif type == 2:
+                elif _type == 2:
                     self.basisfile_potential = filename
 
             elif line[:5] == b">>TOT":
@@ -130,11 +133,11 @@ class Worker(QtCore.QThread):
                 blocknumber = int(line[26:33].decode("utf-8"))
                 filename = line[34:-1].decode("utf-8").strip()
 
-                if type == 0 or type == 3:
+                if _type == 0 or _type == 3:
                     self.dataqueue_field1.put([filestep, blocks, blocknumber, filename])
-                elif type == 1:
+                elif _type == 1:
                     self.dataqueue_field2.put([filestep, blocks, blocknumber, filename])
-                elif type == 2:
+                elif _type == 2:
                     self.dataqueue_potential.put([filestep, blocks, blocknumber, filename])
 
             elif line[:5] == b">>ERR":

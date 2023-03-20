@@ -34,7 +34,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>2</number>
        </property>
        <widget class="QWidget" name="tab_system">
         <attribute name="title">
@@ -69,8 +69,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>350</height>
+              <width>313</width>
+              <height>374</height>
              </rect>
             </property>
             <attribute name="label">
@@ -656,8 +656,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>309</height>
+              <width>266</width>
+              <height>321</height>
              </rect>
             </property>
             <attribute name="label">
@@ -922,8 +922,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>309</height>
+              <width>226</width>
+              <height>295</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1183,8 +1183,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>411</height>
+              <width>274</width>
+              <height>429</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1840,8 +1840,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>451</height>
+              <width>219</width>
+              <height>438</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2585,8 +2585,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>761</height>
+              <width>320</width>
+              <height>785</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3905,9 +3905,9 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>0</y>
-              <width>200</width>
-              <height>552</height>
+              <y>-124</y>
+              <width>314</width>
+              <height>639</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -4369,6 +4369,45 @@
               </layout>
              </item>
              <item>
+              <spacer name="verticalSpacer_27">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_90">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Pairinteraction binding</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkbox_use_python_binding">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>Experimental: Use Python binding</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="verticalSpacer_5">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -4402,7 +4441,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_field1">
         <property name="enabled">
