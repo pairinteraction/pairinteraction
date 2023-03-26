@@ -24,7 +24,7 @@ function(PYTHON_TEST)
   # Tests are executed in the root directory
   add_test(NAME "python.${UT_TARGET}" COMMAND ${Python3_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties("python.${UT_TARGET}" PROPERTIES
-    ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE}")
+    ENVIRONMENT "PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>")
 endfunction(PYTHON_TEST)
 
 # Add Python test cases
