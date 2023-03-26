@@ -303,48 +303,48 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
             return ret;
         });
 
-    pi.add_type<SystemOne>("SystemOne", jlcxx::julia_type<SystemBase<StateOne>>())
+    pi.add_type<SystemOne<scalar_t>>("SystemOne", jlcxx::julia_type<SystemBase<StateOne>>())
         .constructor<std::string, MatrixElementCache &>()
         .constructor<std::string, MatrixElementCache &, bool>()
         // SystemBase methods
         // ///////////////////////////////////////////////////////////////////////
-        .method("restrictEnergy", &SystemOne::restrictEnergy)
-        .method("restrictN", static_cast<void (SystemOne::*)(int, int)>(&SystemOne::restrictN))
+        .method("restrictEnergy", &SystemOne<scalar_t>::restrictEnergy)
+        .method("restrictN", static_cast<void (SystemOne<scalar_t>::*)(int, int)>(&SystemOne<scalar_t>::restrictN))
         .method("restrictN",
-                [](SystemOne &s, jlcxx::ArrayRef<int> n_jl) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<int> n_jl) {
                     std::set<int> n = {n_jl[0], n_jl[1]};
                     s.restrictN(n);
                 })
-        .method("restrictL", static_cast<void (SystemOne::*)(int, int)>(&SystemOne::restrictL))
+        .method("restrictL", static_cast<void (SystemOne<scalar_t>::*)(int, int)>(&SystemOne<scalar_t>::restrictL))
         .method("restrictL",
-                [](SystemOne &s, jlcxx::ArrayRef<int> l_jl) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<int> l_jl) {
                     std::set<int> l = {l_jl[0], l_jl[1]};
                     s.restrictL(l);
                 })
-        .method("restrictJ", static_cast<void (SystemOne::*)(float, float)>(&SystemOne::restrictJ))
+        .method("restrictJ", static_cast<void (SystemOne<scalar_t>::*)(float, float)>(&SystemOne<scalar_t>::restrictJ))
         .method("restrictJ",
-                [](SystemOne &s, jlcxx::ArrayRef<float> j_jl) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<float> j_jl) {
                     std::set<float> j = {j_jl[0], j_jl[1]};
                     s.restrictJ(j);
                 })
-        .method("restrictM", static_cast<void (SystemOne::*)(float, float)>(&SystemOne::restrictM))
+        .method("restrictM", static_cast<void (SystemOne<scalar_t>::*)(float, float)>(&SystemOne<scalar_t>::restrictM))
         .method("restrictM",
-                [](SystemOne &s, jlcxx::ArrayRef<float> m_jl) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<float> m_jl) {
                     std::set<float> m = {m_jl[0], m_jl[1]};
                     s.restrictM(m);
                 })
-        .method("diagonalize", static_cast<void (SystemOne::*)()>(&SystemOne::diagonalize))
+        .method("diagonalize", static_cast<void (SystemOne<scalar_t>::*)()>(&SystemOne<scalar_t>::diagonalize))
         .method("getHamiltonian",
-                static_cast<eigen_sparse_t &(SystemOne::*)()>(&SystemOne::getHamiltonian))
+                static_cast<eigen_sparse_t &(SystemOne<scalar_t>::*)()>(&SystemOne<scalar_t>::getHamiltonian))
         /////////////////////////////////////////////////////////////////////////////////////////////
-        .method("getSpecies", &SystemOne::getSpecies)
+        .method("getSpecies", &SystemOne<scalar_t>::getSpecies)
         .method("setEfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> efield) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> efield) {
                     std::array<double, 3> field = {efield[0], efield[1], efield[2]};
                     s.setEfield(field);
                 })
         .method("setEfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> efield, jlcxx::ArrayRef<double> z_axis,
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> efield, jlcxx::ArrayRef<double> z_axis,
                    jlcxx::ArrayRef<double> y_axis) {
                     std::array<double, 3> field = {efield[0], efield[1], efield[2]};
                     std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
@@ -352,18 +352,18 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     s.setEfield(field, to_z_axis, to_y_axis);
                 })
         .method("setEfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> efield, double alpha, double beta,
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> efield, double alpha, double beta,
                    double gamma) {
                     std::array<double, 3> field = {efield[0], efield[1], efield[2]};
                     s.setEfield(field, alpha, beta, gamma);
                 })
         .method("setBfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> bfield) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> bfield) {
                     std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
                     s.setBfield(field);
                 })
         .method("setBfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> bfield, jlcxx::ArrayRef<double> z_axis,
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> bfield, jlcxx::ArrayRef<double> z_axis,
                    jlcxx::ArrayRef<double> y_axis) {
                     std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
                     std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
@@ -371,15 +371,15 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     s.setBfield(field, to_z_axis, to_y_axis);
                 })
         .method("setBfield",
-                [](SystemOne &s, jlcxx::ArrayRef<double> bfield, double alpha, double beta,
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<double> bfield, double alpha, double beta,
                    double gamma) {
                     std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
                     s.setBfield(field, alpha, beta, gamma);
                 })
-        .method("enableDiamagnetism", &SystemOne::enableDiamagnetism)
-        .method("setConservedParityUnderReflection", &SystemOne::setConservedParityUnderReflection)
+        .method("enableDiamagnetism", &SystemOne<scalar_t>::enableDiamagnetism)
+        .method("setConservedParityUnderReflection", &SystemOne<scalar_t>::setConservedParityUnderReflection)
         .method("setConservedMomentaUnderRotation",
-                [](SystemOne &s, jlcxx::ArrayRef<float> momenta_jl) {
+                [](SystemOne<scalar_t> &s, jlcxx::ArrayRef<float> momenta_jl) {
                     std::set<float> momenta;
                     for (unsigned i = 0; i < momenta_jl.size(); i++) {
                         momenta.insert(momenta_jl[i]);
@@ -388,47 +388,47 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     s.setConservedMomentaUnderRotation(momenta_const);
                 });
 
-    pi.add_type<SystemTwo>("SystemTwo", jlcxx::julia_type<SystemBase<StateTwo>>())
-        .constructor<SystemOne, SystemOne, MatrixElementCache &>()
-        .constructor<SystemOne, SystemOne, MatrixElementCache &, bool>()
-        .constructor<SystemTwo>()
+    pi.add_type<SystemTwo<scalar_t>>("SystemTwo", jlcxx::julia_type<SystemBase<StateTwo>>())
+        .constructor<SystemOne<scalar_t>, SystemOne<scalar_t>, MatrixElementCache &>()
+        .constructor<SystemOne<scalar_t>, SystemOne<scalar_t>, MatrixElementCache &, bool>()
+        .constructor<SystemTwo<scalar_t>>()
         // SystemBase methods
         // ///////////////////////////////////////////////////////////////////////
-        .method("restrictEnergy", &SystemTwo::restrictEnergy)
-        .method("restrictN", static_cast<void (SystemTwo::*)(int, int)>(&SystemTwo::restrictN))
+        .method("restrictEnergy", &SystemTwo<scalar_t>::restrictEnergy)
+        .method("restrictN", static_cast<void (SystemTwo<scalar_t>::*)(int, int)>(&SystemTwo<scalar_t>::restrictN))
         .method("restrictN",
-                [](SystemTwo &s, jlcxx::ArrayRef<int> n_jl) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<int> n_jl) {
                     std::set<int> n = {n_jl[0], n_jl[1]};
                     s.restrictN(n);
                 })
-        .method("restrictL", static_cast<void (SystemTwo::*)(int, int)>(&SystemTwo::restrictL))
+        .method("restrictL", static_cast<void (SystemTwo<scalar_t>::*)(int, int)>(&SystemTwo<scalar_t>::restrictL))
         .method("restrictL",
-                [](SystemTwo &s, jlcxx::ArrayRef<int> l_jl) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<int> l_jl) {
                     std::set<int> l = {l_jl[0], l_jl[1]};
                     s.restrictL(l);
                 })
-        .method("restrictJ", static_cast<void (SystemTwo::*)(float, float)>(&SystemTwo::restrictJ))
+        .method("restrictJ", static_cast<void (SystemTwo<scalar_t>::*)(float, float)>(&SystemTwo<scalar_t>::restrictJ))
         .method("restrictJ",
-                [](SystemTwo &s, jlcxx::ArrayRef<float> j_jl) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<float> j_jl) {
                     std::set<float> j = {j_jl[0], j_jl[1]};
                     s.restrictJ(j);
                 })
-        .method("restrictM", static_cast<void (SystemTwo::*)(float, float)>(&SystemTwo::restrictM))
+        .method("restrictM", static_cast<void (SystemTwo<scalar_t>::*)(float, float)>(&SystemTwo<scalar_t>::restrictM))
         .method("restrictM",
-                [](SystemTwo &s, jlcxx::ArrayRef<float> m_jl) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<float> m_jl) {
                     std::set<float> m = {m_jl[0], m_jl[1]};
                     s.restrictM(m);
                 })
-        .method("diagonalize", static_cast<void (SystemTwo::*)()>(&SystemTwo::diagonalize))
+        .method("diagonalize", static_cast<void (SystemTwo<scalar_t>::*)()>(&SystemTwo<scalar_t>::diagonalize))
         .method("getHamiltonian",
-                static_cast<eigen_sparse_t &(SystemTwo::*)()>(&SystemTwo::getHamiltonian))
+                static_cast<eigen_sparse_t &(SystemTwo<scalar_t>::*)()>(&SystemTwo<scalar_t>::getHamiltonian))
         .method("getOverlap",
-                [](SystemTwo &st, StateTwo &s) {
+                [](SystemTwo<scalar_t> &st, StateTwo &s) {
                     eigen_vector_double_t overlap = st.getOverlap(s);
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, jlcxx::ArrayRef<jl_value_t *> sv) {
+                [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<jl_value_t *> sv) {
                     std::vector<StateTwo> generalizedstates;
                     for (unsigned i = 0; i < sv.size(); i++) {
                         const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
@@ -439,12 +439,12 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, int state_index) {
+                [](SystemTwo<scalar_t> &st, int state_index) {
                     eigen_vector_double_t overlap = st.getOverlap(state_index);
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, jlcxx::ArrayRef<int> si) {
+                [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<int> si) {
                     std::vector<size_t> states_indices;
                     for (unsigned i = 0; i < si.size(); i++) {
                         const size_t s = si[i];
@@ -455,7 +455,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, StateTwo &s, jlcxx::ArrayRef<double> to_z_axis_jl,
+                [](SystemTwo<scalar_t> &st, StateTwo &s, jlcxx::ArrayRef<double> to_z_axis_jl,
                    jlcxx::ArrayRef<double> to_y_axis_jl) {
                     std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
                                                        to_z_axis_jl[2]};
@@ -466,7 +466,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, jlcxx::ArrayRef<jl_value_t *> sv,
+                [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<jl_value_t *> sv,
                    jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl) {
                     std::vector<StateTwo> generalizedstates;
                     for (unsigned i = 0; i < sv.size(); i++) {
@@ -485,7 +485,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, int state_index, jlcxx::ArrayRef<double> to_z_axis_jl,
+                [](SystemTwo<scalar_t> &st, int state_index, jlcxx::ArrayRef<double> to_z_axis_jl,
                    jlcxx::ArrayRef<double> to_y_axis_jl) {
                     std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
                                                        to_z_axis_jl[2]};
@@ -497,7 +497,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, jlcxx::ArrayRef<int> si, jlcxx::ArrayRef<double> to_z_axis_jl,
+                [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<int> si, jlcxx::ArrayRef<double> to_z_axis_jl,
                    jlcxx::ArrayRef<double> to_y_axis_jl) {
                     std::vector<size_t> states_indices;
                     for (unsigned i = 0; i < si.size(); i++) {
@@ -516,17 +516,17 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, StateTwo &s, double alpha, double beta, double gamma) {
+                [](SystemTwo<scalar_t> &st, StateTwo &s, double alpha, double beta, double gamma) {
                     eigen_vector_double_t overlap = st.getOverlap(s, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, int state_index, double alpha, double beta, double gamma) {
+                [](SystemTwo<scalar_t> &st, int state_index, double alpha, double beta, double gamma) {
                     eigen_vector_double_t overlap = st.getOverlap(state_index, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 })
         .method("getOverlap",
-                [](SystemTwo &st, jlcxx::ArrayRef<jl_value_t *> sv, double alpha, double beta,
+                [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<jl_value_t *> sv, double alpha, double beta,
                    double gamma) {
                     std::vector<StateTwo> generalizedstates;
                     for (unsigned i = 0; i < sv.size(); i++) {
@@ -541,7 +541,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                 })
         .method(
             "getOverlap",
-            [](SystemTwo &st, jlcxx::ArrayRef<int> si, double alpha, double beta, double gamma) {
+            [](SystemTwo<scalar_t> &st, jlcxx::ArrayRef<int> si, double alpha, double beta, double gamma) {
                 std::vector<size_t> states_indices;
                 for (unsigned i = 0; i < si.size(); i++) {
                     const size_t s = si[i];
@@ -555,28 +555,28 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
             })
         /////////////////////////////////////////////////////////////////////////////////////////////
         .method("getSpecies",
-                [](SystemTwo &s) {
+                [](SystemTwo<scalar_t> &s) {
                     std::array<std::string, 2> species_arr = s.getSpecies();
                     return std::make_tuple(species_arr[0], species_arr[1]);
                 })
-        .method("getStatesFirst", &SystemTwo::getStatesFirst)
-        .method("getStatesSecond", &SystemTwo::getStatesSecond)
-        .method("enableGreenTensor", &SystemTwo::enableGreenTensor)
-        .method("setSurfaceDistance", &SystemTwo::setSurfaceDistance)
-        .method("setAngle", &SystemTwo::setAngle)
-        .method("setDistance", &SystemTwo::setDistance)
+        .method("getStatesFirst", &SystemTwo<scalar_t>::getStatesFirst)
+        .method("getStatesSecond", &SystemTwo<scalar_t>::getStatesSecond)
+        .method("enableGreenTensor", &SystemTwo<scalar_t>::enableGreenTensor)
+        .method("setSurfaceDistance", &SystemTwo<scalar_t>::setSurfaceDistance)
+        .method("setAngle", &SystemTwo<scalar_t>::setAngle)
+        .method("setDistance", &SystemTwo<scalar_t>::setDistance)
         .method("setDistanceVector",
-                [](SystemTwo &s, jlcxx::ArrayRef<double> dvec) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<double> dvec) {
                     std::array<double, 3> d = {dvec[0], dvec[1], dvec[2]};
                     s.setDistanceVector(d);
                 })
-        .method("setOrder", &SystemTwo::setOrder)
+        .method("setOrder", &SystemTwo<scalar_t>::setOrder)
         .method("setConservedParityUnderPermutation",
-                &SystemTwo::setConservedParityUnderPermutation)
-        .method("setConservedParityUnderInversion", &SystemTwo::setConservedParityUnderInversion)
-        .method("setConservedParityUnderReflection", &SystemTwo::setConservedParityUnderReflection)
+                &SystemTwo<scalar_t>::setConservedParityUnderPermutation)
+        .method("setConservedParityUnderInversion", &SystemTwo<scalar_t>::setConservedParityUnderInversion)
+        .method("setConservedParityUnderReflection", &SystemTwo<scalar_t>::setConservedParityUnderReflection)
         .method("setConservedMomentaUnderRotation",
-                [](SystemTwo &s, jlcxx::ArrayRef<int> momenta_jl) {
+                [](SystemTwo<scalar_t> &s, jlcxx::ArrayRef<int> momenta_jl) {
                     std::set<int> momenta;
                     for (unsigned i = 0; i < momenta_jl.size(); i++) {
                         momenta.insert(momenta_jl[i]);
