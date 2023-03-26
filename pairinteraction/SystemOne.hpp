@@ -20,9 +20,9 @@
 #ifndef SYSTEMONE_H
 #define SYSTEMONE_H
 
-#include "State.h"
-#include "SystemBase.h"
-#include "utils.h"
+#include "State.hpp"
+#include "SystemBase.hpp"
+#include "utils.hpp"
 
 #include <array>
 #include <boost/serialization/base_object.hpp>

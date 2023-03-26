@@ -31,7 +31,7 @@
 #include <sqlite3.h>
 #include <utility>
 
-#include "utils.h"
+#include "utils.hpp"
 
 namespace sqlite {
 

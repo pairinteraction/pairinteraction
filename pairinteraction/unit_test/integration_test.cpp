@@ -17,12 +17,12 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MatrixElementCache.h"
-#include "State.h"
-#include "SystemOne.h"
-#include "SystemTwo.h"
-#include "dtypes.h"
-#include "filesystem.h"
+#include "MatrixElementCache.hpp"
+#include "State.hpp"
+#include "SystemOne.hpp"
+#include "SystemTwo.hpp"
+#include "dtypes.hpp"
+#include "filesystem.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>

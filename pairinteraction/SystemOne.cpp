@@ -17,8 +17,8 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SystemOne.h"
-#include "dtypes.h"
+#include "SystemOne.hpp"
+#include "dtypes.hpp"
 
 #include <cctype>
 #include <cmath>

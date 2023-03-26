@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SystemTwo.h"
-#include "GreenTensor.h"
-#include "dtypes.h"
+#include "SystemTwo.hpp"
+#include "GreenTensor.hpp"
+#include "dtypes.hpp"
 
 #include <algorithm>
 #include <cmath>

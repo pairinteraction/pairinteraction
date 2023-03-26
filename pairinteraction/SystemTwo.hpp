@@ -20,9 +20,9 @@
 #ifndef SYSTEMTWO_H
 #define SYSTEMTWO_H
 
-#include "State.h"
-#include "SystemBase.h"
-#include "SystemOne.h"
+#include "State.hpp"
+#include "SystemBase.hpp"
+#include "SystemOne.hpp"
 
 #include <Eigen/Sparse>
 #include <boost/math/special_functions/binomial.hpp>

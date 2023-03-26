@@ -17,7 +17,7 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SQLite.h"
+#include "SQLite.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>

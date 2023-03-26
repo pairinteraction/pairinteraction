@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MatrixElements.h"
-#include "QuantumDefect.h"
-#include "SQLite.h"
+#include "MatrixElements.hpp"
+#include "QuantumDefect.hpp"
+#include "SQLite.hpp"
 #include <cctype>
 #include <iostream>
 #include <limits>

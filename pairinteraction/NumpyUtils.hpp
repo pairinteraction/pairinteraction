@@ -33,7 +33,7 @@
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-#include "Traits.h"
+#include "Traits.hpp"
 
 namespace {
 

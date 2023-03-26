@@ -20,7 +20,7 @@
 #ifndef SERIALIZABLE_H
 #define SERIALIZABLE_H
 
-#include "dtypes.h"
+#include "dtypes.hpp"
 
 #include <iterator>
 #include <memory>

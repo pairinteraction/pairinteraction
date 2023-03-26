@@ -20,8 +20,8 @@
 #ifndef STATEOLD_H
 #define STATEOLD_H
 
-#include "dtypes.h"
-#include "utils.h"
+#include "dtypes.hpp"
+#include "utils.hpp"
 
 #include <array>
 #include <cmath>

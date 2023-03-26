@@ -17,8 +17,8 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "HamiltonianOne.h"
-#include "filesystem.h"
+#include "HamiltonianOne.hpp"
+#include "filesystem.hpp"
 
 #include <fmt/format.h>
 

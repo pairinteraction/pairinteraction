@@ -20,10 +20,10 @@
 #ifndef BASISNAMES_H
 #define BASISNAMES_H
 
-#include "ConfParser.h"
-#include "Iter.h"
-#include "StateOld.h"
-#include "dtypes.h"
+#include "ConfParser.hpp"
+#include "Iter.hpp"
+#include "StateOld.hpp"
+#include "dtypes.hpp"
 
 #include <fstream>
 #include <memory>

@@ -17,10 +17,10 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "State.h"
-#include "QuantumDefect.h"
-#include "dtypes.h"
-#include "utils.h"
+#include "State.hpp"
+#include "QuantumDefect.hpp"
+#include "dtypes.hpp"
+#include "utils.hpp"
 
 #include <array>
 #include <cctype>

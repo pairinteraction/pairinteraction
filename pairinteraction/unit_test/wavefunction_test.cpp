@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "QuantumDefect.h"
-#include "SQLite.h"
-#include "Wavefunction.h"
+#include "QuantumDefect.hpp"
+#include "SQLite.hpp"
+#include "Wavefunction.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>

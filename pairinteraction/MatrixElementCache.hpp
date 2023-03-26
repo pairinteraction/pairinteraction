@@ -20,11 +20,11 @@
 #ifndef MATRIXELEMENTCACHE_H
 #define MATRIXELEMENTCACHE_H
 
-#include "Basisnames.h"
-#include "State.h"
-#include "Wavefunction.h"
-#include "dtypes.h"
-#include "utils.h"
+#include "Basisnames.hpp"
+#include "State.hpp"
+#include "Wavefunction.hpp"
+#include "dtypes.hpp"
+#include "utils.hpp"
 
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>

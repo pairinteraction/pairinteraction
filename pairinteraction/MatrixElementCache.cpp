@@ -17,12 +17,12 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MatrixElementCache.h"
-#include "QuantumDefect.h"
-#include "SQLite.h"
-#include "filesystem.h"
-#include "utils.h"
-#include "version.h"
+#include "MatrixElementCache.hpp"
+#include "QuantumDefect.hpp"
+#include "SQLite.hpp"
+#include "filesystem.hpp"
+#include "utils.hpp"
+#include "version.hpp"
 
 #include <boost/tokenizer.hpp>
 

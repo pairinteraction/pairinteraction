@@ -18,10 +18,10 @@
 # Generate in-memory database
 
 file(READ databases/quantum_defects.sql QUANTUM_DEFECT_DATABASE_CONTENT)
-configure_file(EmbeddedDatabase.h.in ${CMAKE_CURRENT_BINARY_DIR}/EmbeddedDatabase.h)
+configure_file(EmbeddedDatabase.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/EmbeddedDatabase.hpp)
 
 # Generate header containing the version informations
-configure_file(version.h.in ${CMAKE_CURRENT_BINARY_DIR}/version.h)
+configure_file(version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/version.hpp)
 
 # Add the executables
 

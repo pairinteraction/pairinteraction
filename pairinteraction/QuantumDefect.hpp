@@ -20,10 +20,10 @@
 #ifndef QUANTUM_DEFECT_H
 #define QUANTUM_DEFECT_H
 
-#include "Cache.h"
-#include "SQLite.h"
-#include "dtypes.h"
-#include "utils.h"
+#include "Cache.hpp"
+#include "SQLite.hpp"
+#include "dtypes.hpp"
+#include "utils.hpp"
 
 #include <mutex>
 #include <string>

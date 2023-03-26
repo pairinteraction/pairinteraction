@@ -17,8 +17,8 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Wavefunction.h"
-#include "QuantumDefect.h"
+#include "Wavefunction.hpp"
+#include "QuantumDefect.hpp"
 
 #include <cctype>
 #include <cmath>

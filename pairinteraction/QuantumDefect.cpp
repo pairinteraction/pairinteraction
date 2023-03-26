@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "QuantumDefect.h"
-#include "EmbeddedDatabase.h"
-#include "SQLite.h"
+#include "QuantumDefect.hpp"
+#include "EmbeddedDatabase.hpp"
+#include "SQLite.hpp"
 
 #include <algorithm>
 #include <cmath>

@@ -20,8 +20,8 @@
 #ifndef WAVEFUNCTION_H
 #define WAVEFUNCTION_H
 
-#include "QuantumDefect.h"
-#include "dtypes.h"
+#include "QuantumDefect.hpp"
+#include "dtypes.hpp"
 
 #include <cstdio>
 #include <limits>

@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "EmbeddedDatabase.h"
-#include "QuantumDefect.h"
-#include "SQLite.h"
+#include "EmbeddedDatabase.hpp"
+#include "QuantumDefect.hpp"
+#include "SQLite.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
 #include <doctest/doctest.h>

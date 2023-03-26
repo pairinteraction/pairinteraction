@@ -20,14 +20,14 @@
 #ifndef HAMILTONIAN_TWO_H
 #define HAMILTONIAN_TWO_H
 
-#include "Basisnames.h"
-#include "ConfParser.h"
-#include "Hamiltonian.h"
-#include "HamiltonianOne.h"
-#include "MatrixElements.h"
-#include "SQLite.h"
-#include "dtypes.h"
-#include "filesystem.h"
+#include "Basisnames.hpp"
+#include "ConfParser.hpp"
+#include "Hamiltonian.hpp"
+#include "HamiltonianOne.hpp"
+#include "MatrixElements.hpp"
+#include "SQLite.hpp"
+#include "dtypes.hpp"
+#include "filesystem.hpp"
 
 #include <boost/algorithm/hex.hpp>
 #include <boost/math/special_functions/binomial.hpp>

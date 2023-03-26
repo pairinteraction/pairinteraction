@@ -17,11 +17,11 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Interface.h"
-#include "ConfParser.h"
-#include "HamiltonianOne.h"
-#include "HamiltonianTwo.h"
-#include "filesystem.h"
+#include "Interface.hpp"
+#include "ConfParser.hpp"
+#include "HamiltonianOne.hpp"
+#include "HamiltonianTwo.hpp"
+#include "filesystem.hpp"
 
 #include <fmt/format.h>
 

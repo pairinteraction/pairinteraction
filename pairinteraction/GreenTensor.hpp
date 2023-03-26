@@ -20,7 +20,7 @@
 #ifndef GREENTENSOR_H
 #define GREENTENSOR_H
 
-#include "dtypes.h"
+#include "dtypes.hpp"
 #include <cmath>
 #include <complex>
 

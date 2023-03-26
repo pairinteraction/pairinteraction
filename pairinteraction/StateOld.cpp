@@ -17,9 +17,9 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "StateOld.h"
-#include "QuantumDefect.h"
-#include "dtypes.h"
+#include "StateOld.hpp"
+#include "QuantumDefect.hpp"
+#include "dtypes.hpp"
 
 #include <array>
 #include <cctype>

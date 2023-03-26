@@ -20,11 +20,11 @@
 #ifndef HAMILTONIANMATRIX_H
 #define HAMILTONIANMATRIX_H
 
-#include "Basisnames.h"
-#include "Serializable.h"
-#include "StateOld.h"
-#include "dtypes.h"
-#include "utils.h"
+#include "Basisnames.hpp"
+#include "Serializable.hpp"
+#include "StateOld.hpp"
+#include "dtypes.hpp"
+#include "utils.hpp"
 
 #include <cmath>
 #include <cstdint>

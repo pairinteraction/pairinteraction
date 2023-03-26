@@ -20,10 +20,10 @@
 #ifndef MATRIXELEMENTS_H
 #define MATRIXELEMENTS_H
 
-#include "Basisnames.h"
-#include "StateOld.h"
-#include "Wavefunction.h"
-#include "dtypes.h"
+#include "Basisnames.hpp"
+#include "StateOld.hpp"
+#include "Wavefunction.hpp"
+#include "dtypes.hpp"
 
 #include <wignerSymbols/wignerSymbols-cpp.h>
 

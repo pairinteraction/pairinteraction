@@ -17,6 +17,6 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "MatrixElementCache.h"
-#include "SystemOne.h"
-#include "SystemTwo.h"
+#include "MatrixElementCache.hpp"
+#include "SystemOne.hpp"
+#include "SystemTwo.hpp"

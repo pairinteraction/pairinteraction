@@ -17,22 +17,30 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef EMBEDDED_DATABASE_H
-#define EMBEDDED_DATABASE_H
+#ifndef SERIALIZATION_PATH_H
+#define SERIALIZATION_PATH_H
 
-#include "SQLite.h"
+#include "filesystem.hpp"
 
-class EmbeddedDatabase
-{
-    sqlite::handle db;
+namespace boost {
+namespace serialization {
 
-public:
-    operator sqlite3 *() { return db; }
-    EmbeddedDatabase() : db(":memory:")
-    {
-        sqlite::statement stmt(db);
-        stmt.exec(R"~~(@QUANTUM_DEFECT_DATABASE_CONTENT@)~~");
+template <class Archive>
+void serialize(Archive &ar, fs::path &p, const unsigned int /* version */) {
+    std::string s;
+
+    if (Archive::is_saving::value) {
+        s = p.string();
     }
-};
 
-#endif // EMBEDDED_DATABASE_H
+    ar &s;
+
+    if (Archive::is_loading::value) {
+        p = fs::path(s);
+    }
+}
+
+} // namespace serialization
+} // namespace boost
+
+#endif // SERIALIZATION_PATH_H

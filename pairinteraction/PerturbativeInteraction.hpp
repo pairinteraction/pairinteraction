@@ -20,9 +20,9 @@
 #ifndef PERTURBATIVEINTERACTION_H
 #define PERTURBATIVEINTERACTION_H
 
-#include "MatrixElementCache.h"
-#include "State.h"
-#include "dtypes.h"
+#include "MatrixElementCache.hpp"
+#include "State.hpp"
+#include "dtypes.hpp"
 
 #include <array>
 #include <vector>

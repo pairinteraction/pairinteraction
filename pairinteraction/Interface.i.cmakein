@@ -4,15 +4,15 @@
 %{
 #define SWIG_FILE_WITH_INIT
 
-#include "dtypes.h"
-#include "Interface.h"
-#include "QuantumDefect.h"
-#include "State.h"
-#include "SystemOne.h"
-#include "SystemTwo.h"
-#include "Wavefunction.h"
-#include "MatrixElementCache.h"
-#include "PerturbativeInteraction.h"
+#include "dtypes.hpp"
+#include "Interface.hpp"
+#include "QuantumDefect.hpp"
+#include "State.hpp"
+#include "SystemOne.hpp"
+#include "SystemTwo.hpp"
+#include "Wavefunction.hpp"
+#include "MatrixElementCache.hpp"
+#include "PerturbativeInteraction.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -39,8 +39,8 @@ struct array_source : std::streambuf {
 
 #ifdef SWIGPYTHON
 %{
-#include "NumpyUtils.h"
-#include "Traits.h"
+#include "NumpyUtils.hpp"
+#include "Traits.hpp"
 %}
 
 %init %{
@@ -178,20 +178,20 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 %rename(__lt__) operator<;
-%include "dtypes.h"
+%include "dtypes.hpp"
 
-%include "Interface.h"
+%include "Interface.hpp"
 
-%include "QuantumDefect.h"
+%include "QuantumDefect.hpp"
 
-%include "Wavefunction.h"
+%include "Wavefunction.hpp"
 
-%include "PerturbativeInteraction.h"
+%include "PerturbativeInteraction.hpp"
 
-%include "WignerD.h"
+%include "WignerD.hpp"
 
 // Wrap MatrixElementCache.h
-%include "MatrixElementCache.h"
+%include "MatrixElementCache.hpp"
 
 %boost_picklable(MatrixElementCache);
 
@@ -210,7 +210,7 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %ignore hash;
 %rename(__ostream__) operator<<;
 
-%include "State.h"
+%include "State.hpp"
 
 %boost_picklable(StateOne);
 %boost_picklable(StateTwo);
@@ -242,7 +242,7 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 // Wrap SystemBase.h
 %warnfilter(509) SystemBase::getOverlap;
 
-%include "SystemBase.h"
+%include "SystemBase.hpp"
 
 
 // Wrap SystemOne.h and SystemTwo.h
@@ -252,8 +252,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %copyctor SystemOne;
 %copyctor SystemTwo;
 
-%include "SystemOne.h"
-%include "SystemTwo.h"
+%include "SystemOne.hpp"
+%include "SystemTwo.hpp"
 
 %boost_picklable(SystemOne);
 %boost_picklable(SystemTwo);

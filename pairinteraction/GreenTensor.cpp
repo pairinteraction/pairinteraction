@@ -17,7 +17,7 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GreenTensor.h"
+#include "GreenTensor.hpp"
 #include <limits>
 
 GreenTensor::GreenTensor(double x, double y, double z)

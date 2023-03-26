@@ -20,7 +20,7 @@
 #ifndef HAMILTONIAN_H
 #define HAMILTONIAN_H
 
-#include "Hamiltonianmatrix.h"
+#include "Hamiltonianmatrix.hpp"
 
 #include <vector>
 

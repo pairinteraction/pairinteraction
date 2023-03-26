@@ -19,12 +19,12 @@
 
 #include <Eigen/Sparse>
 
-#include "MatrixElementCache.h"
-#include "State.h"
-#include "SystemBase.h"
-#include "SystemOne.h"
-#include "SystemTwo.h"
-#include "dtypes.h"
+#include "MatrixElementCache.hpp"
+#include "State.hpp"
+#include "SystemBase.hpp"
+#include "SystemOne.hpp"
+#include "SystemTwo.hpp"
+#include "dtypes.hpp"
 #include <jlcxx/const_array.hpp>
 #include <jlcxx/jlcxx.hpp>
 

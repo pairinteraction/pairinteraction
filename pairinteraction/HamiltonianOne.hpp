@@ -20,13 +20,13 @@
 #ifndef HAMILTONIAN_ONE_H
 #define HAMILTONIAN_ONE_H
 
-#include "Basisnames.h"
-#include "ConfParser.h"
-#include "Hamiltonian.h"
-#include "MatrixElements.h"
-#include "SQLite.h"
-#include "dtypes.h"
-#include "filesystem.h"
+#include "Basisnames.hpp"
+#include "ConfParser.hpp"
+#include "Hamiltonian.hpp"
+#include "MatrixElements.hpp"
+#include "SQLite.hpp"
+#include "dtypes.hpp"
+#include "filesystem.hpp"
 
 #include <boost/algorithm/hex.hpp>
 #include <boost/uuid/uuid.hpp>

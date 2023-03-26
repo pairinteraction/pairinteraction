@@ -17,7 +17,7 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "SystemBase.h"
+#include "SystemBase.hpp"
 
 // Explicit template specializations
 

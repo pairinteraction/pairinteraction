@@ -20,13 +20,13 @@
 #ifndef SYSTEMBASE_H
 #define SYSTEMBASE_H
 
-#include "MatrixElementCache.h"
-#include "State.h"
-#include "WignerD.h"
-#include "dtypes.h"
-#include "serialization_eigen.h"
-#include "serialization_path.h"
-#include "utils.h"
+#include "MatrixElementCache.hpp"
+#include "State.hpp"
+#include "WignerD.hpp"
+#include "dtypes.hpp"
+#include "serialization_eigen.hpp"
+#include "serialization_path.hpp"
+#include "utils.hpp"
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include <boost/multi_index/hashed_index.hpp>
