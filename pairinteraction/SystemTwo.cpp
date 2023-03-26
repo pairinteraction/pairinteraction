@@ -29,7 +29,8 @@
 #include <unordered_set>
 #include <vector>
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache)
+template <typename Scalar>
+SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache)
     : SystemBase(cache), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1), system2(b2),
       minimal_le_roy_radius(std::numeric_limits<double>::max()),
       distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
@@ -37,7 +38,8 @@ SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCach
       surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
-SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
+template <typename Scalar>
+SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache,
                      bool memory_saving)
     : SystemBase(cache, memory_saving), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1),
       system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
@@ -46,8 +48,8 @@ SystemTwo::SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCach
       surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
-std::vector<StateOne>
-SystemTwo::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
+template <typename Scalar>
+std::vector<StateOne> SystemTwo<Scalar>::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one;
     for (const auto &entry : states) {
@@ -56,8 +58,8 @@ SystemTwo::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-std::vector<StateOne>
-SystemTwo::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
+template <typename Scalar>
+std::vector<StateOne> SystemTwo<Scalar>::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one;
     for (const auto &entry : states) {
@@ -66,9 +68,11 @@ SystemTwo::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
     return std::vector<StateOne>(states_one.begin(), states_one.end());
 }
 
-const std::array<std::string, 2> &SystemTwo::getSpecies() { return species; }
+template <typename Scalar>
+const std::array<std::string, 2> &SystemTwo<Scalar>::getSpecies() { return species; }
 
-void SystemTwo::enableGreenTensor(bool GTboolean) {
+template <typename Scalar>
+void SystemTwo<Scalar>::enableGreenTensor(bool GTboolean) {
     this->onParameterChange();
     GTbool = GTboolean;
     if (!GTbool && surface_distance != std::numeric_limits<double>::max()) {
@@ -77,7 +81,8 @@ void SystemTwo::enableGreenTensor(bool GTboolean) {
     }
 }
 
-void SystemTwo::setSurfaceDistance(double d) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setSurfaceDistance(double d) {
     this->onParameterChange();
     surface_distance = d;
     if (surface_distance != std::numeric_limits<double>::max()) {
@@ -85,7 +90,8 @@ void SystemTwo::setSurfaceDistance(double d) {
     }
 }
 
-void SystemTwo::setDistance(double d) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setDistance(double d) {
     this->onParameterChange();
     distance_x = distance_x / distance * d;
     distance_y = distance_y / distance * d;
@@ -93,7 +99,8 @@ void SystemTwo::setDistance(double d) {
     distance = d;
 }
 
-void SystemTwo::setDistanceVector(std::array<double, 3> d) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setDistanceVector(std::array<double, 3> d) {
     this->onParameterChange();
     distance_x = d[0];
     distance_y = d[1];
@@ -104,29 +111,34 @@ void SystemTwo::setDistanceVector(std::array<double, 3> d) {
     }
 }
 
-void SystemTwo::setAngle(double a) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setAngle(double a) {
     this->onParameterChange();
     distance_x = distance * std::sin(a);
     distance_y = 0;
     distance_z = distance * std::cos(a);
 }
 
-void SystemTwo::setOrder(double o) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setOrder(double o) {
     this->onParameterChange();
     ordermax = o;
 }
 
-void SystemTwo::setConservedParityUnderPermutation(parity_t parity) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setConservedParityUnderPermutation(parity_t parity) {
     this->onSymmetryChange();
     sym_permutation = parity;
 }
 
-void SystemTwo::setConservedParityUnderInversion(parity_t parity) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setConservedParityUnderInversion(parity_t parity) {
     this->onSymmetryChange();
     sym_inversion = parity;
 }
 
-void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setConservedParityUnderReflection(parity_t parity) {
     this->onSymmetryChange();
     sym_reflection = parity;
     if (!this->isRefelectionAndRotationCompatible()) {
@@ -139,7 +151,8 @@ void SystemTwo::setConservedParityUnderReflection(parity_t parity) {
     // TODO make it work with one-atom states that are not pre-symmetrized
 }
 
-void SystemTwo::setConservedMomentaUnderRotation(const std::set<int> &momenta) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setConservedMomentaUnderRotation(const std::set<int> &momenta) {
     if (momenta.count(ARB) != 0 && momenta.size() > 1) {
         throw std::runtime_error(
             "If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
@@ -152,7 +165,8 @@ void SystemTwo::setConservedMomentaUnderRotation(const std::set<int> &momenta) {
     }
 }
 
-void SystemTwo::setOneAtomBasisvectors(const std::vector<std::array<size_t, 2>> &indices) {
+template <typename Scalar>
+void SystemTwo<Scalar>::setOneAtomBasisvectors(const std::vector<std::array<size_t, 2>> &indices) {
     // Check that all pairs of indices are unique
     std::vector<std::array<size_t, 2>> tmp(indices);
     std::sort(tmp.begin(), tmp.end());
@@ -169,7 +183,8 @@ void SystemTwo::setOneAtomBasisvectors(const std::vector<std::array<size_t, 2>> 
 /// Method that allows base class to initialize Basis //////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::initializeBasis() {
+template <typename Scalar>
+void SystemTwo<Scalar>::initializeBasis() {
     ////////////////////////////////////////////////////////////////////
     /// Restrict one atom states to the allowed quantum numbers ////////
     ////////////////////////////////////////////////////////////////////
@@ -203,7 +218,7 @@ void SystemTwo::initializeBasis() {
 
     std::vector<bool> artificial1(system1.getNumBasisvectors(), false);
     for (size_t col = 0; col < system1.getNumBasisvectors(); ++col) {
-        for (eigen_iterator_t triple(system1.getBasisvectors(), col); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system1.getBasisvectors(), col); triple; ++triple) {
             if (system1.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
                 artificial1[triple.col()] = true;
             }
@@ -212,7 +227,7 @@ void SystemTwo::initializeBasis() {
 
     std::vector<bool> artificial2(system2.getNumBasisvectors(), false);
     for (size_t col = 0; col < system2.getNumBasisvectors(); ++col) {
-        for (eigen_iterator_t triple(system2.getBasisvectors(), col); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system2.getBasisvectors(), col); triple; ++triple) {
             if (system2.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
                 artificial2[triple.col()] = true;
             }
@@ -225,10 +240,10 @@ void SystemTwo::initializeBasis() {
 
     /// Combine one atom states ////////////////////////////////////////
 
-    std::vector<eigen_triplet_t> hamiltonian_triplets;
+    std::vector<Eigen::Triplet<Scalar>> hamiltonian_triplets;
     hamiltonian_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
     states.reserve(system1.getNumStates() * system2.getNumStates() + states_to_add.size());
-    std::vector<eigen_triplet_t> basisvectors_triplets; // TODO reserve
+    std::vector<Eigen::Triplet<Scalar>> basisvectors_triplets; // TODO reserve
     std::vector<double> sqnorm_list(
         system1.getNumStates() * system2.getNumStates() + states_to_add.size(), 0);
 
@@ -292,16 +307,16 @@ void SystemTwo::initializeBasis() {
         hamiltonian_triplets.emplace_back(col_new, col_new, energy);
 
         // Build the basis vector that corresponds to the stored pair state energy
-        for (eigen_iterator_t triple_1(system1.getBasisvectors(), col_1); triple_1; ++triple_1) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(system1.getBasisvectors(), col_1); triple_1; ++triple_1) {
             size_t row_1 = triple_1.row();
             StateOne state_1 = system1.getStatesMultiIndex()[row_1].state;
 
-            for (eigen_iterator_t triple_2(system2.getBasisvectors(), col_2); triple_2;
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(system2.getBasisvectors(), col_2); triple_2;
                  ++triple_2) {
                 size_t row_2 = triple_2.row();
                 StateOne state_2 = system2.getStatesMultiIndex()[row_2].state;
 
-                scalar_t value_new = triple_1.value() * triple_2.value();
+                Scalar value_new = triple_1.value() * triple_2.value();
 
                 if (!artificial1[col_1] && !artificial2[col_2]) {
                     M = state_1.getM() + state_2.getM();
@@ -370,19 +385,19 @@ void SystemTwo::initializeBasis() {
                 // Add further entries to the current basis vector if required by symmetries
                 if (different) {
                     if (sym_inversion_local != NA) {
-                        scalar_t v = value_new;
+                        Scalar v = value_new;
                         v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                         this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
                                               basisvectors_triplets, sqnorm_list);
                     } else if (sym_permutation != NA) {
-                        scalar_t v = value_new;
+                        Scalar v = value_new;
                         v *= (sym_permutation == EVEN) ? -1 : 1;
                         this->addBasisvectors(StateTwo(state_2, state_1), col_new, v,
                                               basisvectors_triplets, sqnorm_list);
                     }
                 }
                 if (sym_reflection_local != NA && !skip_reflection) {
-                    scalar_t v = value_new;
+                    Scalar v = value_new;
                     v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                         : -parityL * parityJ * parityM;
                     this->addBasisvectors(StateTwo(state_1.getReflected(), state_2.getReflected()),
@@ -390,7 +405,7 @@ void SystemTwo::initializeBasis() {
 
                     if (different) {
                         if (sym_inversion_local != NA) {
-                            scalar_t v = value_new;
+                            Scalar v = value_new;
                             v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                                 : -parityL * parityJ * parityM;
                             v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
@@ -398,7 +413,7 @@ void SystemTwo::initializeBasis() {
                                 StateTwo(state_2.getReflected(), state_1.getReflected()), col_new,
                                 v, basisvectors_triplets, sqnorm_list);
                         } else if (sym_permutation != NA) {
-                            scalar_t v = value_new;
+                            Scalar v = value_new;
                             v *= (sym_reflection_local == EVEN) ? parityL * parityJ * parityM
                                                                 : -parityL * parityJ * parityM;
                             v *= (sym_permutation == EVEN) ? -1 : 1;
@@ -506,7 +521,7 @@ void SystemTwo::initializeBasis() {
         hamiltonian_triplets.emplace_back(col_new, col_new, energy);
 
         // Adapt the normalization if required by symmetries
-        scalar_t value_new = 1;
+        Scalar value_new = 1;
         if ((sym_inversion_local != NA || sym_permutation != NA) && different) {
             value_new /= std::sqrt(2);
         }
@@ -517,12 +532,12 @@ void SystemTwo::initializeBasis() {
         // Add further entries to the current basis vector if required by symmetries
         if (different) {
             if (sym_inversion_local != NA) {
-                scalar_t v = value_new;
+                Scalar v = value_new;
                 v *= (sym_inversion_local == EVEN) ? -parityL : parityL;
                 this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
                                       col_new, v, basisvectors_triplets, sqnorm_list);
             } else if (sym_permutation != NA) {
-                scalar_t v = value_new;
+                Scalar v = value_new;
                 v *= (sym_permutation == EVEN) ? -1 : 1;
                 this->addBasisvectors(StateTwo(state.getSecondState(), state.getFirstState()),
                                       col_new, v, basisvectors_triplets, sqnorm_list);
@@ -549,7 +564,7 @@ void SystemTwo::initializeBasis() {
     ////////////////////////////////////////////////////////////////////
 
     // Build transformator and remove vectors (if the squared norm is too small)
-    std::vector<eigen_triplet_t> triplets_transformator;
+    std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
     triplets_transformator.reserve(basisvectors.cols());
 
     size_t idx_new = 0;
@@ -557,7 +572,7 @@ void SystemTwo::initializeBasis() {
         double_t sqnorm = 0;
 
         // Calculate the square norm of the columns of the basisvector matrix
-        for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, idx); triple; ++triple) {
             sqnorm += std::pow(std::abs(triple.value()), 2);
         }
 
@@ -599,7 +614,7 @@ void SystemTwo::initializeBasis() {
     idx_new = 0;
     for (size_t idx : idx_sorted) {
         states_new.push_back(enumerated_state<StateTwo>(idx_new, states[idx].state));
-        triplets_transformator.push_back(eigen_triplet_t(idx_new++,idx,1));
+        triplets_transformator.push_back(Eigen::Triplet<Scalar>(idx_new++,idx,1));
     }
 
     states_new.shrink_to_fit();
@@ -611,7 +626,8 @@ void SystemTwo::initializeBasis() {
 /// Method that allows base class to calculate the interaction /////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::initializeInteraction() {
+template <typename Scalar>
+void SystemTwo<Scalar>::initializeInteraction() {
     if (distance == std::numeric_limits<double>::max()) {
         return;
     }
@@ -767,15 +783,15 @@ void SystemTwo::initializeInteraction() {
     /// Generate the interaction in the canonical basis ////////////////
     ////////////////////////////////////////////////////////////////////
 
-    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<double>>>
         interaction_angulardipole_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_double_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<double>>>
         interaction_multipole_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_greentensor_dd_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_greentensor_dq_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_greentensor_qd_triplets; // TODO reserve
 
     /*// Categorize states // TODO
@@ -869,12 +885,12 @@ void SystemTwo::initializeInteraction() {
                         }
 
                         // Combine everything
-                        scalar_t val = -coulombs_constant * vec1_entry * vec2_entry;
+                        Scalar val = -coulombs_constant * vec1_entry * vec2_entry;
                         if (i1 == 1 && i2 == 1) {
                             val *= -1; //"-" from i^2
                         }
                         if (key % 2 != 0) {
-                            val *= utils::imaginary_unit<scalar_t>();
+                            val *= utils::imaginary_unit<Scalar>();
                         }
                         this->addTriplet(interaction_greentensor_dd_triplets[3 * i2 + i1], r.idx,
                                          c.idx, val);
@@ -1007,12 +1023,12 @@ void SystemTwo::initializeInteraction() {
                             }
                         }
                         if (std::abs(vec_entry * matrix_entry) > tolerance) {
-                            scalar_t val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
+                            Scalar val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
                             if ((i1 == 1) && (i2 != i3 && (i2 == 1 || i3 == 1))) {
                                 val *= -1.; // from i^2
                             }
                             if (key % 2 != 0) {
-                                val *= utils::imaginary_unit<scalar_t>();
+                                val *= utils::imaginary_unit<Scalar>();
                             }
                             this->addTriplet(
                                 interaction_greentensor_dq_triplets[9 * i3 + 3 * i2 + i1], r.idx,
@@ -1149,12 +1165,12 @@ void SystemTwo::initializeInteraction() {
                             }
                         }
                         if (std::abs(vec_entry * matrix_entry) > tolerance) {
-                            scalar_t val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
+                            Scalar val = coulombs_constant * vec_entry * matrix_entry / sqrt(30.);
                             if ((i3 == 1) && (i1 != i2 && (i1 == 1 || i2 == 1))) {
                                 val *= -1.; // from i^2
                             }
                             if (key % 2 != 0) {
-                                val *= utils::imaginary_unit<scalar_t>();
+                                val *= utils::imaginary_unit<Scalar>();
                             }
                             this->addTriplet(
                                 interaction_greentensor_qd_triplets[9 * i3 + 3 * i2 + i1], r.idx,
@@ -1236,7 +1252,7 @@ void SystemTwo::initializeInteraction() {
         interaction_greentensor_dd_triplets[i].clear();
 
         interaction_greentensor_dd[i] = basisvectors.adjoint() *
-            interaction_greentensor_dd[i].selfadjointView<Eigen::Lower>() * basisvectors;
+            interaction_greentensor_dd[i].template selfadjointView<Eigen::Lower>() * basisvectors;
     }
     for (const auto &i : interaction_greentensor_dq_keys) {
         interaction_greentensor_dq[i].resize(states.size(), states.size());
@@ -1246,7 +1262,7 @@ void SystemTwo::initializeInteraction() {
         interaction_greentensor_dq_triplets[i].clear();
 
         interaction_greentensor_dq[i] = basisvectors.adjoint() *
-            interaction_greentensor_dq[i].selfadjointView<Eigen::Lower>() * basisvectors;
+            interaction_greentensor_dq[i].template selfadjointView<Eigen::Lower>() * basisvectors;
     }
     for (const auto &i : interaction_greentensor_qd_keys) {
         interaction_greentensor_qd[i].resize(states.size(), states.size());
@@ -1256,7 +1272,7 @@ void SystemTwo::initializeInteraction() {
         interaction_greentensor_qd_triplets[i].clear();
 
         interaction_greentensor_qd[i] = basisvectors.adjoint() *
-            interaction_greentensor_qd[i].selfadjointView<Eigen::Lower>() * basisvectors;
+            interaction_greentensor_qd[i].template selfadjointView<Eigen::Lower>() * basisvectors;
     }
     for (const auto &i : interaction_angulardipole_keys) {
         interaction_angulardipole[i].resize(states.size(), states.size());
@@ -1265,7 +1281,7 @@ void SystemTwo::initializeInteraction() {
         interaction_angulardipole_triplets[i].clear();
 
         interaction_angulardipole[i] = basisvectors.adjoint() *
-            interaction_angulardipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
+            interaction_angulardipole[i].template selfadjointView<Eigen::Lower>() * basisvectors;
     }
 
     for (const auto &i : interaction_multipole_keys) {
@@ -1275,7 +1291,7 @@ void SystemTwo::initializeInteraction() {
         interaction_multipole_triplets[i].clear();
 
         interaction_multipole[i] = basisvectors.adjoint() *
-            interaction_multipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
+            interaction_multipole[i].template selfadjointView<Eigen::Lower>() * basisvectors;
     }
 }
 
@@ -1283,7 +1299,8 @@ void SystemTwo::initializeInteraction() {
 /// Method that allows base class to construct Hamiltonian /////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::addInteraction() {
+template <typename Scalar>
+void SystemTwo<Scalar>::addInteraction() {
     if (distance == std::numeric_limits<double>::max()) {
         return;
     }
@@ -1316,7 +1333,8 @@ void SystemTwo::addInteraction() {
 /// Method that allows base class to transform the interaction /////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::transformInteraction(const eigen_sparse_t &transformator) {
+template <typename Scalar>
+void SystemTwo<Scalar>::transformInteraction(const eigen_sparse_t &transformator) {
     for (auto &entry : interaction_greentensor_dd) {
         entry.second = transformator.adjoint() * entry.second * transformator;
     }
@@ -1338,7 +1356,8 @@ void SystemTwo::transformInteraction(const eigen_sparse_t &transformator) {
 /// Method that allows base class to delete the interaction ////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::deleteInteraction() {
+template <typename Scalar>
+void SystemTwo<Scalar>::deleteInteraction() {
     interaction_greentensor_dd.clear();
     interaction_greentensor_dq.clear();
     interaction_greentensor_qd.clear();
@@ -1350,13 +1369,14 @@ void SystemTwo::deleteInteraction() {
 /// Methods that allows base class to rotate states ////////////////
 ////////////////////////////////////////////////////////////////////
 
-eigen_sparse_t SystemTwo::rotateStates(const std::vector<size_t> &states_indices, double alpha,
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                        double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Rotate state
-    std::vector<eigen_triplet_t> states_rotated_triplets;
+    std::vector<Eigen::Triplet<Scalar>> states_rotated_triplets;
     states_rotated_triplets.reserve(
         std::min(static_cast<size_t>(10 * 10), states.size()) *
         states_indices.size()); // TODO std::min( (2*jmax+1)*(2*jmax+1), states.size() ) *
@@ -1368,19 +1388,20 @@ eigen_sparse_t SystemTwo::rotateStates(const std::vector<size_t> &states_indices
                          gamma);
     }
 
-    eigen_sparse_t states_rotated(states.size(), states_indices.size());
+    Eigen::SparseMatrix<Scalar> states_rotated(states.size(), states_indices.size());
     states_rotated.setFromTriplets(states_rotated_triplets.begin(), states_rotated_triplets.end());
     states_rotated_triplets.clear();
 
     return states_rotated;
 }
 
-eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double gamma) {
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::buildStaterotator(double alpha, double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Build rotator
-    std::vector<eigen_triplet_t> rotator_triplets;
+    std::vector<Eigen::Triplet<Scalar>> rotator_triplets;
     rotator_triplets.reserve(
         std::min(static_cast<size_t>(10 * 10), states.size()) *
         states.size()); // TODO std::min( (2*jmax+1)*(2*jmax+1), states.size() ) * states.size()
@@ -1389,7 +1410,7 @@ eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double ga
         this->addRotated(entry.state, entry.idx, rotator_triplets, wigner, alpha, beta, gamma);
     }
 
-    eigen_sparse_t rotator(states.size(), states.size());
+    Eigen::SparseMatrix<Scalar> rotator(states.size(), states.size());
     rotator.setFromTriplets(rotator_triplets.begin(), rotator_triplets.end()); // NOLINT
     rotator_triplets.clear();
 
@@ -1400,7 +1421,8 @@ eigen_sparse_t SystemTwo::buildStaterotator(double alpha, double beta, double ga
 /// Method that allows base class to combine systems ///////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
+template <typename Scalar>
+void SystemTwo<Scalar>::incorporate(SystemBase<StateTwo> &system) {
     // Combine parameters
     if (species[0] != dynamic_cast<SystemTwo &>(system).species[0]) {
         throw std::runtime_error(
@@ -1465,13 +1487,15 @@ void SystemTwo::incorporate(SystemBase<StateTwo> &system) {
 /// Methods that allows base class to communicate with subclass ////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::onStatesChange() { minimal_le_roy_radius = std::numeric_limits<double>::max(); }
+template <typename Scalar>
+void SystemTwo<Scalar>::onStatesChange() { minimal_le_roy_radius = std::numeric_limits<double>::max(); }
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemTwo::checkDistance(const double &distance) {
+template <typename Scalar>
+void SystemTwo<Scalar>::checkDistance(const double &distance) {
 
     // Get the minimal Le Roy radius
     if (minimal_le_roy_radius == std::numeric_limits<double>::max()) {
@@ -1511,9 +1535,10 @@ void SystemTwo::checkDistance(const double &distance) {
     }
 }
 
-void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
-                                const scalar_t &value_new,
-                                std::vector<eigen_triplet_t> &basisvectors_triplets,
+template <typename Scalar>
+void SystemTwo<Scalar>::addBasisvectors(const StateTwo &state, const size_t &col_new,
+                                const Scalar &value_new,
+                                std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
                                 std::vector<double> &sqnorm_list) {
     auto state_iter = states.get<1>().find(state);
 
@@ -1529,7 +1554,8 @@ void SystemTwo::addBasisvectors(const StateTwo &state, const size_t &col_new,
     sqnorm_list[row_new] += std::pow(std::abs(value_new), 2);
 }
 
-bool SystemTwo::isRefelectionAndRotationCompatible() {
+template <typename Scalar>
+bool SystemTwo<Scalar>::isRefelectionAndRotationCompatible() {
     if (sym_rotation.count(ARB) != 0 || sym_reflection == NA) {
         return true;
     }
@@ -1542,3 +1568,9 @@ bool SystemTwo::isRefelectionAndRotationCompatible() {
 
     return true;
 }
+
+#ifdef USE_COMPLEX
+template class SystemTwo<std::complex<double>>;
+#else
+template class SystemTwo<double>;
+#endif

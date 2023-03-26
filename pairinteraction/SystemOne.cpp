@@ -30,19 +30,23 @@
 #include <utility>
 #include <vector>
 
-SystemOne::SystemOne(std::string species, MatrixElementCache &cache)
+template <typename Scalar>
+SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache)
     : SystemBase(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(true), charge(0),
       ordermax(0), distance(std::numeric_limits<double>::max()), species(std::move(species)),
       sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
-SystemOne::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
+template <typename Scalar>
+SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
     : SystemBase(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
       diamagnetism(true), charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
       species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
-const std::string &SystemOne::getSpecies() const { return species; }
+template <typename Scalar>
+const std::string &SystemOne<Scalar>::getSpecies() const { return species; }
 
-void SystemOne::setEfield(std::array<double, 3> field) {
+template <typename Scalar>
+void SystemOne<Scalar>::setEfield(std::array<double, 3> field) {
     this->onParameterChange();
     efield = field;
 
@@ -50,7 +54,8 @@ void SystemOne::setEfield(std::array<double, 3> field) {
     this->changeToSphericalbasis(efield, efield_spherical);
 }
 
-void SystemOne::setBfield(std::array<double, 3> field) {
+template <typename Scalar>
+void SystemOne<Scalar>::setBfield(std::array<double, 3> field) {
     this->onParameterChange();
     bfield = field;
 
@@ -67,48 +72,57 @@ void SystemOne::setBfield(std::array<double, 3> field) {
     diamagnetism_terms[{{2, -2}}] = bfield_spherical[+1] * bfield_spherical[+1];
 }
 
-void SystemOne::setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
+template <typename Scalar>
+void SystemOne<Scalar>::setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
                           std::array<double, 3> to_y_axis) {
     this->rotateVector(field, to_z_axis, to_y_axis);
     this->setEfield(field);
 }
 
-void SystemOne::setBfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
+template <typename Scalar>
+void SystemOne<Scalar>::setBfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
                           std::array<double, 3> to_y_axis) {
     this->rotateVector(field, to_z_axis, to_y_axis);
     this->setBfield(field);
 }
 
-void SystemOne::setEfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+template <typename Scalar>
+void SystemOne<Scalar>::setEfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
     this->rotateVector(field, alpha, beta, gamma);
     this->setEfield(field);
 }
 
-void SystemOne::setBfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+template <typename Scalar>
+void SystemOne<Scalar>::setBfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
     this->rotateVector(field, alpha, beta, gamma);
     this->setBfield(field);
 }
 
-void SystemOne::enableDiamagnetism(bool enable) {
+template <typename Scalar>
+void SystemOne<Scalar>::enableDiamagnetism(bool enable) {
     this->onParameterChange();
     diamagnetism = enable;
 }
-void SystemOne::setIonCharge(int c) {
+template <typename Scalar>
+void SystemOne<Scalar>::setIonCharge(int c) {
     this->onParameterChange();
     charge = c;
 }
 
-void SystemOne::setRydIonOrder(unsigned int o) {
+template <typename Scalar>
+void SystemOne<Scalar>::setRydIonOrder(unsigned int o) {
     this->onParameterChange();
     ordermax = o;
 }
 
-void SystemOne::setRydIonDistance(double d) {
+template <typename Scalar>
+void SystemOne<Scalar>::setRydIonDistance(double d) {
     this->onParameterChange();
     distance = d;
 }
 
-void SystemOne::setConservedParityUnderReflection(parity_t parity) {
+template <typename Scalar>
+void SystemOne<Scalar>::setConservedParityUnderReflection(parity_t parity) {
     this->onSymmetryChange();
     sym_reflection = parity;
     if (!this->isRefelectionAndRotationCompatible()) {
@@ -117,7 +131,8 @@ void SystemOne::setConservedParityUnderReflection(parity_t parity) {
     }
 }
 
-void SystemOne::setConservedMomentaUnderRotation(const std::set<float> &momenta) {
+template <typename Scalar>
+void SystemOne<Scalar>::setConservedMomentaUnderRotation(const std::set<float> &momenta) {
     if (momenta.count(static_cast<float>(ARB)) != 0 && momenta.size() > 1) {
         throw std::runtime_error(
             "If ARB (=arbitrary momentum) is specified, momenta must not be passed explicitely.");
@@ -134,7 +149,8 @@ void SystemOne::setConservedMomentaUnderRotation(const std::set<float> &momenta)
 /// Method that allows base class to initialize Basis //////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::initializeBasis() {
+template <typename Scalar>
+void SystemOne<Scalar>::initializeBasis() {
     // If the basis is infinite, throw an error
     if (range_n.empty() &&
         (energy_min == std::numeric_limits<double>::lowest() ||
@@ -156,11 +172,11 @@ void SystemOne::initializeBasis() {
     }
 
     size_t idx = 0;
-    std::vector<eigen_triplet_t>
+    std::vector<Eigen::Triplet<Scalar>>
         basisvectors_triplets; // TODO reserve states, basisvectors_triplets,
                                // hamiltonian_triplets
 
-    std::vector<eigen_triplet_t> hamiltonian_triplets;
+    std::vector<Eigen::Triplet<Scalar>> hamiltonian_triplets;
 
     /// Loop over specified quantum numbers ////////////////////////////
 
@@ -306,7 +322,8 @@ void SystemOne::initializeBasis() {
 /// Method that allows base class to calculate the interaction /////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::initializeInteraction() {
+template <typename Scalar>
+void SystemOne<Scalar>::initializeInteraction() {
     ////////////////////////////////////////////////////////////////////
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -387,14 +404,14 @@ void SystemOne::initializeInteraction() {
     /// Calculate the interaction in the canonical basis ///////////////
     ////////////////////////////////////////////////////////////////////
 
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_efield_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_bfield_triplets; // TODO reserve
-    std::unordered_map<std::array<int, 2>, std::vector<eigen_triplet_t>,
+    std::unordered_map<std::array<int, 2>, std::vector<Eigen::Triplet<Scalar>>,
                        utils::hash<std::array<int, 2>>>
         interaction_diamagnetism_triplets; // TODO reserve
-    std::unordered_map<int, std::vector<eigen_triplet_t>>
+    std::unordered_map<int, std::vector<Eigen::Triplet<Scalar>>>
         interaction_multipole_triplets; // TODO reserve
     // Loop over column entries
     for (const auto &c : states) { // TODO parallelization
@@ -415,7 +432,7 @@ void SystemOne::initializeInteraction() {
                 }
 
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
-                    scalar_t value = cache.getElectricDipole(r.state, c.state);
+                    Scalar value = cache.getElectricDipole(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic
                            // quantum numbers will not be fulfilled
@@ -429,7 +446,7 @@ void SystemOne::initializeInteraction() {
                 }
 
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
-                    scalar_t value = cache.getMagneticDipole(r.state, c.state);
+                    Scalar value = cache.getMagneticDipole(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic
                            // quantum numbers will not be fulfilled
@@ -443,7 +460,7 @@ void SystemOne::initializeInteraction() {
                 }
 
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
-                    scalar_t value = 1. / (8 * electron_rest_mass) *
+                    Scalar value = 1. / (8 * electron_rest_mass) *
                         cache.getDiamagnetism(r.state, c.state, i[0]);
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
@@ -477,7 +494,7 @@ void SystemOne::initializeInteraction() {
 
         if (i == 0) {
             interaction_efield[i] = basisvectors.adjoint() *
-                interaction_efield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+                interaction_efield[i].template selfadjointView<Eigen::Lower>() * basisvectors;
         } else {
             interaction_efield[i] = basisvectors.adjoint() * interaction_efield[i] * basisvectors;
             interaction_efield[-i] = std::pow(-1, i) * interaction_efield[i].adjoint();
@@ -492,7 +509,7 @@ void SystemOne::initializeInteraction() {
 
         if (i == 0) {
             interaction_bfield[i] = basisvectors.adjoint() *
-                interaction_bfield[i].selfadjointView<Eigen::Lower>() * basisvectors;
+                interaction_bfield[i].template selfadjointView<Eigen::Lower>() * basisvectors;
         } else {
             interaction_bfield[i] = basisvectors.adjoint() * interaction_bfield[i] * basisvectors;
             interaction_bfield[-i] = std::pow(-1, i) * interaction_bfield[i].adjoint();
@@ -507,7 +524,7 @@ void SystemOne::initializeInteraction() {
 
         if (i[1] == 0) {
             interaction_diamagnetism[i] = basisvectors.adjoint() *
-                interaction_diamagnetism[i].selfadjointView<Eigen::Lower>() * basisvectors;
+                interaction_diamagnetism[i].template selfadjointView<Eigen::Lower>() * basisvectors;
         } else {
             interaction_diamagnetism[i] =
                 basisvectors.adjoint() * interaction_diamagnetism[i] * basisvectors;
@@ -523,7 +540,7 @@ void SystemOne::initializeInteraction() {
             interaction_multipole_triplets[i].clear();
             if (i == 0) {
                 interaction_multipole[i] = basisvectors.adjoint() *
-                    interaction_multipole[i].selfadjointView<Eigen::Lower>() * basisvectors;
+                    interaction_multipole[i].template selfadjointView<Eigen::Lower>() * basisvectors;
             } else {
                 interaction_multipole[i] =
                     basisvectors.adjoint() * interaction_multipole[i] * basisvectors;
@@ -537,7 +554,8 @@ void SystemOne::initializeInteraction() {
 /// Method that allows base class to construct Hamiltonian /////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::addInteraction() {
+template <typename Scalar>
+void SystemOne<Scalar>::addInteraction() {
     // Build the total Hamiltonian
     double tolerance = 1e-24;
 
@@ -594,7 +612,8 @@ void SystemOne::addInteraction() {
 /// Method that allows base class to transform the interaction /////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::transformInteraction(const eigen_sparse_t &transformator) {
+template <typename Scalar>
+void SystemOne<Scalar>::transformInteraction(const eigen_sparse_t &transformator) {
     for (auto &entry : interaction_efield) {
         entry.second = transformator.adjoint() * entry.second * transformator;
     }
@@ -613,7 +632,8 @@ void SystemOne::transformInteraction(const eigen_sparse_t &transformator) {
 /// Method that allows base class to delete the interaction ////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::deleteInteraction() {
+template <typename Scalar>
+void SystemOne<Scalar>::deleteInteraction() {
     interaction_efield.clear();
     interaction_bfield.clear();
     interaction_diamagnetism.clear();
@@ -624,13 +644,14 @@ void SystemOne::deleteInteraction() {
 /// Methods that allows base class to rotate states ////////////////
 ////////////////////////////////////////////////////////////////////
 
-eigen_sparse_t SystemOne::rotateStates(const std::vector<size_t> &states_indices, double alpha,
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                        double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Rotate state
-    std::vector<eigen_triplet_t> states_rotated_triplets;
+    std::vector<Eigen::Triplet<Scalar>> states_rotated_triplets;
     states_rotated_triplets.reserve(
         std::min(static_cast<size_t>(10), states.size()) *
         states_indices.size()); // TODO std::min( 2*jmax+1, states.size() ) * states_indices.size()
@@ -641,19 +662,20 @@ eigen_sparse_t SystemOne::rotateStates(const std::vector<size_t> &states_indices
                          gamma);
     }
 
-    eigen_sparse_t states_rotated(states.size(), states_indices.size());
+    Eigen::SparseMatrix<Scalar> states_rotated(states.size(), states_indices.size());
     states_rotated.setFromTriplets(states_rotated_triplets.begin(), states_rotated_triplets.end());
     states_rotated_triplets.clear();
 
     return states_rotated;
 }
 
-eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double gamma) {
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::buildStaterotator(double alpha, double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
     // Build rotator
-    std::vector<eigen_triplet_t> rotator_triplets;
+    std::vector<Eigen::Triplet<Scalar>> rotator_triplets;
     rotator_triplets.reserve(
         std::min(static_cast<size_t>(10), states.size()) *
         states.size()); // TODO std::min( 2*jmax+1, states.size() ) * states.size()
@@ -662,7 +684,7 @@ eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double ga
         this->addRotated(entry.state, entry.idx, rotator_triplets, wigner, alpha, beta, gamma);
     }
 
-    eigen_sparse_t rotator(states.size(), states.size());
+    Eigen::SparseMatrix<Scalar> rotator(states.size(), states.size());
     rotator.setFromTriplets(rotator_triplets.begin(), rotator_triplets.end()); // NOLINT
     rotator_triplets.clear();
 
@@ -673,43 +695,44 @@ eigen_sparse_t SystemOne::buildStaterotator(double alpha, double beta, double ga
 /// Method that allows base class to combine systems ///////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::incorporate(SystemBase<StateOne> &system) {
+template <typename Scalar>
+void SystemOne<Scalar>::incorporate(SystemBase<StateOne> &system) {
     // Combine parameters
-    if (species != dynamic_cast<SystemOne &>(system).species) {
+    if (species != dynamic_cast<SystemOne<Scalar> &>(system).species) {
         throw std::runtime_error(
             "The value of the variable 'element' must be the same for both systems.");
     }
-    if (efield != dynamic_cast<SystemOne &>(system).efield) {
+    if (efield != dynamic_cast<SystemOne<Scalar> &>(system).efield) {
         throw std::runtime_error("The value of the variable 'distance' must be the same for both "
                                  "systems."); // implies that efield_spherical is the same, too
     }
-    if (bfield != dynamic_cast<SystemOne &>(system).bfield) {
+    if (bfield != dynamic_cast<SystemOne<Scalar> &>(system).bfield) {
         throw std::runtime_error("The value of the variable 'angle' must be the same for both "
                                  "systems."); // implies that
                                               // bfield_spherical
                                               // is the same,
                                               // too
     }
-    if (diamagnetism != dynamic_cast<SystemOne &>(system).diamagnetism) {
+    if (diamagnetism != dynamic_cast<SystemOne<Scalar> &>(system).diamagnetism) {
         throw std::runtime_error(
             "The value of the variable 'ordermax' must be the same for both systems.");
     }
 
     // Combine symmetries
     unsigned int num_different_symmetries = 0;
-    if (sym_reflection != dynamic_cast<SystemOne &>(system).sym_reflection) {
+    if (sym_reflection != dynamic_cast<SystemOne<Scalar> &>(system).sym_reflection) {
         sym_reflection = NA;
         ++num_different_symmetries;
     }
-    if (!(sym_rotation.size() == dynamic_cast<SystemOne &>(system).sym_rotation.size() &&
+    if (!(sym_rotation.size() == dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.size() &&
           std::equal(sym_rotation.begin(), sym_rotation.end(),
-                     dynamic_cast<SystemOne &>(system).sym_rotation.begin()))) {
+                     dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.begin()))) {
         if (sym_rotation.count(static_cast<float>(ARB)) != 0 ||
-            dynamic_cast<SystemOne &>(system).sym_rotation.count(static_cast<float>(ARB)) != 0) {
+            dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.count(static_cast<float>(ARB)) != 0) {
             sym_rotation = {static_cast<float>(ARB)};
         } else {
-            sym_rotation.insert(dynamic_cast<SystemOne &>(system).sym_rotation.begin(),
-                                dynamic_cast<SystemOne &>(system).sym_rotation.end());
+            sym_rotation.insert(dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.begin(),
+                                dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.end());
         }
         ++num_different_symmetries;
     }
@@ -727,9 +750,10 @@ void SystemOne::incorporate(SystemBase<StateOne> &system) {
 /// Utility methods ////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 
-void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                           std::vector<eigen_triplet_t> &basisvectors_triplets,
-                                           std::vector<eigen_triplet_t> &hamiltonian_triplets,
+template <typename Scalar>
+void SystemOne<Scalar>::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
+                                           std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+                                           std::vector<Eigen::Triplet<Scalar>> &hamiltonian_triplets,
                                            parity_t &sym_reflection_local) {
     // In case of reflection symmetry, skip half of the basis vectors
     if (sym_reflection_local != NA && state.getM() != 0) {
@@ -742,7 +766,7 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     hamiltonian_triplets.emplace_back(idx, idx, energy);
 
     // Adapt the normalization if required by symmetries
-    scalar_t value = 1;
+    Scalar value = 1;
     if (sym_reflection_local != NA && state.getM() != 0) {
         value /= std::sqrt(2);
     }
@@ -753,7 +777,7 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     // Add further entries to the current basis vector if required by symmetries
     if (sym_reflection_local != NA && state.getM() != 0) {
         value *= std::pow(-1, state.getL() + state.getM() - state.getJ()) *
-            utils::imaginary_unit<scalar_t>();
+            utils::imaginary_unit<Scalar>();
         value *= (sym_reflection_local == EVEN) ? 1 : -1;
         // S_y is invariant under reflection through xz-plane
         // TODO is the s quantum number of importance here?
@@ -763,8 +787,9 @@ void SystemOne::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, c
     ++idx;
 }
 
-void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
-                                std::vector<eigen_triplet_t> &basisvectors_triplets) {
+template <typename Scalar>
+void SystemOne<Scalar>::addBasisvectors(const StateOne &state, const size_t &idx, const Scalar &value,
+                                std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets) {
     auto state_iter = states.get<1>().find(state);
 
     size_t row;
@@ -778,7 +803,8 @@ void SystemOne::addBasisvectors(const StateOne &state, const size_t &idx, const 
     basisvectors_triplets.emplace_back(row, idx, value);
 }
 
-void SystemOne::changeToSphericalbasis(std::array<double, 3> field,
+template <typename Scalar>
+void SystemOne<Scalar>::changeToSphericalbasis(std::array<double, 3> field,
                                        std::unordered_map<int, double> &field_spherical) {
     if (field[1] != 0) {
         throw std::runtime_error(
@@ -789,19 +815,22 @@ void SystemOne::changeToSphericalbasis(std::array<double, 3> field,
     field_spherical[0] = field[2];
 }
 
-void SystemOne::changeToSphericalbasis(
+template <typename Scalar>
+void SystemOne<Scalar>::changeToSphericalbasis(
     std::array<double, 3> field, std::unordered_map<int, std::complex<double>> &field_spherical) {
     field_spherical[1] = std::complex<double>(-field[0] / std::sqrt(2), -field[1] / std::sqrt(2));
     field_spherical[-1] = std::complex<double>(field[0] / std::sqrt(2), -field[1] / std::sqrt(2));
     field_spherical[0] = std::complex<double>(field[2], 0);
 }
 
-void SystemOne::addTriplet(std::vector<eigen_triplet_t> &triplets, const size_t r_idx,
-                           const size_t c_idx, const scalar_t val) {
+template <typename Scalar>
+void SystemOne<Scalar>::addTriplet(std::vector<Eigen::Triplet<Scalar>> &triplets, const size_t r_idx,
+                           const size_t c_idx, const Scalar val) {
     triplets.emplace_back(r_idx, c_idx, val);
 }
 
-void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
+template <typename Scalar>
+void SystemOne<Scalar>::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
                              std::array<double, 3> &to_y_axis) {
     auto field_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&field[0]);
 
@@ -811,7 +840,8 @@ void SystemOne::rotateVector(std::array<double, 3> &field, std::array<double, 3>
     }
 }
 
-void SystemOne::rotateVector(std::array<double, 3> &field, double alpha, double beta,
+template <typename Scalar>
+void SystemOne<Scalar>::rotateVector(std::array<double, 3> &field, double alpha, double beta,
                              double gamma) {
     auto field_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&field[0]);
 
@@ -821,7 +851,8 @@ void SystemOne::rotateVector(std::array<double, 3> &field, double alpha, double 
     }
 }
 
-bool SystemOne::isRefelectionAndRotationCompatible() {
+template <typename Scalar>
+bool SystemOne<Scalar>::isRefelectionAndRotationCompatible() {
     if (sym_rotation.count(static_cast<float>(ARB)) != 0 || sym_reflection == NA) {
         return true;
     }
@@ -834,3 +865,9 @@ bool SystemOne::isRefelectionAndRotationCompatible() {
 
     return true;
 }
+
+#ifdef USE_COMPLEX
+template class SystemOne<std::complex<double>>;
+#else
+template class SystemOne<double>;
+#endif

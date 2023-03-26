@@ -40,10 +40,12 @@
 #include <set>
 #include <type_traits>
 
+template <typename Scalar>
 class SystemTwo : public SystemBase<StateTwo> {
 public:
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache);
-    SystemTwo(const SystemOne &b1, const SystemOne &b2, MatrixElementCache &cache,
+    //using Scalar = _Scalar;
+    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache);
+    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache,
               bool memory_saving);
 
     const std::array<std::string, 2> &getSpecies();
@@ -68,22 +70,22 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
-    eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha,
+    Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                 double beta, double gamma) override;
-    eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateTwo> &system) override;
     void onStatesChange() override;
 
 private:
     std::array<std::string, 2> species;
-    SystemOne system1; // is needed in the initializeBasis method and afterwards deleted
-    SystemOne system2; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar> system1; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar> system2; // is needed in the initializeBasis method and afterwards deleted
 
-    std::unordered_map<int, eigen_sparse_t> interaction_angulardipole;
-    std::unordered_map<int, eigen_sparse_t> interaction_multipole;
-    std::unordered_map<int, eigen_sparse_t> interaction_greentensor_dd;
-    std::unordered_map<int, eigen_sparse_t> interaction_greentensor_dq;
-    std::unordered_map<int, eigen_sparse_t> interaction_greentensor_qd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_angulardipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_multipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dq;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_qd;
 
     double minimal_le_roy_radius;
     double distance, distance_x, distance_y, distance_z;
@@ -108,8 +110,8 @@ private:
 
     void checkDistance(const double &distance);
 
-    void addBasisvectors(const StateTwo &state, const size_t &col_new, const scalar_t &value_new,
-                         std::vector<eigen_triplet_t> &basisvectors_triplets,
+    void addBasisvectors(const StateTwo &state, const size_t &col_new, const Scalar &value_new,
+                         std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
                          std::vector<double> &sqnorm_list);
 
     template <typename T>
@@ -188,5 +190,11 @@ private:
             &interaction_greentensor_dq &interaction_greentensor_qd;
     }
 };
+
+#ifdef USE_COMPLEX
+extern template class SystemTwo<std::complex<double>>;
+#else
+extern template class SystemTwo<double>;
+#endif
 
 #endif

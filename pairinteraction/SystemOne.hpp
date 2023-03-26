@@ -40,8 +40,10 @@
 #include <type_traits>
 #include <unordered_map>
 
+template <typename Scalar>
 class SystemOne : public SystemBase<StateOne> {
 public:
+    //using Scalar = _Scalar;
     SystemOne(std::string species, MatrixElementCache &cache);
     SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving);
 
@@ -67,27 +69,27 @@ protected:
     void addInteraction() override;
     void transformInteraction(const eigen_sparse_t &transformator) override;
     void deleteInteraction() override;
-    eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha,
+    Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                 double beta, double gamma) override;
-    eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<StateOne> &system) override;
 
 private:
     std::array<double, 3> efield, bfield;
-    std::unordered_map<int, scalar_t> efield_spherical, bfield_spherical;
+    std::unordered_map<int, Scalar> efield_spherical, bfield_spherical;
     bool diamagnetism;
-    std::unordered_map<std::array<int, 2>, scalar_t, utils::hash<std::array<int, 2>>>
+    std::unordered_map<std::array<int, 2>, Scalar, utils::hash<std::array<int, 2>>>
         diamagnetism_terms;
     int charge;
     unsigned int ordermax;
     double distance;
     std::string species;
 
-    std::unordered_map<int, eigen_sparse_t> interaction_efield;
-    std::unordered_map<int, eigen_sparse_t> interaction_bfield;
-    std::unordered_map<std::array<int, 2>, eigen_sparse_t, utils::hash<std::array<int, 2>>>
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_efield;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_bfield;
+    std::unordered_map<std::array<int, 2>, Eigen::SparseMatrix<Scalar>, utils::hash<std::array<int, 2>>>
         interaction_diamagnetism;
-    std::unordered_map<int, eigen_sparse_t> interaction_multipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_multipole;
     parity_t sym_reflection;
     std::set<float> sym_rotation;
 
@@ -96,19 +98,19 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     void addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                    std::vector<eigen_triplet_t> &basisvectors_triplets,
-                                    std::vector<eigen_triplet_t> &hamiltonian_triplets,
+                                    std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+                                    std::vector<Eigen::Triplet<Scalar>> &hamiltonian_triplets,
                                     parity_t &sym_reflection_local);
 
-    void addBasisvectors(const StateOne &state, const size_t &idx, const scalar_t &value,
-                         std::vector<eigen_triplet_t> &basisvectors_triplets);
+    void addBasisvectors(const StateOne &state, const size_t &idx, const Scalar &value,
+                         std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets);
 
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, double> &field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, std::complex<double>> &field_spherical);
-    void addTriplet(std::vector<eigen_triplet_t> &triplets, size_t r_idx, size_t c_idx,
-                    scalar_t val);
+    void addTriplet(std::vector<Eigen::Triplet<Scalar>> &triplets, size_t r_idx, size_t c_idx,
+                    Scalar val);
     void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
                       std::array<double, 3> &to_y_axis);
     void rotateVector(std::array<double, 3> &field, double alpha, double beta, double gamma);
@@ -169,5 +171,11 @@ private:
         ar &interaction_efield &interaction_bfield &interaction_diamagnetism;
     }
 };
+
+#ifdef USE_COMPLEX
+extern template class SystemOne<std::complex<double>>;
+#else
+extern template class SystemOne<double>;
+#endif
 
 #endif

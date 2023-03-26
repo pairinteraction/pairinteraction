@@ -281,3 +281,16 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
   %}
 #endif
 }
+
+#ifdef USE_COMPLEX
+%template(_SystemOne) SystemOne<std::complex<double>>;
+%template(_SystemTwo) SystemTwo<std::complex<double>>;
+#else
+%template(_SystemOne) SystemOne<double>;
+%template(_SystemTwo) SystemTwo<double>;
+#endif
+
+%pythoncode %{
+  SystemOne = _SystemOne
+  SystemTwo = _SystemTwo
+%}
