@@ -42,6 +42,16 @@ typedef complex_t scalar_t;
 typedef double scalar_t;
 #endif
 
+// Backport template aliases to older Eigen versions
+#if !EIGEN_VERSION_AT_LEAST(3,4,0)
+namespace Eigen {
+template <typename Type>
+using MatrixX = Matrix<Type, Dynamic, Dynamic>;
+template <typename Type>
+using VectorX = Matrix<Type, Dynamic, 1>;
+}
+#endif
+
 typedef Eigen::Triplet<scalar_t> eigen_triplet_t;
 typedef Eigen::Triplet<complex_t> eigen_triplet_complex_t;
 typedef Eigen::Triplet<double> eigen_triplet_double_t;
