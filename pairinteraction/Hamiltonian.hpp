@@ -28,8 +28,8 @@ template <class T>
 class Hamiltonian {
 public:
     Hamiltonian() = default;
-    std::shared_ptr<Hamiltonianmatrix> get(size_t idx) { return matrix_diag[idx]; }
-    std::shared_ptr<const Hamiltonianmatrix> get(size_t idx) const { return matrix_diag[idx]; }
+    std::shared_ptr<Hamiltonianmatrix<scalar_t>> get(size_t idx) { return matrix_diag[idx]; }
+    std::shared_ptr<const Hamiltonianmatrix<scalar_t>> get(size_t idx) const { return matrix_diag[idx]; }
     std::shared_ptr<const Configuration> getParams(size_t idx) const { return params[idx]; }
     size_t size() const { return matrix_diag.size(); }
     std::shared_ptr<const T> names() const { return basis; }
@@ -41,7 +41,7 @@ public:
     }
 
 protected:
-    std::vector<std::shared_ptr<Hamiltonianmatrix>> matrix_diag;
+    std::vector<std::shared_ptr<Hamiltonianmatrix<scalar_t>>> matrix_diag;
     std::vector<std::string> matrix_path;
     std::vector<std::shared_ptr<Configuration>> params;
     std::shared_ptr<T> basis;

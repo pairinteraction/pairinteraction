@@ -115,7 +115,7 @@ void HamiltonianOne::build() {
     // --- Construct one-atom  Hamiltonian and basis ---
     std::cout << "One-atom Hamiltonian, construct diagonal Hamiltonian" << std::endl;
 
-    Hamiltonianmatrix hamiltonian_energy(size_basis, size_energy);
+    Hamiltonianmatrix<scalar_t> hamiltonian_energy(size_basis, size_energy);
 
     double energy_initial = 0;
     for (const auto &state : basis->initial()) {
@@ -291,20 +291,20 @@ void HamiltonianOne::build() {
     // --- Construct atom-field Hamiltonian ---
     std::cout << "One-atom Hamiltonian, construct field Hamiltonian" << std::endl;
 
-    Hamiltonianmatrix hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
-    Hamiltonianmatrix hamiltonian_electricMomentum_p(size_basis, size_electricMomentum_p);
-    Hamiltonianmatrix hamiltonian_electricMomentum_m(size_basis, size_electricMomentum_m);
+    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
+    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_p(size_basis, size_electricMomentum_p);
+    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_m(size_basis, size_electricMomentum_m);
 
-    Hamiltonianmatrix hamiltonian_magneticMomentum_0(size_basis, size_magneticMomentum_0);
-    Hamiltonianmatrix hamiltonian_magneticMomentum_p(size_basis, size_magneticMomentum_p);
-    Hamiltonianmatrix hamiltonian_magneticMomentum_m(size_basis, size_magneticMomentum_m);
+    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_0(size_basis, size_magneticMomentum_0);
+    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_p(size_basis, size_magneticMomentum_p);
+    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_m(size_basis, size_magneticMomentum_m);
 
-    Hamiltonianmatrix hamiltonian_diamagnetism_00(size_basis, size_diamagnetism_00);
-    Hamiltonianmatrix hamiltonian_diamagnetism_20(size_basis, size_diamagnetism_20);
-    Hamiltonianmatrix hamiltonian_diamagnetism_2p(size_basis, size_diamagnetism_2p);
-    Hamiltonianmatrix hamiltonian_diamagnetism_2m(size_basis, size_diamagnetism_2m);
-    Hamiltonianmatrix hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
-    Hamiltonianmatrix hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_00(size_basis, size_diamagnetism_00);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_20(size_basis, size_diamagnetism_20);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2p(size_basis, size_diamagnetism_2p);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2m(size_basis, size_diamagnetism_2m);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
+    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
 
     for (const auto &state_col : *basis) { // TODO parallelization
         for (const auto &state_row : *basis) {
@@ -586,10 +586,10 @@ void HamiltonianOne::build() {
         }
 
         // === Build and diagonalize total matrix if not existent ===
-        Hamiltonianmatrix totalmatrix;
+        Hamiltonianmatrix<scalar_t> totalmatrix;
 
         // calculate Hamiltonian if "is_existing" is false
-        std::shared_ptr<Hamiltonianmatrix> mat;
+        std::shared_ptr<Hamiltonianmatrix<scalar_t>> mat;
         if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
             // --- Build matrix ---
@@ -640,7 +640,7 @@ void HamiltonianOne::build() {
 
         // === Store path to configuration and diagonalized matrix ===
         matrix_path[step] = path.string();
-        matrix_diag[step] = std::make_shared<Hamiltonianmatrix>(totalmatrix); // TODO maybe remove
+        matrix_diag[step] = std::make_shared<Hamiltonianmatrix<scalar_t>>(totalmatrix); // TODO maybe remove
         params[step] = std::make_shared<Configuration>(conf);                 // TODO maybe remove
     }
 

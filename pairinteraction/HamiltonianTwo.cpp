@@ -415,7 +415,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Construct pair Hamiltonians for all orders of the multipole expansion
 
     std::vector<int> exponent_multipole;
-    std::vector<Hamiltonianmatrix> mat_multipole;
+    std::vector<Hamiltonianmatrix<scalar_t>> mat_multipole;
     MatrixElements matrixelements_atom1(conf_tot, species1,
                                         (path_cache / "cache_elements.db").string());
     MatrixElements matrixelements_atom2(conf_tot, species2,
@@ -628,7 +628,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 +
     // Hamiltonian1 x 1)
 
-    std::vector<Hamiltonianmatrix> mat_single;
+    std::vector<Hamiltonianmatrix<scalar_t>> mat_single;
 
     // Check if one_atom Hamiltonians change with step_two
     // It is assumed that nSteps_one = 1 if nSteps_two != nSteps_one // TODO introduce variable
@@ -654,7 +654,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     }
 
     // --- Determine transformed interaction matrices ---
-    std::vector<Hamiltonianmatrix> mat_multipole_transformed;
+    std::vector<Hamiltonianmatrix<scalar_t>> mat_multipole_transformed;
 
     // Check if one_atom Hamiltonians change with step_two
     if (nSteps_two != nSteps_one) {
@@ -805,7 +805,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             }
 
             // === Build and diagonalize total matrix if not existent ===
-            Hamiltonianmatrix totalmatrix;
+            Hamiltonianmatrix<scalar_t> totalmatrix;
 
             if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
