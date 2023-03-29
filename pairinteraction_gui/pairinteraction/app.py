@@ -194,7 +194,7 @@ class SystemDict(GuiDict):
         store["refO"] = {"widget": ui.checkbox_system_refO, "unit": None}
         store["conserveM"] = {"widget": ui.checkbox_system_conserveM, "unit": None}
         store["sametrafo"] = {"widget": ui.checkbox_system_sametrafo, "unit": None}
-        store["python_binding"] = {"widget": ui.checkbox_use_python_binding, "unit": None}
+        store["python_api"] = {"widget": ui.checkbox_use_python_api, "unit": None}
 
     # field map of atom 1 (samebasis == False)
     keys_for_cprogram_field1 = [
@@ -1112,16 +1112,18 @@ class MainWindow(QtWidgets.QMainWindow):
             if idx > 1 and not self.thread.dataqueue_field2.empty():
                 continue
 
-            basisfile = [self.thread.basisfile_field1, self.thread.basisfile_field2, self.thread.basisfile_potential][
-                idx
-            ]
+            basisfiles = [
+                self.thread.basisfiles_field1,
+                self.thread.basisfiles_field2,
+                self.thread.basisfiles_potential,
+            ][idx]
             dataqueue = [self.thread.dataqueue_field1, self.thread.dataqueue_field2, self.thread.dataqueue_potential][
                 idx
             ]
 
             # --- load basis states ---
-
-            if basisfile != "":
+            while len(basisfiles) > 0:
+                basisfile = basisfiles.pop(0)
                 # load basis
                 basis = np.loadtxt(basisfile)
                 if "blocknumber_" in basisfile:
@@ -1161,7 +1163,8 @@ class MainWindow(QtWidgets.QMainWindow):
                             "Field maps: ",
                         ][idxtype]
                         self.ui.statusbar.showMessage(status_type + "calculate overlap states")
-                        QtWidgets.QApplication.processEvents()
+                        # TODO: see processEvents below, it can leed to problems
+                        # QtWidgets.QApplication.processEvents()
 
                         # calculate overlap states
                         if self.angle != 0:
@@ -1425,7 +1428,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
                         # update status bar
                         self.ui.statusbar.showMessage(message_old)
-                        QtWidgets.QApplication.processEvents()
+                        # TODO: this can leed to a crash especially when using the unit tests
+                        # QtWidgets.QApplication.processEvents()
 
                     else:
                         self.stateidx_field[idx][bn] = None
@@ -1490,20 +1494,12 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.buffer_positions = {}
                 self.buffer_boolarr = {}
 
-                self.labelprob = None
-                self.labelprob_energy = None
+                if len(self.storage_states[idx]) == 1:
+                    self.labelprob = None
+                    self.labelprob_energy = None
 
                 self.yMin_field[idx] = None
                 self.yMax_field[idx] = None
-
-                # indicate that the basis file is already processed
-                if idx == 0:
-                    self.thread.basisfile_field1 = ""
-                elif idx == 1:
-                    self.thread.basisfile_field2 = ""
-                elif idx == 2:
-                    self.thread.basisfile_potential = ""
-                    self.thread.basisfile_potential = ""
 
             # --- check if there is some new data and if yes, plot it ---
 
@@ -1536,8 +1532,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.storage_data[idx].append([filestep, blocknumber, filename])
 
                     if "pkl" in filename:
-                        data = pickle.load(open(filename, "rb"))
-                        energies, basis, params = data["energies"], data["basis"], data["params"]
+                        with open(filename, "rb") as f:
+                            pkl_data = pickle.load(f)
+                        energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
                         bn = blocknumber
                     else:
                         eigensystem = Eigensystem(filename)
@@ -1552,19 +1549,19 @@ class MainWindow(QtWidgets.QMainWindow):
                         inversion = params.get("inversion", params.get("pair.inversion"))
                         if inversion in ["1", "EVEN"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
-                        elif inversion in ["1", "ODD"]:
+                        elif inversion in ["-1", "ODD"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
 
                         permutation = params.get("permutation", params.get("pair.permutation"))
                         if permutation in ["1", "EVEN"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
-                        elif permutation in ["1", "ODD"]:
+                        elif permutation in ["-1", "ODD"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
 
                         reflection = params.get("reflection", params.get("pair.reflection"))
                         if reflection in ["1", "EVEN"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
-                        elif reflection in ["1", "ODD"]:
+                        elif reflection in ["-1", "ODD"]:
                             symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
 
                         if len(symmetrycolor) > 0:
@@ -1696,7 +1693,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 if (
                                     (idx == 0 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2]]))
                                     or (
-                                        (idx == 1 or self.thread.samebasis)
+                                        (idx == 1 or (idx == 0 and self.thread.samebasis))
                                         and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6]])
                                     )
                                     or (
@@ -2290,6 +2287,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.proc = None
 
             # Stop this timer
+            print(f"Total time needed: {time() - self.starttime:.2f} s")
             self.timer.stop()
 
             # Change buttons
@@ -3064,7 +3062,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 other_threads = {"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
                 python_threads = {"NUM_PROCESSES": str(self.numprocessors), "OMP_NUM_THREADS": "1"}
 
-                if self.ui.checkbox_use_python_binding.isChecked():
+                if self.ui.checkbox_use_python_api.isChecked():
                     self.proc = subprocess.Popen(
                         [self.path_base + "/start_pipy.py", "--run_gui", "-c", self.path_config, "-o", self.path_cache],
                         stdout=subprocess.PIPE,
@@ -3191,21 +3189,23 @@ class MainWindow(QtWidgets.QMainWindow):
                 data["distances_description"] = "distance(0, idxStep)"
 
             # save states
+            # nState, i-n1-l1-j1-m1-n2-l2-j2-m2 # nState, i-n-l-j-m
             if len(self.storage_states[idx]) == 1 and -1 in self.storage_states[idx]:
                 data["states"] = self.storage_states[idx][-1]
-                data["numStates"] = len(data["states"])
+                data["numStates"] = data["states"].shape[0]
             elif len(self.storage_states[idx]) > 0:
-                # nState, i-n1-l1-j1-m1-n2-l2-j2-m2 # nState, i-n-l-j-m
-                data["states"] = self.storage_states[idx]
-                data["numStates"] = {k: len(v) for k, v in data["states"].items()}
+                data["states"] = [self.storage_states[idx][k] for k in sorted(self.storage_states[idx].keys())]
+                data["numStates"] = [v.shape[0] for v in data["states"]]
 
             # save overlaps
-            if len(self.storage_overlaps[idx]) == 1 and -1 in self.storage_overlaps[idx]:
+            if len(self.stateidx_field[idx]) == 1 and -1 in self.stateidx_field[idx]:
                 data["numOverlapvectors"] = self.stateidx_field[idx][-1].shape[0]
                 data["overlapvectors"] = self.stateidx_field[idx][-1]
             elif len(self.stateidx_field[idx]) > 0:
-                data["numOverlapvectors"] = {k: v.shape[0] for k, v in self.stateidx_field[idx].items()}
-                data["overlapvectors"] = self.stateidx_field[idx]
+                data["numOverlapvectors"] = [
+                    self.stateidx_field[idx][k].shape[0] for k in sorted(self.stateidx_field[idx].keys())
+                ]
+                data["overlapvectors"] = [self.stateidx_field[idx][k] for k in sorted(self.stateidx_field[idx].keys())]
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
@@ -3228,8 +3228,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
             for filestep, _blocknumber, filename in sorted(self.storage_data[idx], key=itemgetter(0, 1)):
                 if "pkl" in filename:
-                    data = pickle.load(open(filename, "rb"))
-                    energies, basis, params = data["energies"], data["basis"], data["params"]
+                    with open(filename, "rb") as f:
+                        pkl_data = pickle.load(f)
+                    energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
                     bn = _blocknumber
                 else:
                     eigensystem = Eigensystem(filename)

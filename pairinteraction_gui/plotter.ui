@@ -3906,7 +3906,7 @@
              <rect>
               <x>0</x>
               <y>-124</y>
-              <width>314</width>
+              <width>333</width>
               <height>639</height>
              </rect>
             </property>
@@ -4393,17 +4393,17 @@
                 </font>
                </property>
                <property name="text">
-                <string>Pairinteraction binding</string>
+                <string>Pairinteraction API</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QCheckBox" name="checkbox_use_python_binding">
+              <widget class="QCheckBox" name="checkbox_use_python_api">
                <property name="enabled">
                 <bool>true</bool>
                </property>
                <property name="text">
-                <string>Experimental: Use Python binding</string>
+                <string>Experimental Feature: Use new python API</string>
                </property>
               </widget>
              </item>

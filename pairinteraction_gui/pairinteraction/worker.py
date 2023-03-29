@@ -27,15 +27,16 @@ class Worker(QtCore.QThread):
         self.exiting = False
         self.samebasis = False
         self.message = ""
-        self.basisfile_field1 = ""
-        self.basisfile_field2 = ""
-        self.basisfile_potential = ""
+        self.basisfiles_field1 = []
+        self.basisfiles_field2 = []
+        self.basisfiles_potential = []
         self.dataqueue_field1 = Queue()
         self.dataqueue_field2 = Queue()
         self.dataqueue_potential = Queue()
 
     def __del__(self):
         self.exiting = True
+        self.stdout.close()
         self.wait()
 
     def execute(self, stdout):
@@ -56,9 +57,9 @@ class Worker(QtCore.QThread):
         self.message = ""
 
         # Clear filenames
-        self.basisfile_field1 = ""
-        self.basisfile_field2 = ""
-        self.basisfile_potential = ""
+        self.basisfiles_field1 = []
+        self.basisfiles_field2 = []
+        self.basisfiles_potential = []
 
         # Clear data queue
         with self.dataqueue_field1.mutex:
@@ -106,11 +107,11 @@ class Worker(QtCore.QThread):
             elif line[:5] == b">>STA":
                 filename = line[6:-1].decode("utf-8").strip()
                 if _type == 0 or _type == 3:
-                    self.basisfile_field1 = filename
+                    self.basisfiles_field1.append(filename)
                 elif _type == 1:
-                    self.basisfile_field2 = filename
+                    self.basisfiles_field2.append(filename)
                 elif _type == 2:
-                    self.basisfile_potential = filename
+                    self.basisfiles_potential.append(filename)
 
             elif line[:5] == b">>TOT":
                 total = int(line[5:12].decode("utf-8"))
