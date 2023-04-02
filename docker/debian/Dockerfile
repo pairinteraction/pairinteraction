@@ -2,11 +2,10 @@ FROM debian:bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
-    apt-transport-https ca-certificates curl gnupg2 \
-  && curl -LO https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB \
-  && apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2019.PUB \
-  && echo 'deb http://apt.repos.intel.com/mkl all main' > /etc/apt/sources.list.d/intel-mkl.list \
-  && apt-get update -qq \
+    apt-transport-https ca-certificates curl \
+  && curl -sSfLo /etc/apt/trusted.gpg.d/oneapi-archive-keyring.asc https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+  && echo "deb https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list \
+  && apt-get update \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git \
     pyqt5-dev-tools \
@@ -22,7 +21,7 @@ RUN apt-get update -qq \
     python3-sphinx python3-numpydoc python3-sphinx-rtd-theme python3-breathe \
     jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
-    intel-mkl-64bit-2020.0-088 \
+    intel-oneapi-mkl-devel \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
@@ -40,4 +39,4 @@ RUN ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/julia/libstdc++.so.
 COPY boost.patch /tmp/
 RUN patch -d/ -p0 < /tmp/boost.patch
 
-ENV MKLROOT="/opt/intel/compilers_and_libraries_2020/linux/mkl/"
+ENV MKLROOT="/opt/intel/oneapi/mkl/latest/"
