@@ -3,13 +3,13 @@
 Tutorials
 =========
 
-.. toctree::
+.. nbgallery::
 
-    introduction.rst
-    matrix_elements.rst
-    wavefunctions.rst
-    comparison_to_saffman_fig13.rst
-    pair_potential_efield_sensitivity.rst
-    vdw_near_surface.rst
-    pair_potential_near_surface.rst
-    atom_ion_interaction.rst
+    examples_python/introduction
+    examples_python/matrix_elements
+    examples_python/wavefunctions
+    examples_python/comparison_to_saffman_fig13
+    examples_python/pair_potential_efield_sensitivity
+    examples_python/vdw_near_surface
+    examples_python/pair_potential_near_surface
+    examples_python/atom_ion_interaction

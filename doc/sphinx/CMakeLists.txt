@@ -41,7 +41,7 @@ set(SPHINX_HTML_DIR "${SPHINX_BASE}/html")
 
 # Sphinx configuration file
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
   "${SPHINX_BASE}/conf.py"
   @ONLY)
 
@@ -102,28 +102,6 @@ foreach(file ${FILE_LIST})
     "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
     "${SPHINX_BASE}/${file}"
     COPYONLY)
-endforeach()
-
-# IPython notebooks to be processed
-set(NOTEBOOKS
-  "introduction.ipynb"
-  "matrix_elements.ipynb"
-  "wavefunctions.ipynb"
-  "comparison_to_saffman_fig13.ipynb"
-  "pair_potential_efield_sensitivity.ipynb"
-  "pair_potential_near_surface.ipynb"
-  "vdw_near_surface.ipynb"
-  "atom_ion_interaction.ipynb")
-
-foreach(file ${NOTEBOOKS})
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
-    "${SPHINX_BASE}/${file}"
-    COPYONLY)
-  add_custom_target("${file}"
-    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to rst "${SPHINX_BASE}/${file}"
-    WORKING_DIRECTORY "${SPHINX_BASE}")
-  add_dependencies(sphinx "${file}")
 endforeach()
 
 # IPython notebooks to be tested

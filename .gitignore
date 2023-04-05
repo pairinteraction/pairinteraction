@@ -9,6 +9,7 @@ __pycache__/
 obj/
 /old/examples/*
 /build
+_build
 
 # Mac specific files
 ._*
