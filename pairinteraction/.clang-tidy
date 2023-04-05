@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,misc-*,modernize-*,-modernize-use-using,performance-*,readability-*,cert-*,-cert-flp30-c,clang-analyzer-*,-clang-analyzer-security.FloatLoopCounter'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,misc-*,modernize-*,-modernize-use-using,performance-*,readability-*,cert-*,-cert-flp30-c,-clang-analyzer-security.FloatLoopCounter,-clang-analyzer-optin.performance.Padding'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false
