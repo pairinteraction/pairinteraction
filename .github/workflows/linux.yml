@@ -45,7 +45,7 @@ jobs:
       run: |
         mkdir -p public/doxygen/ public/sphinx/ public/coverage/
         cp -r build/doc/doxygen/html public/doxygen/
-        cp -r build/doc/sphinx/html public/sphinx/
+        cp -r build/doc/sphinx/_build/html public/sphinx/
         cp -r build/doc/coverage/html public/coverage/
     - name: Deploy pages
       if: github.ref == 'refs/heads/master'

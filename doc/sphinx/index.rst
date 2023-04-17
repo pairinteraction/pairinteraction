@@ -142,19 +142,19 @@ Screenshots
     <p>
     <div class="slideshow-container">
       <div class="slide">
-        <a href="slides/screen-win64.png"><img src="slides/screen-win64.png"></a>
+        <a href="_static/slides/screen-win64.png"><img src="_static/slides/screen-win64.png"></a>
         <div class="slide-text">Main window with sample configuration on Windows 10 64-bit.</div>
       </div>
       <div class="slide">
-        <a href="slides/screen-osx-pairpotential.jpg"><img src="slides/screen-osx-pairpotential.jpg"></a>
+        <a href="_static/slides/screen-osx-pairpotential.jpg"><img src="_static/slides/screen-osx-pairpotential.jpg"></a>
         <div class="slide-text">Main window with sample configuration on Mac OS X El Capitan.</div>
       </div>
       <div class="slide">
-        <a href="slides/screen-osx-starkmap.jpg"><img src="slides/screen-osx-starkmap.jpg"></a>
+        <a href="_static/slides/screen-osx-starkmap.jpg"><img src="_static/slides/screen-osx-starkmap.jpg"></a>
         <div class="slide-text"><a href="https://dx.doi.org/10.1002/andp.19143480702">Stark map</a> for a single Rydberg atom.</div>
       </div>
       <div class="slide">
-        <a href="slides/screen-osx-zeemanmap.jpg"><img src="slides/screen-osx-zeemanmap.jpg"></a>
+        <a href="_static/slides/screen-osx-zeemanmap.jpg"><img src="_static/slides/screen-osx-zeemanmap.jpg"></a>
         <div class="slide-text"><a href="https://dx.doi.org/10.1103/PhysRev.55.52">Quadratic Zeeman effect</a> for a single Rydberg atom.</div>
       </div>
       <div class="slideshow-btn" style="left:0"  onclick="slideshow.step(-1)">«</div>

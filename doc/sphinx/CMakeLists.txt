@@ -19,9 +19,11 @@ find_program(SPHINX_BUILD_EXECUTABLE sphinx-build REQUIRED)
 if(NOT SPHINX_BUILD_EXECUTABLE)
   message(FATAL_ERROR "sphinx-build not found")
 endif()
-find_program(SPHINX_APIDOC_EXECUTABLE sphinx-apidoc REQUIRED)
-if(NOT SPHINX_APIDOC_EXECUTABLE)
-  message(FATAL_ERROR "sphinx-apidoc not found")
+find_program(SPHINX_AUTOBUILD_EXECUTABLE sphinx-autobuild)
+if(NOT SPHINX_AUTOBUILD_EXECUTABLE)
+  message(STATUS "sphinx-autobuild not found")
+else()
+  message(STATUS "sphinx-autobuild found: ${SPHINX_AUTOBUILD_EXECUTABLE}")
 endif()
 find_program(JUPYTER_NBCONVERT_EXECUTABLE jupyter-nbconvert REQUIRED)
 if(NOT JUPYTER_NBCONVERT_EXECUTABLE)
@@ -29,7 +31,6 @@ if(NOT JUPYTER_NBCONVERT_EXECUTABLE)
 endif()
 
 set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
-
 set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
 set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction")
 
@@ -37,39 +38,30 @@ set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction")
 set(SPHINX_CACHE_DIR "${SPHINX_BASE}/_doctrees")
 
 # HTML output directory
-set(SPHINX_HTML_DIR "${SPHINX_BASE}/html")
+set(SPHINX_HTML_DIR "${SPHINX_BASE}/_build/html")
 
 # Sphinx configuration file
 configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
+  "${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
   "${SPHINX_BASE}/conf.py"
   @ONLY)
 
+# Directories to be copied to the build directory
+file(COPY "_static" DESTINATION "${SPHINX_BASE}")
+file(COPY "_templates" DESTINATION "${SPHINX_BASE}")
+
 # Prepare sphinx target
 add_custom_target(sphinx
-    ${CMAKE_COMMAND} -E env SPHINX_APIDOC_OPTIONS=members,inherited-members,show-inheritance
-    # sphinx-apidoc
-    "${SPHINX_APIDOC_EXECUTABLE}"
-      -f
-      -P
-      -o ${SPHINX_BASE}
-      ${SPHINX_PYTHON_DIR}
-      ${EXCLUDE}
-  COMMAND
-    # override automatically generated modules.rst
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/modules.rst ${SPHINX_BASE}/modules.rst
-  COMMAND
-    # override automatically generated pairinteraction.rst
-    ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.rst ${SPHINX_BASE}/pairinteraction.rst
   COMMAND
     # sphinx-build
     "${SPHINX_BUILD_EXECUTABLE}"
-      -q
-      -b html
-      -c "${SPHINX_BASE}"
-      -d "${SPHINX_CACHE_DIR}"
-      "${CMAKE_CURRENT_BINARY_DIR}"
-      "${SPHINX_HTML_DIR}"
+    -q
+    -T
+    -b html
+    -c "${SPHINX_BASE}"
+    -d "${SPHINX_CACHE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${SPHINX_HTML_DIR}"
   VERBATIM
   DEPENDS _pireal _picomplex
   COMMENT "Building HTML documentation with Sphinx")
@@ -78,31 +70,24 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_cpp/
   DESTINATION share/doc/pairinteraction/examples_cpp)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_python/
   DESTINATION share/doc/pairinteraction/examples_python)
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html/
+install(DIRECTORY ${SPHINX_HTML_DIR}
   DESTINATION share/doc/pairinteraction/html)
 
-# Files to be copied to the build directory
-set(FILE_LIST
-  "_templates/layout.html"
-  "images/logo48x48.png"
-  "html/slides/screen-osx-pairpotential.jpg"
-  "html/slides/screen-osx-starkmap.jpg"
-  "html/slides/screen-osx-zeemanmap.jpg"
-  "html/slides/screen-win64.png"
-  "html/buttons/github.svg"
-  "images/license-badge.svg"
-  "images/arXiv-badge.svg"
-  "index.rst"
-  "installation.rst"
-  "genindex.rst"
-  "tutorials.rst")
+# Prepare livehtml target
+add_custom_target(livehtml
+  COMMAND
+    # sphinx-autobuild
+    "${SPHINX_AUTOBUILD_EXECUTABLE}"
+    -b html
+    -c "${SPHINX_BASE}"
+    -d "${SPHINX_CACHE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${SPHINX_HTML_DIR}"
+  VERBATIM
+  DEPENDS _pireal _picomplex
+  COMMENT "Show a live preview of the documentation with Sphinx")
 
-foreach(file ${FILE_LIST})
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/${file}"
-    "${SPHINX_BASE}/${file}"
-    COPYONLY)
-endforeach()
+set_target_properties(livehtml PROPERTIES EXCLUDE_FROM_ALL ON)
 
 # IPython notebooks to be tested
 set(NOTEBOOKS
@@ -123,13 +108,9 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 foreach(file ${NOTEBOOKS})
-  configure_file(
-    "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
-    "${SPHINX_BASE}/${file}"
-    COPYONLY)
   string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
   add_test(NAME "notebook.${NOTEBOOK_NAME}"
-    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to notebook --execute --ExecutePreprocessor.timeout=300 "${SPHINX_BASE}/${file}"
+    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to notebook --execute --ExecutePreprocessor.timeout=300 "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
     WORKING_DIRECTORY "${SPHINX_BASE}")
   set_tests_properties("notebook.${NOTEBOOK_NAME}"
     PROPERTIES ENVIRONMENT "PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>"

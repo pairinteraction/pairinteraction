@@ -2,7 +2,7 @@
 {% block menu %}
 {{ super() }}
 <style>
-a.button {
+a.gitbutton {
   display: block;
   font-size: 18px;
   line-height: 1.5;
@@ -13,12 +13,15 @@ a.button {
   margin: 22px;
   width: 240px;
   height: 60px;
-  background: transparent url(buttons/github.svg) 0 0 no-repeat;
+  background: transparent url("{{ pathto('_static/buttons/github.svg', 1) }}") 0 0 no-repeat;
 }
-a.button small {
+a.gitbutton small {
   display: block;
   font-size: 11px;
 }
+button.toctree-expand {
+  display: none;
+}
 </style>
-<a href="https://github.com/pairinteraction/pairinteraction/releases" class="button">Download<small>pairinteraction on GitHub</small></a>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
 {% endblock %}
