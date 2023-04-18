@@ -13,12 +13,13 @@ RUN apt-get update -qq \
     clang-format-6.0 python3-pip python3-setuptools black flake8 \
     curl ca-certificates netcat \
     doxygen graphviz \
-    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
-    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
+    python3-pip  pandoc \
     python3-matplotlib \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/* \
   && pip3 install 'autopep8==1.3.5'
+
+RUN python3 -m pip install sphinx==6.1.3 numpydoc==1.5.0 sphinx-rtd-theme==1.2.0 nbconvert==7.3.1 ipykernel==6.22.0 nbsphinx==0.9.1
 
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
