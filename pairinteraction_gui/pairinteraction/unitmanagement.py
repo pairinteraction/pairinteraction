@@ -14,11 +14,15 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
+import locale
+
 from pint import UnitRegistry
 from scipy import constants
 
 
 # === Initialize unit registry ===
+
+locale.setlocale(locale.LC_NUMERIC, "C")
 
 ureg = UnitRegistry()
 Q = ureg.Quantity
