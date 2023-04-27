@@ -4,7 +4,7 @@ RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git file \
     libboost-dev libboost-serialization-dev \
-    doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev libopenblas-dev uuid-dev \
+    doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev liblapacke-dev libopenblas-dev uuid-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
     python3-numpy python3-scipy \
