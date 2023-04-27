@@ -50,7 +50,7 @@ extensions = [
 
 # Disable cell numbers in jupyter notebooks and show link to ipynb file
 nbsphinx_prolog = """
-{% set docname = env.doc2path(env.docname, base=False).split("/")[-1] %}
+{% set docname = env.doc2path(env.docname, base=None).split("/")[-1] %}
 
 .. raw:: html
 
