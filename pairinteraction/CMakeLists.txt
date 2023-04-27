@@ -113,10 +113,77 @@ set_target_properties(wignerSymbols PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pireal PRIVATE wignerSymbols)
 target_link_libraries(picomplex PRIVATE wignerSymbols)
 
-# Include Eigen
+set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
+set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
+set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
+set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
+find_package(MKL CONFIG)
+find_package(PkgConfig)
+if(MKL_FOUND)
+  target_link_libraries(pireal PUBLIC MKL::MKL)
+  target_link_libraries(picomplex PUBLIC MKL::MKL)
+  target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
+  target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
+elseif(PKG_CONFIG_FOUND)
+  if(MKL_LINK STREQUAL "sdl")
+    pkg_check_modules(MKL mkl-sdl IMPORTED_TARGET)
+  elseif(MKL_THREADING STREQUAL "sequential")
+    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-seq IMPORTED_TARGET)
+  elseif(MKL_THREADING STREQUAL "intel_thread")
+    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-iomp IMPORTED_TARGET)
+  elseif(MKL_THREADING STREQUAL "gnu_thread")
+    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-gomp IMPORTED_TARGET)
+  elseif(MKL_THREADING STREQUAL "tbb_thread")
+    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-tbb IMPORTED_TARGET)
+  endif()
+  if(MKL_FOUND)
+    target_link_libraries(pireal PUBLIC PkgConfig::MKL)
+    target_link_libraries(picomplex PUBLIC PkgConfig::MKL)
+    target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
+    target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
+  endif()
+endif()
+
+find_package(BLAS)
+find_package(LAPACK)
+if(WITH_LAPACK AND LAPACK_FOUND AND NOT MKL_FOUND)
+  target_link_options(pireal PUBLIC ${LAPACK_LINKER_FLAGS})
+  target_link_options(picomplex PUBLIC ${LAPACK_LINKER_FLAGS})
+  target_link_libraries(pireal PUBLIC ${LAPACK_LIBRARIES})
+  target_link_libraries(picomplex PUBLIC ${LAPACK_LIBRARIES})
+
+  # TODO: Ubuntu and macOS have this in a separate library for some reason.
+  # FIXME: Needs a more robust way to detection and linking.
+  find_library(LAPACKE_LIBRARY NAMES liblapacke.a)
+  if(LAPACKE_LIBRARY)
+    message(STATUS "Found LAPACKE: ${LAPACKE_LIBRARY}")
+    target_link_libraries(pireal PUBLIC ${LAPACKE_LIBRARY})
+    target_link_libraries(picomplex PUBLIC ${LAPACKE_LIBRARY})
+  endif()
+endif()
+
 find_package(Eigen3 REQUIRED NO_MODULE)
 target_link_libraries(pireal PUBLIC Eigen3::Eigen)
 target_link_libraries(picomplex PUBLIC Eigen3::Eigen)
+if(WITH_LAPACK AND MKL_FOUND)
+  target_compile_definitions(pireal PUBLIC
+    EIGEN_USE_MKL_ALL
+    "-DMKL_Complex8=std::complex<float>"
+    "-DMKL_Complex16=std::complex<double>")
+  target_compile_definitions(picomplex PUBLIC
+    EIGEN_USE_MKL_ALL
+    "-DMKL_Complex8=std::complex<float>"
+    "-DMKL_Complex16=std::complex<double>")
+elseif(WITH_LAPACK AND LAPACK_FOUND)
+  target_compile_definitions(pireal PUBLIC
+    EIGEN_USE_BLAS EIGEN_USE_LAPACKE
+    "-Dlapack_complex_float=std::complex<float>"
+    "-Dlapack_complex_double=std::complex<double>")
+  target_compile_definitions(picomplex PUBLIC
+    EIGEN_USE_BLAS EIGEN_USE_LAPACKE
+    "-Dlapack_complex_float=std::complex<float>"
+    "-Dlapack_complex_double=std::complex<double>")
+endif()
 
 find_package(fmt REQUIRED)
 target_link_libraries(pireal PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
@@ -153,16 +220,6 @@ if(WITH_GSL)
   target_link_libraries(picomplex PUBLIC GSL::gsl GSL::gslcblas)
   target_compile_definitions(pireal PUBLIC WITH_GSL)
   target_compile_definitions(picomplex PUBLIC WITH_GSL)
-endif()
-
-find_package(MKL)
-if (MKL_FOUND)
-  target_include_directories(pireal SYSTEM PUBLIC ${MKL_INCLUDE_DIR})
-  target_include_directories(picomplex SYSTEM PUBLIC ${MKL_INCLUDE_DIR})
-  target_link_libraries(pireal PUBLIC ${MKL_LIBRARY})
-  target_link_libraries(picomplex PUBLIC ${MKL_LIBRARY})
-  target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
-  target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
 endif()
 
 # Generate interface with SWIG

@@ -59,8 +59,9 @@
 #include <vector>
 
 #ifdef WITH_INTEL_MKL
+#define MKL_Complex8 std::complex<float>
 #define MKL_Complex16 std::complex<double>
-#include <mkl.h>
+#include <mkl_solvers_ee.h>
 #endif // WITH_INTEL_MKL
 
 template <class T>
@@ -541,10 +542,6 @@ public:
         if (checkIsDiagonal(hamiltonian)) {
             return;
         }
-
-        // Prepare the mkl library
-        mkl_set_threading_layer(MKL_THREADING_SEQUENTIAL);
-        mkl_set_interface_layer(MKL_INTERFACE_LP64);
 
         // Estimate number of found eigenvalues
         std::vector<double> diagonal_max(hamiltonian.outerSize(), 0);

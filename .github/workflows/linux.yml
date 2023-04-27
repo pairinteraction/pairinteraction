@@ -15,6 +15,8 @@ env:
   CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
   QT_QPA_PLATFORM: "offscreen"
   QT_DEBUG_PLUGINS: 1
+  OPENBLAS_NUM_THREADS: 1
+  MKL_NUM_THREADS: 1
 
 jobs:
   debian:
@@ -29,7 +31,9 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
+      run: |
+        . /opt/intel/oneapi/setvars.sh
+        cmake -S . -B build/ -DBLA_VENDOR=Intel10_64lp_seq -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -78,7 +82,7 @@ jobs:
     - name: Install dependencies
       run: pip3 --cache-dir "${{ runner.temp }}/cache-pip" install -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -109,7 +113,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -135,7 +139,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOCS=On -DWITH_GUI=Off
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOCS=On -DWITH_GUI=Off
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -157,7 +161,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
