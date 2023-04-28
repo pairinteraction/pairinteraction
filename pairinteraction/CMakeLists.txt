@@ -155,10 +155,21 @@ if(WITH_LAPACK AND LAPACK_FOUND AND NOT MKL_FOUND)
   # TODO: Ubuntu and macOS have this in a separate library for some reason.
   # FIXME: Needs a more robust way to detection and linking.
   find_library(LAPACKE_LIBRARY NAMES liblapacke.a)
+
+  set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
   if(LAPACKE_LIBRARY)
-    message(STATUS "Found LAPACKE: ${LAPACKE_LIBRARY}")
+    set(CMAKE_REQUIRED_LIBRARIES "${LAPACKE_LIBRARY};${LAPACK_LIBRARIES}")
+  else()
+    set(CMAKE_REQUIRED_LIBRARIES "${LAPACK_LIBRARIES}")
+  endif()
+  check_function_exists(LAPACKE_dsyev LAPACKE_WORKS)
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVED})
+
+  if(LAPACKE_WORKS AND LAPACKE_LIBRARY)
     target_link_libraries(pireal PUBLIC ${LAPACKE_LIBRARY})
     target_link_libraries(picomplex PUBLIC ${LAPACKE_LIBRARY})
+  elseif(NOT LAPACKE_WORKS)
+    message(FATAL_ERROR "No working LAPACKE detected")
   endif()
 endif()
 
