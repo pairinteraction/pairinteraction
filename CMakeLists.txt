@@ -23,6 +23,12 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
     include(CTest)
 endif()
 
+# Work around buggy CMake ignoring CXX_EXTENSIONS OFF
+# https://gitlab.kitware.com/cmake/cmake/-/issues/22224
+if(POLICY CMP0128)
+  cmake_policy(SET CMP0128 NEW)
+endif()
+
 # set version of settings and cache
 
 set(VERSION_SETTINGS "v17")
