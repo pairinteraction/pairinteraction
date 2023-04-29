@@ -1,68 +1,63 @@
-work in progress. content of the file will change.
+Introduction to pairinteraction GUI
+===================================
 
-Quantum numbers and atomic species can be specified easily. 
+Here we introduce how the pairinteraction GUI can be used to calculate **interactions between Rydberg atoms** and **energy shifts in the presence of applied fields**. The underlying physics is discussed in our <tutorial>(LINK to your paper).
 
-Matrix elements to different principal quantum numbers decrease to to smaller spatial overlaps, the number of different n to account for depends on precision required
+Rydberg pair interactions
+-------------------------
 
-Delta l,j, mj which have to be accounted depend on multipol terms due to selection rules for different multipole matrix elements.
+In the image below you can see the window of the user interface. Here, it has been used to calculate van der Waals interactions between two s-state Rydberg atoms in rubidium, at principal quantum numbers $n=70$. 
 
-The energy bandwidth has to be adjusted according to the principal quantum number (n<-3) because at higher principal quantum number the density of Rydberg states per energy band increases.  At the same time, interactions are more long-range for higher n.
+<inlcude Rydberg_SS_interactions.png>
 
-The larger the distances, the less pair states have to be included into diagonalization. For van der Waals potentials, one typically only needs a few pair states.
+The <config file>(LINK: settings_ss_Rb.sconf) where all settings for this calculations are stored can be imported via "File -> importing system settings" in the upper left. The different variables which can be chosen by the user are explained in the following.
 
-One can choose whether one wants to only diagonalize in a given symmetry subspace (required for high-precision calculations to save computation time) or calculate all subspaces at the same time (which works for less precise calculations or for the calculation of van der Waals interactions at large distances).
+- The **quantum numbers** $n,l,j,m_J$ of both interacting Rydberg atoms. For van der Waals Rydberg interactions between two identical Rydberg atoms, one uses the same quantum numbers for both atoms. For Rydberg atom pairs interacting via resonant dipole-dipole interactions, one chooses states with $Δ_l = 1$. 
+- The potentials are calculated by diagonalizing the Rydberg interaction Hamiltonian at various interatomic distances. The **resolution** can be specified in by number of steps. 
+- The distance between the atoms at the **start and the end of the distance interval** where interactions should be calculated. Also the orientation of the atom pairs relativ to the z-axis is tunable (per default, the atoms are parallel to the z-axis). 
+- **External fields** $E$ and $B$. For pair interaction calculations where the distance is varied, one typically chooses identical field strength from start to end.
+- In the calculation, the interaction Hamiltonian is in **multipole terms**. At large distances, it is usually good enough to use the lowest order multipole expansion where only dipole-dipole interactions are accounted for ($1/R^3$). At closer distances, also higher order terms become important. 
+- **Number of states used for the diagonalization**. One can select via energy bands for single-atom states and their quantum numbers as well as via energy bands in the pair states. Because the decreasing spatial overlap for large differences in $n$, only nearby Rydberg states have to be included. The single-atom quantum numbers can be selected according to the selection rules from the multipole-matrix elements (i.e., for dipole-dipole interactions, only states with $Δ_l = 1$ have finite coupling elements). 
+- The **symmetries of the interaction Hamiltonian** can be used to restrict the basis to the relevant subspaces and therefore shorten the computation time. This only works in the absense of external fields because fields (if they are not pointing along the interatomic axis) break the symmetry of the interaction Hamiltonian.
 
-One can choose how the interatomic axis is aligned relative to the z-axis (in the default setting, they are parallel)
-
-External fields not aligned with the interatomic axis break the symmetry of the interaction Hamiltonian and does not allow to do calculations in subspaces.
-
-The plot settings can be adjusted. Colormaps indicate the overlap of the pair potential with the chosen Rydberg pair state. 
-
-The calculated results can be exported and further processed (e.g. using python). The settings can be specified in “Misc”. It can be useful to specify the energy bandwidth where the potentials are exported to save memory.
-
-
+The results are plotted in the gui, **plot settings** can be manually changed. The colormaps in the plots indicate the state overlap of the pair potentials with the chosen Rydberg state. The calculations can be exported using the save button. Under **Misc**, the settings for the export can be specified. In order to save memory, it makes sense to confine the exported states to the energy band where one is interested in. The calculated results can then be further processed (e.g. using python). Under configuration, the **cache directory** can be specified.
 
 
 
 Vibrational spectroscopy of macrodimer binding potentials:
+---------------------------------------------------------
 
-Macrodimer spectroscopy is currently the most precise way to benchmark Rydberg interactions. (Cite Science paper and recent review?)
+Macrodimers <cite https://pubs.acs.org/doi/10.1021/acs.jpca.2c08454> are micrometer-seized diatomic molecules consisting of Rydberg pairs bound by their interactions. Macrodimer spectroscopy is currently the most precise way to benchmark Rydberg interactions because it provides narrow spectroscopic signatures and probes the interactions at short distances. For rubidium, the binding potentials can be calculated at high accuracy using the pair interaction software. For more complicated atoms such as Sr or Yb, macrodimer spectroscopy may provide valuable insights into the details of their Rydberg interactions.
 
-Pair interaction can calculate binding potentials at high precision. The config files for a 0+g potential observed blue-detuned from the 35P resonance and a 1_u potential observed blue-detuned from the 36P resonance are included. They can be opened in the gui under “open system settings”
+Here, we include the config files for:
 
-In the config files one can see how the states included in the diagonalization of the interaction Hamiltonian are selected. High-precision calculations require several thousands of pair states. Interestingly, we found the highest precision if the energy bandwidth for the selection of single-atom and two-atom states were similar.
+- $0^{+}_g$<LINK to settings_0gp.sconf CITE https://www.science.org/doi/10.1126/science.aaw4150> potential observed blue-detuned from the $35P_{1/2}$ resonance.
+- $1_u$<LINK to settings_1u.sconf CITE https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.128.113602>  potential observed blue-detuned from the $36P_{1/2}$ resonance. 
 
-For high precision calculations, symmetries is required to reduce the dimension of the Hamiltonian. For the two exemplary config files we used one gerade and one ungerade potential. Furthermore, pair states are selected according to their angular momentum projection along the interatomic axis.
+In contrast to interactions at large distances which are usually described by van der Waals interactions, these high-precision calculations require several thousands of pair states. The larger the interaction shift from the non-interacting pair state energies, the larger the required basis. In order to reduce the computational effort, the basis should be restricted to the symmetry subspace of interest. In the two attached config files, we used one gerade and one ungerade potential. Furthermore, pair states are selected according to their angular momentum projection along the interatomic axis. We found the highest precision if the energy bandwidth for the selection of single-atom and two-atom states were similar.
 
-High-precision calculations in the presence external fields which break the molecular symmetry are very difficult. (see how the dimension of the Hamiltonian increases if applying external fields in the attached config files). For such a case it might be easier to export the pair potentials and its electronic states and calculate the effects of the fields using perturbation theory (if the field is small enough)
+High-precision calculations in the presence external fields which break the molecular symmetry are very difficult (see how the dimension of the Hamiltonian increases if applying external fields in the attached config files). For finite fields, if the field strength is small enough, it might be easier to export the pair potentials and its electronic states and calculate the effects of the fields using perturbation theory. 
 
-After the binding potentials are exported, the vibrational energies are calculated by solving the Schrödinger equation in the interatomic motion assuming adiabatic motion in the exported potentials (assuming the Born-Oppenheimer approximation).
+The vibrational energies can be calculated by solving the Schrödinger equation of the interatomic motion in the calculated binding potentials. Here, in many cases (but not all), the Born-Oppenheimer approximation holds. 
 
+Multipole interactions
+^^^^^^^^^^^^^^^^^^^^^^
 
+Rydberg interactions have their strongest contribution from dipole-dipole interactions $1/R^3$, followed by dipole-quadrupole interactions $1/R^4$. Calculating vibrational energies of macrodimers requires to also include higher order multipole terms. Approaching the experimental accuracy requires one to include multipole terms up to $1/R^6$ (octupole-octupole and other terms with the same scaling). The image below shows how the calcations approach the observed vibrational resonance when the number of multipole terms is increased. 
 
-Rydberg interactions have their strongest contribution from dipole-dipole interactions, followed by dipole-quadrupole interactions. Predicting vibrational energies of macrodimers requires to also include higher order multipole terms. In order to approach the experimental accuracy, one needs multipole terms up to 1/R6 (octupole-octupole and other terms scaling similarly). 
-
-The further away the binding potentials from the asymptote, the more pair states are required.
-
-It is just coincidence that both exemplary potentials have another pair potential crossing close to the binding potential minimum
-
-
-
-
-Stark maps.
-
-For Stark maps, only single atom properties have to be specified. In the pair interaction software, this is done by using the same quantum numbers for both atoms.
-
-The number of single-atom states included in the Stark maps can be specified by the single-atom bandwidth. The two-atom energy bandwidth has no meaning in the Stark maps because Stark maps are single-atom properties.
+<Include Multipole_terms.png CITE https://edoc.ub.uni-muenchen.de/30114/>
 
 
-Calculating a Stark map requires to choose different E-fields at the start and the end of the calculation. 
+Stark maps
+-----------
 
-As for the interactions, one can easily specify the quantum numbers of other Rydberg states accounted for.
+- The user interface can also be very helpful to calculate energy shifts of Rydberg states in the presence of applied electric and magnetic fields $E$ and $B$. Here, only single atom properties have to be specified. In the pair interaction software, this is done by using the same quantum numbers for both atoms. 
 
-Stark maps can also be calculated for applied magnetic fields. Here, one chooses the same magnetic field for at the start and at the end
+- The number of single-atom states included in the Stark maps can be specified by the single-atom bandwidth. Again, the quantum numbers of the Rydberg states used for the calculation can be specified. The two-atom energy bandwidth has no meaning in the Stark maps because Stark maps are single-atom properties.
 
-One can choose the relative orientation between the electric and magnetic field. 
+- Also the interatomic distance range varied in the calculation of Rydberg interactions is not included in the calculation of Stark maps. Instead, the E-field is varied at the start and the end of the calculation. 
 
-One finds that the Stark maps, in particular at small background electric fields such as the ones present in many experiments, depends on the relative orientation between electric and magnetic field. As a consequence, performing Stark spectroscopy or microwave spectroscopy of neighboring Rydberg states can be used to not only measure the electric field strength but also its orientation relative to the applied magnetic bias field.
+<Include Stark_maps.png>
+
+- Stark maps can also be calculated in the presence of magnetic fields $B$ (see attached config file LINK to settings_Stark_Maps.sconf), also the relative orientation between $E$ and $B$ can be specified in the GUI. In the experiment, this can be useful to obtain the background electric field and its orientation from spectroscopy between different Rydberg states since the splitting depends sligthly on the orientation between both fields. Stark maps can also be calculated at high fields. 
 
