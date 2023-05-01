@@ -113,6 +113,12 @@ set_target_properties(wignerSymbols PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_link_libraries(pireal PRIVATE wignerSymbols)
 target_link_libraries(picomplex PRIVATE wignerSymbols)
 
+# Eigen
+find_package(Eigen3 REQUIRED NO_MODULE)
+target_link_libraries(pireal PUBLIC Eigen3::Eigen)
+target_link_libraries(picomplex PUBLIC Eigen3::Eigen)
+
+# Find MKL
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
 set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
@@ -120,18 +126,7 @@ set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
 find_package(MKL CONFIG)
 find_package(PkgConfig)
-if(MKL_FOUND)
-  if(OMP_LIBRARY)
-    get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY}" DIRECTORY)
-    get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY_PATH}" REALPATH)
-    target_link_options(pireal PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
-    target_link_options(picomplex PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
-  endif()
-  target_link_libraries(pireal PUBLIC MKL::MKL)
-  target_link_libraries(picomplex PUBLIC MKL::MKL)
-  target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
-  target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
-elseif(PKG_CONFIG_FOUND)
+if (NOT MKL_FOUND AND PKG_CONFIG_FOUND)
   if(MKL_LINK STREQUAL "sdl")
     pkg_check_modules(MKL mkl-sdl IMPORTED_TARGET)
   elseif(MKL_THREADING STREQUAL "sequential")
@@ -143,49 +138,34 @@ elseif(PKG_CONFIG_FOUND)
   elseif(MKL_THREADING STREQUAL "tbb_thread")
     pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-tbb IMPORTED_TARGET)
   endif()
-  if(MKL_FOUND)
+endif()
+
+# Find a different lapack vendor
+find_package(LAPACK)
+
+# Determine which lapack vendor to use
+if(WITH_LAPACK AND MKL_FOUND AND (NOT BLA_VENDOR OR BLA_VENDOR MATCHES "All" OR BLA_VENDOR MATCHES "^Intel"))
+  # Use MKL
+  if (TARGET MKL::MKL)
+    if(OMP_LIBRARY)
+      get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY}" DIRECTORY)
+      get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY_PATH}" REALPATH)
+      target_link_options(pireal PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
+      target_link_options(picomplex PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
+    endif()
+    target_link_libraries(pireal PUBLIC MKL::MKL)
+    target_link_libraries(picomplex PUBLIC MKL::MKL)
+    target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
+    target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
+  else()
     target_link_libraries(pireal PUBLIC PkgConfig::MKL)
     target_link_libraries(picomplex PUBLIC PkgConfig::MKL)
     target_compile_definitions(pireal PUBLIC WITH_INTEL_MKL)
     target_compile_definitions(picomplex PUBLIC WITH_INTEL_MKL)
   endif()
-endif()
 
-if(NOT MKL_FOUND)
-  find_package(BLAS)
-  find_package(LAPACK)
-  if(WITH_LAPACK AND LAPACK_FOUND)
-    target_link_options(pireal PUBLIC ${LAPACK_LINKER_FLAGS})
-    target_link_options(picomplex PUBLIC ${LAPACK_LINKER_FLAGS})
-    target_link_libraries(pireal PUBLIC ${LAPACK_LIBRARIES})
-    target_link_libraries(picomplex PUBLIC ${LAPACK_LIBRARIES})
-
-    # TODO: Ubuntu and macOS have this in a separate library for some reason.
-    # FIXME: Needs a more robust way to detection and linking.
-    find_library(LAPACKE_LIBRARY NAMES liblapacke.a)
-
-    set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
-    if(LAPACKE_LIBRARY)
-      set(CMAKE_REQUIRED_LIBRARIES "${LAPACKE_LIBRARY};${LAPACK_LIBRARIES}")
-    else()
-      set(CMAKE_REQUIRED_LIBRARIES "${LAPACK_LIBRARIES}")
-    endif()
-    check_function_exists(LAPACKE_dsyev LAPACKE_WORKS)
-    set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVED})
-
-    if(LAPACKE_WORKS AND LAPACKE_LIBRARY)
-      target_link_libraries(pireal PUBLIC ${LAPACKE_LIBRARY})
-      target_link_libraries(picomplex PUBLIC ${LAPACKE_LIBRARY})
-    elseif(NOT LAPACKE_WORKS)
-      message(FATAL_ERROR "No working LAPACKE detected")
-    endif()
-  endif()
-endif()
-
-find_package(Eigen3 REQUIRED NO_MODULE)
-target_link_libraries(pireal PUBLIC Eigen3::Eigen)
-target_link_libraries(picomplex PUBLIC Eigen3::Eigen)
-if(WITH_LAPACK AND MKL_FOUND)
+  # Using Intel MKL from Eigen
+  message(STATUS "Using Intel MKL from Eigen")
   target_compile_definitions(pireal PUBLIC
     EIGEN_USE_MKL_ALL
     "-DMKL_Complex8=std::complex<float>"
@@ -194,7 +174,36 @@ if(WITH_LAPACK AND MKL_FOUND)
     EIGEN_USE_MKL_ALL
     "-DMKL_Complex8=std::complex<float>"
     "-DMKL_Complex16=std::complex<double>")
+
 elseif(WITH_LAPACK AND LAPACK_FOUND)
+  # Use a different lapack vendor
+  target_link_options(pireal PUBLIC ${LAPACK_LINKER_FLAGS})
+  target_link_options(picomplex PUBLIC ${LAPACK_LINKER_FLAGS})
+  target_link_libraries(pireal PUBLIC ${LAPACK_LIBRARIES})
+  target_link_libraries(picomplex PUBLIC ${LAPACK_LIBRARIES})
+
+  # TODO: Ubuntu and macOS have this in a separate library for some reason.
+  # FIXME: Needs a more robust way to detection and linking.
+  find_library(LAPACKE_LIBRARY NAMES liblapacke.a)
+
+  set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
+  if(LAPACKE_LIBRARY)
+    set(CMAKE_REQUIRED_LIBRARIES "${LAPACKE_LIBRARY};${LAPACK_LIBRARIES}")
+  else()
+    set(CMAKE_REQUIRED_LIBRARIES "${LAPACK_LIBRARIES}")
+  endif()
+  check_function_exists(LAPACKE_dsyev LAPACKE_WORKS)
+  set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVED})
+
+  if(LAPACKE_WORKS AND LAPACKE_LIBRARY)
+    target_link_libraries(pireal PUBLIC ${LAPACKE_LIBRARY})
+    target_link_libraries(picomplex PUBLIC ${LAPACKE_LIBRARY})
+  elseif(NOT LAPACKE_WORKS)
+    message(FATAL_ERROR "No working LAPACKE detected")
+  endif()
+
+  # Using BLAS/LAPACK from Eigen
+  message(STATUS "Using BLAS/LAPACK from Eigen")
   target_compile_definitions(pireal PUBLIC
     EIGEN_USE_BLAS EIGEN_USE_LAPACKE
     "-Dlapack_complex_float=std::complex<float>"
@@ -244,6 +253,8 @@ endif()
 
 # Generate interface with SWIG
 if(WITH_PYTHON)
+  # FIXME: The OLD behavior for policy CMP0078 will be removed from a future version
+  # of CMake.
   if(POLICY CMP0078)
     cmake_policy(SET CMP0078 OLD)
   endif()
