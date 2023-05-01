@@ -48,6 +48,8 @@ extensions = [
     "nbsphinx",
 ]
 
+html_css_files = ["gallery.css"]
+
 # Disable cell numbers in jupyter notebooks and show link to ipynb file
 nbsphinx_prolog = """
 {% set docname = env.doc2path(env.docname, base=None).split("/")[-1] %}
