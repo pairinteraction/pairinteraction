@@ -483,21 +483,50 @@ class MainWindow(QtWidgets.QMainWindow):
         self.path_cpp_complex = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-complex")
         self.path_quantumdefects = os.path.join(self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
-        if os.name == "nt":
-            self.path_out = os.path.join(self.userpath, "pairinteraction/")
+        if sys.platform == "win32":
+            self.path_config = os.path.expandvars(r"%APPDATA%\pairinteraction")
+            if (
+                r"%APPDATA%" in self.path_config
+                or self.path_config == r"\pairinteraction"
+                or not os.path.isabs(self.path_config)
+            ):
+                self.path_config = os.path.expanduser(r"~\AppData\Roaming\pairinteraction")
+            self.path_cache = os.path.expandvars(r"%LOCALAPPDATA%\pairinteraction")
+            if (
+                r"%LOCALAPPDATA%" in self.path_cache
+                or self.path_cache == r"\pairinteraction"
+                or not os.path.isabs(self.path_cache)
+            ):
+                self.path_cache = os.path.expanduser(r"~\AppData\Local\pairinteraction")
+        elif sys.platform == "darwin":
+            self.path_config = os.path.expanduser(r"~/Library/Preferences/pairinteraction")
+            self.path_cache = os.path.expanduser(r"~/Library/Caches/pairinteraction")
         else:
-            self.path_out = os.path.join(self.userpath, ".pairinteraction/")
-        self.path_cache = os.path.join(self.path_out, "cache/")
+            self.path_config = os.path.expandvars(r"$XDG_CONFIG_HOME/pairinteraction")
+            if (
+                r"$XDG_CONFIG_HOME" in self.path_config
+                or self.path_config == r"/pairinteraction"
+                or not os.path.isabs(self.path_config)
+            ):
+                self.path_config = os.path.expanduser(r"~/.config/pairinteraction")
+            self.path_cache = os.path.expandvars(r"$XDG_CACHE_HOME/pairinteraction")
+            if (
+                r"$XDG_CACHE_HOME" in self.path_cache
+                or self.path_cache == r"/pairinteraction"
+                or not os.path.isabs(self.path_cache)
+            ):
+                self.path_cache = os.path.expanduser(r"~/.cache/pairinteraction")
+
         self.path_cache_wignerd = os.path.join(self.path_cache, "wignerd/")
-        self.path_lastsettings = os.path.join(self.path_out, "lastsettings/")
+        self.path_lastsettings = os.path.join(self.path_config, "lastsettings/")
 
         self.path_system_last = os.path.join(self.path_lastsettings, "lastsettings.sconf")
         self.path_plot_last = os.path.join(self.path_lastsettings, "lastsettings.pconf")
         self.path_view_last = os.path.join(self.path_lastsettings, "lastview.json")
         self.path_cache_last = os.path.join(self.path_lastsettings, "lastcache.json")
 
-        self.path_config = os.path.join(self.path_out, "conf.json")
-        self.path_version = os.path.join(self.path_out, "version.json")
+        self.path_conf = os.path.join(self.path_config, "conf.json")
+        self.path_version = os.path.join(self.path_config, "version.json")
 
         self.proc = None
 
@@ -834,15 +863,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 sys.exit()
 
         # Create directories
-        if not os.path.exists(self.path_out):
-            os.makedirs(self.path_out)
-            if os.name == "nt":
-                import ctypes
-
-                FILE_ATTRIBUTE_HIDDEN = 0x02
-                ret = ctypes.windll.kernel32.SetFileAttributesW(self.path_out, FILE_ATTRIBUTE_HIDDEN)
-                if not ret:
-                    raise ctypes.WinError()
+        os.makedirs(self.path_config, exist_ok=True)
+        os.makedirs(self.path_cache, exist_ok=True)
 
         if not os.path.isfile(self.path_version):
             with open(self.path_version, "w") as f:
@@ -2918,7 +2940,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.converter_y = 1
 
                 # save configuration to json file
-                with open(self.path_config, "w") as f:
+                with open(self.path_conf, "w") as f:
                     if self.senderbutton == self.ui.pushbutton_potential_calc:
                         keys = self.systemdict.keys_for_cprogram_potential
                     elif self.samebasis:
@@ -3026,7 +3048,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 ompthreads = {} if self.numprocessors == 0 else {"OMP_NUM_THREADS": str(self.numprocessors)}
 
                 self.proc = subprocess.Popen(
-                    [path_cpp, "-c", self.path_config, "-o", self.path_cache],
+                    [path_cpp, "-c", self.path_conf, "-o", self.path_cache],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=self.path_workingdir,
