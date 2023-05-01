@@ -212,10 +212,10 @@ rst_epilog = """
 .. |pypi| image:: {pypi_image}
           :target: {pypi_target}
           :alt: PyPI Package
-.. |arxiv| image:: images/arXiv-badge.svg
+.. |arxiv| image:: /images/arXiv-badge.svg
            :target: https://arxiv.org/abs/1612.08053
            :alt: arXiv:1612.08053
-.. |license| image:: images/license-badge.svg
+.. |license| image:: /images/license-badge.svg
              :target: https://www.gnu.org/licenses/gpl-3.0.html
              :alt: License
 """.format(
