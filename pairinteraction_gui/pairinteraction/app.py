@@ -3052,7 +3052,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=self.path_workingdir,
-                    env=dict(os.environ, **ompthreads),
+                    env=dict(os.environ, **ompthreads, **{"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}),
                 )
 
                 self.starttime = time()
