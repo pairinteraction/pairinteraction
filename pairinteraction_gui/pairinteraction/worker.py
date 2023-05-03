@@ -36,7 +36,6 @@ class Worker(QtCore.QThread):
 
     def __del__(self):
         self.exiting = True
-        self.stdout.close()
         self.wait()
 
     def execute(self, stdout):
@@ -156,3 +155,4 @@ class Worker(QtCore.QThread):
         # Clear data queue if thread has aborted
         if not finishedgracefully:
             self.clear()
+        self.stdout.close()

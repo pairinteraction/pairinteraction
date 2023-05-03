@@ -2699,6 +2699,8 @@ class MainWindow(QtWidgets.QMainWindow):
     @QtCore.pyqtSlot()
     def startCalc(self):
         if self.proc is None:
+            self.stateidx_field = [{}, {}, {}]
+            self.storage_states = [{}, {}, {}]
 
             # ensure that validators are called
             focused_widget = QtWidgets.QApplication.focusWidget()
@@ -3114,7 +3116,10 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             description = ["field map of atom 1", "field map of atom 2", "pair potential"][idx]
 
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save {description}", path, "zip (*.zip)")
+        if getattr(self, "forceFilename", None) is None:
+            filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, f"Save {description}", path, "zip (*.zip)")
+        else:
+            filename = self.forceFilename
 
         if not filename:
             return
@@ -3195,7 +3200,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 data["numStates"] = data["states"].shape[0]
             elif len(self.storage_states[idx]) > 0:
                 data["states"] = [self.storage_states[idx][k] for k in sorted(self.storage_states[idx].keys())]
-                data["numStates"] = [v.shape[0] for v in data["states"]]
+                data["numStates"] = [[v.shape[0]] for v in data["states"]]
 
             # save overlaps
             if len(self.stateidx_field[idx]) == 1 and -1 in self.stateidx_field[idx]:
@@ -3203,9 +3208,11 @@ class MainWindow(QtWidgets.QMainWindow):
                 data["overlapvectors"] = self.stateidx_field[idx][-1]
             elif len(self.stateidx_field[idx]) > 0:
                 data["numOverlapvectors"] = [
-                    self.stateidx_field[idx][k].shape[0] for k in sorted(self.stateidx_field[idx].keys())
+                    [self.stateidx_field[idx][k].shape[0]] for k in sorted(self.stateidx_field[idx].keys())
                 ]
-                data["overlapvectors"] = [self.stateidx_field[idx][k] for k in sorted(self.stateidx_field[idx].keys())]
+                data["overlapvectors"] = [
+                    [self.stateidx_field[idx][k]] for k in sorted(self.stateidx_field[idx].keys())
+                ]
 
             # save data
             # TODO Variablen an anderer Stelle anlegen

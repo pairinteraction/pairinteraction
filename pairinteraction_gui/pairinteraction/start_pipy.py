@@ -44,6 +44,7 @@ def main(args):
 
 
 def do_simulations(settings, pass_atom="direct"):
+    # TODO decide, wether pass_atom direct or path is better (faster, memory efficient,...)
     param_list = get_param_list(settings)
     ip_list = list(range(len(param_list)))
 
@@ -75,6 +76,12 @@ def do_simulations(settings, pass_atom="direct"):
 
     num_pr = settings.get("runtimeoptions", {}).get("NUM_PROCESSES", 1)
     num_pr = os.cpu_count() if num_pr in [0, -1] else num_pr
+
+    if num_pr > 1 and not atom.config.isReal():
+        raise NotImplementedError(
+            "Parallelization for complex calculations is not implemented yet, since there is some bug occuring."
+        )
+
     if num_pr > 1:
         with concurrent.futures.ProcessPoolExecutor(num_pr) as executor:
             futures = [executor.submit(p_one_run, i) for i in ip_list]

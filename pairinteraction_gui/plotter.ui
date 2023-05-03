@@ -34,7 +34,7 @@
         </size>
        </property>
        <property name="currentIndex">
-        <number>2</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_system">
         <attribute name="title">
@@ -69,8 +69,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>313</width>
-              <height>374</height>
+              <width>200</width>
+              <height>350</height>
              </rect>
             </property>
             <attribute name="label">
@@ -656,8 +656,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>266</width>
-              <height>321</height>
+              <width>200</width>
+              <height>309</height>
              </rect>
             </property>
             <attribute name="label">
@@ -922,8 +922,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>226</width>
-              <height>295</height>
+              <width>200</width>
+              <height>309</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1183,8 +1183,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>274</width>
-              <height>429</height>
+              <width>200</width>
+              <height>411</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1840,8 +1840,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>219</width>
-              <height>438</height>
+              <width>200</width>
+              <height>451</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2585,8 +2585,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>320</width>
-              <height>785</height>
+              <width>200</width>
+              <height>761</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3905,9 +3905,9 @@
             <property name="geometry">
              <rect>
               <x>0</x>
-              <y>-124</y>
-              <width>333</width>
-              <height>639</height>
+              <y>0</y>
+              <width>200</width>
+              <height>552</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -4369,7 +4369,7 @@
               </layout>
              </item>
              <item>
-              <spacer name="verticalSpacer_27">
+             <spacer name="verticalSpacer_27">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
                </property>
@@ -4393,7 +4393,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Pairinteraction API</string>
+                <string>Experimental Features</string>
                </property>
               </widget>
              </item>
@@ -4403,7 +4403,7 @@
                 <bool>true</bool>
                </property>
                <property name="text">
-                <string>Experimental Feature: Use new python API</string>
+                <string>Use new python API as backend</string>
                </property>
               </widget>
              </item>
@@ -4441,7 +4441,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="tab_field1">
         <property name="enabled">

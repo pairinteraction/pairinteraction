@@ -1,0 +1,207 @@
+{
+    "antialiasing": [
+        true,
+        null
+    ],
+    "autorange": [
+        false,
+        null
+    ],
+    "connectionthreshold": [
+        0.1,
+        null
+    ],
+    "gradientwidget": {
+        "mode": "rgb",
+        "ticks": [
+            [
+                1.0,
+                [
+                    0,
+                    0,
+                    0,
+                    255
+                ]
+            ],
+            [
+                0.0,
+                [
+                    255,
+                    255,
+                    255,
+                    255
+                ]
+            ],
+            [
+                0.5,
+                [
+                    122,
+                    109,
+                    240,
+                    255
+                ]
+            ],
+            [
+                0.6666666666666667,
+                [
+                    0,
+                    123,
+                    118,
+                    255
+                ]
+            ],
+            [
+                0.33333333333333337,
+                [
+                    255,
+                    121,
+                    197,
+                    255
+                ]
+            ],
+            [
+                0.16666666666666674,
+                [
+                    247,
+                    204,
+                    159,
+                    255
+                ]
+            ],
+            [
+                0.8333333333333334,
+                [
+                    12,
+                    67,
+                    0,
+                    255
+                ]
+            ]
+        ],
+        "ticksVisible": true
+    },
+    "j1": [
+        0.5,
+        null
+    ],
+    "j2": [
+        0.5,
+        null
+    ],
+    "l1": [
+        0,
+        null
+    ],
+    "l2": [
+        1,
+        null
+    ],
+    "labels": [
+        true,
+        null
+    ],
+    "lin": [
+        true,
+        null
+    ],
+    "lines": [
+        true,
+        null
+    ],
+    "log": [
+        false,
+        null
+    ],
+    "m1": [
+        0.5,
+        null
+    ],
+    "m2": [
+        0.5,
+        null
+    ],
+    "maxE_field1": [
+        null,
+        "gigahertz"
+    ],
+    "maxE_field2": [
+        null,
+        "gigahertz"
+    ],
+    "maxE_potential": [
+        1.0,
+        "gigahertz"
+    ],
+    "minE_field1": [
+        null,
+        "gigahertz"
+    ],
+    "minE_field2": [
+        null,
+        "gigahertz"
+    ],
+    "minE_potential": [
+        -0.5,
+        "gigahertz"
+    ],
+    "n1": [
+        80,
+        null
+    ],
+    "n2": [
+        79,
+        null
+    ],
+    "overlap": [
+        true,
+        null
+    ],
+    "overlapDefined": [
+        false,
+        null
+    ],
+    "overlapUnperturbed": [
+        true,
+        null
+    ],
+    "points": [
+        true,
+        null
+    ],
+    "resolution": [
+        400,
+        null
+    ],
+    "szLabel": [
+        1.0,
+        null
+    ],
+    "szLine": [
+        1.0,
+        null
+    ],
+    "szOverlap": [
+        1.0,
+        null
+    ],
+    "szPoint": [
+        1.0,
+        null
+    ],
+    "transpLabel": [
+        0.5,
+        null
+    ],
+    "transpLine": [
+        0.8,
+        null
+    ],
+    "transpOverlap": [
+        1.0,
+        null
+    ],
+    "transpPoint": [
+        1.0,
+        null
+    ]
+}
