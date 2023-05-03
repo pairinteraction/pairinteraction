@@ -15,8 +15,6 @@ env:
   CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
   QT_QPA_PLATFORM: "offscreen"
   QT_DEBUG_PLUGINS: 1
-  OPENBLAS_NUM_THREADS: 1
-  MKL_NUM_THREADS: 1
 
 jobs:
   debian:

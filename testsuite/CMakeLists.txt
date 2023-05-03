@@ -18,13 +18,13 @@
 # To add test cases easier we use the following function
 function(PYTHON_TEST)
   # Parse arguments
-  cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
+  cmake_parse_arguments(UT "" "TARGET" "SOURCE;ENVIRONMENT" ${ARGN} )
   # Copy test to binary directory
   configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
   add_test(NAME "python.${UT_TARGET}" COMMAND ${Python3_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties("python.${UT_TARGET}" PROPERTIES
-    ENVIRONMENT "PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>")
+    ENVIRONMENT "${UT_ENVIRONMENT};PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>")
 endfunction(PYTHON_TEST)
 
 # Add Python test cases
@@ -46,7 +46,8 @@ if (WITH_PYTHON)
   python_test(TARGET diamagnetism SOURCE diamagnetism.py)
   python_test(TARGET atom_ion_interaction SOURCE atom_ion_interaction.py)
   if(NOT MSVC AND NOT (APPLE AND DEFINED ENV{CI}) AND NOT WITH_CLANG_TIDY) # timeout
-    python_test(TARGET parallelization SOURCE parallelization.py)
+    python_test(TARGET parallelization SOURCE parallelization.py
+      ENVIRONMENT "OPENBLAS_NUM_THREADS=1" "MKL_NUM_THREADS=1")
   endif()
   if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
     python_test(TARGET gui SOURCE gui.py)
