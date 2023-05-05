@@ -182,14 +182,18 @@ elseif(WITH_LAPACK AND LAPACK_FOUND)
   target_link_libraries(pireal PUBLIC ${LAPACK_LIBRARIES})
   target_link_libraries(picomplex PUBLIC ${LAPACK_LIBRARIES})
 
-  # TODO: Ubuntu and macOS have this in a separate library for some reason.
-  # FIXME: Needs a more robust way to detection and linking. Prefer static linking.
+  # Some systems have LAPACKE in a separate library for some reason. The
+  # following attempts to detect that. Static linking is preferred.
   add_library(LAPACKE_TARGET INTERFACE)
   add_library(LAPACKE::LAPACKE ALIAS LAPACKE_TARGET)
-  find_library(LAPACKE_LIBRARY NAMES liblapacke.a lapacke)
+  find_library(LAPACKE_LIBRARY
+    NAMES liblapacke.a liblapacke.dylib lapacke
+    PATH_SUFFIXES lib
+    PATHS /usr/local/opt/lapack)
   find_path(LAPACKE_INCLUDE_DIR
     NAMES lapacke.h
-    PATHS /usr/include/openblas)
+    PATH_SUFFIXES include
+    PATHS /usr/include/openblas /usr/local/opt/lapack)
 
   set(CMAKE_REQUIRED_INCLUDES_SAVED ${CMAKE_REQUIRED_INCLUDES})
   set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})

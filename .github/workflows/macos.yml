@@ -39,11 +39,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost doctest eigen fmt gsl
+          brew install boost doctest eigen fmt gsl lapack
           npm install -g fileicon
 
       - name: Configure
-        run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DWITH_LAPACK=Off -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
+        run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython3_FIND_FRAMEWORK=LAST
       - name: Build
         run: cmake --build build/ -- --keep-going
       - name: Test
