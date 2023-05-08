@@ -183,8 +183,8 @@ elseif(WITH_LAPACK AND LAPACK_FOUND)
   target_link_libraries(picomplex PUBLIC ${LAPACK_LIBRARIES})
 
   # TODO: Ubuntu and macOS have this in a separate library for some reason.
-  # FIXME: Needs a more robust way to detection and linking.
-  find_library(LAPACKE_LIBRARY NAMES liblapacke.a)
+  # FIXME: Needs a more robust way to detection and linking. Prefer static linking.
+  find_library(LAPACKE_LIBRARY NAMES liblapacke.a liblapacke)
 
   set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
   if(LAPACKE_LIBRARY)

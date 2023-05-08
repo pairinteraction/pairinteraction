@@ -22,6 +22,7 @@
 
 #include <mutex>
 #include <optional>
+#include <stdexcept>
 #include <unordered_map>
 
 /** \brief Generic cache object
