@@ -51,7 +51,7 @@ if (WITH_PYTHON)
   endif()
   if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
     python_test(TARGET gui SOURCE gui.py)
-    file(COPY   ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
   endif()
 endif()
 

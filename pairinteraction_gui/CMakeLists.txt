@@ -41,6 +41,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pipy ${CMAKE_BINARY_DIR}/dist/pairinteraction/pipy
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${CMAKE_BINARY_DIR}/${STARTGUI} ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
   )
@@ -70,6 +71,7 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
 
   install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION pairinteraction_gui PATTERN "pairinteraction" EXCLUDE)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION pairinteraction_gui)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pipy DESTINATION pairinteraction_gui)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )
@@ -86,6 +88,7 @@ elseif( CMAKE_HOST_UNIX )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/pairinteraction_gui)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction DESTINATION share/pairinteraction/pairinteraction_gui)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pipy DESTINATION share/pairinteraction/pairinteraction_gui)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/${STARTGUI} DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")

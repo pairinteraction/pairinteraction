@@ -86,6 +86,13 @@ multiprocessing.freeze_support()
 pg.setConfigOption("background", "w")
 pg.setConfigOption("foreground", "k")
 
+# Global dictionary containing the total electron spin of the elements
+SPIN_DICT = {"Li": 0.5, "Na": 0.5, "K": 0.5, "Rb": 0.5, "Cs": 0.5, "Sr1": 0, "Sr3": 1}
+
+# Global constants
+PLOT_ALL = -99  # FIXME: extend spinbox to allow for None
+NO_RESTRICTIONS = -1  # FIXME: extend spinbox to allow for None
+NO_BN = -1
 
 # === Dictionary to manage the elements of the GUI related to the plotter ===
 
@@ -443,7 +450,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_plotwindow()
         self.ui.setupUi(self)
 
-        self.invalidQuantumnumbers = [False, False, False, False]
+        self.invalidQuantumnumbers = {}
+        self.invalidQuantumnumbersMessage = ""
 
         self.samebasis = False
 
@@ -557,34 +565,24 @@ class MainWindow(QtWidgets.QMainWindow):
         conn = sqlite3.connect(self.path_quantumdefects)
         c = conn.cursor()
         c.execute("SELECT DISTINCT element FROM rydberg_ritz")
-        elements = [e[0] for e in c.fetchall() if not e[0] in ["Sr1", "Sr3"]]  # TODO
+        self.all_elements = [e[0] for e in c.fetchall()]
+        self.cpp_elements = [e for e in self.all_elements if e not in ["Sr1", "Sr3"]]
         conn.close()
 
-        for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
-            combobox.clear()
-            combobox.addItems(elements)
-
         # TODO !!!!!! numBlocks kann auch hoeher als 3 sein!
-        self.buffer_basis = [{}, {}, {}]
-        self.buffer_energies = [{}, {}, {}]
-        self.buffer_positions = [{}, {}, {}]
-        self.buffer_boolarr = [{}, {}, {}]
-        self.buffer_basis_potential = {}
-        self.buffer_energies_potential = {}
-        self.buffer_positions_potential = {}
+        self.buffer_basis = {}
+        self.buffer_energies = {}
+        self.buffer_positions = {}
+        self.buffer_boolarr = {}
 
         self.buffer_energiesMap = [{}, {}, {}]
         self.buffer_positionsMap = [{}, {}, {}]
         self.buffer_overlapMap = [{}, {}, {}]
-        self.buffer_energiesMap_potential = {}
-        self.buffer_positionsMap_potential = {}
-        self.buffer_overlapMap_potential = {}
 
         self.lines_buffer_minIdx = {}
-        self.colormap_buffer_minIdx_potential = 0
         self.colormap_buffer_minIdx_field = [0] * 3
-        self.lines_buffer_minIdx_field = [0] * 3
-        self.iSelected = {}
+        self.lines_buffer_minIdx_field = {}
+        """self.iSelected = {}"""
 
         """self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
         self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
@@ -692,36 +690,30 @@ class MainWindow(QtWidgets.QMainWindow):
         # Connect signals and slots
         self.thread.criticalsignal.connect(self.showCriticalMessage)
 
-        self.ui.spinbox_system_n1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_n2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_l1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_l2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_j1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_j2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_m1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_system_m2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_n1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_n2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_l1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_l2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_j1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_j2.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_m1.valueChanged.connect(self.validateQuantumnumbers)
-        self.ui.spinbox_plot_m2.valueChanged.connect(self.validateQuantumnumbers)
+        for system in ["system", "plot"]:
+            for number in [1, 2]:
+                for q in "nljm":
+                    getattr(self.ui, f"spinbox_{system}_{q}{number}").valueChanged.connect(
+                        self.validateOneQuantumnumbers
+                    )
 
-        self.ui.spinbox_system_j1.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_system_j2.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_system_m1.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_system_m2.editingFinished.connect(self.validateHalfinteger)
-        self.ui.spinbox_plot_j1.editingFinished.connect(self.validateHalfintegerpositiveOrMinusone)
-        self.ui.spinbox_plot_j2.editingFinished.connect(self.validateHalfintegerpositiveOrMinusone)
-        self.ui.spinbox_plot_m1.editingFinished.connect(self.validateHalfintegerOrMinusone)
-        self.ui.spinbox_plot_m2.editingFinished.connect(self.validateHalfintegerOrMinusone)
-        self.ui.spinbox_plot_n1.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
-        self.ui.spinbox_plot_n2.editingFinished.connect(self.validateIntegerpositiveOrMinusone)
+        self.ui.spinbox_system_j1.editingFinished.connect(self.validateSpinLike)
+        self.ui.spinbox_system_j2.editingFinished.connect(self.validateSpinLike)
+        self.ui.spinbox_system_m1.editingFinished.connect(self.validateSpinLike)
+        self.ui.spinbox_system_m2.editingFinished.connect(self.validateSpinLike)
+        self.ui.spinbox_plot_j1.editingFinished.connect(self.validateSpinLikePositiveOrPlotAll)
+        self.ui.spinbox_plot_j2.editingFinished.connect(self.validateSpinLikePositiveOrPlotAll)
+        self.ui.spinbox_plot_m1.editingFinished.connect(self.validateSpinLikeOrPlotAll)
+        self.ui.spinbox_plot_m2.editingFinished.connect(self.validateSpinLikeOrPlotAll)
+        self.ui.spinbox_plot_n1.editingFinished.connect(self.validateIntegerPositiveOrPlotAll)
+        self.ui.spinbox_plot_n2.editingFinished.connect(self.validateIntegerPositiveOrPlotAll)
 
         self.ui.combobox_system_species1.currentIndexChanged[str].connect(self.forbidSamebasis)
         self.ui.combobox_system_species2.currentIndexChanged[str].connect(self.forbidSamebasis)
+        self.ui.combobox_system_species1.currentIndexChanged[str].connect(self.defaultQuantumnumbers)
+        self.ui.combobox_system_species2.currentIndexChanged[str].connect(self.defaultQuantumnumbers)
+        self.ui.combobox_system_species1.currentIndexChanged.connect(self.validateAllQuantumnumbers)
+        self.ui.combobox_system_species2.currentIndexChanged.connect(self.validateAllQuantumnumbers)
 
         self.ui.radiobutton_system_pairbasisDefined.toggled.connect(self.togglePairbasis)
         self.ui.radiobutton_plot_overlapDefined.toggled.connect(self.toggleOverlapstate)
@@ -789,6 +781,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.spinbox_system_m1.valueChanged.connect(self.autosetSymmetrization)
         self.ui.spinbox_system_m2.valueChanged.connect(self.autosetSymmetrization)
         self.ui.checkbox_system_samebasis.stateChanged.connect(self.autosetSymmetrization)
+
+        self.ui.checkbox_use_python_api.stateChanged.connect(self.setSpeciesElements)
 
         # Load cache directory
         if os.path.isfile(self.path_cache_last):
@@ -958,6 +952,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.spinbox_system_deltaJSingle.valueChanged.emit(self.ui.spinbox_system_deltaJSingle.value())
         self.ui.spinbox_system_deltaMSingle.valueChanged.emit(self.ui.spinbox_system_deltaMSingle.value())
 
+        self.ui.checkbox_use_python_api.toggled.emit(self.ui.checkbox_use_python_api.isChecked())
+
         # Setup plot
         constDistance = self.getConstDistance()
         constEField = self.getConstEField()
@@ -989,8 +985,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def loadSettingsSystem(self, path):
         with open(path) as f:
             params = json.load(f)
-            for k, v in params.items():
-                self.systemdict[k] = Quantity(v[0], v[1])
+            prio_keys = ["species1", "species2"]  # first set species, to adapt the allowed j and m values
+            for k in prio_keys + list(params.keys()):
+                self.systemdict[k] = Quantity(params[k][0], params[k][1])
 
     def loadSettingsPlotter(self, path):
         with open(path) as f:
@@ -1130,7 +1127,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     _ind = basisfile.index("blocknumber_") + len("blocknumber_")
                     bn = int(basisfile[_ind:-4])
                 else:
-                    bn = -1
+                    bn = NO_BN
 
                 if len(basis.shape) == 1:
                     basis = np.array([basis])
@@ -1171,7 +1168,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion
                             # verwenden, erste Spalte aus basis entfernen
                             if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2]] != -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3]][:, boolarr]
@@ -1183,7 +1180,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                                 statecoeff = np.ones_like(stateidx, dtype=float)
                                 m1 = self.overlapstate[idx][3]
-                                if m1 != -1:
+                                if m1 != PLOT_ALL:
                                     for j in np.unique(relevantBasis[:, 3]):
                                         boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
                                         if np.abs(m1) > j:
@@ -1194,7 +1191,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                 boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
                                                 statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] == -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] == PLOT_ALL
                                 if sum(boolarr) > 0:
                                     undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
                                     sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
@@ -1208,7 +1205,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 if self.thread.samebasis and np.any(
                                     self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
                                 ):
-                                    boolarr = self.overlapstate[idx][[4, 5, 6]] != -1
+                                    boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
                                     stateidx2 = np.where(
                                         np.all(
                                             basis[:, [1, 2, 3]][:, boolarr]
@@ -1220,7 +1217,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                                     statecoeff2 = np.ones_like(stateidx2, dtype=float)
                                     m1 = self.overlapstate[idx][7]
-                                    if m1 != -1:
+                                    if m1 != PLOT_ALL:
                                         for j in np.unique(relevantBasis[:, 3]):
                                             boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
                                             if np.abs(m1) > j:
@@ -1231,7 +1228,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                     boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
                                                     statecoeff2[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == -1
+                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == PLOT_ALL
                                     if sum(boolarr) > 0:
                                         undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
                                         sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
@@ -1271,7 +1268,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     stateidx = np.append(stateidx, stateidx_second)
                                     stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
                             elif idx == 1:
-                                boolarr = self.overlapstate[idx][[4, 5, 6]] != -1
+                                boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3]][:, boolarr]
@@ -1283,7 +1280,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                                 statecoeff = np.ones_like(stateidx, dtype=float)
                                 m1 = self.overlapstate[idx][7]
-                                if m1 != -1:
+                                if m1 != PLOT_ALL:
                                     for j in np.unique(relevantBasis[:, 3]):
                                         boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
                                         if np.abs(m1) > j:
@@ -1294,7 +1291,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                 boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
                                                 statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == -1
+                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == PLOT_ALL
                                 if sum(boolarr) > 0:
                                     undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
                                     sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
@@ -1317,7 +1314,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     statecoeff.append(coeff)
                                 stateamount = np.zeros_like(stateidx)"""
                             elif idx == 2:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 4, 5, 6]] != -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 4, 5, 6]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3, 5, 6, 7]][:, boolarr]
@@ -1330,7 +1327,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 statecoeff = np.ones_like(stateidx, dtype=float)
                                 for selector in [0, 4]:
                                     m1 = self.overlapstate[idx][3 + selector]
-                                    if m1 != -1:
+                                    if m1 != PLOT_ALL:
                                         for j in np.unique(relevantBasis[:, 3 + selector]):
                                             boolarr = np.all(relevantBasis[:, [3 + selector]] == [j], axis=-1)
                                             if np.abs(m1) > j:
@@ -1344,7 +1341,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                                     )
                                                     statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] == -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] == PLOT_ALL
                                 if sum(boolarr) > 0:
                                     undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
                                     sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
@@ -1375,7 +1372,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
                         else:
                             if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3, 4]][:, boolarr]
@@ -1386,7 +1383,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 if self.thread.samebasis and np.any(
                                     self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
                                 ):
-                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
+                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
                                     stateidx = np.append(
                                         stateidx,
                                         np.where(
@@ -1398,7 +1395,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                         )[0],
                                     )
                             elif idx == 1:
-                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != -1
+                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3, 4]][:, boolarr]
@@ -1407,7 +1404,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     )
                                 )[0]
                             elif idx == 2:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != -1
+                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != PLOT_ALL
                                 stateidx = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
@@ -1488,11 +1485,17 @@ class MainWindow(QtWidgets.QMainWindow):
                 os.remove(basisfile)
 
                 # clear variables
-                self.lines_buffer_minIdx_field = {}
-                self.buffer_basis = {}
-                self.buffer_energies = {}
-                self.buffer_positions = {}
-                self.buffer_boolarr = {}
+                for buffer in [
+                    self.lines_buffer_minIdx_field,
+                    self.buffer_basis,
+                    self.buffer_energies,
+                    self.buffer_positions,
+                    self.buffer_boolarr,
+                ]:
+                    _bns = list(buffer.keys())
+                    for _bn in _bns:
+                        if _bn == bn or bn == NO_BN:
+                            del buffer[_bn]
 
                 if len(self.storage_states[idx]) == 1:
                     self.labelprob = None
@@ -1531,7 +1534,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     # save data
                     self.storage_data[idx].append([filestep, blocknumber, filename])
 
-                    if "pkl" in filename:
+                    if filename.endswith(".pkl"):
                         with open(filename, "rb") as f:
                             pkl_data = pickle.load(f)
                         energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
@@ -1541,7 +1544,7 @@ class MainWindow(QtWidgets.QMainWindow):
                         energies = eigensystem.energies
                         basis = eigensystem.basis
                         params = eigensystem.params
-                        bn = -1
+                        bn = NO_BN
 
                     if idx == 2:
                         symmetrycolor = []
@@ -2089,7 +2092,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
                         while (
                             self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys()
-                            and self.lines_buffer_minIdx_field[blocknumber] + 1 in self.buffer_basis[blocknumber].keys()
+                            and (self.lines_buffer_minIdx_field[blocknumber] + 1)
+                            in self.buffer_basis[blocknumber].keys()
                         ):
                             # determine the data to plot
                             overlap = np.abs(
@@ -2261,25 +2265,18 @@ class MainWindow(QtWidgets.QMainWindow):
             and self.thread.dataqueue_potential.empty()
         ):
             # Delete buffers
-            self.buffer_basis = [{}, {}, {}]
-            self.buffer_energies = [{}, {}, {}]
-            self.buffer_positions = [{}, {}, {}]
-            self.buffer_boolarr = [{}, {}, {}]
-            self.buffer_basis_potential = {}
-            self.buffer_energies_potential = {}
-            self.buffer_positions_potential = {}
+            self.buffer_basis = {}
+            self.buffer_energies = {}
+            self.buffer_positions = {}
+            self.buffer_boolarr = {}
 
             self.buffer_energiesMap = [{}, {}, {}]
             self.buffer_positionsMap = [{}, {}, {}]
             self.buffer_overlapMap = [{}, {}, {}]
-            self.buffer_energiesMap_potential = {}
-            self.buffer_positionsMap_potential = {}
-            self.buffer_overlapMap_potential = {}
 
             self.lines_buffer_minIdx = {}
-            self.colormap_buffer_minIdx_potential = 0
             self.colormap_buffer_minIdx_field = [0] * 3
-            self.lines_buffer_minIdx_field = [0] * 3
+            self.lines_buffer_minIdx_field = {}
 
             # Delete c++ process
             if self.proc is not None:
@@ -2460,9 +2457,9 @@ class MainWindow(QtWidgets.QMainWindow):
     def adjustPairlimits(self, value):
         sender = self.sender()
 
-        if value == -1:
+        if value == NO_RESTRICTIONS:
             maximum = 999
-            minimum = -1
+            minimum = NO_RESTRICTIONS
         else:
             maximum = value
             minimum = 0
@@ -2500,6 +2497,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def toggleOverlapstate(self):
         checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
         self.ui.widget_plot_qn.setEnabled(checked)
+        self.validateAllQuantumnumbers()
 
     @QtCore.pyqtSlot(bool)  # TODO
     def toggleSymmetrization(self):
@@ -2512,6 +2510,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.checkbox_system_refO.setEnabled(checked)
         self.ui.checkbox_system_conserveM.setEnabled(checked)
         self.autosetSymmetrization()
+
+    def setSpeciesElements(self):
+        checked = self.ui.checkbox_use_python_api.isChecked()
+        species_list = self.all_elements if checked else self.cpp_elements
+        for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
+            e_old = combobox.currentText()
+            combobox.clear()
+            for e in species_list:
+                combobox.addItem(e)
+            if e_old in species_list:
+                combobox.setCurrentIndex(species_list.index(e_old))
 
     def autosetSymmetrization(self):
         if self.ui.radiobutton_symManual.isChecked():
@@ -2594,103 +2603,99 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.checkbox_system_samebasis.setCheckState(self.samebasis_state)
 
     @QtCore.pyqtSlot()
+    def defaultQuantumnumbers(self):
+        sender = self.sender()
+        number = int(sender.objectName()[-1])
+        species = getattr(self.ui, f"combobox_system_species{number}").currentText()
+        s = SPIN_DICT.get(species, 0.5)
+
+        for q in ["j", "m"]:
+            for system in ["system", "plot"]:
+                spinbox = getattr(self.ui, f"spinbox_{system}_{q}{number}")
+                value = spinbox.value()
+                spinbox.setDecimals(0 if s % 1 == 0 else 1)
+                # Minimum and Maximum for m are handled via setDecimals
+                if spinbox.minimum() >= 0:
+                    spinbox.setMinimum(s % 1)
+                spinbox.setValue(np.floor(value) + (s % 1))
+
+    @QtCore.pyqtSlot()
     def validateCores(self):
         sender = self.sender()
         if sender.value() != -1 and sender.value() < 2:
             sender.setValue(2)
 
-    @QtCore.pyqtSlot()
-    def validateQuantumnumbers(self):
+    def validateAllQuantumnumbers(self):
+        self.invalidQuantumnumbers = {}
+        check_systems = ["system", "plot"] if self.ui.radiobutton_plot_overlapDefined.isChecked() else ["system"]
+        for system in check_systems:
+            for number in [1, 2]:
+                self.validateOneQuantumnumbers(system, number)
+
+    def validateOneQuantumnumbers(self, system=None, number=None):
+        if system is None or number is None:
+            sender_name = self.sender().objectName()
+            system = "plot" if "plot" in sender_name else "system"
+            number = 2 if "2" in sender_name else 1
+        assert system in ["system", "plot"] and number in [1, 2]
+        name = system + str(number)
+
+        qns = []
+        for q in "nljm":
+            spinbox = getattr(self.ui, f"spinbox_{system}_{q}{number}")
+            qns.append(spinbox.value())
+        n, l, j, m = qns
+        species = getattr(self.ui, f"combobox_system_species{number}").currentText()
+        s = SPIN_DICT.get(species, 0.5)
+
+        err = False
+        is_plot = system == "plot"
+        if l >= n and not (is_plot and PLOT_ALL in [n, l]):
+            err = True
+        elif abs(m) > j and not (is_plot and PLOT_ALL in [j, m]):
+            err = True
+        elif abs(l - j) > s and not (is_plot and PLOT_ALL in [l, j]):
+            err = True
+        elif (j - s) % 1 != 0 and not (is_plot and PLOT_ALL in [j]):
+            err = True
+        self.invalidQuantumnumbers[name] = err
+
+        msg = ", ".join([k for k, v in self.invalidQuantumnumbers.items() if v])
+        if msg != "":
+            msg = f"Invalid quantum numbers specified ({msg})."
+        self.ui.statusbar.showMessage(msg)
+        self.invalidQuantumnumbersMessage = msg
+
+    def _validateQnGeneral(self, _type="integer", orPlotAll=False):
+        assert _type in ["integer", "integerpositive", "spinlike", "spinlikepositive"]
         sender = self.sender()
+        number = int(sender.objectName()[-1])
+        species = getattr(self.ui, f"combobox_system_species{number}").currentText()
+        s = SPIN_DICT.get(species, 0.5)
+        value = sender.value()
 
-        quantumnumbers = [
-            [
-                self.ui.spinbox_system_n1,
-                self.ui.spinbox_system_l1,
-                self.ui.spinbox_system_j1,
-                self.ui.spinbox_system_m1,
-            ],
-            [
-                self.ui.spinbox_system_n2,
-                self.ui.spinbox_system_l2,
-                self.ui.spinbox_system_j2,
-                self.ui.spinbox_system_m2,
-            ],
-            [self.ui.spinbox_plot_n1, self.ui.spinbox_plot_l1, self.ui.spinbox_plot_j1, self.ui.spinbox_plot_m1],
-            [self.ui.spinbox_plot_n2, self.ui.spinbox_plot_l2, self.ui.spinbox_plot_j2, self.ui.spinbox_plot_m2],
-        ]
-
-        for i, qn in enumerate(quantumnumbers):
-
-            if sender in qn:
-                n, l, j, m = qn
-
-                n_err = False
-                l_err = False
-                j_err = False
-                m_err = False
-
-                nn = n.value()
-                ll = l.value()
-                jj = j.value()
-                mm = m.value()
-
-                if (nn != -1 and ll != -1) and (nn - 1 < ll):
-                    n_err |= True
-                    l_err |= True
-                if (ll != -1 and jj != -1) and (abs(ll - jj) != 0.5):
-                    l_err |= True
-                    j_err |= True
-                if (jj != -1 and mm != -1) and (jj < abs(mm)):
-                    j_err |= True
-                    m_err |= True
-
-                if (nn != -1 and jj != -1) and (nn - 0.5 < jj):
-                    n_err |= True
-                    j_err |= True
-                if (nn != -1 and mm != -1) and (nn - 0.5 < abs(mm)):
-                    n_err |= True
-                    m_err |= True
-                if (ll != -1 and mm != -1) and (ll + 0.5 < abs(mm)):
-                    l_err |= True
-                    m_err |= True
-
-                if n_err or l_err or j_err or m_err:
-                    self.invalidQuantumnumbers[i] = True
-                else:
-                    self.invalidQuantumnumbers[i] = False
-
-        if np.any(self.invalidQuantumnumbers):
-            self.ui.statusbar.showMessage("Invalide quantum numbers specified.")
-        else:
-            self.ui.statusbar.showMessage("")
+        if orPlotAll and (("positive" in _type and value < 0) or (value == PLOT_ALL)):
+            sender.setValue(PLOT_ALL)
+        elif "integer" in _type:
+            sender.setValue(int(value))
+        elif "spinlike" in _type:
+            sender.setValue(np.floor(value) + (s % 1))
 
     @QtCore.pyqtSlot()
-    def validateHalfinteger(self):
-        value = self.sender().value()
-        self.sender().setValue(np.floor(value) + 0.5)
+    def validateSpinLike(self):
+        self._validateQnGeneral(_type="spinlike")
 
     @QtCore.pyqtSlot()
-    def validateHalfintegerpositiveOrMinusone(self):
-        value = self.sender().value()
-        if value <= 0:
-            self.sender().setValue(-1)
-        else:
-            self.sender().setValue(np.floor(value) + 0.5)
+    def validateSpinLikePositiveOrPlotAll(self):
+        self._validateQnGeneral(_type="spinlikepositive", orPlotAll=True)
 
     @QtCore.pyqtSlot()
-    def validateHalfintegerOrMinusone(self):
-        value = self.sender().value()
-        if value == -1:
-            pass
-        else:
-            self.sender().setValue(np.floor(value) + 0.5)
+    def validateSpinLikeOrPlotAll(self):
+        self._validateQnGeneral(_type="spinlike", orPlotAll=True)
 
     @QtCore.pyqtSlot()
-    def validateIntegerpositiveOrMinusone(self):
-        value = self.sender().value()
-        if value <= 0:
-            self.sender().setValue(-1)
+    def validateIntegerPositiveOrPlotAll(self):
+        self._validateQnGeneral(_type="integer", orPlotAll=True)
 
     @QtCore.pyqtSlot(str)
     def showCriticalMessage(self, msg):
@@ -2707,8 +2712,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if focused_widget is not None:
                 focused_widget.clearFocus()
 
-            if np.any(self.invalidQuantumnumbers):
-                QtWidgets.QMessageBox.critical(self, "Message", "Invalide quantum numbers specified.")
+            if any(self.invalidQuantumnumbers.values()):
+                QtWidgets.QMessageBox.critical(self, "Message", self.invalidQuantumnumbersMessage)
 
             elif (
                 self.ui.radiobutton_system_missingWhittaker.isChecked()
@@ -2971,22 +2976,22 @@ class MainWindow(QtWidgets.QMainWindow):
                         params["zerotheta"] = self.angle == 0
 
                     if params["deltaNSingle"] < 0:
-                        params["deltaNSingle"] = -1
+                        params["deltaNSingle"] = NO_RESTRICTIONS
                     if params["deltaLSingle"] < 0:
-                        params["deltaLSingle"] = -1
+                        params["deltaLSingle"] = NO_RESTRICTIONS
                     if params["deltaJSingle"] < 0:
-                        params["deltaJSingle"] = -1
+                        params["deltaJSingle"] = NO_RESTRICTIONS
                     if params["deltaMSingle"] < 0:
-                        params["deltaMSingle"] = -1
+                        params["deltaMSingle"] = NO_RESTRICTIONS
 
                     if (
                         self.senderbutton == self.ui.pushbutton_potential_calc
                         and self.ui.radiobutton_system_pairbasisSame.isChecked()
                     ):
-                        params["deltaNPair"] = -1
-                        params["deltaLPair"] = -1
-                        params["deltaJPair"] = -1
-                        params["deltaMPair"] = -1
+                        params["deltaNPair"] = NO_RESTRICTIONS
+                        params["deltaLPair"] = NO_RESTRICTIONS
+                        params["deltaJPair"] = NO_RESTRICTIONS
+                        params["deltaMPair"] = NO_RESTRICTIONS
 
                     if self.angle != 0:
                         arrlabels = [
@@ -3065,18 +3070,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 python_threads = {"NUM_PROCESSES": str(self.numprocessors), "OMP_NUM_THREADS": "1"}
 
                 if self.ui.checkbox_use_python_api.isChecked():
+                    path_python = os.path.join(self.path_base, "start_pipy.py")
                     self.proc = subprocess.Popen(
-                        [self.path_base + "/start_pipy.py", "--run_gui", "-c", self.path_config, "-o", self.path_cache],
+                        [sys.executable, path_python, "--run_gui", "-c", self.path_conf, "-o", self.path_cache],
                         stdout=subprocess.PIPE,
                         stderr=subprocess.STDOUT,
                         cwd=self.path_workingdir,
-                        env=dict(
-                            os.environ,
-                            **{
-                                "NUM_PROCESSES": str(self.numprocessors),
-                                "OMP_NUM_THREADS": "1",
-                            },
-                        ),
+                        env=dict(os.environ, **python_threads, **other_threads),
                     )
                 else:
                     self.proc = subprocess.Popen(
@@ -3141,22 +3141,23 @@ class MainWindow(QtWidgets.QMainWindow):
 
         try:
             # save plot
-            plotitem = [
-                self.ui.graphicsview_field1_plot,
-                self.ui.graphicsview_field2_plot,
-                self.ui.graphicsview_potential_plot,
-            ][idx].getPlotItem()
-            exporter = exporters.ImageExporter(plotitem)
-            exporter.parameters()["width"] = 2000
-            exporter.parameters()["height"] = 2000
-            exporter.parameters()["antialias"] = True
-            image = exporter.export(toBytes=True)
+            if getattr(self, "savePlot", True):
+                plotitem = [
+                    self.ui.graphicsview_field1_plot,
+                    self.ui.graphicsview_field2_plot,
+                    self.ui.graphicsview_potential_plot,
+                ][idx].getPlotItem()
+                exporter = exporters.ImageExporter(plotitem)
+                exporter.parameters()["width"] = 2000
+                exporter.parameters()["height"] = 2000
+                exporter.parameters()["antialias"] = True
+                image = exporter.export(toBytes=True)
 
-            buffer = QtCore.QBuffer()
-            buffer.open(QtCore.QIODevice.WriteOnly)
-            image = image.scaled(1500, 1500, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-            image.save(buffer, "PNG")
-            ziparchive.writestr("plot.png", buffer.data())
+                buffer = QtCore.QBuffer()
+                buffer.open(QtCore.QIODevice.WriteOnly)
+                image = image.scaled(1500, 1500, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                image.save(buffer, "PNG")
+                ziparchive.writestr("plot.png", buffer.data())
 
             # save configuration
             ziparchive.writestr("settings.sconf", self.storage_configuration[idx][0])
@@ -3195,24 +3196,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # save states
             # nState, i-n1-l1-j1-m1-n2-l2-j2-m2 # nState, i-n-l-j-m
-            if len(self.storage_states[idx]) == 1 and -1 in self.storage_states[idx]:
-                data["states"] = self.storage_states[idx][-1]
+            if len(self.storage_states[idx]) == 1 and NO_BN in self.storage_states[idx]:
+                data["states"] = self.storage_states[idx][NO_BN]
                 data["numStates"] = data["states"].shape[0]
             elif len(self.storage_states[idx]) > 0:
                 data["states"] = [self.storage_states[idx][k] for k in sorted(self.storage_states[idx].keys())]
                 data["numStates"] = [[v.shape[0]] for v in data["states"]]
 
             # save overlaps
-            if len(self.stateidx_field[idx]) == 1 and -1 in self.stateidx_field[idx]:
-                data["numOverlapvectors"] = self.stateidx_field[idx][-1].shape[0]
-                data["overlapvectors"] = self.stateidx_field[idx][-1]
+            if len(self.stateidx_field[idx]) == 1 and NO_BN in self.stateidx_field[idx]:
+                data["numOverlapvectors"] = self.stateidx_field[idx][NO_BN].shape[0]
+                data["overlapvectors"] = self.stateidx_field[idx][NO_BN]
             elif len(self.stateidx_field[idx]) > 0:
-                data["numOverlapvectors"] = [
-                    [self.stateidx_field[idx][k].shape[0]] for k in sorted(self.stateidx_field[idx].keys())
-                ]
-                data["overlapvectors"] = [
-                    [self.stateidx_field[idx][k]] for k in sorted(self.stateidx_field[idx].keys())
-                ]
+                _stateidx = self.stateidx_field[idx]
+                keys = [k for k in _stateidx.keys() if _stateidx[k] is not None]
+                data["numOverlapvectors"] = [[_stateidx[k].shape[0]] for k in keys]
+                data["overlapvectors"] = [[_stateidx[k]] for k in keys]
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
@@ -3234,7 +3233,7 @@ class MainWindow(QtWidgets.QMainWindow):
             filestep_last = None
 
             for filestep, _blocknumber, filename in sorted(self.storage_data[idx], key=itemgetter(0, 1)):
-                if "pkl" in filename:
+                if filename.endswith(".pkl"):
                     with open(filename, "rb") as f:
                         pkl_data = pickle.load(f)
                     energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
@@ -3246,7 +3245,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     # nState, nBasis (stored in Compressed Sparse Column format,
                     # CSC)
                     params = eigensystem.params
-                    bn = -1
+                    bn = NO_BN
                 energies *= self.converter_y
 
                 if self.stateidx_field[idx].get(bn, None) is not None:
@@ -3500,21 +3499,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def clearCache(self):
-        files = [
-            "cache_elements.db",
-            "cache_matrix_complex.db",
-            "cache_matrix_real.db",
-            "cache_matrix_complex",
-            "cache_matrix_real",
-            "cache_matrix_complex_new",
-            "cache_matrix_real_new",
-        ]  # TODO: sicherstellen, dass gleiche Namen wie im C++ Programm
-        for file in files:
-            path = os.path.join(self.path_cache, file)
+        for name in os.listdir(self.path_cache):
+            path = os.path.join(self.path_cache, name)
             if os.path.isfile(path):
-                os.remove(path)
+                if (name.startswith("cache_elements") or name.startswith("cache_matrix")) and name.endswith(".db"):
+                    os.remove(path)
             elif os.path.isdir(path):
-                shutil.rmtree(path)
+                if name.startswith("cache_matrix"):
+                    shutil.rmtree(path)
 
         if os.path.isdir(self.path_cache_wignerd):
             shutil.rmtree(self.path_cache_wignerd)
@@ -3662,10 +3654,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     so[k] = f"{int(2 * float(st[k]))}/2"
 
             if sconf["pairbasisSame"][0]:
-                sconf["deltaNPair"][0] = -1
-                sconf["deltaLPair"][0] = -1
-                sconf["deltaJPair"][0] = -1
-                sconf["deltaMPair"][0] = -1
+                sconf["deltaNPair"][0] = NO_RESTRICTIONS
+                sconf["deltaLPair"][0] = NO_RESTRICTIONS
+                sconf["deltaJPair"][0] = NO_RESTRICTIONS
+                sconf["deltaMPair"][0] = NO_RESTRICTIONS
 
             interaction = "multipole expansion up to order {}".format(sconf["exponent"][0])
 

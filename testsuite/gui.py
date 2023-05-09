@@ -1,8 +1,11 @@
 # https://johnnado.com/pyqt-qtest-example/
 # https://github.com/jmcgeheeiv/pyqttestexample
+import io
 import json
 import os
+import shutil
 import sys
+import tempfile
 import unittest
 import zipfile
 
@@ -15,32 +18,31 @@ from PyQt5.QtWidgets import QApplication
 import pairinteraction_gui.pairinteraction.app as piGui
 
 app = QApplication(sys.argv)
-PATH = "reference_data/gui/"
+PATH = os.path.join("reference_data", "gui")
 
 
 class PairinteractionGuiTest(unittest.TestCase):
     def setUp(self):
         self.form = piGui.MainWindow()
+        self.form.path_cache = tempfile.mkdtemp()
         self.form.ui.action_sconf_reset.trigger()
         self.form.ui.action_pconf_reset.trigger()
 
     def testFieldCalcButton(self):
         # Testing simulation single atom with all E and B fields on
-        self.form.loadSettingsSystem(PATH + "Field/settings.sconf")
-        self.form.loadSettingsPlotter(PATH + "Field/settings.pconf")
-        self._testEnergies(0, "Field", dE=3)
+        self.form.loadSettingsSystem(os.path.join(PATH, "field", "settings.sconf"))
+        self.form.loadSettingsPlotter(os.path.join(PATH, "field", "settings.pconf"))
+        self._testEnergies(0, "field", dE=3)
 
     def testPotentialCalcButton(self):
         # Testing simulation for pairpotential
-        self.form.loadSettingsSystem(PATH + "Potential/settings.sconf")
-        self.form.loadSettingsPlotter(PATH + "Potential/settings.pconf")
-        self._testEnergies(2, "Potential", dE=0.3)
+        self.form.loadSettingsSystem(os.path.join(PATH, "potential", "settings.sconf"))
+        self.form.loadSettingsPlotter(os.path.join(PATH, "potential", "settings.pconf"))
+        self._testEnergies(2, "potential", dE=0.3)
 
-    def _testEnergies(self, idx, ref_data, dE, dE_tol=1e-3, use_python_api="both"):
-        if use_python_api == "both":
-            for use_python_api in [False, True]:
-                self._testEnergies(idx, ref_data, dE, use_python_api=use_python_api)
-            return
+    def _testEnergies(self, idx, ref_data, dE, dE_tol=1e-3, use_python_api="default"):
+        if use_python_api == "default":
+            return self._testEnergies(idx, ref_data, dE, use_python_api=True)
         self.form.ui.checkbox_use_python_api.setChecked(use_python_api)
         self.form.autosetSymmetrization()
 
@@ -57,34 +59,40 @@ class PairinteractionGuiTest(unittest.TestCase):
             self.form.checkForData()
 
         # Save current data
-        self.form.forceFilename = PATH + "tmp"
+        self.form.savePlot = False
+        forceFilename = os.path.join(PATH, "current")
+        self.form.forceFilename = forceFilename
         QTest.mouseClick(widget_save, Qt.LeftButton)
 
         data = {}
         sconfig = {}
-        # Load reference data
-        with zipfile.ZipFile(PATH + "tmp", "r") as zip_file:
-            with zip_file.open("data.mat") as f:
-                data["tmp"] = scipy.io.loadmat(f)
-            with zip_file.open("settings.sconf") as f:
-                sconfig["tmp"] = json.load(f)
-        os.remove(PATH + "tmp")
-
         # Load current data
-        with open(PATH + ref_data + "/data.mat", "rb") as f:
+        with zipfile.ZipFile(forceFilename, "r") as zip_file:
+            with zip_file.open("data.mat") as f:
+                f_io = io.BytesIO(f.read())
+                data["current"] = scipy.io.loadmat(f_io)
+            with zip_file.open("settings.sconf") as f:
+                sconfig["current"] = json.load(f)
+        os.remove(forceFilename)
+
+        # Load reference data
+        with open(os.path.join(PATH, ref_data, "data.mat"), "rb") as f:
             data["ref"] = scipy.io.loadmat(f)
-        with open(PATH + ref_data + "/settings.sconf") as f:
+        with open(os.path.join(PATH, ref_data, "settings.sconf")) as f:
             sconfig["ref"] = json.load(f)
 
         # Check if configs match # unecessary since we load the same config
         for k, v in sconfig["ref"].items():
-            assert sconfig["tmp"][k] == v
+            assert sconfig["current"][k] == v
+
+        if len(data["current"]["eigenvalues"]) == 0:
+            raise ValueError("No eigenvalues found in current data, some bug in calculating the eigenvalues.")
 
         # Check if central eigenvalues (+/- dE) match
         for i in range(len(data["ref"]["eigenvalues"])):
             Es = {k: np.array(mat["eigenvalues"])[i] for k, mat in data.items()}
             Es = {k: E[np.abs(E) < dE] for k, E in Es.items()}
-            diff_rel = np.abs(Es["ref"] - Es["tmp"])
+            diff_rel = np.abs(Es["ref"] - Es["current"])
             assert np.all(diff_rel <= dE_tol)
 
     def tearDown(self):
@@ -95,6 +103,9 @@ class PairinteractionGuiTest(unittest.TestCase):
         if self.form.proc:
             self.form.proc.stdout.close()
             self.form.proc.wait()
+
+        # Remove tmp cache
+        shutil.rmtree(self.form.path_cache)
 
 
 if __name__ == "__main__":

@@ -6,13 +6,13 @@ with open("@CMAKE_SOURCE_DIR@/README.md", "r") as fh:
     long_description = fh.read()
 
 with open("@CMAKE_SOURCE_DIR@/requirements.txt", "r") as fh:
-    install_requires = [str(req) for req in parse_requirements(fh)]
+    install_requires = [str(req) for req in parse_requirements(fh) if req.name not in ["pyinstaller", "wheel"]]
 
 setup(
     name = "pairinteraction",
     python_requires=">=3.8",
     version = r"@VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA@",
-    author="Sebastian Weber, Henri Menke, Johannes Block, Alexander Papageorge",
+    author="Sebastian Weber, Henri Menke, Johannes Mögerle, Johannes Block, Alexander Papageorge",
     description="A Rydberg Interaction Calculator",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -25,7 +25,7 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     ],
     packages = find_namespace_packages(include=[
-        "pairinteraction", "pairinteraction_gui", "pairinteraction_gui.pairinteraction", "pairinteraction_gui.pairinteraction.*"
+        "pairinteraction", "pairinteraction_gui", "pairinteraction_gui.pairinteraction", "pairinteraction_gui.pipy", "pairinteraction_gui.pairinteraction.*"
     ]),
     package_data = {
         "pairinteraction" : [

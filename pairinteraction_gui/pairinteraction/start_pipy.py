@@ -1,19 +1,18 @@
-#!/usr/bin/env python3
 """The main function will be called by the pairinteraction GUI to start the calculation.
 """
 import argparse
-import concurrent.futures
 import itertools
 import json
+import multiprocessing
 import os
 import pickle
 import sys
-from functools import partial
+import tempfile
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/../")
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + "/../../")
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 import pipy  # noqa
 
 
@@ -40,27 +39,39 @@ def main(args):
     else:
         settings["blocknumber"] = 1
         do_simulations(settings)
+    info("all Hamiltonias processed")
     output(f"{'>>END':5}")
 
 
 def do_simulations(settings, pass_atom="direct"):
     # TODO decide, wether pass_atom direct or path is better (faster, memory efficient,...)
+    # probably direct is better for the current way of implementing the parallelization
+    # also if path we need to pickle the objects, which on some os leeds to problems
     param_list = get_param_list(settings)
     ip_list = list(range(len(param_list)))
 
     atom = pipy.atom_from_config(settings["config"])
-    atom.system.buildHamiltonian()
+    info(f"construct {atom}", atom.config)
 
     if atom.nAtoms == 2:
         allQunumbers = [[*qns[:, 0], *qns[:, 1]] for qns in np.array(atom.allQunumbers)]
     else:
         allQunumbers = atom.allQunumbers
+    info(f"basis size with restrictions: {len(allQunumbers)}", atom.config)
+
     _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{atom.config.toHash()}"
-    path_basis = f"/tmp/basis_{_name}_blocknumber_{settings['blocknumber']}.csv"
+    path_tmp = tempfile.gettempdir()
+    path_basis = os.path.join(path_tmp, f"basis_{_name}_blocknumber_{settings['blocknumber']}.csv")
     basis = np.insert(allQunumbers, 0, np.arange(len(allQunumbers)), axis=1)
     np.savetxt(path_basis, basis, delimiter="\t", fmt=["%d"] + ["%d", "%d", "%.1f", "%.1f"] * atom.nAtoms)
+    info(f"save {type(atom).__name__} basis", atom.config)
     output(f"{'>>BAS':5}{len(basis):7}")
     output(f"{'>>STA':5} {path_basis} ")
+
+    if not getattr(atom, "preCalculate", False):
+        info("precalculate matrix elements", atom.config)
+        atom.system.buildInteraction()
+        atom.preCalculate = True
 
     if pass_atom == "direct":
         config = {"atom": atom}
@@ -72,21 +83,19 @@ def do_simulations(settings, pass_atom="direct"):
     else:
         config = settings["config"]
 
-    p_one_run = partial(one_run, config, param_list)
+    global p_one_run
+
+    def p_one_run(ip):
+        return one_run(config, param_list, ip)
 
     num_pr = settings.get("runtimeoptions", {}).get("NUM_PROCESSES", 1)
     num_pr = os.cpu_count() if num_pr in [0, -1] else num_pr
 
-    if num_pr > 1 and not atom.config.isReal():
-        raise NotImplementedError(
-            "Parallelization for complex calculations is not implemented yet, since there is some bug occuring."
-        )
-
     if num_pr > 1:
-        with concurrent.futures.ProcessPoolExecutor(num_pr) as executor:
-            futures = [executor.submit(p_one_run, i) for i in ip_list]
-            for future in concurrent.futures.as_completed(futures):
-                print_completed(settings, future.result())
+        with multiprocessing.Pool(num_pr) as pool:
+            results = pool.imap_unordered(p_one_run, ip_list)
+            for result in results:
+                print_completed(settings, result)
     else:
         for i in ip_list:
             result = p_one_run(i)
@@ -111,13 +120,12 @@ def one_run(config, param_list, ip):
     dimension = len(atom.basisQunumbers)
 
     real_complex = "real" if config.isReal() else "complex"
-    pathCacheMatrix = config.pathCache() + f"cache_matrix_{real_complex}_new/"
+    pathCacheMatrix = os.path.join(config.pathCache(), f"cache_matrix_{real_complex}_new")
     os.makedirs(pathCacheMatrix, exist_ok=True)
     _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{config.toHash()}"
-    filename = pathCacheMatrix + _name + ".pkl"
+    filename = os.path.join(pathCacheMatrix, _name + ".pkl")
 
     if not os.path.exists(filename):
-        output(f"Calculating {ip}, {dimension}x{dimension}")
         atom.calcEnergies()
         energies0 = config.getEnergiesPair() if atom.nAtoms == 2 else config.getEnergiesSingle()
         data = {
@@ -125,10 +133,15 @@ def one_run(config, param_list, ip):
             "basis": atom.vectors,
             "params": config.toOutDict(),
         }
+        info(f"{ip+1}. Hamiltonian diagonalized ({dimension}x{dimension})", atom.config)
+
         with open(filename, "wb") as f:
             pickle.dump(data, f)
-        with open(filename.replace(".pkl", ".json"), "w") as f:
+        filename_json = os.path.join(pathCacheMatrix, _name + ".json")
+        with open(filename_json, "w") as f:
             json.dump(data["params"], f, indent=4)
+    else:
+        info(f"{ip+1}. Hamiltonian loaded", atom.config)
 
     result = {
         "ip": ip,
@@ -241,6 +254,16 @@ def conf_to_settings(conf, pathCache):
 
 def output(x):
     print(x, flush=True)
+
+
+def info(x, config=None):
+    if config is None:
+        print(x, flush=True)
+        return
+    pi = "pireal" if config.isReal() else "picomplex"
+    no = "One-atom" if config.nAtoms() == 1 else "Two-atom"
+    msg = f"{pi}: {no} Hamiltonian, {x}"
+    print(msg, flush=True)
 
 
 if __name__ == "__main__":

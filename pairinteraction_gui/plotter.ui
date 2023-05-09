@@ -3364,10 +3364,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>999</number>
@@ -3399,10 +3399,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>100</number>
@@ -3431,13 +3431,13 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
                        </property>
                        <property name="minimum">
-                        <double>-1.000000000000000</double>
+                        <double>-99.000000000000000</double>
                        </property>
                        <property name="maximum">
                         <double>99.500000000000000</double>
@@ -3466,7 +3466,7 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
@@ -3523,10 +3523,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>999</number>
@@ -3558,10 +3558,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>100</number>
@@ -3590,13 +3590,13 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
                        </property>
                        <property name="minimum">
-                        <double>-1.000000000000000</double>
+                        <double>-99.000000000000000</double>
                        </property>
                        <property name="maximum">
                         <double>99.500000000000000</double>
@@ -3625,7 +3625,7 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
