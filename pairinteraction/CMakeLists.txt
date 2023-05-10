@@ -184,23 +184,41 @@ elseif(WITH_LAPACK AND LAPACK_FOUND)
 
   # TODO: Ubuntu and macOS have this in a separate library for some reason.
   # FIXME: Needs a more robust way to detection and linking. Prefer static linking.
+  add_library(LAPACKE_TARGET INTERFACE)
+  add_library(LAPACKE::LAPACKE ALIAS LAPACKE_TARGET)
   find_library(LAPACKE_LIBRARY NAMES liblapacke.a lapacke)
+  find_path(LAPACKE_INCLUDE_DIR
+    NAMES lapacke.h
+    PATHS /usr/include/openblas)
 
+  set(CMAKE_REQUIRED_INCLUDES_SAVED ${CMAKE_REQUIRED_INCLUDES})
   set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
+  if(LAPACKE_INCLUDE_DIR)
+    set(CMAKE_REQUIRED_INCLUDES "${LAPACKE_INCLUDE_DIR}")
+  endif()
   if(LAPACKE_LIBRARY)
     set(CMAKE_REQUIRED_LIBRARIES "${LAPACKE_LIBRARY};${LAPACK_LIBRARIES}")
   else()
     set(CMAKE_REQUIRED_LIBRARIES "${LAPACK_LIBRARIES}")
   endif()
-  check_function_exists(LAPACKE_dsyev LAPACKE_WORKS)
+  include(CheckSymbolExists)
+  check_symbol_exists(LAPACKE_dsyev "lapacke.h" LAPACKE_WORKS)
+  set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_SAVED})
   set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVED})
 
-  if(LAPACKE_WORKS AND LAPACKE_LIBRARY)
-    target_link_libraries(pireal PUBLIC ${LAPACKE_LIBRARY})
-    target_link_libraries(picomplex PUBLIC ${LAPACKE_LIBRARY})
+  if(LAPACKE_WORKS)
+    if(LAPACKE_LIBRARY)
+      target_link_libraries(LAPACKE_TARGET INTERFACE "${LAPACKE_LIBRARY}")
+    endif()
+    if(LAPACKE_INCLUDE_DIR)
+      target_include_directories(LAPACKE_TARGET SYSTEM INTERFACE "${LAPACKE_INCLUDE_DIR}")
+    endif()
   elseif(NOT LAPACKE_WORKS)
     message(FATAL_ERROR "No working LAPACKE detected")
   endif()
+
+  target_link_libraries(pireal PUBLIC LAPACKE::LAPACKE)
+  target_link_libraries(picomplex PUBLIC LAPACKE::LAPACKE)
 
   # Using BLAS/LAPACK from Eigen
   message(STATUS "Using BLAS/LAPACK from Eigen")

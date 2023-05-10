@@ -61,7 +61,10 @@
 #ifdef WITH_INTEL_MKL
 #define MKL_Complex8 std::complex<float>
 #define MKL_Complex16 std::complex<double>
+#include <mkl_lapacke.h>
 #include <mkl_solvers_ee.h>
+#elif defined EIGEN_USE_LAPACKE
+#include <lapacke.h>
 #endif // WITH_INTEL_MKL
 
 template <class T>
@@ -618,6 +621,9 @@ public:
                                       hamiltonian.outerIndexPtr(), hamiltonian.innerIndexPtr(),
                                       &fpm[0], &epsout, &loop, &energy_lower_bound,
                                       &energy_upper_bound, &m0, &e[0], &x[0], &m, &res[0], &info);
+                    if (info != 0) {
+                        throw std::runtime_error("Diagonalization with FEAST failed.");
+                    }
                 }
 
                 // Build the new hamiltonian
@@ -657,12 +663,33 @@ public:
             return;
         }
 
+#if defined EIGEN_USE_LAPACKE || WITH_INTEL_MKL
+
+        // Diagonalize hamiltonian
+        char jobz = 'V';                 // eigenvalues and eigenvectors are computed
+        char uplo = 'U';                 // full matrix is stored, upper is used
+        int n = hamiltonian.cols();      // size of the matrix
+        eigen_dense_t mat = hamiltonian; // matrix
+        int lda = mat.outerStride();     // leading dimension
+        eigen_vector_double_t evals(n);  // eigenvalues
+        int info = LAPACKE_evd(LAPACK_COL_MAJOR, jobz, uplo, n, mat.data(), lda, evals.data());
+        if (info != 0) {
+            throw std::runtime_error("Diagonalization with LAPACKE failed.");
+        }
+
+        // Get eigenvectors
+        eigen_sparse_t evecs = mat.sparseView();
+
+#else // EIGEN_USE_LAPACKE || WITH_INTEL_MKL
+
         // Diagonalize hamiltonian
         Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonian);
 
         // Get eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
         eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
+
+#endif // EIGEN_USE_LAPACKE || WITH_INTEL_MKL
 
         // Build the new hamiltonian
         hamiltonian.setZero();
@@ -1513,6 +1540,18 @@ private:
         zfeast_hcsrev(uplo, n, a, ia, ja, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);
     }
 #endif // WITH_INTEL_MKL
+
+#if defined EIGEN_USE_LAPACKE || WITH_INTEL_MKL
+    int LAPACKE_evd(const int matrix_layout, const char jobz, const char uplo, const lapack_int n,
+                    double *a, const lapack_int lda, double *w) {
+        return LAPACKE_dsyevd(matrix_layout, jobz, uplo, n, a, lda, w);
+    }
+
+    int LAPACKE_evd(const int matrix_layout, const char jobz, const char uplo, const lapack_int n,
+                    lapack_complex_double *a, const lapack_int lda, double *w) {
+        return LAPACKE_zheevd(matrix_layout, jobz, uplo, n, a, lda, w);
+    }
+#endif // EIGEN_USE_LAPACKE || WITH_INTEL_MKL
 
     ////////////////////////////////////////////////////////////////////
     /// Method to update the system ////////////////////////////////////
