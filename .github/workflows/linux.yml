@@ -12,8 +12,6 @@ env:
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
   CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
-  QT_QPA_PLATFORM: "offscreen"
-  QT_DEBUG_PLUGINS: 1
 
 jobs:
   debian:
@@ -35,6 +33,9 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
     - name: Documentation
       run: |
         lcov --directory . --capture --output-file coverage.info;
@@ -84,6 +85,9 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
     - name: Wheel
       run: |
         python setup.py bdist_wheel --python-tag py3 --plat-name "$AUDITWHEEL_PLAT"
@@ -115,6 +119,9 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
     - name: Documentation
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package
@@ -141,6 +148,9 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
     - name: Documentation
       run: cmake --build build/ --target doc -- --keep-going
 
@@ -163,6 +173,9 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
     - name: Documentation
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package

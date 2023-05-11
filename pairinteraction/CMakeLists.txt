@@ -140,6 +140,48 @@ if (NOT MKL_FOUND AND PKG_CONFIG_FOUND)
   endif()
 endif()
 
+if(MSVC)
+  # https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-windows/2023-1/contents-of-the-redist-intel64-directory.html
+  file(GLOB MKL_DLLS
+    # Threading layer
+    "${MKL_ROOT}/redist/intel64/mkl_${MKL_THREADING}*.dll"
+    # Computational layer
+    "${MKL_ROOT}/redist/intel64/mkl_core*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_def*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_mc*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_avx*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_vml_def*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_vml_mc*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_vml_avx*.dll"
+    "${MKL_ROOT}/redist/intel64/mkl_vml_cmpt*.dll"
+    "${MKL_ROOT}/redist/intel64/libimalloc.dll")
+  if(NOT MKL_DLLS)
+    message(WARNING "MKL DLLs could not be located! Dynamic lookup will probably fail.")
+  endif()
+  if(MKL_THREADING STREQUAL "intel_thread")
+    # Implementation detail of MKLConfig.cmake, the pkg-config files do not expose these variables
+    if(EXISTS "${OMP_DLL_DIR}/${OMP_DLLNAME}")
+      list(APPEND MKL_DLLS ${OMP_DLL_DIR}/${OMP_DLLNAME})
+    else()
+      message(WARNING "Intel OpenMP DLL cloud not be located! Dynamic lookup will probably fail.")
+    endif()
+  elseif(MKL_THREADING STREQUAL "tbb_thread")
+    # FIXME: Do we have to add any additional DLLs?
+  endif()
+  set(MKL_DLLS_TO_COPY "${MKL_DLLS}" CACHE STRING "Intel MKL DLLs to copy into the target dir (;-list, ignored if not on Windows)")
+  unset(MKL_DLLS)
+endif()
+
+function(target_copy_mkl_dlls TARGET)
+  foreach(FILE ${MKL_DLLS_TO_COPY})
+    add_custom_command(TARGET ${TARGET} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FILE} $<TARGET_FILE_DIR:${TARGET}>)
+  endforeach()
+endfunction()
+
+target_copy_mkl_dlls(pireal)
+target_copy_mkl_dlls(picomplex)
+
 # Find a different lapack vendor
 find_package(LAPACK)
 
@@ -318,6 +360,7 @@ if(WITH_PYTHON)
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
   swig_link_libraries(pireal PUBLIC pireal $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
+  target_copy_mkl_dlls(${SWIG_MODULE_pireal_REAL_NAME})
 
   set_property(SOURCE ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i PROPERTY CPLUSPLUS ON)
   swig_add_library(picomplex LANGUAGE python SOURCES ${CMAKE_CURRENT_BINARY_DIR}/interface_complex.i)
@@ -334,6 +377,7 @@ if(WITH_PYTHON)
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
   swig_link_libraries(picomplex PUBLIC picomplex $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
+  target_copy_mkl_dlls(${SWIG_MODULE_picomplex_REAL_NAME})
 
 endif()
 

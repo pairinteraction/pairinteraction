@@ -17,8 +17,6 @@ env:
   CTEST_PARALLEL_LEVEL: 3
   CTEST_OUTPUT_ON_FAILURE: 1
   CXXFLAGS: "-Wall -Wextra -Wpedantic"
-  QT_QPA_PLATFORM: "offscreen"
-  QT_DEBUG_PLUGINS: 1
 
 jobs:
   macos:
@@ -48,6 +46,9 @@ jobs:
         run: cmake --build build/ -- --keep-going
       - name: Test
         run: cmake --build build/ --target test -- --keep-going
+        env:
+          QT_QPA_PLATFORM: "offscreen"
+          QT_DEBUG_PLUGINS: 1
       - name: Package
         run: |
           cmake --build build/ --target package -- --keep-going

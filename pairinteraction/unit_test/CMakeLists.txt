@@ -30,6 +30,7 @@ function(UNIT_TEST)
   target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
   set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
   target_link_libraries(${UT_TARGET} PRIVATE pireal doctest::doctest)
+  target_copy_mkl_dlls(${UT_TARGET})
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
