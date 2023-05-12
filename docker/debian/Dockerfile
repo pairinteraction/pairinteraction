@@ -34,9 +34,3 @@ RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-li
 
 # https://github.com/JuliaLang/julia/issues/34276
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/julia/libstdc++.so.6
-
-# https://github.com/boostorg/serialization/issues/219
-COPY boost.patch /tmp/
-RUN patch -d/ -p0 < /tmp/boost.patch
-
-ENV MKLROOT="/opt/intel/oneapi/mkl/latest/"
