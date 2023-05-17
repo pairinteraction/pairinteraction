@@ -81,8 +81,8 @@ public:
     void diagonalize();
     friend Hamiltonianmatrix operator+ <>(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
     friend Hamiltonianmatrix operator- <>(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
-    template <typename S, typename T> friend Hamiltonianmatrix<S> operator*(const T& lhs, Hamiltonianmatrix<S> rhs);
-    template <typename S, typename T> friend Hamiltonianmatrix<S> operator*(Hamiltonianmatrix<S> lhs, const T& rhs);
+    template <typename S, typename T> friend Hamiltonianmatrix<S> operator*(const T& lhs, Hamiltonianmatrix<S> rhs); // NOLINT
+    template <typename S, typename T> friend Hamiltonianmatrix<S> operator*(Hamiltonianmatrix<S> lhs, const T& rhs); // NOLINT
     Hamiltonianmatrix &operator+=(const Hamiltonianmatrix &rhs);
     Hamiltonianmatrix &operator-=(const Hamiltonianmatrix &rhs);
     bytes_t &serialize() override;
@@ -144,7 +144,6 @@ protected:
     std::vector<Eigen::Triplet<Scalar>> triplets_entries;
 };
 
-#ifdef USE_COMPLEX
 extern template class Hamiltonianmatrix<std::complex<double>>;
 extern template Hamiltonianmatrix<std::complex<double>> operator+(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
 extern template Hamiltonianmatrix<std::complex<double>> operator-(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
@@ -158,7 +157,6 @@ extern template Hamiltonianmatrix<std::complex<double>> combine(const Hamiltonia
                           const Symmetry &sym);
 extern template void energycutoff(const Hamiltonianmatrix<std::complex<double>> &lhs, const Hamiltonianmatrix<std::complex<double>> &rhs,
                   const double &deltaE, std::vector<bool> &necessary);
-#else
 extern template class Hamiltonianmatrix<double>;
 extern template Hamiltonianmatrix<double> operator+(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
 extern template Hamiltonianmatrix<double> operator-(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
@@ -170,6 +168,5 @@ extern template Hamiltonianmatrix<double> combine(const Hamiltonianmatrix<double
                           const Symmetry &sym);
 extern template void energycutoff(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
                   const double &deltaE, std::vector<bool> &necessary);
-#endif
 
 #endif // HAMILTONIANMATRIX_H

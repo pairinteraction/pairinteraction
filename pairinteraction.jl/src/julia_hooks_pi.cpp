@@ -258,13 +258,13 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
         .method("<=", &StateTwo::operator<=);
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("SystemBase")
-        .apply<SystemBase<scalar_t,StateOne>>(
+        .apply<SystemBase<double,StateOne>, SystemBase<std::complex<double>,StateOne>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; })
-        .apply<SystemBase<scalar_t,StateTwo>>(
+        .apply<SystemBase<double,StateTwo>, SystemBase<std::complex<double>,StateTwo>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("eigen_sparse_t")
-        .apply<Eigen::SparseMatrix<scalar_t>>([](auto wrapped)
+        .apply<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<std::complex<double>>>([](auto wrapped)
     {
         typedef typename decltype(wrapped)::type WrappedT;
         typedef typename WrappedT::Scalar Scalar;
@@ -316,7 +316,7 @@ if constexpr(is_complex_v) {
     });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("SystemOne")
-        .apply<SystemOne<scalar_t>>([](auto wrapped)
+        .apply<SystemOne<double>, SystemOne<std::complex<double>>>([](auto wrapped)
     {
         typedef typename decltype(wrapped)::type WrappedT;
         typedef typename WrappedT::Scalar Scalar;
@@ -407,7 +407,7 @@ if constexpr(is_complex_v) {
     });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("SystemTwo")
-        .apply<SystemTwo<scalar_t>>([](auto wrapped)
+        .apply<SystemTwo<double>, SystemTwo<std::complex<double>>>([](auto wrapped)
     {
         typedef typename decltype(wrapped)::type WrappedT;
         typedef typename WrappedT::Scalar Scalar;

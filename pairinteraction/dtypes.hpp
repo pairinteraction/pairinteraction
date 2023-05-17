@@ -36,12 +36,6 @@ typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
 typedef std::nullptr_t invalid_t;
 
-#ifdef USE_COMPLEX
-typedef complex_t scalar_t;
-#else
-typedef double scalar_t;
-#endif
-
 // Backport template aliases to older Eigen versions
 #if !EIGEN_VERSION_AT_LEAST(3,4,0)
 namespace Eigen {
@@ -52,12 +46,9 @@ using VectorX = Matrix<Type, Dynamic, 1>;
 }
 #endif
 
-typedef Eigen::SparseMatrix<scalar_t> eigen_sparse_t;
 typedef Eigen::SparseMatrix<double> eigen_sparse_double_t;
 typedef Eigen::SparseMatrix<double>::InnerIterator eigen_iterator_double_t;
-typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_double_t;
-typedef Eigen::Matrix<scalar_t, Eigen::Dynamic, 1> eigen_vector_t;
 typedef Eigen::Matrix<double, Eigen::Dynamic, 1> eigen_vector_double_t;
 
 typedef Eigen::Matrix<double, 3, 3> eigen_matrix33;

@@ -653,8 +653,5 @@ void HamiltonianOne<Scalar>::build() {
     std::cout << "One-atom Hamiltonian, all Hamiltonians processed" << std::endl;
 }
 
-#ifdef USE_COMPLEX
 template class HamiltonianOne<std::complex<double>>;
-#else
 template class HamiltonianOne<double>;
-#endif

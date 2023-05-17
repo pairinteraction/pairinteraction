@@ -1569,8 +1569,5 @@ bool SystemTwo<Scalar>::isRefelectionAndRotationCompatible() {
     return true;
 }
 
-#ifdef USE_COMPLEX
 template class SystemTwo<std::complex<double>>;
-#else
 template class SystemTwo<double>;
-#endif

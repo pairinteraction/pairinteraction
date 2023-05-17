@@ -139,13 +139,9 @@ namespace std {
   MAKE_NUMPY_TYPEMAP_IN(TYPE)
 %enddef
 
-MAKE_NUMPY_TYPEMAP(eigen_dense_t)
-MAKE_NUMPY_TYPEMAP(eigen_dense_t)
 MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
-MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
-MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
 MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<std::complex<double>>)
 MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<double>)
@@ -184,11 +180,8 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "Interface.hpp"
 
-#ifdef USE_COMPLEX
-%template(compute) compute<std::complex<double>>;
-#else
-%template(compute) compute<double>;
-#endif
+%template(computeComplex) compute<std::complex<double>>;
+%template(computeReal) compute<double>;
 
 %include "QuantumDefect.hpp"
 
@@ -254,13 +247,10 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemOne.h and SystemTwo.h
-#ifdef USE_COMPLEX
-%template(_SystemStateOne) SystemBase<std::complex<double>,StateOne>;
-%template(_SystemStateTwo) SystemBase<std::complex<double>,StateTwo>;
-#else
-%template(_SystemStateOne) SystemBase<double,StateOne>;
-%template(_SystemStateTwo) SystemBase<double,StateTwo>;
-#endif
+%template(_SystemStateOneComplex) SystemBase<std::complex<double>,StateOne>;
+%template(_SystemStateTwoComplex) SystemBase<std::complex<double>,StateTwo>;
+%template(_SystemStateOneReal) SystemBase<double,StateOne>;
+%template(_SystemStateTwoReal) SystemBase<double,StateTwo>;
 
 %copyctor SystemOne;
 %copyctor SystemTwo;
@@ -282,28 +272,38 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 #endif
 }
 
-%extend SystemTwo {
+%extend SystemTwo<double> {
 #ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       tmp = MatrixElementCache()
-      s1 = SystemOne("", tmp)
-      s2 = SystemOne("", tmp)
+      s1 = SystemOneReal("", tmp)
+      s2 = SystemOneReal("", tmp)
       self.__init__(s1, s2, tmp)
       self.__setstate_internal(sState)
   %}
 #endif
 }
 
-#ifdef USE_COMPLEX
-%template(_SystemOne) SystemOne<std::complex<double>>;
-%template(_SystemTwo) SystemTwo<std::complex<double>>;
-#else
-%template(_SystemOne) SystemOne<double>;
-%template(_SystemTwo) SystemTwo<double>;
+%extend SystemTwo<std::complex<double>> {
+#ifdef SWIGPYTHON
+  %pythoncode %{
+    def __setstate__(self, sState):
+      tmp = MatrixElementCache()
+      s1 = SystemOneComplex("", tmp)
+      s2 = SystemOneComplex("", tmp)
+      self.__init__(s1, s2, tmp)
+      self.__setstate_internal(sState)
+  %}
 #endif
+}
+
+%template(SystemOneComplex) SystemOne<std::complex<double>>;
+%template(SystemTwoComplex) SystemTwo<std::complex<double>>;
+%template(SystemOneReal) SystemOne<double>;
+%template(SystemTwoReal) SystemTwo<double>;
 
 %pythoncode %{
-  SystemOne = _SystemOne
-  SystemTwo = _SystemTwo
+  SystemOne = SystemOneComplex
+  SystemTwo = SystemTwoComplex
 %}

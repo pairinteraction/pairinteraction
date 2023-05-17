@@ -25,7 +25,8 @@ static void print_usage(std::ostream &os, int status) {
     os << "Usage:\n"
           "  -? [ --help ]         produce this help message\n"
           "  -c [ --config ] arg   Path to config JSON file\n"
-          "  -o [ --output ] arg   Path to cache JSON file\n";
+          "  -o [ --output ] arg   Path to cache JSON file\n"
+          "  -t [ --type ] arg     Type of calculation: arg = real|complex\n";
     std::exit(status);
 }
 
@@ -34,7 +35,7 @@ int main(int argc, char *argv[]) {
         print_usage(std::cout, EXIT_SUCCESS);
     }
 
-    std::string config, output;
+    std::string config, output, type;
 
     int optind = 1;
     while (optind < argc) {
@@ -55,6 +56,13 @@ int main(int argc, char *argv[]) {
                 std::exit(EXIT_FAILURE);
             }
             output = argv[optind];
+        } else if (opt == "-t" || opt == "--type") {
+            ++optind;
+            if (!(optind < argc)) {
+                std::cerr << "Option " << opt << " requires an argument\n";
+                std::exit(EXIT_FAILURE);
+            }
+            type = argv[optind];
         } else {
             std::cerr << "Unknown option: " << opt << "\n";
             print_usage(std::cerr, EXIT_FAILURE);
@@ -72,9 +80,17 @@ int main(int argc, char *argv[]) {
         std::exit(EXIT_FAILURE);
     }
 
-#ifdef USE_COMPLEX
-    return compute<std::complex<double>>(config, output);
-#else
-    return compute<double>(config, output);
-#endif
+    if (type.empty()) {
+        std::cerr << "Option --type is required\n";
+        std::exit(EXIT_FAILURE);
+    }
+
+    if (type == "complex") {
+        return compute<std::complex<double>>(config, output);
+    } else if (type == "real") {
+        return compute<double>(config, output);
+    } else {
+        std::cerr << "Option --type can only be 'real' or 'complex' but is '" << type << "'\n";
+        std::exit(EXIT_FAILURE);
+    }
 }

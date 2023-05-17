@@ -23,7 +23,7 @@ using PairInteraction
 cache = PairInteraction.MatrixElementCache()
 
 # Set up SystemOne
-system_one = PairInteraction.SystemOne("Rb", cache)
+system_one = PairInteraction.SystemOne{Float64}("Rb", cache)
 PairInteraction.restrictEnergy(system_one, -1077.243011609127, -939.9554235203701)
 PairInteraction.restrictN(system_one, 57, 63)
 PairInteraction.restrictL(system_one, 0, 3)

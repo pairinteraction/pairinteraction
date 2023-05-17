@@ -587,8 +587,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             raise Exception("Directory containing executables not found.")
 
-        self.path_cpp_real = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-real")
-        self.path_cpp_complex = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-complex")
+        self.path_cpp = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-real")
         self.path_quantumdefects = os.path.join(self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
         if sys.platform == "win32":
@@ -3094,12 +3093,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # start c++ process
             if params["minEy"] != 0 or params["maxEy"] != 0 or params["minBy"] != 0 or params["maxBy"] != 0:
-                path_cpp = self.path_cpp_complex
+                arg_type = "complex"
             else:
-                path_cpp = self.path_cpp_real
+                arg_type = "real"
 
             if os.name == "nt":
-                path_cpp += ".exe"
+                self.path_cpp += ".exe"
 
             self.createThread()
 
@@ -3120,7 +3119,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 omp_threads = {} if self.numprocessors == 0 else {"OMP_NUM_THREADS": str(self.numprocessors)}
                 other_threads = {"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
                 self.proc = subprocess.Popen(
-                    [path_cpp, "-c", self.path_conf, "-o", self.path_cache],
+                    [self.path_cpp, "-c", self.path_conf, "-o", self.path_cache, "-t", arg_type],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=self.path_workingdir,

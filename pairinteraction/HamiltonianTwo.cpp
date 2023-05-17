@@ -880,8 +880,5 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, all Hamiltonians processed" << std::endl;
 }
 
-#ifdef USE_COMPLEX
 template class HamiltonianTwo<std::complex<double>>;
-#else
 template class HamiltonianTwo<double>;
-#endif

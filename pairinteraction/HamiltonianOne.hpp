@@ -62,10 +62,7 @@ private:
     fs::path path_cache;
 };
 
-#ifdef USE_COMPLEX
 extern template class HamiltonianOne<std::complex<double>>;
-#else
 extern template class HamiltonianOne<double>;
-#endif
 
 #endif // HAMILTONIAN_ONE_H

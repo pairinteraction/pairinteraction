@@ -73,7 +73,7 @@ class TestCompute(unittest.TestCase):
             )
 
     def test_compute(self):
-        pi.compute(self.path_config, self.path_cache)
+        pi.computeReal(self.path_config, self.path_cache)
 
     def tearDown(self):
         try:

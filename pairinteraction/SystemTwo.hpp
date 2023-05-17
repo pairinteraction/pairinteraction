@@ -191,10 +191,7 @@ private:
     }
 };
 
-#ifdef USE_COMPLEX
 extern template class SystemTwo<std::complex<double>>;
-#else
 extern template class SystemTwo<double>;
-#endif
 
 #endif

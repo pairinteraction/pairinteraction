@@ -163,7 +163,7 @@ private:
     friend class boost::serialization::access;
 
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
+    void serialize(Archive &ar, unsigned int /*version*/) {
         ar &boost::serialization::base_object<SystemBase<Scalar_, StateOne>>(*this);
         ar &species;
         ar &efield &bfield &diamagnetism &sym_reflection &sym_rotation;
@@ -172,10 +172,7 @@ private:
     }
 };
 
-#ifdef USE_COMPLEX
 extern template class SystemOne<std::complex<double>>;
-#else
 extern template class SystemOne<double>;
-#endif
 
 #endif

@@ -866,8 +866,5 @@ bool SystemOne<Scalar>::isRefelectionAndRotationCompatible() {
     return true;
 }
 
-#ifdef USE_COMPLEX
 template class SystemOne<std::complex<double>>;
-#else
 template class SystemOne<double>;
-#endif

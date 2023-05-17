@@ -768,7 +768,6 @@ void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<
     }
 }
 
-#ifdef USE_COMPLEX
 template class Hamiltonianmatrix<std::complex<double>>;
 template Hamiltonianmatrix<std::complex<double>> operator+(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
 template Hamiltonianmatrix<std::complex<double>> operator-(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
@@ -782,7 +781,6 @@ template Hamiltonianmatrix<std::complex<double>> combine(const Hamiltonianmatrix
                           const Symmetry &sym);
 template void energycutoff(const Hamiltonianmatrix<std::complex<double>> &lhs, const Hamiltonianmatrix<std::complex<double>> &rhs,
                   const double &deltaE, std::vector<bool> &necessary);
-#else
 template class Hamiltonianmatrix<double>;
 template Hamiltonianmatrix<double> operator+(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
 template Hamiltonianmatrix<double> operator-(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
@@ -794,4 +792,3 @@ template Hamiltonianmatrix<double> combine(const Hamiltonianmatrix<double> &lhs,
                           const Symmetry &sym);
 template void energycutoff(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
                   const double &deltaE, std::vector<bool> &necessary);
-#endif
