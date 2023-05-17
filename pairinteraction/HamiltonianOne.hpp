@@ -36,7 +36,8 @@
 #include <iostream>
 #include <memory>
 
-class HamiltonianOne : public Hamiltonian<BasisnamesOne> {
+template <typename Scalar>
+class HamiltonianOne : public Hamiltonian<Scalar,BasisnamesOne> {
 public:
     HamiltonianOne(const Configuration &config, fs::path &path_cache,
                    std::shared_ptr<BasisnamesOne> basis_one);
@@ -60,5 +61,11 @@ private:
     std::string species;
     fs::path path_cache;
 };
+
+#ifdef USE_COMPLEX
+extern template class HamiltonianOne<std::complex<double>>;
+#else
+extern template class HamiltonianOne<double>;
+#endif
 
 #endif // HAMILTONIAN_ONE_H

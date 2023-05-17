@@ -39,6 +39,8 @@
 */
 
 int compute(const std::string &config_name, const std::string &output_name) {
+    using Scalar = scalar_t;
+
     std::cout << std::unitbuf;
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
@@ -65,38 +67,38 @@ int compute(const std::string &config_name, const std::string &output_name) {
                 << std::endl;
             return 1;
         }
-        std::shared_ptr<HamiltonianOne> hamiltonian_one;
+        std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one;
         if (existAtom1 && existAtom2) {
             std::cout << fmt::format(">>TYP{:7d}", 3) << std::endl;
             auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
-            hamiltonian_one = std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one);
+            hamiltonian_one = std::make_shared<HamiltonianOne<Scalar>>(config, path_cache, basisnames_one);
         }
-        std::shared_ptr<HamiltonianTwo> hamiltonian_two;
+        std::shared_ptr<HamiltonianTwo<Scalar>> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one);
+            hamiltonian_two = std::make_shared<HamiltonianTwo<Scalar>>(config, path_cache, hamiltonian_one);
         }
     } else {
-        std::shared_ptr<HamiltonianOne> hamiltonian_one1;
+        std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1;
         if (existAtom1) {
             std::cout << fmt::format(">>TYP{:7d}", 0) << std::endl;
             auto basisnames_one1 =
                 std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(config));
             hamiltonian_one1 =
-                std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one1);
+                std::make_shared<HamiltonianOne<Scalar>>(config, path_cache, basisnames_one1);
         }
-        std::shared_ptr<HamiltonianOne> hamiltonian_one2;
+        std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2;
         if (existAtom2) {
             std::cout << fmt::format(">>TYP{:7d}", 1) << std::endl;
             auto basisnames_one2 =
                 std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(config));
             hamiltonian_one2 =
-                std::make_shared<HamiltonianOne>(config, path_cache, basisnames_one2);
+                std::make_shared<HamiltonianOne<Scalar>>(config, path_cache, basisnames_one2);
         }
-        std::shared_ptr<HamiltonianTwo> hamiltonian_two;
+        std::shared_ptr<HamiltonianTwo<Scalar>> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo>(config, path_cache, hamiltonian_one1,
+            hamiltonian_two = std::make_shared<HamiltonianTwo<Scalar>>(config, path_cache, hamiltonian_one1,
                                                                hamiltonian_one2);
         }
     }

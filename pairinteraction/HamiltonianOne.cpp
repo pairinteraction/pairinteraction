@@ -25,20 +25,23 @@
 #include <stdexcept>
 #include <utility>
 
-HamiltonianOne::HamiltonianOne(const Configuration &config, fs::path &path_cache,
+template <typename Scalar>
+HamiltonianOne<Scalar>::HamiltonianOne(const Configuration &config, fs::path &path_cache,
                                std::shared_ptr<BasisnamesOne> basis_one)
     : path_cache(path_cache) {
-    basis = std::move(basis_one);
+    this->basis = std::move(basis_one);
     configure(config);
     build();
 }
 
-const Configuration &HamiltonianOne::getConf()
+template <typename Scalar>
+const Configuration &HamiltonianOne<Scalar>::getConf()
     const { // TODO in Configurable Klasse auslagern, von der geerbt werrden soll
     return basicconf;
 }
 
-void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z, double &val_p,
+template <typename Scalar>
+void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, double val_z, double &val_p,
                                        double &val_m, double &val_0) {
     if (val_y != 0) {
         std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
@@ -50,7 +53,8 @@ void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z,
     val_0 = val_z;
 }
 
-void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z,
+template <typename Scalar>
+void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, double val_z,
                                        std::complex<double> &val_p, std::complex<double> &val_m,
                                        std::complex<double> &val_0) {
     val_p = std::complex<double>(-val_x / std::sqrt(2), -val_y / std::sqrt(2));
@@ -58,8 +62,9 @@ void HamiltonianOne::changeToSpherical(double val_x, double val_y, double val_z,
     val_0 = std::complex<double>(val_z, 0);
 }
 
-void HamiltonianOne::configure(const Configuration &config) {
-    basicconf = basis->getConf();
+template <typename Scalar>
+void HamiltonianOne<Scalar>::configure(const Configuration &config) {
+    basicconf = this->basis->getConf();
     basicconf["deltaESingle"] << config["deltaESingle"];
     basicconf["diamagnetism"] << config["diamagnetism"];
 
@@ -89,9 +94,10 @@ void HamiltonianOne::configure(const Configuration &config) {
     }
 }
 
-void HamiltonianOne::build() {
+template <typename Scalar>
+void HamiltonianOne<Scalar>::build() {
     fs::path path_cache_mat;
-    if (utils::is_complex<scalar_t>::value) {
+    if (utils::is_complex<Scalar>::value) {
         path_cache_mat = path_cache / "cache_matrix_complex";
     } else {
         path_cache_mat = path_cache / "cache_matrix_real";
@@ -109,23 +115,23 @@ void HamiltonianOne::build() {
     // === Calculate one-atom Hamiltonian ===
 
     // --- Count entries of one-atom Hamiltonian ---
-    size_t size_basis = basis->size();
-    size_t size_energy = basis->size();
+    size_t size_basis = this->basis->size();
+    size_t size_energy = this->basis->size();
 
     // --- Construct one-atom  Hamiltonian and basis ---
     std::cout << "One-atom Hamiltonian, construct diagonal Hamiltonian" << std::endl;
 
-    Hamiltonianmatrix<scalar_t> hamiltonian_energy(size_basis, size_energy);
+    Hamiltonianmatrix<Scalar> hamiltonian_energy(size_basis, size_energy);
 
     double energy_initial = 0;
-    for (const auto &state : basis->initial()) {
+    for (const auto &state : this->basis->initial()) {
         energy_initial += energy_level(species, state.n, state.l, state.j);
     }
-    energy_initial /= basis->initial().size(); // TODO save it to the json file
+    energy_initial /= this->basis->initial().size(); // TODO save it to the json file
 
-    std::vector<bool> is_necessary(basis->size(), false);
+    std::vector<bool> is_necessary(this->basis->size(), false);
     idx_t idx = 0;
-    for (const auto &state : *basis) {
+    for (const auto &state : *this->basis) {
         double val = energy_level(species, state.n, state.l, state.j) - energy_initial;
         if (std::abs(val) < deltaE + 1e-11 || deltaE < 0) { // TODO
             is_necessary[state.idx] = true;
@@ -134,16 +140,16 @@ void HamiltonianOne::build() {
             ++idx;
         }
     }
-    std::cout << "One-atom Hamiltonian, basis size without restrictions: " << basis->size()
+    std::cout << "One-atom Hamiltonian, basis size without restrictions: " << this->basis->size()
               << std::endl;
 
-    basis->removeUnnecessaryStates(is_necessary);
+    this->basis->removeUnnecessaryStates(is_necessary);
 
-    hamiltonian_energy.compress(basis->dim(), basis->dim());
+    hamiltonian_energy.compress(this->basis->dim(), this->basis->dim());
 
-    std::cout << "One-atom Hamiltonian, basis size with restrictions: " << basis->size()
+    std::cout << "One-atom Hamiltonian, basis size with restrictions: " << this->basis->size()
               << std::endl;
-    std::cout << fmt::format(">>BAS{:7d}", basis->size()) << std::endl;
+    std::cout << fmt::format(">>BAS{:7d}", this->basis->size()) << std::endl;
 
     // === Save single atom basis ===
     std::cout << "One-atom Hamiltonian, save single atom basis" << std::endl;
@@ -159,7 +165,7 @@ void HamiltonianOne::build() {
     // save basis
     fs::path path_basis = fs::temp_directory_path();
     path_basis /= "basis_one_" + uuid + ".csv";
-    basis->save(path_basis.string());
+    this->basis->save(path_basis.string());
 
     std::cout << fmt::format(">>STA {:s}", path_basis.string()) << std::endl;
 
@@ -168,7 +174,7 @@ void HamiltonianOne::build() {
     ////////////////////////////////////////////////////////
 
     // --- Obtain existence of fields ---
-    scalar_t min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m,
+    Scalar min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m,
         max_B_0, max_B_p, max_B_m;
     changeToSpherical(min_E_x, min_E_y, min_E_z, min_E_p, min_E_m, min_E_0);
     changeToSpherical(max_E_x, max_E_y, max_E_z, max_E_p, max_E_m, max_E_0);
@@ -186,49 +192,49 @@ void HamiltonianOne::build() {
     MatrixElements matrix_elements(basicconf, species, (path_cache / "cache_elements.db").string());
 
     if (exist_E_0) {
-        matrix_elements.precalculateElectricMomentum(basis, 0);
+        matrix_elements.precalculateElectricMomentum(this->basis, 0);
     }
     if (exist_E_1) {
-        matrix_elements.precalculateElectricMomentum(basis, 1);
+        matrix_elements.precalculateElectricMomentum(this->basis, 1);
     }
     if (exist_E_1) {
-        matrix_elements.precalculateElectricMomentum(basis, -1);
+        matrix_elements.precalculateElectricMomentum(this->basis, -1);
     }
 
     if (exist_B_0) {
-        matrix_elements.precalculateMagneticMomentum(basis, 0);
+        matrix_elements.precalculateMagneticMomentum(this->basis, 0);
     }
     if (exist_B_1) {
-        matrix_elements.precalculateMagneticMomentum(basis, 1);
+        matrix_elements.precalculateMagneticMomentum(this->basis, 1);
     }
     if (exist_B_1) {
-        matrix_elements.precalculateMagneticMomentum(basis, -1);
+        matrix_elements.precalculateMagneticMomentum(this->basis, -1);
     }
 
     if (diamagnetism && (exist_B_0 || exist_B_1)) {
-        matrix_elements.precalculateDiamagnetism(basis, 0, 0);
+        matrix_elements.precalculateDiamagnetism(this->basis, 0, 0);
     }
     if (diamagnetism && (exist_B_0 || exist_B_1)) {
-        matrix_elements.precalculateDiamagnetism(basis, 2, 0);
+        matrix_elements.precalculateDiamagnetism(this->basis, 2, 0);
     }
     if (diamagnetism && exist_B_0 && exist_B_1) {
-        matrix_elements.precalculateDiamagnetism(basis, 2, 1);
+        matrix_elements.precalculateDiamagnetism(this->basis, 2, 1);
     }
     if (diamagnetism && exist_B_0 && exist_B_1) {
-        matrix_elements.precalculateDiamagnetism(basis, 2, -1);
+        matrix_elements.precalculateDiamagnetism(this->basis, 2, -1);
     }
     if (diamagnetism && exist_B_1) {
-        matrix_elements.precalculateDiamagnetism(basis, 2, 2);
+        matrix_elements.precalculateDiamagnetism(this->basis, 2, 2);
     }
     if (diamagnetism && exist_B_1) {
-        matrix_elements.precalculateDiamagnetism(basis, 2, -2);
+        matrix_elements.precalculateDiamagnetism(this->basis, 2, -2);
     }
 
     // --- Count entries of atom-field Hamiltonian ---
     std::cout << "One-atom Hamiltonian, count number of entries within the field Hamiltonian"
               << std::endl;
 
-    size_basis = basis->size();
+    size_basis = this->basis->size();
     size_t size_electricMomentum_0 = 0;
     size_t size_electricMomentum_p = 0;
     size_t size_electricMomentum_m = 0;
@@ -244,8 +250,8 @@ void HamiltonianOne::build() {
     size_t size_diamagnetism_2pp = 0;
     size_t size_diamagnetism_2mm = 0;
 
-    for (const auto &state_col : *basis) { // TODO parallelization
-        for (const auto &state_row : *basis) {
+    for (const auto &state_col : *this->basis) { // TODO parallelization
+        for (const auto &state_row : *this->basis) {
             if (state_row.idx < state_col.idx) { // lower triangle only
                 continue;
             }
@@ -291,23 +297,23 @@ void HamiltonianOne::build() {
     // --- Construct atom-field Hamiltonian ---
     std::cout << "One-atom Hamiltonian, construct field Hamiltonian" << std::endl;
 
-    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
-    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_p(size_basis, size_electricMomentum_p);
-    Hamiltonianmatrix<scalar_t> hamiltonian_electricMomentum_m(size_basis, size_electricMomentum_m);
+    Hamiltonianmatrix<Scalar> hamiltonian_electricMomentum_0(size_basis, size_electricMomentum_0);
+    Hamiltonianmatrix<Scalar> hamiltonian_electricMomentum_p(size_basis, size_electricMomentum_p);
+    Hamiltonianmatrix<Scalar> hamiltonian_electricMomentum_m(size_basis, size_electricMomentum_m);
 
-    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_0(size_basis, size_magneticMomentum_0);
-    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_p(size_basis, size_magneticMomentum_p);
-    Hamiltonianmatrix<scalar_t> hamiltonian_magneticMomentum_m(size_basis, size_magneticMomentum_m);
+    Hamiltonianmatrix<Scalar> hamiltonian_magneticMomentum_0(size_basis, size_magneticMomentum_0);
+    Hamiltonianmatrix<Scalar> hamiltonian_magneticMomentum_p(size_basis, size_magneticMomentum_p);
+    Hamiltonianmatrix<Scalar> hamiltonian_magneticMomentum_m(size_basis, size_magneticMomentum_m);
 
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_00(size_basis, size_diamagnetism_00);
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_20(size_basis, size_diamagnetism_20);
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2p(size_basis, size_diamagnetism_2p);
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2m(size_basis, size_diamagnetism_2m);
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
-    Hamiltonianmatrix<scalar_t> hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_00(size_basis, size_diamagnetism_00);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_20(size_basis, size_diamagnetism_20);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_2p(size_basis, size_diamagnetism_2p);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_2m(size_basis, size_diamagnetism_2m);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_2pp(size_basis, size_diamagnetism_2pp);
+    Hamiltonianmatrix<Scalar> hamiltonian_diamagnetism_2mm(size_basis, size_diamagnetism_2mm);
 
-    for (const auto &state_col : *basis) { // TODO parallelization
-        for (const auto &state_row : *basis) {
+    for (const auto &state_col : *this->basis) { // TODO parallelization
+        for (const auto &state_row : *this->basis) {
             if (state_row.idx < state_col.idx) {
                 continue;
             }
@@ -405,20 +411,20 @@ void HamiltonianOne::build() {
 
     std::cout << "One-atom Hamiltonian, compress field Hamiltonian" << std::endl;
 
-    hamiltonian_electricMomentum_0.compress(basis->dim(), basis->dim());
-    hamiltonian_electricMomentum_p.compress(basis->dim(), basis->dim());
-    hamiltonian_electricMomentum_m.compress(basis->dim(), basis->dim());
+    hamiltonian_electricMomentum_0.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_electricMomentum_p.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_electricMomentum_m.compress(this->basis->dim(), this->basis->dim());
 
-    hamiltonian_magneticMomentum_0.compress(basis->dim(), basis->dim());
-    hamiltonian_magneticMomentum_p.compress(basis->dim(), basis->dim());
-    hamiltonian_magneticMomentum_m.compress(basis->dim(), basis->dim());
+    hamiltonian_magneticMomentum_0.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_magneticMomentum_p.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_magneticMomentum_m.compress(this->basis->dim(), this->basis->dim());
 
-    hamiltonian_diamagnetism_00.compress(basis->dim(), basis->dim());
-    hamiltonian_diamagnetism_20.compress(basis->dim(), basis->dim());
-    hamiltonian_diamagnetism_2p.compress(basis->dim(), basis->dim());
-    hamiltonian_diamagnetism_2m.compress(basis->dim(), basis->dim());
-    hamiltonian_diamagnetism_2pp.compress(basis->dim(), basis->dim());
-    hamiltonian_diamagnetism_2mm.compress(basis->dim(), basis->dim());
+    hamiltonian_diamagnetism_00.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_diamagnetism_20.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_diamagnetism_2p.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_diamagnetism_2m.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_diamagnetism_2pp.compress(this->basis->dim(), this->basis->dim());
+    hamiltonian_diamagnetism_2mm.compress(this->basis->dim(), this->basis->dim());
 
     ////////////////////////////////////////////////////////
     ////// Prepare processing of Hamiltonians //////////////
@@ -431,7 +437,7 @@ void HamiltonianOne::build() {
     // === Open database ===
     fs::path path_db;
 
-    if (utils::is_complex<scalar_t>::value) {
+    if (utils::is_complex<Scalar>::value) {
         path_db = path_cache / "cache_matrix_complex.db";
     } else {
         path_db = path_cache / "cache_matrix_real.db";
@@ -442,9 +448,9 @@ void HamiltonianOne::build() {
     // === Initialize variables ===
     bool flag_perhapsmissingtable = true;
 
-    matrix_path.resize(nSteps);
-    matrix_diag.resize(nSteps); // TODO maybe remove
-    params.resize(nSteps);      // TODO maybe remove
+    this->matrix_path.resize(nSteps);
+    this->matrix_diag.resize(nSteps); // TODO maybe remove
+    this->params.resize(nSteps);      // TODO maybe remove
 
     ////////////////////////////////////////////////////////
     ////// Loop through steps //////////////////////////////
@@ -471,12 +477,12 @@ void HamiltonianOne::build() {
         double By = min_B_y + normalized_position * (max_B_y - min_B_y);
         double Bz = min_B_z + normalized_position * (max_B_z - min_B_z);
 
-        scalar_t E_0 = min_E_0 + normalized_position * (max_E_0 - min_E_0);
-        scalar_t E_p = min_E_p + normalized_position * (max_E_p - min_E_p);
-        scalar_t E_m = min_E_m + normalized_position * (max_E_m - min_E_m);
-        scalar_t B_0 = min_B_0 + normalized_position * (max_B_0 - min_B_0);
-        scalar_t B_p = min_B_p + normalized_position * (max_B_p - min_B_p);
-        scalar_t B_m = min_B_m + normalized_position * (max_B_m - min_B_m);
+        Scalar E_0 = min_E_0 + normalized_position * (max_E_0 - min_E_0);
+        Scalar E_p = min_E_p + normalized_position * (max_E_p - min_E_p);
+        Scalar E_m = min_E_m + normalized_position * (max_E_m - min_E_m);
+        Scalar B_0 = min_B_0 + normalized_position * (max_B_0 - min_B_0);
+        Scalar B_p = min_B_p + normalized_position * (max_B_p - min_B_p);
+        Scalar B_m = min_B_m + normalized_position * (max_B_m - min_B_m);
 
         // Get configuration and save fields
         Configuration conf = basicconf;
@@ -586,10 +592,10 @@ void HamiltonianOne::build() {
         }
 
         // === Build and diagonalize total matrix if not existent ===
-        Hamiltonianmatrix<scalar_t> totalmatrix;
+        Hamiltonianmatrix<Scalar> totalmatrix;
 
         // calculate Hamiltonian if "is_existing" is false
-        std::shared_ptr<Hamiltonianmatrix<scalar_t>> mat;
+        std::shared_ptr<Hamiltonianmatrix<Scalar>> mat;
         if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
             // --- Build matrix ---
@@ -639,10 +645,16 @@ void HamiltonianOne::build() {
         }
 
         // === Store path to configuration and diagonalized matrix ===
-        matrix_path[step] = path.string();
-        matrix_diag[step] = std::make_shared<Hamiltonianmatrix<scalar_t>>(totalmatrix); // TODO maybe remove
-        params[step] = std::make_shared<Configuration>(conf);                 // TODO maybe remove
+        this->matrix_path[step] = path.string();
+        this->matrix_diag[step] = std::make_shared<Hamiltonianmatrix<Scalar>>(totalmatrix); // TODO maybe remove
+        this->params[step] = std::make_shared<Configuration>(conf);                 // TODO maybe remove
     }
 
     std::cout << "One-atom Hamiltonian, all Hamiltonians processed" << std::endl;
 }
+
+#ifdef USE_COMPLEX
+template class HamiltonianOne<std::complex<double>>;
+#else
+template class HamiltonianOne<double>;
+#endif

@@ -24,15 +24,15 @@
 
 #include <vector>
 
-template <class T>
+template <typename Scalar, class Basisnames>
 class Hamiltonian {
 public:
     Hamiltonian() = default;
-    std::shared_ptr<Hamiltonianmatrix<scalar_t>> get(size_t idx) { return matrix_diag[idx]; }
-    std::shared_ptr<const Hamiltonianmatrix<scalar_t>> get(size_t idx) const { return matrix_diag[idx]; }
+    std::shared_ptr<Hamiltonianmatrix<Scalar>> get(size_t idx) { return matrix_diag[idx]; }
+    std::shared_ptr<const Hamiltonianmatrix<Scalar>> get(size_t idx) const { return matrix_diag[idx]; }
     std::shared_ptr<const Configuration> getParams(size_t idx) const { return params[idx]; }
     size_t size() const { return matrix_diag.size(); }
-    std::shared_ptr<const T> names() const { return basis; }
+    std::shared_ptr<const Basisnames> names() const { return basis; }
     void removeUnnecessaryStates(std::vector<bool> &necessary) {
         basis->removeUnnecessaryStates(necessary);
         for (auto &p : matrix_diag) {
@@ -41,10 +41,10 @@ public:
     }
 
 protected:
-    std::vector<std::shared_ptr<Hamiltonianmatrix<scalar_t>>> matrix_diag;
+    std::vector<std::shared_ptr<Hamiltonianmatrix<Scalar>>> matrix_diag;
     std::vector<std::string> matrix_path;
     std::vector<std::shared_ptr<Configuration>> params;
-    std::shared_ptr<T> basis;
+    std::shared_ptr<Basisnames> basis;
 };
 
 #endif // HAMILTONIAN_H
