@@ -495,10 +495,21 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) *
-                    sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
-                    WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1],
-                                            kappa);
+                // Check triangle conditions (violated e.g. for WignerSymbols::wigner6j(0, 0.5, 0.5,
+                // 0.5, 0, 1))
+                if (state.l[0] >= std::abs(state.j[0] - 0.5) && state.l[0] <= state.j[0] + 0.5 &&
+                    state.l[0] >= std::abs(state.l[1] - kappa) &&
+                    state.l[0] <= state.l[1] + kappa &&
+                    state.j[1] >= std::abs(state.j[0] - kappa) &&
+                    state.j[1] <= state.j[0] + kappa && state.j[1] >= std::abs(state.l[1] - 0.5) &&
+                    state.j[1] <= state.l[1] + 0.5) {
+                    cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) *
+                        sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
+                        WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1],
+                                                kappa);
+                } else {
+                    cache.second = 0;
+                }
 
                 ss.str(std::string());
                 ss << "insert into cache_reduced_commutes_s (k, l1, j1, l2, j2, value) values ("
