@@ -184,6 +184,12 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 %include "Interface.hpp"
 
+#ifdef USE_COMPLEX
+%template(compute) compute<std::complex<double>>;
+#else
+%template(compute) compute<double>;
+#endif
+
 %include "QuantumDefect.hpp"
 
 %include "Wavefunction.hpp"

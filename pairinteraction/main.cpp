@@ -72,5 +72,9 @@ int main(int argc, char *argv[]) {
         std::exit(EXIT_FAILURE);
     }
 
-    return compute(config, output);
+#ifdef USE_COMPLEX
+    return compute<std::complex<double>>(config, output);
+#else
+    return compute<double>(config, output);
+#endif
 }

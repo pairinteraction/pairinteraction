@@ -38,9 +38,8 @@
 
 */
 
+template <typename Scalar>
 int compute(const std::string &config_name, const std::string &output_name) {
-    using Scalar = scalar_t;
-
     std::cout << std::unitbuf;
 
     Eigen::setNbThreads(1); // TODO set it to setNbThreads(0) when Eigen's multithreading is needed
@@ -108,3 +107,9 @@ int compute(const std::string &config_name, const std::string &output_name) {
 
     return 0;
 }
+
+#ifdef USE_COMPLEX
+template int compute<std::complex<double>>(std::string const &config_name, std::string const &output_name);
+#else
+template int compute<double>(std::string const &config_name, std::string const &output_name);
+#endif
