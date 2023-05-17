@@ -23,12 +23,24 @@
 
 template <>
 template <>
-StateOne SystemBase<StateOne>::createStateFromLabel(const std::string &label) const {
+StateOne SystemBase<double, StateOne>::createStateFromLabel(const std::string &label) const {
     return StateOne(label);
 }
 
 template <>
 template <>
-StateTwo SystemBase<StateTwo>::createStateFromLabel(const std::string &label) const {
+StateOne SystemBase<std::complex<double>, StateOne>::createStateFromLabel(const std::string &label) const {
+    return StateOne(label);
+}
+
+template <>
+template <>
+StateTwo SystemBase<double, StateTwo>::createStateFromLabel(const std::string &label) const {
+    return StateTwo(std::array<std::string, 2>({{"0_" + label, "1_" + label}}));
+}
+
+template <>
+template <>
+StateTwo SystemBase<std::complex<double>, StateTwo>::createStateFromLabel(const std::string &label) const {
     return StateTwo(std::array<std::string, 2>({{"0_" + label, "1_" + label}}));
 }

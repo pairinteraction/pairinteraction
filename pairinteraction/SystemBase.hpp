@@ -117,7 +117,7 @@ struct states_set {
         type;
 };
 
-template <class T>
+template <class Scalar, class State>
 class SystemBase {
 public:
     virtual ~SystemBase() = default;
@@ -153,9 +153,9 @@ public:
     /// Method for adding user-defined states //////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    void addStates(const T &s) { states_to_add.insert(s); }
+    void addStates(const State &s) { states_to_add.insert(s); }
 
-    void addStates(const std::set<T> &s) { states_to_add.insert(s.begin(), s.end()); }
+    void addStates(const std::set<State> &s) { states_to_add.insert(s.begin(), s.end()); }
 
     // TODO make it possible to just use added states, i.e. use no restrictions on quantum numbers
     // and energies
@@ -164,11 +164,11 @@ public:
     /// Methods to get overlaps ////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    eigen_vector_double_t getOverlap(const T &generalizedstate) {
+    eigen_vector_double_t getOverlap(const State &generalizedstate) {
         return this->getOverlap(generalizedstate, 0, 0, 0);
     }
 
-    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates) {
+    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates) {
         return this->getOverlap(generalizedstates, 0, 0, 0);
     }
 
@@ -180,13 +180,13 @@ public:
         return this->getOverlap(states_indices, 0, 0, 0);
     }
 
-    eigen_vector_double_t getOverlap(const T &generalizedstate, std::array<double, 3> to_z_axis,
+    eigen_vector_double_t getOverlap(const State &generalizedstate, std::array<double, 3> to_z_axis,
                                      std::array<double, 3> to_y_axis) {
         auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
         return this->getOverlap(generalizedstate, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
     }
 
-    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates,
+    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates,
                                      std::array<double, 3> to_z_axis,
                                      std::array<double, 3> to_y_axis) {
         auto euler_zyz = this->getEulerAngles(to_z_axis, to_y_axis);
@@ -206,9 +206,9 @@ public:
         return this->getOverlap(states_indices, euler_zyz[0], euler_zyz[1], euler_zyz[2]);
     }
 
-    eigen_vector_double_t getOverlap(const T &generalizedstate, double alpha, double beta,
+    eigen_vector_double_t getOverlap(const State &generalizedstate, double alpha, double beta,
                                      double gamma) {
-        std::vector<T> generalizedstates({generalizedstate});
+        std::vector<State> generalizedstates({generalizedstate});
         return this->getOverlap(generalizedstates, alpha, beta, gamma);
     }
 
@@ -218,7 +218,7 @@ public:
         return this->getOverlap(states_indices, alpha, beta, gamma);
     }
 
-    eigen_vector_double_t getOverlap(const std::vector<T> &generalizedstates, double alpha,
+    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates, double alpha,
                                      double beta, double gamma) {
         // Build basis
         this->buildBasis();
@@ -253,9 +253,9 @@ public:
         this->buildBasis();
 
         // Build state vectors
-        eigen_sparse_t overlap_states;
+        Eigen::SparseMatrix<Scalar> overlap_states;
         if (alpha == 0 && beta == 0 && gamma == 0) {
-            std::vector<eigen_triplet_t> overlap_states_triplets;
+            std::vector<Eigen::Triplet<Scalar>> overlap_states_triplets;
             overlap_states_triplets.reserve(states_indices.size());
 
             size_t current = 0;
@@ -271,10 +271,10 @@ public:
         }
 
         // Calculate overlap
-        eigen_sparse_t product = basisvectors.adjoint() * overlap_states;
+        Eigen::SparseMatrix<Scalar> product = basisvectors.adjoint() * overlap_states;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
         for (int k = 0; k < product.outerSize(); ++k) {
-            for (eigen_iterator_t triple(product, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(product, k); triple; ++triple) {
                 overlap[triple.row()] += std::pow(std::abs(triple.value()), 2);
             }
         }
@@ -286,9 +286,9 @@ public:
     /// Methods to get properties of the system ////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    std::vector<T> getStates() {
+    std::vector<State> getStates() {
         this->buildBasis();
-        std::vector<T> states_converted;
+        std::vector<State> states_converted;
         states_converted.reserve(states.size());
         for (const auto &s : states) {
             states_converted.push_back(std::move(s.state));
@@ -296,17 +296,17 @@ public:
         return states_converted;
     }
 
-    const typename states_set<T>::type &
+    const typename states_set<State>::type &
     getStatesMultiIndex() { // TODO @hmenke typemap for "const typename states_set<T>::type &"
         return states;
     }
 
-    eigen_sparse_t &getBasisvectors() {
+    Eigen::SparseMatrix<Scalar> &getBasisvectors() {
         this->buildBasis();
         return basisvectors;
     }
 
-    eigen_sparse_t &getHamiltonian() {
+    Eigen::SparseMatrix<Scalar> &getHamiltonian() {
         this->buildHamiltonian();
         return hamiltonian;
     }
@@ -340,19 +340,19 @@ public:
         return basisvectors.rows();
     }
 
-    std::vector<T> getMainStates() {
+    std::vector<State> getMainStates() {
         // Build basis
         this->buildBasis();
 
         // Get states with the main contribution
-        std::vector<T> states_with_maxval;
+        std::vector<State> states_with_maxval;
         states_with_maxval.reserve(basisvectors.cols());
 
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
             double maxval = -1;
             size_t row_with_maxval;
 
-            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
                 if (std::abs(triple.value()) > maxval) {
                     row_with_maxval = triple.row();
                     maxval = std::abs(triple.value());
@@ -365,7 +365,7 @@ public:
         return states_with_maxval;
     }
 
-    std::array<std::vector<size_t>, 2> getConnections(SystemBase<T> &system_to, double threshold) {
+    std::array<std::vector<size_t>, 2> getConnections(SystemBase<Scalar, State> &system_to, double threshold) {
         // Build basis
         this->buildBasis();
         system_to.buildBasis();
@@ -373,7 +373,7 @@ public:
         double threshold_sqrt = std::sqrt(threshold);
 
         // Calculate transformator between the set of states
-        std::vector<eigen_triplet_t> triplets_transformator;
+        std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
         triplets_transformator.reserve(std::min(states.size(), system_to.states.size()));
 
         for (const auto &s : system_to.states) {
@@ -384,7 +384,7 @@ public:
             }
         }
 
-        eigen_sparse_t transformator(states.size(), system_to.states.size());
+        Eigen::SparseMatrix<Scalar> transformator(states.size(), system_to.states.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         // Calculate overlap
@@ -554,7 +554,7 @@ public:
         diagonal_idx.reserve(hamiltonian.outerSize());
         for (int k = 0; k < hamiltonian.outerSize(); ++k) {
             double val = 0;
-            for (eigen_iterator_t triple(hamiltonian, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(hamiltonian, k); triple; ++triple) {
                 if (triple.row() == triple.col()) {
                     val = std::real(triple.value());
                 } else if (triple.row() != triple.col()) {
@@ -607,7 +607,7 @@ public:
         {
             MKL_INT n = hamiltonian.rows();  // size of the matrix
             MKL_INT m;                       // will contain the number of eigenvalues
-            std::vector<scalar_t> x(m0 * n); // the first m columns will contain the eigenvectors
+            std::vector<Scalar> x(m0 * n); // the first m columns will contain the eigenvectors
             {
                 std::vector<double> e(m0); // will contain the first m eigenvalues
                 {
@@ -637,7 +637,7 @@ public:
             }
 
             // Transform the basis vectors
-            eigen_sparse_t evecs = Eigen::Map<eigen_dense_t>(&x[0], n, m).sparseView();
+            Eigen::SparseMatrix<Scalar> evecs = Eigen::Map<Eigen::MatrixX<Scalar>>(&x[0], n, m).sparseView();
             if (threshold == 0) {
                 basisvectors = basisvectors * evecs;
             } else {
@@ -669,7 +669,7 @@ public:
         char jobz = 'V';                 // eigenvalues and eigenvectors are computed
         char uplo = 'U';                 // full matrix is stored, upper is used
         int n = hamiltonian.cols();      // size of the matrix
-        eigen_dense_t mat = hamiltonian; // matrix
+        Eigen::MatrixX<Scalar> mat = hamiltonian; // matrix
         int lda = mat.outerStride();     // leading dimension
         eigen_vector_double_t evals(n);  // eigenvalues
         int info = LAPACKE_evd(LAPACK_COL_MAJOR, jobz, uplo, n, mat.data(), lda, evals.data());
@@ -678,16 +678,16 @@ public:
         }
 
         // Get eigenvectors
-        eigen_sparse_t evecs = mat.sparseView();
+        Eigen::SparseMatrix<Scalar> evecs = mat.sparseView();
 
 #else // EIGEN_USE_LAPACKE || WITH_INTEL_MKL
 
         // Diagonalize hamiltonian
-        Eigen::SelfAdjointEigenSolver<eigen_dense_t> eigensolver(hamiltonian);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixX<Scalar>> eigensolver(hamiltonian);
 
         // Get eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
-        eigen_sparse_t evecs = eigensolver.eigenvectors().sparseView();
+        Eigen::SparseMatrix<Scalar> evecs = eigensolver.eigenvectors().sparseView();
 
 #endif // EIGEN_USE_LAPACKE || WITH_INTEL_MKL
 
@@ -735,7 +735,7 @@ public:
         size_t idx_new = 0;
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
             size_t hashvalue = hashvalue_states;
-            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
                 utils::hash_combine(hashvalue, triple.row());
                 utils::hash_combine(hashvalue, triple.value());
             }
@@ -744,7 +744,7 @@ public:
             std::stringstream ss;
             ss << std::hex << hashvalue;
             states.push_back(
-                enumerated_state<T>(idx_new++, this->createStateFromLabel<T>(ss.str())));
+                enumerated_state<State>(idx_new++, this->createStateFromLabel<State>(ss.str())));
         }
         states.shrink_to_fit();
 
@@ -776,7 +776,7 @@ public:
         this->buildHamiltonian();
 
         // Get the rotator for the basis states
-        eigen_sparse_t transformator = this->buildStaterotator(alpha, beta, gamma);
+        Eigen::SparseMatrix<Scalar> transformator = this->buildStaterotator(alpha, beta, gamma);
 
         // Rotate basis
         this->transformInteraction(basisvectors.adjoint());
@@ -789,7 +789,7 @@ public:
         this->transformInteraction(basisvectors);
     }
 
-    void add(SystemBase<T> &system) {
+    void add(SystemBase<Scalar, State> &system) {
         // --- Build bases ---
         this->buildBasis();
         system.buildBasis();
@@ -816,9 +816,9 @@ public:
         }
 
         // --- Combine states and build transformators ---
-        eigen_sparse_t transformator;
+        Eigen::SparseMatrix<Scalar> transformator;
         {
-            std::vector<eigen_triplet_t> transformator_triplets;
+            std::vector<Eigen::Triplet<Scalar>> transformator_triplets;
             transformator_triplets.reserve(system.states.size());
 
             for (const auto &entry : system.states) {
@@ -826,7 +826,7 @@ public:
 
                 size_t newidx = states.size();
                 if (state_iter == states.template get<1>().end()) {
-                    states.push_back(enumerated_state<T>(newidx, entry.state));
+                    states.push_back(enumerated_state<State>(newidx, entry.state));
                 } else {
                     newidx = state_iter->idx;
                 }
@@ -859,7 +859,7 @@ public:
         }
 
         // --- Check if basis vectors are orthogonal ---
-        eigen_sparse_t tmp =
+        Eigen::SparseMatrix<Scalar> tmp =
             (basisvectors.leftCols(size_this).adjoint() * basisvectors.rightCols(size_other))
                 .pruned(1e-12, 1);
         if (tmp.nonZeros() != 0) {
@@ -868,10 +868,10 @@ public:
         }
 
         // --- Combine hamiltonian and hamiltonian_unperturbed_cache ---
-        eigen_sparse_t shifter(hamiltonian.rows() + system.hamiltonian.rows(),
+        Eigen::SparseMatrix<Scalar> shifter(hamiltonian.rows() + system.hamiltonian.rows(),
                                system.hamiltonian.rows());
         {
-            std::vector<eigen_triplet_t> shifter_triplets;
+            std::vector<Eigen::Triplet<Scalar>> shifter_triplets;
             shifter_triplets.reserve(system.hamiltonian.rows());
 
             for (size_t idx = 0; idx < system.hamiltonian.rows(); ++idx) {
@@ -913,7 +913,7 @@ public:
         }
 
         // Build transformator and remove vectors
-        std::vector<eigen_triplet_t> triplets_transformator;
+        std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
         triplets_transformator.reserve(indices_of_wanted_basisvectors.size());
 
         size_t idx_new = 0;
@@ -928,7 +928,7 @@ public:
         this->applyRightsideTransformator(triplets_transformator);
     }
 
-    void applySchriefferWolffTransformation(SystemBase<T> &system0) {
+    void applySchriefferWolffTransformation(SystemBase<Scalar, State> &system0) {
         this->diagonalize();
         system0.buildHamiltonian();
 
@@ -954,9 +954,9 @@ public:
         // --- Express the basis vectors of system0 as a linearcombination of all states ---
 
         // Combine states and build transformators
-        eigen_sparse_t transformator;
+        Eigen::SparseMatrix<Scalar> transformator;
         {
-            std::vector<eigen_triplet_t> transformator_triplets;
+            std::vector<Eigen::Triplet<Scalar>> transformator_triplets;
             transformator_triplets.reserve(system0.states.size());
 
             for (const auto &entry : system0.states) {
@@ -979,7 +979,7 @@ public:
         }
 
         // Get basisvectors of system0
-        eigen_sparse_t low_energy_basis0 = transformator * system0.basisvectors;
+        Eigen::SparseMatrix<Scalar> low_energy_basis0 = transformator * system0.basisvectors;
 
         // --- Find basisvectors which corresponds to the basis vectors of system0 ---
 
@@ -995,7 +995,7 @@ public:
                              indices.end(),
                              [&overlap](int a, int b) { return overlap[a] > overlap[b]; });
 
-            std::vector<eigen_triplet_t> transformator_triplets;
+            std::vector<Eigen::Triplet<Scalar>> transformator_triplets;
             transformator_triplets.reserve(low_energy_basis0.cols());
 
             for (int i = 0; i < low_energy_basis0.cols(); ++i) {
@@ -1008,23 +1008,23 @@ public:
         }
 
         // Get corresponding basis vectors
-        eigen_sparse_t low_energy_basis = basisvectors * transformator;
+        Eigen::SparseMatrix<Scalar> low_energy_basis = basisvectors * transformator;
 
         // --- Perform the Schrieffer Wolff transformation ---
 
         // Projector on the selected basis vectors (typically low-energy subspace)
-        eigen_sparse_t projector0 = low_energy_basis0 * low_energy_basis0.adjoint();
-        eigen_sparse_t projector = low_energy_basis * low_energy_basis.adjoint();
+        Eigen::SparseMatrix<Scalar> projector0 = low_energy_basis0 * low_energy_basis0.adjoint();
+        Eigen::SparseMatrix<Scalar> projector = low_energy_basis * low_energy_basis.adjoint();
 
         // Reflection operator which change signes of the selectes basis vectors but act
         // trivially on others
-        eigen_dense_t reflection0 =
-            eigen_dense_t::Identity(states.size(), states.size()) - 2 * projector0;
-        eigen_dense_t reflection =
-            eigen_dense_t::Identity(states.size(), states.size()) - 2 * projector;
+        Eigen::MatrixX<Scalar> reflection0 =
+            Eigen::MatrixX<Scalar>::Identity(states.size(), states.size()) - 2 * projector0;
+        Eigen::MatrixX<Scalar> reflection =
+            Eigen::MatrixX<Scalar>::Identity(states.size(), states.size()) - 2 * projector;
 
         // Direct rotator from low_energy_basis to low_energy_basis0
-        eigen_sparse_t rotator = (reflection0 * reflection).sqrt().sparseView();
+        Eigen::SparseMatrix<Scalar> rotator = (reflection0 * reflection).sqrt().sparseView();
 
         if (std::isnan(std::abs(rotator.coeffRef(0, 0)))) {
             throw std::runtime_error(
@@ -1042,7 +1042,7 @@ public:
     /// Methods to manipulate entries of the Hamiltonian ///////////////
     ////////////////////////////////////////////////////////////////////
 
-    size_t getStateIndex(const T &searched_state) {
+    size_t getStateIndex(const State &searched_state) {
         this->buildBasis();
 
         if (utils::is_true(searched_state.isGeneralized())) {
@@ -1057,7 +1057,7 @@ public:
         return state_iter->idx;
     }
 
-    std::vector<size_t> getStateIndex(const std::vector<T> &searched_states) {
+    std::vector<size_t> getStateIndex(const std::vector<State> &searched_states) {
         this->buildBasis();
 
         std::vector<size_t> indices;
@@ -1078,7 +1078,7 @@ public:
         return indices;
     }
 
-    size_t getBasisvectorIndex(const T &searched_state) {
+    size_t getBasisvectorIndex(const State &searched_state) {
         this->buildBasis();
 
         size_t stateidx = this->getStateIndex(searched_state);
@@ -1086,7 +1086,7 @@ public:
         double maxval = -1;
         size_t col_with_maxval = -1;
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
                 if (triple.row() == stateidx) {
                     if (std::abs(triple.value()) > maxval) {
                         col_with_maxval = triple.col();
@@ -1100,22 +1100,22 @@ public:
         return col_with_maxval;
     }
 
-    std::vector<size_t> getBasisvectorIndex(const std::vector<T> &searched_states) {
+    std::vector<size_t> getBasisvectorIndex(const std::vector<State> &searched_states) {
         this->buildBasis();
 
         // Ensure that the states within searched_states are unique
         {
-            std::set<T> tmp(searched_states.begin(), searched_states.end());
+            std::set<State> tmp(searched_states.begin(), searched_states.end());
             if (tmp.size() < searched_states.size()) {
                 throw std::runtime_error("States are occuring multiple times.");
             }
         }
 
         // Construct canonical basis vectors
-        eigen_sparse_t canonicalbasis;
+        Eigen::SparseMatrix<Scalar> canonicalbasis;
         {
             std::vector<size_t> state_indices = this->getStateIndex(searched_states);
-            std::vector<eigen_triplet_t> canonicalbasis_triplets;
+            std::vector<Eigen::Triplet<Scalar>> canonicalbasis_triplets;
             canonicalbasis_triplets.reserve(searched_states.size());
             for (size_t i = 0; i < state_indices.size(); ++i) {
                 canonicalbasis_triplets.emplace_back(state_indices[i], i, 1);
@@ -1166,12 +1166,12 @@ public:
     void forgetStatemixing() {
         this->diagonalize();
 
-        std::vector<eigen_triplet_t> basisvectors_triplets;
+        std::vector<Eigen::Triplet<Scalar>> basisvectors_triplets;
         basisvectors_triplets.reserve(basisvectors.cols());
         double threshold = std::sqrt(0.5);
 
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
-            for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
                 if (std::abs(triple.value()) > threshold) {
                     basisvectors_triplets.emplace_back(triple.row(), triple.col(), 1);
                     break;
@@ -1187,7 +1187,7 @@ public:
         basisvectors.setFromTriplets(basisvectors_triplets.begin(), basisvectors_triplets.end());
     }
 
-    scalar_t getHamiltonianEntry(const T &state_row, const T &state_col) {
+    Scalar getHamiltonianEntry(const State &state_row, const State &state_col) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);
@@ -1196,7 +1196,7 @@ public:
         return (basisvectors.row(idx_row) * hamiltonian).dot(basisvectors.row(idx_col));
     }
 
-    void setHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
+    void setHamiltonianEntry(const State &state_row, const State &state_col, Scalar value) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);
@@ -1204,7 +1204,7 @@ public:
 
         value -= (basisvectors.row(idx_row) * hamiltonian).dot(basisvectors.row(idx_col));
 
-        eigen_sparse_t tmp(states.size(), states.size());
+        Eigen::SparseMatrix<Scalar> tmp(states.size(), states.size());
         tmp.reserve(2);
         tmp.insert(idx_row, idx_col) = value;
         if (idx_row != idx_col) {
@@ -1215,13 +1215,13 @@ public:
         hamiltonian += basisvectors.adjoint() * tmp * basisvectors;
     }
 
-    void addHamiltonianEntry(const T &state_row, const T &state_col, scalar_t value) {
+    void addHamiltonianEntry(const State &state_row, const State &state_col, Scalar value) {
         this->buildHamiltonian();
 
         size_t idx_row = this->getStateIndex(state_row);
         size_t idx_col = this->getStateIndex(state_col);
 
-        eigen_sparse_t tmp(states.size(), states.size());
+        Eigen::SparseMatrix<Scalar> tmp(states.size(), states.size());
         tmp.reserve(2);
         tmp.insert(idx_row, idx_col) = value;
         if (idx_row != idx_col) {
@@ -1248,14 +1248,14 @@ protected:
     virtual void initializeBasis() = 0;
     virtual void initializeInteraction() = 0;
 
-    virtual void transformInteraction(const eigen_sparse_t &transformator) = 0;
+    virtual void transformInteraction(const Eigen::SparseMatrix<Scalar> &transformator) = 0;
     virtual void addInteraction() = 0;
     virtual void deleteInteraction() = 0;
 
-    virtual eigen_sparse_t rotateStates(const std::vector<size_t> &states_indices, double alpha,
+    virtual Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                         double beta, double gamma) = 0;
-    virtual eigen_sparse_t buildStaterotator(double alpha, double beta, double gamma) = 0;
-    virtual void incorporate(SystemBase<T> &system) = 0;
+    virtual Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) = 0;
+    virtual void incorporate(SystemBase<Scalar, State> &system) = 0;
 
     virtual void onStatesChange(){};
 
@@ -1266,17 +1266,17 @@ protected:
     double energy_min, energy_max;
     std::set<int> range_n, range_l;
     std::set<float> range_j, range_m;
-    std::set<T> states_to_add;
+    std::set<State> states_to_add;
 
     bool memory_saving;
     bool is_interaction_already_contained;
     bool is_new_hamiltonian_required;
 
-    typename states_set<T>::type states;
-    eigen_sparse_t basisvectors;
-    eigen_sparse_t hamiltonian;
-    eigen_sparse_t basisvectors_unperturbed_cache;
-    eigen_sparse_t hamiltonian_unperturbed_cache;
+    typename states_set<State>::type states;
+    Eigen::SparseMatrix<Scalar> basisvectors;
+    Eigen::SparseMatrix<Scalar> hamiltonian;
+    Eigen::SparseMatrix<Scalar> basisvectors_unperturbed_cache;
+    Eigen::SparseMatrix<Scalar> hamiltonian_unperturbed_cache;
 
     ////////////////////////////////////////////////////////////////////
     /// Helper method that shoul be called by the derived classes //////
@@ -1311,12 +1311,12 @@ protected:
     /// Helper methods to check diagonality and unitarity of a matrix //
     ////////////////////////////////////////////////////////////////////
 
-    bool checkIsDiagonal(const eigen_sparse_t &mat) {
-        eigen_sparse_t tmp = mat;
+    bool checkIsDiagonal(const Eigen::SparseMatrix<Scalar> &mat) {
+        Eigen::SparseMatrix<Scalar> tmp = mat;
         tmp.prune(1e-12, 1);
 
         for (int k = 0; k < tmp.outerSize(); ++k) {
-            for (eigen_iterator_t triple(tmp, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple; ++triple) {
                 if (triple.row() != triple.col()) {
                     return false;
                 }
@@ -1325,15 +1325,15 @@ protected:
         return true;
     }
 
-    bool checkIsUnitary(const eigen_sparse_t &mat) {
-        eigen_sparse_t tmp = (mat.adjoint() * mat).pruned(1e-12, 1);
+    bool checkIsUnitary(const Eigen::SparseMatrix<Scalar> &mat) {
+        Eigen::SparseMatrix<Scalar> tmp = (mat.adjoint() * mat).pruned(1e-12, 1);
 
         if (tmp.nonZeros() != tmp.outerSize()) {
             return false;
         }
 
         for (int k = 0; k < tmp.outerSize(); ++k) {
-            for (eigen_iterator_t triple(tmp, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple; ++triple) {
                 if (triple.row() != triple.col()) {
                     return false;
                 }
@@ -1355,11 +1355,11 @@ protected:
         return range_q.empty() || range_q.find(q) != range_q.end();
     }
 
-    bool checkIsQuantumstateValid(const T &state) {
+    bool checkIsQuantumstateValid(const State &state) {
         return checkIsQuantumstateValid(state, state.isArtificial());
     }
 
-    bool checkIsQuantumstateValid(const T &state, bool a) {
+    bool checkIsQuantumstateValid(const State &state, bool a) {
         return a ||
             (checkIsQuantumnumberValid(state.getN(), range_n) &&
              checkIsQuantumnumberValid(state.getL(), range_l) &&
@@ -1367,7 +1367,7 @@ protected:
              checkIsQuantumnumberValid(state.getM(), range_m));
     }
 
-    bool checkIsQuantumstateValid(const T &state, std::array<bool, 2> a) {
+    bool checkIsQuantumstateValid(const State &state, std::array<bool, 2> a) {
         bool valid = true;
         for (int idx = 0; idx < 2; ++idx) {
             valid = valid &&
@@ -1391,14 +1391,14 @@ protected:
     /// Helper methods to change the set of basis vectors //////////////
     ////////////////////////////////////////////////////////////////////
 
-    void applyLeftsideTransformator(std::vector<eigen_triplet_t> &triplets_transformator) {
-        eigen_sparse_t transformator(triplets_transformator.size(), basisvectors.rows());
+    void applyLeftsideTransformator(std::vector<Eigen::Triplet<Scalar>> &triplets_transformator) {
+        Eigen::SparseMatrix<Scalar> transformator(triplets_transformator.size(), basisvectors.rows());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyLeftsideTransformator(transformator);
     }
 
-    void applyLeftsideTransformator(eigen_sparse_t &transformator) {
+    void applyLeftsideTransformator(Eigen::SparseMatrix<Scalar> &transformator) {
         // Apply transformator in order to remove rows from the basisvector matrix (i.e. states)
         basisvectors = transformator * basisvectors;
         if (basisvectors_unperturbed_cache.size() != 0) {
@@ -1406,14 +1406,14 @@ protected:
         }
     }
 
-    void applyRightsideTransformator(std::vector<eigen_triplet_t> &triplets_transformator) {
-        eigen_sparse_t transformator(basisvectors.cols(), triplets_transformator.size());
+    void applyRightsideTransformator(std::vector<Eigen::Triplet<Scalar>> &triplets_transformator) {
+        Eigen::SparseMatrix<Scalar> transformator(basisvectors.cols(), triplets_transformator.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyRightsideTransformator(transformator);
     }
 
-    void applyRightsideTransformator(eigen_sparse_t &transformator) {
+    void applyRightsideTransformator(Eigen::SparseMatrix<Scalar> &transformator) {
         // Apply transformator in order to remove columns from the basisvector matrix (i.e. basis
         // vectors)
         basisvectors = basisvectors * transformator;
@@ -1437,22 +1437,22 @@ protected:
     void removeRestrictedStates(F &&checkIsValidEntry) {
         // Validate the call signature of the passed in object
         static_assert(
-            std::is_same<decltype(checkIsValidEntry(std::declval<enumerated_state<T> const &>())),
+            std::is_same<decltype(checkIsValidEntry(std::declval<enumerated_state<State> const &>())),
                          bool>::value,
             "Function signature mismatch!  Expected `bool "
-            "checkIsValidEntry(enumerated_state<T> const &)'");
+            "checkIsValidEntry(enumerated_state<State> const &)'");
 
         // Build transformator and remove states
-        typename states_set<T>::type states_new;
+        typename states_set<State>::type states_new;
         states_new.reserve(states.size());
-        std::vector<eigen_triplet_t> triplets_transformator;
+        std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
         triplets_transformator.reserve(states.size());
 
         size_t idx_new = 0;
 
         for (const auto &entry : states) {
             if (checkIsValidEntry(entry)) {
-                states_new.push_back(enumerated_state<T>(idx_new, entry.state));
+                states_new.push_back(enumerated_state<State>(idx_new, entry.state));
                 triplets_transformator.emplace_back(idx_new, entry.idx, 1);
                 ++idx_new;
             }
@@ -1566,7 +1566,7 @@ private:
             ////////////////////////////////////////////////////////////////////
 
             // Remove states if the quantum numbers are not allowed
-            removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
+            removeRestrictedStates([=](const enumerated_state<State> &entry) -> bool {
                 return this->checkIsQuantumstateValid(entry.state);
             });
 
@@ -1584,7 +1584,7 @@ private:
 
             // Build transformator and remove vectors (if their energy is not allowed or the squared
             // norm too small)
-            std::vector<eigen_triplet_t> triplets_transformator;
+            std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
             triplets_transformator.reserve(basisvectors.cols());
 
             size_t idx_new = 0;
@@ -1594,7 +1594,7 @@ private:
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the basisvector matrix
-                    for (eigen_iterator_t triple(basisvectors, idx); triple; ++triple) {
+                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, idx); triple; ++triple) {
                         sqnorm += std::pow(std::abs(triple.value()), 2);
                     }
                     if (sqnorm > threshold_for_sqnorm) {
@@ -1612,13 +1612,13 @@ private:
             // Calculate the square norm of the rows of the basisvector matrix
             std::vector<double> sqnorm_list(basisvectors.rows(), 0);
             for (int k = 0; k < this->basisvectors.cols(); ++k) {
-                for (eigen_iterator_t triple(basisvectors, k); triple; ++triple) {
+                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
                     sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
                 }
             }
 
             // Remove states if the squared norm is to small
-            removeRestrictedStates([=](const enumerated_state<T> &entry) -> bool {
+            removeRestrictedStates([=](const enumerated_state<State> &entry) -> bool {
                 return sqnorm_list[entry.idx] > threshold_for_sqnorm;
             });
 

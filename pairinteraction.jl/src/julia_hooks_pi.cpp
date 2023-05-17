@@ -253,9 +253,9 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
         .method("<=", &StateTwo::operator<=);
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("SystemBase")
-        .apply<SystemBase<StateOne>>(
+        .apply<SystemBase<scalar_t,StateOne>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; })
-        .apply<SystemBase<StateTwo>>(
+        .apply<SystemBase<scalar_t,StateTwo>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; });
 
     pi.add_type<eigen_sparse_t>("eigen_sparse_t")
@@ -303,7 +303,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
             return ret;
         });
 
-    pi.add_type<SystemOne<scalar_t>>("SystemOne", jlcxx::julia_type<SystemBase<StateOne>>())
+    pi.add_type<SystemOne<scalar_t>>("SystemOne", jlcxx::julia_type<SystemBase<scalar_t,StateOne>>())
         .constructor<std::string, MatrixElementCache &>()
         .constructor<std::string, MatrixElementCache &, bool>()
         // SystemBase methods
@@ -388,7 +388,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     s.setConservedMomentaUnderRotation(momenta_const);
                 });
 
-    pi.add_type<SystemTwo<scalar_t>>("SystemTwo", jlcxx::julia_type<SystemBase<StateTwo>>())
+    pi.add_type<SystemTwo<scalar_t>>("SystemTwo", jlcxx::julia_type<SystemBase<scalar_t,StateTwo>>())
         .constructor<SystemOne<scalar_t>, SystemOne<scalar_t>, MatrixElementCache &>()
         .constructor<SystemOne<scalar_t>, SystemOne<scalar_t>, MatrixElementCache &, bool>()
         .constructor<SystemTwo<scalar_t>>()

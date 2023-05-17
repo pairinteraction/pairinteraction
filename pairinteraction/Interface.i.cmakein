@@ -147,6 +147,8 @@ MAKE_NUMPY_TYPEMAP(eigen_vector_t)
 MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
 MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
+MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<std::complex<double>>)
+MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<double>)
 
  // Instantiate often used STL templates
 namespace std {
@@ -246,8 +248,13 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemOne.h and SystemTwo.h
-%template(_SystemStateOne) SystemBase<StateOne>;
-%template(_SystemStateTwo) SystemBase<StateTwo>;
+#ifdef USE_COMPLEX
+%template(_SystemStateOne) SystemBase<std::complex<double>,StateOne>;
+%template(_SystemStateTwo) SystemBase<std::complex<double>,StateTwo>;
+#else
+%template(_SystemStateOne) SystemBase<double,StateOne>;
+%template(_SystemStateTwo) SystemBase<double,StateTwo>;
+#endif
 
 %copyctor SystemOne;
 %copyctor SystemTwo;

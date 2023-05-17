@@ -40,12 +40,12 @@
 #include <set>
 #include <type_traits>
 
-template <typename Scalar>
-class SystemTwo : public SystemBase<StateTwo> {
+template <typename Scalar_>
+class SystemTwo : public SystemBase<Scalar_, StateTwo> {
 public:
-    //using Scalar = _Scalar;
-    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache);
-    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache,
+    using Scalar = Scalar_;
+    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2, MatrixElementCache &cache);
+    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2, MatrixElementCache &cache,
               bool memory_saving);
 
     const std::array<std::string, 2> &getSpecies();
@@ -68,24 +68,24 @@ protected:
     void initializeBasis() override;
     void initializeInteraction() override;
     void addInteraction() override;
-    void transformInteraction(const eigen_sparse_t &transformator) override;
+    void transformInteraction(const Eigen::SparseMatrix<Scalar_> &transformator) override;
     void deleteInteraction() override;
-    Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices, double alpha,
+    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices, double alpha,
                                 double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) override;
-    void incorporate(SystemBase<StateTwo> &system) override;
+    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta, double gamma) override;
+    void incorporate(SystemBase<Scalar_, StateTwo> &system) override;
     void onStatesChange() override;
 
 private:
     std::array<std::string, 2> species;
-    SystemOne<Scalar> system1; // is needed in the initializeBasis method and afterwards deleted
-    SystemOne<Scalar> system2; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar_> system1; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar_> system2; // is needed in the initializeBasis method and afterwards deleted
 
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_angulardipole;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_multipole;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dd;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dq;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_qd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_angulardipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_multipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_dd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_dq;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_qd;
 
     double minimal_le_roy_radius;
     double distance, distance_x, distance_y, distance_z;
@@ -110,8 +110,8 @@ private:
 
     void checkDistance(const double &distance);
 
-    void addBasisvectors(const StateTwo &state, const size_t &col_new, const Scalar &value_new,
-                         std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+    void addBasisvectors(const StateTwo &state, const size_t &col_new, const Scalar_ &value_new,
+                         std::vector<Eigen::Triplet<Scalar_>> &basisvectors_triplets,
                          std::vector<double> &sqnorm_list);
 
     template <typename T>
@@ -157,9 +157,9 @@ private:
                  ++m2) {
                 StateTwo newstate(state.getSpecies(), state.getN(), state.getL(), state.getJ(),
                                   {{m1, m2}});
-                auto state_iter = states.get<1>().find(newstate);
+                auto state_iter = this->states.template get<1>().find(newstate);
 
-                if (state_iter != states.get<1>().end()) {
+                if (state_iter != this->states.template get<1>().end()) {
                     auto val = val1 * val2_vector[m2 + state.getSecondState().getJ()];
                     triplets.push_back(Eigen::Triplet<T>(state_iter->idx, idx, val));
                 } else {
@@ -181,7 +181,7 @@ private:
 
     template <class Archive>
     void serialize(Archive &ar, const unsigned int /*version*/) {
-        ar &boost::serialization::base_object<SystemBase<StateTwo>>(*this);
+        ar &boost::serialization::base_object<SystemBase<Scalar_, StateTwo>>(*this);
         ar &species &system1 &system2;
         ar &distance &distance_x &distance_y &distance_z &surface_distance &ordermax;
         ar &sym_permutation &sym_inversion &sym_reflection &sym_rotation;
