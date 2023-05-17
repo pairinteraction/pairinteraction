@@ -15,12 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 
-find_package(PyUIC REQUIRED)
+find_program(PYUIC_BINARY NAMES py3uic5 pyuic5 py3uic5.bat pyuic5.bat REQUIRED)
+if(NOT PYUIC_BINARY)
+  message(FATAL_ERROR "Python User Interface Compiler not found")
+endif()
 
 set(STARTGUI "start_pairinteraction_gui")
 
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py)
 add_custom_target(gui ALL
-  COMMAND ${CMAKE_COMMAND} -DIN=${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein -DOUT=${CMAKE_CURRENT_BINARY_DIR}/pairinteraction/version.py -DVERSION_SOFTWARE=${VERSION_SOFTWARE} -DVERSION_SETTINGS=${VERSION_SETTINGS} -DVERSION_CACHE=${VERSION_CACHE} -P ${CMAKE_MODULE_PATH}/configure.cmake
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/startgui.cmakein ${CMAKE_BINARY_DIR}/${STARTGUI}
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction

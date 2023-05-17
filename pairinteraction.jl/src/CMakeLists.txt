@@ -15,7 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-find_package(JuliaInterp REQUIRED)
+find_program(Julia_EXECUTABLE NAMES julia REQUIRED)
+if(NOT Julia_EXECUTABLE)
+  message(FATAL_ERROR "Julia interpreter not found")
+endif()
 execute_process(
   COMMAND "${Julia_EXECUTABLE}" -e "using CxxWrap; print(joinpath(dirname(CxxWrap.jlcxx_path), \"cmake\", \"JlCxx\"))"
   OUTPUT_VARIABLE JlCxx_DIR

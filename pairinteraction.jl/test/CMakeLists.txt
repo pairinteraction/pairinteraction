@@ -18,6 +18,11 @@
 # Build tests only when testing
 set_directory_properties(PROPERTIES EXCLUDE_FROM_ALL ON)
 
+find_program(Julia_EXECUTABLE NAMES julia REQUIRED)
+if(NOT Julia_EXECUTABLE)
+  message(FATAL_ERROR "Julia interpreter not found")
+endif()
+
 function(JULIA_TEST)
   # Parse arguments
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
@@ -29,12 +34,9 @@ function(JULIA_TEST)
     PROPERTIES ENVIRONMENT "JULIA_LOAD_PATH=${CMAKE_BINARY_DIR}/pairinteraction.jl/src/:")
 endfunction()
 
-if (WITH_JULIA)
-  add_dependencies(check pireal_jl picomplex_jl)
-  find_package(JuliaInterp REQUIRED)
-  julia_test(TARGET field_combination SOURCE test_field_combination.jl)
-  julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
-  julia_test(TARGET pair_state SOURCE test_pair_state.jl)
-  julia_test(TARGET quantum_defect SOURCE test_quantum_defect.jl)
-  julia_test(TARGET state SOURCE test_state.jl)
-endif()
+add_dependencies(check pireal_jl picomplex_jl)
+julia_test(TARGET field_combination SOURCE test_field_combination.jl)
+julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
+julia_test(TARGET pair_state SOURCE test_pair_state.jl)
+julia_test(TARGET quantum_defect SOURCE test_quantum_defect.jl)
+julia_test(TARGET state SOURCE test_state.jl)
