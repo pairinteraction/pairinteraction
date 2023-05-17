@@ -33,19 +33,19 @@ class PerturbationTest(unittest.TestCase):
         ### Schrieffer Wolff transformation ###
 
         state_one = state_two_subspace[0].getFirstState()
-        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(state_one.getEnergy() - 200, state_one.getEnergy() + 200)
         system_one.restrictN(state_one.getN() - deltaN, state_one.getN() + deltaN)
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(state_two_subspace[0].getEnergy() - 20, state_two_subspace[0].getEnergy() + 20)
         system_two.setConservedMomentaUnderRotation([int(np.sum(state_two_subspace[0].getM()))])
 
         # System containing the unperturbed Hamiltonian
-        system_two_unperturbed = pi.SystemTwo(system_two)
+        system_two_unperturbed = pi.SystemTwoReal(system_two)
 
         # System containing the perturbed Hamiltonian
-        system_two_perturbed = pi.SystemTwo(system_two)
+        system_two_perturbed = pi.SystemTwoReal(system_two)
         system_two_perturbed.setDistance(distance)
 
         # Restrict unperturbed system to the subspace
@@ -88,7 +88,7 @@ class PerturbationTest(unittest.TestCase):
         ### Exact calculation ###
 
         state_one = state_two_subspace[0].getFirstState()
-        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(state_one.getEnergy() - 200, state_one.getEnergy() + 200)
         system_one.restrictN(state_one.getN() - deltaN, state_one.getN() + deltaN)
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
@@ -105,7 +105,7 @@ class PerturbationTest(unittest.TestCase):
             ]
         )
 
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.setMinimalNorm(0.01)
         system_two.restrictEnergy(fieldshift - 20, fieldshift + 20)
         system_two.setConservedMomentaUnderRotation([int(np.sum(state_two_subspace[0].getM()))])
@@ -120,7 +120,7 @@ class PerturbationTest(unittest.TestCase):
         ### Schrieffer Wolff transformation ###
 
         state_one = state_two_subspace[0].getFirstState()
-        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(state_one.getEnergy() - 200, state_one.getEnergy() + 200)
         system_one.restrictN(state_one.getN() - deltaN, state_one.getN() + deltaN)
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
@@ -137,28 +137,28 @@ class PerturbationTest(unittest.TestCase):
             ]
         )
 
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.setMinimalNorm(0.01)
         system_two.restrictEnergy(fieldshift - 20, fieldshift + 20)
         system_two.setConservedMomentaUnderRotation([int(np.sum(state_two_subspace[0].getM()))])
 
         # System containing the unperturbed Hamiltonian
-        system_two_unperturbed = pi.SystemTwo(system_two)
+        system_two_unperturbed = pi.SystemTwoReal(system_two)
 
         # System containing the perturbed Hamiltonian
-        system_two_perturbed = pi.SystemTwo(system_two)
+        system_two_perturbed = pi.SystemTwoReal(system_two)
         system_two_perturbed.setDistance(distance)
 
         # Restrict unperturbed system to the subspace
         system_two_unperturbed.constrainBasisvectors(system_two_unperturbed.getBasisvectorIndex(state_two_subspace))
 
         # IMPORTANT: Chose the states such that the basisvector matrix is a unit matrix
-        # The step is necessary because we removed from SystemTwo some irrelevant states
+        # The step is necessary because we removed from SystemTwoReal some irrelevant states
         # and basis vectors which where only important to get the Stark shift right, so
         # that the basisvector matrix is not unitary anymore. This is due to
-        # diagonalization with a non-zero threshold (SystemOne.diagonalize), setting a
-        # conserved momentum (SystemTwo.setConservedMomentaUnderRotation), and removing
-        # states that rarely occur (SystemTwo.setMinimalNorm).
+        # diagonalization with a non-zero threshold (SystemOneReal.diagonalize), setting a
+        # conserved momentum (SystemTwoReal.setConservedMomentaUnderRotation), and removing
+        # states that rarely occur (SystemTwoReal.setMinimalNorm).
         # We solve this problem by interpreting the basis vectors a new states. In the
         # basis of these states, the basis vector matrix is a unit matrix and thus
         # unitary.
@@ -191,18 +191,18 @@ class PerturbationTest(unittest.TestCase):
         ### Schrieffer Wolff transformation ###
 
         state_one = state_two_subspace[0].getFirstState()
-        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(state_one.getEnergy() - 200, state_one.getEnergy() + 200)
         system_one.restrictN(state_one.getN() - deltaN, state_one.getN() + deltaN)
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(state_two_subspace[0].getEnergy() - 20, state_two_subspace[0].getEnergy() + 20)
 
         # System containing the unperturbed Hamiltonian
-        system_two_unperturbed = pi.SystemTwo(system_two)
+        system_two_unperturbed = pi.SystemTwoReal(system_two)
 
         # System containing the perturbed Hamiltonian
-        system_two_perturbed = pi.SystemTwo(system_two)
+        system_two_perturbed = pi.SystemTwoReal(system_two)
         system_two_perturbed.setDistance(distance)
         system_two_perturbed.setAngle(theta)
 

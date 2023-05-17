@@ -30,16 +30,10 @@ unset(CMAKE_CXX_STANDRD)
 set_property(TARGET JlCxx::cxxwrap_julia PROPERTY INTERFACE_COMPILE_OPTIONS)
 
 add_library(pireal_jl SHARED julia_hooks_pi.cpp)
-add_library(picomplex_jl SHARED julia_hooks_pi.cpp)
-
-target_compile_definitions(picomplex_jl PUBLIC "USE_COMPLEX")
 
 target_compile_features(pireal_jl PRIVATE cxx_std_17)
 set_target_properties(pireal_jl PROPERTIES CXX_EXTENSIONS OFF)
-target_compile_features(picomplex_jl PRIVATE cxx_std_17)
-set_target_properties(picomplex_jl PROPERTIES CXX_EXTENSIONS OFF)
 
 target_link_libraries(pireal_jl PUBLIC pireal JlCxx::cxxwrap_julia)
-target_link_libraries(picomplex_jl PUBLIC picomplex JlCxx::cxxwrap_julia)
 
 configure_file(PairInteraction.jl ${CMAKE_CURRENT_BINARY_DIR}/PairInteraction.jl COPYONLY)

@@ -87,7 +87,6 @@ SectionGroup /e "${APP_NAME}"
     SetOutPath "$INSTDIR\${LIBNAME}"
     File "${BUILD_DIR}\${LIBNAME}\Release\*"
     File "${BUILD_DIR}\${LIBNAME}\pireal.py"
-    File "${BUILD_DIR}\${LIBNAME}\picomplex.py"
     SetOutPath "$INSTDIR\${LIBNAME}\databases"
     File "${BUILD_DIR}\${LIBNAME}\databases\*.db"
 

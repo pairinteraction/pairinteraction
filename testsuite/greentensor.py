@@ -16,13 +16,13 @@ class GreenTensorTest(unittest.TestCase):
 
     def test_greentensor_angle(self):
         # Build one-atom system
-        system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
         system_one.restrictN(self.state_one.getN() - 1, self.state_one.getN() + 1)
         system_one.restrictL(self.state_one.getL() - 2, self.state_one.getL() + 2)
 
         # Build two-atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(self.state_two.getEnergy() - 5, self.state_two.getEnergy() + 5)
         system_two.setConservedParityUnderInversion(pi.ODD)
         system_two.setConservedParityUnderPermutation(pi.ODD)
@@ -30,12 +30,12 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setAngle(1.78)
 
         # Construct the Hamiltonian using the standard approach
-        system_two_standard = pi.SystemTwo(system_two)
+        system_two_standard = pi.SystemTwoReal(system_two)
         system_two_standard.enableGreenTensor(False)
         hamiltonian_standard = system_two_standard.getHamiltonian()
 
         # Construct the Hamiltonian using the green tensor approach
-        system_two_greentensor = pi.SystemTwo(system_two)
+        system_two_greentensor = pi.SystemTwoReal(system_two)
         system_two_greentensor.enableGreenTensor(True)
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
@@ -50,13 +50,13 @@ class GreenTensorTest(unittest.TestCase):
 
     def test_greentensor_dipolequadrupole(self):
         # Build one-atom system
-        system_one = pi.SystemOne(self.state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(self.state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(self.state_one.getEnergy() - 40, self.state_one.getEnergy() + 40)
         system_one.restrictN(self.state_one.getN() - 2, self.state_one.getN() + 2)
         system_one.restrictL(self.state_one.getL() - 2, self.state_one.getL() + 2)
 
         # Build two-atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(self.state_two.getEnergy() - 5, self.state_two.getEnergy() + 5)
         system_two.setConservedMomentaUnderRotation([int(np.sum(self.state_two.getM()))])
         system_two.setConservedParityUnderInversion(pi.ODD)
@@ -64,12 +64,12 @@ class GreenTensorTest(unittest.TestCase):
         system_two.setOrder(4)
 
         # Construct the Hamiltonian using the standard approach
-        system_two_standard = pi.SystemTwo(system_two)
+        system_two_standard = pi.SystemTwoReal(system_two)
         system_two_standard.enableGreenTensor(False)
         hamiltonian_standard = system_two_standard.getHamiltonian()
 
         # Construct the Hamiltonian using the green tensor approach
-        system_two_greentensor = pi.SystemTwo(system_two)
+        system_two_greentensor = pi.SystemTwoReal(system_two)
         system_two_greentensor.enableGreenTensor(True)
         hamiltonian_greentensor = system_two_greentensor.getHamiltonian()
 
@@ -93,7 +93,7 @@ class GreenTensorTest(unittest.TestCase):
         state_two = pi.StateTwo(state_one1, state_one2)
 
         # Set up one-atom system
-        system_one = pi.SystemOne(state_one1.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one1.getSpecies(), self.cache)
         system_one.restrictEnergy(
             min(state_one1.getEnergy(), state_one2.getEnergy()) - 30,
             max(state_one1.getEnergy(), state_one2.getEnergy()) + 30,
@@ -106,7 +106,7 @@ class GreenTensorTest(unittest.TestCase):
         )
 
         # Set up two-atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(state_two.getEnergy() - 3, state_two.getEnergy() + 3)
 
         system_two.setAngle(theta)

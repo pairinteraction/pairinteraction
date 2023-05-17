@@ -30,7 +30,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         state_one = pi.StateOne("Rb", 61, 2, 1.5, 1.5)
 
         # Build one atom system
-        system_one = pi.SystemOne(state_one.getSpecies(), self.cache)
+        system_one = pi.SystemOneReal(state_one.getSpecies(), self.cache)
         system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40)
         system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1)
         system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1)
@@ -44,7 +44,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         def calcEnergies_one(field):
             # copy allows to restrict energy further
-            tmp = pi.SystemOne(system_one)
+            tmp = pi.SystemOneReal(system_one)
             tmp.setEfield([0, 0, field])
             tmp.diagonalize(1e-3)
             tmp.restrictEnergy(state_one.getEnergy() - 20, state_one.getEnergy() + 20)
@@ -105,7 +105,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         state_two = pi.StateTwo(state_one, state_one)
 
         # Build two atom system
-        system_two = pi.SystemTwo(system_one, system_one, self.cache)
+        system_two = pi.SystemTwoReal(system_one, system_one, self.cache)
         system_two.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2)
         system_two.setConservedParityUnderPermutation(pi.ODD)
         system_two.setDistance(1)
@@ -118,7 +118,7 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
 
         def calcEnergies_two(distance):
             # copy allows to restrict energy further
-            tmp = pi.SystemTwo(system_two)
+            tmp = pi.SystemTwoReal(system_two)
             tmp.setDistance(distance)
             tmp.diagonalize(1e-3)
             tmp.restrictEnergy(state_two.getEnergy() - 0.1, state_two.getEnergy() + 0.1)
