@@ -786,7 +786,7 @@ void SystemBase<Scalar, State>::unitarize() {
     basisvectors.resize(states.size(), states.size());
     basisvectors.setZero();
     basisvectors.reserve(states.size());
-    for (int idx = 0; idx < states.size(); ++idx) {
+    for (size_t idx = 0; idx < states.size(); ++idx) {
         basisvectors.insert(idx, idx) = 1;
     }
     basisvectors.makeCompressed();
@@ -907,7 +907,7 @@ void SystemBase<Scalar, State>::add(SystemBase<Scalar, State> &system) {
         std::vector<Eigen::Triplet<Scalar>> shifter_triplets;
         shifter_triplets.reserve(system.hamiltonian.rows());
 
-        for (size_t idx = 0; idx < system.hamiltonian.rows(); ++idx) {
+        for (Eigen::Index idx = 0; idx < system.hamiltonian.rows(); ++idx) {
             shifter_triplets.emplace_back(hamiltonian.rows() + idx, idx, 1);
         }
 
@@ -953,7 +953,7 @@ void SystemBase<Scalar, State>::constrainBasisvectors(
 
     size_t idx_new = 0;
     for (const auto &idx : indices_of_wanted_basisvectors) {
-        if (idx >= basisvectors.cols()) {
+        if (Eigen::Index(idx) >= basisvectors.cols()) {
             throw std::runtime_error("A basis vector with index " + std::to_string(idx) +
                                      " could not be found.");
         }
@@ -1119,7 +1119,7 @@ template <class Scalar, class State>
 size_t SystemBase<Scalar, State>::getBasisvectorIndex(const State &searched_state) {
     this->buildBasis();
 
-    size_t stateidx = this->getStateIndex(searched_state);
+    Eigen::Index stateidx = this->getStateIndex(searched_state);
 
     double maxval = -1;
     size_t col_with_maxval = -1;
@@ -1221,7 +1221,7 @@ void SystemBase<Scalar, State>::forgetStatemixing() {
         }
     }
 
-    if (basisvectors_triplets.size() < basisvectors.cols()) {
+    if (Eigen::Index(basisvectors_triplets.size()) < basisvectors.cols()) {
         throw std::runtime_error(
             "The states are mixed too strongly for calling forgetStatemixing().");
     }
