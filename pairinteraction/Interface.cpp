@@ -70,12 +70,14 @@ int compute(const std::string &config_name, const std::string &output_name) {
         if (existAtom1 && existAtom2) {
             std::cout << fmt::format(">>TYP{:7d}", 3) << std::endl;
             auto basisnames_one = std::make_shared<BasisnamesOne>(BasisnamesOne::fromBoth(config));
-            hamiltonian_one = std::make_shared<HamiltonianOne<Scalar>>(config, path_cache, basisnames_one);
+            hamiltonian_one =
+                std::make_shared<HamiltonianOne<Scalar>>(config, path_cache, basisnames_one);
         }
         std::shared_ptr<HamiltonianTwo<Scalar>> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo<Scalar>>(config, path_cache, hamiltonian_one);
+            hamiltonian_two =
+                std::make_shared<HamiltonianTwo<Scalar>>(config, path_cache, hamiltonian_one);
         }
     } else {
         std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1;
@@ -97,8 +99,8 @@ int compute(const std::string &config_name, const std::string &output_name) {
         std::shared_ptr<HamiltonianTwo<Scalar>> hamiltonian_two;
         if (existAtom1 && existAtom2 && (config.count("minR") != 0u)) {
             std::cout << fmt::format(">>TYP{:7d}", 2) << std::endl;
-            hamiltonian_two = std::make_shared<HamiltonianTwo<Scalar>>(config, path_cache, hamiltonian_one1,
-                                                               hamiltonian_one2);
+            hamiltonian_two = std::make_shared<HamiltonianTwo<Scalar>>(
+                config, path_cache, hamiltonian_one1, hamiltonian_one2);
         }
     }
 
@@ -108,5 +110,6 @@ int compute(const std::string &config_name, const std::string &output_name) {
     return 0;
 }
 
-template int compute<std::complex<double>>(std::string const &config_name, std::string const &output_name);
+template int compute<std::complex<double>>(std::string const &config_name,
+                                           std::string const &output_name);
 template int compute<double>(std::string const &config_name, std::string const &output_name);

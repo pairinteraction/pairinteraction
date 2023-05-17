@@ -37,7 +37,7 @@
 #include <memory>
 
 template <typename Scalar>
-class HamiltonianOne : public Hamiltonian<Scalar,BasisnamesOne> {
+class HamiltonianOne : public Hamiltonian<Scalar, BasisnamesOne> {
 public:
     HamiltonianOne(const Configuration &config, fs::path &path_cache,
                    std::shared_ptr<BasisnamesOne> basis_one);

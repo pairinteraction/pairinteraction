@@ -30,8 +30,20 @@
 #include <vector>
 
 template <typename Scalar>
-SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache)
-    : SystemBase<Scalar,StateTwo>(cache), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1), system2(b2),
+SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2,
+                             MatrixElementCache &cache)
+    : SystemBase<Scalar, StateTwo>(cache), species({{b1.getSpecies(), b2.getSpecies()}}),
+      system1(b1), system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
+      distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
+      distance_z(std::numeric_limits<double>::max()), GTbool(false),
+      surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
+      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
+
+template <typename Scalar>
+SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2,
+                             MatrixElementCache &cache, bool memory_saving)
+    : SystemBase<Scalar, StateTwo>(cache, memory_saving),
+      species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1), system2(b2),
       minimal_le_roy_radius(std::numeric_limits<double>::max()),
       distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
       distance_z(std::numeric_limits<double>::max()), GTbool(false),
@@ -39,17 +51,8 @@ SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar
       sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
 
 template <typename Scalar>
-SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache,
-                     bool memory_saving)
-    : SystemBase<Scalar,StateTwo>(cache, memory_saving), species({{b1.getSpecies(), b2.getSpecies()}}), system1(b1),
-      system2(b2), minimal_le_roy_radius(std::numeric_limits<double>::max()),
-      distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
-      distance_z(std::numeric_limits<double>::max()), GTbool(false),
-      surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
-      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
-
-template <typename Scalar>
-std::vector<StateOne> SystemTwo<Scalar>::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
+std::vector<StateOne>
+SystemTwo<Scalar>::getStatesFirst() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one;
     for (const auto &entry : this->states) {
@@ -59,7 +62,8 @@ std::vector<StateOne> SystemTwo<Scalar>::getStatesFirst() { // TODO @hmenke type
 }
 
 template <typename Scalar>
-std::vector<StateOne> SystemTwo<Scalar>::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
+std::vector<StateOne>
+SystemTwo<Scalar>::getStatesSecond() { // TODO @hmenke typemap for "state_set<StateOne>"
     this->buildBasis();
     std::unordered_set<StateOne> states_one;
     for (const auto &entry : this->states) {
@@ -69,7 +73,9 @@ std::vector<StateOne> SystemTwo<Scalar>::getStatesSecond() { // TODO @hmenke typ
 }
 
 template <typename Scalar>
-const std::array<std::string, 2> &SystemTwo<Scalar>::getSpecies() { return species; }
+const std::array<std::string, 2> &SystemTwo<Scalar>::getSpecies() {
+    return species;
+}
 
 template <typename Scalar>
 void SystemTwo<Scalar>::enableGreenTensor(bool GTboolean) {
@@ -218,7 +224,9 @@ void SystemTwo<Scalar>::initializeBasis() {
 
     std::vector<bool> artificial1(system1.getNumBasisvectors(), false);
     for (size_t col = 0; col < system1.getNumBasisvectors(); ++col) {
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system1.getBasisvectors(), col); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system1.getBasisvectors(),
+                                                                        col);
+             triple; ++triple) {
             if (system1.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
                 artificial1[triple.col()] = true;
             }
@@ -227,7 +235,9 @@ void SystemTwo<Scalar>::initializeBasis() {
 
     std::vector<bool> artificial2(system2.getNumBasisvectors(), false);
     for (size_t col = 0; col < system2.getNumBasisvectors(); ++col) {
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system2.getBasisvectors(), col); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(system2.getBasisvectors(),
+                                                                        col);
+             triple; ++triple) {
             if (system2.getStatesMultiIndex()[triple.row()].state.isArtificial()) {
                 artificial2[triple.col()] = true;
             }
@@ -242,7 +252,8 @@ void SystemTwo<Scalar>::initializeBasis() {
 
     std::vector<Eigen::Triplet<Scalar>> hamiltonian_triplets;
     hamiltonian_triplets.reserve(system1.getNumBasisvectors() * system2.getNumBasisvectors());
-    this->states.reserve(system1.getNumStates() * system2.getNumStates() + this->states_to_add.size());
+    this->states.reserve(system1.getNumStates() * system2.getNumStates() +
+                         this->states_to_add.size());
     std::vector<Eigen::Triplet<Scalar>> basisvectors_triplets; // TODO reserve
     std::vector<double> sqnorm_list(
         system1.getNumStates() * system2.getNumStates() + this->states_to_add.size(), 0);
@@ -307,12 +318,15 @@ void SystemTwo<Scalar>::initializeBasis() {
         hamiltonian_triplets.emplace_back(col_new, col_new, energy);
 
         // Build the basis vector that corresponds to the stored pair state energy
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(system1.getBasisvectors(), col_1); triple_1; ++triple_1) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(system1.getBasisvectors(),
+                                                                          col_1);
+             triple_1; ++triple_1) {
             size_t row_1 = triple_1.row();
             StateOne state_1 = system1.getStatesMultiIndex()[row_1].state;
 
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(system2.getBasisvectors(), col_2); triple_2;
-                 ++triple_2) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(
+                     system2.getBasisvectors(), col_2);
+                 triple_2; ++triple_2) {
                 size_t row_2 = triple_2.row();
                 StateOne state_2 = system2.getStatesMultiIndex()[row_2].state;
 
@@ -572,7 +586,8 @@ void SystemTwo<Scalar>::initializeBasis() {
         double_t sqnorm = 0;
 
         // Calculate the square norm of the columns of the basisvector matrix
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(this->basisvectors, idx); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(this->basisvectors, idx);
+             triple; ++triple) {
             sqnorm += std::pow(std::abs(triple.value()), 2);
         }
 
@@ -853,15 +868,15 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i1 == 0 && std::abs(q1) == 1) { // Calculate x-entry
                             vec1_entry = 1 / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getFirstState(),
-                                                        c.state.getFirstState());
+                                                              c.state.getFirstState());
                             vec1_entry *= (q1 == 1) ? -1 : 1;
                         } else if (i1 == 1 && std::abs(q1) == 1) { // Calculate y-entry
                             vec1_entry = 1 / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getFirstState(),
-                                                        c.state.getFirstState());
+                                                              c.state.getFirstState());
                         } else if (i1 == 2 && q1 == 0) { // Calculate z-entry
                             vec1_entry = this->cache.getElectricDipole(r.state.getFirstState(),
-                                                                 c.state.getFirstState());
+                                                                       c.state.getFirstState());
                         } else {
                             continue;
                         }
@@ -871,15 +886,15 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i2 == 0 && std::abs(q2) == 1) { // Calculate x-entry
                             vec2_entry = 1 / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getSecondState(),
-                                                        c.state.getSecondState());
+                                                              c.state.getSecondState());
                             vec2_entry *= (q2 == 1) ? -1 : 1;
                         } else if (i2 == 1 && std::abs(q2) == 1) { // Calculate y-entry
                             vec2_entry = 1 / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getSecondState(),
-                                                        c.state.getSecondState());
+                                                              c.state.getSecondState());
                         } else if (i2 == 2 && q2 == 0) { // Calculate z-entry
                             vec2_entry = this->cache.getElectricDipole(r.state.getSecondState(),
-                                                                 c.state.getSecondState());
+                                                                       c.state.getSecondState());
                         } else {
                             continue;
                         }
@@ -918,15 +933,15 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i1 == 0 && std::abs(q1) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getFirstState(),
-                                                        c.state.getFirstState());
+                                                              c.state.getFirstState());
                             vec_entry *= (q1 == 1) ? -1. : 1.;
                         } else if (i1 == 1 && std::abs(q1) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getFirstState(),
-                                                        c.state.getFirstState());
+                                                              c.state.getFirstState());
                         } else if (i1 == 2 && q1 == 0) {
                             vec_entry = this->cache.getElectricDipole(r.state.getFirstState(),
-                                                                c.state.getFirstState());
+                                                                      c.state.getFirstState());
                         } else {
                             continue;
                         }
@@ -935,23 +950,23 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.); // with sqrt(2kappa +1 /4pi)
                             } else if (q2 == 0) {
                                 matrix_entry = -sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         } else if (i2 == 0 && i3 == 1) {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 2) ? -1. : 1.;
                             }
@@ -959,7 +974,7 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 1) ? -1. : 1.;
                             }
@@ -967,7 +982,7 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 2) ? -1. : 1.;
                             }
@@ -975,30 +990,30 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
                                     -this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                c.state.getSecondState(), 2) *
+                                                                      c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.); // with sqrt(2kappa +1 /4pi)
                             } else if (q2 == 0) {
                                 matrix_entry = -sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         } else if (i2 == 1 && i3 == 2) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                             }
                         } else if (i2 == 2 && i3 == 0) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 1) ? -1. : 1.;
                             }
@@ -1007,18 +1022,18 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), 2) *
+                                                                     c.state.getSecondState(), 2) *
                                     sqrt(5. / 4.);
                             }
                         } else if (i2 == 2 && i3 == 2) {
                             if (q2 == 0) {
                                 matrix_entry = sqrt(8. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                   c.state.getSecondState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         }
@@ -1060,15 +1075,15 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i3 == 0 && std::abs(q2) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getSecondState(),
-                                                        c.state.getSecondState());
+                                                              c.state.getSecondState());
                             vec_entry *= (q2 == 1) ? -1. : 1.;
                         } else if (i3 == 1 && std::abs(q2) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
                                 this->cache.getElectricDipole(r.state.getSecondState(),
-                                                        c.state.getSecondState());
+                                                              c.state.getSecondState());
                         } else if (i3 == 2 && q2 == 0) {
                             vec_entry = this->cache.getElectricDipole(r.state.getSecondState(),
-                                                                c.state.getSecondState());
+                                                                      c.state.getSecondState());
                         } else {
                             continue;
                         }
@@ -1077,23 +1092,23 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                             } else if (q1 == 0) {
                                 matrix_entry = -sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         } else if (i1 == 0 && i2 == 1) {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 2) ? -1. : 1.;
                             }
@@ -1101,7 +1116,7 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 1) ? -1. : 1.;
                             }
@@ -1109,7 +1124,7 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 2) ? -1. : 1.;
                             }
@@ -1117,30 +1132,30 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
                                     -this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                c.state.getFirstState(), 2) *
+                                                                      c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                             } else if (q1 == 0) {
                                 matrix_entry = -sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         } else if (i1 == 1 && i2 == 2) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                             }
                         } else if (i1 == 2 && i2 == 0) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 1) ? -1. : 1.;
                             }
@@ -1149,18 +1164,18 @@ void SystemTwo<Scalar>::initializeInteraction() {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
                                     this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), 2) *
+                                                                     c.state.getFirstState(), 2) *
                                     sqrt(5. / 4.);
                             }
                         } else if (i1 == 2 && i2 == 2) {
                             if (q1 == 0) {
                                 matrix_entry = sqrt(8. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 2) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
                                         sqrt(5. / 4.) +
                                     sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                   c.state.getFirstState(), 0) *
+                                        this->cache.getElectricMultipole(
+                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
                                         sqrt(1. / 4.);
                             }
                         }
@@ -1193,9 +1208,9 @@ void SystemTwo<Scalar>::initializeInteraction() {
                     if (interaction_angulardipole_keys.count(key) != 0) {
                         double val = coulombs_constant *
                             this->cache.getElectricDipole(r.state.getFirstState(),
-                                                    c.state.getFirstState()) *
+                                                          c.state.getFirstState()) *
                             this->cache.getElectricDipole(r.state.getSecondState(),
-                                                    c.state.getSecondState());
+                                                          c.state.getSecondState());
 
                         this->addTriplet(interaction_angulardipole_triplets[key], r.idx, c.idx,
                                          val);
@@ -1224,10 +1239,10 @@ void SystemTwo<Scalar>::initializeInteraction() {
 
                                 val += coulombs_constant * std::pow(-1, kappa2) *
                                     std::sqrt(binomials) *
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                               c.state.getFirstState(), kappa1) *
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                               c.state.getSecondState(), kappa2);
+                                    this->cache.getElectricMultipole(
+                                        r.state.getFirstState(), c.state.getFirstState(), kappa1) *
+                                    this->cache.getElectricMultipole(
+                                        r.state.getSecondState(), c.state.getSecondState(), kappa2);
                             }
                         }
 
@@ -1252,7 +1267,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
         interaction_greentensor_dd_triplets[i].clear();
 
         interaction_greentensor_dd[i] = this->basisvectors.adjoint() *
-            interaction_greentensor_dd[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+            interaction_greentensor_dd[i].template selfadjointView<Eigen::Lower>() *
+            this->basisvectors;
     }
     for (const auto &i : interaction_greentensor_dq_keys) {
         interaction_greentensor_dq[i].resize(this->states.size(), this->states.size());
@@ -1262,7 +1278,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
         interaction_greentensor_dq_triplets[i].clear();
 
         interaction_greentensor_dq[i] = this->basisvectors.adjoint() *
-            interaction_greentensor_dq[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+            interaction_greentensor_dq[i].template selfadjointView<Eigen::Lower>() *
+            this->basisvectors;
     }
     for (const auto &i : interaction_greentensor_qd_keys) {
         interaction_greentensor_qd[i].resize(this->states.size(), this->states.size());
@@ -1272,7 +1289,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
         interaction_greentensor_qd_triplets[i].clear();
 
         interaction_greentensor_qd[i] = this->basisvectors.adjoint() *
-            interaction_greentensor_qd[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+            interaction_greentensor_qd[i].template selfadjointView<Eigen::Lower>() *
+            this->basisvectors;
     }
     for (const auto &i : interaction_angulardipole_keys) {
         interaction_angulardipole[i].resize(this->states.size(), this->states.size());
@@ -1281,7 +1299,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
         interaction_angulardipole_triplets[i].clear();
 
         interaction_angulardipole[i] = this->basisvectors.adjoint() *
-            interaction_angulardipole[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+            interaction_angulardipole[i].template selfadjointView<Eigen::Lower>() *
+            this->basisvectors;
     }
 
     for (const auto &i : interaction_multipole_keys) {
@@ -1370,8 +1389,9 @@ void SystemTwo<Scalar>::deleteInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
-                                       double beta, double gamma) {
+Eigen::SparseMatrix<Scalar>
+SystemTwo<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
+                                double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
@@ -1384,8 +1404,8 @@ Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::rotateStates(const std::vector<si
 
     size_t current = 0;
     for (auto const &idx : states_indices) {
-        this->addRotated(this->states[idx].state, current++, states_rotated_triplets, wigner, alpha, beta,
-                         gamma);
+        this->addRotated(this->states[idx].state, current++, states_rotated_triplets, wigner, alpha,
+                         beta, gamma);
     }
 
     Eigen::SparseMatrix<Scalar> states_rotated(this->states.size(), states_indices.size());
@@ -1396,7 +1416,8 @@ Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::rotateStates(const std::vector<si
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::buildStaterotator(double alpha, double beta, double gamma) {
+Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::buildStaterotator(double alpha, double beta,
+                                                                 double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
@@ -1404,7 +1425,8 @@ Eigen::SparseMatrix<Scalar> SystemTwo<Scalar>::buildStaterotator(double alpha, d
     std::vector<Eigen::Triplet<Scalar>> rotator_triplets;
     rotator_triplets.reserve(
         std::min(static_cast<size_t>(10 * 10), this->states.size()) *
-        this->states.size()); // TODO std::min( (2*jmax+1)*(2*jmax+1), states.size() ) * states.size()
+        this->states
+            .size()); // TODO std::min( (2*jmax+1)*(2*jmax+1), states.size() ) * states.size()
 
     for (auto const &entry : this->states) {
         this->addRotated(entry.state, entry.idx, rotator_triplets, wigner, alpha, beta, gamma);
@@ -1488,7 +1510,9 @@ void SystemTwo<Scalar>::incorporate(SystemBase<Scalar, StateTwo> &system) {
 ////////////////////////////////////////////////////////////////////
 
 template <typename Scalar>
-void SystemTwo<Scalar>::onStatesChange() { minimal_le_roy_radius = std::numeric_limits<double>::max(); }
+void SystemTwo<Scalar>::onStatesChange() {
+    minimal_le_roy_radius = std::numeric_limits<double>::max();
+}
 
 ////////////////////////////////////////////////////////////////////
 /// Utility methods ////////////////////////////////////////////////
@@ -1537,9 +1561,9 @@ void SystemTwo<Scalar>::checkDistance(const double &distance) {
 
 template <typename Scalar>
 void SystemTwo<Scalar>::addBasisvectors(const StateTwo &state, const size_t &col_new,
-                                const Scalar &value_new,
-                                std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
-                                std::vector<double> &sqnorm_list) {
+                                        const Scalar &value_new,
+                                        std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+                                        std::vector<double> &sqnorm_list) {
     auto state_iter = this->states.template get<1>().find(state);
 
     size_t row_new;

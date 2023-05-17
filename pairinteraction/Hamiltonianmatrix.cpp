@@ -26,7 +26,8 @@ template <typename Scalar>
 Hamiltonianmatrix<Scalar>::Hamiltonianmatrix() = default;
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar>::Hamiltonianmatrix(const Eigen::SparseMatrix<Scalar> &entries, const Eigen::SparseMatrix<Scalar> &basis)
+Hamiltonianmatrix<Scalar>::Hamiltonianmatrix(const Eigen::SparseMatrix<Scalar> &entries,
+                                             const Eigen::SparseMatrix<Scalar> &basis)
     : entries_(entries), basis_(basis) {}
 
 template <typename Scalar>
@@ -42,7 +43,9 @@ Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::entries() {
 }
 
 template <typename Scalar>
-const Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::entries() const { return entries_; }
+const Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::entries() const {
+    return entries_;
+}
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::basis() {
@@ -51,13 +54,19 @@ Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::basis() {
 }
 
 template <typename Scalar>
-const Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::basis() const { return basis_; }
+const Eigen::SparseMatrix<Scalar> &Hamiltonianmatrix<Scalar>::basis() const {
+    return basis_;
+}
 
 template <typename Scalar>
-size_t Hamiltonianmatrix<Scalar>::num_basisvectors() const { return basis_.cols(); }
+size_t Hamiltonianmatrix<Scalar>::num_basisvectors() const {
+    return basis_.cols();
+}
 
 template <typename Scalar>
-size_t Hamiltonianmatrix<Scalar>::num_coordinates() const { return basis_.rows(); }
+size_t Hamiltonianmatrix<Scalar>::num_coordinates() const {
+    return basis_.rows();
+}
 
 template <typename Scalar>
 void Hamiltonianmatrix<Scalar>::addBasis(idx_t row, idx_t col, Scalar val) {
@@ -92,7 +101,8 @@ Hamiltonianmatrix<Scalar> Hamiltonianmatrix<Scalar>::abs() const {
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> Hamiltonianmatrix<Scalar>::changeBasis(const Eigen::SparseMatrix<Scalar> &basis) const {
+Hamiltonianmatrix<Scalar>
+Hamiltonianmatrix<Scalar>::changeBasis(const Eigen::SparseMatrix<Scalar> &basis) const {
     auto transformator = basis_.adjoint() * basis;
     auto entries = transformator.adjoint() * entries_ * transformator;
     return Hamiltonianmatrix<Scalar>(entries, basis);
@@ -124,10 +134,12 @@ void Hamiltonianmatrix<Scalar>::applyCutoff(double cutoff) {
 }
 
 template <typename Scalar>
-void Hamiltonianmatrix<Scalar>::findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const {
+void Hamiltonianmatrix<Scalar>::findUnnecessaryStates(
+    std::vector<bool> &isNecessaryCoordinate) const {
     std::vector<double> isNecessaryCoordinate_real(num_coordinates(), 0);
     for (int k = 0; k < basis_.outerSize(); ++k) {
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k); triple;
+             ++triple) {
             isNecessaryCoordinate_real[triple.row()] += std::pow(std::abs(triple.value()), 2);
         }
     }
@@ -147,7 +159,8 @@ void Hamiltonianmatrix<Scalar>::removeUnnecessaryBasisvectors(
     // build transformator
     std::vector<double> isNecessaryBasisvector(num_basisvectors(), 0);
     for (int k_1 = 0; k_1 < basis_.outerSize(); ++k_1) {
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k_1); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k_1); triple;
+             ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
             ptrdiff_t row = triple.row(); // coordinate
             if (isNecessaryCoordinate[row]) {
@@ -181,7 +194,8 @@ void Hamiltonianmatrix<Scalar>::removeUnnecessaryBasisvectors() {
     // build transformator
     std::vector<double> isNecessaryBasisvector(num_basisvectors(), 0);
     for (int k_1 = 0; k_1 < basis_.outerSize(); ++k_1) {
-        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k_1); triple; ++triple) {
+        for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basis_, k_1); triple;
+             ++triple) {
             ptrdiff_t col = triple.col(); // basis vector
             isNecessaryBasisvector[col] += std::pow(std::abs(triple.value()), 2);
         }
@@ -206,7 +220,8 @@ void Hamiltonianmatrix<Scalar>::removeUnnecessaryBasisvectors() {
 }
 
 template <typename Scalar>
-void Hamiltonianmatrix<Scalar>::removeUnnecessaryStates(const std::vector<bool> &isNecessaryCoordinate) {
+void Hamiltonianmatrix<Scalar>::removeUnnecessaryStates(
+    const std::vector<bool> &isNecessaryCoordinate) {
     bytes.clear();
 
     // build transformator
@@ -228,7 +243,8 @@ void Hamiltonianmatrix<Scalar>::removeUnnecessaryStates(const std::vector<bool> 
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> Hamiltonianmatrix<Scalar>::getBlock(const std::vector<ptrdiff_t> &indices) {
+Hamiltonianmatrix<Scalar>
+Hamiltonianmatrix<Scalar>::getBlock(const std::vector<ptrdiff_t> &indices) {
     std::vector<Eigen::Triplet<Scalar>> triplets_transformator;
     triplets_transformator.reserve(indices.size());
     for (size_t idx = 0; idx < indices.size(); ++idx) {
@@ -247,7 +263,8 @@ template <typename Scalar>
 void Hamiltonianmatrix<Scalar>::diagonalize() {
     if (this->num_basisvectors() > 1) { // NOLINT
         // diagonalization
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixX<Scalar>> eigensolver(Eigen::MatrixX<Scalar>(this->entries()));
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixX<Scalar>> eigensolver(
+            Eigen::MatrixX<Scalar>(this->entries()));
 
         // eigenvalues and eigenvectors
         eigen_vector_double_t evals = eigensolver.eigenvalues();
@@ -265,42 +282,46 @@ void Hamiltonianmatrix<Scalar>::diagonalize() {
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> operator+(Hamiltonianmatrix<Scalar> lhs, const Hamiltonianmatrix<Scalar> &rhs) {
+Hamiltonianmatrix<Scalar> operator+(Hamiltonianmatrix<Scalar> lhs,
+                                    const Hamiltonianmatrix<Scalar> &rhs) {
     lhs.bytes.clear();
     lhs.entries_ += rhs.entries_;
     return lhs;
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> operator-(Hamiltonianmatrix<Scalar> lhs, const Hamiltonianmatrix<Scalar> &rhs) {
+Hamiltonianmatrix<Scalar> operator-(Hamiltonianmatrix<Scalar> lhs,
+                                    const Hamiltonianmatrix<Scalar> &rhs) {
     lhs.bytes.clear();
     lhs.entries_ -= rhs.entries_;
     return lhs;
 }
 
 template <typename Scalar, typename T>
-Hamiltonianmatrix<Scalar> operator*(const T& lhs, Hamiltonianmatrix<Scalar> rhs) {
+Hamiltonianmatrix<Scalar> operator*(const T &lhs, Hamiltonianmatrix<Scalar> rhs) {
     rhs.bytes.clear();
     rhs.entries_ *= lhs;
     return rhs;
 }
 
 template <typename Scalar, typename T>
-Hamiltonianmatrix<Scalar> operator*(Hamiltonianmatrix<Scalar> lhs, const T& rhs) {
+Hamiltonianmatrix<Scalar> operator*(Hamiltonianmatrix<Scalar> lhs, const T &rhs) {
     lhs.bytes.clear();
     lhs.entries_ *= rhs;
     return lhs;
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> &Hamiltonianmatrix<Scalar>::operator+=(const Hamiltonianmatrix<Scalar> &rhs) {
+Hamiltonianmatrix<Scalar> &
+Hamiltonianmatrix<Scalar>::operator+=(const Hamiltonianmatrix<Scalar> &rhs) {
     bytes.clear();
     entries_ += rhs.entries_;
     return *this;
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> &Hamiltonianmatrix<Scalar>::operator-=(const Hamiltonianmatrix<Scalar> &rhs) {
+Hamiltonianmatrix<Scalar> &
+Hamiltonianmatrix<Scalar>::operator-=(const Hamiltonianmatrix<Scalar> &rhs) {
     bytes.clear();
     entries_ -= rhs.entries_;
     return *this;
@@ -329,7 +350,7 @@ void Hamiltonianmatrix<Scalar>::doSerialization() {
         storage_idx_t entries_rows = entries_.rows();
         storage_idx_t entries_cols = entries_.cols();
         std::vector<Scalar> entries_data(entries_.valuePtr(),
-                                           entries_.valuePtr() + entries_.nonZeros());
+                                         entries_.valuePtr() + entries_.nonZeros());
         std::vector<storage_double> entries_data_real, entries_data_imag;
         splitComplex(entries_data_real, entries_data_imag, entries_data);
         std::vector<storage_idx_t> entries_indices(entries_.innerIndexPtr(),
@@ -514,9 +535,10 @@ bool Hamiltonianmatrix<Scalar>::load(const std::string &fname) {
 }
 
 template <typename Scalar>
-Hamiltonianmatrix<Scalar> combine(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<Scalar> &rhs,
-                          const double &deltaE, const std::shared_ptr<BasisnamesTwo> &basis_two,
-                          const Symmetry &sym) {
+Hamiltonianmatrix<Scalar> combine(const Hamiltonianmatrix<Scalar> &lhs,
+                                  const Hamiltonianmatrix<Scalar> &rhs, const double &deltaE,
+                                  const std::shared_ptr<BasisnamesTwo> &basis_two,
+                                  const Symmetry &sym) {
     // TODO program a faster method for samebasis == true
 
     size_t num_basisvectors = lhs.num_basisvectors() * rhs.num_basisvectors();
@@ -597,8 +619,12 @@ Hamiltonianmatrix<Scalar> combine(const Hamiltonianmatrix<Scalar> &lhs, const Ha
                 bool existing = false;
 
                 // --- Combine basis vectors for mat.basis() ---
-                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(lhs.basis(), col_1); triple_1; ++triple_1) {
-                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(rhs.basis(), col_2); triple_2; ++triple_2) {
+                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(lhs.basis(),
+                                                                                  col_1);
+                     triple_1; ++triple_1) {
+                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(rhs.basis(),
+                                                                                      col_2);
+                         triple_2; ++triple_2) {
                         size_t row =
                             rhs.num_coordinates() * triple_1.row() + triple_2.row(); // coordinate
 
@@ -745,8 +771,8 @@ Hamiltonianmatrix<Scalar> combine(const Hamiltonianmatrix<Scalar> &lhs, const Ha
 }
 
 template <typename Scalar>
-void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<Scalar> &rhs, const double &deltaE,
-                  std::vector<bool> &necessary) {
+void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<Scalar> &rhs,
+                  const double &deltaE, std::vector<bool> &necessary) {
     Eigen::VectorX<Scalar> diag1 = lhs.entries().diagonal();
     Eigen::VectorX<Scalar> diag2 = rhs.entries().diagonal();
 
@@ -756,8 +782,12 @@ void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<
             Scalar val_entries = diag1[col_1] + diag2[col_2]; // diag(V) x I + I x diag(V)
             if (std::abs(val_entries) < deltaE + 1e-11 ||
                 deltaE < 0) { // TODO make +1e-11 unnecessary
-                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(lhs.basis(), col_1); triple_1; ++triple_1) {
-                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(rhs.basis(), col_2); triple_2; ++triple_2) {
+                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_1(lhs.basis(),
+                                                                                  col_1);
+                     triple_1; ++triple_1) {
+                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple_2(rhs.basis(),
+                                                                                      col_2);
+                         triple_2; ++triple_2) {
                         size_t row =
                             rhs.num_coordinates() * triple_1.row() + triple_2.row(); // coordinate
                         necessary[row] = true;
@@ -769,26 +799,37 @@ void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<
 }
 
 template class Hamiltonianmatrix<std::complex<double>>;
-template Hamiltonianmatrix<std::complex<double>> operator+(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
-template Hamiltonianmatrix<std::complex<double>> operator-(Hamiltonianmatrix<std::complex<double>> lhs, const Hamiltonianmatrix<std::complex<double>> &rhs);
-template Hamiltonianmatrix<std::complex<double>> operator*(const std::complex<double> &lhs, Hamiltonianmatrix<std::complex<double>> rhs);
-template Hamiltonianmatrix<std::complex<double>> operator*(Hamiltonianmatrix<std::complex<double>> lhs, const std::complex<double> &rhs);
-template Hamiltonianmatrix<std::complex<double>> operator*(const double& lhs, Hamiltonianmatrix<std::complex<double>> rhs);
-template Hamiltonianmatrix<std::complex<double>> operator*(Hamiltonianmatrix<std::complex<double>> lhs, const double& rhs);
-template Hamiltonianmatrix<std::complex<double>> combine(const Hamiltonianmatrix<std::complex<double>> &lhs, const Hamiltonianmatrix<std::complex<double>> &rhs,
-                          const double &deltaE,
-                          const std::shared_ptr<BasisnamesTwo> &basis_two,
-                          const Symmetry &sym);
-template void energycutoff(const Hamiltonianmatrix<std::complex<double>> &lhs, const Hamiltonianmatrix<std::complex<double>> &rhs,
-                  const double &deltaE, std::vector<bool> &necessary);
+template Hamiltonianmatrix<std::complex<double>>
+operator+(Hamiltonianmatrix<std::complex<double>> lhs,
+          const Hamiltonianmatrix<std::complex<double>> &rhs);
+template Hamiltonianmatrix<std::complex<double>>
+operator-(Hamiltonianmatrix<std::complex<double>> lhs,
+          const Hamiltonianmatrix<std::complex<double>> &rhs);
+template Hamiltonianmatrix<std::complex<double>>
+operator*(const std::complex<double> &lhs, Hamiltonianmatrix<std::complex<double>> rhs);
+template Hamiltonianmatrix<std::complex<double>>
+operator*(Hamiltonianmatrix<std::complex<double>> lhs, const std::complex<double> &rhs);
+template Hamiltonianmatrix<std::complex<double>>
+operator*(const double &lhs, Hamiltonianmatrix<std::complex<double>> rhs);
+template Hamiltonianmatrix<std::complex<double>>
+operator*(Hamiltonianmatrix<std::complex<double>> lhs, const double &rhs);
+template Hamiltonianmatrix<std::complex<double>>
+combine(const Hamiltonianmatrix<std::complex<double>> &lhs,
+        const Hamiltonianmatrix<std::complex<double>> &rhs, const double &deltaE,
+        const std::shared_ptr<BasisnamesTwo> &basis_two, const Symmetry &sym);
+template void energycutoff(const Hamiltonianmatrix<std::complex<double>> &lhs,
+                           const Hamiltonianmatrix<std::complex<double>> &rhs, const double &deltaE,
+                           std::vector<bool> &necessary);
 template class Hamiltonianmatrix<double>;
-template Hamiltonianmatrix<double> operator+(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
-template Hamiltonianmatrix<double> operator-(Hamiltonianmatrix<double> lhs, const Hamiltonianmatrix<double> &rhs);
-template Hamiltonianmatrix<double> operator*(const double& lhs, Hamiltonianmatrix<double> rhs);
-template Hamiltonianmatrix<double> operator*(Hamiltonianmatrix<double> lhs, const double& rhs);
-template Hamiltonianmatrix<double> combine(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
-                          const double &deltaE,
-                          const std::shared_ptr<BasisnamesTwo> &basis_two,
-                          const Symmetry &sym);
-template void energycutoff(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
-                  const double &deltaE, std::vector<bool> &necessary);
+template Hamiltonianmatrix<double> operator+(Hamiltonianmatrix<double> lhs,
+                                             const Hamiltonianmatrix<double> &rhs);
+template Hamiltonianmatrix<double> operator-(Hamiltonianmatrix<double> lhs,
+                                             const Hamiltonianmatrix<double> &rhs);
+template Hamiltonianmatrix<double> operator*(const double &lhs, Hamiltonianmatrix<double> rhs);
+template Hamiltonianmatrix<double> operator*(Hamiltonianmatrix<double> lhs, const double &rhs);
+template Hamiltonianmatrix<double>
+combine(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
+        const double &deltaE, const std::shared_ptr<BasisnamesTwo> &basis_two, const Symmetry &sym);
+template void energycutoff(const Hamiltonianmatrix<double> &lhs,
+                           const Hamiltonianmatrix<double> &rhs, const double &deltaE,
+                           std::vector<bool> &necessary);

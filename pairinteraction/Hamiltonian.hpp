@@ -29,7 +29,9 @@ class Hamiltonian {
 public:
     Hamiltonian() = default;
     std::shared_ptr<Hamiltonianmatrix<Scalar>> get(size_t idx) { return matrix_diag[idx]; }
-    std::shared_ptr<const Hamiltonianmatrix<Scalar>> get(size_t idx) const { return matrix_diag[idx]; }
+    std::shared_ptr<const Hamiltonianmatrix<Scalar>> get(size_t idx) const {
+        return matrix_diag[idx];
+    }
     std::shared_ptr<const Configuration> getParams(size_t idx) const { return params[idx]; }
     size_t size() const { return matrix_diag.size(); }
     std::shared_ptr<const Basisnames> names() const { return basis; }

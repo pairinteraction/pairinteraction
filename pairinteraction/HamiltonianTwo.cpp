@@ -25,8 +25,9 @@
 #include <utility>
 
 template <typename Scalar>
-HamiltonianTwo<Scalar>::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                               const std::shared_ptr<HamiltonianOne<Scalar>> &hamiltonian_one)
+HamiltonianTwo<Scalar>::HamiltonianTwo(
+    const Configuration &config, fs::path &path_cache,
+    const std::shared_ptr<HamiltonianOne<Scalar>> &hamiltonian_one)
     : hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one),
       path_cache(path_cache) { // TODO
 
@@ -37,8 +38,8 @@ HamiltonianTwo<Scalar>::HamiltonianTwo(const Configuration &config, fs::path &pa
 
 template <typename Scalar>
 HamiltonianTwo<Scalar>::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                               std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1,
-                               std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2)
+                                       std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1,
+                                       std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2)
     : hamiltonian_one1(std::move(hamiltonian_one1)), hamiltonian_one2(std::move(hamiltonian_one2)),
       path_cache(path_cache) {
 
@@ -78,7 +79,7 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
         this->basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names()); // TODO remove
     } else {
         this->basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(),
-                                                hamiltonian_one2->names()); // TODO remove
+                                                      hamiltonian_one2->names()); // TODO remove
     }
     Configuration conf_matpair = this->basis->getConf();
     conf_matpair["deltaEPair"] = conf_tot["deltaEPair"];
@@ -446,8 +447,10 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
         std::cout << "Two-atom Hamiltonian, get one-atom states needed for the pair state basis"
                   << std::endl;
 
-        auto basis_one1_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(this->basis));
-        auto basis_one2_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(this->basis));
+        auto basis_one1_needed =
+            std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(this->basis));
+        auto basis_one2_needed =
+            std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(this->basis));
 
         for (int kappa = kappa_min; kappa <= kappa_max; ++kappa) {
             std::cout << "Two-atom Hamiltonian, precalculate matrix elements for kappa = " << kappa
@@ -596,8 +599,9 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
                 << "Two-atom Hamiltonian, compress interaction Hamiltonian that belongs to 1/R^"
                 << sumOfKappas + 1 << std::endl;
 
-            mat_multipole[idx_multipole].compress(this->basis->dim(),
-                                                  this->basis->dim()); // TODO substitute dim() by size()
+            mat_multipole[idx_multipole].compress(
+                this->basis->dim(),
+                this->basis->dim()); // TODO substitute dim() by size()
         }
     }
 
@@ -648,8 +652,8 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
             Symmetry sym = symmetries[idx_symmetry];
 
             // Combine the Hamiltonians of the two atoms
-            mat_single[idx_symmetry] = combine(*(hamiltonian_one1->get(0)),
-                                               *(hamiltonian_one2->get(0)), deltaE, this->basis, sym);
+            mat_single[idx_symmetry] = combine(
+                *(hamiltonian_one1->get(0)), *(hamiltonian_one2->get(0)), deltaE, this->basis, sym);
 
             // Remove more or less empty basis vectors
             mat_single[idx_symmetry].removeUnnecessaryBasisvectors();
@@ -814,8 +818,9 @@ void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
 
                 // --- Combine single atom matrices ---
                 if (nSteps_two == nSteps_one) {
-                    totalmatrix = combine(*(hamiltonian_one1->get(step_two)),
-                                          *(hamiltonian_one2->get(step_two)), deltaE, this->basis, sym);
+                    totalmatrix =
+                        combine(*(hamiltonian_one1->get(step_two)),
+                                *(hamiltonian_one2->get(step_two)), deltaE, this->basis, sym);
                     totalmatrix.removeUnnecessaryBasisvectors();
                 } else {
                     totalmatrix = mat_single[idx_symmetry];

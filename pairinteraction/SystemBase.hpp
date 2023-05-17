@@ -274,7 +274,8 @@ public:
         Eigen::SparseMatrix<Scalar> product = basisvectors.adjoint() * overlap_states;
         eigen_vector_double_t overlap = eigen_vector_double_t::Zero(product.rows());
         for (int k = 0; k < product.outerSize(); ++k) {
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(product, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(product, k); triple;
+                 ++triple) {
                 overlap[triple.row()] += std::pow(std::abs(triple.value()), 2);
             }
         }
@@ -352,7 +353,8 @@ public:
             double maxval = -1;
             size_t row_with_maxval;
 
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k);
+                 triple; ++triple) {
                 if (std::abs(triple.value()) > maxval) {
                     row_with_maxval = triple.row();
                     maxval = std::abs(triple.value());
@@ -365,7 +367,8 @@ public:
         return states_with_maxval;
     }
 
-    std::array<std::vector<size_t>, 2> getConnections(SystemBase<Scalar, State> &system_to, double threshold) {
+    std::array<std::vector<size_t>, 2> getConnections(SystemBase<Scalar, State> &system_to,
+                                                      double threshold) {
         // Build basis
         this->buildBasis();
         system_to.buildBasis();
@@ -554,7 +557,8 @@ public:
         diagonal_idx.reserve(hamiltonian.outerSize());
         for (int k = 0; k < hamiltonian.outerSize(); ++k) {
             double val = 0;
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(hamiltonian, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(hamiltonian, k); triple;
+                 ++triple) {
                 if (triple.row() == triple.col()) {
                     val = std::real(triple.value());
                 } else if (triple.row() != triple.col()) {
@@ -605,9 +609,9 @@ public:
 
         // Do the diagonalization
         {
-            MKL_INT n = hamiltonian.rows();  // size of the matrix
-            MKL_INT m;                       // will contain the number of eigenvalues
-            std::vector<Scalar> x(m0 * n); // the first m columns will contain the eigenvectors
+            MKL_INT n = hamiltonian.rows(); // size of the matrix
+            MKL_INT m;                      // will contain the number of eigenvalues
+            std::vector<Scalar> x(m0 * n);  // the first m columns will contain the eigenvectors
             {
                 std::vector<double> e(m0); // will contain the first m eigenvalues
                 {
@@ -637,7 +641,8 @@ public:
             }
 
             // Transform the basis vectors
-            Eigen::SparseMatrix<Scalar> evecs = Eigen::Map<Eigen::MatrixX<Scalar>>(&x[0], n, m).sparseView();
+            Eigen::SparseMatrix<Scalar> evecs =
+                Eigen::Map<Eigen::MatrixX<Scalar>>(&x[0], n, m).sparseView();
             if (threshold == 0) {
                 basisvectors = basisvectors * evecs;
             } else {
@@ -666,12 +671,12 @@ public:
 #if defined EIGEN_USE_LAPACKE || WITH_INTEL_MKL
 
         // Diagonalize hamiltonian
-        char jobz = 'V';                 // eigenvalues and eigenvectors are computed
-        char uplo = 'U';                 // full matrix is stored, upper is used
-        int n = hamiltonian.cols();      // size of the matrix
+        char jobz = 'V';                          // eigenvalues and eigenvectors are computed
+        char uplo = 'U';                          // full matrix is stored, upper is used
+        int n = hamiltonian.cols();               // size of the matrix
         Eigen::MatrixX<Scalar> mat = hamiltonian; // matrix
-        int lda = mat.outerStride();     // leading dimension
-        eigen_vector_double_t evals(n);  // eigenvalues
+        int lda = mat.outerStride();              // leading dimension
+        eigen_vector_double_t evals(n);           // eigenvalues
         int info = LAPACKE_evd(LAPACK_COL_MAJOR, jobz, uplo, n, mat.data(), lda, evals.data());
         if (info != 0) {
             throw std::runtime_error("Diagonalization with LAPACKE failed.");
@@ -735,7 +740,8 @@ public:
         size_t idx_new = 0;
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
             size_t hashvalue = hashvalue_states;
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k);
+                 triple; ++triple) {
                 utils::hash_combine(hashvalue, triple.row());
                 utils::hash_combine(hashvalue, triple.value());
             }
@@ -869,7 +875,7 @@ public:
 
         // --- Combine hamiltonian and hamiltonian_unperturbed_cache ---
         Eigen::SparseMatrix<Scalar> shifter(hamiltonian.rows() + system.hamiltonian.rows(),
-                               system.hamiltonian.rows());
+                                            system.hamiltonian.rows());
         {
             std::vector<Eigen::Triplet<Scalar>> shifter_triplets;
             shifter_triplets.reserve(system.hamiltonian.rows());
@@ -1086,7 +1092,8 @@ public:
         double maxval = -1;
         size_t col_with_maxval = -1;
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k);
+                 triple; ++triple) {
                 if (triple.row() == stateidx) {
                     if (std::abs(triple.value()) > maxval) {
                         col_with_maxval = triple.col();
@@ -1171,7 +1178,8 @@ public:
         double threshold = std::sqrt(0.5);
 
         for (int k = 0; k < basisvectors.outerSize(); ++k) { // col == idx_vector
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k);
+                 triple; ++triple) {
                 if (std::abs(triple.value()) > threshold) {
                     basisvectors_triplets.emplace_back(triple.row(), triple.col(), 1);
                     break;
@@ -1252,9 +1260,10 @@ protected:
     virtual void addInteraction() = 0;
     virtual void deleteInteraction() = 0;
 
-    virtual Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices, double alpha,
-                                        double beta, double gamma) = 0;
-    virtual Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) = 0;
+    virtual Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices,
+                                                     double alpha, double beta, double gamma) = 0;
+    virtual Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta,
+                                                          double gamma) = 0;
     virtual void incorporate(SystemBase<Scalar, State> &system) = 0;
 
     virtual void onStatesChange(){};
@@ -1316,7 +1325,8 @@ protected:
         tmp.prune(1e-12, 1);
 
         for (int k = 0; k < tmp.outerSize(); ++k) {
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple;
+                 ++triple) {
                 if (triple.row() != triple.col()) {
                     return false;
                 }
@@ -1333,7 +1343,8 @@ protected:
         }
 
         for (int k = 0; k < tmp.outerSize(); ++k) {
-            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple; ++triple) {
+            for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(tmp, k); triple;
+                 ++triple) {
                 if (triple.row() != triple.col()) {
                     return false;
                 }
@@ -1392,7 +1403,8 @@ protected:
     ////////////////////////////////////////////////////////////////////
 
     void applyLeftsideTransformator(std::vector<Eigen::Triplet<Scalar>> &triplets_transformator) {
-        Eigen::SparseMatrix<Scalar> transformator(triplets_transformator.size(), basisvectors.rows());
+        Eigen::SparseMatrix<Scalar> transformator(triplets_transformator.size(),
+                                                  basisvectors.rows());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyLeftsideTransformator(transformator);
@@ -1407,7 +1419,8 @@ protected:
     }
 
     void applyRightsideTransformator(std::vector<Eigen::Triplet<Scalar>> &triplets_transformator) {
-        Eigen::SparseMatrix<Scalar> transformator(basisvectors.cols(), triplets_transformator.size());
+        Eigen::SparseMatrix<Scalar> transformator(basisvectors.cols(),
+                                                  triplets_transformator.size());
         transformator.setFromTriplets(triplets_transformator.begin(), triplets_transformator.end());
 
         this->applyRightsideTransformator(transformator);
@@ -1436,11 +1449,11 @@ protected:
     template <typename F>
     void removeRestrictedStates(F &&checkIsValidEntry) {
         // Validate the call signature of the passed in object
-        static_assert(
-            std::is_same<decltype(checkIsValidEntry(std::declval<enumerated_state<State> const &>())),
-                         bool>::value,
-            "Function signature mismatch!  Expected `bool "
-            "checkIsValidEntry(enumerated_state<State> const &)'");
+        static_assert(std::is_same<decltype(checkIsValidEntry(
+                                       std::declval<enumerated_state<State> const &>())),
+                                   bool>::value,
+                      "Function signature mismatch!  Expected `bool "
+                      "checkIsValidEntry(enumerated_state<State> const &)'");
 
         // Build transformator and remove states
         typename states_set<State>::type states_new;
@@ -1594,7 +1607,9 @@ private:
                     double_t sqnorm = 0;
 
                     // Calculate the square norm of the columns of the basisvector matrix
-                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, idx); triple; ++triple) {
+                    for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors,
+                                                                                    idx);
+                         triple; ++triple) {
                         sqnorm += std::pow(std::abs(triple.value()), 2);
                     }
                     if (sqnorm > threshold_for_sqnorm) {
@@ -1612,7 +1627,8 @@ private:
             // Calculate the square norm of the rows of the basisvector matrix
             std::vector<double> sqnorm_list(basisvectors.rows(), 0);
             for (int k = 0; k < this->basisvectors.cols(); ++k) {
-                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k); triple; ++triple) {
+                for (typename Eigen::SparseMatrix<Scalar>::InnerIterator triple(basisvectors, k);
+                     triple; ++triple) {
                     sqnorm_list[triple.row()] += std::pow(std::abs(triple.value()), 2);
                 }
             }

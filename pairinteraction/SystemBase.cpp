@@ -29,7 +29,8 @@ StateOne SystemBase<double, StateOne>::createStateFromLabel(const std::string &l
 
 template <>
 template <>
-StateOne SystemBase<std::complex<double>, StateOne>::createStateFromLabel(const std::string &label) const {
+StateOne
+SystemBase<std::complex<double>, StateOne>::createStateFromLabel(const std::string &label) const {
     return StateOne(label);
 }
 
@@ -41,6 +42,7 @@ StateTwo SystemBase<double, StateTwo>::createStateFromLabel(const std::string &l
 
 template <>
 template <>
-StateTwo SystemBase<std::complex<double>, StateTwo>::createStateFromLabel(const std::string &label) const {
+StateTwo
+SystemBase<std::complex<double>, StateTwo>::createStateFromLabel(const std::string &label) const {
     return StateTwo(std::array<std::string, 2>({{"0_" + label, "1_" + label}}));
 }

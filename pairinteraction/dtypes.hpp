@@ -37,13 +37,13 @@ typedef std::vector<byte_t> bytes_t;
 typedef std::nullptr_t invalid_t;
 
 // Backport template aliases to older Eigen versions
-#if !EIGEN_VERSION_AT_LEAST(3,4,0)
+#if !EIGEN_VERSION_AT_LEAST(3, 4, 0)
 namespace Eigen {
 template <typename Type>
 using MatrixX = Matrix<Type, Dynamic, Dynamic>;
 template <typename Type>
 using VectorX = Matrix<Type, Dynamic, 1>;
-}
+} // namespace Eigen
 #endif
 
 typedef Eigen::SparseMatrix<double> eigen_sparse_double_t;

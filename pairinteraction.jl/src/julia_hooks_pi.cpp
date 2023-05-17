@@ -258,237 +258,235 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
         .method("<=", &StateTwo::operator<=);
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>, jlcxx::TypeVar<2>>>("SystemBase")
-        .apply<SystemBase<double,StateOne>, SystemBase<std::complex<double>,StateOne>>(
+        .apply<SystemBase<double, StateOne>, SystemBase<std::complex<double>, StateOne>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; })
-        .apply<SystemBase<double,StateTwo>, SystemBase<std::complex<double>,StateTwo>>(
+        .apply<SystemBase<double, StateTwo>, SystemBase<std::complex<double>, StateTwo>>(
             [](auto wrapped) { typedef typename decltype(wrapped)::type WrappedT; });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("eigen_sparse_t")
-        .apply<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<std::complex<double>>>([](auto wrapped)
-    {
-        typedef typename decltype(wrapped)::type WrappedT;
-        typedef typename WrappedT::Scalar Scalar;
-        constexpr bool const is_complex_v = utils::is_complex<Scalar>::value;
+        .apply<Eigen::SparseMatrix<double>, Eigen::SparseMatrix<std::complex<double>>>(
+            [](auto wrapped) {
+                typedef typename decltype(wrapped)::type WrappedT;
+                typedef typename WrappedT::Scalar Scalar;
+                constexpr bool const is_complex_v = utils::is_complex<Scalar>::value;
 
-        wrapped.method("nonzerorealvalues",
-                [](WrappedT &e) {
+                wrapped.method("nonzerorealvalues", [](WrappedT &e) {
                     jlcxx::Array<double> ret;
-if constexpr(is_complex_v) {
-                    for (int i = 0; i < e.nonZeros(); i++) {
-                        ret.push_back((e.valuePtr()[i]).real());
+                    if constexpr (is_complex_v) {
+                        for (int i = 0; i < e.nonZeros(); i++) {
+                            ret.push_back((e.valuePtr()[i]).real());
+                        }
+                    } else {
+                        for (int i = 0; i < e.nonZeros(); i++) {
+                            ret.push_back(e.valuePtr()[i]);
+                        }
                     }
-} else {
-      for (int i=0; i<e.nonZeros(); i++){
-          ret.push_back(e.valuePtr()[i]);
-      }
-}
                     return ret;
                 });
-        wrapped.method("nonzeroimagvalues",
-                [](WrappedT &e) {
+                wrapped.method("nonzeroimagvalues", [](WrappedT &e) {
                     jlcxx::Array<double> ret;
-if constexpr(is_complex_v) {
-                    for (int i = 0; i < e.nonZeros(); i++) {
-                        ret.push_back((e.valuePtr()[i]).imag());
+                    if constexpr (is_complex_v) {
+                        for (int i = 0; i < e.nonZeros(); i++) {
+                            ret.push_back((e.valuePtr()[i]).imag());
+                        }
+                    } else {
+                        for (int i = 0; i < e.nonZeros(); i++) {
+                            ret.push_back(0);
+                        }
                     }
-} else {
-      for (int i=0; i<e.nonZeros(); i++){
-          ret.push_back(0);
-      }
-}
                     return ret;
                 });
-        wrapped.method("outerIndex",
-                [](WrappedT &e) {
+                wrapped.method("outerIndex", [](WrappedT &e) {
                     jlcxx::Array<int> ret;
                     for (int i = 0; i < e.outerSize(); i++) {
                         ret.push_back(e.outerIndexPtr()[i]);
                     }
                     return ret;
                 });
-        wrapped.method("innerIndex", [](WrappedT &e) {
-            jlcxx::Array<int> ret;
-            for (int i = 0; i < e.nonZeros(); i++) {
-                ret.push_back(e.innerIndexPtr()[i]);
-            }
-            return ret;
-        });
-    });
+                wrapped.method("innerIndex", [](WrappedT &e) {
+                    jlcxx::Array<int> ret;
+                    for (int i = 0; i < e.nonZeros(); i++) {
+                        ret.push_back(e.innerIndexPtr()[i]);
+                    }
+                    return ret;
+                });
+            });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("SystemOne")
-        .apply<SystemOne<double>, SystemOne<std::complex<double>>>([](auto wrapped)
-    {
-        typedef typename decltype(wrapped)::type WrappedT;
-        typedef typename WrappedT::Scalar Scalar;
+        .apply<SystemOne<double>, SystemOne<std::complex<double>>>([](auto wrapped) {
+            typedef typename decltype(wrapped)::type WrappedT;
+            typedef typename WrappedT::Scalar Scalar;
 
-        wrapped.template constructor<std::string, MatrixElementCache &>();
-        wrapped.template constructor<std::string, MatrixElementCache &, bool>();
-        // SystemBase methods
-        // ///////////////////////////////////////////////////////////////////////
-        wrapped.method("restrictEnergy", &WrappedT::restrictEnergy);
-        wrapped.method("restrictN", static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictN));
-        wrapped.method("restrictN",
-                [](WrappedT &s, jlcxx::ArrayRef<int> n_jl) {
-                    std::set<int> n = {n_jl[0], n_jl[1]};
-                    s.restrictN(n);
-                });
-        wrapped.method("restrictL", static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictL));
-        wrapped.method("restrictL",
-                [](WrappedT &s, jlcxx::ArrayRef<int> l_jl) {
-                    std::set<int> l = {l_jl[0], l_jl[1]};
-                    s.restrictL(l);
-                });
-        wrapped.method("restrictJ", static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictJ));
-        wrapped.method("restrictJ",
-                [](WrappedT &s, jlcxx::ArrayRef<float> j_jl) {
-                    std::set<float> j = {j_jl[0], j_jl[1]};
-                    s.restrictJ(j);
-                });
-        wrapped.method("restrictM", static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictM));
-        wrapped.method("restrictM",
-                [](WrappedT &s, jlcxx::ArrayRef<float> m_jl) {
-                    std::set<float> m = {m_jl[0], m_jl[1]};
-                    s.restrictM(m);
-                });
-        wrapped.method("diagonalize", static_cast<void (WrappedT::*)()>(&WrappedT::diagonalize));
-        wrapped.method("getHamiltonian",
-                       static_cast<Eigen::SparseMatrix<Scalar> &(WrappedT::*)()>(&WrappedT::getHamiltonian));
-        /////////////////////////////////////////////////////////////////////////////////////////////
-        wrapped.method("getSpecies", &WrappedT::getSpecies);
-        wrapped.method("setEfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> efield) {
-                    std::array<double, 3> field = {efield[0], efield[1], efield[2]};
-                    s.setEfield(field);
-                });
-        wrapped.method("setEfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> efield, jlcxx::ArrayRef<double> z_axis,
-                   jlcxx::ArrayRef<double> y_axis) {
-                    std::array<double, 3> field = {efield[0], efield[1], efield[2]};
-                    std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
-                    std::array<double, 3> to_y_axis = {y_axis[0], y_axis[1], y_axis[2]};
-                    s.setEfield(field, to_z_axis, to_y_axis);
-                });
-        wrapped.method("setEfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> efield, double alpha, double beta,
-                   double gamma) {
-                    std::array<double, 3> field = {efield[0], efield[1], efield[2]};
-                    s.setEfield(field, alpha, beta, gamma);
-                });
-        wrapped.method("setBfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> bfield) {
-                    std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
-                    s.setBfield(field);
-                });
-        wrapped.method("setBfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> bfield, jlcxx::ArrayRef<double> z_axis,
-                   jlcxx::ArrayRef<double> y_axis) {
-                    std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
-                    std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
-                    std::array<double, 3> to_y_axis = {y_axis[0], y_axis[1], y_axis[2]};
-                    s.setBfield(field, to_z_axis, to_y_axis);
-                });
-        wrapped.method("setBfield",
-                [](WrappedT &s, jlcxx::ArrayRef<double> bfield, double alpha, double beta,
-                   double gamma) {
-                    std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
-                    s.setBfield(field, alpha, beta, gamma);
-                });
-        wrapped.method("enableDiamagnetism", &WrappedT::enableDiamagnetism);
-        wrapped.method("setConservedParityUnderReflection", &WrappedT::setConservedParityUnderReflection);
-        wrapped.method("setConservedMomentaUnderRotation",
-                [](WrappedT &s, jlcxx::ArrayRef<float> momenta_jl) {
-                    std::set<float> momenta;
-                    for (unsigned i = 0; i < momenta_jl.size(); i++) {
-                        momenta.insert(momenta_jl[i]);
-                    }
-                    const std::set<float> &momenta_const = momenta;
-                    s.setConservedMomentaUnderRotation(momenta_const);
-                });
-    });
+            wrapped.template constructor<std::string, MatrixElementCache &>();
+            wrapped.template constructor<std::string, MatrixElementCache &, bool>();
+            // SystemBase methods
+            // ///////////////////////////////////////////////////////////////////////
+            wrapped.method("restrictEnergy", &WrappedT::restrictEnergy);
+            wrapped.method("restrictN",
+                           static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictN));
+            wrapped.method("restrictN", [](WrappedT &s, jlcxx::ArrayRef<int> n_jl) {
+                std::set<int> n = {n_jl[0], n_jl[1]};
+                s.restrictN(n);
+            });
+            wrapped.method("restrictL",
+                           static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictL));
+            wrapped.method("restrictL", [](WrappedT &s, jlcxx::ArrayRef<int> l_jl) {
+                std::set<int> l = {l_jl[0], l_jl[1]};
+                s.restrictL(l);
+            });
+            wrapped.method("restrictJ",
+                           static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictJ));
+            wrapped.method("restrictJ", [](WrappedT &s, jlcxx::ArrayRef<float> j_jl) {
+                std::set<float> j = {j_jl[0], j_jl[1]};
+                s.restrictJ(j);
+            });
+            wrapped.method("restrictM",
+                           static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictM));
+            wrapped.method("restrictM", [](WrappedT &s, jlcxx::ArrayRef<float> m_jl) {
+                std::set<float> m = {m_jl[0], m_jl[1]};
+                s.restrictM(m);
+            });
+            wrapped.method("diagonalize",
+                           static_cast<void (WrappedT::*)()>(&WrappedT::diagonalize));
+            wrapped.method("getHamiltonian",
+                           static_cast<Eigen::SparseMatrix<Scalar> &(WrappedT::*)()>(
+                               &WrappedT::getHamiltonian));
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            wrapped.method("getSpecies", &WrappedT::getSpecies);
+            wrapped.method("setEfield", [](WrappedT &s, jlcxx::ArrayRef<double> efield) {
+                std::array<double, 3> field = {efield[0], efield[1], efield[2]};
+                s.setEfield(field);
+            });
+            wrapped.method("setEfield",
+                           [](WrappedT &s, jlcxx::ArrayRef<double> efield,
+                              jlcxx::ArrayRef<double> z_axis, jlcxx::ArrayRef<double> y_axis) {
+                               std::array<double, 3> field = {efield[0], efield[1], efield[2]};
+                               std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
+                               std::array<double, 3> to_y_axis = {y_axis[0], y_axis[1], y_axis[2]};
+                               s.setEfield(field, to_z_axis, to_y_axis);
+                           });
+            wrapped.method("setEfield",
+                           [](WrappedT &s, jlcxx::ArrayRef<double> efield, double alpha,
+                              double beta, double gamma) {
+                               std::array<double, 3> field = {efield[0], efield[1], efield[2]};
+                               s.setEfield(field, alpha, beta, gamma);
+                           });
+            wrapped.method("setBfield", [](WrappedT &s, jlcxx::ArrayRef<double> bfield) {
+                std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
+                s.setBfield(field);
+            });
+            wrapped.method("setBfield",
+                           [](WrappedT &s, jlcxx::ArrayRef<double> bfield,
+                              jlcxx::ArrayRef<double> z_axis, jlcxx::ArrayRef<double> y_axis) {
+                               std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
+                               std::array<double, 3> to_z_axis = {z_axis[0], z_axis[1], z_axis[2]};
+                               std::array<double, 3> to_y_axis = {y_axis[0], y_axis[1], y_axis[2]};
+                               s.setBfield(field, to_z_axis, to_y_axis);
+                           });
+            wrapped.method("setBfield",
+                           [](WrappedT &s, jlcxx::ArrayRef<double> bfield, double alpha,
+                              double beta, double gamma) {
+                               std::array<double, 3> field = {bfield[0], bfield[1], bfield[2]};
+                               s.setBfield(field, alpha, beta, gamma);
+                           });
+            wrapped.method("enableDiamagnetism", &WrappedT::enableDiamagnetism);
+            wrapped.method("setConservedParityUnderReflection",
+                           &WrappedT::setConservedParityUnderReflection);
+            wrapped.method("setConservedMomentaUnderRotation",
+                           [](WrappedT &s, jlcxx::ArrayRef<float> momenta_jl) {
+                               std::set<float> momenta;
+                               for (unsigned i = 0; i < momenta_jl.size(); i++) {
+                                   momenta.insert(momenta_jl[i]);
+                               }
+                               const std::set<float> &momenta_const = momenta;
+                               s.setConservedMomentaUnderRotation(momenta_const);
+                           });
+        });
 
     pi.add_type<jlcxx::Parametric<jlcxx::TypeVar<1>>>("SystemTwo")
-        .apply<SystemTwo<double>, SystemTwo<std::complex<double>>>([](auto wrapped)
-    {
-        typedef typename decltype(wrapped)::type WrappedT;
-        typedef typename WrappedT::Scalar Scalar;
+        .apply<SystemTwo<double>, SystemTwo<std::complex<double>>>([](auto wrapped) {
+            typedef typename decltype(wrapped)::type WrappedT;
+            typedef typename WrappedT::Scalar Scalar;
 
-        wrapped.template constructor<SystemOne<Scalar>, SystemOne<Scalar>, MatrixElementCache &>();
-        wrapped.template constructor<SystemOne<Scalar>, SystemOne<Scalar>, MatrixElementCache &, bool>();
-        wrapped.template constructor<WrappedT>();
-        // SystemBase methods
-        // ///////////////////////////////////////////////////////////////////////
-        wrapped.method("restrictEnergy", &WrappedT::restrictEnergy);
-        wrapped.method("restrictN", static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictN));
-        wrapped.method("restrictN",
-                [](WrappedT &s, jlcxx::ArrayRef<int> n_jl) {
-                    std::set<int> n = {n_jl[0], n_jl[1]};
-                    s.restrictN(n);
-                });
-        wrapped.method("restrictL", static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictL));
-        wrapped.method("restrictL",
-                [](WrappedT &s, jlcxx::ArrayRef<int> l_jl) {
-                    std::set<int> l = {l_jl[0], l_jl[1]};
-                    s.restrictL(l);
-                });
-        wrapped.method("restrictJ", static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictJ));
-        wrapped.method("restrictJ",
-                [](WrappedT &s, jlcxx::ArrayRef<float> j_jl) {
-                    std::set<float> j = {j_jl[0], j_jl[1]};
-                    s.restrictJ(j);
-                });
-        wrapped.method("restrictM", static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictM));
-        wrapped.method("restrictM",
-                [](WrappedT &s, jlcxx::ArrayRef<float> m_jl) {
-                    std::set<float> m = {m_jl[0], m_jl[1]};
-                    s.restrictM(m);
-                });
-        wrapped.method("diagonalize", static_cast<void (WrappedT::*)()>(&WrappedT::diagonalize));
-        wrapped.method("getHamiltonian",
-                       static_cast<Eigen::SparseMatrix<Scalar> &(WrappedT::*)()>(&WrappedT::getHamiltonian));
-        wrapped.method("getOverlap",
-                [](WrappedT &st, StateTwo &s) {
-                    eigen_vector_double_t overlap = st.getOverlap(s);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv) {
-                    std::vector<StateTwo> generalizedstates;
-                    for (unsigned i = 0; i < sv.size(); i++) {
-                        const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
-                        generalizedstates.push_back(s);
-                    }
-                    const std::vector<StateTwo> &generalizedstates_const = generalizedstates;
-                    eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, int state_index) {
-                    eigen_vector_double_t overlap = st.getOverlap(state_index);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, jlcxx::ArrayRef<int> si) {
-                    std::vector<size_t> states_indices;
-                    for (unsigned i = 0; i < si.size(); i++) {
-                        const size_t s = si[i];
-                        states_indices.push_back(s);
-                    }
-                    const std::vector<size_t> &states_indices_const = states_indices;
-                    eigen_vector_double_t overlap = st.getOverlap(states_indices_const);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, StateTwo &s, jlcxx::ArrayRef<double> to_z_axis_jl,
-                   jlcxx::ArrayRef<double> to_y_axis_jl) {
-                    std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
-                                                       to_z_axis_jl[2]};
-                    std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
-                                                       to_y_axis_jl[2]};
+            wrapped
+                .template constructor<SystemOne<Scalar>, SystemOne<Scalar>, MatrixElementCache &>();
+            wrapped.template constructor<SystemOne<Scalar>, SystemOne<Scalar>, MatrixElementCache &,
+                                         bool>();
+            wrapped.template constructor<WrappedT>();
+            // SystemBase methods
+            // ///////////////////////////////////////////////////////////////////////
+            wrapped.method("restrictEnergy", &WrappedT::restrictEnergy);
+            wrapped.method("restrictN",
+                           static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictN));
+            wrapped.method("restrictN", [](WrappedT &s, jlcxx::ArrayRef<int> n_jl) {
+                std::set<int> n = {n_jl[0], n_jl[1]};
+                s.restrictN(n);
+            });
+            wrapped.method("restrictL",
+                           static_cast<void (WrappedT::*)(int, int)>(&WrappedT::restrictL));
+            wrapped.method("restrictL", [](WrappedT &s, jlcxx::ArrayRef<int> l_jl) {
+                std::set<int> l = {l_jl[0], l_jl[1]};
+                s.restrictL(l);
+            });
+            wrapped.method("restrictJ",
+                           static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictJ));
+            wrapped.method("restrictJ", [](WrappedT &s, jlcxx::ArrayRef<float> j_jl) {
+                std::set<float> j = {j_jl[0], j_jl[1]};
+                s.restrictJ(j);
+            });
+            wrapped.method("restrictM",
+                           static_cast<void (WrappedT::*)(float, float)>(&WrappedT::restrictM));
+            wrapped.method("restrictM", [](WrappedT &s, jlcxx::ArrayRef<float> m_jl) {
+                std::set<float> m = {m_jl[0], m_jl[1]};
+                s.restrictM(m);
+            });
+            wrapped.method("diagonalize",
+                           static_cast<void (WrappedT::*)()>(&WrappedT::diagonalize));
+            wrapped.method("getHamiltonian",
+                           static_cast<Eigen::SparseMatrix<Scalar> &(WrappedT::*)()>(
+                               &WrappedT::getHamiltonian));
+            wrapped.method("getOverlap", [](WrappedT &st, StateTwo &s) {
+                eigen_vector_double_t overlap = st.getOverlap(s);
+                return jlcxx::get_array_from_evd_t(overlap);
+            });
+            wrapped.method("getOverlap", [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv) {
+                std::vector<StateTwo> generalizedstates;
+                for (unsigned i = 0; i < sv.size(); i++) {
+                    const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
+                    generalizedstates.push_back(s);
+                }
+                const std::vector<StateTwo> &generalizedstates_const = generalizedstates;
+                eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const);
+                return jlcxx::get_array_from_evd_t(overlap);
+            });
+            wrapped.method("getOverlap", [](WrappedT &st, int state_index) {
+                eigen_vector_double_t overlap = st.getOverlap(state_index);
+                return jlcxx::get_array_from_evd_t(overlap);
+            });
+            wrapped.method("getOverlap", [](WrappedT &st, jlcxx::ArrayRef<int> si) {
+                std::vector<size_t> states_indices;
+                for (unsigned i = 0; i < si.size(); i++) {
+                    const size_t s = si[i];
+                    states_indices.push_back(s);
+                }
+                const std::vector<size_t> &states_indices_const = states_indices;
+                eigen_vector_double_t overlap = st.getOverlap(states_indices_const);
+                return jlcxx::get_array_from_evd_t(overlap);
+            });
+            wrapped.method("getOverlap",
+                           [](WrappedT &st, StateTwo &s, jlcxx::ArrayRef<double> to_z_axis_jl,
+                              jlcxx::ArrayRef<double> to_y_axis_jl) {
+                               std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
+                                                                  to_z_axis_jl[2]};
+                               std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
+                                                                  to_y_axis_jl[2]};
 
-                    eigen_vector_double_t overlap = st.getOverlap(s, to_z_axis, to_y_axis);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
+                               eigen_vector_double_t overlap =
+                                   st.getOverlap(s, to_z_axis, to_y_axis);
+                               return jlcxx::get_array_from_evd_t(overlap);
+                           });
+            wrapped.method(
+                "getOverlap",
                 [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv,
                    jlcxx::ArrayRef<double> to_z_axis_jl, jlcxx::ArrayRef<double> to_y_axis_jl) {
                     std::vector<StateTwo> generalizedstates;
@@ -507,21 +505,67 @@ if constexpr(is_complex_v) {
                         st.getOverlap(generalizedstates_const, to_z_axis, to_y_axis);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, int state_index, jlcxx::ArrayRef<double> to_z_axis_jl,
-                   jlcxx::ArrayRef<double> to_y_axis_jl) {
-                    std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
-                                                       to_z_axis_jl[2]};
-                    std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
-                                                       to_y_axis_jl[2]};
+            wrapped.method("getOverlap",
+                           [](WrappedT &st, int state_index, jlcxx::ArrayRef<double> to_z_axis_jl,
+                              jlcxx::ArrayRef<double> to_y_axis_jl) {
+                               std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
+                                                                  to_z_axis_jl[2]};
+                               std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
+                                                                  to_y_axis_jl[2]};
 
-                    eigen_vector_double_t overlap =
-                        st.getOverlap(state_index, to_z_axis, to_y_axis);
+                               eigen_vector_double_t overlap =
+                                   st.getOverlap(state_index, to_z_axis, to_y_axis);
+                               return jlcxx::get_array_from_evd_t(overlap);
+                           });
+            wrapped.method("getOverlap",
+                           [](WrappedT &st, jlcxx::ArrayRef<int> si,
+                              jlcxx::ArrayRef<double> to_z_axis_jl,
+                              jlcxx::ArrayRef<double> to_y_axis_jl) {
+                               std::vector<size_t> states_indices;
+                               for (unsigned i = 0; i < si.size(); i++) {
+                                   const size_t s = si[i];
+                                   states_indices.push_back(s);
+                               }
+                               const std::vector<size_t> &states_indices_const = states_indices;
+
+                               std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
+                                                                  to_z_axis_jl[2]};
+                               std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
+                                                                  to_y_axis_jl[2]};
+
+                               eigen_vector_double_t overlap =
+                                   st.getOverlap(states_indices_const, to_z_axis, to_y_axis);
+                               return jlcxx::get_array_from_evd_t(overlap);
+                           });
+            wrapped.method("getOverlap",
+                           [](WrappedT &st, StateTwo &s, double alpha, double beta, double gamma) {
+                               eigen_vector_double_t overlap = st.getOverlap(s, alpha, beta, gamma);
+                               return jlcxx::get_array_from_evd_t(overlap);
+                           });
+            wrapped.method(
+                "getOverlap",
+                [](WrappedT &st, int state_index, double alpha, double beta, double gamma) {
+                    eigen_vector_double_t overlap = st.getOverlap(state_index, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, jlcxx::ArrayRef<int> si, jlcxx::ArrayRef<double> to_z_axis_jl,
-                   jlcxx::ArrayRef<double> to_y_axis_jl) {
+            wrapped.method("getOverlap",
+                           [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv, double alpha,
+                              double beta, double gamma) {
+                               std::vector<StateTwo> generalizedstates;
+                               for (unsigned i = 0; i < sv.size(); i++) {
+                                   const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
+                                   generalizedstates.push_back(s);
+                               }
+                               const std::vector<StateTwo> &generalizedstates_const =
+                                   generalizedstates;
+
+                               eigen_vector_double_t overlap =
+                                   st.getOverlap(generalizedstates_const, alpha, beta, gamma);
+                               return jlcxx::get_array_from_evd_t(overlap);
+                           });
+            wrapped.method(
+                "getOverlap",
+                [](WrappedT &st, jlcxx::ArrayRef<int> si, double alpha, double beta, double gamma) {
                     std::vector<size_t> states_indices;
                     for (unsigned i = 0; i < si.size(); i++) {
                         const size_t s = si[i];
@@ -529,85 +573,42 @@ if constexpr(is_complex_v) {
                     }
                     const std::vector<size_t> &states_indices_const = states_indices;
 
-                    std::array<double, 3> to_z_axis = {to_z_axis_jl[0], to_z_axis_jl[1],
-                                                       to_z_axis_jl[2]};
-                    std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
-                                                       to_y_axis_jl[2]};
-
                     eigen_vector_double_t overlap =
-                        st.getOverlap(states_indices_const, to_z_axis, to_y_axis);
+                        st.getOverlap(states_indices_const, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, StateTwo &s, double alpha, double beta, double gamma) {
-                    eigen_vector_double_t overlap = st.getOverlap(s, alpha, beta, gamma);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, int state_index, double alpha, double beta, double gamma) {
-                    eigen_vector_double_t overlap = st.getOverlap(state_index, alpha, beta, gamma);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method("getOverlap",
-                [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv, double alpha, double beta,
-                   double gamma) {
-                    std::vector<StateTwo> generalizedstates;
-                    for (unsigned i = 0; i < sv.size(); i++) {
-                        const StateTwo s = *jlcxx::unbox_wrapped_ptr<StateTwo>(sv[i]);
-                        generalizedstates.push_back(s);
-                    }
-                    const std::vector<StateTwo> &generalizedstates_const = generalizedstates;
-
-                    eigen_vector_double_t overlap =
-                        st.getOverlap(generalizedstates_const, alpha, beta, gamma);
-                    return jlcxx::get_array_from_evd_t(overlap);
-                });
-        wrapped.method(
-            "getOverlap",
-            [](WrappedT &st, jlcxx::ArrayRef<int> si, double alpha, double beta, double gamma) {
-                std::vector<size_t> states_indices;
-                for (unsigned i = 0; i < si.size(); i++) {
-                    const size_t s = si[i];
-                    states_indices.push_back(s);
-                }
-                const std::vector<size_t> &states_indices_const = states_indices;
-
-                eigen_vector_double_t overlap =
-                    st.getOverlap(states_indices_const, alpha, beta, gamma);
-                return jlcxx::get_array_from_evd_t(overlap);
+            /////////////////////////////////////////////////////////////////////////////////////////////
+            wrapped.method("getSpecies", [](WrappedT &s) {
+                std::array<std::string, 2> species_arr = s.getSpecies();
+                return std::make_tuple(species_arr[0], species_arr[1]);
             });
-        /////////////////////////////////////////////////////////////////////////////////////////////
-        wrapped.method("getSpecies",
-                [](WrappedT &s) {
-                    std::array<std::string, 2> species_arr = s.getSpecies();
-                    return std::make_tuple(species_arr[0], species_arr[1]);
-                });
-        wrapped.method("getStatesFirst", &WrappedT::getStatesFirst);
-        wrapped.method("getStatesSecond", &WrappedT::getStatesSecond);
-        wrapped.method("enableGreenTensor", &WrappedT::enableGreenTensor);
-        wrapped.method("setSurfaceDistance", &WrappedT::setSurfaceDistance);
-        wrapped.method("setAngle", &WrappedT::setAngle);
-        wrapped.method("setDistance", &WrappedT::setDistance);
-        wrapped.method("setDistanceVector",
-                [](WrappedT &s, jlcxx::ArrayRef<double> dvec) {
-                    std::array<double, 3> d = {dvec[0], dvec[1], dvec[2]};
-                    s.setDistanceVector(d);
-                });
-        wrapped.method("setOrder", &WrappedT::setOrder);
-        wrapped.method("setConservedParityUnderPermutation",
-                       &WrappedT::setConservedParityUnderPermutation);
-        wrapped.method("setConservedParityUnderInversion", &WrappedT::setConservedParityUnderInversion);
-        wrapped.method("setConservedParityUnderReflection", &WrappedT::setConservedParityUnderReflection);
-        wrapped.method("setConservedMomentaUnderRotation",
-                [](WrappedT &s, jlcxx::ArrayRef<int> momenta_jl) {
-                    std::set<int> momenta;
-                    for (unsigned i = 0; i < momenta_jl.size(); i++) {
-                        momenta.insert(momenta_jl[i]);
-                    }
-                    const std::set<int> &momenta_const = momenta;
-                    s.setConservedMomentaUnderRotation(momenta_const);
-                });
-    });
+            wrapped.method("getStatesFirst", &WrappedT::getStatesFirst);
+            wrapped.method("getStatesSecond", &WrappedT::getStatesSecond);
+            wrapped.method("enableGreenTensor", &WrappedT::enableGreenTensor);
+            wrapped.method("setSurfaceDistance", &WrappedT::setSurfaceDistance);
+            wrapped.method("setAngle", &WrappedT::setAngle);
+            wrapped.method("setDistance", &WrappedT::setDistance);
+            wrapped.method("setDistanceVector", [](WrappedT &s, jlcxx::ArrayRef<double> dvec) {
+                std::array<double, 3> d = {dvec[0], dvec[1], dvec[2]};
+                s.setDistanceVector(d);
+            });
+            wrapped.method("setOrder", &WrappedT::setOrder);
+            wrapped.method("setConservedParityUnderPermutation",
+                           &WrappedT::setConservedParityUnderPermutation);
+            wrapped.method("setConservedParityUnderInversion",
+                           &WrappedT::setConservedParityUnderInversion);
+            wrapped.method("setConservedParityUnderReflection",
+                           &WrappedT::setConservedParityUnderReflection);
+            wrapped.method("setConservedMomentaUnderRotation",
+                           [](WrappedT &s, jlcxx::ArrayRef<int> momenta_jl) {
+                               std::set<int> momenta;
+                               for (unsigned i = 0; i < momenta_jl.size(); i++) {
+                                   momenta.insert(momenta_jl[i]);
+                               }
+                               const std::set<int> &momenta_const = momenta;
+                               s.setConservedMomentaUnderRotation(momenta_const);
+                           });
+        });
 
     pi.add_type<QuantumDefect>("QuantumDefect")
         .constructor<std::string const &, int, int, double>()

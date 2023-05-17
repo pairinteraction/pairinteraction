@@ -32,18 +32,20 @@
 
 template <typename Scalar>
 SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache)
-    : SystemBase<Scalar,StateOne>(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}), diamagnetism(true), charge(0),
-      ordermax(0), distance(std::numeric_limits<double>::max()), species(std::move(species)),
-      sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
-
-template <typename Scalar>
-SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
-    : SystemBase<Scalar,StateOne>(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
+    : SystemBase<Scalar, StateOne>(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
       diamagnetism(true), charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
       species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
 
 template <typename Scalar>
-const std::string &SystemOne<Scalar>::getSpecies() const { return species; }
+SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving)
+    : SystemBase<Scalar, StateOne>(cache, memory_saving), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
+      diamagnetism(true), charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
+      species(std::move(species)), sym_reflection(NA), sym_rotation({static_cast<float>(ARB)}) {}
+
+template <typename Scalar>
+const std::string &SystemOne<Scalar>::getSpecies() const {
+    return species;
+}
 
 template <typename Scalar>
 void SystemOne<Scalar>::setEfield(std::array<double, 3> field) {
@@ -74,26 +76,28 @@ void SystemOne<Scalar>::setBfield(std::array<double, 3> field) {
 
 template <typename Scalar>
 void SystemOne<Scalar>::setEfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
-                          std::array<double, 3> to_y_axis) {
+                                  std::array<double, 3> to_y_axis) {
     this->rotateVector(field, to_z_axis, to_y_axis);
     this->setEfield(field);
 }
 
 template <typename Scalar>
 void SystemOne<Scalar>::setBfield(std::array<double, 3> field, std::array<double, 3> to_z_axis,
-                          std::array<double, 3> to_y_axis) {
+                                  std::array<double, 3> to_y_axis) {
     this->rotateVector(field, to_z_axis, to_y_axis);
     this->setBfield(field);
 }
 
 template <typename Scalar>
-void SystemOne<Scalar>::setEfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+void SystemOne<Scalar>::setEfield(std::array<double, 3> field, double alpha, double beta,
+                                  double gamma) {
     this->rotateVector(field, alpha, beta, gamma);
     this->setEfield(field);
 }
 
 template <typename Scalar>
-void SystemOne<Scalar>::setBfield(std::array<double, 3> field, double alpha, double beta, double gamma) {
+void SystemOne<Scalar>::setBfield(std::array<double, 3> field, double alpha, double beta,
+                                  double gamma) {
     this->rotateVector(field, alpha, beta, gamma);
     this->setBfield(field);
 }
@@ -496,7 +500,8 @@ void SystemOne<Scalar>::initializeInteraction() {
             interaction_efield[i] = this->basisvectors.adjoint() *
                 interaction_efield[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
         } else {
-            interaction_efield[i] = this->basisvectors.adjoint() * interaction_efield[i] * this->basisvectors;
+            interaction_efield[i] =
+                this->basisvectors.adjoint() * interaction_efield[i] * this->basisvectors;
             interaction_efield[-i] = std::pow(-1, i) * interaction_efield[i].adjoint();
         }
     }
@@ -511,7 +516,8 @@ void SystemOne<Scalar>::initializeInteraction() {
             interaction_bfield[i] = this->basisvectors.adjoint() *
                 interaction_bfield[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
         } else {
-            interaction_bfield[i] = this->basisvectors.adjoint() * interaction_bfield[i] * this->basisvectors;
+            interaction_bfield[i] =
+                this->basisvectors.adjoint() * interaction_bfield[i] * this->basisvectors;
             interaction_bfield[-i] = std::pow(-1, i) * interaction_bfield[i].adjoint();
         }
     }
@@ -524,7 +530,8 @@ void SystemOne<Scalar>::initializeInteraction() {
 
         if (i[1] == 0) {
             interaction_diamagnetism[i] = this->basisvectors.adjoint() *
-                interaction_diamagnetism[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+                interaction_diamagnetism[i].template selfadjointView<Eigen::Lower>() *
+                this->basisvectors;
         } else {
             interaction_diamagnetism[i] =
                 this->basisvectors.adjoint() * interaction_diamagnetism[i] * this->basisvectors;
@@ -540,7 +547,8 @@ void SystemOne<Scalar>::initializeInteraction() {
             interaction_multipole_triplets[i].clear();
             if (i == 0) {
                 interaction_multipole[i] = this->basisvectors.adjoint() *
-                    interaction_multipole[i].template selfadjointView<Eigen::Lower>() * this->basisvectors;
+                    interaction_multipole[i].template selfadjointView<Eigen::Lower>() *
+                    this->basisvectors;
             } else {
                 interaction_multipole[i] =
                     this->basisvectors.adjoint() * interaction_multipole[i] * this->basisvectors;
@@ -645,8 +653,9 @@ void SystemOne<Scalar>::deleteInteraction() {
 ////////////////////////////////////////////////////////////////////
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
-                                       double beta, double gamma) {
+Eigen::SparseMatrix<Scalar>
+SystemOne<Scalar>::rotateStates(const std::vector<size_t> &states_indices, double alpha,
+                                double beta, double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
@@ -658,8 +667,8 @@ Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::rotateStates(const std::vector<si
 
     size_t current = 0;
     for (auto const &idx : states_indices) {
-        this->addRotated(this->states[idx].state, current++, states_rotated_triplets, wigner, alpha, beta,
-                         gamma);
+        this->addRotated(this->states[idx].state, current++, states_rotated_triplets, wigner, alpha,
+                         beta, gamma);
     }
 
     Eigen::SparseMatrix<Scalar> states_rotated(this->states.size(), states_indices.size());
@@ -670,7 +679,8 @@ Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::rotateStates(const std::vector<si
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::buildStaterotator(double alpha, double beta, double gamma) {
+Eigen::SparseMatrix<Scalar> SystemOne<Scalar>::buildStaterotator(double alpha, double beta,
+                                                                 double gamma) {
     // Initialize Wigner D matrix
     WignerD wigner;
 
@@ -728,7 +738,8 @@ void SystemOne<Scalar>::incorporate(SystemBase<Scalar, StateOne> &system) {
           std::equal(sym_rotation.begin(), sym_rotation.end(),
                      dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.begin()))) {
         if (sym_rotation.count(static_cast<float>(ARB)) != 0 ||
-            dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.count(static_cast<float>(ARB)) != 0) {
+            dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.count(static_cast<float>(ARB)) !=
+                0) {
             sym_rotation = {static_cast<float>(ARB)};
         } else {
             sym_rotation.insert(dynamic_cast<SystemOne<Scalar> &>(system).sym_rotation.begin(),
@@ -751,10 +762,10 @@ void SystemOne<Scalar>::incorporate(SystemBase<Scalar, StateOne> &system) {
 ////////////////////////////////////////////////////////////////////
 
 template <typename Scalar>
-void SystemOne<Scalar>::addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                           std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
-                                           std::vector<Eigen::Triplet<Scalar>> &hamiltonian_triplets,
-                                           parity_t &sym_reflection_local) {
+void SystemOne<Scalar>::addSymmetrizedBasisvectors(
+    const StateOne &state, size_t &idx, const double &energy,
+    std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+    std::vector<Eigen::Triplet<Scalar>> &hamiltonian_triplets, parity_t &sym_reflection_local) {
     // In case of reflection symmetry, skip half of the basis vectors
     if (sym_reflection_local != NA && state.getM() != 0) {
         if (state.getM() < 0) {
@@ -788,8 +799,9 @@ void SystemOne<Scalar>::addSymmetrizedBasisvectors(const StateOne &state, size_t
 }
 
 template <typename Scalar>
-void SystemOne<Scalar>::addBasisvectors(const StateOne &state, const size_t &idx, const Scalar &value,
-                                std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets) {
+void SystemOne<Scalar>::addBasisvectors(
+    const StateOne &state, const size_t &idx, const Scalar &value,
+    std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets) {
     auto state_iter = this->states.template get<1>().find(state);
 
     size_t row;
@@ -805,7 +817,7 @@ void SystemOne<Scalar>::addBasisvectors(const StateOne &state, const size_t &idx
 
 template <typename Scalar>
 void SystemOne<Scalar>::changeToSphericalbasis(std::array<double, 3> field,
-                                       std::unordered_map<int, double> &field_spherical) {
+                                               std::unordered_map<int, double> &field_spherical) {
     if (field[1] != 0) {
         throw std::runtime_error(
             "For fields with non-zero y-coordinates, a complex data type is needed.");
@@ -824,14 +836,14 @@ void SystemOne<Scalar>::changeToSphericalbasis(
 }
 
 template <typename Scalar>
-void SystemOne<Scalar>::addTriplet(std::vector<Eigen::Triplet<Scalar>> &triplets, const size_t r_idx,
-                           const size_t c_idx, const Scalar val) {
+void SystemOne<Scalar>::addTriplet(std::vector<Eigen::Triplet<Scalar>> &triplets,
+                                   const size_t r_idx, const size_t c_idx, const Scalar val) {
     triplets.emplace_back(r_idx, c_idx, val);
 }
 
 template <typename Scalar>
 void SystemOne<Scalar>::rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
-                             std::array<double, 3> &to_y_axis) {
+                                     std::array<double, 3> &to_y_axis) {
     auto field_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&field[0]);
 
     if (field_mapped.norm() != 0) {
@@ -842,7 +854,7 @@ void SystemOne<Scalar>::rotateVector(std::array<double, 3> &field, std::array<do
 
 template <typename Scalar>
 void SystemOne<Scalar>::rotateVector(std::array<double, 3> &field, double alpha, double beta,
-                             double gamma) {
+                                     double gamma) {
     auto field_mapped = Eigen::Map<Eigen::Matrix<double, 3, 1>>(&field[0]);
 
     if (field_mapped.norm() != 0) {

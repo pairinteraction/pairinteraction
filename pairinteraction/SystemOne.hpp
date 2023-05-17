@@ -69,9 +69,10 @@ protected:
     void addInteraction() override;
     void transformInteraction(const Eigen::SparseMatrix<Scalar_> &transformator) override;
     void deleteInteraction() override;
-    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices, double alpha,
-                                double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices,
+                                              double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta,
+                                                   double gamma) override;
     void incorporate(SystemBase<Scalar_, StateOne> &system) override;
 
 private:
@@ -87,7 +88,8 @@ private:
 
     std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_efield;
     std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_bfield;
-    std::unordered_map<std::array<int, 2>, Eigen::SparseMatrix<Scalar_>, utils::hash<std::array<int, 2>>>
+    std::unordered_map<std::array<int, 2>, Eigen::SparseMatrix<Scalar_>,
+                       utils::hash<std::array<int, 2>>>
         interaction_diamagnetism;
     std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_multipole;
     parity_t sym_reflection;

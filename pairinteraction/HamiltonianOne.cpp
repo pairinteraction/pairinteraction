@@ -27,7 +27,7 @@
 
 template <typename Scalar>
 HamiltonianOne<Scalar>::HamiltonianOne(const Configuration &config, fs::path &path_cache,
-                               std::shared_ptr<BasisnamesOne> basis_one)
+                                       std::shared_ptr<BasisnamesOne> basis_one)
     : path_cache(path_cache) {
     this->basis = std::move(basis_one);
     configure(config);
@@ -41,8 +41,8 @@ const Configuration &HamiltonianOne<Scalar>::getConf()
 }
 
 template <typename Scalar>
-void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, double val_z, double &val_p,
-                                       double &val_m, double &val_0) {
+void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, double val_z,
+                                               double &val_p, double &val_m, double &val_0) {
     if (val_y != 0) {
         std::string msg("For fields with non-zero y-coordinates, a complex data type is needed.");
         std::cout << fmt::format(">>ERR{:s}", msg) << std::endl;
@@ -55,8 +55,9 @@ void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, doubl
 
 template <typename Scalar>
 void HamiltonianOne<Scalar>::changeToSpherical(double val_x, double val_y, double val_z,
-                                       std::complex<double> &val_p, std::complex<double> &val_m,
-                                       std::complex<double> &val_0) {
+                                               std::complex<double> &val_p,
+                                               std::complex<double> &val_m,
+                                               std::complex<double> &val_0) {
     val_p = std::complex<double>(-val_x / std::sqrt(2), -val_y / std::sqrt(2));
     val_m = std::complex<double>(val_x / std::sqrt(2), -val_y / std::sqrt(2));
     val_0 = std::complex<double>(val_z, 0);
@@ -174,8 +175,8 @@ void HamiltonianOne<Scalar>::build() {
     ////////////////////////////////////////////////////////
 
     // --- Obtain existence of fields ---
-    Scalar min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m,
-        max_B_0, max_B_p, max_B_m;
+    Scalar min_E_0, min_E_p, min_E_m, min_B_0, min_B_p, min_B_m, max_E_0, max_E_p, max_E_m, max_B_0,
+        max_B_p, max_B_m;
     changeToSpherical(min_E_x, min_E_y, min_E_z, min_E_p, min_E_m, min_E_0);
     changeToSpherical(max_E_x, max_E_y, max_E_z, max_E_p, max_E_m, max_E_0);
     changeToSpherical(min_B_x, min_B_y, min_B_z, min_B_p, min_B_m, min_B_0);
@@ -646,8 +647,9 @@ void HamiltonianOne<Scalar>::build() {
 
         // === Store path to configuration and diagonalized matrix ===
         this->matrix_path[step] = path.string();
-        this->matrix_diag[step] = std::make_shared<Hamiltonianmatrix<Scalar>>(totalmatrix); // TODO maybe remove
-        this->params[step] = std::make_shared<Configuration>(conf);                 // TODO maybe remove
+        this->matrix_diag[step] =
+            std::make_shared<Hamiltonianmatrix<Scalar>>(totalmatrix); // TODO maybe remove
+        this->params[step] = std::make_shared<Configuration>(conf);   // TODO maybe remove
     }
 
     std::cout << "One-atom Hamiltonian, all Hamiltonians processed" << std::endl;

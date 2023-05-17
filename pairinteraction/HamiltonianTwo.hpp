@@ -39,7 +39,7 @@
 #include <memory>
 
 template <typename Scalar>
-class HamiltonianTwo : public Hamiltonian<Scalar,BasisnamesTwo> {
+class HamiltonianTwo : public Hamiltonian<Scalar, BasisnamesTwo> {
 public:
     HamiltonianTwo(const Configuration &config, fs::path &path_cache,
                    const std::shared_ptr<HamiltonianOne<Scalar>> &hamiltonian_one);

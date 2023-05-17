@@ -44,7 +44,8 @@ template <typename Scalar_>
 class SystemTwo : public SystemBase<Scalar_, StateTwo> {
 public:
     using Scalar = Scalar_;
-    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2, MatrixElementCache &cache);
+    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2,
+              MatrixElementCache &cache);
     SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2, MatrixElementCache &cache,
               bool memory_saving);
 
@@ -70,9 +71,10 @@ protected:
     void addInteraction() override;
     void transformInteraction(const Eigen::SparseMatrix<Scalar_> &transformator) override;
     void deleteInteraction() override;
-    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices, double alpha,
-                                double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices,
+                                              double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta,
+                                                   double gamma) override;
     void incorporate(SystemBase<Scalar_, StateTwo> &system) override;
     void onStatesChange() override;
 
