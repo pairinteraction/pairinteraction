@@ -34,7 +34,7 @@ struct IsBits<method_t> : std::true_type {};
 template <>
 struct IsBits<parity_t> : std::true_type {};
 
-jlcxx::Array<double> get_array_from_evd_t(eigen_vector_double_t overlap) {
+jlcxx::Array<double> get_array_from_evd_t(Eigen::VectorX<double> overlap) {
     jlcxx::Array<double> ret;
     for (unsigned i = 0; i < overlap.size(); i++) {
         ret.push_back(overlap.data()[i]);
@@ -446,7 +446,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                            static_cast<Eigen::SparseMatrix<Scalar> &(WrappedT::*)()>(
                                &WrappedT::getHamiltonian));
             wrapped.method("getOverlap", [](WrappedT &st, StateTwo &s) {
-                eigen_vector_double_t overlap = st.getOverlap(s);
+                Eigen::VectorX<double> overlap = st.getOverlap(s);
                 return jlcxx::get_array_from_evd_t(overlap);
             });
             wrapped.method("getOverlap", [](WrappedT &st, jlcxx::ArrayRef<jl_value_t *> sv) {
@@ -456,11 +456,11 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     generalizedstates.push_back(s);
                 }
                 const std::vector<StateTwo> &generalizedstates_const = generalizedstates;
-                eigen_vector_double_t overlap = st.getOverlap(generalizedstates_const);
+                Eigen::VectorX<double> overlap = st.getOverlap(generalizedstates_const);
                 return jlcxx::get_array_from_evd_t(overlap);
             });
             wrapped.method("getOverlap", [](WrappedT &st, int state_index) {
-                eigen_vector_double_t overlap = st.getOverlap(state_index);
+                Eigen::VectorX<double> overlap = st.getOverlap(state_index);
                 return jlcxx::get_array_from_evd_t(overlap);
             });
             wrapped.method("getOverlap", [](WrappedT &st, jlcxx::ArrayRef<int> si) {
@@ -470,7 +470,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     states_indices.push_back(s);
                 }
                 const std::vector<size_t> &states_indices_const = states_indices;
-                eigen_vector_double_t overlap = st.getOverlap(states_indices_const);
+                Eigen::VectorX<double> overlap = st.getOverlap(states_indices_const);
                 return jlcxx::get_array_from_evd_t(overlap);
             });
             wrapped.method("getOverlap",
@@ -481,7 +481,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                                std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
                                                                   to_y_axis_jl[2]};
 
-                               eigen_vector_double_t overlap =
+                               Eigen::VectorX<double> overlap =
                                    st.getOverlap(s, to_z_axis, to_y_axis);
                                return jlcxx::get_array_from_evd_t(overlap);
                            });
@@ -501,7 +501,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
                                                        to_y_axis_jl[2]};
 
-                    eigen_vector_double_t overlap =
+                    Eigen::VectorX<double> overlap =
                         st.getOverlap(generalizedstates_const, to_z_axis, to_y_axis);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });
@@ -513,7 +513,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                                std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
                                                                   to_y_axis_jl[2]};
 
-                               eigen_vector_double_t overlap =
+                               Eigen::VectorX<double> overlap =
                                    st.getOverlap(state_index, to_z_axis, to_y_axis);
                                return jlcxx::get_array_from_evd_t(overlap);
                            });
@@ -533,19 +533,20 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                                std::array<double, 3> to_y_axis = {to_y_axis_jl[0], to_y_axis_jl[1],
                                                                   to_y_axis_jl[2]};
 
-                               eigen_vector_double_t overlap =
+                               Eigen::VectorX<double> overlap =
                                    st.getOverlap(states_indices_const, to_z_axis, to_y_axis);
                                return jlcxx::get_array_from_evd_t(overlap);
                            });
             wrapped.method("getOverlap",
                            [](WrappedT &st, StateTwo &s, double alpha, double beta, double gamma) {
-                               eigen_vector_double_t overlap = st.getOverlap(s, alpha, beta, gamma);
+                               Eigen::VectorX<double> overlap =
+                                   st.getOverlap(s, alpha, beta, gamma);
                                return jlcxx::get_array_from_evd_t(overlap);
                            });
             wrapped.method(
                 "getOverlap",
                 [](WrappedT &st, int state_index, double alpha, double beta, double gamma) {
-                    eigen_vector_double_t overlap = st.getOverlap(state_index, alpha, beta, gamma);
+                    Eigen::VectorX<double> overlap = st.getOverlap(state_index, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });
             wrapped.method("getOverlap",
@@ -559,7 +560,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                                const std::vector<StateTwo> &generalizedstates_const =
                                    generalizedstates;
 
-                               eigen_vector_double_t overlap =
+                               Eigen::VectorX<double> overlap =
                                    st.getOverlap(generalizedstates_const, alpha, beta, gamma);
                                return jlcxx::get_array_from_evd_t(overlap);
                            });
@@ -573,7 +574,7 @@ JLCXX_MODULE define_julia_module(jlcxx::Module &pi) {
                     }
                     const std::vector<size_t> &states_indices_const = states_indices;
 
-                    eigen_vector_double_t overlap =
+                    Eigen::VectorX<double> overlap =
                         st.getOverlap(states_indices_const, alpha, beta, gamma);
                     return jlcxx::get_array_from_evd_t(overlap);
                 });

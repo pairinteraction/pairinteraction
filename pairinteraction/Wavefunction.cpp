@@ -68,14 +68,14 @@ Numerov::Numerov(QuantumDefect const &qd) : qd(qd) {
     double const xmax = std::sqrt(2 * qd.n * (qd.n + 15));
     double const nsteps = std::ceil((xmax - xmin) / dx);
 
-    xy = eigen_dense_double_t::Zero(nsteps, 2);
+    xy = Eigen::MatrixX<double>::Zero(nsteps, 2);
 
     for (int i = 0; i < nsteps; ++i) {
         xy(i, 0) = (xmin + i * dx);
     }
 }
 
-eigen_dense_double_t Numerov::integrate() {
+Eigen::MatrixX<double> Numerov::integrate() {
     using model_potential::g;
 
     int const nsteps = xy.rows();
@@ -152,7 +152,7 @@ Whittaker::Whittaker(QuantumDefect const &qd) : qd(qd) {
     }
 }
 
-eigen_dense_double_t Whittaker::integrate() {
+Eigen::MatrixX<double> Whittaker::integrate() {
     using whittaker_functions::RadialWFWhittaker;
 
     // Set the sign

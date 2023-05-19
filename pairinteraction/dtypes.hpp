@@ -24,35 +24,29 @@
 #include <Eigen/Sparse>
 #include <array>
 #include <cmath>
-#include <unsupported/Eigen/CXX11/Tensor>
 #include <vector>
 
-typedef std::complex<double> complex_t;
 typedef uint32_t idx_t;
 typedef double storage_double; // TODO has always to be the same as double
 typedef int32_t storage_idx_t;
 
 typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
-typedef std::nullptr_t invalid_t;
 
 // Backport template aliases to older Eigen versions
+// https://eigen.tuxfamily.org/dox/group__matrixtypedefs.html
 #if !EIGEN_VERSION_AT_LEAST(3, 4, 0)
 namespace Eigen {
 template <typename Type>
 using MatrixX = Matrix<Type, Dynamic, Dynamic>;
 template <typename Type>
 using VectorX = Matrix<Type, Dynamic, 1>;
+template <typename Type>
+using Matrix3 = Matrix<Type, 3, 3>;
+template <typename Type>
+using Vector3 = Matrix<Type, 3, 1>;
 } // namespace Eigen
 #endif
-
-typedef Eigen::SparseMatrix<double> eigen_sparse_double_t;
-typedef Eigen::SparseMatrix<double>::InnerIterator eigen_iterator_double_t;
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> eigen_dense_double_t;
-typedef Eigen::Matrix<double, Eigen::Dynamic, 1> eigen_vector_double_t;
-
-typedef Eigen::Matrix<double, 3, 3> eigen_matrix33;
-typedef Eigen::TensorFixedSize<double, Eigen::Sizes<3, 3, 3>> eigen_tensor333;
 
 constexpr const double au2GHz = 6579683.920757349;
 constexpr const double au2Vcm = 5142206707.0;

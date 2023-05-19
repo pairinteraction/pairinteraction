@@ -152,39 +152,40 @@ public:
     /// Methods to get overlaps ////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
 
-    eigen_vector_double_t getOverlap(const State &generalizedstate);
+    Eigen::VectorX<double> getOverlap(const State &generalizedstate);
 
-    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates);
+    Eigen::VectorX<double> getOverlap(const std::vector<State> &generalizedstates);
 
-    eigen_vector_double_t getOverlap(const size_t &state_index);
+    Eigen::VectorX<double> getOverlap(const size_t &state_index);
 
-    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices);
+    Eigen::VectorX<double> getOverlap(const std::vector<size_t> &states_indices);
 
-    eigen_vector_double_t getOverlap(const State &generalizedstate, std::array<double, 3> to_z_axis,
-                                     std::array<double, 3> to_y_axis);
+    Eigen::VectorX<double> getOverlap(const State &generalizedstate,
+                                      std::array<double, 3> to_z_axis,
+                                      std::array<double, 3> to_y_axis);
 
-    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates,
-                                     std::array<double, 3> to_z_axis,
-                                     std::array<double, 3> to_y_axis);
+    Eigen::VectorX<double> getOverlap(const std::vector<State> &generalizedstates,
+                                      std::array<double, 3> to_z_axis,
+                                      std::array<double, 3> to_y_axis);
 
-    eigen_vector_double_t getOverlap(const size_t &state_index, std::array<double, 3> to_z_axis,
-                                     std::array<double, 3> to_y_axis);
+    Eigen::VectorX<double> getOverlap(const size_t &state_index, std::array<double, 3> to_z_axis,
+                                      std::array<double, 3> to_y_axis);
 
-    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices,
-                                     std::array<double, 3> to_z_axis,
-                                     std::array<double, 3> to_y_axis);
+    Eigen::VectorX<double> getOverlap(const std::vector<size_t> &states_indices,
+                                      std::array<double, 3> to_z_axis,
+                                      std::array<double, 3> to_y_axis);
 
-    eigen_vector_double_t getOverlap(const State &generalizedstate, double alpha, double beta,
-                                     double gamma);
+    Eigen::VectorX<double> getOverlap(const State &generalizedstate, double alpha, double beta,
+                                      double gamma);
 
-    eigen_vector_double_t getOverlap(const size_t &state_index, double alpha, double beta,
-                                     double gamma);
+    Eigen::VectorX<double> getOverlap(const size_t &state_index, double alpha, double beta,
+                                      double gamma);
 
-    eigen_vector_double_t getOverlap(const std::vector<State> &generalizedstates, double alpha,
-                                     double beta, double gamma);
+    Eigen::VectorX<double> getOverlap(const std::vector<State> &generalizedstates, double alpha,
+                                      double beta, double gamma);
 
-    eigen_vector_double_t getOverlap(const std::vector<size_t> &states_indices, double alpha,
-                                     double beta, double gamma);
+    Eigen::VectorX<double> getOverlap(const std::vector<size_t> &states_indices, double alpha,
+                                      double beta, double gamma);
 
     ////////////////////////////////////////////////////////////////////
     /// Methods to get properties of the system ////////////////////////

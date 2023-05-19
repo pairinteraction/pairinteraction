@@ -91,7 +91,7 @@ double g(QuantumDefect const &qd, double x);
  */
 class Numerov {
     QuantumDefect const &qd;
-    eigen_dense_double_t xy;
+    Eigen::MatrixX<double> xy;
 
 public:
     /** \brief Integration step size */
@@ -113,7 +113,7 @@ public:
      *
      * \returns vector with wavefunction amplitude
      */
-    eigen_dense_double_t integrate();
+    Eigen::MatrixX<double> integrate();
 
     /** \brief Power kernel for matrix elements
      *
@@ -177,7 +177,7 @@ double RadialWFWhittaker(double r, double nu, int l);
 
 class Whittaker {
     QuantumDefect const &qd;
-    eigen_dense_double_t xy;
+    Eigen::MatrixX<double> xy;
 
 public:
     /** \brief Integration step size */
@@ -201,7 +201,7 @@ public:
      *
      * \returns vector with wavefunction amplitude
      */
-    eigen_dense_double_t integrate();
+    Eigen::MatrixX<double> integrate();
 
     /** \brief Power kernel for matrix elements
      *

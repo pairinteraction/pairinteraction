@@ -267,7 +267,7 @@ void Hamiltonianmatrix<Scalar>::diagonalize() {
             Eigen::MatrixX<Scalar>(this->entries()));
 
         // eigenvalues and eigenvectors
-        eigen_vector_double_t evals = eigensolver.eigenvalues();
+        Eigen::VectorX<double> evals = eigensolver.eigenvalues();
         Eigen::SparseMatrix<Scalar> evecs = eigensolver.eigenvectors().sparseView(1e-4, 0.5);
 
         this->entries().setZero();

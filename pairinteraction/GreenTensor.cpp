@@ -20,6 +20,8 @@
 #include "GreenTensor.hpp"
 #include <limits>
 
+using TensorType = GreenTensor::TensorType;
+
 GreenTensor::GreenTensor(double x, double y, double z)
     : x(x), y(y), z(z), zA(std::numeric_limits<double>::max()),
       zB(std::numeric_limits<double>::max()), dd_tensor_calculated(false),
@@ -45,7 +47,7 @@ void GreenTensor::addSurface(double d) {
     qd_tensor_calculated = false;
 }
 
-const eigen_matrix33 &GreenTensor::getDDTensor() {
+const Eigen::Matrix3<double> &GreenTensor::getDDTensor() {
     if (!dd_tensor_calculated) {
         dd_tensor = getDDTensorVacuum(x, y, z);
         if (zA != std::numeric_limits<double>::max()) {
@@ -57,7 +59,7 @@ const eigen_matrix33 &GreenTensor::getDDTensor() {
     return dd_tensor;
 }
 
-const eigen_tensor333 &GreenTensor::getDQTensor() {
+const TensorType &GreenTensor::getDQTensor() {
     if (!dq_tensor_calculated) {
         dq_tensor = getDQTensorVacuum(x, y, z);
         if (zA != std::numeric_limits<double>::max()) {
@@ -68,7 +70,7 @@ const eigen_tensor333 &GreenTensor::getDQTensor() {
     return dq_tensor;
 }
 
-const eigen_tensor333 &GreenTensor::getQDTensor() {
+const TensorType &GreenTensor::getQDTensor() {
     if (!qd_tensor_calculated) {
         qd_tensor = getQDTensorVacuum(x, y, z);
         if (zA != std::numeric_limits<double>::max()) {
@@ -79,40 +81,40 @@ const eigen_tensor333 &GreenTensor::getQDTensor() {
     return qd_tensor;
 }
 
-eigen_matrix33 GreenTensor::getDDTensorVacuum(double x, double y, double z) const {
+Eigen::Matrix3<double> GreenTensor::getDDTensorVacuum(double x, double y, double z) const {
     // Build distance vector
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
 
     // Construct Green tensor
-    eigen_matrix33 vacuum_tensor =
+    Eigen::Matrix3<double> vacuum_tensor =
         -Eigen::MatrixXd::Identity(3, 3) / std::pow(distance.norm(), 3.) +
         3. * distance * distance.transpose() / std::pow(distance.norm(), 5.);
 
     return vacuum_tensor;
 }
 
-eigen_matrix33 GreenTensor::getDDTensorPlate(double x, double zA, double zB) const {
+Eigen::Matrix3<double> GreenTensor::getDDTensorPlate(double x, double zA, double zB) const {
     // Calculate distances to mirror dipole
     double zp = zA + zB;
     double rp = std::sqrt(x * x + zp * zp);
 
     // Construct Green tensor
-    eigen_matrix33 plate_tensor_second_matrix;
+    Eigen::Matrix3<double> plate_tensor_second_matrix;
     plate_tensor_second_matrix << x * x, 0., -x * zp, 0., 0., 0., x * zp, 0., x * x;
 
-    eigen_matrix33 plate_tensor =
-        Eigen::Vector3d({1., 1., 2.}).asDiagonal().toDenseMatrix() / std::pow(rp, 3.) -
+    Eigen::Matrix3<double> plate_tensor =
+        Eigen::Vector3<double>({1., 1., 2.}).asDiagonal().toDenseMatrix() / std::pow(rp, 3.) -
         3. * plate_tensor_second_matrix / std::pow(rp, 5);
 
     return plate_tensor;
 }
 
-eigen_tensor333 GreenTensor::getDQTensorVacuum(double x, double y, double z) const {
-    eigen_tensor333 vacuum_tensor;
+TensorType GreenTensor::getDQTensorVacuum(double x, double y, double z) const {
+    TensorType vacuum_tensor;
     vacuum_tensor.setZero();
 
-    eigen_matrix33 Eye = eigen_matrix33::Identity(3, 3);
+    Eigen::Matrix3<double> Eye = Eigen::Matrix3<double>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
     double dist = sqrt(x * x + y * y + z * z);
@@ -131,11 +133,11 @@ eigen_tensor333 GreenTensor::getDQTensorVacuum(double x, double y, double z) con
     return vacuum_tensor;
 }
 
-eigen_tensor333 GreenTensor::getQDTensorVacuum(double x, double y, double z) const {
-    eigen_tensor333 vacuum_tensor;
+TensorType GreenTensor::getQDTensorVacuum(double x, double y, double z) const {
+    TensorType vacuum_tensor;
     vacuum_tensor.setZero();
 
-    eigen_matrix33 Eye = eigen_matrix33::Identity(3, 3);
+    Eigen::Matrix3<double> Eye = Eigen::Matrix3<double>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
     double dist = sqrt(x * x + y * y + z * z);
@@ -155,8 +157,8 @@ eigen_tensor333 GreenTensor::getQDTensorVacuum(double x, double y, double z) con
     return vacuum_tensor;
 }
 
-eigen_tensor333 GreenTensor::getDQTensorPlate(double x, double zA, double zB) const {
-    eigen_tensor333 plate_tensor;
+TensorType GreenTensor::getDQTensorPlate(double x, double zA, double zB) const {
+    TensorType plate_tensor;
     plate_tensor.setZero();
 
     double zp = zA + zB;
@@ -164,12 +166,12 @@ eigen_tensor333 GreenTensor::getDQTensorPlate(double x, double zA, double zB) co
     distanceplus << -x, 0., zp;
     double rp = distanceplus.norm();
 
-    eigen_matrix33 plate_tensor_first_matrix =
-        Eigen::Vector3d({1., 1., 2.}).asDiagonal().toDenseMatrix();
-    eigen_matrix33 plate_tensor_second_matrix;
+    Eigen::Matrix3<double> plate_tensor_first_matrix =
+        Eigen::Vector3<double>({1., 1., 2.}).asDiagonal().toDenseMatrix();
+    Eigen::Matrix3<double> plate_tensor_second_matrix;
     plate_tensor_second_matrix << x * x, 0., -x * zp, 0., 0., 0., x * zp, 0., x * x;
 
-    eigen_tensor333 plate_tensor_second_gradient;
+    TensorType plate_tensor_second_gradient;
     plate_tensor_second_gradient.setZero();
     plate_tensor_second_gradient(0, 0, 0) = -2. * x;
     plate_tensor_second_gradient(2, 2, 0) = -2. * x;
@@ -194,8 +196,8 @@ eigen_tensor333 GreenTensor::getDQTensorPlate(double x, double zA, double zB) co
     return plate_tensor;
 }
 
-eigen_tensor333 GreenTensor::getQDTensorPlate(double x, double zA, double zB) const {
-    eigen_tensor333 plate_tensor;
+TensorType GreenTensor::getQDTensorPlate(double x, double zA, double zB) const {
+    TensorType plate_tensor;
     plate_tensor.setZero();
 
     double zp = zA + zB;
@@ -203,12 +205,12 @@ eigen_tensor333 GreenTensor::getQDTensorPlate(double x, double zA, double zB) co
     distanceplus << x, 0., zp;
     double rp = distanceplus.norm();
 
-    eigen_matrix33 plate_tensor_first_matrix =
-        Eigen::Vector3d({1., 1., 2.}).asDiagonal().toDenseMatrix();
-    eigen_matrix33 plate_tensor_second_matrix;
+    Eigen::Matrix3<double> plate_tensor_first_matrix =
+        Eigen::Vector3<double>({1., 1., 2.}).asDiagonal().toDenseMatrix();
+    Eigen::Matrix3<double> plate_tensor_second_matrix;
     plate_tensor_second_matrix << x * x, 0., -x * zp, 0., 0., 0., x * zp, 0., x * x;
 
-    eigen_tensor333 gradient_plate_tensor_second;
+    TensorType gradient_plate_tensor_second;
     gradient_plate_tensor_second.setZero();
     gradient_plate_tensor_second(0, 0, 0) = 2. * x;
     gradient_plate_tensor_second(0, 2, 2) = 2. * x;
