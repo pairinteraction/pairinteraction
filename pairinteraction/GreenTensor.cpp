@@ -117,7 +117,7 @@ TensorType GreenTensor::getDQTensorVacuum(double x, double y, double z) const {
     Eigen::Matrix3<double> Eye = Eigen::Matrix3<double>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
-    double dist = sqrt(x * x + y * y + z * z);
+    double dist = std::sqrt(x * x + y * y + z * z);
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
@@ -140,7 +140,7 @@ TensorType GreenTensor::getQDTensorVacuum(double x, double y, double z) const {
     Eigen::Matrix3<double> Eye = Eigen::Matrix3<double>::Identity(3, 3);
     Eigen::Matrix<double, 3, 1> distance;
     distance << x, y, z;
-    double dist = sqrt(x * x + y * y + z * z);
+    double dist = std::sqrt(x * x + y * y + z * z);
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
