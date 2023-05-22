@@ -578,16 +578,20 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             raise Exception("Directory containing configurations not found.")
 
-        if os.path.exists(os.path.join(self.path_base, "pairinteraction-real" + ext)):
+        if os.path.exists(os.path.join(self.path_base, "pairinteraction-backend-deprecated" + ext)):
             self.path_workingdir = self.path_base
-        elif os.path.exists(os.path.join(self.path_base, "../../pairinteraction", "pairinteraction-real" + ext)):
+        elif os.path.exists(
+            os.path.join(self.path_base, "../../pairinteraction", "pairinteraction-backend-deprecated" + ext)
+        ):
             self.path_workingdir = os.path.join(self.path_base, "../../pairinteraction")
-        elif os.path.exists(os.path.join(self.path_base, "../pairinteraction", "pairinteraction-real" + ext)):
+        elif os.path.exists(
+            os.path.join(self.path_base, "../pairinteraction", "pairinteraction-backend-deprecated" + ext)
+        ):
             self.path_workingdir = os.path.join(self.path_base, "../pairinteraction")
         else:
             raise Exception("Directory containing executables not found.")
 
-        self.path_cpp = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-real")
+        self.path_cpp = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-backend-deprecated")
         self.path_quantumdefects = os.path.join(self.path_base, self.path_workingdir, "databases/quantum_defects.db")
 
         if sys.platform == "win32":

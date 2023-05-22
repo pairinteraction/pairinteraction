@@ -28,7 +28,7 @@ else( )
 endif( )
 
 add_custom_target(win32
-  DEPENDS pairinteraction-real database gui
+  DEPENDS pairinteraction-backend-deprecated database gui
   COMMENT "Build NSIS installer"
   COMMAND ${MAKENSIS} ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.nsi
 )

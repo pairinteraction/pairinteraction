@@ -35,12 +35,12 @@ set_target_properties(pireal PROPERTIES CXX_EXTENSIONS OFF)
 
 target_compile_definitions(pireal PUBLIC $<$<CXX_COMPILER_ID:MSVC>:NOMINMAX WIN32_LEAN_AND_MEAN _USE_MATH_DEFINES>)
 
-add_executable(pairinteraction-real    ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+add_executable(pairinteraction-backend-deprecated ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
-target_compile_features(pairinteraction-real PRIVATE cxx_std_17)
-set_target_properties(pairinteraction-real PROPERTIES CXX_EXTENSIONS OFF)
+target_compile_features(pairinteraction-backend-deprecated PRIVATE cxx_std_17)
+set_target_properties(pairinteraction-backend-deprecated PROPERTIES CXX_EXTENSIONS OFF)
 
-target_link_libraries(pairinteraction-real    pireal)
+target_link_libraries(pairinteraction-backend-deprecated pireal)
 
 # Add current directory to search path
 
@@ -334,10 +334,10 @@ if( WITH_DMG )
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION pairinteraction)
   endif()
   install(TARGETS pireal LIBRARY DESTINATION pairinteraction)
-  install(TARGETS pairinteraction-real RUNTIME DESTINATION pairinteraction)
+  install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION pairinteraction)
 
   set(bin1 \${CMAKE_INSTALL_PREFIX}/pairinteraction/libpireal.dylib)
-  set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction/pairinteraction-real)
+  set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction/pairinteraction-backend-deprecated)
   if(WITH_PYTHON)
     set(bin3 \${CMAKE_INSTALL_PREFIX}/pairinteraction/_pireal.so)
   endif()
@@ -350,11 +350,11 @@ elseif ( NOT WIN32 )
     set(PY_VERSION "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
     set(PY_MOD_DIR "lib/python${PY_VERSION}/dist-packages/pairinteraction")
 
-    install(TARGETS ${SWIG_MODULE_pireal_REAL_NAME}    LIBRARY DESTINATION ${PY_MOD_DIR})
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py    DESTINATION ${PY_MOD_DIR})
+    install(TARGETS ${SWIG_MODULE_pireal_REAL_NAME} LIBRARY DESTINATION ${PY_MOD_DIR})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
   endif()
 
-  install(TARGETS pireal    LIBRARY DESTINATION lib)
-  install(TARGETS pairinteraction-real    RUNTIME DESTINATION share/pairinteraction/pairinteraction)
+  install(TARGETS pireal LIBRARY DESTINATION lib)
+  install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
 
 endif( )

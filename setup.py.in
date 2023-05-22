@@ -30,7 +30,7 @@ setup(
     package_data = {
         "pairinteraction" : [
             "_pireal.so",
-            "pairinteraction-real",
+            "pairinteraction-backend-deprecated",
             "databases/quantum_defects.db"
         ],
         "pairinteraction_gui" : [ "conf/example.pconf", "conf/example.sconf", "pairinteraction_app/icon.png" ],
