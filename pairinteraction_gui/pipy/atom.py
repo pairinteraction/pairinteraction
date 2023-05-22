@@ -46,6 +46,7 @@ class Atom:
         self.config = config
 
         # properties call by self.property without underscore to ensure, they are created first
+        self._cache = None
         self._system = None
         self._basisStates = None
         self._basisQunumbers = None
@@ -263,7 +264,7 @@ class Atom:
         raise NotImplementedError("This has to be implemented in the subclass")
 
     def getCache(self):
-        if not hasattr(self, "_cache") or self._cache is not None:
+        if getattr(self, "_cache", None) is None:
             pathCache = self.config.pathCache()
             os.makedirs(pathCache, exist_ok=True)
             logger.debug("Using cache at %s", pathCache)
@@ -272,6 +273,25 @@ class Atom:
                 pi.MatrixElementCache.setMethod(pi.WHITTAKER)
             self._cache = pi.MatrixElementCache(pathCache)
         return self._cache
+
+    def delete(self):
+        """Delete all cpp objects and more."""
+        # Never delete _cache with also deleting the _system!
+        # Also first delete _system, then _cache
+        for k in [
+            "_system",
+            "_cache",
+            "_basisStates",
+            "_basisQunumbers",
+            "_allStates",
+            "_allQunumbers",
+            "energies",
+            "vectors",
+            "overlaps",
+        ]:
+            if hasattr(self, k):
+                delattr(self, k)
+            setattr(self, k, None)
 
 
 class AtomOne(Atom):
@@ -523,6 +543,15 @@ class AtomTwo(Atom):
             self.energies, self.overlaps, self.vectors = None, None, None
             return True
         return False
+
+    def delete(self):
+        """Delete all cpp objects and more."""
+        for k in ["_atom1", "_atom2"]:
+            if getattr(self, k, None) is not None:
+                getattr(self, k).delete()
+                delattr(self, k)
+                setattr(self, k, None)
+        super().delete()
 
 
 def atom_from_config(_config):

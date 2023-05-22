@@ -92,17 +92,13 @@ class PairinteractionGuiTest(unittest.TestCase):
         for i in range(len(data["ref"]["eigenvalues"])):
             Es = {k: np.array(mat["eigenvalues"])[i] for k, mat in data.items()}
             Es = {k: E[np.abs(E) < dE] for k, E in Es.items()}
+            assert len(np.abs(Es["ref"]) == len(Es["current"]))
             diff_rel = np.abs(Es["ref"] - Es["current"])
             assert np.all(diff_rel <= dE_tol)
 
     def tearDown(self):
-        # Calculation runs in the background. Wait for it to finish.
-        if self.form.thread.isRunning():
-            self.form.thread.wait()
-        # Close any pipes and wait for subprocess to exit.
-        if self.form.proc:
-            self.form.proc.stdout.close()
-            self.form.proc.wait()
+        # clean up processes
+        self.form.cleanupProcesses()
 
         # Remove tmp cache
         shutil.rmtree(self.form.path_cache)

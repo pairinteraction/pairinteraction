@@ -67,7 +67,7 @@ from pairinteraction_gui.pairinteraction.guiadditions import (
     DoubleValidator,
 )
 from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
-from pairinteraction_gui.pairinteraction.worker import Worker
+from pairinteraction_gui.pairinteraction.worker import Worker, pipyThread, allQueuesClass
 from pairinteraction_gui.pairinteraction.loader import Eigensystem
 from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
 
@@ -454,6 +454,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.invalidQuantumnumbersMessage = ""
 
         self.samebasis = False
+        self.current_idx = None
 
         self.systemdict = SystemDict(self.ui)
         self.plotdict = PlotDict(self.ui)
@@ -538,9 +539,12 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.proc = None
 
-        self.thread = Worker()
+        self.allQueues = allQueuesClass()
+        self.readThread = None
+        self.pipyThread = None
 
         self.timer = QtCore.QTimer()
+        self.starttime = None
 
         self.momentumcolors = [
             (55, 126, 184),
@@ -550,6 +554,9 @@ class MainWindow(QtWidgets.QMainWindow):
             (0, 0, 0),
             (255 // 5, 255 // 5, 255 // 5),
         ]  # s, p, d, f, other, undetermined
+
+        self.labelprob = None
+        self.labelprob_energy = None
 
         self.momentummat = [None] * 3
         self.labelmat = [None] * 3
@@ -569,7 +576,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cpp_elements = [e for e in self.all_elements if e not in ["Sr1", "Sr3"]]
         conn.close()
 
-        # TODO !!!!!! numBlocks kann auch hoeher als 3 sein!
         self.buffer_basis = {}
         self.buffer_energies = {}
         self.buffer_positions = {}
@@ -688,8 +694,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.lineedit_storage_maxE.setValidator(validator_doublenone)
 
         # Connect signals and slots
-        self.thread.criticalsignal.connect(self.showCriticalMessage)
-
         for system in ["system", "plot"]:
             for number in [1, 2]:
                 for q in "nljm":
@@ -1080,216 +1084,160 @@ class MainWindow(QtWidgets.QMainWindow):
     #    return self.systemdict['species1'] == self.systemdict['species2']
 
     def abortCalculation(self):
-        # kill c++ process - this terminates the self.thread, too
+        # kill all processes
         if self.proc is not None:
             self.proc.terminate()
+            self.proc.wait()
+        if self.readThread is not None:
+            self.readThread.exiting = True
+            self.readThread.wait()
+        if self.pipyThread is not None:
+            self.pipyThread.exiting = True
+            self.pipyThread.terminate()
+            self.pipyThread.wait()
+        self.allQueues.clear()
 
-        # wait until self.thread has finished
-        self.thread.wait()
-
-        # clear queues
-        self.thread.clear()
+    def cleanupProcesses(self):
+        """Cleanup after calculation is finished or stopped."""
+        if self.proc is not None:
+            self.proc.wait()
+            self.proc = None
+        if self.readThread is not None:
+            self.readThread.wait()
+            self.readThread = None
+        if self.pipyThread is not None:
+            self.pipyThread.wait()
+            # del self.pipyThread
+            self.pipyThread = None
+        self.allQueues.clear()
 
     def checkForData(self):
         dataamount = 0
 
         # === print status ===
         elapsedtime = f"{timedelta(seconds=int(time() - self.starttime))}"
-        if self.thread.message != "":
-            self.ui.statusbar.showMessage(self.thread.message + ", elapsed time " + elapsedtime)
+        if self.allQueues.message != "":
+            self.ui.statusbar.showMessage(self.allQueues.message + ", elapsed time " + elapsedtime)
         else:
             self.ui.statusbar.showMessage("Elapsed time " + elapsedtime)
 
         # === process field and potential maps ===
+        idx = self.current_idx
+        if idx is None:
+            return
 
-        for idx in range(3):
+        basisfiles = self.allQueues.basisfiles[idx]
+        dataqueue = self.allQueues.dataqueues[idx]
 
-            if idx > 0 and not self.thread.dataqueue_field1.empty():
-                continue
-            if idx > 1 and not self.thread.dataqueue_field2.empty():
-                continue
+        # --- load basis states ---
+        while len(basisfiles) > 0:
+            basisfile = basisfiles.pop(0)
+            # load basis
+            basis = np.loadtxt(basisfile)
+            if "blocknumber_" in basisfile:
+                _ind = basisfile.index("blocknumber_") + len("blocknumber_")
+                bn = int(basisfile[_ind:-4])
+            else:
+                bn = NO_BN
 
-            basisfiles = [
-                self.thread.basisfiles_field1,
-                self.thread.basisfiles_field2,
-                self.thread.basisfiles_potential,
-            ][idx]
-            dataqueue = [self.thread.dataqueue_field1, self.thread.dataqueue_field2, self.thread.dataqueue_potential][
-                idx
-            ]
+            if len(basis.shape) == 1:
+                basis = np.array([basis])
 
-            # --- load basis states ---
-            while len(basisfiles) > 0:
-                basisfile = basisfiles.pop(0)
-                # load basis
-                basis = np.loadtxt(basisfile)
-                if "blocknumber_" in basisfile:
-                    _ind = basisfile.index("blocknumber_") + len("blocknumber_")
-                    bn = int(basisfile[_ind:-4])
-                else:
-                    bn = NO_BN
+            if basis.size == 0:
+                nState = 0
+            else:
+                nState = len(basis)
 
-                if len(basis.shape) == 1:
-                    basis = np.array([basis])
+            if nState == 0:
+                # save basis
+                self.storage_states[idx][bn] = None
 
-                if basis.size == 0:
-                    nState = 0
-                else:
-                    nState = len(basis)
+            else:
+                # save basis
+                self.storage_states[idx][bn] = basis
 
-                if nState == 0:
-                    # save basis
-                    self.storage_states[idx][bn] = None
+                # determine which state to highlite
+                if self.ui.groupbox_plot_overlap.isChecked():
+                    # update status bar
+                    message_old = self.ui.statusbar.currentMessage()
+                    if idx == 0 and self.allQueues._type == 3:
+                        idxtype = 3
+                    else:
+                        idxtype = idx
+                    status_type = [
+                        "Field map of first atom: ",
+                        "Field map of second atom: ",
+                        "Pair potential: ",
+                        "Field maps: ",
+                    ][idxtype]
+                    self.ui.statusbar.showMessage(status_type + "calculate overlap states")
+                    # TODO: see processEvents below, it can leed to problems
+                    # QtWidgets.QApplication.processEvents()
 
-                else:
-                    # save basis
-                    self.storage_states[idx][bn] = basis
+                    # calculate overlap states
+                    if self.angle != 0:
+                        # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion
+                        # verwenden, erste Spalte aus basis entfernen
+                        if idx == 0:
+                            boolarr = self.overlapstate[idx][[0, 1, 2]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3]][:, boolarr]
+                                    == self.overlapstate[idx][None, [0, 1, 2]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
+                            relevantBasis = basis[stateidx]
 
-                    # determine which state to highlite
-                    if self.ui.groupbox_plot_overlap.isChecked():
-                        # update status bar
-                        message_old = self.ui.statusbar.currentMessage()
-                        if idx == 0 and self.thread.samebasis:
-                            idxtype = 3
-                        else:
-                            idxtype = idx
-                        status_type = [
-                            "Field map of first atom: ",
-                            "Field map of second atom: ",
-                            "Pair potential: ",
-                            "Field maps: ",
-                        ][idxtype]
-                        self.ui.statusbar.showMessage(status_type + "calculate overlap states")
-                        # TODO: see processEvents below, it can leed to problems
-                        # QtWidgets.QApplication.processEvents()
-
-                        # calculate overlap states
-                        if self.angle != 0:
-                            # TODO Vereinheitlichen: fuer die verschidenden idx selbe Funktion
-                            # verwenden, erste Spalte aus basis entfernen
-                            if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2]] != PLOT_ALL
-                                stateidx = np.where(
-                                    np.all(
-                                        basis[:, [1, 2, 3]][:, boolarr]
-                                        == self.overlapstate[idx][None, [0, 1, 2]][:, boolarr],
-                                        axis=-1,
-                                    )
-                                )[0]
-                                relevantBasis = basis[stateidx]
-
-                                statecoeff = np.ones_like(stateidx, dtype=float)
-                                m1 = self.overlapstate[idx][3]
-                                if m1 != PLOT_ALL:
-                                    for j in np.unique(relevantBasis[:, 3]):
-                                        boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
-                                        if np.abs(m1) > j:
-                                            statecoeff[boolarr] *= 0
-                                        else:
-                                            withjBasis = relevantBasis[boolarr]
-                                            for m2 in np.unique(withjBasis[:, 4]):
-                                                boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                                statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
-
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] == PLOT_ALL
-                                if sum(boolarr) > 0:
-                                    undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
-                                    sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
-                                    diff = np.append(
-                                        [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
-                                    )
-                                    stateamount = np.cumsum(diff)[np.argsort(sorter)]
-                                else:
-                                    stateamount = np.zeros_like(stateidx)
-
-                                if self.thread.samebasis and np.any(
-                                    self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
-                                ):
-                                    boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
-                                    stateidx2 = np.where(
-                                        np.all(
-                                            basis[:, [1, 2, 3]][:, boolarr]
-                                            == self.overlapstate[idx][None, [4, 5, 6]][:, boolarr],
-                                            axis=-1,
-                                        )
-                                    )[0]
-                                    relevantBasis = basis[stateidx2]
-
-                                    statecoeff2 = np.ones_like(stateidx2, dtype=float)
-                                    m1 = self.overlapstate[idx][7]
-                                    if m1 != PLOT_ALL:
-                                        for j in np.unique(relevantBasis[:, 3]):
-                                            boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
-                                            if np.abs(m1) > j:
-                                                statecoeff2[boolarr] *= 0
-                                            else:
-                                                withjBasis = relevantBasis[boolarr]
-                                                for m2 in np.unique(withjBasis[:, 4]):
-                                                    boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                                    statecoeff2[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
-
-                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == PLOT_ALL
-                                    if sum(boolarr) > 0:
-                                        undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
-                                        sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
-                                        diff = np.append(
-                                            [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
-                                        )
-                                        stateamount2 = np.cumsum(diff)[np.argsort(sorter)]
+                            statecoeff = np.ones_like(stateidx, dtype=float)
+                            m1 = self.overlapstate[idx][3]
+                            if m1 != PLOT_ALL:
+                                for j in np.unique(relevantBasis[:, 3]):
+                                    boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
+                                    if np.abs(m1) > j:
+                                        statecoeff[boolarr] *= 0
                                     else:
-                                        stateamount2 = np.zeros_like(stateidx2)
+                                        withjBasis = relevantBasis[boolarr]
+                                        for m2 in np.unique(withjBasis[:, 4]):
+                                            boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
-                                    statecoeff = np.append(statecoeff, statecoeff2)
-                                    stateidx = np.append(stateidx, stateidx2)
-                                    stateamount = np.append(stateamount, stateamount2)
-
-                                """stateidx = np.where(
-                                    np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1)
-                                )[0]
-                                statecoeff = []
-                                j = self.overlapstate[idx][2]
-                                for state in basis[stateidx]:
-                                    m2 = state[4]
-                                    m1 = self.overlapstate[idx][3]
-                                    coeff = self.wignerd.calc(j, m2, m1, self.angle)
-                                    statecoeff.append(coeff)
+                            boolarr = self.overlapstate[idx][[0, 1, 2, 3]] == PLOT_ALL
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append(
+                                    [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
+                                )
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                            else:
                                 stateamount = np.zeros_like(stateidx)
-                                if self.thread.samebasis and \
-                                    np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
-                                    stateidx_second = np.where(
-                                        np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
-                                    )[0]
-                                    j = self.overlapstate[idx][6]
-                                    for state in basis[stateidx_second]:
-                                        m2 = state[4]
-                                        m1 = self.overlapstate[idx][7]
-                                        coeff = self.wignerd.calc(j, m2, m1, self.angle)
-                                        statecoeff.append(coeff)
-                                    stateidx = np.append(stateidx, stateidx_second)
-                                    stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
-                            elif idx == 1:
+
+                            if self.allQueues._type == 3 and np.any(
+                                self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
+                            ):
                                 boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
-                                stateidx = np.where(
+                                stateidx2 = np.where(
                                     np.all(
                                         basis[:, [1, 2, 3]][:, boolarr]
                                         == self.overlapstate[idx][None, [4, 5, 6]][:, boolarr],
                                         axis=-1,
                                     )
                                 )[0]
-                                relevantBasis = basis[stateidx]
+                                relevantBasis = basis[stateidx2]
 
-                                statecoeff = np.ones_like(stateidx, dtype=float)
+                                statecoeff2 = np.ones_like(stateidx2, dtype=float)
                                 m1 = self.overlapstate[idx][7]
                                 if m1 != PLOT_ALL:
                                     for j in np.unique(relevantBasis[:, 3]):
                                         boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
                                         if np.abs(m1) > j:
-                                            statecoeff[boolarr] *= 0
+                                            statecoeff2[boolarr] *= 0
                                         else:
                                             withjBasis = relevantBasis[boolarr]
                                             for m2 in np.unique(withjBasis[:, 4]):
                                                 boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
-                                                statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+                                                statecoeff2[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
 
                                 boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == PLOT_ALL
                                 if sum(boolarr) > 0:
@@ -1298,1021 +1246,1038 @@ class MainWindow(QtWidgets.QMainWindow):
                                     diff = np.append(
                                         [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
                                     )
-                                    stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                                    stateamount2 = np.cumsum(diff)[np.argsort(sorter)]
                                 else:
-                                    stateamount = np.zeros_like(stateidx)
+                                    stateamount2 = np.zeros_like(stateidx2)
 
-                                """stateidx = np.where(
+                                statecoeff = np.append(statecoeff, statecoeff2)
+                                stateidx = np.append(stateidx, stateidx2)
+                                stateamount = np.append(stateamount, stateamount2)
+
+                            """stateidx = np.where(
+                                np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[0,1,2]],axis=-1)
+                            )[0]
+                            statecoeff = []
+                            j = self.overlapstate[idx][2]
+                            for state in basis[stateidx]:
+                                m2 = state[4]
+                                m1 = self.overlapstate[idx][3]
+                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)
+                            if self.allQueues._type == 3 and \
+                                np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
+                                stateidx_second = np.where(
                                     np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
                                 )[0]
-                                statecoeff = []
-                                j = self.overlapstate[idx][2]
-                                for state in basis[stateidx]:
+                                j = self.overlapstate[idx][6]
+                                for state in basis[stateidx_second]:
                                     m2 = state[4]
                                     m1 = self.overlapstate[idx][7]
                                     coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                     statecoeff.append(coeff)
-                                stateamount = np.zeros_like(stateidx)"""
-                            elif idx == 2:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 4, 5, 6]] != PLOT_ALL
-                                stateidx = np.where(
-                                    np.all(
-                                        basis[:, [1, 2, 3, 5, 6, 7]][:, boolarr]
-                                        == self.overlapstate[idx][None, [0, 1, 2, 4, 5, 6]][:, boolarr],
-                                        axis=-1,
-                                    )
-                                )[0]
-                                relevantBasis = basis[stateidx]
-
-                                statecoeff = np.ones_like(stateidx, dtype=float)
-                                for selector in [0, 4]:
-                                    m1 = self.overlapstate[idx][3 + selector]
-                                    if m1 != PLOT_ALL:
-                                        for j in np.unique(relevantBasis[:, 3 + selector]):
-                                            boolarr = np.all(relevantBasis[:, [3 + selector]] == [j], axis=-1)
-                                            if np.abs(m1) > j:
-                                                statecoeff[boolarr] *= 0
-                                            else:
-                                                withjBasis = relevantBasis[boolarr]
-                                                for m2 in np.unique(withjBasis[:, 4 + selector]):
-                                                    boolarr = np.all(
-                                                        relevantBasis[:, [3 + selector, 4 + selector]] == [j, m2],
-                                                        axis=-1,
-                                                    )
-                                                    statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
-
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] == PLOT_ALL
-                                if sum(boolarr) > 0:
-                                    undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
-                                    sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
-                                    diff = np.append(
-                                        [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
-                                    )
-                                    stateamount = np.cumsum(diff)[np.argsort(sorter)]
-                                else:
-                                    stateamount = np.zeros_like(stateidx)
-
-                                """stateidx = np.where(
-                                    np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1)
-                                )[0]
-                                statecoeff = []
-                                j = self.overlapstate[idx][[2,6]]
-                                for state in basis[stateidx]:
-                                    m_final = state[[4,8]]
-                                    m_initial = self.overlapstate[idx][[3,7]]
-                                    coeff = 1
-                                    for m2, m1, jj in zip(m_final, m_initial, j):
-                                        coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
-                                    statecoeff.append(coeff)
-                                stateamount = np.zeros_like(stateidx)"""
-
-                            # write calculated wigner d matrix elements into the
-                            # cache
-                            self.wignerd.save()
-
-                        else:
-                            if idx == 0:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != PLOT_ALL
-                                stateidx = np.where(
-                                    np.all(
-                                        basis[:, [1, 2, 3, 4]][:, boolarr]
-                                        == self.overlapstate[idx][None, [0, 1, 2, 3]][:, boolarr],
-                                        axis=-1,
-                                    )
-                                )[0]
-                                if self.thread.samebasis and np.any(
-                                    self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
-                                ):
-                                    boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
-                                    stateidx = np.append(
-                                        stateidx,
-                                        np.where(
-                                            np.all(
-                                                basis[:, [1, 2, 3, 4]][:, boolarr]
-                                                == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr],
-                                                axis=-1,
-                                            )
-                                        )[0],
-                                    )
-                            elif idx == 1:
-                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
-                                stateidx = np.where(
-                                    np.all(
-                                        basis[:, [1, 2, 3, 4]][:, boolarr]
-                                        == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr],
-                                        axis=-1,
-                                    )
-                                )[0]
-                            elif idx == 2:
-                                boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != PLOT_ALL
-                                stateidx = np.where(
-                                    np.all(
-                                        basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
-                                        == self.overlapstate[idx][None, [0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr],
-                                        axis=-1,
-                                    )
-                                )[0]
-
-                            statecoeff = np.ones_like(stateidx)
-                            stateamount = np.arange(len(stateidx))
-
-                        if len(stateidx) < 1:
-                            self.stateidx_field[idx][bn] = None
-                        else:
-                            self.stateidx_field[idx][bn] = sparse.csc_matrix(
-                                (statecoeff, (stateamount, stateidx)), shape=(np.max(stateamount) + 1, nState)
-                            )
-
-                        # update status bar
-                        self.ui.statusbar.showMessage(message_old)
-                        # TODO: this can leed to a crash especially when using the unit tests
-                        # QtWidgets.QApplication.processEvents()
-
-                    else:
-                        self.stateidx_field[idx][bn] = None
-
-                    # calculate a matrix that can be used to determine the momenta
-                    # inside a basis element
-                    if idx == 0 or idx == 1:
-                        momentum = basis[:, 2]
-                        self.momentummat[idx] = sparse.csc_matrix(
-                            (momentum[:, None] == np.arange(np.max(momentum) + 1)[None, :]).astype(int)
-                        )
-
-                    # extract labels
-                    # TODO only if necessary !!!!!
-
-                    if idx == 0 or idx == 1:
-                        nlj = basis[:, [1, 2, 3]]
-                    elif idx == 2:
-                        nlj = basis[:, [1, 2, 3, 5, 6, 7]]
-
-                    # sort pair state names
-                    if idx == 2 and self.thread.samebasis:
-                        firstsmaller = np.argmax(
-                            np.append(nlj[:, 0:3] < nlj[:, 3:6], np.ones((len(nlj), 1), dtype=bool), axis=-1), axis=-1
-                        )  # TODO in Funktion auslagern
-                        firstsmaller_reverted = np.argmax(
-                            np.append(nlj[:, 3:6] < nlj[:, 0:3], np.ones((len(nlj), 1), dtype=bool), axis=-1), axis=-1
-                        )  # TODO in Funktion auslagern
-                        namesToSwap = firstsmaller > firstsmaller_reverted
-                        nlj[namesToSwap] = nlj[namesToSwap][:, [3, 4, 5, 0, 1, 2]]
-
-                    sorter = np.lexsort(nlj.T[::-1])
-                    nlj = nlj[sorter]
-                    diff = np.append([True], np.diff(nlj, axis=0).any(axis=1))
-                    cumsum = np.cumsum(diff)[np.argsort(sorter)]
-
-                    # determine labels of states
-                    self.labelstates[idx] = nlj[diff]
-                    self.labelmat[idx] = sparse.coo_matrix(
-                        (np.ones_like(cumsum), (np.arange(len(cumsum)), cumsum - 1)),
-                        shape=(len(cumsum), len(self.labelstates[idx])),
-                    ).tocsr()  # nStates, nLabels
-
-                    # determine labels of momenta
-                    if idx == 0 or idx == 1:  # TODO !!!
-                        self.momentumstrings[idx] = [
-                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, 1]) + 1).astype(int)
-                        ]
-                    elif idx == 2:
-                        self.momentumstrings[idx] = [
-                            f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(int)
-                        ]
-                    self.momentumstrings[idx][:4] = self.momentslabels
-
-                # remove basis file from hard disk
-                os.remove(basisfile)
-
-                # clear variables
-                for buffer in [
-                    self.lines_buffer_minIdx_field,
-                    self.buffer_basis,
-                    self.buffer_energies,
-                    self.buffer_positions,
-                    self.buffer_boolarr,
-                ]:
-                    _bns = list(buffer.keys())
-                    for _bn in _bns:
-                        if _bn == bn or bn == NO_BN:
-                            del buffer[_bn]
-
-                if len(self.storage_states[idx]) == 1:
-                    self.labelprob = None
-                    self.labelprob_energy = None
-
-                self.yMin_field[idx] = None
-                self.yMax_field[idx] = None
-
-            # --- check if there is some new data and if yes, plot it ---
-
-            if not dataqueue.empty() and len(self.storage_states[idx]) == 0:
-                dataqueue.get()  # TODO make this hack unnecessary
-
-            elif not dataqueue.empty():
-
-                graphicsview_plot = [
-                    self.ui.graphicsview_field1_plot,
-                    self.ui.graphicsview_field2_plot,
-                    self.ui.graphicsview_potential_plot,
-                ]
-
-                minE = self.minE[idx]
-                maxE = self.maxE[idx]
-
-                # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
-                x = np.array([])
-                y = np.array([])
-                l = np.array([])
-                s = []
-
-                while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
-
-                    # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
-                    filestep, numBlocks, blocknumber, filename = dataqueue.get()
-
-                    # save data
-                    self.storage_data[idx].append([filestep, blocknumber, filename])
-
-                    if filename.endswith(".pkl"):
-                        with open(filename, "rb") as f:
-                            pkl_data = pickle.load(f)
-                        energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
-                        bn = blocknumber
-                    else:
-                        eigensystem = Eigensystem(filename)
-                        energies = eigensystem.energies
-                        basis = eigensystem.basis
-                        params = eigensystem.params
-                        bn = NO_BN
-
-                    if idx == 2:
-                        symmetrycolor = []
-
-                        inversion = params.get("inversion", params.get("pair.inversion"))
-                        if inversion in ["1", "EVEN"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
-                        elif inversion in ["-1", "ODD"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
-
-                        permutation = params.get("permutation", params.get("pair.permutation"))
-                        if permutation in ["1", "EVEN"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
-                        elif permutation in ["-1", "ODD"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
-
-                        reflection = params.get("reflection", params.get("pair.reflection"))
-                        if reflection in ["1", "EVEN"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
-                        elif reflection in ["-1", "ODD"]:
-                            symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
-
-                        if len(symmetrycolor) > 0:
-                            symmetrycolor = tuple(np.mean(symmetrycolor, axis=0).astype(int))
-                        else:
-                            symmetrycolor = (40, 40, 40)
-
-                    # --- determine which basis elements are within the energy range ---
-                    boolarr = np.ones(len(energies), dtype=bool)
-                    boolarr[np.isnan(energies)] = False
-                    energies[np.isnan(energies)] = 0
-
-                    if minE is not None:
-                        boolarr &= energies >= minE / self.converter_y
-                    if maxE is not None:
-                        boolarr &= energies <= maxE / self.converter_y
-
-                    # cut the energies
-                    energies = energies[boolarr]
-
-                    # convert the energies
-                    energies *= self.converter_y
-
-                    # cut the basis
-                    (idxarr,) = np.nonzero(boolarr)
-                    transformator = sparse.coo_matrix(
-                        (np.ones_like(idxarr), (idxarr, np.arange(len(idxarr)))), shape=(basis.shape[1], len(idxarr))
-                    ).tocsr()
-                    basis = basis * transformator
-
-                    # probability to be in a certain state
-                    probs = np.abs(basis)  # nState, nBasis
-                    probs.data **= 2
-
-                    # --- calculate the momentum that is associated with a basis element ---
-                    if idx == 0 or idx == 1:
-                        # calculate which momenta appear in a basis element
-                        momentum_probabilty = probs.T * self.momentummat[idx]  # nBasis, nMomentum
-
-                        # keep information about the momentum that appears with
-                        # a probability > 0.5 only
-                        momentum_probabilty.data[:] *= momentum_probabilty.data > 0.5
-                        momentum_probabilty.eliminate_zeros()
-                        momentum_probabilty = sparse.coo_matrix(momentum_probabilty)
-
-                        # store the value of this momentum
-                        # -1 means no determinable momentum
-                        momentum = -np.ones(momentum_probabilty.shape[0], dtype=int)
-                        momentum[momentum_probabilty.row] = momentum_probabilty.col
-
-                    # --- calculate the position (x value) ---
-                    if self.xAxis[idx] in ["B", "E"]:
-                        rotator = np.array(
-                            [
-                                [np.cos(-self.angle), 0, -np.sin(-self.angle)],
-                                [0, 1, 0],
-                                [np.sin(-self.angle), 0, np.cos(-self.angle)],
-                            ]
-                        )
-
-                    if self.xAxis[idx] == "B":
-                        fields = [
-                            [float(params.get("Bx", params.get("atom1.Bx")))],
-                            [float(params.get("By", params.get("atom1.By")))],
-                            [float(params.get("Bz", params.get("atom1.Bz")))],
-                        ]
-                        fields = np.dot(rotator, fields).flatten()
-                        position = self.get1DPosition(fields) * self.converter_x[idx]
-                    elif self.xAxis[idx] == "E":
-                        fields = [
-                            [float(params.get("Ex", params.get("atom1.Ex")))],
-                            [float(params.get("Ey", params.get("atom1.Ey")))],
-                            [float(params.get("Ez", params.get("atom1.Ez")))],
-                        ]
-                        fields = np.dot(rotator, fields).flatten()
-                        position = self.get1DPosition(fields) * self.converter_x[idx]
-                    elif self.xAxis[idx] == "R":
-                        position = float(params.get("R", params.get("pair.distance"))) * self.converter_x[idx]
-
-                    # --- draw labels at the beginning of the plotting ---
-                    if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
-
-                        # probability to find a label inside a basis element
-                        if not hasattr(self, "labelprob_energy") or self.labelprob_energy is None:
-                            # nBasis, nLabels # TODO !!! tocsr
-                            self.labelprob = (probs.T * self.labelmat[idx]).tocsr()
-                            self.labelprob_energy = [energies]
-                        else:
-                            csr_vappend(self.labelprob, (probs.T * self.labelmat[idx]).tocsr())
-                            self.labelprob_energy.append(energies)
-
-                        labelprob_num_potential = len(self.labelprob_energy)
-
-                        if labelprob_num_potential == numBlocks:
-                            # total probability to find a label
-                            cumprob = self.labelprob.sum(axis=0).getA1()
-                            boolarr = cumprob > 0.1
-
-                            # normalize in such a way that the total
-                            # probability is always one
-                            (idxarr,) = np.nonzero(boolarr)
-                            normalizer = sparse.coo_matrix(
-                                (1 / cumprob[idxarr], (idxarr, np.arange(len(idxarr)))),
-                                shape=(self.labelprob.shape[1], len(idxarr)),
-                            ).tocsr()
-
-                            # store the energetic expectation value of the
-                            # labels
-                            labelenergies = (self.labelprob * normalizer).T * np.concatenate(self.labelprob_energy)
-
-                            if len(labelenergies) == 0:
-                                continue
-
-                            # store the position of the labels
-                            labelposition = position
-
-                            # get size and alpha value of labels
-                            size = f"{max(int(round(self.ui.spinbox_plot_szLabel.value() * 11)), 1)}"
-                            alpha = int(round(self.ui.spinbox_plot_transpLabel.value() * 255))
-
-                            # draw the labels
-                            for labelstate, labelenergy in zip(self.labelstates[idx][boolarr], labelenergies):
-
-                                if self.leftSmallerRight[idx]:
-                                    anchorX = 0
-                                else:
-                                    anchorX = 1
-
-                                if (
-                                    (idx == 0 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2]]))
-                                    or (
-                                        (idx == 1 or (idx == 0 and self.thread.samebasis))
-                                        and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6]])
-                                    )
-                                    or (
-                                        idx == 2
-                                        and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2, 4, 5, 6]])
-                                    )
-                                    or (
-                                        (idx == 2 and self.thread.samebasis)
-                                        and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6, 0, 1, 2]])
-                                    )
-                                ):
-                                    color_fill = (255, 192, 203, alpha)
-                                    color_border = (255, 182, 193, 255)
-                                    zvalue = 16
-                                else:
-                                    color_fill = (250, 235, 215, alpha)
-                                    color_border = (255, 228, 181, 255)
-                                    zvalue = 15
-
-                                if idx == 0 or idx == 1:
-                                    sn, sl, sj = labelstate
-                                    text = pg.TextItem(
-                                        html='<div style="text-align: center; font-size: '
-                                        + size
-                                        + 'pt;">'
-                                        + '<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(
-                                            int(sn), self.momentumstrings[idx][int(sl)]
-                                        )
-                                        + size
-                                        + f'pt;">{int(2 * sj)}/2</sub></span></div>',
-                                        anchor=(anchorX, 0.5),
-                                        fill=color_fill,
-                                        border=color_border,
-                                    )
-                                elif idx == 2:
-                                    sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
-                                    text = pg.TextItem(
-                                        html='<div style="text-align: center; font-size: '
-                                        + size
-                                        + 'pt;"><span style="color: rgba(0,0,0,255);">'
-                                        + f'{int(sn1)}{self.momentumstrings[idx][int(sl1)]}<sub style="font-size: '
-                                        + size
-                                        + f'pt;">{int(2 * sj1)}/2</sub>'
-                                        + f' {int(sn2)}{self.momentumstrings[idx][int(sl2)]}<sub style="font-size: '
-                                        + size
-                                        + f'pt;">{int(2 * sj2)}/2</sub>'
-                                        + "</span></div>",
-                                        anchor=(anchorX, 0.5),
-                                        fill=color_fill,
-                                        border=color_border,
-                                    )
-
-                                text.setPos(labelposition, labelenergy)
-                                text.setZValue(zvalue)
-                                graphicsview_plot[idx].addItem(text)
-
-                            posx = labelposition * np.ones_like(labelenergies) + 1e-12
-                            posy = labelenergies + 1e-12
-                            curve = PointsItem(
-                                np.append(posx, posx - 2e-12), np.append(posy, posy - 2e-12), 0, 0, (255, 255, 255)
-                            )
-                            curve.setZValue(5)
-                            graphicsview_plot[idx].addItem(curve)
-
-                            # drawing labels take some time
-                            dataamount += 3000
-
-                            self.labelprob = None
-                            self.labelprob_energy = None
-
-                    # --- draw color map ---
-                    if self.ui.groupbox_plot_overlap.isChecked() and self.steps > 1:
-                        # --- get settings ---
-                        # get size and alpha value
-                        size = self.ui.spinbox_plot_szOverlap.value()
-                        alpha = min(self.ui.spinbox_plot_transpOverlap.value(), 0.9999)  # HACK
-
-                        # get resolution
-                        res = self.ui.spinbox_plot_resolution.value()
-
-                        # calculate size of color map
-                        height_pixelunits = res
-                        enlargement = int(max(np.round((height_pixelunits / self.steps - 2) / 2), 0))
-                        width_pixelunits = 5 + 4 * enlargement
-
-                        # calculate values to smooth the colormap
-                        smootherX = (enlargement * 2 + 2) * 1 / 2
-                        smootherY = height_pixelunits * 1 / 150 * size
-
-                        # --- build buffers ---
-                        # initialize arrays if first run at a new position
-                        # ("filestep")
-                        if filestep not in self.buffer_positionsMap[idx].keys():
-                            self.buffer_positionsMap[idx][filestep] = position
-                            self.buffer_energiesMap[idx][filestep] = []
-                            self.buffer_overlapMap[idx][filestep] = []
-
-                        # try to get limits
-                        if self.yMax_field[idx] is None and maxE is not None:
-                            self.yMax_field[idx] = maxE
-                        if self.yMin_field[idx] is None and minE is not None:
-                            self.yMin_field[idx] = minE
-
-                        # calculate overlap
-                        if self.stateidx_field[idx].get(bn, None) is not None:
-                            overlap = np.abs(self.stateidx_field[idx][bn].conjugate() * basis)
-                            overlap.data **= 2
-                            overlap = overlap.sum(axis=0).getA1()
-
-                        # check if limits do not exists
-                        if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
-                            # append the energies to the arrays
-                            self.buffer_energiesMap[idx][filestep].append(energies)
-
-                            # append the overlaps to the arrays
-                            if self.stateidx_field[idx].get(bn, None) is not None:
-                                self.buffer_overlapMap[idx][filestep].append(overlap)
+                                stateidx = np.append(stateidx, stateidx_second)
+                                stateamount = np.append(stateamount,np.ones_like(stateidx_second))"""
+                        elif idx == 1:
+                            boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3]][:, boolarr]
+                                    == self.overlapstate[idx][None, [4, 5, 6]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
+                            relevantBasis = basis[stateidx]
+
+                            statecoeff = np.ones_like(stateidx, dtype=float)
+                            m1 = self.overlapstate[idx][7]
+                            if m1 != PLOT_ALL:
+                                for j in np.unique(relevantBasis[:, 3]):
+                                    boolarr = np.all(relevantBasis[:, [3]] == [j], axis=-1)
+                                    if np.abs(m1) > j:
+                                        statecoeff[boolarr] *= 0
+                                    else:
+                                        withjBasis = relevantBasis[boolarr]
+                                        for m2 in np.unique(withjBasis[:, 4]):
+                                            boolarr = np.all(relevantBasis[:, [3, 4]] == [j, m2], axis=-1)
+                                            statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+
+                            boolarr = self.overlapstate[idx][[4, 5, 6, 7]] == PLOT_ALL
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4]][:, boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append(
+                                    [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
+                                )
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
                             else:
-                                self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies))
+                                stateamount = np.zeros_like(stateidx)
 
-                            # check if all data of the zeroth position is
-                            # collected
-                            # TODO ensure that this also works if numBlocks
-                            # changes with the step
-                            if (
-                                0 in self.buffer_overlapMap[idx].keys()
-                                and len(self.buffer_overlapMap[idx][0]) == numBlocks
+                            """stateidx = np.where(
+                                np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
+                            )[0]
+                            statecoeff = []
+                            j = self.overlapstate[idx][2]
+                            for state in basis[stateidx]:
+                                m2 = state[4]
+                                m1 = self.overlapstate[idx][7]
+                                coeff = self.wignerd.calc(j, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)"""
+                        elif idx == 2:
+                            boolarr = self.overlapstate[idx][[0, 1, 2, 4, 5, 6]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3, 5, 6, 7]][:, boolarr]
+                                    == self.overlapstate[idx][None, [0, 1, 2, 4, 5, 6]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
+                            relevantBasis = basis[stateidx]
+
+                            statecoeff = np.ones_like(stateidx, dtype=float)
+                            for selector in [0, 4]:
+                                m1 = self.overlapstate[idx][3 + selector]
+                                if m1 != PLOT_ALL:
+                                    for j in np.unique(relevantBasis[:, 3 + selector]):
+                                        boolarr = np.all(relevantBasis[:, [3 + selector]] == [j], axis=-1)
+                                        if np.abs(m1) > j:
+                                            statecoeff[boolarr] *= 0
+                                        else:
+                                            withjBasis = relevantBasis[boolarr]
+                                            for m2 in np.unique(withjBasis[:, 4 + selector]):
+                                                boolarr = np.all(
+                                                    relevantBasis[:, [3 + selector, 4 + selector]] == [j, m2],
+                                                    axis=-1,
+                                                )
+                                                statecoeff[boolarr] *= self.wignerd.calc(j, m1, m2, self.angle)
+
+                            boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] == PLOT_ALL
+                            if sum(boolarr) > 0:
+                                undeterminedQuantumNumbers = relevantBasis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
+                                sorter = np.lexsort(undeterminedQuantumNumbers.T[::-1])
+                                diff = np.append(
+                                    [False], np.diff(undeterminedQuantumNumbers[sorter], axis=0).any(axis=1)
+                                )
+                                stateamount = np.cumsum(diff)[np.argsort(sorter)]
+                            else:
+                                stateamount = np.zeros_like(stateidx)
+
+                            """stateidx = np.where(
+                                np.all(basis[:,[1,2,3,5,6,7]] == self.overlapstate[idx][None,[0,1,2,4,5,6]],axis=-1)
+                            )[0]
+                            statecoeff = []
+                            j = self.overlapstate[idx][[2,6]]
+                            for state in basis[stateidx]:
+                                m_final = state[[4,8]]
+                                m_initial = self.overlapstate[idx][[3,7]]
+                                coeff = 1
+                                for m2, m1, jj in zip(m_final, m_initial, j):
+                                    coeff *= self.wignerd.calc(jj, m2, m1, self.angle)
+                                statecoeff.append(coeff)
+                            stateamount = np.zeros_like(stateidx)"""
+
+                        # write calculated wigner d matrix elements into the
+                        # cache
+                        self.wignerd.save()
+
+                    else:
+                        if idx == 0:
+                            boolarr = self.overlapstate[idx][[0, 1, 2, 3]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3, 4]][:, boolarr]
+                                    == self.overlapstate[idx][None, [0, 1, 2, 3]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
+                            if self.allQueues._type == 3 and np.any(
+                                self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
                             ):
-                                # make limits
-                                if self.yMin_field[idx] is None:
-                                    self.yMin_field[idx] = np.nanmin(np.concatenate(self.buffer_energiesMap[idx][0]))
-                                if self.yMax_field[idx] is None:
-                                    self.yMax_field[idx] = np.nanmax(np.concatenate(self.buffer_energiesMap[idx][0]))
+                                boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
+                                stateidx = np.append(
+                                    stateidx,
+                                    np.where(
+                                        np.all(
+                                            basis[:, [1, 2, 3, 4]][:, boolarr]
+                                            == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr],
+                                            axis=-1,
+                                        )
+                                    )[0],
+                                )
+                        elif idx == 1:
+                            boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3, 4]][:, boolarr]
+                                    == self.overlapstate[idx][None, [4, 5, 6, 7]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
+                        elif idx == 2:
+                            boolarr = self.overlapstate[idx][[0, 1, 2, 3, 4, 5, 6, 7]] != PLOT_ALL
+                            stateidx = np.where(
+                                np.all(
+                                    basis[:, [1, 2, 3, 4, 5, 6, 7, 8]][:, boolarr]
+                                    == self.overlapstate[idx][None, [0, 1, 2, 3, 4, 5, 6, 7]][:, boolarr],
+                                    axis=-1,
+                                )
+                            )[0]
 
-                                # calculate energy-indices
-                                for f in self.buffer_energiesMap[idx].keys():
-                                    for i in range(len(self.buffer_energiesMap[idx][f])):
-                                        boolarr = (self.buffer_energiesMap[idx][f][i] >= self.yMin_field[idx]) & (
-                                            self.buffer_energiesMap[idx][f][i] <= self.yMax_field[idx]
-                                        )
-                                        self.buffer_energiesMap[idx][f][i] = bytescale(
-                                            self.buffer_energiesMap[idx][f][i][boolarr],
-                                            low=0,
-                                            high=height_pixelunits - 1,
-                                            cmin=self.yMin_field[idx],
-                                            cmax=self.yMax_field[idx],
-                                        )
-                                        self.buffer_overlapMap[idx][f][i] = self.buffer_overlapMap[idx][f][i][boolarr]
+                        statecoeff = np.ones_like(stateidx)
+                        stateamount = np.arange(len(stateidx))
+
+                    if len(stateidx) < 1:
+                        self.stateidx_field[idx][bn] = None
+                    else:
+                        self.stateidx_field[idx][bn] = sparse.csc_matrix(
+                            (statecoeff, (stateamount, stateidx)), shape=(np.max(stateamount) + 1, nState)
+                        )
+
+                    # update status bar
+                    self.ui.statusbar.showMessage(message_old)
+                    # TODO: this can leed to a crash especially when using the unit tests
+                    # QtWidgets.QApplication.processEvents()
+
+                else:
+                    self.stateidx_field[idx][bn] = None
+
+                # calculate a matrix that can be used to determine the momenta
+                # inside a basis element
+                if idx == 0 or idx == 1:
+                    momentum = basis[:, 2]
+                    self.momentummat[idx] = sparse.csc_matrix(
+                        (momentum[:, None] == np.arange(np.max(momentum) + 1)[None, :]).astype(int)
+                    )
+
+                # extract labels
+                # TODO only if necessary !!!!!
+
+                if idx == 0 or idx == 1:
+                    nlj = basis[:, [1, 2, 3]]
+                elif idx == 2:
+                    nlj = basis[:, [1, 2, 3, 5, 6, 7]]
+
+                # sort pair state names
+                if idx == 2 and self.allQueues._type == 3:
+                    firstsmaller = np.argmax(
+                        np.append(nlj[:, 0:3] < nlj[:, 3:6], np.ones((len(nlj), 1), dtype=bool), axis=-1), axis=-1
+                    )  # TODO in Funktion auslagern
+                    firstsmaller_reverted = np.argmax(
+                        np.append(nlj[:, 3:6] < nlj[:, 0:3], np.ones((len(nlj), 1), dtype=bool), axis=-1), axis=-1
+                    )  # TODO in Funktion auslagern
+                    namesToSwap = firstsmaller > firstsmaller_reverted
+                    nlj[namesToSwap] = nlj[namesToSwap][:, [3, 4, 5, 0, 1, 2]]
+
+                sorter = np.lexsort(nlj.T[::-1])
+                nlj = nlj[sorter]
+                diff = np.append([True], np.diff(nlj, axis=0).any(axis=1))
+                cumsum = np.cumsum(diff)[np.argsort(sorter)]
+
+                # determine labels of states
+                self.labelstates[idx] = nlj[diff]
+                self.labelmat[idx] = sparse.coo_matrix(
+                    (np.ones_like(cumsum), (np.arange(len(cumsum)), cumsum - 1)),
+                    shape=(len(cumsum), len(self.labelstates[idx])),
+                ).tocsr()  # nStates, nLabels
+
+                # determine labels of momenta
+                if idx == 0 or idx == 1:  # TODO !!!
+                    self.momentumstrings[idx] = [
+                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, 1]) + 1).astype(int)
+                    ]
+                elif idx == 2:
+                    self.momentumstrings[idx] = [
+                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(int)
+                    ]
+                self.momentumstrings[idx][:4] = self.momentslabels
+
+            # remove basis file from hard disk
+            os.remove(basisfile)
+
+            self.yMin_field[idx] = None
+            self.yMax_field[idx] = None
+
+        # --- check if there is some new data and if yes, plot it ---
+
+        if not dataqueue.empty() and len(self.storage_states[idx]) == 0:
+            print("doing hack")
+            dataqueue.get()  # TODO make this hack unnecessary
+            return
+
+        if not self.threadIsRunning() and dataqueue.empty():  # this order is important!
+            self.threadFinished()
+
+        graphicsview_plot = [
+            self.ui.graphicsview_field1_plot,
+            self.ui.graphicsview_field2_plot,
+            self.ui.graphicsview_potential_plot,
+        ]
+
+        minE = self.minE[idx]
+        maxE = self.maxE[idx]
+
+        # --- storage that allows to draw the hole buffer at once, at least if it is no very large ---
+        x = np.array([])
+        y = np.array([])
+        l = np.array([])
+        s = []
+
+        while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
+
+            # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
+            filestep, numBlocks, blocknumber, filename = dataqueue.get()
+
+            # save data
+            self.storage_data[idx].append([filestep, blocknumber, filename])
+
+            if filename.endswith(".pkl"):
+                with open(filename, "rb") as f:
+                    pkl_data = pickle.load(f)
+                energies, basis, params = pkl_data["energies"], pkl_data["basis"], pkl_data["params"]
+                bn = blocknumber
+            else:
+                eigensystem = Eigensystem(filename)
+                energies = eigensystem.energies
+                basis = eigensystem.basis
+                params = eigensystem.params
+                bn = NO_BN
+
+            if len(energies) == 0:
+                print("WARNING: Loaded data does not contain any eigenvalues.")
+
+            if idx == 2:
+                symmetrycolor = []
+
+                inversion = params.get("inversion", params.get("pair.inversion"))
+                if inversion in ["1", "EVEN"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_invE.color().getRgb()[:-1])
+                elif inversion in ["-1", "ODD"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_invO.color().getRgb()[:-1])
+
+                permutation = params.get("permutation", params.get("pair.permutation"))
+                if permutation in ["1", "EVEN"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_perE.color().getRgb()[:-1])
+                elif permutation in ["-1", "ODD"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_perO.color().getRgb()[:-1])
+
+                reflection = params.get("reflection", params.get("pair.reflection"))
+                if reflection in ["1", "EVEN"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_refE.color().getRgb()[:-1])
+                elif reflection in ["-1", "ODD"]:
+                    symmetrycolor.append(self.ui.colorbutton_plot_refO.color().getRgb()[:-1])
+
+                if len(symmetrycolor) > 0:
+                    symmetrycolor = tuple(np.mean(symmetrycolor, axis=0).astype(int))
+                else:
+                    symmetrycolor = (40, 40, 40)
+
+            # --- determine which basis elements are within the energy range ---
+            boolarr = np.ones(len(energies), dtype=bool)
+            boolarr[np.isnan(energies)] = False
+            energies[np.isnan(energies)] = 0
+
+            if minE is not None:
+                boolarr &= energies >= minE / self.converter_y
+            if maxE is not None:
+                boolarr &= energies <= maxE / self.converter_y
+
+            # cut the energies
+            energies = energies[boolarr]
+
+            # convert the energies
+            energies *= self.converter_y
+
+            # cut the basis
+            (idxarr,) = np.nonzero(boolarr)
+            transformator = sparse.coo_matrix(
+                (np.ones_like(idxarr), (idxarr, np.arange(len(idxarr)))), shape=(basis.shape[1], len(idxarr))
+            ).tocsr()
+            basis = basis * transformator
+
+            # probability to be in a certain state
+            probs = np.abs(basis)  # nState, nBasis
+            probs.data **= 2
+
+            # --- calculate the momentum that is associated with a basis element ---
+            if idx == 0 or idx == 1:
+                # calculate which momenta appear in a basis element
+                momentum_probabilty = probs.T * self.momentummat[idx]  # nBasis, nMomentum
+
+                # keep information about the momentum that appears with
+                # a probability > 0.5 only
+                momentum_probabilty.data[:] *= momentum_probabilty.data > 0.5
+                momentum_probabilty.eliminate_zeros()
+                momentum_probabilty = sparse.coo_matrix(momentum_probabilty)
+
+                # store the value of this momentum
+                # -1 means no determinable momentum
+                momentum = -np.ones(momentum_probabilty.shape[0], dtype=int)
+                momentum[momentum_probabilty.row] = momentum_probabilty.col
+
+            # --- calculate the position (x value) ---
+            if self.xAxis[idx] in ["B", "E"]:
+                rotator = np.array(
+                    [
+                        [np.cos(-self.angle), 0, -np.sin(-self.angle)],
+                        [0, 1, 0],
+                        [np.sin(-self.angle), 0, np.cos(-self.angle)],
+                    ]
+                )
+
+            if self.xAxis[idx] == "B":
+                fields = [
+                    [float(params.get("Bx", params.get("atom1.Bx")))],
+                    [float(params.get("By", params.get("atom1.By")))],
+                    [float(params.get("Bz", params.get("atom1.Bz")))],
+                ]
+                fields = np.dot(rotator, fields).flatten()
+                position = self.get1DPosition(fields) * self.converter_x[idx]
+            elif self.xAxis[idx] == "E":
+                fields = [
+                    [float(params.get("Ex", params.get("atom1.Ex")))],
+                    [float(params.get("Ey", params.get("atom1.Ey")))],
+                    [float(params.get("Ez", params.get("atom1.Ez")))],
+                ]
+                fields = np.dot(rotator, fields).flatten()
+                position = self.get1DPosition(fields) * self.converter_x[idx]
+            elif self.xAxis[idx] == "R":
+                position = float(params.get("R", params.get("pair.distance"))) * self.converter_x[idx]
+
+            # --- draw labels at the beginning of the plotting ---
+            if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
+
+                # probability to find a label inside a basis element
+                if not hasattr(self, "labelprob_energy") or self.labelprob_energy is None:
+                    # nBasis, nLabels # TODO !!! tocsr
+                    self.labelprob = (probs.T * self.labelmat[idx]).tocsr()
+                    self.labelprob_energy = [energies]
+                else:
+                    csr_vappend(self.labelprob, (probs.T * self.labelmat[idx]).tocsr())
+                    self.labelprob_energy.append(energies)
+
+                labelprob_num_potential = len(self.labelprob_energy)
+
+                if labelprob_num_potential == numBlocks:
+                    # total probability to find a label
+                    cumprob = self.labelprob.sum(axis=0).getA1()
+                    boolarr = cumprob > 0.1
+
+                    # normalize in such a way that the total
+                    # probability is always one
+                    (idxarr,) = np.nonzero(boolarr)
+                    normalizer = sparse.coo_matrix(
+                        (1 / cumprob[idxarr], (idxarr, np.arange(len(idxarr)))),
+                        shape=(self.labelprob.shape[1], len(idxarr)),
+                    ).tocsr()
+
+                    # store the energetic expectation value of the
+                    # labels
+                    labelenergies = (self.labelprob * normalizer).T * np.concatenate(self.labelprob_energy)
+
+                    if len(labelenergies) == 0:
+                        continue
+
+                    # store the position of the labels
+                    labelposition = position
+
+                    # get size and alpha value of labels
+                    size = f"{max(int(round(self.ui.spinbox_plot_szLabel.value() * 11)), 1)}"
+                    alpha = int(round(self.ui.spinbox_plot_transpLabel.value() * 255))
+
+                    # draw the labels
+                    for labelstate, labelenergy in zip(self.labelstates[idx][boolarr], labelenergies):
+
+                        if self.leftSmallerRight[idx]:
+                            anchorX = 0
                         else:
-                            # determine whether the energies lie within the
-                            # limits
-                            boolarr = (energies >= self.yMin_field[idx]) & (energies <= self.yMax_field[idx])
+                            anchorX = 1
 
-                            # append the energy-indices to the arrays
-                            self.buffer_energiesMap[idx][filestep].append(
-                                bytescale(
-                                    energies[boolarr],
+                        if (
+                            (idx == 0 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2]]))
+                            or (
+                                (idx == 1 or (idx == 0 and self.allQueues._type == 3))
+                                and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6]])
+                            )
+                            or (idx == 2 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2, 4, 5, 6]]))
+                            or (
+                                (idx == 2 and self.allQueues._type == 3)
+                                and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6, 0, 1, 2]])
+                            )
+                        ):
+                            color_fill = (255, 192, 203, alpha)
+                            color_border = (255, 182, 193, 255)
+                            zvalue = 16
+                        else:
+                            color_fill = (250, 235, 215, alpha)
+                            color_border = (255, 228, 181, 255)
+                            zvalue = 15
+
+                        if idx == 0 or idx == 1:
+                            sn, sl, sj = labelstate
+                            text = pg.TextItem(
+                                html='<div style="text-align: center; font-size: '
+                                + size
+                                + 'pt;">'
+                                + '<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(
+                                    int(sn), self.momentumstrings[idx][int(sl)]
+                                )
+                                + size
+                                + f'pt;">{int(2 * sj)}/2</sub></span></div>',
+                                anchor=(anchorX, 0.5),
+                                fill=color_fill,
+                                border=color_border,
+                            )
+                        elif idx == 2:
+                            sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
+                            text = pg.TextItem(
+                                html='<div style="text-align: center; font-size: '
+                                + size
+                                + 'pt;"><span style="color: rgba(0,0,0,255);">'
+                                + f'{int(sn1)}{self.momentumstrings[idx][int(sl1)]}<sub style="font-size: '
+                                + size
+                                + f'pt;">{int(2 * sj1)}/2</sub>'
+                                + f' {int(sn2)}{self.momentumstrings[idx][int(sl2)]}<sub style="font-size: '
+                                + size
+                                + f'pt;">{int(2 * sj2)}/2</sub>'
+                                + "</span></div>",
+                                anchor=(anchorX, 0.5),
+                                fill=color_fill,
+                                border=color_border,
+                            )
+
+                        text.setPos(labelposition, labelenergy)
+                        text.setZValue(zvalue)
+                        graphicsview_plot[idx].addItem(text)
+
+                    posx = labelposition * np.ones_like(labelenergies) + 1e-12
+                    posy = labelenergies + 1e-12
+                    curve = PointsItem(
+                        np.append(posx, posx - 2e-12), np.append(posy, posy - 2e-12), 0, 0, (255, 255, 255)
+                    )
+                    curve.setZValue(5)
+                    graphicsview_plot[idx].addItem(curve)
+
+                    # drawing labels take some time
+                    dataamount += 3000
+
+            # --- draw color map ---
+            if self.ui.groupbox_plot_overlap.isChecked() and self.steps > 1:
+                # --- get settings ---
+                # get size and alpha value
+                size = self.ui.spinbox_plot_szOverlap.value()
+                alpha = min(self.ui.spinbox_plot_transpOverlap.value(), 0.9999)  # HACK
+
+                # get resolution
+                res = self.ui.spinbox_plot_resolution.value()
+
+                # calculate size of color map
+                height_pixelunits = res
+                enlargement = int(max(np.round((height_pixelunits / self.steps - 2) / 2), 0))
+                width_pixelunits = 5 + 4 * enlargement
+
+                # calculate values to smooth the colormap
+                smootherX = (enlargement * 2 + 2) * 1 / 2
+                smootherY = height_pixelunits * 1 / 150 * size
+
+                # --- build buffers ---
+                # initialize arrays if first run at a new position
+                # ("filestep")
+                if filestep not in self.buffer_positionsMap[idx].keys():
+                    self.buffer_positionsMap[idx][filestep] = position
+                    self.buffer_energiesMap[idx][filestep] = []
+                    self.buffer_overlapMap[idx][filestep] = []
+
+                # try to get limits
+                if self.yMax_field[idx] is None and maxE is not None:
+                    self.yMax_field[idx] = maxE
+                if self.yMin_field[idx] is None and minE is not None:
+                    self.yMin_field[idx] = minE
+
+                # calculate overlap
+                if self.stateidx_field[idx].get(bn, None) is not None:
+                    overlap = np.abs(self.stateidx_field[idx][bn].conjugate() * basis)
+                    overlap.data **= 2
+                    overlap = overlap.sum(axis=0).getA1()
+
+                # check if limits do not exists
+                if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
+                    # append the energies to the arrays
+                    self.buffer_energiesMap[idx][filestep].append(energies)
+
+                    # append the overlaps to the arrays
+                    if self.stateidx_field[idx].get(bn, None) is not None:
+                        self.buffer_overlapMap[idx][filestep].append(overlap)
+                    else:
+                        self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies))
+
+                    # check if all data of the zeroth position is
+                    # collected
+                    # TODO ensure that this also works if numBlocks
+                    # changes with the step
+                    if 0 in self.buffer_overlapMap[idx].keys() and len(self.buffer_overlapMap[idx][0]) == numBlocks:
+                        # make limits
+                        if self.yMin_field[idx] is None:
+                            self.yMin_field[idx] = np.nanmin(np.concatenate(self.buffer_energiesMap[idx][0]))
+                        if self.yMax_field[idx] is None:
+                            self.yMax_field[idx] = np.nanmax(np.concatenate(self.buffer_energiesMap[idx][0]))
+
+                        # calculate energy-indices
+                        for f in self.buffer_energiesMap[idx].keys():
+                            for i in range(len(self.buffer_energiesMap[idx][f])):
+                                boolarr = (self.buffer_energiesMap[idx][f][i] >= self.yMin_field[idx]) & (
+                                    self.buffer_energiesMap[idx][f][i] <= self.yMax_field[idx]
+                                )
+                                self.buffer_energiesMap[idx][f][i] = bytescale(
+                                    self.buffer_energiesMap[idx][f][i][boolarr],
                                     low=0,
                                     high=height_pixelunits - 1,
                                     cmin=self.yMin_field[idx],
                                     cmax=self.yMax_field[idx],
                                 )
-                            )
+                                self.buffer_overlapMap[idx][f][i] = self.buffer_overlapMap[idx][f][i][boolarr]
+                else:
+                    # determine whether the energies lie within the
+                    # limits
+                    boolarr = (energies >= self.yMin_field[idx]) & (energies <= self.yMax_field[idx])
 
-                            # append the overlaps to the arrays
-                            if self.stateidx_field[idx].get(bn, None) is not None:
-                                self.buffer_overlapMap[idx][filestep].append(overlap[boolarr])
-                            else:
-                                self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies[boolarr]))
-
-                        # extract line to fit C3 or C6
-                        if (
-                            self.stateidx_field[idx].get(bn, None) is not None
-                            and len(overlap) > 0
-                            and (
-                                blocknumber not in self.linesO[idx].keys()
-                                or np.max(overlap) > 0.5 * np.max(self.linesO[idx][blocknumber])
-                            )
-                        ):
-                            idxSelected = np.argmax(overlap)
-                            xSelected = position
-                            eSelected = energies[idxSelected]
-                            oSelected = overlap[idxSelected]
-                            if blocknumber not in self.linesX[idx].keys():
-                                self.linesX[idx][blocknumber] = []
-                            if blocknumber not in self.linesY[idx].keys():
-                                self.linesY[idx][blocknumber] = []
-                            if blocknumber not in self.linesO[idx].keys():
-                                self.linesO[idx][blocknumber] = []
-                            self.linesX[idx][blocknumber].append(xSelected)
-                            self.linesY[idx][blocknumber].append(eSelected)
-                            self.linesO[idx][blocknumber].append(oSelected)
-
-                            # the c3 and c6 buttons should be enabled
-                            if filestep == 0 and idx == 2:
-                                self.ui.pushbutton_potential_fit.setEnabled(True)
-                                self.ui.combobox_potential_fct.setEnabled(True)
-
-                        # --- build color maps starting at the lowest position---
-                        # loop over positions ("filestep") as long as three
-                        # subsequent positions
-                        # ("self.colormap_buffer_minIdx_field[idx]+0,1,2") are
-                        # within the buffers
-                        while True:
-                            # break if limits do not exist
-                            if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
-                                break
-
-                            # break if buffer index is not in the buffer
-                            bufferidx = []
-
-                            # not start
-                            if self.colormap_buffer_minIdx_field[idx] != 0:
-                                if (
-                                    self.colormap_buffer_minIdx_field[idx] - 1
-                                    not in self.buffer_positionsMap[idx].keys()
-                                ):
-                                    break
-                                bufferidx.append(-1)
-
-                            if self.colormap_buffer_minIdx_field[idx] not in self.buffer_positionsMap[idx].keys():
-                                break
-                            bufferidx.append(0)
-
-                            # not end
-                            if self.colormap_buffer_minIdx_field[idx] != self.steps - 1:
-                                if (
-                                    self.colormap_buffer_minIdx_field[idx] + 1
-                                    not in self.buffer_positionsMap[idx].keys()
-                                ):
-                                    break
-                                bufferidx.append(1)
-
-                            # break if the data is not buffered of all blocks,
-                            # yet
-                            tobreak = False
-                            for i in bufferidx:
-                                if (
-                                    len(self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] + i])
-                                    < numBlocks
-                                ):
-                                    tobreak = True
-                            if tobreak:
-                                break
-
-                            # calculate position-indices
-                            positions = [
-                                self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
-                                for i in bufferidx
-                            ]
-
-                            # add outer points if at the end or start
-                            # end
-                            if self.colormap_buffer_minIdx_field[idx] == self.steps - 1:
-                                positions = positions + [2 * positions[1] - positions[0]]
-                            # start
-                            elif self.colormap_buffer_minIdx_field[idx] == 0:
-                                positions = [2 * positions[0] - positions[1]] + positions
-
-                            # determine limits of the color map part
-                            posLeft = (positions[0] + positions[1]) / 2
-                            posRight = (positions[1] + positions[2]) / 2
-                            idx_left, idx_right = bytescale(
-                                np.array([posLeft, posRight]),
-                                low=0,
-                                high=width_pixelunits - 1,
-                                cmin=positions[0],
-                                cmax=positions[-1],
-                            )
-
-                            # calculate unit converters
-                            self.displayunits2pixelunits_x = width_pixelunits / (positions[2] - positions[0])
-                            self.displayunits2pixelunits_y = height_pixelunits / (
-                                self.yMax_field[idx] - self.yMin_field[idx]
-                            )
-
-                            # build map
-                            # x-y-coordinate system, origin is at the bottom
-                            # left corner
-                            colormap = np.zeros((width_pixelunits, height_pixelunits))
-
-                            for i in bufferidx:
-                                overlap = np.concatenate(
-                                    self.buffer_overlapMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
-                                )
-                                pos = self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
-                                idx_pos = bytescale(
-                                    pos, low=0, high=width_pixelunits - 1, cmin=positions[0], cmax=positions[-1]
-                                )
-                                idx_energies = np.concatenate(
-                                    self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
-                                )
-
-                                if self.logscale:
-                                    overlap[overlap < 1e-2] = 1e-2
-                                    overlap = (2 + np.log10(overlap)) / 2
-
-                                colormap[idx_pos, :] = (
-                                    sparse.coo_matrix(
-                                        (overlap, (idx_energies, np.arange(len(idx_energies)))),
-                                        shape=(height_pixelunits, len(idx_energies)),
-                                    )
-                                    .sum(axis=1)
-                                    .getA1()
-                                )
-
-                                dataamount += len(idx_energies) * 10
-
-                            # smoothing
-                            colormap = gaussian_filter(colormap, (smootherX, smootherY), mode="constant")
-
-                            # cutting
-                            colormap = colormap[idx_left:idx_right]
-
-                            # normalizing
-                            normalizer = np.zeros((width_pixelunits, int(2 * 3 * smootherY + 1)))
-                            normalizer[int((width_pixelunits - 1) / 2), int(3 * smootherY)] = 1
-                            normalizer = gaussian_filter(normalizer, (smootherX, smootherY), mode="constant")
-
-                            colormap /= np.max(normalizer)
-
-                            # plotting
-                            img = pg.ImageItem(
-                                image=colormap, opacity=alpha, autoDownsample=True, lut=self.lut, levels=[-0.002, 1]
-                            )  # HACK
-                            img.setRect(
-                                QtCore.QRectF(
-                                    posLeft - 0.5 / self.displayunits2pixelunits_x,
-                                    self.yMin_field[idx] - 0.5 / self.displayunits2pixelunits_y,
-                                    posRight - posLeft,
-                                    self.yMax_field[idx] - self.yMin_field[idx] + 1 / self.displayunits2pixelunits_y,
-                                )
-                            )  # xMin, yMin_field[idx], xSize, ySize # TODO energyMin anpassen wegen Pixelgroesse
-                            img.setZValue(3)
-                            graphicsview_plot[idx].addItem(img)
-
-                            # remove plotted data from buffer
-                            # not start
-                            if self.colormap_buffer_minIdx_field[idx] != 0:
-                                del self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
-                                del self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
-                                del self.buffer_overlapMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
-
-                            # increase the buffer index
-                            self.colormap_buffer_minIdx_field[idx] += 1
-
-                    # --- draw lines ---
-                    if self.ui.groupbox_plot_lines.isChecked():
-                        if blocknumber not in self.buffer_basis.keys():
-                            self.buffer_basis[blocknumber] = {}
-                            self.buffer_energies[blocknumber] = {}
-                            self.buffer_positions[blocknumber] = {}
-                            self.buffer_boolarr[blocknumber] = {}
-                            self.lines_buffer_minIdx_field[blocknumber] = 0
-                            """self.iSelected[blocknumber] = None
-                            self.linesX[idx][blocknumber] = []
-                            self.linesY[idx][blocknumber] = []"""
-
-                        self.buffer_basis[blocknumber][filestep] = basis
-                        self.buffer_energies[blocknumber][filestep] = energies
-                        self.buffer_positions[blocknumber][filestep] = position
-                        self.buffer_boolarr[blocknumber][filestep] = []
-
-                        if idx == 0 or idx == 1:
-                            # cut the momenta to reasonable values
-                            momentum[momentum > len(self.momentumcolors) - 2] = len(self.momentumcolors) - 2
-                            momentum[momentum < 0] = len(self.momentumcolors) - 1
-
-                            # loop over momenta
-                            for i in range(len(self.momentumcolors)):
-                                # determine which basis elements have the
-                                # current momentum
-                                boolarr = momentum == i
-                                self.buffer_boolarr[blocknumber][filestep].append(boolarr)
-                        elif idx == 2:
-                            self.buffer_boolarr[blocknumber][filestep].append(
-                                np.ones_like(self.buffer_energies[blocknumber][filestep], dtype=bool)
-                            )
-
-                        # get size and alpha value of points
-                        size = self.ui.spinbox_plot_szLine.value()
-                        alpha = self.ui.spinbox_plot_transpLine.value() * 255
-
-                        """# legend
-                        if idx == 2 and filestep == 0 and symmetry != 0:
-                            graphicsview_plot[idx].addLegend()
-                            style = pg.PlotDataItem(
-                                pen = pg.mkPen(self.symmetrycolors[1]+(alpha,),width=size,cosmetic=True))
-                            graphicsview_plot[idx].plotItem.legend.addItem(style, "sym")
-                            style = pg.PlotDataItem(
-                                pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
-                            graphicsview_plot[idx].plotItem.legend.addItem(style, "asym")"""
-
-                        while (
-                            self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys()
-                            and (self.lines_buffer_minIdx_field[blocknumber] + 1)
-                            in self.buffer_basis[blocknumber].keys()
-                        ):
-                            # determine the data to plot
-                            overlap = np.abs(
-                                self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]].conj().T
-                                * self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1]
-                            )  # nBasis first, nBasis second
-
-                            overlap.data[overlap.data <= np.sqrt(self.ui.spinbox_plot_connectionthreshold.value())] = 0
-                            overlap.eliminate_zeros()
-                            csr_keepmax(overlap)
-
-                            overlap = overlap.tocoo()
-
-                            iFirst = overlap.row
-                            iSecond = overlap.col
-
-                            ydata = np.transpose(
-                                [
-                                    self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][
-                                        iFirst
-                                    ],
-                                    self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1][
-                                        iSecond
-                                    ],
-                                ]
-                            )
-                            xdata = np.ones_like(ydata)
-                            xdata[:, 0] *= self.buffer_positions[blocknumber][
-                                self.lines_buffer_minIdx_field[blocknumber]
-                            ]
-                            xdata[:, 1] *= self.buffer_positions[blocknumber][
-                                self.lines_buffer_minIdx_field[blocknumber] + 1
-                            ]
-
-                            """# track lines with the largest probability to find the overlapstate
-                            if self.lines_buffer_minIdx_field[blocknumber] == 0:
-                                overlapWithOverlapstate = np.abs(self.stateidx_field[idx].conjugate()*\
-                                    self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
-                                overlapWithOverlapstate.data **= 2
-                                overlapWithOverlapstate = overlapWithOverlapstate.sum(axis=0).getA1()
-
-                                if len(overlapWithOverlapstate) > 0:
-                                    self.iSelected[blocknumber] = np.argmax(overlapWithOverlapstate)
-                                    xSelected = self.buffer_positions[blocknumber]\
-                                        [self.lines_buffer_minIdx_field[blocknumber]]
-                                    eSelected = self.buffer_energies[blocknumber]\
-                                        [self.lines_buffer_minIdx_field[blocknumber]][self.iSelected[blocknumber]]
-                                    self.linesX[idx][blocknumber].append(xSelected)
-                                    self.linesY[idx][blocknumber].append(eSelected)
-                                else:
-                                    self.iSelected[blocknumber] = -1
-
-                            boolarr = iFirst == self.iSelected[blocknumber]
-                            if np.sum(boolarr) == 1:
-                                self.iSelected[blocknumber] = iSecond[boolarr]
-                                xSelected = self.buffer_positions[blocknumber]\
-                                    [self.lines_buffer_minIdx_field[blocknumber]+1]
-                                eSelected, = self.buffer_energies[blocknumber]\
-                                    [self.lines_buffer_minIdx_field[blocknumber]+1][self.iSelected[blocknumber]]
-                                self.linesX[idx][blocknumber].append(xSelected)
-                                self.linesY[idx][blocknumber].append(eSelected)
-                            else:
-                                self.iSelected[blocknumber] = -1"""
-
-                            # loop over momenta
-                            numMomenta = len(
-                                self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                            )
-
-                            for i in range(numMomenta):
-                                boolarr = self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][
-                                    i
-                                ][iFirst]
-                                if np.sum(boolarr) == 0:
-                                    continue
-
-                                # determine the associated color
-                                if idx == 0 or idx == 1:
-                                    color = self.momentumcolors[i]
-                                elif idx == 2:
-                                    color = symmetrycolor
-
-                                # plot the data
-                                # TODO alpha and color der Funktion zusammen
-                                # uebergeben
-                                curve = MultiLine(xdata[boolarr], ydata[boolarr], size, alpha, color)
-                                curve.setZValue(7)
-                                graphicsview_plot[idx].addItem(curve)
-
-                            del self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                            del self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                            del self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-                            del self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
-
-                            # increase the buffer index
-                            self.lines_buffer_minIdx_field[blocknumber] += 1
-
-                            dataamount += len(iFirst) * 10
-
-                    # --- store data to plot several points at once ---
-                    if self.ui.groupbox_plot_points.isChecked():
-                        x = np.append(x, position * np.ones_like(energies))
-                        y = np.append(y, energies)
-                        if idx == 0 or idx == 1:
-                            l = np.append(l, momentum)
-                        elif idx == 2:
-                            s += [symmetrycolor] * len(energies)
-
-                        dataamount += len(x)
-
-                # --- plot the stored data ---
-                if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
-
-                    # get size and alpha value of points
-                    size = self.ui.spinbox_plot_szPoint.value()
-                    alpha = self.ui.spinbox_plot_transpPoint.value() * 255
-
-                    if idx == 0 or idx == 1:
-                        # cut the momenta to reasonable values
-                        l[l > len(self.momentumcolors) - 2] = len(self.momentumcolors) - 2
-                        l[l < 0] = len(self.momentumcolors) - 1
-
-                    # find unique symmetry colors
-                    if idx == 0 or idx == 1:
-                        looprange = len(self.momentumcolors)
-                    elif idx == 2:
-                        s = np.array(s)
-                        uniquesymmetrycolors = (
-                            np.unique(s.view(np.dtype((np.void, s.dtype.itemsize * s.shape[1]))))
-                            .view(s.dtype)
-                            .reshape(-1, s.shape[1])
+                    # append the energy-indices to the arrays
+                    self.buffer_energiesMap[idx][filestep].append(
+                        bytescale(
+                            energies[boolarr],
+                            low=0,
+                            high=height_pixelunits - 1,
+                            cmin=self.yMin_field[idx],
+                            cmax=self.yMax_field[idx],
                         )
-                        looprange = len(uniquesymmetrycolors)
+                    )
+
+                    # append the overlaps to the arrays
+                    if self.stateidx_field[idx].get(bn, None) is not None:
+                        self.buffer_overlapMap[idx][filestep].append(overlap[boolarr])
+                    else:
+                        self.buffer_overlapMap[idx][filestep].append(np.zeros_like(energies[boolarr]))
+
+                # extract line to fit C3 or C6
+                if (
+                    self.stateidx_field[idx].get(bn, None) is not None
+                    and len(overlap) > 0
+                    and (
+                        blocknumber not in self.linesO[idx].keys()
+                        or np.max(overlap) > 0.5 * np.max(self.linesO[idx][blocknumber])
+                    )
+                ):
+                    idxSelected = np.argmax(overlap)
+                    xSelected = position
+                    eSelected = energies[idxSelected]
+                    oSelected = overlap[idxSelected]
+                    if blocknumber not in self.linesX[idx].keys():
+                        self.linesX[idx][blocknumber] = []
+                    if blocknumber not in self.linesY[idx].keys():
+                        self.linesY[idx][blocknumber] = []
+                    if blocknumber not in self.linesO[idx].keys():
+                        self.linesO[idx][blocknumber] = []
+                    self.linesX[idx][blocknumber].append(xSelected)
+                    self.linesY[idx][blocknumber].append(eSelected)
+                    self.linesO[idx][blocknumber].append(oSelected)
+
+                    # the c3 and c6 buttons should be enabled
+                    if filestep == 0 and idx == 2:
+                        self.ui.pushbutton_potential_fit.setEnabled(True)
+                        self.ui.combobox_potential_fct.setEnabled(True)
+
+                # --- build color maps starting at the lowest position---
+                # loop over positions ("filestep") as long as three
+                # subsequent positions
+                # ("self.colormap_buffer_minIdx_field[idx]+0,1,2") are
+                # within the buffers
+                while True:
+                    # break if limits do not exist
+                    if self.yMax_field[idx] is None or self.yMin_field[idx] is None:
+                        break
+
+                    # break if buffer index is not in the buffer
+                    bufferidx = []
+
+                    # not start
+                    if self.colormap_buffer_minIdx_field[idx] != 0:
+                        if self.colormap_buffer_minIdx_field[idx] - 1 not in self.buffer_positionsMap[idx].keys():
+                            break
+                        bufferidx.append(-1)
+
+                    if self.colormap_buffer_minIdx_field[idx] not in self.buffer_positionsMap[idx].keys():
+                        break
+                    bufferidx.append(0)
+
+                    # not end
+                    if self.colormap_buffer_minIdx_field[idx] != self.steps - 1:
+                        if self.colormap_buffer_minIdx_field[idx] + 1 not in self.buffer_positionsMap[idx].keys():
+                            break
+                        bufferidx.append(1)
+
+                    # break if the data is not buffered of all blocks,
+                    # yet
+                    tobreak = False
+                    for i in bufferidx:
+                        if len(self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] + i]) < numBlocks:
+                            tobreak = True
+                    if tobreak:
+                        break
+
+                    # calculate position-indices
+                    positions = [
+                        self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] + i] for i in bufferidx
+                    ]
+
+                    # add outer points if at the end or start
+                    # end
+                    if self.colormap_buffer_minIdx_field[idx] == self.steps - 1:
+                        positions = positions + [2 * positions[1] - positions[0]]
+                    # start
+                    elif self.colormap_buffer_minIdx_field[idx] == 0:
+                        positions = [2 * positions[0] - positions[1]] + positions
+
+                    # determine limits of the color map part
+                    posLeft = (positions[0] + positions[1]) / 2
+                    posRight = (positions[1] + positions[2]) / 2
+                    idx_left, idx_right = bytescale(
+                        np.array([posLeft, posRight]),
+                        low=0,
+                        high=width_pixelunits - 1,
+                        cmin=positions[0],
+                        cmax=positions[-1],
+                    )
+
+                    # calculate unit converters
+                    self.displayunits2pixelunits_x = width_pixelunits / (positions[2] - positions[0])
+                    self.displayunits2pixelunits_y = height_pixelunits / (self.yMax_field[idx] - self.yMin_field[idx])
+
+                    # build map
+                    # x-y-coordinate system, origin is at the bottom
+                    # left corner
+                    colormap = np.zeros((width_pixelunits, height_pixelunits))
+
+                    for i in bufferidx:
+                        overlap = np.concatenate(
+                            self.buffer_overlapMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
+                        )
+                        pos = self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
+                        idx_pos = bytescale(
+                            pos, low=0, high=width_pixelunits - 1, cmin=positions[0], cmax=positions[-1]
+                        )
+                        idx_energies = np.concatenate(
+                            self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] + i]
+                        )
+
+                        if self.logscale:
+                            overlap[overlap < 1e-2] = 1e-2
+                            overlap = (2 + np.log10(overlap)) / 2
+
+                        colormap[idx_pos, :] = (
+                            sparse.coo_matrix(
+                                (overlap, (idx_energies, np.arange(len(idx_energies)))),
+                                shape=(height_pixelunits, len(idx_energies)),
+                            )
+                            .sum(axis=1)
+                            .getA1()
+                        )
+
+                        dataamount += len(idx_energies) * 10
+
+                    # smoothing
+                    colormap = gaussian_filter(colormap, (smootherX, smootherY), mode="constant")
+
+                    # cutting
+                    colormap = colormap[idx_left:idx_right]
+
+                    # normalizing
+                    normalizer = np.zeros((width_pixelunits, int(2 * 3 * smootherY + 1)))
+                    normalizer[int((width_pixelunits - 1) / 2), int(3 * smootherY)] = 1
+                    normalizer = gaussian_filter(normalizer, (smootherX, smootherY), mode="constant")
+
+                    colormap /= np.max(normalizer)
+
+                    # plotting
+                    img = pg.ImageItem(
+                        image=colormap, opacity=alpha, autoDownsample=True, lut=self.lut, levels=[-0.002, 1]
+                    )  # HACK
+                    img.setRect(
+                        QtCore.QRectF(
+                            posLeft - 0.5 / self.displayunits2pixelunits_x,
+                            self.yMin_field[idx] - 0.5 / self.displayunits2pixelunits_y,
+                            posRight - posLeft,
+                            self.yMax_field[idx] - self.yMin_field[idx] + 1 / self.displayunits2pixelunits_y,
+                        )
+                    )  # xMin, yMin_field[idx], xSize, ySize # TODO energyMin anpassen wegen Pixelgroesse
+                    img.setZValue(3)
+                    graphicsview_plot[idx].addItem(img)
+
+                    # remove plotted data from buffer
+                    # not start
+                    if self.colormap_buffer_minIdx_field[idx] != 0:
+                        del self.buffer_energiesMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
+                        del self.buffer_positionsMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
+                        del self.buffer_overlapMap[idx][self.colormap_buffer_minIdx_field[idx] - 1]
+
+                    # increase the buffer index
+                    self.colormap_buffer_minIdx_field[idx] += 1
+
+            # --- draw lines ---
+            if self.ui.groupbox_plot_lines.isChecked():
+                if blocknumber not in self.buffer_basis:
+                    self.buffer_basis[blocknumber] = {}
+                    self.buffer_energies[blocknumber] = {}
+                    self.buffer_positions[blocknumber] = {}
+                    self.buffer_boolarr[blocknumber] = {}
+                    self.lines_buffer_minIdx_field[blocknumber] = 0
+                    """self.iSelected[blocknumber] = None
+                    self.linesX[idx][blocknumber] = []
+                    self.linesY[idx][blocknumber] = []"""
+
+                self.buffer_basis[blocknumber][filestep] = basis
+                self.buffer_energies[blocknumber][filestep] = energies
+                self.buffer_positions[blocknumber][filestep] = position
+                self.buffer_boolarr[blocknumber][filestep] = []
+
+                if idx == 0 or idx == 1:
+                    # cut the momenta to reasonable values
+                    momentum[momentum > len(self.momentumcolors) - 2] = len(self.momentumcolors) - 2
+                    momentum[momentum < 0] = len(self.momentumcolors) - 1
 
                     # loop over momenta
-                    for i in range(looprange):
-                        if idx == 0 or idx == 1:
-                            # determine which basis elements have the current
-                            # momentum
-                            boolarr = l == i
-                            if np.sum(boolarr) == 0:
-                                continue
+                    for i in range(len(self.momentumcolors)):
+                        # determine which basis elements have the
+                        # current momentum
+                        boolarr = momentum == i
+                        self.buffer_boolarr[blocknumber][filestep].append(boolarr)
+                elif idx == 2:
+                    self.buffer_boolarr[blocknumber][filestep].append(
+                        np.ones_like(self.buffer_energies[blocknumber][filestep], dtype=bool)
+                    )
 
-                            # determine the associated color
+                # get size and alpha value of points
+                size = self.ui.spinbox_plot_szLine.value()
+                alpha = self.ui.spinbox_plot_transpLine.value() * 255
+
+                """# legend
+                if idx == 2 and filestep == 0 and symmetry != 0:
+                    graphicsview_plot[idx].addLegend()
+                    style = pg.PlotDataItem(
+                        pen = pg.mkPen(self.symmetrycolors[1]+(alpha,),width=size,cosmetic=True))
+                    graphicsview_plot[idx].plotItem.legend.addItem(style, "sym")
+                    style = pg.PlotDataItem(
+                        pen = pg.mkPen(self.symmetrycolors[2]+(alpha,),width=size,cosmetic=True))
+                    graphicsview_plot[idx].plotItem.legend.addItem(style, "asym")"""
+
+                while (
+                    self.lines_buffer_minIdx_field[blocknumber] in self.buffer_basis[blocknumber].keys()
+                    and (self.lines_buffer_minIdx_field[blocknumber] + 1) in self.buffer_basis[blocknumber].keys()
+                ):
+                    # determine the data to plot
+                    overlap = np.abs(
+                        self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]].conj().T
+                        * self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1]
+                    )  # nBasis first, nBasis second
+
+                    overlap.data[overlap.data <= np.sqrt(self.ui.spinbox_plot_connectionthreshold.value())] = 0
+                    overlap.eliminate_zeros()
+                    csr_keepmax(overlap)
+
+                    overlap = overlap.tocoo()
+
+                    iFirst = overlap.row
+                    iSecond = overlap.col
+
+                    ydata = np.transpose(
+                        [
+                            self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][iFirst],
+                            self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1][iSecond],
+                        ]
+                    )
+                    xdata = np.ones_like(ydata)
+                    xdata[:, 0] *= self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                    xdata[:, 1] *= self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber] + 1]
+
+                    """# track lines with the largest probability to find the overlapstate
+                    if self.lines_buffer_minIdx_field[blocknumber] == 0:
+                        overlapWithOverlapstate = np.abs(self.stateidx_field[idx].conjugate()*\
+                            self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
+                        overlapWithOverlapstate.data **= 2
+                        overlapWithOverlapstate = overlapWithOverlapstate.sum(axis=0).getA1()
+
+                        if len(overlapWithOverlapstate) > 0:
+                            self.iSelected[blocknumber] = np.argmax(overlapWithOverlapstate)
+                            xSelected = self.buffer_positions[blocknumber]\
+                                [self.lines_buffer_minIdx_field[blocknumber]]
+                            eSelected = self.buffer_energies[blocknumber]\
+                                [self.lines_buffer_minIdx_field[blocknumber]][self.iSelected[blocknumber]]
+                            self.linesX[idx][blocknumber].append(xSelected)
+                            self.linesY[idx][blocknumber].append(eSelected)
+                        else:
+                            self.iSelected[blocknumber] = -1
+
+                    boolarr = iFirst == self.iSelected[blocknumber]
+                    if np.sum(boolarr) == 1:
+                        self.iSelected[blocknumber] = iSecond[boolarr]
+                        xSelected = self.buffer_positions[blocknumber]\
+                            [self.lines_buffer_minIdx_field[blocknumber]+1]
+                        eSelected, = self.buffer_energies[blocknumber]\
+                            [self.lines_buffer_minIdx_field[blocknumber]+1][self.iSelected[blocknumber]]
+                        self.linesX[idx][blocknumber].append(xSelected)
+                        self.linesY[idx][blocknumber].append(eSelected)
+                    else:
+                        self.iSelected[blocknumber] = -1"""
+
+                    # loop over momenta
+                    numMomenta = len(self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]])
+
+                    for i in range(numMomenta):
+                        boolarr = self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]][i][
+                            iFirst
+                        ]
+                        if np.sum(boolarr) == 0:
+                            continue
+
+                        # determine the associated color
+                        if idx == 0 or idx == 1:
                             color = self.momentumcolors[i]
                         elif idx == 2:
-                            # determine which basis elements have the current
-                            # symmetry
-                            boolarr = np.all(s == uniquesymmetrycolors[i], axis=1)
-                            if np.sum(boolarr) == 0:
-                                continue
+                            color = symmetrycolor
 
-                            # determine the associated color
-                            color = tuple(uniquesymmetrycolors[i])
-
-                        # plot the basis elements
-                        curve = PointsItem(x[boolarr], y[boolarr], size, alpha, color)
-                        curve.setZValue(5)
+                        # plot the data
+                        # TODO alpha and color der Funktion zusammen
+                        # uebergeben
+                        curve = MultiLine(xdata[boolarr], ydata[boolarr], size, alpha, color)
+                        curve.setZValue(7)
                         graphicsview_plot[idx].addItem(curve)
 
-                # --- update the graphics view ---
-                graphicsview_plot[idx].repaint()
+                    del self.buffer_basis[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                    del self.buffer_energies[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                    del self.buffer_positions[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
+                    del self.buffer_boolarr[blocknumber][self.lines_buffer_minIdx_field[blocknumber]]
 
-        # check if thread has finished
-        if (
-            self.thread.isFinished()
-            and self.thread.dataqueue_field1.empty()
-            and self.thread.dataqueue_field2.empty()
-            and self.thread.dataqueue_potential.empty()
-        ):
-            # Delete buffers
-            self.buffer_basis = {}
-            self.buffer_energies = {}
-            self.buffer_positions = {}
-            self.buffer_boolarr = {}
+                    # increase the buffer index
+                    self.lines_buffer_minIdx_field[blocknumber] += 1
 
-            self.buffer_energiesMap = [{}, {}, {}]
-            self.buffer_positionsMap = [{}, {}, {}]
-            self.buffer_overlapMap = [{}, {}, {}]
+                    dataamount += len(iFirst) * 10
 
-            self.lines_buffer_minIdx = {}
-            self.colormap_buffer_minIdx_field = [0] * 3
-            self.lines_buffer_minIdx_field = {}
+            # --- store data to plot several points at once ---
+            if self.ui.groupbox_plot_points.isChecked():
+                x = np.append(x, position * np.ones_like(energies))
+                y = np.append(y, energies)
+                if idx == 0 or idx == 1:
+                    l = np.append(l, momentum)
+                elif idx == 2:
+                    s += [symmetrycolor] * len(energies)
 
-            # Delete c++ process
-            if self.proc is not None:
-                self.proc.wait()
-                self.proc = None
+                dataamount += len(x)
 
-            # Stop this timer
-            print(f"Total time needed: {time() - self.starttime:.2f} s")
-            self.timer.stop()
+        # --- plot the stored data ---
+        if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
 
-            # Change buttons
-            if self.ui.pushbutton_field1_calc != self.senderbutton:
-                self.ui.pushbutton_field1_calc.setEnabled(True)
-            if self.ui.pushbutton_field2_calc != self.senderbutton:
-                self.ui.pushbutton_field2_calc.setEnabled(True)
-            if self.ui.pushbutton_potential_calc != self.senderbutton:
-                self.ui.pushbutton_potential_calc.setEnabled(True)
-            if self.ui.pushbutton_field1_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate field map")
-            if self.ui.pushbutton_field2_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate field map")
-            if self.ui.pushbutton_potential_calc == self.senderbutton:
-                self.senderbutton.setText("Calculate potential")
+            # get size and alpha value of points
+            size = self.ui.spinbox_plot_szPoint.value()
+            alpha = self.ui.spinbox_plot_transpPoint.value() * 255
 
-            # Toggle antialiasing # HACK
-            if self.ui.checkbox_plot_antialiasing.isChecked():
-                for plotarea in [
-                    self.ui.graphicsview_field1_plot,
-                    self.ui.graphicsview_field2_plot,
-                    self.ui.graphicsview_potential_plot,
-                ]:
-                    plotarea.setAntialiasing(False)
-                    plotarea.setAntialiasing(True)
+            if idx == 0 or idx == 1:
+                # cut the momenta to reasonable values
+                l[l > len(self.momentumcolors) - 2] = len(self.momentumcolors) - 2
+                l[l < 0] = len(self.momentumcolors) - 1
 
-            # Reset status bar
-            self.ui.statusbar.showMessage("")
+            # find unique symmetry colors
+            if idx == 0 or idx == 1:
+                looprange = len(self.momentumcolors)
+            elif idx == 2:
+                s = np.array(s)
+                uniquesymmetrycolors = (
+                    np.unique(s.view(np.dtype((np.void, s.dtype.itemsize * s.shape[1]))))
+                    .view(s.dtype)
+                    .reshape(-1, s.shape[1])
+                )
+                looprange = len(uniquesymmetrycolors)
+
+            # loop over momenta
+            for i in range(looprange):
+                if idx == 0 or idx == 1:
+                    # determine which basis elements have the current
+                    # momentum
+                    boolarr = l == i
+                    if np.sum(boolarr) == 0:
+                        continue
+
+                    # determine the associated color
+                    color = self.momentumcolors[i]
+                elif idx == 2:
+                    # determine which basis elements have the current
+                    # symmetry
+                    boolarr = np.all(s == uniquesymmetrycolors[i], axis=1)
+                    if np.sum(boolarr) == 0:
+                        continue
+
+                    # determine the associated color
+                    color = tuple(uniquesymmetrycolors[i])
+
+                # plot the basis elements
+                curve = PointsItem(x[boolarr], y[boolarr], size, alpha, color)
+                curve.setZValue(5)
+                graphicsview_plot[idx].addItem(curve)
+
+        # --- update the graphics view ---
+        graphicsview_plot[idx].repaint()
+
+    def threadFinished(self):
+        # Delete buffers
+        self.buffer_basis = {}
+        self.buffer_energies = {}
+        self.buffer_positions = {}
+        self.buffer_boolarr = {}
+
+        self.buffer_energiesMap = [{}, {}, {}]
+        self.buffer_positionsMap = [{}, {}, {}]
+        self.buffer_overlapMap = [{}, {}, {}]
+
+        self.lines_buffer_minIdx = {}
+        self.colormap_buffer_minIdx_field = [0] * 3
+        self.lines_buffer_minIdx_field = {}
+
+        self.cleanupProcesses()
+
+        # Logging for debugging
+        print(f"Total time needed: {time() - self.starttime:.2f} s")
+        print(f"Amount of data loaded into gui: {len(self.storage_data[self.current_idx])}")
+        # Stop this timer
+        self.timer.stop()
+
+        # Change buttons
+        if self.ui.pushbutton_field1_calc != self.senderbutton:
+            self.ui.pushbutton_field1_calc.setEnabled(True)
+        if self.ui.pushbutton_field2_calc != self.senderbutton:
+            self.ui.pushbutton_field2_calc.setEnabled(True)
+        if self.ui.pushbutton_potential_calc != self.senderbutton:
+            self.ui.pushbutton_potential_calc.setEnabled(True)
+        if self.ui.pushbutton_field1_calc == self.senderbutton:
+            self.senderbutton.setText("Calculate field map")
+        if self.ui.pushbutton_field2_calc == self.senderbutton:
+            self.senderbutton.setText("Calculate field map")
+        if self.ui.pushbutton_potential_calc == self.senderbutton:
+            self.senderbutton.setText("Calculate potential")
+
+        self.current_idx = None
+        self.labelprob = None
+        self.labelprob_energy = None
+
+        # Toggle antialiasing # HACK
+        if self.ui.checkbox_plot_antialiasing.isChecked():
+            for plotarea in [
+                self.ui.graphicsview_field1_plot,
+                self.ui.graphicsview_field2_plot,
+                self.ui.graphicsview_potential_plot,
+            ]:
+                plotarea.setAntialiasing(False)
+                plotarea.setAntialiasing(True)
+
+        # Reset status bar
+        self.ui.statusbar.showMessage("")
 
     @QtCore.pyqtSlot()
     def fitC3C6(self):
@@ -2703,400 +2668,402 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def startCalc(self):
-        if self.proc is None:
-            self.stateidx_field = [{}, {}, {}]
-            self.storage_states = [{}, {}, {}]
+        if self.timer.isActive():
+            self.abortCalculation()
+            return
 
-            # ensure that validators are called
-            focused_widget = QtWidgets.QApplication.focusWidget()
-            if focused_widget is not None:
-                focused_widget.clearFocus()
+        self.stateidx_field = [{}, {}, {}]
+        self.storage_states = [{}, {}, {}]
 
-            if any(self.invalidQuantumnumbers.values()):
-                QtWidgets.QMessageBox.critical(self, "Message", self.invalidQuantumnumbersMessage)
+        # ensure that validators are called
+        focused_widget = QtWidgets.QApplication.focusWidget()
+        if focused_widget is not None:
+            focused_widget.clearFocus()
 
-            elif (
-                self.ui.radiobutton_system_missingWhittaker.isChecked()
-                and max(self.systemdict["n1"].magnitude, self.systemdict["n1"].magnitude)
-                + max(self.systemdict["deltaNSingle"].magnitude, self.systemdict["deltaNPair"].magnitude)
-                > 97
+        if any(self.invalidQuantumnumbers.values()):
+            QtWidgets.QMessageBox.critical(self, "Message", self.invalidQuantumnumbersMessage)
+
+        elif (
+            self.ui.radiobutton_system_missingWhittaker.isChecked()
+            and max(self.systemdict["n1"].magnitude, self.systemdict["n1"].magnitude)
+            + max(self.systemdict["deltaNSingle"].magnitude, self.systemdict["deltaNPair"].magnitude)
+            > 97
+        ):
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Message",
+                "If the principal quantum number exceeds 97, radial matrix "
+                + "elements must be calculated from model potentials.",
+            )
+
+        else:
+            self.senderbutton = self.sender()
+            buttons = [
+                self.ui.pushbutton_field1_calc,
+                self.ui.pushbutton_field2_calc,
+                self.ui.pushbutton_potential_calc,
+            ]
+            if self.senderbutton not in buttons:
+                raise ValueError("Sender button not in buttons.")
+            self.current_idx = buttons.index(self.senderbutton)
+
+            if (
+                self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_field2_calc]
+                and self.systemdict["theta"].toAU().magnitude != 0
             ):
-                QtWidgets.QMessageBox.critical(
+                QtWidgets.QMessageBox.warning(
                     self,
-                    "Message",
-                    "If the principal quantum number exceeds 97, radial matrix "
-                    + "elements must be calculated from model potentials.",
+                    "Warning",
+                    "For calculating field maps, you might like to set the interaction angle to zero. "
+                    + "A non-zero angle makes the program compute eigenvectors in the rotated basis where the "
+                    + "quantization axis equals the interatomic axis. This slows down calculations.",
                 )
 
+            if self.systemdict["theta"].magnitude != 0 and (
+                self.systemdict["deltaMSingle"].magnitude >= 0
+                or (
+                    self.ui.radiobutton_system_pairbasisDefined.isChecked()
+                    and self.systemdict["deltaMPair"].magnitude >= 0
+                )
+            ):
+                QtWidgets.QMessageBox.warning(
+                    self,
+                    "Warning",
+                    "For non-zero interaction angles, it is recommended not to restrict "
+                    + "the magnetic quantum number.",
+                )
+
+            # save last settings
+            self.saveSettingsSystem(self.path_system_last)
+            self.saveSettingsPlotter(self.path_plot_last)
+            self.saveSettingsView(self.path_view_last)
+
+            # change buttons
+            if self.senderbutton != self.ui.pushbutton_field1_calc:
+                self.ui.pushbutton_field1_calc.setEnabled(False)
+            if self.senderbutton != self.ui.pushbutton_field2_calc:
+                self.ui.pushbutton_field2_calc.setEnabled(False)
+            if self.senderbutton != self.ui.pushbutton_potential_calc:
+                self.ui.pushbutton_potential_calc.setEnabled(False)
+            if self.senderbutton == self.ui.pushbutton_potential_calc:
+                self.ui.pushbutton_potential_fit.setEnabled(False)
+                self.ui.combobox_potential_fct.setEnabled(False)
+            self.senderbutton.setText("Abort calculation")
+
+            # store, whether the same basis should be used for both atoms
+            self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
+
+            # store configuration
+            # toAU converts the angle from deg to rad
+            self.angle = self.systemdict["theta"].toAU().magnitude
+
+            self.minE = [
+                self.plotdict["minE_field1"].magnitude,
+                self.plotdict["minE_field2"].magnitude,
+                self.plotdict["minE_potential"].magnitude,
+            ]
+            self.maxE = [
+                self.plotdict["maxE_field1"].magnitude,
+                self.plotdict["maxE_field2"].magnitude,
+                self.plotdict["maxE_potential"].magnitude,
+            ]
+
+            self.steps = self.systemdict["steps"].magnitude
+            # self.calcmissing = self.ui.checkbox_calc_missing.checkState() == QtCore.Qt.Checked
+
+            unperturbedstate = np.array(
+                [
+                    self.systemdict["n1"].magnitude,
+                    self.systemdict["l1"].magnitude,
+                    self.systemdict["j1"].magnitude,
+                    self.systemdict["m1"].magnitude,
+                    self.systemdict["n2"].magnitude,
+                    self.systemdict["l2"].magnitude,
+                    self.systemdict["j2"].magnitude,
+                    self.systemdict["m2"].magnitude,
+                ]
+            )
+
+            if self.ui.radiobutton_plot_overlapUnperturbed.isChecked():
+                overlapstate = unperturbedstate
             else:
-                self.senderbutton = self.sender()
-
-                if (
-                    self.senderbutton in [self.ui.pushbutton_field1_calc, self.ui.pushbutton_field2_calc]
-                    and self.systemdict["theta"].toAU().magnitude != 0
-                ):
-                    QtWidgets.QMessageBox.warning(
-                        self,
-                        "Warning",
-                        "For calculating field maps, you might like to set the interaction angle to zero. "
-                        + "A non-zero angle makes the program compute eigenvectors in the rotated basis where the "
-                        + "quantization axis equals the interatomic axis. This slows down calculations.",
-                    )
-
-                if self.systemdict["theta"].magnitude != 0 and (
-                    self.systemdict["deltaMSingle"].magnitude >= 0
-                    or (
-                        self.ui.radiobutton_system_pairbasisDefined.isChecked()
-                        and self.systemdict["deltaMPair"].magnitude >= 0
-                    )
-                ):
-                    QtWidgets.QMessageBox.warning(
-                        self,
-                        "Warning",
-                        "For non-zero interaction angles, it is recommended not to restrict "
-                        + "the magnetic quantum number.",
-                    )
-
-                # save last settings
-                self.saveSettingsSystem(self.path_system_last)
-                self.saveSettingsPlotter(self.path_plot_last)
-                self.saveSettingsView(self.path_view_last)
-
-                # change buttons
-                if self.senderbutton != self.ui.pushbutton_field1_calc:
-                    self.ui.pushbutton_field1_calc.setEnabled(False)
-                if self.senderbutton != self.ui.pushbutton_field2_calc:
-                    self.ui.pushbutton_field2_calc.setEnabled(False)
-                if self.senderbutton != self.ui.pushbutton_potential_calc:
-                    self.ui.pushbutton_potential_calc.setEnabled(False)
-                if self.senderbutton == self.ui.pushbutton_potential_calc:
-                    self.ui.pushbutton_potential_fit.setEnabled(False)
-                    self.ui.combobox_potential_fct.setEnabled(False)
-                self.senderbutton.setText("Abort calculation")
-
-                # store, whether the same basis should be used for both atoms
-                self.samebasis = self.ui.checkbox_system_samebasis.checkState() == QtCore.Qt.Checked
-
-                # store configuration
-                # toAU converts the angle from deg to rad
-                self.angle = self.systemdict["theta"].toAU().magnitude
-
-                self.minE = [
-                    self.plotdict["minE_field1"].magnitude,
-                    self.plotdict["minE_field2"].magnitude,
-                    self.plotdict["minE_potential"].magnitude,
-                ]
-                self.maxE = [
-                    self.plotdict["maxE_field1"].magnitude,
-                    self.plotdict["maxE_field2"].magnitude,
-                    self.plotdict["maxE_potential"].magnitude,
-                ]
-
-                self.steps = self.systemdict["steps"].magnitude
-                # self.calcmissing = self.ui.checkbox_calc_missing.checkState() == QtCore.Qt.Checked
-
-                unperturbedstate = np.array(
+                overlapstate = np.array(
                     [
-                        self.systemdict["n1"].magnitude,
-                        self.systemdict["l1"].magnitude,
-                        self.systemdict["j1"].magnitude,
-                        self.systemdict["m1"].magnitude,
-                        self.systemdict["n2"].magnitude,
-                        self.systemdict["l2"].magnitude,
-                        self.systemdict["j2"].magnitude,
-                        self.systemdict["m2"].magnitude,
+                        self.plotdict["n1"].magnitude,
+                        self.plotdict["l1"].magnitude,
+                        self.plotdict["j1"].magnitude,
+                        self.plotdict["m1"].magnitude,
+                        self.plotdict["n2"].magnitude,
+                        self.plotdict["l2"].magnitude,
+                        self.plotdict["j2"].magnitude,
+                        self.plotdict["m2"].magnitude,
                     ]
                 )
 
-                if self.ui.radiobutton_plot_overlapUnperturbed.isChecked():
-                    overlapstate = unperturbedstate
-                else:
-                    overlapstate = np.array(
+            self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)
+
+            # clear plots and set them up
+            validsenders = [
+                [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc],
+                [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc],
+                [self.ui.pushbutton_potential_calc],
+            ]
+
+            constDistance = self.getConstDistance()
+            constEField = self.getConstEField()
+            constBField = self.getConstBField()
+
+            self.xAxis = [None] * 3
+            self.converter_x = [None] * 3
+            self.leftSmallerRight = [None] * 3
+
+            for idx in range(3):
+                if (self.senderbutton not in validsenders[idx]) and not (idx == 0 and self.samebasis):
+                    continue
+
+                self.unperturbedstate[idx] = unperturbedstate
+                self.overlapstate[idx] = overlapstate
+
+                # setup storage variables to save the results
+                filelike_system = StringIO()
+                filelike_plotter = StringIO()
+                self.saveSettingsSystem(filelike_system)
+                self.saveSettingsPlotter(filelike_plotter)
+
+                self.storage_data[idx] = []
+                self.storage_states[idx] = {}
+                self.storage_configuration[idx] = [filelike_system.getvalue(), filelike_plotter.getvalue()]
+
+                # clear plot
+                autorangestate = (
+                    self.graphicviews_plot[idx].getViewBox().getState()["autoRange"]
+                )  # HACK to avoid performance issues during clearing
+                if autorangestate[0]:
+                    self.graphicviews_plot[idx].disableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().XAxis)
+                if autorangestate[1]:
+                    self.graphicviews_plot[idx].disableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().YAxis)
+                self.graphicviews_plot[idx].clear()
+                if autorangestate[0]:
+                    self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().XAxis)
+                if autorangestate[1]:
+                    self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().YAxis)
+
+                # set up energy axis
+                self.graphicviews_plot[idx].setLabel("left", "Energy (" + str(Units.energy) + ")")
+                self.graphicviews_plot[idx].setLimits(yMin=self.minE[idx])
+                self.graphicviews_plot[idx].setLimits(yMax=self.maxE[idx])
+
+                # set up step axis
+                if (idx in [0, 1] and constEField and not constBField) or (
+                    idx == 2 and constDistance and not constBField
+                ):
+                    self.xAxis[idx] = "B"
+                    self.graphicviews_plot[idx].setLabel("bottom", "Magnetic field (" + str(Units.bfield) + ")")
+                    # Quantity(1, Units.au_bfield).toUU().magnitude
+                    self.converter_x[idx] = 1
+                    posMin = self.get1DPosition(
                         [
-                            self.plotdict["n1"].magnitude,
-                            self.plotdict["l1"].magnitude,
-                            self.plotdict["j1"].magnitude,
-                            self.plotdict["m1"].magnitude,
-                            self.plotdict["n2"].magnitude,
-                            self.plotdict["l2"].magnitude,
-                            self.plotdict["j2"].magnitude,
-                            self.plotdict["m2"].magnitude,
+                            self.systemdict["minBx"].magnitude,
+                            self.systemdict["minBy"].magnitude,
+                            self.systemdict["minBz"].magnitude,
+                        ]
+                    )
+                    posMax = self.get1DPosition(
+                        [
+                            self.systemdict["maxBx"].magnitude,
+                            self.systemdict["maxBy"].magnitude,
+                            self.systemdict["maxBz"].magnitude,
+                        ]
+                    )
+                elif (idx in [0, 1]) or (idx == 2 and constDistance and not constEField):
+                    self.xAxis[idx] = "E"
+                    self.graphicviews_plot[idx].setLabel("bottom", "Electric field (" + str(Units.efield) + ")")
+                    # Quantity(1, Units.au_efield).toUU().magnitude
+                    self.converter_x[idx] = 1
+                    posMin = self.get1DPosition(
+                        [
+                            self.systemdict["minEx"].magnitude,
+                            self.systemdict["minEy"].magnitude,
+                            self.systemdict["minEz"].magnitude,
+                        ]
+                    )
+                    posMax = self.get1DPosition(
+                        [
+                            self.systemdict["maxEx"].magnitude,
+                            self.systemdict["maxEy"].magnitude,
+                            self.systemdict["maxEz"].magnitude,
+                        ]
+                    )
+                elif idx == 2:
+                    self.xAxis[idx] = "R"
+                    self.graphicviews_plot[idx].setLabel("bottom", "Interatomic distance (" + str(Units.length) + ")")
+                    # Quantity(1, Units.au_length).toUU().magnitude
+                    self.converter_x[idx] = 1
+                    posMin = self.systemdict["minR"].magnitude
+                    posMax = self.systemdict["maxR"].magnitude
+
+                self.leftSmallerRight[idx] = posMin < posMax
+
+                # enable / disable auto range
+                if self.ui.checkbox_plot_autorange.isChecked():
+                    self.graphicviews_plot[idx].enableAutoRange()
+                else:
+                    if not self.manualRangeX[idx]:
+                        self.graphicviews_plot[idx].setXRange(posMin, posMax)
+                    if not self.manualRangeY[idx] and self.minE[idx] is not None and self.maxE[idx] is not None:
+                        self.graphicviews_plot[idx].setYRange(self.minE[idx], self.maxE[idx])
+
+                # clear variables
+                self.linesSelected[idx] = 0
+                self.linesData[idx] = []
+                self.linesX[idx] = {}
+                self.linesY[idx] = {}
+                self.linesO[idx] = {}
+                self.linesSender[idx] = None
+
+            # Quantity(1, Units.au_energy).toUU().magnitude
+            self.converter_y = 1
+
+            # save configuration to json file
+            with open(self.path_conf, "w") as f:
+                if self.senderbutton == self.ui.pushbutton_potential_calc:
+                    keys = self.systemdict.keys_for_cprogram_potential
+                    button_id = 2
+                elif self.samebasis:
+                    keys = self.systemdict.keys_for_cprogram_field12
+                    button_id = 3
+                elif self.senderbutton == self.ui.pushbutton_field1_calc:
+                    keys = self.systemdict.keys_for_cprogram_field1
+                    button_id = 0
+                elif self.senderbutton == self.ui.pushbutton_field2_calc:
+                    keys = self.systemdict.keys_for_cprogram_field2
+                    button_id = 1
+
+                params = {k: self.systemdict[k].toUU().magnitude for k in keys}
+                params["button_id"] = button_id
+
+                self.numprocessors = self.systemdict["cores"].magnitude
+                params["NUM_PROCESSES"] = self.numprocessors
+
+                if self.senderbutton == self.ui.pushbutton_potential_calc:
+                    params["zerotheta"] = self.angle == 0
+
+                if params["deltaNSingle"] < 0:
+                    params["deltaNSingle"] = NO_RESTRICTIONS
+                if params["deltaLSingle"] < 0:
+                    params["deltaLSingle"] = NO_RESTRICTIONS
+                if params["deltaJSingle"] < 0:
+                    params["deltaJSingle"] = NO_RESTRICTIONS
+                if params["deltaMSingle"] < 0:
+                    params["deltaMSingle"] = NO_RESTRICTIONS
+
+                if (
+                    self.senderbutton == self.ui.pushbutton_potential_calc
+                    and self.ui.radiobutton_system_pairbasisSame.isChecked()
+                ):
+                    params["deltaNPair"] = NO_RESTRICTIONS
+                    params["deltaLPair"] = NO_RESTRICTIONS
+                    params["deltaJPair"] = NO_RESTRICTIONS
+                    params["deltaMPair"] = NO_RESTRICTIONS
+
+                if self.angle != 0:
+                    arrlabels = [
+                        ["minEx", "minEy", "minEz"],
+                        ["maxEx", "maxEy", "maxEz"],
+                        ["minBx", "minBy", "minBz"],
+                        ["maxBx", "maxBy", "maxBz"],
+                    ]
+                    rotator = np.array(
+                        [
+                            [np.cos(self.angle), 0, -np.sin(self.angle)],
+                            [0, 1, 0],
+                            [np.sin(self.angle), 0, np.cos(self.angle)],
                         ]
                     )
 
-                self.lut = self.ui.gradientwidget_plot_gradient.getLookupTable(512)
+                    for labels in arrlabels:
+                        fields = np.array([[params[label]] for label in labels])
+                        fields = np.dot(rotator, fields).flatten()
+                        for field, label in zip(fields, labels):
+                            params[label] = field
 
-                # clear plots and set them up
-                validsenders = [
-                    [self.ui.pushbutton_field1_calc, self.ui.pushbutton_potential_calc],
-                    [self.ui.pushbutton_field2_calc, self.ui.pushbutton_potential_calc],
-                    [self.ui.pushbutton_potential_calc],
-                ]
-
-                constDistance = self.getConstDistance()
-                constEField = self.getConstEField()
-                constBField = self.getConstBField()
-
-                self.xAxis = [None] * 3
-                self.converter_x = [None] * 3
-                self.leftSmallerRight = [None] * 3
-
-                for idx in range(3):
-                    if (self.senderbutton not in validsenders[idx]) and not (idx == 0 and self.samebasis):
-                        continue
-
-                    self.unperturbedstate[idx] = unperturbedstate
-                    self.overlapstate[idx] = overlapstate
-
-                    # setup storage variables to save the results
-                    filelike_system = StringIO()
-                    filelike_plotter = StringIO()
-                    self.saveSettingsSystem(filelike_system)
-                    self.saveSettingsPlotter(filelike_plotter)
-
-                    self.storage_data[idx] = []
-                    self.storage_states[idx] = {}
-                    self.storage_configuration[idx] = [filelike_system.getvalue(), filelike_plotter.getvalue()]
-
-                    # clear plot
-                    autorangestate = (
-                        self.graphicviews_plot[idx].getViewBox().getState()["autoRange"]
-                    )  # HACK to avoid performance issues during clearing
-                    if autorangestate[0]:
-                        self.graphicviews_plot[idx].disableAutoRange(
-                            axis=self.graphicviews_plot[idx].getViewBox().XAxis
-                        )
-                    if autorangestate[1]:
-                        self.graphicviews_plot[idx].disableAutoRange(
-                            axis=self.graphicviews_plot[idx].getViewBox().YAxis
-                        )
-                    self.graphicviews_plot[idx].clear()
-                    if autorangestate[0]:
-                        self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().XAxis)
-                    if autorangestate[1]:
-                        self.graphicviews_plot[idx].enableAutoRange(axis=self.graphicviews_plot[idx].getViewBox().YAxis)
-
-                    # set up energy axis
-                    self.graphicviews_plot[idx].setLabel("left", "Energy (" + str(Units.energy) + ")")
-                    self.graphicviews_plot[idx].setLimits(yMin=self.minE[idx])
-                    self.graphicviews_plot[idx].setLimits(yMax=self.maxE[idx])
-
-                    # set up step axis
-                    if (idx in [0, 1] and constEField and not constBField) or (
-                        idx == 2 and constDistance and not constBField
-                    ):
-                        self.xAxis[idx] = "B"
-                        self.graphicviews_plot[idx].setLabel("bottom", "Magnetic field (" + str(Units.bfield) + ")")
-                        # Quantity(1, Units.au_bfield).toUU().magnitude
-                        self.converter_x[idx] = 1
-                        posMin = self.get1DPosition(
-                            [
-                                self.systemdict["minBx"].magnitude,
-                                self.systemdict["minBy"].magnitude,
-                                self.systemdict["minBz"].magnitude,
-                            ]
-                        )
-                        posMax = self.get1DPosition(
-                            [
-                                self.systemdict["maxBx"].magnitude,
-                                self.systemdict["maxBy"].magnitude,
-                                self.systemdict["maxBz"].magnitude,
-                            ]
-                        )
-                    elif (idx in [0, 1]) or (idx == 2 and constDistance and not constEField):
-                        self.xAxis[idx] = "E"
-                        self.graphicviews_plot[idx].setLabel("bottom", "Electric field (" + str(Units.efield) + ")")
-                        # Quantity(1, Units.au_efield).toUU().magnitude
-                        self.converter_x[idx] = 1
-                        posMin = self.get1DPosition(
-                            [
-                                self.systemdict["minEx"].magnitude,
-                                self.systemdict["minEy"].magnitude,
-                                self.systemdict["minEz"].magnitude,
-                            ]
-                        )
-                        posMax = self.get1DPosition(
-                            [
-                                self.systemdict["maxEx"].magnitude,
-                                self.systemdict["maxEy"].magnitude,
-                                self.systemdict["maxEz"].magnitude,
-                            ]
-                        )
-                    elif idx == 2:
-                        self.xAxis[idx] = "R"
-                        self.graphicviews_plot[idx].setLabel(
-                            "bottom", "Interatomic distance (" + str(Units.length) + ")"
-                        )
-                        # Quantity(1, Units.au_length).toUU().magnitude
-                        self.converter_x[idx] = 1
-                        posMin = self.systemdict["minR"].magnitude
-                        posMax = self.systemdict["maxR"].magnitude
-
-                    self.leftSmallerRight[idx] = posMin < posMax
-
-                    # enable / disable auto range
-                    if self.ui.checkbox_plot_autorange.isChecked():
-                        self.graphicviews_plot[idx].enableAutoRange()
-                    else:
-                        if not self.manualRangeX[idx]:
-                            self.graphicviews_plot[idx].setXRange(posMin, posMax)
-                        if not self.manualRangeY[idx] and self.minE[idx] is not None and self.maxE[idx] is not None:
-                            self.graphicviews_plot[idx].setYRange(self.minE[idx], self.maxE[idx])
-
-                    # clear variables
-                    self.linesSelected[idx] = 0
-                    self.linesData[idx] = []
-                    self.linesX[idx] = {}
-                    self.linesY[idx] = {}
-                    self.linesO[idx] = {}
-                    self.linesSender[idx] = None
-
-                # Quantity(1, Units.au_energy).toUU().magnitude
-                self.converter_y = 1
-
-                # save configuration to json file
-                with open(self.path_conf, "w") as f:
-                    if self.senderbutton == self.ui.pushbutton_potential_calc:
-                        keys = self.systemdict.keys_for_cprogram_potential
-                        button_id = 2
-                    elif self.samebasis:
-                        keys = self.systemdict.keys_for_cprogram_field12
-                        button_id = 3
-                    elif self.senderbutton == self.ui.pushbutton_field1_calc:
-                        keys = self.systemdict.keys_for_cprogram_field1
-                        button_id = 0
-                    elif self.senderbutton == self.ui.pushbutton_field2_calc:
-                        keys = self.systemdict.keys_for_cprogram_field2
-                        button_id = 1
-
-                    params = {k: self.systemdict[k].toUU().magnitude for k in keys}
-                    params["button_id"] = button_id
-
-                    if self.senderbutton == self.ui.pushbutton_potential_calc:
-                        params["zerotheta"] = self.angle == 0
-
-                    if params["deltaNSingle"] < 0:
-                        params["deltaNSingle"] = NO_RESTRICTIONS
-                    if params["deltaLSingle"] < 0:
-                        params["deltaLSingle"] = NO_RESTRICTIONS
-                    if params["deltaJSingle"] < 0:
-                        params["deltaJSingle"] = NO_RESTRICTIONS
-                    if params["deltaMSingle"] < 0:
-                        params["deltaMSingle"] = NO_RESTRICTIONS
-
-                    if (
-                        self.senderbutton == self.ui.pushbutton_potential_calc
-                        and self.ui.radiobutton_system_pairbasisSame.isChecked()
-                    ):
-                        params["deltaNPair"] = NO_RESTRICTIONS
-                        params["deltaLPair"] = NO_RESTRICTIONS
-                        params["deltaJPair"] = NO_RESTRICTIONS
-                        params["deltaMPair"] = NO_RESTRICTIONS
-
-                    if self.angle != 0:
-                        arrlabels = [
-                            ["minEx", "minEy", "minEz"],
-                            ["maxEx", "maxEy", "maxEz"],
-                            ["minBx", "minBy", "minBz"],
-                            ["maxBx", "maxBy", "maxBz"],
-                        ]
-                        rotator = np.array(
-                            [
-                                [np.cos(self.angle), 0, -np.sin(self.angle)],
-                                [0, 1, 0],
-                                [np.sin(self.angle), 0, np.cos(self.angle)],
-                            ]
-                        )
-
-                        for labels in arrlabels:
-                            fields = np.array([[params[label]] for label in labels])
-                            fields = np.dot(rotator, fields).flatten()
-                            for field, label in zip(fields, labels):
-                                params[label] = field
-
-                    """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or \
-                        params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or \
-                        params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
-                        params["conserveM"] = False
-                    else:
-                        params["conserveM"] = True
-
-                    if (self.senderbutton == self.ui.pushbutton_potential_calc and \
-                        params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 \
-                        or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 \
-                        or params["maxEz"] != 0:
-                        params["conserveParityL"] = False
-                    else:
-                        params["conserveParityL"] = True"""
-
-                    # TODO make quantities of None type accessible without
-                    # .magnitude
-
-                    # TODO remove this hack
-                    if self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 3:
-                        params["dd"] = True
-                        params["dq"] = False
-                        params["qq"] = False
-                    # TODO remove this hack
-                    elif self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 2:
-                        params["dd"] = False
-                        params["dq"] = False
-                        params["qq"] = False
-                    else:  # TODO remove this hack
-                        params["dd"] = True
-                        params["dq"] = True
-                        params["qq"] = True
-
-                    json.dump(params, f, indent=4, sort_keys=True)
-
-                # start c++ process
-                if params["minEy"] != 0 or params["maxEy"] != 0 or params["minBy"] != 0 or params["maxBy"] != 0:
-                    path_cpp = self.path_cpp_complex
+                """if self.angle != 0 or params["minEx"] != 0 or params["minEy"] != 0 or \
+                    params["maxEx"] != 0 or params["maxEy"] != 0 or params["minBx"] != 0 or \
+                    params["minBy"] != 0 or params["maxBx"] != 0 or params["maxBy"] != 0:
+                    params["conserveM"] = False
                 else:
-                    path_cpp = self.path_cpp_real
+                    params["conserveM"] = True
 
-                if os.name == "nt":
-                    path_cpp += ".exe"
+                if (self.senderbutton == self.ui.pushbutton_potential_calc and \
+                    params["exponent"] > 3) or params["minEx"] != 0 or params["minEy"] != 0 \
+                    or params["minEz"] != 0 or params["maxEx"] != 0 or params["maxEy"] != 0 \
+                    or params["maxEz"] != 0:
+                    params["conserveParityL"] = False
+                else:
+                    params["conserveParityL"] = True"""
 
-                self.numprocessors = self.systemdict["cores"].magnitude
+                # TODO make quantities of None type accessible without
+                # .magnitude
+
+                # TODO remove this hack
+                if self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 3:
+                    params["dd"] = True
+                    params["dq"] = False
+                    params["qq"] = False
+                # TODO remove this hack
+                elif self.senderbutton == self.ui.pushbutton_potential_calc and params["exponent"] == 2:
+                    params["dd"] = False
+                    params["dq"] = False
+                    params["qq"] = False
+                else:  # TODO remove this hack
+                    params["dd"] = True
+                    params["dq"] = True
+                    params["qq"] = True
+
+                json.dump(params, f, indent=4, sort_keys=True)
+
+            # start c++ process
+            if params["minEy"] != 0 or params["maxEy"] != 0 or params["minBy"] != 0 or params["maxBy"] != 0:
+                path_cpp = self.path_cpp_complex
+            else:
+                path_cpp = self.path_cpp_real
+
+            if os.name == "nt":
+                path_cpp += ".exe"
+
+            if self.ui.checkbox_use_python_api.isChecked():
+                paths = {
+                    "path_conf": self.path_conf,
+                    "path_cache": self.path_cache,
+                    "path_workingdir": self.path_workingdir,
+                }
+                self.pipyThread = pipyThread(self.allQueues, paths)
+                self.pipyThread.start()
+            else:
                 # OMP_NUM_THREADS – Specifies the number of threads to
                 # use in parallel regions.  The value of this variable
                 # shall be a comma-separated list of positive
                 # integers; the value specified the number of threads
                 # to use for the corresponding nested level.  If
                 # undefined one thread per CPU is used.
+                omp_before = os.environ.pop("OMP_NUM_THREADS", 1)
                 omp_threads = {} if self.numprocessors == 0 else {"OMP_NUM_THREADS": str(self.numprocessors)}
                 other_threads = {"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
-                python_threads = {"NUM_PROCESSES": str(self.numprocessors), "OMP_NUM_THREADS": "1"}
+                self.proc = subprocess.Popen(
+                    [path_cpp, "-c", self.path_conf, "-o", self.path_cache],
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    cwd=self.path_workingdir,
+                    env=dict(os.environ, **other_threads, **omp_threads),
+                )
+                self.readThread = Worker(self.allQueues)
+                self.readThread.criticalsignal.connect(self.showCriticalMessage)
+                self.readThread.execute(self.proc.stdout)
+                os.environ["OMP_NUM_THREADS"] = omp_before
 
-                if self.ui.checkbox_use_python_api.isChecked():
-                    path_python = os.path.join(self.path_base, "start_pipy.py")
-                    self.proc = subprocess.Popen(
-                        [sys.executable, path_python, "--run_gui", "-c", self.path_conf, "-o", self.path_cache],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        cwd=self.path_workingdir,
-                        env=dict(os.environ, **python_threads, **other_threads),
-                    )
-                else:
-                    self.proc = subprocess.Popen(
-                        [path_cpp, "-c", self.path_conf, "-o", self.path_cache],
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.STDOUT,
-                        cwd=self.path_workingdir,
-                        env=dict(os.environ, **omp_threads, **other_threads),
-                    )
-
-                self.starttime = time()
-
-                # start thread that collects the output
-                self.thread.execute(self.proc.stdout)
-
-                # start timer used for processing the results
-                self.timer.start(0)
-
-        else:
-            self.abortCalculation()
+            # start timer used for processing the results
+            self.timer.start(0)
+            self.starttime = time()
 
     @QtCore.pyqtSlot()
     def saveResult(self):
@@ -3320,6 +3287,9 @@ class MainWindow(QtWidgets.QMainWindow):
             if len(data["eigenvalues"]) > 0:
                 data["numSteps"] = len(data["eigenvalues"])
                 data["numEigenvectors"] = len(data["eigenvalues"][0])
+
+            if len(data["eigenvalues"]) == 0:
+                print("WARNING: Save data, although no eigenvalues were found.")
 
             if self.ui.radiobutton_system_quantizationZ.isChecked() and self.angle != 0:
 
@@ -4181,6 +4151,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Close everything
         super().closeEvent(event)
+
+    def threadIsRunning(self):
+        if self.pipyThread is not None:
+            return self.pipyThread.isRunning()
+        elif self.readThread is not None and self.proc is not None:
+            return self.proc.poll() is None or self.readThread.isRunning()
+        else:
+            print("WARNING: threadIsRunning() called but no thread is running, return False")
+            return False
 
 
 def main():

@@ -14,25 +14,21 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
+import os
+import time
 from queue import Queue
 
-from PyQt5 import QtCore
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtCore import QThread
 
 
-class Worker(QtCore.QThread):
-    criticalsignal = QtCore.pyqtSignal(str)
+class Worker(QThread):
+    criticalsignal = pyqtSignal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, allQueues, parent=None):
         super().__init__(parent)
+        self.allQueues = allQueues
         self.exiting = False
-        self.samebasis = False
-        self.message = ""
-        self.basisfiles_field1 = []
-        self.basisfiles_field2 = []
-        self.basisfiles_potential = []
-        self.dataqueue_field1 = Queue()
-        self.dataqueue_field2 = Queue()
-        self.dataqueue_potential = Queue()
 
     def __del__(self):
         self.exiting = True
@@ -42,117 +38,139 @@ class Worker(QtCore.QThread):
         self.stdout = stdout
         self.start()
 
-    def clear(self):
-        with self.dataqueue_field1.mutex:
-            self.dataqueue_field1.queue.clear()
-        with self.dataqueue_field2.mutex:
-            self.dataqueue_field2.queue.clear()
-        with self.dataqueue_potential.mutex:
-            self.dataqueue_potential.queue.clear()
-
     def run(self):
-        finishedgracefully = False
-
-        self.message = ""
-
-        # Clear filenames
-        self.basisfiles_field1 = []
-        self.basisfiles_field2 = []
-        self.basisfiles_potential = []
-
-        # Clear data queue
-        with self.dataqueue_field1.mutex:
-            self.dataqueue_field1.queue.clear()
-        with self.dataqueue_field2.mutex:
-            self.dataqueue_field2.queue.clear()
-        with self.dataqueue_potential.mutex:
-            self.dataqueue_potential.queue.clear()
-
-        # Parse stdout
-        dim = 0
-        _type = 0
-        current = 0
-        total = 0
-
-        status_type = ""
-        status_progress = ""
+        self.exiting = False
 
         for line in iter(self.stdout.readline, b""):
-            if isinstance(line, str):
-                line = line.encode("utf-8")
-
-            if self.exiting or not line:
+            if self.exiting or not line or self.allQueues.finishedgracefully:
                 break
-
-            elif line[:5] == b">>TYP":
-                _type = int(line[5:12].decode("utf-8"))
-                status_type = [
-                    "Field map of first atom: ",
-                    "Field map of second atom: ",
-                    "Pair potential: ",
-                    "Field maps: ",
-                ][_type]
-                status_progress = "construct matrices"
-
-                if _type == 3:
-                    self.samebasis = True
-                elif _type == 0 or _type == 1:
-                    self.samebasis = False
-
-            elif line[:5] == b">>BAS":
-                basissize = int(line[5:12].decode("utf-8"))
-                status_progress = f"construct matrices using {basissize} basis vectors"
-
-            elif line[:5] == b">>STA":
-                filename = line[6:-1].decode("utf-8").strip()
-                if _type == 0 or _type == 3:
-                    self.basisfiles_field1.append(filename)
-                elif _type == 1:
-                    self.basisfiles_field2.append(filename)
-                elif _type == 2:
-                    self.basisfiles_potential.append(filename)
-
-            elif line[:5] == b">>TOT":
-                total = int(line[5:12].decode("utf-8"))
-                current = 0
-
-            elif line[:5] == b">>DIM":
-                dim = int(line[5:12])
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total
-                )
-
-            elif line[:5] == b">>OUT":
-                current += 1
-                status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                    dim, dim, current, total
-                )
-
-                filestep = int(line[12:19].decode("utf-8"))
-                blocks = int(line[19:26].decode("utf-8"))
-                blocknumber = int(line[26:33].decode("utf-8"))
-                filename = line[34:-1].decode("utf-8").strip()
-
-                if _type == 0 or _type == 3:
-                    self.dataqueue_field1.put([filestep, blocks, blocknumber, filename])
-                elif _type == 1:
-                    self.dataqueue_field2.put([filestep, blocks, blocknumber, filename])
-                elif _type == 2:
-                    self.dataqueue_potential.put([filestep, blocks, blocknumber, filename])
-
-            elif line[:5] == b">>ERR":
-                self.criticalsignal.emit(line[5:].decode("utf-8").strip())
-
-            elif line[:5] == b">>END":
-                finishedgracefully = True
-                break
-
-            else:
-                print(line.decode("utf-8"), end="")
-
-            self.message = status_type + status_progress
+            self.allQueues.processOneLine(line)
 
         # Clear data queue if thread has aborted
-        if not finishedgracefully:
-            self.clear()
-        self.stdout.close()
+        if not self.allQueues.finishedgracefully:
+            self.allQueues.clear()
+        if self.stdout is not None:
+            self.stdout.close()
+
+
+class pipyThread(QThread):
+    def __init__(self, allQueues, paths, parent=None):
+        super().__init__(parent)
+        self.allQueues = allQueues
+        self.paths = paths
+        self.kwargs = {"printFunction": self.emit}
+        from pairinteraction_gui.pairinteraction import start_pipy
+
+        self.start_pipy = start_pipy
+
+    def run(self):
+        self.start_pipy.main(self.paths, self.kwargs)
+
+    def emit(self, msg):
+        self.allQueues.processOneLine(msg)
+
+    def terminate(self):
+        # FIXME this is not the cleanest way, maybe using multiprocessing.manager/event/value would be better
+        # but also might be slower and introduces bugs, where the gui does not close, althoug the terminal terminated
+        current_time = time.time()
+
+        pool = self.kwargs.get("pool", None)
+        if pool is not None:
+            pool.terminate()
+            pool.join()
+
+        super().terminate()
+        self.wait()
+
+        # delete files, that where changed during pool.terminate was called
+        for real_complex in ["real", "complex"]:
+            pathCacheMatrix = os.path.join(self.paths["path_cache"], f"cache_matrix_{real_complex}_new")
+            if not os.path.isdir(pathCacheMatrix):
+                continue
+            for fn in os.listdir(pathCacheMatrix):
+                f = os.path.join(pathCacheMatrix, fn)
+                if not os.path.isfile(f):
+                    continue
+                if current_time < os.path.getmtime(f):
+                    os.remove(f)
+
+        atom = self.kwargs.get("atom", None)
+        if atom is not None:
+            atom.delete()
+
+
+class allQueuesClass:
+    def __init__(self):
+        self.dataqueues = [Queue(), Queue(), Queue()]  # field1, field2, potential
+        self.clear()
+
+    def clear(self):
+        self.basisfiles = [[], [], []]  # field1, field2, potential
+        self.dataqueues = [Queue(), Queue(), Queue()]  # field1, field2, potential
+
+        # Parse stdout
+        self.dim = 0
+        self._type = 0
+        self.current = 0
+        self.total = 0
+
+        self.message = ""
+        self.status_type = ""
+        self.status_progress = ""
+
+        self.finishedgracefully = False
+
+    def processOneLine(self, line):
+        if isinstance(line, bytes):
+            line = line.decode("utf-8")
+
+        if line[:5] == ">>TYP":
+            self._type = int(line[5:12])
+            self.status_type = [
+                "Field map of first atom: ",
+                "Field map of second atom: ",
+                "Pair potential: ",
+                "Field maps: ",
+            ][self._type]
+            self.status_progress = "construct matrices"
+
+        elif line[:5] == ">>BAS":
+            basissize = int(line[5:12])
+            self.status_progress = f"construct matrices using {basissize} basis vectors"
+
+        elif line[:5] == ">>STA":
+            filename = line[6:-1].strip()
+            self.basisfiles[self._type % 3].append(filename)
+
+        elif line[:5] == ">>TOT":
+            self.total = int(line[5:12])
+            self.current = 0
+
+        elif line[:5] == ">>DIM":
+            self.dim = int(line[5:12])
+            self.status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
+                self.dim, self.dim, self.current, self.total
+            )
+
+        elif line[:5] == ">>OUT":
+            self.current += 1
+            self.status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
+                self.dim, self.dim, self.current, self.total
+            )
+
+            filestep = int(line[12:19])
+            blocks = int(line[19:26])
+            blocknumber = int(line[26:33])
+            filename = line[34:-1].strip()
+            self.dataqueues[self._type % 3].put([filestep, blocks, blocknumber, filename])
+
+        elif line[:5] == ">>ERR":
+            self.criticalsignal.emit(line[5:].strip())
+
+        elif line[:5] == ">>END":
+            self.finishedgracefully = True
+
+        else:
+            print(line, end="")
+
+        self.message = self.status_type + self.status_progress

@@ -15,7 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-import pairinteraction_gui.pairinteraction.app as app
 
 if __name__ == "__main__":
+    # import here, such that spawned windows workers do not import it again
+    import pairinteraction_gui.pairinteraction.app as app
+
     app.main()

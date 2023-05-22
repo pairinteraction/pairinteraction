@@ -1,6 +1,5 @@
 """The main function will be called by the pairinteraction GUI to start the calculation.
 """
-import argparse
 import itertools
 import json
 import multiprocessing
@@ -11,101 +10,135 @@ import tempfile
 
 import numpy as np
 
+
+# FIXME we should use from pairinteraction_gui import pipy here,
+# however, this will lead to bugs in the pyinstall on mac and windows
+# probably you have to fix this by adapting cmake and/or the .spec file
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
 import pipy  # noqa
 
 
-def main(args):
+def main(paths, kwargs):
+    kwargs.setdefault("printFunction", lambda msg: print(msg, flush=True, end=""))
+
+    path_conf, path_cache = paths["path_conf"], paths["path_cache"]
     # Load params from conf.json file
-    with open(args.path_config) as f:
+    with open(path_conf) as f:
         conf = json.load(f)
 
     # convert conf to settings and save as settings.json
-    settings = conf_to_settings(conf, args.path_cache)
-    with open(args.path_config.replace("conf.json", "settings.json"), "w") as f:
+    settings = conf_to_settings(conf, path_cache)
+    with open(path_conf.replace("conf.json", "settings.json"), "w") as f:
         json.dump(settings, f, indent=4)
 
     # start the calculation
     config = settings["config"]
     scriptoptions = settings["scriptoptions"]
-    output(f"{'>>TYP':5}{settings['button_id']:7}")
-    output(f"{'>>TOT':5}{scriptoptions['numBlocks']*scriptoptions['listoptions']['steps']:7}")
+    output(f"{'>>TYP':5}{settings['button_id']:7}", kwargs)
+    output(f"{'>>TOT':5}{scriptoptions['numBlocks']*scriptoptions['listoptions']['steps']:7}", kwargs)
     if config["nAtoms"] == 2:
         for bn, syms in enumerate(scriptoptions["symmetries_list"]):
             config.update(syms)
             settings["blocknumber"] = bn
-            do_simulations(settings)
+            do_simulations(settings, kwargs)
     else:
         settings["blocknumber"] = 1
-        do_simulations(settings)
-    info("all Hamiltonias processed")
-    output(f"{'>>END':5}")
+        do_simulations(settings, kwargs)
+    info("all Hamiltonian processed", kwargs)
+    output(f"{'>>END':5}", kwargs)
 
 
-def do_simulations(settings, pass_atom="direct"):
-    # TODO decide, wether pass_atom direct or path is better (faster, memory efficient,...)
-    # probably direct is better for the current way of implementing the parallelization
-    # also if path we need to pickle the objects, which on some os leeds to problems
-    param_list = get_param_list(settings)
-    ip_list = list(range(len(param_list)))
+def do_simulations(settings, kwargs, pass_atom="direct&delete", context="default"):
+    assert context in ["default", "fork", "spawn", "forkserver"]
+    assert pass_atom in ["direct", "path", "direct&delete", "path&delete", "config"]
 
-    atom = pipy.atom_from_config(settings["config"])
-    info(f"construct {atom}", atom.config)
+    kwargs["atom"] = atom = pipy.atom_from_config(settings["config"])
+    info(f"construct {atom}", kwargs)
 
+    # create and save atom basis
     if atom.nAtoms == 2:
         allQunumbers = [[*qns[:, 0], *qns[:, 1]] for qns in np.array(atom.allQunumbers)]
     else:
         allQunumbers = atom.allQunumbers
-    info(f"basis size with restrictions: {len(allQunumbers)}", atom.config)
-
+    info(f"basis size with restrictions: {len(allQunumbers)}", kwargs)
     _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{atom.config.toHash()}"
     path_tmp = tempfile.gettempdir()
     path_basis = os.path.join(path_tmp, f"basis_{_name}_blocknumber_{settings['blocknumber']}.csv")
     basis = np.insert(allQunumbers, 0, np.arange(len(allQunumbers)), axis=1)
     np.savetxt(path_basis, basis, delimiter="\t", fmt=["%d"] + ["%d", "%d", "%.1f", "%.1f"] * atom.nAtoms)
-    info(f"save {type(atom).__name__} basis", atom.config)
-    output(f"{'>>BAS':5}{len(basis):7}")
-    output(f"{'>>STA':5} {path_basis} ")
+    info(f"save {type(atom).__name__} basis", kwargs)
+    output(f"{'>>BAS':5}{len(basis):7}", kwargs)
+    output(f"{'>>STA':5} {path_basis} ", kwargs)
 
-    if not getattr(atom, "preCalculate", False):
-        info("precalculate matrix elements", atom.config)
-        atom.system.buildInteraction()
-        atom.preCalculate = True
+    # precalculate matrix elements
+    param_list = get_param_list(settings)
+    info("precalculate matrix elements", kwargs)
+    # make sure also interactions are precalculated (distance must be not None) and all fields, that might occur
+    atom.updateFromParams(param_list[0])
+    atom.system.buildInteraction()
+    atom.updateFromParams(param_list[-1])
+    atom.system.buildInteraction()
 
-    if pass_atom == "direct":
+    # Decide how to pass the atom to the subprocesses
+    if "delete" in pass_atom:
+        atom.delete()  # delete the cpp object, so it is not pickled
+    if "direct" in pass_atom:
         config = {"atom": atom}
-    elif pass_atom == "path":
+    elif "path" in pass_atom:
         atom_path = path_basis.replace("basis_", "atom_").replace(".csv", ".pkl")
         with open(atom_path, "wb") as file:
             pickle.dump(atom, file)
         config = {"atom_path": atom_path}
-    else:
-        config = settings["config"]
+    elif pass_atom == "config":
+        config = atom.config.toOutDict()
 
-    global p_one_run
+    # Some definitions for the multiprocessing
+    ip_list = list(range(len(param_list)))
+    run_kwargs = {"config": config, "param_list": param_list}
+    dict_list = [(ip, run_kwargs) for ip in ip_list]
 
-    def p_one_run(ip):
-        return one_run(config, param_list, ip)
+    global P_ONE_RUN
+
+    def P_ONE_RUN(ip):
+        return one_run(ip, config, param_list)
 
     num_pr = settings.get("runtimeoptions", {}).get("NUM_PROCESSES", 1)
     num_pr = os.cpu_count() if num_pr in [0, -1] else num_pr
 
+    # The actual calculation
     if num_pr > 1:
-        with multiprocessing.Pool(num_pr) as pool:
-            results = pool.imap_unordered(p_one_run, ip_list)
-            for result in results:
-                print_completed(settings, result)
+        if context == "default":
+            kwargs["pool"] = pool = multiprocessing.Pool(num_pr)
+        elif context in ["fork", "spawn", "forkserver"]:
+            kwargs["pool"] = pool = multiprocessing.get_context(context).Pool(
+                num_pr
+            )  # mimic windows behaviour with spawn
+        if pool._ctx.get_start_method() == "fork":
+            results = pool.imap_unordered(P_ONE_RUN, ip_list)
+        else:  # this is slower on linux and sometimes had weird bugs when aborting calculation
+            results = pool.imap_unordered(one_run_dict, dict_list)
+        for result in results:
+            print_completed(settings, result, kwargs)
+        pool.terminate()  # equivalent to with pool
     else:
         for i in ip_list:
-            result = p_one_run(i)
-            print_completed(settings, result)
+            result = P_ONE_RUN(i)
+            print_completed(settings, result, kwargs)
 
+    # Clean up
+    atom.delete()
+    del kwargs["atom"]
     if "atom_path" in config:
         os.remove(config["atom_path"])
 
 
-def one_run(config, param_list, ip):
+def one_run_dict(args):
+    ip, run_kwargs = args
+    return one_run(ip, **run_kwargs)
+
+
+def one_run(ip, config, param_list):
     # get default Atom from config (either given, load it or newly construct it)
     if "atom" in config:
         atom = config["atom"]
@@ -124,8 +157,9 @@ def one_run(config, param_list, ip):
     os.makedirs(pathCacheMatrix, exist_ok=True)
     _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{config.toHash()}"
     filename = os.path.join(pathCacheMatrix, _name + ".pkl")
+    filename_json = os.path.join(pathCacheMatrix, _name + ".json")
 
-    if not os.path.exists(filename):
+    if not os.path.exists(filename) or not os.path.exists(filename_json):
         atom.calcEnergies()
         energies0 = config.getEnergiesPair() if atom.nAtoms == 2 else config.getEnergiesSingle()
         data = {
@@ -133,15 +167,14 @@ def one_run(config, param_list, ip):
             "basis": atom.vectors,
             "params": config.toOutDict(),
         }
-        info(f"{ip+1}. Hamiltonian diagonalized ({dimension}x{dimension})", atom.config)
 
+        print(f"{ip+1}. Hamiltonian diagonalized ({dimension}x{dimension}) ({multiprocessing.current_process().name})")
         with open(filename, "wb") as f:
             pickle.dump(data, f)
-        filename_json = os.path.join(pathCacheMatrix, _name + ".json")
         with open(filename_json, "w") as f:
             json.dump(data["params"], f, indent=4)
     else:
-        info(f"{ip+1}. Hamiltonian loaded", atom.config)
+        print(f"{ip+1}. Hamiltonian loaded")
 
     result = {
         "ip": ip,
@@ -169,12 +202,13 @@ def get_param_list(settings):
     return param_list
 
 
-def print_completed(settings, result):
-    output(f"{'>>DIM':5}{result['dimension']:7}")
+def print_completed(settings, result, kwargs):
+    output(f"{'>>DIM':5}{result['dimension']:7}", kwargs)
     numBlocks = settings["scriptoptions"]["numBlocks"]
     totalstep = 1 + result["ip"] * numBlocks + settings["blocknumber"]
     output(
-        f"{'>>OUT':5}{totalstep:7}{result['ip']:7}{numBlocks:7}" f"{settings['blocknumber']:7} {result['filename']} "
+        f"{'>>OUT':5}{totalstep:7}{result['ip']:7}{numBlocks:7}" f"{settings['blocknumber']:7} {result['filename']} ",
+        kwargs,
     )
 
 
@@ -233,7 +267,7 @@ def conf_to_settings(conf, pathCache):
     else:
         symmetries_list = [{k: False for k in ["inversion", "permutation", "reflection"]}]
 
-    runtimeoptions = {"NUM_PROCESSES": int(os.environ.get("NUM_PROCESSES", 0))}
+    runtimeoptions = {"NUM_PROCESSES": int(conf.get("NUM_PROCESSES", 0))}
 
     # touch unimportant options
     for k in ["dd", "dq", "qq", "missingWhittaker", "precision", "zerotheta"]:
@@ -252,30 +286,16 @@ def conf_to_settings(conf, pathCache):
     return settings
 
 
-def output(x):
-    print(x, flush=True)
+def output(msg, kwargs):
+    printFunction = kwargs["printFunction"]
+    printFunction(msg + "\n")
 
 
-def info(x, config=None):
-    if config is None:
-        print(x, flush=True)
-        return
-    pi = "pireal" if config.isReal() else "picomplex"
-    no = "One-atom" if config.nAtoms() == 1 else "Two-atom"
-    msg = f"{pi}: {no} Hamiltonian, {x}"
-    print(msg, flush=True)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Scripts")
-    parser.add_argument("--run_gui", action="store_true", help="Use this only to run a calculation from the GUI!")
-    parser.add_argument("-c", "--path_config", type=str, help="Path to the config.")
-    parser.add_argument("-o", "--path_cache", type=str, help="Path to the cache.")
-    args = parser.parse_args()
-
-    if args.run_gui:
-        main(args)
-    else:
-        raise ValueError(
-            "For now this script can only be called from the GUI and there is no other use calling this script!"
-        )
+def info(msg, kwargs):
+    printFunction = kwargs["printFunction"]
+    atom = kwargs.get("atom", None)
+    if atom is not None:
+        pi = "pireal" if atom.config.isReal() else "picomplex"
+        no = "One-atom" if atom.config.nAtoms() == 1 else "Two-atom"
+        msg = f"{pi}: {no} Hamiltonian, {msg}"
+    printFunction(msg + "\n")
