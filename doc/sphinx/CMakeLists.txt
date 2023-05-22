@@ -63,7 +63,7 @@ add_custom_target(sphinx
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${SPHINX_HTML_DIR}"
   VERBATIM
-  DEPENDS _pireal
+  DEPENDS _binding
   COMMENT "Building HTML documentation with Sphinx")
 
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_cpp/
@@ -84,7 +84,7 @@ add_custom_target(livehtml
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${SPHINX_HTML_DIR}"
   VERBATIM
-  DEPENDS _pireal
+  DEPENDS _binding
   COMMENT "Show a live preview of the documentation with Sphinx")
 
 set_target_properties(livehtml PROPERTIES EXCLUDE_FROM_ALL ON)

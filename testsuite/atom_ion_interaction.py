@@ -7,10 +7,10 @@ class AtomIonInteractionTest(unittest.TestCase):
     def test_atom_ion_monopole_dipole(self):
         cache = pi.MatrixElementCache()
 
-        # Set up SystemOneReal
+        # Set up SystemOne
         state = pi.StateOne("Rb", 45, 1, 1.5, 0.5)
-        system = pi.SystemOneReal(state.getSpecies(), cache)
-        system = pi.SystemOneReal(state.getSpecies(), cache)
+        system = pi.SystemOne(state.getSpecies(), cache)
+        system = pi.SystemOne(state.getSpecies(), cache)
         system.restrictEnergy(state.getEnergy() - 100, state.getEnergy() + 100)
         system.restrictN(42, 48)
         system.restrictM(0.5, 0.5)

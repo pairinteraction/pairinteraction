@@ -21,7 +21,7 @@ cache = pi.MatrixElementCache("./cache")
 
 
 def setup_system_one(bfield):
-    system_one = pi.SystemOneReal(state_one.getSpecies(), cache)
+    system_one = pi.SystemOne(state_one.getSpecies(), cache)
     system_one.restrictEnergy(state_one.getEnergy() - 100, state_one.getEnergy() + 100)
     system_one.restrictN(state_one.getN() - 2, state_one.getN() + 2)
     system_one.restrictL(state_one.getL() - 2, state_one.getL() + 2)
@@ -30,7 +30,7 @@ def setup_system_one(bfield):
 
 
 def setup_system_two(system_one, angle):
-    system_two = pi.SystemTwoReal(system_one, system_one, cache)
+    system_two = pi.SystemTwo(system_one, system_one, cache)
     system_two.restrictEnergy(state_two.getEnergy() - 5, state_two.getEnergy() + 5)
     system_two.setDistance(10)
     system_two.setAngle(angle)

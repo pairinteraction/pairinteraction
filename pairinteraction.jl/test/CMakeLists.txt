@@ -34,7 +34,7 @@ function(JULIA_TEST)
     PROPERTIES ENVIRONMENT "JULIA_LOAD_PATH=${CMAKE_BINARY_DIR}/pairinteraction.jl/src/:")
 endfunction()
 
-add_dependencies(check pireal_jl)
+add_dependencies(check pairinteraction_jl)
 julia_test(TARGET field_combination SOURCE test_field_combination.jl)
 julia_test(TARGET green_tensor SOURCE test_green_tensor.jl)
 julia_test(TARGET pair_state SOURCE test_pair_state.jl)

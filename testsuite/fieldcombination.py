@@ -7,8 +7,8 @@ class FieldCombinationTest(unittest.TestCase):
     def test_combined_fields(self):
         cache = pi.MatrixElementCache()
 
-        # Set up SystemOneReal
-        system_one = pi.SystemOneReal("Rb", cache)
+        # Set up SystemOne
+        system_one = pi.SystemOne("Rb", cache)
         system_one.restrictEnergy(-1077.243011609127, -939.9554235203701)
         system_one.restrictN(57, 63)
         system_one.restrictL(0, 3)

@@ -1,5 +1,5 @@
 // -*- C -*-  (not really, but good for syntax highlighting)
-%module(docstring="Backend for @DATATYPE@ matrices") pi@DATATYPE@
+%module(docstring="Python interface for pairinteraction") binding
 
 %{
 #define SWIG_FILE_WITH_INIT
@@ -300,8 +300,3 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 %template(SystemTwoComplex) SystemTwo<std::complex<double>>;
 %template(SystemOneReal) SystemOne<double>;
 %template(SystemTwoReal) SystemTwo<double>;
-
-%pythoncode %{
-  SystemOne = SystemOneComplex
-  SystemTwo = SystemTwoComplex
-%}

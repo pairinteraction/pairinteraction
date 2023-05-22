@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from pairinteraction import pireal as pi
+from pairinteraction import picomplex as pi
 
 
 class RotationTest(unittest.TestCase):

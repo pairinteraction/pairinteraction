@@ -29,7 +29,7 @@ setup(
     ]),
     package_data = {
         "pairinteraction" : [
-            "_pireal.so",
+            "_binding.so",
             "pairinteraction-backend-deprecated",
             "databases/quantum_defects.db"
         ],

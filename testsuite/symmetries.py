@@ -5,7 +5,7 @@ from itertools import product
 
 import numpy as np
 
-from pairinteraction import pireal as pi
+from pairinteraction import picomplex as pi
 
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):

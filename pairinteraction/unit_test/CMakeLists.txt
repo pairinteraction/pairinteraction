@@ -29,7 +29,7 @@ function(UNIT_TEST)
   add_executable(${UT_TARGET} ${UT_SOURCE})
   target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
   set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
-  target_link_libraries(${UT_TARGET} PRIVATE pireal doctest::doctest)
+  target_link_libraries(${UT_TARGET} PRIVATE pairinteraction doctest::doctest)
   target_copy_mkl_dlls(${UT_TARGET})
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
