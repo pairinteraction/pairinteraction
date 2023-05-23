@@ -202,7 +202,7 @@ additionally need
 
 .. code-block:: none
 
-    python3-pint python3-psutil python3-pyqt5.qtsvg
+    python3-pint python3-pyqt5.qtsvg
 
 Build Instructions
 """"""""""""""""""
@@ -239,7 +239,7 @@ Afterwards you can start the program from the build directory
     $ ./pairinteraction
 
 For the GUI to work, you need Python3 with the packages ``numpy``,
-``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
+``scipy``, ``pint``, and ``pyqt5``.
 
 In order to use the pairinteraction Python 3 library,
 you have to add the build directory to the Python package search path. The pairinteraction C++
@@ -269,7 +269,7 @@ additionally need
 
 .. code-block:: none
 
-    python3-psutil python3-pip
+    python3-pip
 
 The package manager ``pip`` is needed to install the ``pint`` package
 which we also need
@@ -313,7 +313,7 @@ Afterwards you can start the program from the build directory
     $ ./pairinteraction
 
 For the GUI to work, you need Python3 with the packages ``numpy``,
-``scipy``, ``pint``, ``psutil``, and ``pyqt5``.
+``scipy``, ``pint``, and ``pyqt5``.
 
 In order to use the pairinteraction Python 3 library,
 you have to add the build directory to the Python package search path. The pairinteraction C++
@@ -338,7 +338,7 @@ packages have to be installed
 
 .. code-block:: none
 
-    pint psutil pyqt numpy scipy
+    pint pyqt numpy scipy
 
 .. _Miniconda: https://conda.io/miniconda.html
 .. _Anaconda: https://www.anaconda.com/distribution/

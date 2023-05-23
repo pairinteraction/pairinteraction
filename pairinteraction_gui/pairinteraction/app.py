@@ -32,8 +32,6 @@ from io import StringIO
 from operator import itemgetter
 from time import time
 
-import psutil
-
 # Process information
 
 # GUI
@@ -1102,11 +1100,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.statusbar.showMessage(self.thread.message + ", elapsed time " + elapsedtime)
         else:
             self.ui.statusbar.showMessage("Elapsed time " + elapsedtime)
-
-        # === check if memory consumption is to high ===
-        if psutil.virtual_memory().percent > 99:  # TODO: is the virtual or swap memory the problem on rqo-donkey?
-            self.abortCalculation()
-            QtWidgets.QMessageBox.critical(self, "Message", "The program has run out of memory.")
 
         # === process field and potential maps ===
 

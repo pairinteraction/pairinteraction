@@ -37,10 +37,6 @@ the individual licenses apply.
 * Pint (https://github.com/hgrecco/pint)
     Copyright (c) 2012 by Hernan E. Grecco and contributors
     Pint license, https://github.com/hgrecco/pint/blob/master/LICENSE
-
-* psutil (https://github.com/giampaolo/psutil)
-    Copyright (c) 2009, Jay Loden, Dave Daeschler, Giampaolo Rodola'
-    The 3-Clause BSD License, https://opensource.org/licenses/BSD-3-Clause
   
 * Anaconda (https://www.continuum.io/anaconda)
     Copyright (c) 2016, Continuum Analytics, Inc.

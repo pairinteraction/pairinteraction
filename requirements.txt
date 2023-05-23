@@ -1,6 +1,5 @@
 numpy~=1.22.3
 pint~=0.19.2
-psutil~=5.9.0
 pyinstaller~=5.0.1
 pyqt5~=5.15.6
 pyqtgraph~=0.12.4
