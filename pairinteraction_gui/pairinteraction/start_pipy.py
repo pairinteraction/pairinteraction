@@ -82,7 +82,11 @@ def do_simulations(settings, kwargs, pass_atom="direct&delete", context="default
 
     # Decide how to pass the atom to the subprocesses
     if "delete" in pass_atom:
-        atom.delete()  # delete the cpp object, so it is not pickled
+        atom.delete()
+        # delete the cpp object, so it is not pickled and let the subprocess recreate them
+        # Ideally, each subprocess recreates it just once. This seems to work for forked processes,
+        # however for spawned processes, the recreation happens for each run - even if the same SpawnPoolWorker is used
+        # Why is the state of the "Atom" object not stored in the spawned processes? # FIXME
     if "direct" in pass_atom:
         config = {"atom": atom}
     elif "path" in pass_atom:

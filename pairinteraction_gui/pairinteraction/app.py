@@ -15,61 +15,89 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 # Standard library
-import json
-import locale
-import multiprocessing
-import os
-import pickle
-import shutil
-import signal
-import subprocess
-import sys
-import webbrowser
-import zipfile
-from datetime import datetime
-from datetime import timedelta
-from io import BytesIO
-from io import StringIO
-from operator import itemgetter
-from time import time
+import itertools
+import threading
+from time import sleep
 
-# Process information
 
-# GUI
-try:
-    from PyQt5 import QtCore, QtGui, QtWidgets
-    from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-except ImportError:
-    raise ImportError(
-        "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
-        "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
-        "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'."
+# Loading animation in the command line
+class LoadingAnimation:
+    def __init__(self, text, delay=0.05):
+        self.text = text
+        self.delay = delay
+
+    def __enter__(self):
+        self.done = False
+        self.t = threading.Thread(target=self._animate)
+        self.t.start()
+
+    def __exit__(self, *args):
+        self.done = True
+        self.t.join()
+
+    def _animate(self):
+        for c in itertools.cycle(["|", "/", "-", "\\"]):
+            if self.done:
+                break
+            print("\r" + self.text + " " + c, flush=True, end="")
+            sleep(self.delay)
+        print("\r" + self.text + " " + "Done!", flush=True)
+
+
+# Imports
+with LoadingAnimation("Import Modules..."):
+    import json
+    import locale
+    import os
+    import pickle
+    import shutil
+    import signal
+    import subprocess
+    import sys
+    import webbrowser
+    import zipfile
+    from datetime import datetime
+    from datetime import timedelta
+    from io import BytesIO
+    from io import StringIO
+    from operator import itemgetter
+    from time import time
+
+    # GUI
+    try:
+        from PyQt5 import QtCore, QtGui, QtWidgets
+        from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
+    except ImportError:
+        raise ImportError(
+            "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
+            "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
+            "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'."
+        )
+
+    import pyqtgraph as pg
+    from pyqtgraph import exporters
+    from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
+
+    # Numerics
+    import numpy as np
+    from scipy import sparse
+    from scipy.ndimage.filters import gaussian_filter
+    from scipy import io
+
+    # Own classes
+    from pairinteraction_gui.pairinteraction.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
+    from pairinteraction_gui.pairinteraction.unitmanagement import Quantity, Units
+    from pairinteraction_gui.pairinteraction.guiadditions import (
+        GuiDict,
+        DoubledeltaValidator,
+        DoublenoneValidator,
+        DoublepositiveValidator,
+        DoubleValidator,
     )
-
-import pyqtgraph as pg
-from pyqtgraph import exporters
-from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
-
-# Numerics
-import numpy as np
-from scipy import sparse
-from scipy.ndimage.filters import gaussian_filter
-from scipy import io
-
-# Own classes
-from pairinteraction_gui.pairinteraction.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
-from pairinteraction_gui.pairinteraction.unitmanagement import Quantity, Units
-from pairinteraction_gui.pairinteraction.guiadditions import (
-    GuiDict,
-    DoubledeltaValidator,
-    DoublenoneValidator,
-    DoublepositiveValidator,
-    DoubleValidator,
-)
-from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
-from pairinteraction_gui.pairinteraction.worker import Worker, pipyThread, allQueuesClass
-from pairinteraction_gui.pairinteraction.loader import Eigensystem
-from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
+    from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
+    from pairinteraction_gui.pairinteraction.worker import Worker, pipyThread, allQueuesClass
+    from pairinteraction_gui.pairinteraction.loader import Eigensystem
+    from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
 
 if getattr(sys, "frozen", False):
     sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
@@ -78,9 +106,6 @@ else:
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-
-# Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
-multiprocessing.freeze_support()
 
 # Global configurations of pyqtgraph
 pg.setConfigOption("background", "w")
@@ -93,6 +118,7 @@ SPIN_DICT = {"Li": 0.5, "Na": 0.5, "K": 0.5, "Rb": 0.5, "Cs": 0.5, "Sr1": 0, "Sr
 PLOT_ALL = -99  # FIXME: extend spinbox to allow for None
 NO_RESTRICTIONS = -1  # FIXME: extend spinbox to allow for None
 NO_BN = -1
+
 
 # === Dictionary to manage the elements of the GUI related to the plotter ===
 
@@ -448,7 +474,9 @@ class MainWindow(QtWidgets.QMainWindow):
             pg.graphicsItems.GradientEditorItem.Gradients[k]["ticks"] = mapticks
 
         self.ui = Ui_plotwindow()
-        self.ui.setupUi(self)
+
+        with LoadingAnimation("Setup UI..."):
+            self.ui.setupUi(self)
 
         self.invalidQuantumnumbers = {}
         self.invalidQuantumnumbersMessage = ""
@@ -616,8 +644,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.manualRangeX = [False, False, False]
         self.manualRangeY = [False, False, False]
 
-        self.printer = QPrinter(QPrinter.HighResolution)
-        self.printer.setPageMargins(20, 15, 20, 20, QPrinter.Millimeter)
+        self.printer = None
 
         self.momentslabels = ["S", "P", "D", "F"]
 
@@ -3571,6 +3598,11 @@ class MainWindow(QtWidgets.QMainWindow):
                         self.plotdict["m2"].magnitude,
                     ]
                 )
+
+        if self.printer is None:
+            with LoadingAnimation("Create printer..."):
+                self.printer = QPrinter(QPrinter.HighResolution)
+                self.printer.setPageMargins(20, 15, 20, 20, QPrinter.Millimeter)
 
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_() == QPrintDialog.Accepted:

@@ -366,16 +366,18 @@ class AtomOne(Atom):
             "Bfield": Bfield != config.Bfield(),
         }
 
-        if update["Efield"]:
-            config.setEfield(Efield, "")
-            self.system.setEfield(config.Efield())
-        if update["Bfield"]:
-            config.setBfield(Bfield, "")
-            self.system.setBfield(config.Bfield())
-
         if any(update.values()):
             self.energies, self.overlaps, self.vectors = None, None, None
+
+            if update["Efield"]:
+                config.setEfield(Efield, "")
+                self.system.setEfield(config.Efield())
+            if update["Bfield"]:
+                config.setBfield(Bfield, "")
+                self.system.setBfield(config.Bfield())
+
             return True
+
         return False
 
 
@@ -513,35 +515,37 @@ class AtomTwo(Atom):
             if k in new:
                 update[k] = new[k] != getattr(config, k)()
 
-        if update.get("angle", False):
-            config.setAngle(new["angle"])
-            self.system.setAngle(config.angle())
-        if update.get("distance", False):
-            config.setDistance(new["distance"])
-            self.system.setDistance(config.distance())
-        for sym in ["inversion", "permutation", "reflection"]:
-            if update.get(sym, False):
-                config.setSymmetry(sym, new[sym])
-
-        if any(update.get(k, False) for k in ["atom1", "atom2"]):
-            # for now we have to build the system again, because internal SystemTwo makes a copy of the SystemOne's ...
-            # and therefore by updatind the SystemOne's it does not update the SystemTwo
-            logger.warning(
-                "AtomTwo updating the E/B field. This will update the AtomOne's, "
-                "and has to recalculate the system (but will not change the basis!). Sure you want to do this?"
-            )
-        if any(update.get(k, False) for k in ["inversion", "permutation", "reflection"]):
-            logger.warning(
-                "AtomTwo updating a symmetry. This will update the basis and recalculates the system! "
-                "Sure you want to do this?"
-            )
-
-        if any(update.get(k, False) for k in ["atom1", "atom2", "inversion", "permutation", "reflection"]):
-            self._createSystem()
-
         if any(update.values()):
             self.energies, self.overlaps, self.vectors = None, None, None
+
+            if update.get("angle", False):
+                config.setAngle(new["angle"])
+                self.system.setAngle(config.angle())
+            if update.get("distance", False):
+                config.setDistance(new["distance"])
+                self.system.setDistance(config.distance())
+            for sym in ["inversion", "permutation", "reflection"]:
+                if update.get(sym, False):
+                    config.setSymmetry(sym, new[sym])
+
+            if any(update.get(k, False) for k in ["atom1", "atom2"]):
+                # for now we have to build the system again, because internal SystemTwo makes a copy of
+                # the SystemOne's... and therefore by updatind the SystemOne's it does not update the SystemTwo
+                logger.warning(
+                    "AtomTwo updating the E/B field. This will update the AtomOne's, "
+                    "and has to recalculate the system (but will not change the basis!). Sure you want to do this?"
+                )
+            if any(update.get(k, False) for k in ["inversion", "permutation", "reflection"]):
+                logger.warning(
+                    "AtomTwo updating a symmetry. This will update the basis and recalculates the system! "
+                    "Sure you want to do this?"
+                )
+
+            if any(update.get(k, False) for k in ["atom1", "atom2", "inversion", "permutation", "reflection"]):
+                self._createSystem()
+
             return True
+
         return False
 
     def delete(self):

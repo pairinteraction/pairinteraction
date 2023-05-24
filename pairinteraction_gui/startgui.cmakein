@@ -17,7 +17,11 @@
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 
 if __name__ == "__main__":
-    # import here, such that spawned windows workers do not import it again
+    # Import here, such that spawned windows workers do not import it again
     import pairinteraction_gui.pairinteraction.app as app
+    import multiprocessing
+
+    # Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
+    multiprocessing.freeze_support()
 
     app.main()
