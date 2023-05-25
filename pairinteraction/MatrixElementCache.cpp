@@ -18,6 +18,8 @@
  */
 
 #include "MatrixElementCache.hpp"
+
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
 #include "SQLite.hpp"
 #include "filesystem.hpp"

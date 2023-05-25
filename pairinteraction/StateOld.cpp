@@ -18,8 +18,8 @@
  */
 
 #include "StateOld.hpp"
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
-#include "dtypes.hpp"
 
 #include <array>
 #include <cctype>

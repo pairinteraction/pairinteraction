@@ -20,14 +20,10 @@
 #ifndef SYSTEMBASE_H
 #define SYSTEMBASE_H
 
-#include "MatrixElementCache.hpp"
 #include "State.hpp"
-#include "WignerD.hpp"
-#include "dtypes.hpp"
 #include "serialization_eigen.hpp"
 #include "serialization_path.hpp"
 #include "utils.hpp"
-#include <unsupported/Eigen/MatrixFunctions>
 
 #include <boost/multi_index/hashed_index.hpp>
 #include <boost/multi_index/member.hpp>
@@ -46,17 +42,10 @@
 #include <boost/serialization/vector.hpp>
 #include <complex>
 #include <functional>
-#include <iterator>
-#include <limits>
-#include <memory>
-#include <numeric>
 #include <set>
-#include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <utility>
 #include <vector>
+
+class MatrixElementCache;
 
 template <class T>
 class enumerated_state {

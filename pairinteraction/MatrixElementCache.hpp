@@ -23,7 +23,6 @@
 #include "Basisnames.hpp"
 #include "State.hpp"
 #include "Wavefunction.hpp"
-#include "dtypes.hpp"
 #include "utils.hpp"
 
 // clang-format off
@@ -43,6 +42,11 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+
+enum method_t {
+    NUMEROV = 0,
+    WHITTAKER = 1,
+};
 
 class StateOne;
 class StateTwo;

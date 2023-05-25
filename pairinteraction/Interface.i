@@ -4,15 +4,16 @@
 %{
 #define SWIG_FILE_WITH_INIT
 
-#include "dtypes.hpp"
+#include "Constants.hpp"
 #include "Interface.hpp"
+#include "MatrixElementCache.hpp"
+#include "PerturbativeInteraction.hpp"
 #include "QuantumDefect.hpp"
 #include "State.hpp"
+#include "Symmetry.hpp"
 #include "SystemOne.hpp"
 #include "SystemTwo.hpp"
 #include "Wavefunction.hpp"
-#include "MatrixElementCache.hpp"
-#include "PerturbativeInteraction.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -174,9 +175,10 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 %rename(__lt__) operator<;
-%include "dtypes.hpp"
 
+%include "Constants.hpp"
 %include "Interface.hpp"
+%include "Symmetry.hpp"
 
 %template(computeComplex) compute<std::complex<double>>;
 %template(computeReal) compute<double>;

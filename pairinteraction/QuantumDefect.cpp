@@ -18,6 +18,8 @@
  */
 
 #include "QuantumDefect.hpp"
+#include "Cache.hpp"
+#include "Constants.hpp"
 #include "EmbeddedDatabase.hpp"
 #include "SQLite.hpp"
 

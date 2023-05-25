@@ -18,6 +18,7 @@
  */
 
 #include "Wavefunction.hpp"
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
 
 #include "EigenCompat.hpp"

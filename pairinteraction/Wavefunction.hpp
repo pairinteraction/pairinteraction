@@ -21,7 +21,6 @@
 #define WAVEFUNCTION_H
 
 #include "QuantumDefect.hpp"
-#include "dtypes.hpp"
 
 #include "EigenCompat.hpp"
 #include <Eigen/Core>

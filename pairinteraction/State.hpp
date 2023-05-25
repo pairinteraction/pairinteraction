@@ -20,15 +20,12 @@
 #ifndef STATE_H
 #define STATE_H
 
-#include "MatrixElementCache.hpp"
-#include "dtypes.hpp"
 #include "utils.hpp"
 
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <string>
-#include <typeinfo>
 
 // clang-format off
 #if __has_include (<boost/serialization/version.hpp>)

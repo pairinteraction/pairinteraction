@@ -18,8 +18,13 @@
  */
 
 #include "MatrixElements.hpp"
+
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
 #include "SQLite.hpp"
+
+#include <fmt/format.h>
+
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -27,8 +32,6 @@
 #include <stdexcept>
 #include <string>
 #include <utility>
-
-#include <fmt/format.h>
 
 bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2, int q) {
     bool validL = state1.l == state2.l;

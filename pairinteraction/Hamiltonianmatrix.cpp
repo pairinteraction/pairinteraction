@@ -18,12 +18,13 @@
  */
 
 #include "Hamiltonianmatrix.hpp"
-#include <stdexcept>
 
 #include "EigenCompat.hpp"
 #include <Eigen/Core>
 #include <Eigen/Eigenvalues>
 #include <fmt/format.h>
+
+#include <stdexcept>
 
 template <typename Scalar>
 Hamiltonianmatrix<Scalar>::Hamiltonianmatrix() = default;

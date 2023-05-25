@@ -18,9 +18,12 @@
  */
 
 #include "PerturbativeInteraction.hpp"
+#include "Constants.hpp"
 
 #include "EigenCompat.hpp"
 #include <Eigen/Core>
+
+#include "Constants.hpp"
 
 #include <unordered_set>
 

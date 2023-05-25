@@ -23,7 +23,7 @@
 #include "Basisnames.hpp"
 #include "Serializable.hpp"
 #include "StateOld.hpp"
-#include "dtypes.hpp"
+#include "Symmetry.hpp"
 #include "utils.hpp"
 
 #include "EigenCompat.hpp"
@@ -36,6 +36,8 @@
 #include <memory>
 #include <stdexcept>
 #include <vector>
+
+typedef double storage_double;
 
 const uint8_t csr_not_csc = 0x01;      // xxx0: csc, xxx1: csr
 const uint8_t complex_not_real = 0x02; // xx0x: real, xx1x: complex

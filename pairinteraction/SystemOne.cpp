@@ -18,7 +18,9 @@
  */
 
 #include "SystemOne.hpp"
-#include "dtypes.hpp"
+#include "Constants.hpp"
+#include "MatrixElementCache.hpp"
+#include "Symmetry.hpp"
 
 #include <cctype>
 #include <cmath>

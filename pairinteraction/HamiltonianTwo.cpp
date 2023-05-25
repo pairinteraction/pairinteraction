@@ -19,6 +19,8 @@
 
 #include "HamiltonianTwo.hpp"
 
+#include "Constants.hpp"
+
 #include <fmt/format.h>
 
 #include <stdexcept>

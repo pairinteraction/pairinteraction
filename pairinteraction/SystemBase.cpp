@@ -18,6 +18,7 @@
  */
 
 #include "SystemBase.hpp"
+#include "Symmetry.hpp"
 
 #include "EigenCompat.hpp"
 #include <Eigen/Geometry>

@@ -21,7 +21,9 @@
 #define SYSTEMONE_H
 
 #include "State.hpp"
+#include "Symmetry.hpp"
 #include "SystemBase.hpp"
+#include "WignerD.hpp"
 #include "utils.hpp"
 
 #include <array>
@@ -37,7 +39,6 @@
 #include <boost/serialization/unordered_map.hpp>
 #include <cmath>
 #include <set>
-#include <type_traits>
 #include <unordered_map>
 
 template <typename Scalar_>

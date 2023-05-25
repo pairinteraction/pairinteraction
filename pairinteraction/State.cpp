@@ -18,8 +18,9 @@
  */
 
 #include "State.hpp"
+#include "Constants.hpp"
+#include "MatrixElementCache.hpp"
 #include "QuantumDefect.hpp"
-#include "dtypes.hpp"
 #include "utils.hpp"
 
 #include <array>
