@@ -20,6 +20,9 @@
 #include "Hamiltonianmatrix.hpp"
 #include <stdexcept>
 
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
+#include <Eigen/Eigenvalues>
 #include <fmt/format.h>
 
 template <typename Scalar>

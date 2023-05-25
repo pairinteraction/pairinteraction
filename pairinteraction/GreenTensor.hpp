@@ -20,8 +20,8 @@
 #ifndef GREENTENSOR_H
 #define GREENTENSOR_H
 
-#include "dtypes.hpp"
-
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
 #include <unsupported/Eigen/CXX11/Tensor>
 
 #include <cmath>

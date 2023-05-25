@@ -20,6 +20,9 @@
 #include "Wavefunction.hpp"
 #include "QuantumDefect.hpp"
 
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
+
 #include <cctype>
 #include <cmath>
 #ifdef WITH_GSL

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.15 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)

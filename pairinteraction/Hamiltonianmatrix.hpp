@@ -26,6 +26,9 @@
 #include "dtypes.hpp"
 #include "utils.hpp"
 
+#include "EigenCompat.hpp"
+#include <Eigen/SparseCore>
+
 #include <cmath>
 #include <cstdint>
 #include <cstdio>

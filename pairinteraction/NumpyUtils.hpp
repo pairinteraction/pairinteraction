@@ -30,6 +30,7 @@
 #include <stdexcept>
 #include <tuple>
 
+#include "EigenCompat.hpp"
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 

@@ -33,21 +33,6 @@ typedef int32_t storage_idx_t;
 typedef uint8_t byte_t;
 typedef std::vector<byte_t> bytes_t;
 
-// Backport template aliases to older Eigen versions
-// https://eigen.tuxfamily.org/dox/group__matrixtypedefs.html
-#if !EIGEN_VERSION_AT_LEAST(3, 4, 0)
-namespace Eigen {
-template <typename Type>
-using MatrixX = Matrix<Type, Dynamic, Dynamic>;
-template <typename Type>
-using VectorX = Matrix<Type, Dynamic, 1>;
-template <typename Type>
-using Matrix3 = Matrix<Type, 3, 3>;
-template <typename Type>
-using Vector3 = Matrix<Type, 3, 1>;
-} // namespace Eigen
-#endif
-
 constexpr const double au2GHz = 6579683.920757349;
 constexpr const double au2Vcm = 5142206707.0;
 constexpr const double au2G = 2350517550.0;

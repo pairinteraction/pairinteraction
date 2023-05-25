@@ -19,6 +19,9 @@
 
 #include "PerturbativeInteraction.hpp"
 
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
+
 #include <unordered_set>
 
 PerturbativeInteraction::PerturbativeInteraction(MatrixElementCache &cache) : cache(cache) {

@@ -24,7 +24,8 @@
 #include "SystemBase.hpp"
 #include "SystemOne.hpp"
 
-#include <Eigen/Sparse>
+#include "EigenCompat.hpp"
+#include <Eigen/SparseCore>
 #include <boost/math/special_functions/binomial.hpp>
 // clang-format off
 #if __has_include (<boost/serialization/version.hpp>)

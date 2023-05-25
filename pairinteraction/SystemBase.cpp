@@ -19,6 +19,10 @@
 
 #include "SystemBase.hpp"
 
+#include "EigenCompat.hpp"
+#include <Eigen/Geometry>
+#include <unsupported/Eigen/MatrixFunctions>
+
 #include <numeric>
 
 #ifdef WITH_INTEL_MKL

@@ -17,7 +17,8 @@
  * along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <Eigen/Sparse>
+#include "EigenCompat.hpp"
+#include <Eigen/SparseCore>
 
 #include "MatrixElementCache.hpp"
 #include "State.hpp"

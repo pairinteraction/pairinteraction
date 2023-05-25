@@ -23,6 +23,9 @@
 #include "QuantumDefect.hpp"
 #include "dtypes.hpp"
 
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
+
 #include <cstdio>
 #include <limits>
 #include <string>
