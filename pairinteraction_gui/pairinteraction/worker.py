@@ -14,8 +14,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-import os
-import time
 from queue import Queue
 
 from PyQt5.QtCore import pyqtSignal
@@ -25,9 +23,9 @@ from PyQt5.QtCore import QThread
 class Worker(QThread):
     criticalsignal = pyqtSignal(str)
 
-    def __init__(self, allQueues, parent=None):
+    def __init__(self, all_queues, parent=None):
         super().__init__(parent)
-        self.allQueues = allQueues
+        self.all_queues = all_queues
         self.exiting = False
 
     def __del__(self):
@@ -42,64 +40,18 @@ class Worker(QThread):
         self.exiting = False
 
         for line in iter(self.stdout.readline, b""):
-            if self.exiting or not line or self.allQueues.finishedgracefully:
+            if self.exiting or not line or self.all_queues.finishedgracefully:
                 break
-            self.allQueues.processOneLine(line)
+            self.all_queues.processOneLine(line)
 
         # Clear data queue if thread has aborted
-        if not self.allQueues.finishedgracefully:
-            self.allQueues.clear()
+        if not self.all_queues.finishedgracefully:
+            self.all_queues.clear()
         if self.stdout is not None:
             self.stdout.close()
 
 
-class pipyThread(QThread):
-    def __init__(self, allQueues, paths, parent=None):
-        super().__init__(parent)
-        self.allQueues = allQueues
-        self.paths = paths
-        self.kwargs = {"printFunction": self.emit}
-        from pairinteraction_gui.pairinteraction import pipy_thread
-
-        self.pipy_thread = pipy_thread
-
-    def run(self):
-        self.pipy_thread.main(self.paths, self.kwargs)
-
-    def emit(self, msg):
-        self.allQueues.processOneLine(msg)
-
-    def terminate(self):
-        # FIXME this is not the cleanest way, maybe using multiprocessing.manager/event/value would be better
-        # but also might be slower and introduces bugs, where the gui does not close, althoug the terminal terminated
-        current_time = time.time()
-
-        pool = self.kwargs.get("pool", None)
-        if pool is not None:
-            pool.terminate()
-            pool.join()
-
-        super().terminate()
-        self.wait()
-
-        # delete files, that where changed during pool.terminate was called
-        for real_complex in ["real", "complex"]:
-            pathCacheMatrix = os.path.join(self.paths["path_cache"], f"cache_matrix_{real_complex}_new")
-            if not os.path.isdir(pathCacheMatrix):
-                continue
-            for fn in os.listdir(pathCacheMatrix):
-                f = os.path.join(pathCacheMatrix, fn)
-                if not os.path.isfile(f):
-                    continue
-                if current_time < os.path.getmtime(f):
-                    os.remove(f)
-
-        atom = self.kwargs.get("atom", None)
-        if atom is not None:
-            atom.delete()
-
-
-class allQueuesClass:
+class AllQueues:
     def __init__(self):
         self.dataqueues = [Queue(), Queue(), Queue()]  # field1, field2, potential
         self.clear()

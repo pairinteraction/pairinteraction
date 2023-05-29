@@ -95,7 +95,8 @@ with LoadingAnimation("Import Modules..."):
         DoubleValidator,
     )
     from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
-    from pairinteraction_gui.pairinteraction.worker import Worker, pipyThread, allQueuesClass
+    from pairinteraction_gui.pairinteraction.worker import Worker, AllQueues
+    from pairinteraction_gui.pairinteraction.pipy_thread import PipyThread
     from pairinteraction_gui.pairinteraction.loader import Eigensystem
     from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
 
@@ -565,11 +566,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.path_conf = os.path.join(self.path_config, "conf.json")
         self.path_version = os.path.join(self.path_config, "version.json")
 
+        self.all_queues = AllQueues()
+        self.pipy_thread = None
+        self.read_thread = None
         self.proc = None
-
-        self.allQueues = allQueuesClass()
-        self.readThread = None
-        self.pipyThread = None
 
         self.timer = QtCore.QTimer()
         self.starttime = None
@@ -1115,36 +1115,34 @@ class MainWindow(QtWidgets.QMainWindow):
         if self.proc is not None:
             self.proc.terminate()
             self.proc.wait()
-        if self.readThread is not None:
-            self.readThread.exiting = True
-            self.readThread.wait()
-        if self.pipyThread is not None:
-            self.pipyThread.exiting = True
-            self.pipyThread.terminate()
-            self.pipyThread.wait()
-        self.allQueues.clear()
+            self.proc = None
+        if self.read_thread is not None:
+            self.read_thread.exiting = True
+            self.read_thread.wait()
+            self.read_thread = None
+        if self.pipy_thread is not None:
+            self.pipy_thread.terminate()
+            self.pipy_thread.wait()
+            self.pipy_thread = None
+        self.all_queues.clear()
 
     def cleanupProcesses(self):
         """Cleanup after calculation is finished or stopped."""
         if self.proc is not None:
             self.proc.wait()
-            self.proc = None
-        if self.readThread is not None:
-            self.readThread.wait()
-            self.readThread = None
-        if self.pipyThread is not None:
-            self.pipyThread.wait()
-            # del self.pipyThread
-            self.pipyThread = None
-        self.allQueues.clear()
+        if self.read_thread is not None:
+            self.read_thread.wait()
+        if self.pipy_thread is not None:
+            self.pipy_thread.wait()
+        self.all_queues.clear()
 
     def checkForData(self):
         dataamount = 0
 
         # === print status ===
         elapsedtime = f"{timedelta(seconds=int(time() - self.starttime))}"
-        if self.allQueues.message != "":
-            self.ui.statusbar.showMessage(self.allQueues.message + ", elapsed time " + elapsedtime)
+        if self.all_queues.message != "":
+            self.ui.statusbar.showMessage(self.all_queues.message + ", elapsed time " + elapsedtime)
         else:
             self.ui.statusbar.showMessage("Elapsed time " + elapsedtime)
 
@@ -1153,8 +1151,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if idx is None:
             return
 
-        basisfiles = self.allQueues.basisfiles[idx]
-        dataqueue = self.allQueues.dataqueues[idx]
+        basisfiles = self.all_queues.basisfiles[idx]
+        dataqueue = self.all_queues.dataqueues[idx]
 
         # --- load basis states ---
         while len(basisfiles) > 0:
@@ -1187,7 +1185,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if self.ui.groupbox_plot_overlap.isChecked():
                     # update status bar
                     message_old = self.ui.statusbar.currentMessage()
-                    if idx == 0 and self.allQueues._type == 3:
+                    if idx == 0 and self.all_queues._type == 3:
                         idxtype = 3
                     else:
                         idxtype = idx
@@ -1240,7 +1238,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             else:
                                 stateamount = np.zeros_like(stateidx)
 
-                            if self.allQueues._type == 3 and np.any(
+                            if self.all_queues._type == 3 and np.any(
                                 self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
                             ):
                                 boolarr = self.overlapstate[idx][[4, 5, 6]] != PLOT_ALL
@@ -1292,7 +1290,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 coeff = self.wignerd.calc(j, m2, m1, self.angle)
                                 statecoeff.append(coeff)
                             stateamount = np.zeros_like(stateidx)
-                            if self.allQueues._type == 3 and \
+                            if self.all_queues._type == 3 and \
                                 np.any(self.overlapstate[idx][[0,1,2,3]] != self.overlapstate[idx][[4,5,6,7]]):
                                 stateidx_second = np.where(
                                     np.all(basis[:,[1,2,3]] == self.overlapstate[idx][None,[4,5,6]],axis=-1)
@@ -1418,7 +1416,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                     axis=-1,
                                 )
                             )[0]
-                            if self.allQueues._type == 3 and np.any(
+                            if self.all_queues._type == 3 and np.any(
                                 self.overlapstate[idx][[0, 1, 2, 3]] != self.overlapstate[idx][[4, 5, 6, 7]]
                             ):
                                 boolarr = self.overlapstate[idx][[4, 5, 6, 7]] != PLOT_ALL
@@ -1486,7 +1484,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     nlj = basis[:, [1, 2, 3, 5, 6, 7]]
 
                 # sort pair state names
-                if idx == 2 and self.allQueues._type == 3:
+                if idx == 2 and self.all_queues._type == 3:
                     firstsmaller = np.argmax(
                         np.append(nlj[:, 0:3] < nlj[:, 3:6], np.ones((len(nlj), 1), dtype=bool), axis=-1), axis=-1
                     )  # TODO in Funktion auslagern
@@ -1723,12 +1721,12 @@ class MainWindow(QtWidgets.QMainWindow):
                         if (
                             (idx == 0 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2]]))
                             or (
-                                (idx == 1 or (idx == 0 and self.allQueues._type == 3))
+                                (idx == 1 or (idx == 0 and self.all_queues._type == 3))
                                 and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6]])
                             )
                             or (idx == 2 and np.all(labelstate == self.unperturbedstate[idx][[0, 1, 2, 4, 5, 6]]))
                             or (
-                                (idx == 2 and self.allQueues._type == 3)
+                                (idx == 2 and self.all_queues._type == 3)
                                 and np.all(labelstate == self.unperturbedstate[idx][[4, 5, 6, 0, 1, 2]])
                             )
                         ):
@@ -2305,6 +2303,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Reset status bar
         self.ui.statusbar.showMessage("")
+
+    def createThread(self):
+        if self.ui.checkbox_use_python_api.isChecked():
+            if self.pipy_thread is None:
+                self.pipy_thread = PipyThread(self.all_queues)
+            self.read_thread = None
+        else:
+            self.pipy_thread = None
+            if self.read_thread is None:
+                self.read_thread = Worker(self.all_queues)
+                self.read_thread.criticalsignal.connect(self.showCriticalMessage)
+        self.proc = None
 
     @QtCore.pyqtSlot()
     def fitC3C6(self):
@@ -3047,6 +3057,8 @@ class MainWindow(QtWidgets.QMainWindow):
                     params["dq"] = True
                     params["qq"] = True
 
+                params["pathCache"] = self.path_cache
+                params["pathConf"] = self.path_conf
                 json.dump(params, f, indent=4, sort_keys=True)
 
             # start c++ process
@@ -3058,14 +3070,12 @@ class MainWindow(QtWidgets.QMainWindow):
             if os.name == "nt":
                 path_cpp += ".exe"
 
+            self.createThread()
+
             if self.ui.checkbox_use_python_api.isChecked():
-                paths = {
-                    "path_conf": self.path_conf,
-                    "path_cache": self.path_cache,
-                    "path_workingdir": self.path_workingdir,
-                }
-                self.pipyThread = pipyThread(self.allQueues, paths)
-                self.pipyThread.start()
+                self.pipy_thread.setParams(params)
+                self.pipy_thread.setNumProcesses(self.numprocessors)
+                self.pipy_thread.start()
             else:
                 # OMP_NUM_THREADS – Specifies the number of threads to
                 # use in parallel regions.  The value of this variable
@@ -3083,9 +3093,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     cwd=self.path_workingdir,
                     env=dict(os.environ, **other_threads, **omp_threads),
                 )
-                self.readThread = Worker(self.allQueues)
-                self.readThread.criticalsignal.connect(self.showCriticalMessage)
-                self.readThread.execute(self.proc.stdout)
+                self.read_thread.execute(self.proc.stdout)
                 os.environ["OMP_NUM_THREADS"] = omp_before
 
             # start timer used for processing the results
@@ -4185,13 +4193,14 @@ class MainWindow(QtWidgets.QMainWindow):
         super().closeEvent(event)
 
     def threadIsRunning(self):
-        if self.pipyThread is not None:
-            return self.pipyThread.isRunning()
-        elif self.readThread is not None and self.proc is not None:
-            return self.proc.poll() is None or self.readThread.isRunning()
-        else:
-            print("WARNING: threadIsRunning() called but no thread is running, return False")
-            return False
+        running = []
+        if self.pipy_thread is not None:
+            running.append(self.pipy_thread.isRunning())
+        if self.read_thread is not None:
+            running.append(self.read_thread.isRunning())
+        if self.proc is not None:
+            running.append(self.proc.poll() is None)
+        return any(running)
 
 
 def main():
