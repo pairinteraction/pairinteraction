@@ -59,12 +59,12 @@ class pipyThread(QThread):
         self.allQueues = allQueues
         self.paths = paths
         self.kwargs = {"printFunction": self.emit}
-        from pairinteraction_gui.pairinteraction import start_pipy
+        from pairinteraction_gui.pairinteraction import pipy_thread
 
-        self.start_pipy = start_pipy
+        self.pipy_thread = pipy_thread
 
     def run(self):
-        self.start_pipy.main(self.paths, self.kwargs)
+        self.pipy_thread.main(self.paths, self.kwargs)
 
     def emit(self, msg):
         self.allQueues.processOneLine(msg)
