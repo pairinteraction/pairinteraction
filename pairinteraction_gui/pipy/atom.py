@@ -52,6 +52,7 @@ class Atom:
         self._basisQunumbers = None
         self._allStates = None
         self._allQunumbers = None
+        self._noStates = None
 
         # this will be set when doing calcEnergies and reset to None if the config changes
         self.energies = None
@@ -92,9 +93,19 @@ class Atom:
             self._createBasis()
         return self._allQunumbers
 
+    @property
+    def noStates(self):
+        if self._noStates is None:
+            self.system  # build system, there self._NoStates will be set
+        return self._noStates
+
     def _createBasis(self):
-        self._basisStates = list(self.system.getMainStates())
-        self._allStates = list(self.system.getStates())
+        if self.noStates:
+            self._basisStates = []
+            self._allStates = []
+        else:
+            self._basisStates = list(self.system.getMainStates())
+            self._allStates = list(self.system.getStates())
         basisQunumbers = [(s.getN(), s.getL(), s.getJ(), s.getM()) for s in self._basisStates]
         allQunumbers = [(s.getN(), s.getL(), s.getJ(), s.getM()) for s in self._allStates]
         if self.nAtoms == 2:
@@ -142,17 +153,29 @@ class Atom:
         """
         if self._system is None:
             raise NotImplementedError
+        try:
+            self._system.getNumStates()
+        except RuntimeError as e:
+            if "The basis contains no states." in str(e):
+                logger.warning("WARNING: The basis contains no states.")
+                self._noStates = True
+            else:
+                raise e
         self.logSystem()
 
     def logSystem(self):
         logger.debug(type(self).__name__)
         system = self.system
 
-        logger.debug("Number of basis vectors: %s, %s", system.getNumBasisvectors(), len(system.getMainStates()))
-        # logger.debug("Basisvectors = MainStates keys [:5]: %s", [s.getKey() for s in system.getMainStates()][:5])
+        if self.noStates:
+            logger.debug("Number of basis vectors: noStates")
+            logger.debug("Number of involved states: noStates")
+        else:
+            logger.debug("Number of basis vectors: %s, %s", system.getNumBasisvectors(), len(system.getMainStates()))
+            # logger.debug("Basisvectors = MainStates keys [:5]: %s", [s.getKey() for s in system.getMainStates()][:5])
 
-        logger.debug("Number of involved states: %s, %s", system.getNumStates(), len(system.getStates()))
-        # logger.debug("States keys [:5]: %s", [s.getKey() for s in system.getStates()][:5])
+            logger.debug("Number of involved states: %s, %s", system.getNumStates(), len(system.getStates()))
+            # logger.debug("States keys [:5]: %s", [s.getKey() for s in system.getStates()][:5])
 
     def copySystem(self):
         """Returning a copy of the system."""

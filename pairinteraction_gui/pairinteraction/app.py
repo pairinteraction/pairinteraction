@@ -570,6 +570,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pipy_thread = None
         self.read_thread = None
         self.proc = None
+        self.run_with_pipy = None
 
         self.timer = QtCore.QTimer()
         self.starttime = None
@@ -583,17 +584,6 @@ class MainWindow(QtWidgets.QMainWindow):
             (255 // 5, 255 // 5, 255 // 5),
         ]  # s, p, d, f, other, undetermined
 
-        self.labelprob = None
-        self.labelprob_energy = None
-
-        self.momentummat = [None] * 3
-        self.labelmat = [None] * 3
-        self.labelstates = [None] * 3
-        self.momentumstrings = [None] * 3
-        self.stateidx_field = [{}, {}, {}]
-        self.yMin_field = [None] * 3
-        self.yMax_field = [None] * 3
-
         # fill comboboxes with elements from the quantum defects database
         import sqlite3
 
@@ -604,24 +594,43 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cpp_elements = [e for e in self.all_elements if e not in ["Sr1", "Sr3"]]
         conn.close()
 
+        # dicts with one entry per symmetry block (bn)
+        self.labelprob = {}
+        self.labelprob_energy = {}
         self.buffer_basis = {}
         self.buffer_energies = {}
         self.buffer_positions = {}
         self.buffer_boolarr = {}
-
-        self.buffer_energiesMap = [{}, {}, {}]
-        self.buffer_positionsMap = [{}, {}, {}]
-        self.buffer_overlapMap = [{}, {}, {}]
-
-        self.lines_buffer_minIdx = {}
-        self.colormap_buffer_minIdx_field = [0] * 3
         self.lines_buffer_minIdx_field = {}
-        """self.iSelected = {}"""
 
-        """self.ui.colorbutton_plot_nosym.setColor(self.symmetrycolors[0])
-        self.ui.colorbutton_plot_sym.setColor(self.symmetrycolors[1])
-        self.ui.colorbutton_plot_asym.setColor(self.symmetrycolors[2])"""
+        # lists with one entry per idx
+        self.momentummat = [{}, {}, {}]  # [idx][bn]
+        self.labelmat = [{}, {}, {}]  # [idx][bn]
+        self.labelstates = [{}, {}, {}]  # [idx][bn]
+        self.momentumstrings = [{}, {}, {}]  # [idx][bn]
+        self.yMin_field = [None] * 3
+        self.yMax_field = [None] * 3
+        self.colormap_buffer_minIdx_field = [0] * 3
+        self.manualRangeX = [False, False, False]
+        self.manualRangeY = [False, False, False]
+        self.unperturbedstate = [None, None, None]
+        self.overlapstate = [None, None, None]
+        self.linesSelected = [0, 0, 0]  # [None,None,None] waere auch ok
+        self.linesData = [[], [], []]  # [None,None,None] waere auch ok
+        self.linesSender = [None, None, None]
+        self.storage_data = [[], [], []]  # [idx]
+        self.empty_data = [0, 0, 0]  # [idx]
+        self.storage_states = [{}, {}, {}]  # [idx][bn]
+        self.storage_configuration = [[None, None], [None, None], [None, None]]  # [idx][0: system, 1: plotter]
+        self.stateidx_field = [{}, {}, {}]  # [idx][bn]
+        self.buffer_energiesMap = [{}, {}, {}]  # [idx][filestep]
+        self.buffer_positionsMap = [{}, {}, {}]  # [idx][filestep]
+        self.buffer_overlapMap = [{}, {}, {}]  # [idx][filestep]
+        self.linesX = [{}, {}, {}]  # [idx][bn]
+        self.linesY = [{}, {}, {}]  # [idx][bn]
+        self.linesO = [{}, {}, {}]  # [idx][bn]
 
+        #
         self.ui.colorbutton_plot_invE.setColor((180, 0, 120))
         self.ui.colorbutton_plot_invO.setColor((0, 120, 180))
         self.ui.colorbutton_plot_perE.setColor((180, 60, 60))
@@ -637,26 +646,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.tab_field2 = self.ui.tabwidget_plotter.widget(1)
 
-        self.storage_data = [[], [], []]
-        self.storage_states = [{}, {}, {}]
-        self.storage_configuration = [[None, None], [None, None], [None, None]]
-
-        self.manualRangeX = [False, False, False]
-        self.manualRangeY = [False, False, False]
-
         self.printer = None
 
         self.momentslabels = ["S", "P", "D", "F"]
-
-        self.unperturbedstate = [None, None, None]
-        self.overlapstate = [None, None, None]
-
-        self.linesX = [None, None, None]
-        self.linesY = [None, None, None]
-        self.linesO = [None, None, None]
-        self.linesSelected = [0, 0, 0]  # [None,None,None] waere auch ok
-        self.linesData = [[], [], []]  # [None,None,None] waere auch ok
-        self.linesSender = [None, None, None]
 
         # TODOs
         self.ui.checkbox_system_override.setEnabled(False)
@@ -994,7 +986,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.graphicsview_field1_plot,
             self.ui.graphicsview_field2_plot,
             self.ui.graphicsview_potential_plot,
-        ]
+        ]  # [idx]
 
         for idx in range(3):
             self.graphicviews_plot[idx].setDownsampling(ds=True, auto=True, mode="peak")
@@ -1471,7 +1463,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 # inside a basis element
                 if idx == 0 or idx == 1:
                     momentum = basis[:, 2]
-                    self.momentummat[idx] = sparse.csc_matrix(
+                    self.momentummat[idx][bn] = sparse.csc_matrix(
                         (momentum[:, None] == np.arange(np.max(momentum) + 1)[None, :]).astype(int)
                     )
 
@@ -1500,22 +1492,22 @@ class MainWindow(QtWidgets.QMainWindow):
                 cumsum = np.cumsum(diff)[np.argsort(sorter)]
 
                 # determine labels of states
-                self.labelstates[idx] = nlj[diff]
-                self.labelmat[idx] = sparse.coo_matrix(
+                self.labelstates[idx][bn] = nlj[diff]
+                self.labelmat[idx][bn] = sparse.coo_matrix(
                     (np.ones_like(cumsum), (np.arange(len(cumsum)), cumsum - 1)),
-                    shape=(len(cumsum), len(self.labelstates[idx])),
+                    shape=(len(cumsum), len(self.labelstates[idx][bn])),
                 ).tocsr()  # nStates, nLabels
 
                 # determine labels of momenta
                 if idx == 0 or idx == 1:  # TODO !!!
-                    self.momentumstrings[idx] = [
-                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, 1]) + 1).astype(int)
+                    self.momentumstrings[idx][bn] = [
+                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][bn][:, 1]) + 1).astype(int)
                     ]
                 elif idx == 2:
-                    self.momentumstrings[idx] = [
-                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][:, [1, 4]]) + 1).astype(int)
+                    self.momentumstrings[idx][bn] = [
+                        f" {i}" for i in np.arange(np.max(self.labelstates[idx][bn][:, [1, 4]]) + 1).astype(int)
                     ]
-                self.momentumstrings[idx][:4] = self.momentslabels
+                self.momentumstrings[idx][bn][:4] = self.momentslabels
 
             # remove basis file from hard disk
             os.remove(basisfile)
@@ -1553,6 +1545,12 @@ class MainWindow(QtWidgets.QMainWindow):
             # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
             filestep, numBlocks, blocknumber, filename = dataqueue.get()
 
+            if (
+                blocknumber not in self.storage_states[idx] and self.run_with_pipy
+            ):  # first load basis for this symmetry block
+                dataqueue.put([filestep, numBlocks, blocknumber, filename])
+                break
+
             # save data
             self.storage_data[idx].append([filestep, blocknumber, filename])
 
@@ -1569,7 +1567,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 bn = NO_BN
 
             if len(energies) == 0:
-                print("WARNING: Loaded data does not contain any eigenvalues.")
+                print("Loaded data does not contain any eigenvalues.")
+                self.empty_data[idx] += 1
+                # dont continue, since the "empty" run is needed for the labels
 
             if idx == 2:
                 symmetrycolor = []
@@ -1627,7 +1627,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # --- calculate the momentum that is associated with a basis element ---
             if idx == 0 or idx == 1:
                 # calculate which momenta appear in a basis element
-                momentum_probabilty = probs.T * self.momentummat[idx]  # nBasis, nMomentum
+                momentum_probabilty = probs.T * self.momentummat[idx][bn]  # nBasis, nMomentum
 
                 # keep information about the momentum that appears with
                 # a probability > 0.5 only
@@ -1669,23 +1669,25 @@ class MainWindow(QtWidgets.QMainWindow):
             elif self.xAxis[idx] == "R":
                 position = float(params.get("R", params.get("pair.distance"))) * self.converter_x[idx]
 
-            # --- draw labels at the beginning of the plotting ---
+            # --- draw labels at filestep 0 ---
             if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
 
                 # probability to find a label inside a basis element
-                if not hasattr(self, "labelprob_energy") or self.labelprob_energy is None:
+                if self.labelprob_energy.get(bn, None) is None:
                     # nBasis, nLabels # TODO !!! tocsr
-                    self.labelprob = (probs.T * self.labelmat[idx]).tocsr()
-                    self.labelprob_energy = [energies]
+                    self.labelprob[bn] = (probs.T * self.labelmat[idx][bn]).tocsr()
+                    self.labelprob_energy[bn] = [energies]
                 else:
-                    csr_vappend(self.labelprob, (probs.T * self.labelmat[idx]).tocsr())
-                    self.labelprob_energy.append(energies)
+                    csr_vappend(self.labelprob[bn], (probs.T * self.labelmat[idx][bn]).tocsr())
+                    self.labelprob_energy[bn].append(energies)
 
-                labelprob_num_potential = len(self.labelprob_energy)
-
-                if labelprob_num_potential == numBlocks:
+                if self.run_with_pipy or len(self.labelprob_energy[bn]) == numBlocks:
+                    # FIXME: for the new backend we are plotting the labels for each symmetry block separately
+                    # this leads to plotting the same label multiple times
+                    # The problem is, that for each symmetry block we might have different allowed states
+                    # We need a clever way to still add the probs for the same states of different symmetry blocks
                     # total probability to find a label
-                    cumprob = self.labelprob.sum(axis=0).getA1()
+                    cumprob = self.labelprob[bn].sum(axis=0).getA1()
                     boolarr = cumprob > 0.1
 
                     # normalize in such a way that the total
@@ -1693,12 +1695,12 @@ class MainWindow(QtWidgets.QMainWindow):
                     (idxarr,) = np.nonzero(boolarr)
                     normalizer = sparse.coo_matrix(
                         (1 / cumprob[idxarr], (idxarr, np.arange(len(idxarr)))),
-                        shape=(self.labelprob.shape[1], len(idxarr)),
+                        shape=(self.labelprob[bn].shape[1], len(idxarr)),
                     ).tocsr()
 
                     # store the energetic expectation value of the
                     # labels
-                    labelenergies = (self.labelprob * normalizer).T * np.concatenate(self.labelprob_energy)
+                    labelenergies = (self.labelprob[bn] * normalizer).T * np.concatenate(self.labelprob_energy[bn])
 
                     if len(labelenergies) == 0:
                         continue
@@ -1711,7 +1713,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     alpha = int(round(self.ui.spinbox_plot_transpLabel.value() * 255))
 
                     # draw the labels
-                    for labelstate, labelenergy in zip(self.labelstates[idx][boolarr], labelenergies):
+                    for labelstate, labelenergy in zip(self.labelstates[idx][bn][boolarr], labelenergies):
 
                         if self.leftSmallerRight[idx]:
                             anchorX = 0
@@ -1745,7 +1747,7 @@ class MainWindow(QtWidgets.QMainWindow):
                                 + size
                                 + 'pt;">'
                                 + '<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(
-                                    int(sn), self.momentumstrings[idx][int(sl)]
+                                    int(sn), self.momentumstrings[idx][bn][int(sl)]
                                 )
                                 + size
                                 + f'pt;">{int(2 * sj)}/2</sub></span></div>',
@@ -1759,10 +1761,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                 html='<div style="text-align: center; font-size: '
                                 + size
                                 + 'pt;"><span style="color: rgba(0,0,0,255);">'
-                                + f'{int(sn1)}{self.momentumstrings[idx][int(sl1)]}<sub style="font-size: '
+                                + f'{int(sn1)}{self.momentumstrings[idx][bn][int(sl1)]}<sub style="font-size: '
                                 + size
                                 + f'pt;">{int(2 * sj1)}/2</sub>'
-                                + f' {int(sn2)}{self.momentumstrings[idx][int(sl2)]}<sub style="font-size: '
+                                + f' {int(sn2)}{self.momentumstrings[idx][bn][int(sl2)]}<sub style="font-size: '
                                 + size
                                 + f'pt;">{int(2 * sj2)}/2</sub>'
                                 + "</span></div>",
@@ -2261,7 +2263,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.buffer_positionsMap = [{}, {}, {}]
         self.buffer_overlapMap = [{}, {}, {}]
 
-        self.lines_buffer_minIdx = {}
         self.colormap_buffer_minIdx_field = [0] * 3
         self.lines_buffer_minIdx_field = {}
 
@@ -2270,6 +2271,8 @@ class MainWindow(QtWidgets.QMainWindow):
         # Logging for debugging
         print(f"Total time needed: {time() - self.starttime:.2f} s")
         print(f"Amount of data loaded into gui: {len(self.storage_data[self.current_idx])}")
+        if self.empty_data[self.current_idx] != 0:
+            print(f"From which {self.empty_data[self.current_idx]} was empty data.")
         # Stop this timer
         self.timer.stop()
 
@@ -2288,8 +2291,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.senderbutton.setText("Calculate potential")
 
         self.current_idx = None
-        self.labelprob = None
-        self.labelprob_energy = None
+        self.labelprob = {}
+        self.labelprob_energy = {}
 
         # Toggle antialiasing # HACK
         if self.ui.checkbox_plot_antialiasing.isChecked():
@@ -2651,14 +2654,14 @@ class MainWindow(QtWidgets.QMainWindow):
         s = SPIN_DICT.get(species, 0.5)
 
         err = False
-        is_plot = system == "plot"
-        if l >= n and not (is_plot and PLOT_ALL in [n, l]):
+        qns_is_plot_all = [q == PLOT_ALL for q in qns] if system == "plot" else [False] * 4
+        if not l < n and not any(qns_is_plot_all[:2]):
             err = True
-        elif abs(m) > j and not (is_plot and PLOT_ALL in [j, m]):
+        if not abs(m) <= j and not any(qns_is_plot_all[2:]):
             err = True
-        elif abs(l - j) > s and not (is_plot and PLOT_ALL in [l, j]):
+        if not (abs(l - s) <= j <= l + s) and not any(qns_is_plot_all[1:3]):
             err = True
-        elif (j - s) % 1 != 0 and not (is_plot and PLOT_ALL in [j]):
+        if not ((j + s) % 1 == 0 and (j - s) % 1 == 0) and not qns_is_plot_all[2]:
             err = True
         self.invalidQuantumnumbers[name] = err
 
@@ -2867,6 +2870,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.saveSettingsSystem(filelike_system)
                 self.saveSettingsPlotter(filelike_plotter)
 
+                self.empty_data[idx] = 0
                 self.storage_data[idx] = []
                 self.storage_states[idx] = {}
                 self.storage_configuration[idx] = [filelike_system.getvalue(), filelike_plotter.getvalue()]
@@ -2979,7 +2983,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 params = {k: self.systemdict[k].toUU().magnitude for k in keys}
                 params["button_id"] = button_id
 
-                self.numprocessors = self.systemdict["cores"].magnitude
+                nprc = self.systemdict["cores"].magnitude
+                # set default to number of cores - 1 (leave one core for the GUI/plotting)
+                self.numprocessors = os.cpu_count() - 1 if nprc == 0 else nprc
                 params["NUM_PROCESSES"] = self.numprocessors
 
                 if self.senderbutton == self.ui.pushbutton_potential_calc:
@@ -3073,10 +3079,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self.createThread()
 
             if self.ui.checkbox_use_python_api.isChecked():
+                self.run_with_pipy = True
                 self.pipy_thread.setParams(params)
                 self.pipy_thread.setNumProcesses(self.numprocessors)
                 self.pipy_thread.start()
             else:
+                self.run_with_pipy = False
                 # OMP_NUM_THREADS – Specifies the number of threads to
                 # use in parallel regions.  The value of this variable
                 # shall be a comma-separated list of positive
@@ -4181,7 +4189,6 @@ class MainWindow(QtWidgets.QMainWindow):
         painter.end()"""
 
     def closeEvent(self, event):
-        # Kill c++ program if necessary
         self.abortCalculation()
 
         # Save last settings
