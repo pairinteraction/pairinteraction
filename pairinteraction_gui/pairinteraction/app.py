@@ -15,95 +15,146 @@
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 # Standard library
-import itertools
-import threading
-from time import sleep
+# Import and construct everything inside functions to ensure that
+# spawned processes do not re-execute the code
+import multiprocessing
+import os
+import sys
 
-
-# Loading animation in the command line
-class LoadingAnimation:
-    def __init__(self, text, delay=0.05):
-        self.text = text
-        self.delay = delay
-
-    def __enter__(self):
-        self.done = False
-        self.t = threading.Thread(target=self._animate)
-        self.t.start()
-
-    def __exit__(self, *args):
-        self.done = True
-        self.t.join()
-
-    def _animate(self):
-        for c in itertools.cycle(["|", "/", "-", "\\"]):
-            if self.done:
-                break
-            print("\r" + self.text + " " + c, flush=True, end="")
-            sleep(self.delay)
-        print("\r" + self.text + " " + "Done!", flush=True)
-
-
-# Imports
-with LoadingAnimation("Import Modules..."):
-    import json
-    import locale
-    import os
-    import pickle
-    import shutil
-    import signal
-    import subprocess
-    import sys
-    import webbrowser
-    import zipfile
-    from datetime import datetime
-    from datetime import timedelta
-    from io import BytesIO
-    from io import StringIO
-    from operator import itemgetter
-    from time import time
-
-    # GUI
-    try:
-        from PyQt5 import QtCore, QtGui, QtWidgets
-        from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-    except ImportError:
-        raise ImportError(
-            "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
-            "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
-            "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'."
-        )
-
-    import pyqtgraph as pg
-    from pyqtgraph import exporters
-    from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
-
-    # Numerics
-    import numpy as np
-    from scipy import sparse
-    from scipy.ndimage.filters import gaussian_filter
-    from scipy import io
-
-    # Own classes
-    from pairinteraction_gui.pairinteraction.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
-    from pairinteraction_gui.pairinteraction.unitmanagement import Quantity, Units
-    from pairinteraction_gui.pairinteraction.guiadditions import (
-        GuiDict,
-        DoubledeltaValidator,
-        DoublenoneValidator,
-        DoublepositiveValidator,
-        DoubleValidator,
+try:
+    from PyQt5 import QtCore, QtGui, QtWidgets
+except ImportError:
+    raise ImportError(
+        "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
+        "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
+        "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'."
     )
-    from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
-    from pairinteraction_gui.pairinteraction.worker import Worker, AllQueues
-    from pairinteraction_gui.pairinteraction.pipy_thread import PipyThread
-    from pairinteraction_gui.pairinteraction.loader import Eigensystem
-    from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
 
+# Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
+multiprocessing.freeze_support()
+
+# Disable multithreading in calculations as we parallelize over interatomic distances
+os.environ.update({"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1", "OMP_NUM_THREADS": "1"})
+
+
+###################################################################################
+# Create application
+###################################################################################
+
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    app.setStyle(QtWidgets.QStyleFactory.create("fusion"))
+
+
+###################################################################################
+# Create splash screen
+###################################################################################
+
+
+class SplashScreen(QtWidgets.QSplashScreen):
+    def __init__(self, app):
+        super(QtWidgets.QSplashScreen, self).__init__()
+        self.app = app
+        self.setWindowTitle("Start pairinteraction GUI")
+        self.setWindowFlag(QtCore.Qt.FramelessWindowHint)
+
+        splash_pix = QtGui.QPixmap(270, 320)
+        splash_pix.fill(QtGui.QColor("#2980B9"))
+        painter = QtGui.QPainter(splash_pix)
+        if getattr(sys, "frozen", False):
+            iconpath = os.path.join(sys._MEIPASS, "icon.png")
+        else:
+            iconpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), "icon.png")
+        painter.drawPixmap(10, 10, 250, 250, QtGui.QPixmap(iconpath))
+        del painter
+        self.setPixmap(splash_pix)
+
+        self.labelDescription = QtWidgets.QLabel(self)
+        self.labelDescription.setStyleSheet("color: white;")
+        self.labelDescription.setAlignment(QtCore.Qt.AlignLeft)
+        self.labelDescription.setGeometry(5, splash_pix.height() - 45, splash_pix.width() - 10, 20)
+        self.labelDescription.setText("Start program ...")
+
+        self.progressBar = QtWidgets.QProgressBar(self)
+        self.progressBar.setMaximum(100)
+        self.progressBar.setGeometry(0, splash_pix.height() - 20, splash_pix.width(), 20)
+
+    def progress(self, text, value):
+        print(f"{text:<20s} {value:>3d} %", flush=True)
+        self.labelDescription.setText(text)
+        self.progressBar.setValue(value)
+        self.app.processEvents()
+
+
+if __name__ == "__main__":
+    splash = SplashScreen(app)
+    splash.show()
+
+###################################################################################
+# Import modules and setup global configurations
+###################################################################################
+
+if __name__ == "__main__":
+    splash.progress("Import Modules ...", 0)
+
+import json
+import locale
+import pickle
+import shutil
+import signal
+import subprocess
+import webbrowser
+import zipfile
+from datetime import datetime
+from datetime import timedelta
+from io import BytesIO
+from io import StringIO
+from operator import itemgetter
+from time import time
+
+# GUI
+from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
+import pyqtgraph as pg
+from pyqtgraph import exporters
+from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
+
+if __name__ == "__main__":
+    splash.progress("Import Modules ...", 20)
+
+# Numerics
+import numpy as np
+from scipy import sparse
+from scipy.ndimage import gaussian_filter
+from scipy import io
+
+if __name__ == "__main__":
+    splash.progress("Import Modules ...", 40)
+
+# Own classes
+from pairinteraction_gui.pairinteraction.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
+from pairinteraction_gui.pairinteraction.unitmanagement import Quantity, Units
+from pairinteraction_gui.pairinteraction.guiadditions import (
+    GuiDict,
+    DoubledeltaValidator,
+    DoublenoneValidator,
+    DoublepositiveValidator,
+    DoubleValidator,
+)
+
+from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
+from pairinteraction_gui.pairinteraction.worker import Worker, AllQueues
+from pairinteraction_gui.pairinteraction.pipy_thread import PipyThread
+from pairinteraction_gui.pairinteraction.loader import Eigensystem
+from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
+
+if __name__ == "__main__":
+    splash.progress("Import Modules ...", 80)
+
+# Add directories to the path to ensure that the pairinteraction executable is found
 if getattr(sys, "frozen", False):
-    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(sys.executable)), ".."))
+    sys.path.append(os.path.join(sys._MEIPASS, ".."))
 else:
-    sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), ".."))
+    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -120,8 +171,9 @@ PLOT_ALL = -99  # FIXME: extend spinbox to allow for None
 NO_RESTRICTIONS = -1  # FIXME: extend spinbox to allow for None
 NO_BN = -1
 
-
-# === Dictionary to manage the elements of the GUI related to the plotter ===
+###################################################################################
+# Define dictionary to manage the elements of the GUI related to the plotter
+###################################################################################
 
 
 class PlotDict(GuiDict):
@@ -162,7 +214,9 @@ class PlotDict(GuiDict):
         store["autorange"] = {"widget": ui.checkbox_plot_autorange, "unit": None}
 
 
-# === dictionary to manage the elements of the gui related to the system ===
+###################################################################################
+# Define dictionary to manage the elements of the gui related to the system
+###################################################################################
 
 
 class SystemDict(GuiDict):
@@ -385,6 +439,11 @@ class SystemDict(GuiDict):
     ]
 
 
+###################################################################################
+# Define the windows of the application
+###################################################################################
+
+
 class AboutDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -412,7 +471,15 @@ class AboutDialog(QtWidgets.QDialog):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, splash=None):
+
+        if splash is None:
+
+            class SplashScreenMocked:
+                def progress(self, text, value):
+                    print(f"{text:<20s} {value:>3d} %", flush=True)
+
+            self.splash = SplashScreenMocked()
 
         if os.name == "nt":
             ext = ".exe"
@@ -476,8 +543,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui = Ui_plotwindow()
 
-        with LoadingAnimation("Setup UI..."):
-            self.ui.setupUi(self)
+        self.splash.progress("Setup UI ...", 80)
+
+        self.ui.setupUi(self)
+
+        self.splash.progress("Setup UI ...", 100)
 
         self.invalidQuantumnumbers = {}
         self.invalidQuantumnumbersMessage = ""
@@ -651,9 +721,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.momentslabels = ["S", "P", "D", "F"]
 
         # TODOs
-        self.ui.checkbox_system_override.setEnabled(False)
-        self.ui.action_radial_clear.setEnabled(False)
-        # self.ui.spinbox_system_exponent.setMaximum(3)
         self.ui.lineedit_system_precision.hide()
         self.ui.label_system_precision.hide()
 
@@ -886,7 +953,10 @@ class MainWindow(QtWidgets.QMainWindow):
         if not os.path.isfile(self.path_version):
             with open(self.path_version, "w") as f:
                 json.dump(
-                    {"version_settings": version_settings, "version_cache": version_cache}, f, indent=4, sort_keys=True
+                    {"version_settings": version_settings, "version_cache": version_cache},
+                    f,
+                    indent=4,
+                    sort_keys=True,
                 )
 
         if not os.path.exists(self.path_lastsettings):
@@ -2270,9 +2340,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Logging for debugging
         print(f"Total time needed: {time() - self.starttime:.2f} s")
-        print(f"Amount of data loaded into gui: {len(self.storage_data[self.current_idx])}")
-        if self.empty_data[self.current_idx] != 0:
-            print(f"From which {self.empty_data[self.current_idx]} was empty data.")
+        processed_files = len(self.storage_data[self.current_idx]) - self.empty_data[self.current_idx]
+        print(f"Number of processed cache files: {processed_files}")
         # Stop this timer
         self.timer.stop()
 
@@ -3616,9 +3685,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 )
 
         if self.printer is None:
-            with LoadingAnimation("Create printer..."):
-                self.printer = QPrinter(QPrinter.HighResolution)
-                self.printer.setPageMargins(20, 15, 20, 20, QPrinter.Millimeter)
+            print("Create printer ...", flush=True)
+            self.printer = QPrinter(QPrinter.HighResolution)
+            self.printer.setPageMargins(20, 15, 20, 20, QPrinter.Millimeter)
 
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_() == QPrintDialog.Accepted:
@@ -4210,13 +4279,13 @@ class MainWindow(QtWidgets.QMainWindow):
         return any(running)
 
 
-def main():
-    app = QtWidgets.QApplication(sys.argv)
+if __name__ == "__main__":
     form = MainWindow()
     form.show()
+    splash.finish(form)
     rc = app.exec_()
 
-    # Hack to avoid exit crashes
+    # Hack to avoid crashes on exit
     # http://stackoverflow.com/questions/11945183/what-are-good-practices-for-avoiding-crashes-hangs-in-pyqt
     del form
     del app

@@ -37,10 +37,11 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
 
   find_program(PYINSTALLER NAMES pyinstaller)
 
-  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/databases/quantum_defects.db
+  add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/dist/pairinteraction ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/icon.png ${CMAKE_BINARY_DIR}/dist/pairinteraction/pipy ${CMAKE_BINARY_DIR}/dist/pairinteraction/databases/quantum_defects.db
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_BINARY_DIR}/dist/pairinteraction/conf
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction/icon.png ${CMAKE_BINARY_DIR}/dist/pairinteraction/icon.png
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pipy ${CMAKE_BINARY_DIR}/dist/pairinteraction/pipy
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     DEPENDS ${CMAKE_BINARY_DIR}/${STARTGUI} ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction ${CMAKE_CURRENT_SOURCE_DIR}/conf
@@ -71,7 +72,6 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
 
   install(DIRECTORY ${CMAKE_BINARY_DIR}/dist/pairinteraction/. DESTINATION pairinteraction_gui PATTERN "pairinteraction" EXCLUDE)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pairinteraction DESTINATION pairinteraction_gui)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/dist/pairinteraction/pipy DESTINATION pairinteraction_gui)
 
   find_program( FILEICON NAMES fileicon )
   if( FILEICON )

@@ -10,20 +10,21 @@ import unittest
 import zipfile
 
 import numpy as np
-import scipy.io
+from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
-from PyQt5.QtWidgets import QApplication
+from scipy.io import loadmat
 
-import pairinteraction_gui.pairinteraction.app as piGui
+from pairinteraction_gui.pairinteraction.app import MainWindow
 
-app = QApplication(sys.argv)
 PATH = os.path.join("reference_data", "gui")
+
+app = QtWidgets.QApplication(sys.argv)
 
 
 class PairinteractionGuiTest(unittest.TestCase):
     def setUp(self):
-        self.form = piGui.MainWindow()
+        self.form = MainWindow()
         self.form.path_cache = tempfile.mkdtemp()
         self.form.ui.action_sconf_reset.trigger()
         self.form.ui.action_pconf_reset.trigger()
@@ -70,14 +71,14 @@ class PairinteractionGuiTest(unittest.TestCase):
         with zipfile.ZipFile(forceFilename, "r") as zip_file:
             with zip_file.open("data.mat") as f:
                 f_io = io.BytesIO(f.read())
-                data["current"] = scipy.io.loadmat(f_io)
+                data["current"] = loadmat(f_io)
             with zip_file.open("settings.sconf") as f:
                 sconfig["current"] = json.load(f)
         os.remove(forceFilename)
 
         # Load reference data
         with open(os.path.join(PATH, ref_data, "data.mat"), "rb") as f:
-            data["ref"] = scipy.io.loadmat(f)
+            data["ref"] = loadmat(f)
         with open(os.path.join(PATH, ref_data, "settings.sconf")) as f:
             sconfig["ref"] = json.load(f)
 

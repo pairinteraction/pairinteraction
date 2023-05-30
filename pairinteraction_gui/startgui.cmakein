@@ -15,13 +15,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
+import runpy
+
 
 if __name__ == "__main__":
-    # Import here, such that spawned windows workers do not import it again
-    import pairinteraction_gui.pairinteraction.app as app
-    import multiprocessing
 
-    # Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
-    multiprocessing.freeze_support()
-
-    app.main()
+    runpy.run_module("pairinteraction_gui.pairinteraction.app", {}, "__main__")

@@ -1,3 +1,5 @@
 [flake8]
 max-line-length = 120
 extend-ignore = E203, E225, E226, E266, E741
+per-file-ignores =
+    pairinteraction_gui/pairinteraction/app.py:E402

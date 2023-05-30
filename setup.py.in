@@ -33,7 +33,7 @@ setup(
             "pairinteraction-complex", "pairinteraction-real",
             "databases/quantum_defects.db"
         ],
-        "pairinteraction_gui" : [ "conf/example.pconf", "conf/example.sconf" ],
+        "pairinteraction_gui" : [ "conf/example.pconf", "conf/example.sconf", "pairinteraction/icon.png" ],
     },
     scripts = [ "start_pairinteraction_gui" ],
     install_requires = install_requires,
