@@ -116,7 +116,7 @@ from time import time
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 import pyqtgraph as pg
 from pyqtgraph import exporters
-from pairinteraction_gui.pairinteraction.plotter import Ui_plotwindow
+from pairinteraction_gui.pairinteraction_app.plotter import Ui_plotwindow
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 20)
@@ -131,9 +131,9 @@ if __name__ == "__main__":
     splash.progress("Import Modules ...", 40)
 
 # Own classes
-from pairinteraction_gui.pairinteraction.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
-from pairinteraction_gui.pairinteraction.unitmanagement import Quantity, Units
-from pairinteraction_gui.pairinteraction.guiadditions import (
+from pairinteraction_gui.pairinteraction_app.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
+from pairinteraction_gui.pairinteraction_app.unitmanagement import Quantity, Units
+from pairinteraction_gui.pairinteraction_app.guiadditions import (
     GuiDict,
     DoubledeltaValidator,
     DoublenoneValidator,
@@ -141,11 +141,11 @@ from pairinteraction_gui.pairinteraction.guiadditions import (
     DoubleValidator,
 )
 
-from pairinteraction_gui.pairinteraction.pyqtgraphadditions import PointsItem, MultiLine
-from pairinteraction_gui.pairinteraction.worker import Worker, AllQueues
-from pairinteraction_gui.pairinteraction.pipy_thread import PipyThread
-from pairinteraction_gui.pairinteraction.loader import Eigensystem
-from pairinteraction_gui.pairinteraction.version import version_program, version_settings, version_cache
+from pairinteraction_gui.pairinteraction_app.pyqtgraphadditions import PointsItem, MultiLine
+from pairinteraction_gui.pairinteraction_app.loader import Eigensystem
+from pairinteraction_gui.pairinteraction_app.version import version_program, version_settings, version_cache
+from pairinteraction_gui.pairinteraction_app.pipy_thread import PipyThread
+from pairinteraction_gui.pairinteraction_app.worker import Worker, AllQueues
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 80)

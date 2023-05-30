@@ -221,10 +221,10 @@ class Config:
             setattr(self, f"_energiesSingle{part}", self._getSingle("_energies", part, None))
         if getattr(self, f"_energiesSingle{part}", None) is None:
             if pi is None:
-                import pipy
+                from pairinteraction import pireal
 
-                pi = pipy.pireal
-            states = [pi.StateOne(self.species(part), *qn) for qn in self.qnumbersSingle(part)]
+                pi = pireal
+            states = [pi.StateOne(self.species(), *qn) for qn in self.qnumbersSingle(part)]
             energies = [s.getEnergy() for s in states]
             setattr(self, f"_energiesSingle{part}", energies)
         return getattr(self, f"_energiesSingle{part}")

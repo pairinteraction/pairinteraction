@@ -5,10 +5,10 @@ import os
 block_cipher = None
 
 a = Analysis(
-    ["start_pairinteraction_gui"],
-    pathex=[],
+    ["pairinteraction_gui/pairinteraction_app/app.py"],
+    pathex=[".", "pairinteraction"],
     binaries=[],
-    datas=[],
+    datas=[("pairinteraction_gui/pairinteraction_app/icon.png", "."), ("pairinteraction_gui/conf", "conf")],
     hiddenimports=["scipy.integrate", "scipy._lib.messagestream"],
     hookspath=[],
     runtime_hooks=[],
@@ -47,6 +47,6 @@ a.binaries = [
 
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 exe = EXE(
-    pyz, a.scripts, exclude_binaries=True, name="pairinteraction", debug=False, strip=False, upx=True, console=True
+    pyz, a.scripts, exclude_binaries=True, name="pairinteraction_gui", debug=False, strip=False, upx=True, console=True
 )
-coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas, strip=False, upx=True, name="pairinteraction")
+coll = COLLECT(exe, a.binaries, a.zipfiles, a.datas, strip=False, upx=True, name="pairinteraction_gui")

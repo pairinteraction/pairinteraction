@@ -8,8 +8,9 @@ import os
 
 import numpy as np
 from pipy import Config
-from pipy import picomplex
-from pipy import pireal
+
+from pairinteraction import picomplex
+from pairinteraction import pireal
 
 logger = logging.getLogger(__name__)
 

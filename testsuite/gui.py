@@ -15,7 +15,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
 from scipy.io import loadmat
 
-from pairinteraction_gui.pairinteraction.app import MainWindow
+from pairinteraction_gui.pairinteraction_app.app import MainWindow
 
 PATH = os.path.join("reference_data", "gui")
 

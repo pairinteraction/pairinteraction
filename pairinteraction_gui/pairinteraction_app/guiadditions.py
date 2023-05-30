@@ -23,7 +23,7 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 
-from pairinteraction_gui.pairinteraction.unitmanagement import Quantity
+from pairinteraction_gui.pairinteraction_app.unitmanagement import Quantity
 
 
 # === Dictionary to manage the elements of the GUI ===
