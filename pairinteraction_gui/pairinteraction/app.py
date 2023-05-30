@@ -3052,9 +3052,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 params = {k: self.systemdict[k].toUU().magnitude for k in keys}
                 params["button_id"] = button_id
 
-                nprc = self.systemdict["cores"].magnitude
-                # set default to number of cores - 1 (leave one core for the GUI/plotting)
-                self.numprocessors = os.cpu_count() - 1 if nprc == 0 else nprc
+                self.numprocessors = self.systemdict["cores"].magnitude
                 params["NUM_PROCESSES"] = self.numprocessors
 
                 if self.senderbutton == self.ui.pushbutton_potential_calc:

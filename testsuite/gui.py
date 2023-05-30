@@ -43,7 +43,9 @@ class PairinteractionGuiTest(unittest.TestCase):
 
     def _testEnergies(self, idx, ref_data, dE, dE_tol=1e-3, use_python_api="default"):
         if use_python_api == "default":
-            return self._testEnergies(idx, ref_data, dE, use_python_api=True)
+            for use_python_api in [False, True]:
+                self._testEnergies(idx, ref_data, dE, use_python_api=use_python_api)
+            return
         self.form.ui.checkbox_use_python_api.setChecked(use_python_api)
         self.form.autosetSymmetrization()
 
