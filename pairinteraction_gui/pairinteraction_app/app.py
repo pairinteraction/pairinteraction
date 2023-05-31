@@ -1156,8 +1156,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.all_queues.clear()
 
     def checkForData(self):
-        dataamount = 0
-
         # === print status ===
         elapsedtime = f"{timedelta(seconds=int(time() - self.starttime))}"
         if self.all_queues.message != "":
@@ -1567,6 +1565,7 @@ class MainWindow(QtWidgets.QMainWindow):
         l = np.array([])
         s = []
 
+        dataamount = 0
         while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
 
             # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
@@ -1596,7 +1595,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if len(energies) == 0:
                 print("Loaded data does not contain any eigenvalues.")
                 self.empty_data[idx] += 1
-                # dont continue, since the "empty" run is needed for the labels
+                # dont continue, since the "empty" run is needed for the labels and colormaps
 
             if idx == 2:
                 symmetrycolor = []
@@ -1729,9 +1728,6 @@ class MainWindow(QtWidgets.QMainWindow):
                     # labels
                     labelenergies = (self.labelprob[bn] * normalizer).T * np.concatenate(self.labelprob_energy[bn])
 
-                    if len(labelenergies) == 0:
-                        continue
-
                     # store the position of the labels
                     labelposition = position
 
@@ -1808,16 +1804,17 @@ class MainWindow(QtWidgets.QMainWindow):
                         text.setZValue(zvalue)
                         graphicsview_plot[idx].addItem(text)
 
-                    posx = labelposition * np.ones_like(labelenergies) + 1e-12
-                    posy = labelenergies + 1e-12
-                    curve = PointsItem(
-                        np.append(posx, posx - 2e-12), np.append(posy, posy - 2e-12), 0, 0, (255, 255, 255)
-                    )
-                    curve.setZValue(5)
-                    graphicsview_plot[idx].addItem(curve)
+                    if len(labelenergies) > 0:
+                        posx = labelposition * np.ones_like(labelenergies) + 1e-12
+                        posy = labelenergies + 1e-12
+                        curve = PointsItem(
+                            np.append(posx, posx - 2e-12), np.append(posy, posy - 2e-12), 0, 0, (255, 255, 255)
+                        )
+                        curve.setZValue(5)
+                        graphicsview_plot[idx].addItem(curve)
 
-                    # drawing labels take some time
-                    dataamount += 3000
+                        # drawing labels take some time
+                        dataamount += 3000
 
             # --- draw color map ---
             if self.ui.groupbox_plot_overlap.isChecked() and self.steps > 1:

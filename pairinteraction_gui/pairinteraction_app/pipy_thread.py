@@ -129,7 +129,7 @@ class PipyThread(QThread):
         output(f"{'>>TOT':5}{scriptoptions['numBlocks']*scriptoptions['listoptions']['steps']:7}", kwargs)
         if config["nAtoms"] == 2:
             for bn, syms in enumerate(scriptoptions["symmetries_list"]):
-                print(f"Starting symmetry block {bn}/{scriptoptions['numBlocks']} with {syms}")
+                print(f"Starting symmetry block {bn+1}/{scriptoptions['numBlocks']} with {syms}")
                 config.update(syms)
                 settings["blocknumber"] = bn
                 self.run_simulations(settings, kwargs)
