@@ -15,6 +15,9 @@ In the image below you can see the window of the user interface. Here, it has be
 
 The config file :download:`settings_ss_rb.sconf <settings_ss_rb.sconf>` where all settings for this calculation are stored can be imported via ``File -> Open system settings ...`` in the upper left menu bar. Config files for more pair potential calculations used in scientific publications can be found in the tutorial about :ref:`macrodimer binding potentials <gui_macrodimers>`.
 
+.. tip::
+    Use the *mouse wheel* to zoom in and out of a plot. Place the *mouse cursor* on the energy/distance axis and use the mouse wheel to change the energy/distance range of the plot.
+
 The different variables which can be chosen by the user are explained in the following.
 
 - In the ``General`` tab:
