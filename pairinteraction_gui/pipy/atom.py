@@ -7,10 +7,10 @@ import logging
 import os
 
 import numpy as np
-from pipy import Config
 
 from pairinteraction import picomplex
 from pairinteraction import pireal
+from pairinteraction_gui.pipy import Config
 
 logger = logging.getLogger(__name__)
 

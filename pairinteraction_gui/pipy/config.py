@@ -6,7 +6,8 @@ from typing import Any
 from typing import Union
 
 import numpy as np
-from pipy.misc import CustomDict
+
+from pairinteraction_gui.pipy.misc import CustomDict
 
 InvalidKey = object()
 

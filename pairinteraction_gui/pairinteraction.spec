@@ -6,13 +6,13 @@ block_cipher = None
 
 a = Analysis(
     ["pairinteraction_gui/pairinteraction_app/app.py"],
-    pathex=[".", "pairinteraction"],
+    pathex=["."],
     binaries=[],
     datas=[("pairinteraction_gui/pairinteraction_app/icon.png", "."), ("pairinteraction_gui/conf", "conf")],
     hiddenimports=["scipy.integrate", "scipy._lib.messagestream"],
     hookspath=[],
     runtime_hooks=[],
-    excludes=["matplotlib", "OpenGL", "PyQt5.QtOpenGL"],
+    excludes=["matplotlib", "OpenGL", "PyQt5.QtOpenGL", "pairinteraction"],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
     cipher=block_cipher,

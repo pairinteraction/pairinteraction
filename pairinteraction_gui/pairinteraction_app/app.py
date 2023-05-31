@@ -97,6 +97,10 @@ if __name__ == "__main__":
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 0)
 
+# Adapt the path to ensure that the pairinteraction library can be imported
+if getattr(sys, "frozen", False):
+    sys.path.insert(0, os.path.join(sys._MEIPASS, ".."))
+
 import json
 import locale
 import pickle
@@ -149,12 +153,6 @@ from pairinteraction_gui.pairinteraction_app.worker import Worker, AllQueues
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 80)
-
-# Add directories to the path to ensure that the pairinteraction executable is found
-if getattr(sys, "frozen", False):
-    sys.path.append(os.path.join(sys._MEIPASS, ".."))
-else:
-    sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 
 # Make program killable via strg-c if it is started in a terminal
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -565,9 +563,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.plotfile = None
         self.resultfile = None
 
-        # http://stackoverflow.com/questions/404744/determining-application-path-in-a-python-exe-generated-by-pyinstaller
+        # Add directories to the path to ensure that the pairinteraction executable is found
         if getattr(sys, "frozen", False):
-            self.path_base = os.path.dirname(os.path.realpath(sys.executable))
+            self.path_base = os.path.realpath(sys._MEIPASS)
         elif __file__:
             self.path_base = os.path.dirname(os.path.realpath(__file__))
 
@@ -575,6 +573,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.path_configurationdir = os.path.join(self.path_base, "conf")
         elif os.path.exists(os.path.join(self.path_base, "../conf", "example.sconf")):
             self.path_configurationdir = os.path.join(self.path_base, "../conf")
+        elif os.path.exists(os.path.join(self.path_base, "./pairinteraction", "pairinteraction-real" + ext)):
+            self.path_workingdir = os.path.join(self.path_base, "./pairinteraction")
         else:
             raise Exception("Directory containing configurations not found.")
 

@@ -5,20 +5,13 @@ import json
 import multiprocessing
 import os
 import pickle
-import sys
 import tempfile
 import time
 
 import numpy as np
 from PyQt5.QtCore import QThread
 
-
-# FIXME we should use from pairinteraction_gui import pipy here,
-# however, this will lead to bugs in the pyinstall on mac and windows
-# probably you have to fix this by adapting cmake and/or the .spec file
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".."))
-import pipy  # noqa
+from pairinteraction_gui import pipy
 
 
 SPIN_DICT = {"Li": 0.5, "Na": 0.5, "K": 0.5, "Rb": 0.5, "Cs": 0.5, "Sr1": 0, "Sr3": 1}
