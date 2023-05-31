@@ -55,7 +55,7 @@ class Config:
     def isReal(self) -> bool:
         """Defines if we use pireal or picomplex."""
         if self.nAtoms() == 1:
-            return self.isRealSingle()
+            return self.isRealSingle(None)
         else:  # self.nAtoms() == 2
             return self.isRealSingle(1) and self.isRealSingle(2)
 
@@ -115,7 +115,7 @@ class Config:
         return Config(self._dic.copy())
 
     # Single atom parameters
-    def _getSingle(self, key, default=InvalidKey, part=None):
+    def _getSingle(self, key, part, default=InvalidKey):
         """Get a value from the user dictionary which corresponds to a parameter for AtomOne.
         In general options for AtomOne are stored in the user dictionary
         under the key `atom1.key`, but we also check `key1`, `atom.key` and `key` (analog for 2).
@@ -129,15 +129,15 @@ class Config:
     def isRealSingle(self, part=None) -> bool:
         """Wether Ey and By are zero or not."""
         isReal = self.Ey(part) == 0 and self.By(part) == 0
-        return self._getSingle("isReal", isReal, part)
+        return self._getSingle("isReal", part, isReal)
 
     def species(self, part=None) -> str:
         """Species of the atom (e.g. "Rb")."""
-        return self._getSingle("species", InvalidKey, part)
+        return self._getSingle("species", part, InvalidKey)
 
     def Efield(self, part=None) -> "list[float]":
         """Electric field vector."""
-        return self._getSingle("Efield", [self._getSingle("E" + x, 0, part) for x in "xyz"], part)
+        return self._getSingle("Efield", part, [self._getSingle("E" + x, part, 0) for x in "xyz"])
 
     def Ex(self, part=None) -> float:
         """Electric field in x direction."""
@@ -153,7 +153,7 @@ class Config:
 
     def Bfield(self, part=None) -> "list[float]":
         """Magnetic field vector."""
-        return self._getSingle("Bfield", [self._getSingle("B" + x, 0, part) for x in "xyz"], part)
+        return self._getSingle("Bfield", part, [self._getSingle("B" + x, part, 0) for x in "xyz"])
 
     def Bx(self, part=None) -> float:
         """Magnetic field in x direction."""
@@ -178,7 +178,7 @@ class Config:
         """Initialize the quantum numbers for the atom.
         Return a list of tuples (n, l, j, m).
         """
-        qnumbers = self._getSingle("qnumbers", InvalidKey, part)
+        qnumbers = self._getSingle("qnumbers", part, InvalidKey)
         if qnumbers is not InvalidKey:
             shape = np.shape(qnumbers)
             if shape == (4,):
@@ -188,7 +188,7 @@ class Config:
             else:
                 raise ValueError("Atom qnumbers must be a list of 4-tuples or a Nx4 array.")
         else:
-            qnumbers = [tuple(self._getSingle(q, InvalidKey, part) for q in "nljm")]
+            qnumbers = [tuple(self._getSingle(q, part, InvalidKey) for q in "nljm")]
             if any(x is InvalidKey for x in qnumbers[0]):
                 raise ValueError(f"Atom qnumbers not specified for part {part}.")
 
@@ -218,13 +218,13 @@ class Config:
         """Get the energies of the atom states in qnumbersSingle without any E/B fields."""
         part = getattr(self, "iAtom", 1) if part is None else part
         if getattr(self, f"_energiesSingle{part}", None) is None:
-            setattr(self, f"_energiesSingle{part}", self._getSingle("_energies", None, part))
+            setattr(self, f"_energiesSingle{part}", self._getSingle("_energies", part, None))
         if getattr(self, f"_energiesSingle{part}", None) is None:
             if pi is None:
                 import pipy
 
                 pi = pipy.pireal
-            states = [pi.StateOne(self.species(), *qn) for qn in self.qnumbersSingle(part)]
+            states = [pi.StateOne(self.species(part), *qn) for qn in self.qnumbersSingle(part)]
             energies = [s.getEnergy() for s in states]
             setattr(self, f"_energiesSingle{part}", energies)
         return getattr(self, f"_energiesSingle{part}")
@@ -405,11 +405,11 @@ class Config:
     # - None: We are looking for a single parameter and just a single atom is involved (will default to 1)
     # - 1 or 2: We are looking for a single parameter and the atom with the given index is involved
     # - "pair": We are looking for a pair parameter
-    def _getPart(self, key, default=InvalidKey, part=None):
+    def _getPart(self, key, part, default=InvalidKey):
         """Wrapper around _getSingle and _getPair."""
         if str(part).lower() == "pair":
             return self._getPair(key, default)
-        return self._getSingle(key, default, part)
+        return self._getSingle(key, part, default)
 
     def qnumbers(self, part) -> "list[tuple]":
         """Get the quantum numbers for the part.
@@ -428,13 +428,13 @@ class Config:
 
     def conserveMomenta(self, part) -> bool:
         """Wether to conserve the momenta or not."""
-        conserveMomenta = self._getPart("momenta", None, part) is not None
-        return self._getPart("conserveMomenta", conserveMomenta, part)
+        conserveMomenta = self._getPart("momenta", part, None) is not None
+        return self._getPart("conserveMomenta", part, conserveMomenta)
 
     def momenta(self, part) -> "list":
         """Get the momenta, which should be conserved for the atom."""
         ispair = str(part).lower() == "pair"
-        momenta = self._getPart("momenta", None, part)
+        momenta = self._getPart("momenta", part, None)
         if momenta is not None:
             if isinstance(momenta, (int, float)):
                 momenta = [momenta]
@@ -448,7 +448,7 @@ class Config:
             return None
         return [int(m) if ispair else float(m) for m in momenta]
 
-    def restrictQn(self, Q, part=None, **kwargs) -> "tuple[Union[float, int], Union[float, int]]":
+    def restrictQn(self, Q, part, **kwargs) -> "tuple[Union[float, int], Union[float, int]]":
         """Allowed formatting in config:
         - dQ, deltaQ, dQSingle, deltaQSingle
         - minQ, minQSingle, maxQ, maxQSingle
@@ -460,12 +460,12 @@ class Config:
         if Q == "Energy":
             key_list += [f"deltaE{single_pair}"]
         for key in key_list:
-            dQ = self._getPart(key, InvalidKey, part)
+            dQ = self._getPart(key, part, InvalidKey)
             if dQ is not InvalidKey:
                 break
         dQ = None if (dQ is InvalidKey or dQ is None or dQ < 0) else dQ
-        minQ = self._getPart(f"min{Q}", None, part)
-        maxQ = self._getPart(f"max{Q}", None, part)
+        minQ = self._getPart(f"min{Q}", part, None)
+        maxQ = self._getPart(f"max{Q}", part, None)
 
         if minQ is not None and maxQ is not None:
             pass

@@ -59,10 +59,6 @@ class Atom:
         self.vectors = None
         self.overlaps = None
 
-    def __repr__(self):
-        config = self.config
-        return f"{self.__class__.__name__}({config.species()}, ...)"
-
     @property
     def system(self):
         if self._system is None:
@@ -320,6 +316,10 @@ class Atom:
 class AtomOne(Atom):
     nAtoms = 1
 
+    def __repr__(self):
+        config = self.config
+        return f"{self.__class__.__name__}({config.species()}, ...)"
+
     @property
     def system(self) -> pireal.SystemOne:
         return super().system
@@ -406,6 +406,10 @@ class AtomOne(Atom):
 
 class AtomTwo(Atom):
     nAtoms = 2
+
+    def __repr__(self):
+        config = self.config
+        return f"{self.__class__.__name__}({config.species(1)}, {config.species(2)}, ...)"
 
     def __init__(self, config):
         super().__init__(config)

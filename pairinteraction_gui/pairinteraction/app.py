@@ -1784,16 +1784,20 @@ class MainWindow(QtWidgets.QMainWindow):
                             )
                         elif idx == 2:
                             sn1, sl1, sj1, sn2, sl2, sj2 = labelstate
+                            sn1, sn2 = int(sn1), int(sn2)
+                            sl1, sl2 = (self.momentumstrings[idx][bn][int(sl)] for sl in [sl1, sl2])
+                            sj1, sj2 = (f"{int(2 * sj)}/2" if sj % 1 != 0 else f"{int(sj)}" for sj in [sj1, sj2])
+
                             text = pg.TextItem(
                                 html='<div style="text-align: center; font-size: '
                                 + size
                                 + 'pt;"><span style="color: rgba(0,0,0,255);">'
-                                + f'{int(sn1)}{self.momentumstrings[idx][bn][int(sl1)]}<sub style="font-size: '
+                                + f'{sn1}{sl1}<sub style="font-size: '
                                 + size
-                                + f'pt;">{int(2 * sj1)}/2</sub>'
-                                + f' {int(sn2)}{self.momentumstrings[idx][bn][int(sl2)]}<sub style="font-size: '
+                                + f'pt;">{sj1}</sub>'
+                                + f' {sn2}{sl2}<sub style="font-size: '
                                 + size
-                                + f'pt;">{int(2 * sj2)}/2</sub>'
+                                + f'pt;">{sj2}</sub>'
                                 + "</span></div>",
                                 anchor=(anchorX, 0.5),
                                 fill=color_fill,
