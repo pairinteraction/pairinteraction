@@ -26,6 +26,7 @@
 
 #include <cstring>
 #include <iterator>
+#include <memory>
 #include <numeric>
 #include <stdexcept>
 #include <tuple>
@@ -35,32 +36,6 @@
 #include <Eigen/SparseCore>
 
 #include "Traits.hpp"
-
-namespace {
-
-#define CONCATENATE_IMPL(s1, s2) s1##s2
-#define CONCATENATE(s1, s2) CONCATENATE_IMPL(s1, s2)
-#define ANONYMOUS_VARIABLE(str) CONCATENATE(str, __LINE__)
-
-enum class ScopeGuardOnExit {};
-
-template <typename F>
-class ScopeGuard {
-    F f;
-
-public:
-    ScopeGuard(F f) : f(std::move(f)) {}
-    ~ScopeGuard() noexcept { f(); }
-};
-
-template <typename F>
-ScopeGuard<F> operator+(ScopeGuardOnExit, F &&f) {
-    return ScopeGuard<F>(std::forward<F>(f));
-}
-
-#define SCOPE_EXIT auto ANONYMOUS_VARIABLE(onexit_) = ScopeGuardOnExit{} + [=]()
-
-} // namespace
 
 namespace numpy {
 
@@ -368,14 +343,14 @@ PyObject *sparse_impl(T &&sm) {
 
     char object[] = "csc_matrix";
     char arglist[] = "(OOO)(ii)";
-    PyObject *scipy = PyImport_ImportModule("scipy.sparse");
-    SCOPE_EXIT { Py_XDECREF(scipy); };
+    std::unique_ptr<PyObject, decltype(&Py_DecRef)> scipy{PyImport_ImportModule("scipy.sparse"),
+                                                          &Py_DecRef};
     if (scipy == nullptr) {
         PyErr_Print();
         return nullptr;
     }
-    PyObject *mat =
-        PyObject_CallMethod(scipy, object, arglist, data, indices, indptr, num_rows, num_cols);
+    PyObject *mat = PyObject_CallMethod(scipy.get(), object, arglist, data, indices, indptr,
+                                        num_rows, num_cols);
     if (mat == nullptr) {
         PyErr_Print();
         return nullptr;
@@ -532,42 +507,37 @@ template <typename SparseMatrixType>
 Eigen::Map<SparseMatrixType>
 #endif
 as(numpy::array ndarray) {
-    PyObject *scipy = PyImport_ImportModule("scipy.sparse");
-    SCOPE_EXIT { Py_XDECREF(scipy); };
+    auto make_unique_object = [](PyObject *o) {
+        return std::unique_ptr<PyObject, decltype(&Py_DecRef)>{o, &Py_DecRef};
+    };
+    auto scipy = make_unique_object(PyImport_ImportModule("scipy.sparse"));
     if (scipy == nullptr) {
         PyErr_Print();
         return nullptr;
     }
-    PyObject *csc_matrix = PyObject_GetAttrString(scipy, "csc_matrix");
-    SCOPE_EXIT { Py_XDECREF(csc_matrix); };
+    auto csc_matrix = make_unique_object(PyObject_GetAttrString(scipy.get(), "csc_matrix"));
     if (csc_matrix == nullptr) {
         PyErr_Print();
         return nullptr;
     }
-    if (!ndarray || !PyObject_IsInstance(ndarray, csc_matrix))
+    if (!ndarray || !PyObject_IsInstance(ndarray, csc_matrix.get()))
         throw std::invalid_argument("The argument is not a valid csc_matrix!");
 
-    PyObject *tmp;
-
-    tmp = PyObject_GetAttrString(ndarray, "data");
-    SCOPE_EXIT { Py_XDECREF(tmp); };
-    PyArrayObject *data_ = reinterpret_cast<PyArrayObject *>(tmp);
+    auto data_obj = make_unique_object(PyObject_GetAttrString(ndarray, "data"));
+    PyArrayObject *data_ = reinterpret_cast<PyArrayObject *>(data_obj.get());
     internal::check_order_and_alignment(data_);
 
-    tmp = PyObject_GetAttrString(ndarray, "indices");
-    SCOPE_EXIT { Py_XDECREF(tmp); };
-    PyArrayObject *indices_ = reinterpret_cast<PyArrayObject *>(tmp);
+    auto indices_obj = make_unique_object(PyObject_GetAttrString(ndarray, "indices"));
+    PyArrayObject *indices_ = reinterpret_cast<PyArrayObject *>(indices_obj.get());
     internal::check_order_and_alignment(indices_);
 
-    tmp = PyObject_GetAttrString(ndarray, "indptr");
-    SCOPE_EXIT { Py_XDECREF(tmp); };
-    PyArrayObject *indptr_ = reinterpret_cast<PyArrayObject *>(tmp);
+    auto indptr_obj = make_unique_object(PyObject_GetAttrString(ndarray, "indptr"));
+    PyArrayObject *indptr_ = reinterpret_cast<PyArrayObject *>(indptr_obj.get());
     internal::check_order_and_alignment(indptr_);
 
-    PyObject *shape = PyObject_GetAttrString(ndarray, "shape");
-    SCOPE_EXIT { Py_XDECREF(tmp); };
+    auto shape_obj = make_unique_object(PyObject_GetAttrString(ndarray, "shape"));
     int rows, cols;
-    PyArg_ParseTuple(shape, "ii", &rows, &cols);
+    PyArg_ParseTuple(shape_obj.get(), "ii", &rows, &cols);
 
     npy_intp *nnz = PyArray_SHAPE(data_);
 
