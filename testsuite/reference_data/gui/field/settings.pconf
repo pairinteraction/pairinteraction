@@ -77,7 +77,8 @@
                     255
                 ]
             ]
-        ]
+        ],
+        "ticksVisible": true
     },
     "j1": [
         0.5,
@@ -92,7 +93,7 @@
         null
     ],
     "l2": [
-        0,
+        1,
         null
     ],
     "labels": [

@@ -1,10 +1,7 @@
 numpy~=1.22.3
 pint~=0.19.2
-pyinstaller~=5.0.1
+pyinstaller~=5.11.0
 pyqt5~=5.15.6
 pyqtgraph~=0.12.4
-pyzmq~=22.3.0
 scipy~=1.8.0
-sip~=6.6.1
-six~=1.16.0
 wheel~=0.37.1

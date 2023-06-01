@@ -1,10 +1,10 @@
 {
     "conserveM": [
-        true,
+        false,
         null
     ],
     "cores": [
-        0,
+        1,
         null
     ],
     "deltaEPair": [
@@ -12,7 +12,7 @@
         "gigahertz"
     ],
     "deltaESingle": [
-        40.0,
+        20.0,
         "gigahertz"
     ],
     "deltaJPair": [
@@ -56,11 +56,11 @@
         null
     ],
     "invE": [
-        true,
+        false,
         null
     ],
     "invO": [
-        true,
+        false,
         null
     ],
     "j1": [
@@ -96,15 +96,15 @@
         null
     ],
     "maxBx": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "maxBy": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "maxBz": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "maxE_storage": [
@@ -112,15 +112,15 @@
         "gigahertz"
     ],
     "maxEx": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "maxEy": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "maxEz": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "maxR": [
@@ -128,15 +128,15 @@
         "micrometer"
     ],
     "minBx": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "minBy": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "minBz": [
-        0.0,
+        1.5,
         "gauss"
     ],
     "minE_storage": [
@@ -144,15 +144,15 @@
         "gigahertz"
     ],
     "minEx": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "minEy": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "minEz": [
-        0.0,
+        1.0,
         "volt/centimeter"
     ],
     "minR": [
@@ -195,10 +195,6 @@
         1e-12,
         null
     ],
-    "python_api": [
-        false,
-        null
-    ],
     "quantizationInteratomic": [
         true,
         null
@@ -232,7 +228,7 @@
         null
     ],
     "steps": [
-        50,
+        1,
         null
     ],
     "symAuto": [

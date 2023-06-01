@@ -29,7 +29,7 @@
        </property>
        <property name="minimumSize">
         <size>
-         <width>0</width>
+         <width>400</width>
          <height>0</height>
         </size>
        </property>
@@ -69,8 +69,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>350</height>
+              <width>380</width>
+              <height>366</height>
              </rect>
             </property>
             <attribute name="label">
@@ -656,8 +656,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>309</height>
+              <width>380</width>
+              <height>366</height>
              </rect>
             </property>
             <attribute name="label">
@@ -922,8 +922,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>309</height>
+              <width>380</width>
+              <height>366</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1183,8 +1183,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>411</height>
+              <width>359</width>
+              <height>445</height>
              </rect>
             </property>
             <attribute name="label">
@@ -1728,11 +1728,6 @@
                   </property>
                   <item row="4" column="0">
                    <widget class="QLabel" name="label_73">
-                    <property name="font">
-                     <font>
-                      <pointsize>12</pointsize>
-                     </font>
-                    </property>
                     <property name="text">
                      <string>Δj</string>
                     </property>
@@ -1771,11 +1766,6 @@
                   </item>
                   <item row="5" column="0">
                    <widget class="QLabel" name="label_74">
-                    <property name="font">
-                     <font>
-                      <pointsize>12</pointsize>
-                     </font>
-                    </property>
                     <property name="text">
                      <string>Δm</string>
                     </property>
@@ -1840,8 +1830,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>451</height>
+              <width>359</width>
+              <height>372</height>
              </rect>
             </property>
             <attribute name="label">
@@ -2585,8 +2575,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>761</height>
+              <width>359</width>
+              <height>864</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
@@ -3364,10 +3354,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>999</number>
@@ -3399,10 +3389,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>100</number>
@@ -3431,13 +3421,13 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
                        </property>
                        <property name="minimum">
-                        <double>-1.000000000000000</double>
+                        <double>-99.000000000000000</double>
                        </property>
                        <property name="maximum">
                         <double>99.500000000000000</double>
@@ -3466,7 +3456,7 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
@@ -3523,10 +3513,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>999</number>
@@ -3558,10 +3548,10 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="minimum">
-                        <number>-1</number>
+                        <number>-99</number>
                        </property>
                        <property name="maximum">
                         <number>100</number>
@@ -3590,13 +3580,13 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
                        </property>
                        <property name="minimum">
-                        <double>-1.000000000000000</double>
+                        <double>-99.000000000000000</double>
                        </property>
                        <property name="maximum">
                         <double>99.500000000000000</double>
@@ -3625,7 +3615,7 @@
                         </size>
                        </property>
                        <property name="statusTip">
-                        <string>A value of -1 means that the quantum number can be of any value.</string>
+                        <string>A value of -99 means that the quantum number can be of any value.</string>
                        </property>
                        <property name="decimals">
                         <number>1</number>
@@ -3878,7 +3868,7 @@
        </widget>
        <widget class="QWidget" name="tab">
         <attribute name="title">
-         <string>Misc.</string>
+         <string>Misc</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_13">
          <item>
@@ -3906,8 +3896,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>200</width>
-              <height>552</height>
+              <width>359</width>
+              <height>586</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_9">
@@ -4269,42 +4259,6 @@
               </spacer>
              </item>
              <item>
-              <widget class="QLabel" name="label_95">
-               <property name="font">
-                <font>
-                 <weight>75</weight>
-                 <bold>true</bold>
-                </font>
-               </property>
-               <property name="text">
-                <string>Cache</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="checkbox_system_override">
-               <property name="text">
-                <string>override cache (recalculates everything)</string>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <spacer name="verticalSpacer_25">
-               <property name="orientation">
-                <enum>Qt::Vertical</enum>
-               </property>
-               <property name="sizeType">
-                <enum>QSizePolicy::Fixed</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>20</width>
-                 <height>10</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
               <widget class="QLabel" name="label_90">
                <property name="font">
                 <font>
@@ -4369,6 +4323,45 @@
               </layout>
              </item>
              <item>
+              <spacer name="verticalSpacer_27">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeType">
+                <enum>QSizePolicy::Fixed</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>20</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+             <item>
+              <widget class="QLabel" name="label_90">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>Experimental Features</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkbox_use_python_api">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="text">
+                <string>Use new python API as backend</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="verticalSpacer_5">
                <property name="orientation">
                 <enum>Qt::Vertical</enum>
@@ -4397,8 +4390,8 @@
        </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-         <horstretch>0</horstretch>
-         <verstretch>4</verstretch>
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
         </sizepolicy>
        </property>
        <property name="currentIndex">
@@ -5108,6 +5101,12 @@
              <property name="enabled">
               <bool>false</bool>
              </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
              <property name="minimumSize">
               <size>
                <width>0</width>
@@ -5199,7 +5198,7 @@
      <x>0</x>
      <y>0</y>
      <width>960</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -5363,17 +5362,12 @@
   </action>
   <action name="action_sconf_reset">
    <property name="text">
-    <string>Reset system settings</string>
+    <string>Reset system and misc settings</string>
    </property>
   </action>
   <action name="action_pconf_reset">
    <property name="text">
     <string>Reset plot settings</string>
-   </property>
-  </action>
-  <action name="action_radial_clear">
-   <property name="text">
-    <string>Clear database of radial matrix elements</string>
    </property>
   </action>
   <action name="action_reporterror">

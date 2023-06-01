@@ -31,8 +31,8 @@ endif()
 
 # set version of settings and cache
 
-set(VERSION_SETTINGS "v17")
-set(VERSION_CACHE "v17")
+set(VERSION_SETTINGS "v18")
+set(VERSION_CACHE "v18")
 set(VERSION_SOFTWARE_DEFAULT "v0.0.0")
 
 # get software version info from git

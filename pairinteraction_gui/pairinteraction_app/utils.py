@@ -161,6 +161,8 @@ def csr_vappend(a, b):
     """Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
     Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
     the first matrix instead of copying it. The data, indices, and indptr still get copied."""
+    if a.shape[1] != b.shape[1]:
+        raise ValueError("Dimension mismatch in csr_vappend")
 
     a.data = np.hstack((a.data, b.data))
     a.indices = np.hstack((a.indices, b.indices))
@@ -174,6 +176,8 @@ def csr_vappend(a, b):
 
 def csc_happend(a, b):
     """Takes in 2 csc_matrices and appends the second one to the right of the first one."""
+    if a.shape[0] != b.shape[0]:
+        raise ValueError("Dimension mismatch in csc_happend")
 
     a.data = np.hstack((a.data, b.data))
     a.indices = np.hstack((a.indices, b.indices))
