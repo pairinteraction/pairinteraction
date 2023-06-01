@@ -50,12 +50,12 @@ jobs:
         cp -r build/doc/sphinx/_build/html public/sphinx/
         cp -r build/doc/coverage/html public/coverage/
     - name: Deploy pages
-      if: github.ref == 'refs/heads/master'
       uses: JamesIves/github-pages-deploy-action@v4.4.2
       with:
         branch: gh-pages
         folder: public
         single-commit: true
+        dry-run: ${{ !(github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) }}
 
   manylinux:
     runs-on: ubuntu-latest
