@@ -18,6 +18,12 @@
  */
 
 #include "PerturbativeInteraction.hpp"
+#include "Constants.hpp"
+
+#include "EigenCompat.hpp"
+#include <Eigen/Core>
+
+#include "Constants.hpp"
 
 #include <unordered_set>
 
@@ -126,9 +132,9 @@ double PerturbativeInteraction::getC6(const StateTwo &state, double deltaN) {
     return C6;
 }
 
-eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> &states,
-                                                    double deltaN) {
-    eigen_dense_double_t C6_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
+Eigen::MatrixX<double> PerturbativeInteraction::getC6(const std::vector<StateTwo> &states,
+                                                      double deltaN) {
+    Eigen::MatrixX<double> C6_matrix = Eigen::MatrixX<double>::Zero(states.size(), states.size());
 
     std::unordered_set<StateTwo> set_states(states.begin(), states.end());
 
@@ -283,8 +289,8 @@ eigen_dense_double_t PerturbativeInteraction::getC6(const std::vector<StateTwo> 
     return C6_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeInteraction::getC3(const std::vector<StateTwo> &states) {
-    eigen_dense_double_t C3_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
+Eigen::MatrixX<double> PerturbativeInteraction::getC3(const std::vector<StateTwo> &states) {
+    Eigen::MatrixX<double> C3_matrix = Eigen::MatrixX<double>::Zero(states.size(), states.size());
 
     for (size_t idx_row = 0; idx_row < states.size(); ++idx_row) {
         auto &state_row = states[idx_row];
@@ -312,8 +318,9 @@ eigen_dense_double_t PerturbativeInteraction::getC3(const std::vector<StateTwo> 
     return C3_matrix.selfadjointView<Eigen::Upper>();
 }
 
-eigen_dense_double_t PerturbativeInteraction::getEnergy(const std::vector<StateTwo> &states) {
-    eigen_dense_double_t energies_matrix = eigen_dense_double_t::Zero(states.size(), states.size());
+Eigen::MatrixX<double> PerturbativeInteraction::getEnergy(const std::vector<StateTwo> &states) {
+    Eigen::MatrixX<double> energies_matrix =
+        Eigen::MatrixX<double>::Zero(states.size(), states.size());
 
     for (size_t idx = 0; idx < states.size(); ++idx) {
         auto &state = states[idx];

@@ -19,13 +19,17 @@
 
 #include "HamiltonianTwo.hpp"
 
+#include "Constants.hpp"
+
 #include <fmt/format.h>
 
 #include <stdexcept>
 #include <utility>
 
-HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                               const std::shared_ptr<HamiltonianOne> &hamiltonian_one)
+template <typename Scalar>
+HamiltonianTwo<Scalar>::HamiltonianTwo(
+    const Configuration &config, fs::path &path_cache,
+    const std::shared_ptr<HamiltonianOne<Scalar>> &hamiltonian_one)
     : hamiltonian_one1(hamiltonian_one), hamiltonian_one2(hamiltonian_one),
       path_cache(path_cache) { // TODO
 
@@ -34,9 +38,10 @@ HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache
     calculate(config);
 }
 
-HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                               std::shared_ptr<HamiltonianOne> hamiltonian_one1,
-                               std::shared_ptr<HamiltonianOne> hamiltonian_one2)
+template <typename Scalar>
+HamiltonianTwo<Scalar>::HamiltonianTwo(const Configuration &config, fs::path &path_cache,
+                                       std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1,
+                                       std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2)
     : hamiltonian_one1(std::move(hamiltonian_one1)), hamiltonian_one2(std::move(hamiltonian_one2)),
       path_cache(path_cache) {
 
@@ -45,9 +50,10 @@ HamiltonianTwo::HamiltonianTwo(const Configuration &config, fs::path &path_cache
     calculate(config);
 }
 
-void HamiltonianTwo::calculate(const Configuration &conf_tot) {
+template <typename Scalar>
+void HamiltonianTwo<Scalar>::calculate(const Configuration &conf_tot) {
     fs::path path_cache_mat;
-    if (utils::is_complex<scalar_t>::value) {
+    if (utils::is_complex<Scalar>::value) {
         path_cache_mat = path_cache / "cache_matrix_complex";
     } else {
         path_cache_mat = path_cache / "cache_matrix_real";
@@ -72,12 +78,12 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // new, pair hamiltonian specific configuration
 
     if (samebasis) {
-        basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names()); // TODO remove
+        this->basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names()); // TODO remove
     } else {
-        basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(),
-                                                hamiltonian_one2->names()); // TODO remove
+        this->basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(),
+                                                      hamiltonian_one2->names()); // TODO remove
     }
-    Configuration conf_matpair = basis->getConf();
+    Configuration conf_matpair = this->basis->getConf();
     conf_matpair["deltaEPair"] = conf_tot["deltaEPair"];
     conf_matpair["deltaNPair"] = conf_tot["deltaNPair"];
     conf_matpair["deltaLPair"] = conf_tot["deltaLPair"];
@@ -260,19 +266,19 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, build pair state basis" << std::endl;
 
     if (samebasis) {
-        basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names());
+        this->basis = std::make_shared<BasisnamesTwo>(hamiltonian_one1->names());
     } else {
-        basis =
+        this->basis =
             std::make_shared<BasisnamesTwo>(hamiltonian_one1->names(), hamiltonian_one2->names());
     }
 
-    std::cout << "Two-atom Hamiltonian, basis size without restrictions: " << basis->size()
+    std::cout << "Two-atom Hamiltonian, basis size without restrictions: " << this->basis->size()
               << std::endl;
 
     // === Determine necessary symmetries ===
     std::cout << "Two-atom Hamiltonian, determine symmetrized subspaces" << std::endl;
 
-    StateTwoOld initial = basis->initial();
+    StateTwoOld initial = this->basis->initial();
     parity_t initalParityL = (std::pow(-1, initial.l[0] + initial.l[1]) > 0) ? EVEN : ODD;
     int initalM = initial.m[0] + initial.m[1];
     int initalJ = initial.j[0] + initial.j[1];
@@ -281,7 +287,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::vector<int> sym_rotation;
     if (conserveM) {
         if (!sametrafo) {
-            for (const auto &state : *basis) {
+            for (const auto &state : *this->basis) {
                 sym_rotation.push_back(state.m[0] + state.m[1]);
             }
         } else if (!zerotheta) {
@@ -345,7 +351,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     std::cout << "Two-atom Hamiltonian, build up the list of necessary pair states" << std::endl;
 
     // Apply energy cutoff
-    std::vector<bool> necessary_tmp(basis->size(), false);
+    std::vector<bool> necessary_tmp(this->basis->size(), false);
 
     auto nSteps_one_i = static_cast<int>(nSteps_one);
 
@@ -356,9 +362,9 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     }
 
     // Apply restrictions due to symmetries
-    std::vector<bool> necessary(basis->size(), false);
+    std::vector<bool> necessary(this->basis->size(), false);
 
-    for (const auto &state : *basis) {
+    for (const auto &state : *this->basis) {
         for (Symmetry sym : symmetries) {
             float M = state.m[0] + state.m[1];
             int parityL = std::pow(-1, state.l[0] + state.l[1]);
@@ -399,7 +405,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // save pair state basis
     fs::path path_basis = fs::temp_directory_path();
     path_basis /= "basis_two_" + uuid + ".csv";
-    basis->save(
+    this->basis->save(
         path_basis
             .string()); // TODO save only necessary entries, i.e. save pair state basis in sparse
                         // format (possibility, remove basis states but keep their idx - this would
@@ -415,7 +421,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Construct pair Hamiltonians for all orders of the multipole expansion
 
     std::vector<int> exponent_multipole;
-    std::vector<Hamiltonianmatrix> mat_multipole;
+    std::vector<Hamiltonianmatrix<Scalar>> mat_multipole;
     MatrixElements matrixelements_atom1(conf_tot, species1,
                                         (path_cache / "cache_elements.db").string());
     MatrixElements matrixelements_atom2(conf_tot, species2,
@@ -443,8 +449,10 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         std::cout << "Two-atom Hamiltonian, get one-atom states needed for the pair state basis"
                   << std::endl;
 
-        auto basis_one1_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(basis));
-        auto basis_one2_needed = std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(basis));
+        auto basis_one1_needed =
+            std::make_shared<BasisnamesOne>(BasisnamesOne::fromFirst(this->basis));
+        auto basis_one2_needed =
+            std::make_shared<BasisnamesOne>(BasisnamesOne::fromSecond(this->basis));
 
         for (int kappa = kappa_min; kappa <= kappa_max; ++kappa) {
             std::cout << "Two-atom Hamiltonian, precalculate matrix elements for kappa = " << kappa
@@ -463,14 +471,14 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         for (int sumOfKappas = sumOfKappas_min; sumOfKappas <= sumOfKappas_max; ++sumOfKappas) {
             int idx_multipole = sumOfKappas - sumOfKappas_min;
 
-            for (const auto &state_col : *basis) { // TODO parallelization
+            for (const auto &state_col : *this->basis) { // TODO parallelization
                 if (!necessary[state_col.idx]) {
                     continue;
                 }
 
                 int M_col = state_col.first().m + state_col.second().m;
 
-                for (const auto &state_row : *basis) {
+                for (const auto &state_row : *this->basis) {
                     if (!necessary[state_row.idx]) {
                         continue;
                     }
@@ -506,7 +514,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
         }
 
         // --- Construct two-atom interaction Hamiltonians ---
-        size_t size_basis = basis->size();
+        size_t size_basis = this->basis->size();
 
         for (int sumOfKappas = sumOfKappas_min; sumOfKappas <= sumOfKappas_max; ++sumOfKappas) {
             std::cout
@@ -521,14 +529,14 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 2 * size_mat_multipole[idx_multipole]); // factor of 2 because triangular matrix is
                                                         // not sufficient
 
-            for (const auto &state_col : *basis) { // TODO parallelization
+            for (const auto &state_col : *this->basis) { // TODO parallelization
                 if (!necessary[state_col.idx]) {
                     continue;
                 }
 
                 int M_col = state_col.first().m + state_col.second().m;
 
-                for (const auto &state_row : *basis) {
+                for (const auto &state_row : *this->basis) {
                     if (!necessary[state_row.idx]) {
                         continue;
                     }
@@ -593,8 +601,9 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
                 << "Two-atom Hamiltonian, compress interaction Hamiltonian that belongs to 1/R^"
                 << sumOfKappas + 1 << std::endl;
 
-            mat_multipole[idx_multipole].compress(basis->dim(),
-                                                  basis->dim()); // TODO substitute dim() by size()
+            mat_multipole[idx_multipole].compress(
+                this->basis->dim(),
+                this->basis->dim()); // TODO substitute dim() by size()
         }
     }
 
@@ -609,7 +618,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // === Open database ===
     fs::path path_db;
 
-    if (utils::is_complex<scalar_t>::value) {
+    if (utils::is_complex<Scalar>::value) {
         path_db = path_cache / "cache_matrix_complex.db";
     } else {
         path_db = path_cache / "cache_matrix_real.db";
@@ -620,7 +629,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // === Initialize variables ===
     bool flag_perhapsmissingtable = true;
 
-    matrix_path.resize(nSteps_two * symmetries.size());
+    this->matrix_path.resize(nSteps_two * symmetries.size());
 
     auto indices_symmetry_i = static_cast<int>(symmetries.size());
 
@@ -628,7 +637,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     // Construct pair Hamiltonian consistent of combined one-atom Hamiltonians (1 x Hamiltonian2 +
     // Hamiltonian1 x 1)
 
-    std::vector<Hamiltonianmatrix> mat_single;
+    std::vector<Hamiltonianmatrix<Scalar>> mat_single;
 
     // Check if one_atom Hamiltonians change with step_two
     // It is assumed that nSteps_one = 1 if nSteps_two != nSteps_one // TODO introduce variable
@@ -645,8 +654,8 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             Symmetry sym = symmetries[idx_symmetry];
 
             // Combine the Hamiltonians of the two atoms
-            mat_single[idx_symmetry] = combine(*(hamiltonian_one1->get(0)),
-                                               *(hamiltonian_one2->get(0)), deltaE, basis, sym);
+            mat_single[idx_symmetry] = combine(
+                *(hamiltonian_one1->get(0)), *(hamiltonian_one2->get(0)), deltaE, this->basis, sym);
 
             // Remove more or less empty basis vectors
             mat_single[idx_symmetry].removeUnnecessaryBasisvectors();
@@ -654,7 +663,7 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
     }
 
     // --- Determine transformed interaction matrices ---
-    std::vector<Hamiltonianmatrix> mat_multipole_transformed;
+    std::vector<Hamiltonianmatrix<Scalar>> mat_multipole_transformed;
 
     // Check if one_atom Hamiltonians change with step_two
     if (nSteps_two != nSteps_one) {
@@ -805,14 +814,15 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             }
 
             // === Build and diagonalize total matrix if not existent ===
-            Hamiltonianmatrix totalmatrix;
+            Hamiltonianmatrix<Scalar> totalmatrix;
 
             if (!is_existing || !totalmatrix.load(path_mat.string())) {
 
                 // --- Combine single atom matrices ---
                 if (nSteps_two == nSteps_one) {
-                    totalmatrix = combine(*(hamiltonian_one1->get(step_two)),
-                                          *(hamiltonian_one2->get(step_two)), deltaE, basis, sym);
+                    totalmatrix =
+                        combine(*(hamiltonian_one1->get(step_two)),
+                                *(hamiltonian_one2->get(step_two)), deltaE, this->basis, sym);
                     totalmatrix.removeUnnecessaryBasisvectors();
                 } else {
                     totalmatrix = mat_single[idx_symmetry];
@@ -870,9 +880,12 @@ void HamiltonianTwo::calculate(const Configuration &conf_tot) {
             }
 
             // === Store path to configuration and diagonalized matrix ===
-            matrix_path[step] = path.string();
+            this->matrix_path[step] = path.string();
         }
     }
 
     std::cout << "Two-atom Hamiltonian, all Hamiltonians processed" << std::endl;
 }
+
+template class HamiltonianTwo<std::complex<double>>;
+template class HamiltonianTwo<double>;

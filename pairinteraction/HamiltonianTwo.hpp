@@ -26,7 +26,6 @@
 #include "HamiltonianOne.hpp"
 #include "MatrixElements.hpp"
 #include "SQLite.hpp"
-#include "dtypes.hpp"
 #include "filesystem.hpp"
 
 #include <boost/algorithm/hex.hpp>
@@ -38,18 +37,19 @@
 #include <iostream>
 #include <memory>
 
-class HamiltonianTwo : public Hamiltonian<BasisnamesTwo> {
+template <typename Scalar>
+class HamiltonianTwo : public Hamiltonian<Scalar, BasisnamesTwo> {
 public:
     HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                   const std::shared_ptr<HamiltonianOne> &hamiltonian_one);
+                   const std::shared_ptr<HamiltonianOne<Scalar>> &hamiltonian_one);
     HamiltonianTwo(const Configuration &config, fs::path &path_cache,
-                   std::shared_ptr<HamiltonianOne> hamiltonian_one1,
-                   std::shared_ptr<HamiltonianOne> hamiltonian_one2);
+                   std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1,
+                   std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2);
     void calculate(const Configuration &conf_tot);
 
 private:
-    std::shared_ptr<HamiltonianOne> hamiltonian_one1; // TODO const HamiltonianOne
-    std::shared_ptr<HamiltonianOne> hamiltonian_one2;
+    std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one1; // TODO const HamiltonianOne
+    std::shared_ptr<HamiltonianOne<Scalar>> hamiltonian_one2;
     double deltaE;
     int deltaN;
     int deltaL;
@@ -62,5 +62,8 @@ private:
     bool samebasis;
     fs::path path_cache;
 };
+
+extern template class HamiltonianTwo<std::complex<double>>;
+extern template class HamiltonianTwo<double>;
 
 #endif // HAMILTONIAN_TWO_H

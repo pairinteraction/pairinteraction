@@ -21,7 +21,6 @@
 #include "State.hpp"
 #include "SystemOne.hpp"
 #include "SystemTwo.hpp"
-#include "dtypes.hpp"
 #include "filesystem.hpp"
 
 #define DOCTEST_CONFIG_IMPLEMENT_WITH_MAIN
@@ -49,7 +48,7 @@ struct F {
 
 TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
 {
-
+    using Scalar = double;
     constexpr bool dump_new_reference_data = false;
     constexpr double tolerance = 1e-6;
 
@@ -61,8 +60,8 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     MatrixElementCache cache(path_cache.string());
 
     // Load reference data
-    eigen_sparse_t hamiltonian_one_reference, hamiltonian_two_reference;
-    eigen_sparse_t basis_one_reference, basis_two_reference;
+    Eigen::SparseMatrix<Scalar> hamiltonian_one_reference, hamiltonian_two_reference;
+    Eigen::SparseMatrix<Scalar> basis_one_reference, basis_two_reference;
 
     if (!dump_new_reference_data) {
         std::ifstream ifs("./pairinteraction/unit_test/integration_test_referencedata.txt");
@@ -81,7 +80,7 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     ////////////////////////////////////////////////////////////////////
 
     // Build one-atom system
-    SystemOne system_one(state_one.getSpecies(), cache);
+    SystemOne<Scalar> system_one(state_one.getSpecies(), cache);
     system_one.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
     system_one.restrictN(state_one.getN() - 1, state_one.getN() + 1);
     system_one.restrictL(state_one.getL() - 1, state_one.getL() + 1);
@@ -96,10 +95,10 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_one = system_one.getHamiltonian();
-    eigen_sparse_t basis_one = system_one.getBasisvectors();
+    Eigen::SparseMatrix<Scalar> hamiltonian_one = system_one.getHamiltonian();
+    Eigen::SparseMatrix<Scalar> basis_one = system_one.getBasisvectors();
 
-    eigen_sparse_double_t diff;
+    Eigen::SparseMatrix<double> diff;
     double max_diff_hamiltonian, max_diff_basis;
 
     if (!dump_new_reference_data) {
@@ -141,13 +140,13 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     // eigenvectors)
     // system_one = SystemOne(state_one.species, cache); // TODO  object of type 'SystemOne' cannot
     // be assigned because its copy assignment operator is implicitly deleted
-    SystemOne system_one_new(state_one.getSpecies(), cache);
+    SystemOne<Scalar> system_one_new(state_one.getSpecies(), cache);
     system_one_new.restrictEnergy(state_one.getEnergy() - 40, state_one.getEnergy() + 40);
     system_one_new.restrictN(state_one.getN() - 1, state_one.getN() + 1);
     system_one_new.restrictL(state_one.getL() - 1, state_one.getL() + 1);
 
     // Build two-atom system
-    SystemTwo system_two(system_one_new, system_one_new, cache);
+    SystemTwo<Scalar> system_two(system_one_new, system_one_new, cache);
     system_two.restrictEnergy(state_two.getEnergy() - 2, state_two.getEnergy() + 2);
     system_two.setConservedParityUnderPermutation(ODD);
     system_two.setDistance(6);
@@ -160,8 +159,8 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     // Compare current results to the reference data (the results have to be
     // compared before diagonalization as the order of the eigenvectors is not
     // fixed)
-    eigen_sparse_t hamiltonian_two = system_two.getHamiltonian();
-    eigen_sparse_t basis_two = system_two.getBasisvectors();
+    Eigen::SparseMatrix<Scalar> hamiltonian_two = system_two.getHamiltonian();
+    Eigen::SparseMatrix<Scalar> basis_two = system_two.getBasisvectors();
 
     if (!dump_new_reference_data) {
         diff = (hamiltonian_two - hamiltonian_two_reference)

@@ -20,15 +20,10 @@
 #ifndef QUANTUM_DEFECT_H
 #define QUANTUM_DEFECT_H
 
-#include "Cache.hpp"
 #include "SQLite.hpp"
-#include "dtypes.hpp"
 #include "utils.hpp"
 
-#include <mutex>
 #include <string>
-#include <tuple>
-#include <unordered_map>
 
 /** \brief Quantum defect storage
  *

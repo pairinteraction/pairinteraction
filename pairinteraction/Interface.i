@@ -1,18 +1,19 @@
 // -*- C -*-  (not really, but good for syntax highlighting)
-%module(docstring="Backend for @DATATYPE@ matrices") pi@DATATYPE@
+%module(docstring="Python interface for pairinteraction") binding
 
 %{
 #define SWIG_FILE_WITH_INIT
 
-#include "dtypes.hpp"
+#include "Constants.hpp"
 #include "Interface.hpp"
+#include "MatrixElementCache.hpp"
+#include "PerturbativeInteraction.hpp"
 #include "QuantumDefect.hpp"
 #include "State.hpp"
+#include "Symmetry.hpp"
 #include "SystemOne.hpp"
 #include "SystemTwo.hpp"
 #include "Wavefunction.hpp"
-#include "MatrixElementCache.hpp"
-#include "PerturbativeInteraction.hpp"
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/binary_iarchive.hpp>
@@ -139,14 +140,10 @@ namespace std {
   MAKE_NUMPY_TYPEMAP_IN(TYPE)
 %enddef
 
-MAKE_NUMPY_TYPEMAP(eigen_dense_t)
-MAKE_NUMPY_TYPEMAP(eigen_dense_t)
-MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
-MAKE_NUMPY_TYPEMAP(eigen_dense_double_t)
-MAKE_NUMPY_TYPEMAP(eigen_vector_t)
-MAKE_NUMPY_TYPEMAP(eigen_vector_double_t)
-MAKE_NUMPY_TYPEMAP(eigen_sparse_t)
-MAKE_NUMPY_TYPEMAP(eigen_sparse_double_t)
+MAKE_NUMPY_TYPEMAP(Eigen::MatrixX<double>)
+MAKE_NUMPY_TYPEMAP(Eigen::VectorX<double>)
+MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<double>)
+MAKE_NUMPY_TYPEMAP(Eigen::SparseMatrix<std::complex<double>>)
 
  // Instantiate often used STL templates
 namespace std {
@@ -158,7 +155,7 @@ namespace std {
   %template(ArrayDoubleThree) array<double,3>;
   %template(ArrayVectorSizeTTwo) array<std::vector<size_t>,2>;
   %template(VectorArraySizeTTwo) vector<std::array<size_t, 2>>;
-  %template(ArrayEigenVectorDoubleTwo) array<eigen_vector_double_t,2>;
+  %template(ArrayEigenVectorDoubleTwo) array<Eigen::VectorX<double>,2>;
   %template(SetInt) set<int>;
   %template(SetFloat) set<float>;
   %template(SetStateOne) set<StateOne>;
@@ -178,9 +175,13 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 %rename(__lt__) operator<;
-%include "dtypes.hpp"
 
+%include "Constants.hpp"
 %include "Interface.hpp"
+%include "Symmetry.hpp"
+
+%template(computeComplex) compute<std::complex<double>>;
+%template(computeReal) compute<double>;
 
 %include "QuantumDefect.hpp"
 
@@ -246,8 +247,10 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 
 
 // Wrap SystemOne.h and SystemTwo.h
-%template(_SystemStateOne) SystemBase<StateOne>;
-%template(_SystemStateTwo) SystemBase<StateTwo>;
+%template(_SystemStateOneComplex) SystemBase<std::complex<double>,StateOne>;
+%template(_SystemStateTwoComplex) SystemBase<std::complex<double>,StateTwo>;
+%template(_SystemStateOneReal) SystemBase<double,StateOne>;
+%template(_SystemStateTwoReal) SystemBase<double,StateTwo>;
 
 %copyctor SystemOne;
 %copyctor SystemTwo;
@@ -269,15 +272,33 @@ MAKE_NUMPY_TYPEMAP_OUT(std::array<double,2>)
 #endif
 }
 
-%extend SystemTwo {
+%extend SystemTwo<double> {
 #ifdef SWIGPYTHON
   %pythoncode %{
     def __setstate__(self, sState):
       tmp = MatrixElementCache()
-      s1 = SystemOne("", tmp)
-      s2 = SystemOne("", tmp)
+      s1 = SystemOneReal("", tmp)
+      s2 = SystemOneReal("", tmp)
       self.__init__(s1, s2, tmp)
       self.__setstate_internal(sState)
   %}
 #endif
 }
+
+%extend SystemTwo<std::complex<double>> {
+#ifdef SWIGPYTHON
+  %pythoncode %{
+    def __setstate__(self, sState):
+      tmp = MatrixElementCache()
+      s1 = SystemOneComplex("", tmp)
+      s2 = SystemOneComplex("", tmp)
+      self.__init__(s1, s2, tmp)
+      self.__setstate_internal(sState)
+  %}
+#endif
+}
+
+%template(SystemOneComplex) SystemOne<std::complex<double>>;
+%template(SystemTwoComplex) SystemTwo<std::complex<double>>;
+%template(SystemOneReal) SystemOne<double>;
+%template(SystemTwoReal) SystemTwo<double>;

@@ -25,7 +25,6 @@
 #include "Hamiltonian.hpp"
 #include "MatrixElements.hpp"
 #include "SQLite.hpp"
-#include "dtypes.hpp"
 #include "filesystem.hpp"
 
 #include <boost/algorithm/hex.hpp>
@@ -36,7 +35,8 @@
 #include <iostream>
 #include <memory>
 
-class HamiltonianOne : public Hamiltonian<BasisnamesOne> {
+template <typename Scalar>
+class HamiltonianOne : public Hamiltonian<Scalar, BasisnamesOne> {
 public:
     HamiltonianOne(const Configuration &config, fs::path &path_cache,
                    std::shared_ptr<BasisnamesOne> basis_one);
@@ -60,5 +60,8 @@ private:
     std::string species;
     fs::path path_cache;
 };
+
+extern template class HamiltonianOne<std::complex<double>>;
+extern template class HamiltonianOne<double>;
 
 #endif // HAMILTONIAN_ONE_H

@@ -150,11 +150,11 @@ void BasisnamesOne::build(StateTwoOld startstate, const std::string &species) {
     // loop over quantum numbers of startstate1
     for (int n = std::fmax(0, startstate.n[0] - delta_n); n <= startstate.n[0] + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l[0] - delta_l);
-             l <= fmin(n - 1, startstate.l[0] + delta_l); ++l) {
-            for (float j = std::fmax(fabs(l - 0.5), startstate.j[0] - delta_j);
-                 j <= fmin(l + 0.5, startstate.j[0] + delta_j); ++j) {
+             l <= std::fmin(n - 1, startstate.l[0] + delta_l); ++l) {
+            for (float j = std::fmax(std::fabs(l - 0.5), startstate.j[0] - delta_j);
+                 j <= std::fmin(l + 0.5, startstate.j[0] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[0] - delta_m);
-                     m <= fmin(j, startstate.m[0] + delta_m); ++m) {
+                     m <= std::fmin(j, startstate.m[0] + delta_m); ++m) {
                     auto result = names_set.insert(StateOneOld(idx, n, l, j, m));
                     if (result.second) {
                         idx++;
@@ -167,11 +167,11 @@ void BasisnamesOne::build(StateTwoOld startstate, const std::string &species) {
     // loop over quantum numbers of startstate2
     for (int n = std::fmax(0, startstate.n[1] - delta_n); n <= startstate.n[1] + delta_n; ++n) {
         for (int l = std::fmax(0, startstate.l[1] - delta_l);
-             l <= fmin(n - 1, startstate.l[1] + delta_l); ++l) {
-            for (float j = std::fmax(fabs(l - 0.5), startstate.j[1] - delta_j);
-                 j <= fmin(l + 0.5, startstate.j[1] + delta_j); ++j) {
+             l <= std::fmin(n - 1, startstate.l[1] + delta_l); ++l) {
+            for (float j = std::fmax(std::fabs(l - 0.5), startstate.j[1] - delta_j);
+                 j <= std::fmin(l + 0.5, startstate.j[1] + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m[1] - delta_m);
-                     m <= fmin(j, startstate.m[1] + delta_m); ++m) {
+                     m <= std::fmin(j, startstate.m[1] + delta_m); ++m) {
                     auto result = names_set.insert(StateOneOld(idx, n, l, j, m));
                     if (result.second) {
                         idx++;
@@ -213,12 +213,12 @@ void BasisnamesOne::build(StateOneOld startstate, const std::string &species) {
 
     // loop over quantum numbers
     for (int n = std::fmax(0, startstate.n - delta_n); n <= startstate.n + delta_n; ++n) {
-        for (int l = std::fmax(0, startstate.l - delta_l); l <= fmin(n - 1, startstate.l + delta_l);
-             ++l) {
-            for (float j = std::fmax(fabs(l - 0.5), startstate.j - delta_j);
-                 j <= fmin(l + 0.5, startstate.j + delta_j); ++j) {
+        for (int l = std::fmax(0, startstate.l - delta_l);
+             l <= std::fmin(n - 1, startstate.l + delta_l); ++l) {
+            for (float j = std::fmax(std::fabs(l - 0.5), startstate.j - delta_j);
+                 j <= std::fmin(l + 0.5, startstate.j + delta_j); ++j) {
                 for (float m = std::fmax(-j, startstate.m - delta_m);
-                     m <= fmin(j, startstate.m + delta_m); ++m) { // TODO
+                     m <= std::fmin(j, startstate.m + delta_m); ++m) { // TODO
                     names_.emplace_back(idx++, n, l, j, m);
                 }
             }

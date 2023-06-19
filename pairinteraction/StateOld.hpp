@@ -20,7 +20,6 @@
 #ifndef STATEOLD_H
 #define STATEOLD_H
 
-#include "dtypes.hpp"
 #include "utils.hpp"
 
 #include <array>
@@ -38,6 +37,8 @@
 // clang-format on
 #include <boost/serialization/array.hpp>
 #include <boost/serialization/string.hpp>
+
+typedef uint32_t idx_t;
 
 /** \brief %Base class for states
  *

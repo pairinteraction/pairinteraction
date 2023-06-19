@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-import pairinteraction.picomplex as pi
+import pairinteraction.pireal as pi
 
 
 class TestState(unittest.TestCase):

@@ -22,7 +22,7 @@ import Base.string
 using CxxWrap
 
 pairinteraction_dir = dirname(@__FILE__)
-@wrapmodule(joinpath(pairinteraction_dir, "libpireal_jl.so"))
+@wrapmodule(joinpath(pairinteraction_dir, "libpairinteraction_jl.so"))
 
 function __init__()
     @initcxx

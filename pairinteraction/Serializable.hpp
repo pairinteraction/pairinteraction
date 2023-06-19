@@ -20,8 +20,6 @@
 #ifndef SERIALIZABLE_H
 #define SERIALIZABLE_H
 
-#include "dtypes.hpp"
-
 #include <iterator>
 #include <memory>
 #include <typeindex>
@@ -29,14 +27,17 @@
 #include <unordered_map>
 #include <vector>
 
+typedef uint8_t byte_t;
+typedef uint16_t type_t;
+typedef int32_t storage_idx_t;
+typedef std::vector<byte_t> bytes_t;
+
 class Serializable {
 public:
     virtual ~Serializable() = default;
     virtual bytes_t &serialize() = 0;
     virtual void deserialize(bytes_t &bytes) = 0;
 };
-
-typedef uint16_t type_t;
 
 class Serializer {
 public:

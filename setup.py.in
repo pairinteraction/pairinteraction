@@ -29,8 +29,8 @@ setup(
     ]),
     package_data = {
         "pairinteraction" : [
-            "_picomplex.so", "_pireal.so",
-            "pairinteraction-complex", "pairinteraction-real",
+            "_binding.so",
+            "pairinteraction-backend-deprecated",
             "databases/quantum_defects.db"
         ],
         "pairinteraction_gui" : [ "conf/example.pconf", "conf/example.sconf", "pairinteraction_app/icon.png" ],

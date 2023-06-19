@@ -30,7 +30,7 @@ state_two = PairInteraction.StateTwo(state_one, state_one)
 
 # test_greentensor_angle
 # Build one-atom system
-system_one = PairInteraction.SystemOne(PairInteraction.getSpecies(state_one), cache)
+system_one = PairInteraction.SystemOne{Float64}(PairInteraction.getSpecies(state_one), cache)
 PairInteraction.restrictEnergy(system_one, PairInteraction.getEnergy(state_one) - 40,
                                            PairInteraction.getEnergy(state_one) + 40)
 PairInteraction.restrictN(system_one, PairInteraction.getN(state_one) - 1,
@@ -39,7 +39,7 @@ PairInteraction.restrictL(system_one, PairInteraction.getL(state_one) - 2,
                                       PairInteraction.getL(state_one) + 2)
 
 # Build two-atom system
-system_two = PairInteraction.SystemTwo(system_one, system_one, cache)
+system_two = PairInteraction.SystemTwo{Float64}(system_one, system_one, cache)
 PairInteraction.restrictEnergy(system_two, PairInteraction.getEnergy(state_two) - 5,
                                            PairInteraction.getEnergy(state_two) + 5)
 PairInteraction.setConservedParityUnderInversion(system_two, PairInteraction.ODD)
@@ -48,12 +48,12 @@ PairInteraction.setDistance(system_two, 5)
 PairInteraction.setAngle(system_two, 1.78)
 
 # Construct the Hamiltonian using the standard approach
-system_two_standard = PairInteraction.SystemTwo(system_two)
+system_two_standard = PairInteraction.SystemTwo{Float64}(system_two)
 PairInteraction.enableGreenTensor(system_two_standard, false)
 hamiltonian_standard = sparse(PairInteraction.getHamiltonian(system_two_standard))
 
 # Construct the Hamiltonian using the green tensor approach
-system_two_greentensor = PairInteraction.SystemTwo(system_two)
+system_two_greentensor = PairInteraction.SystemTwo{Float64}(system_two)
 PairInteraction.enableGreenTensor(system_two_greentensor, true)
 hamiltonian_greentensor = sparse(PairInteraction.getHamiltonian(system_two_greentensor))
 
@@ -78,7 +78,7 @@ state_one2 = PairInteraction.StateOne("Rb", 72, 0, 0.5f0, 0.5f0)
 state_two = PairInteraction.StateTwo(state_one1, state_one2)
 
 # Set up one-atom system
-system_one = PairInteraction.SystemOne(PairInteraction.getSpecies(state_one1), cache)
+system_one = PairInteraction.SystemOne{Float64}(PairInteraction.getSpecies(state_one1), cache)
 PairInteraction.restrictEnergy(system_one,
                                min(PairInteraction.getEnergy(state_one1),
                                PairInteraction.getEnergy(state_one2)) - 30,
@@ -92,7 +92,7 @@ PairInteraction.restrictL(system_one,
                           max(PairInteraction.getL(state_one1), PairInteraction.getL(state_one2)) + 1)
 
 # Set up two-atom system
-system_two = PairInteraction.SystemTwo(system_one, system_one, cache)
+system_two = PairInteraction.SystemTwo{Float64}(system_one, system_one, cache)
 PairInteraction.restrictEnergy(system_two,
                                PairInteraction.getEnergy(state_two) - 3,
                                PairInteraction.getEnergy(state_two) + 3)

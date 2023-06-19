@@ -18,6 +18,8 @@
  */
 
 #include "MatrixElementCache.hpp"
+
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
 #include "SQLite.hpp"
 #include "filesystem.hpp"
@@ -36,7 +38,7 @@
 
 bool selectionRulesMomentumNew(StateOne const &state1, StateOne const &state2, int q) {
     bool validL = state1.getL() == state2.getL();
-    bool validJ = fabs(state1.getJ() - state2.getJ()) <= 1;
+    bool validJ = std::fabs(state1.getJ() - state2.getJ()) <= 1;
     bool validM = state1.getM() == state2.getM() + q;
     bool validQ = abs(q) <= 1;
     return validL && validJ && validM && validQ;
@@ -44,31 +46,33 @@ bool selectionRulesMomentumNew(StateOne const &state1, StateOne const &state2, i
 
 bool selectionRulesMomentumNew(StateOne const &state1, StateOne const &state2) {
     bool validL = state1.getL() == state2.getL();
-    bool validJ = fabs(state1.getJ() - state2.getJ()) <= 1;
-    bool validM = (fabs(state1.getM() - state2.getM()) <= 1);
+    bool validJ = std::fabs(state1.getJ() - state2.getJ()) <= 1;
+    bool validM = (std::fabs(state1.getM() - state2.getM()) <= 1);
     return validL && validJ && validM;
 }
 
 bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, int kappa, int q) {
     bool validL = (abs(state1.getL() - state2.getL()) <= kappa) &&
         (kappa % 2 == abs(state1.getL() - state2.getL()) % 2);
-    bool validJ =
-        (fabs(state1.getJ() - state2.getJ()) <= kappa) && (state1.getJ() + state2.getJ() >= kappa);
+    bool validJ = (std::fabs(state1.getJ() - state2.getJ()) <= kappa) &&
+        (state1.getJ() + state2.getJ() >= kappa);
     bool validM = state1.getM() == state2.getM() + q;
     bool validQ = abs(q) <= kappa;
-    bool noZero = !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
-                    state1.getM() == -state2.getM() && fabs(state1.getM() - state2.getM()) == 1);
+    bool noZero =
+        !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
+          state1.getM() == -state2.getM() && std::fabs(state1.getM() - state2.getM()) == 1);
     return validL && validJ && validM && validQ && noZero;
 }
 
 bool selectionRulesMultipoleNew(StateOne const &state1, StateOne const &state2, int kappa) {
     bool validL = (abs(state1.getL() - state2.getL()) <= kappa) &&
         (kappa % 2 == abs(state1.getL() - state2.getL()) % 2);
-    bool validJ =
-        (fabs(state1.getJ() - state2.getJ()) <= kappa) && (state1.getJ() + state2.getJ() >= kappa);
-    bool validM = (fabs(state1.getM() - state2.getM()) <= kappa);
-    bool noZero = !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
-                    state1.getM() == -state2.getM() && fabs(state1.getM() - state2.getM()) == 1);
+    bool validJ = (std::fabs(state1.getJ() - state2.getJ()) <= kappa) &&
+        (state1.getJ() + state2.getJ() >= kappa);
+    bool validM = (std::fabs(state1.getM() - state2.getM()) <= kappa);
+    bool noZero =
+        !(kappa == 2 && state1.getJ() == state2.getJ() && state2.getJ() == 1.5 &&
+          state1.getM() == -state2.getM() && std::fabs(state1.getM() - state2.getM()) == 1);
     return validL && validJ && validM && noZero;
 }
 
@@ -229,7 +233,7 @@ MatrixElementCache::CacheKey_cache_angular::CacheKey_cache_angular(int kappa, fl
     } else {
         j = {{j2, j1}};
         m = {{m2, m1}};
-        sgn = pow(-1, int(j1 - m1 + j2 - m2));
+        sgn = std::pow(-1, int(j1 - m1 + j2 - m2));
     }
 }
 
@@ -243,7 +247,7 @@ MatrixElementCache::CacheKey_cache_reduced_commutes::CacheKey_cache_reduced_comm
     } else {
         l = {{l2, l1}};
         j = {{j2, j1}};
-        sgn = pow(-1, int(l1 + j1 + l2 + j2 + 2 * s)); // TODO is this formula always correct?
+        sgn = std::pow(-1, int(l1 + j1 + l2 + j2 + 2 * s)); // TODO is this formula always correct?
     }
 }
 
@@ -256,7 +260,7 @@ MatrixElementCache::CacheKey_cache_reduced_multipole::CacheKey_cache_reduced_mul
         sgn = 1;
     } else {
         l = {{l2, l1}};
-        sgn = pow(-1, kappa);
+        sgn = std::pow(-1, kappa);
     }
 }
 
@@ -405,8 +409,8 @@ double MatrixElementCache::getMagneticDipole(StateOne const &state_row, StateOne
 
     return -bohr_magneton * iter1->second * key2.sgn * iter2->second *
         (gL * key3.sgn * iter3->second *
-             sqrt(state_row.getL() * (state_row.getL() + 1) * (2 * state_row.getL() + 1)) +
-         gS * key4.sgn * iter4->second * sqrt(s * (s + 1) * (2 * s + 1)));
+             std::sqrt(state_row.getL() * (state_row.getL() + 1) * (2 * state_row.getL() + 1)) +
+         gS * key4.sgn * iter4->second * std::sqrt(s * (s + 1) * (2 * s + 1)));
 }
 
 double MatrixElementCache::getElectricMultipole(StateOne const &state_row,
@@ -813,7 +817,7 @@ int MatrixElementCache::update() {
         for (auto &cached : cache_angular_missing) {
             float q = cached.m[0] - cached.m[1];
 
-            double val = pow(-1, int(cached.j[0] - cached.m[0])) *
+            double val = std::pow(-1, int(cached.j[0] - cached.m[0])) *
                 WignerSymbols::wigner3j(cached.j[0], cached.kappa, cached.j[1], -cached.m[0], q,
                                         cached.m[1]);
             cache_angular.insert({cached, val});
@@ -855,8 +859,8 @@ int MatrixElementCache::update() {
                 cached.j[1] >= std::abs(cached.l[1] - cached.s) &&
                 cached.j[1] <=
                     cached.l[1] + cached.s) { // TODO implement this in the wignerSymbols library
-                val = pow(-1, int(cached.l[0] + cached.s + cached.j[1] + cached.kappa)) *
-                    sqrt((2 * cached.j[0] + 1) * (2 * cached.j[1] + 1)) *
+                val = std::pow(-1, int(cached.l[0] + cached.s + cached.j[1] + cached.kappa)) *
+                    std::sqrt((2 * cached.j[0] + 1) * (2 * cached.j[1] + 1)) *
                     WignerSymbols::wigner6j(cached.l[0], cached.j[0], cached.s, cached.j[1],
                                             cached.l[1], cached.kappa);
             }
@@ -900,8 +904,8 @@ int MatrixElementCache::update() {
                 cached.j[1] >= std::abs(cached.s - cached.l[0]) &&
                 cached.j[1] <=
                     cached.s + cached.l[0]) { // TODO implement this in the wignerSymbols library
-                val = pow(-1, int(cached.l[0] + cached.s + cached.j[0] + cached.kappa)) *
-                    sqrt((2 * cached.j[0] + 1) * (2 * cached.j[1] + 1)) *
+                val = std::pow(-1, int(cached.l[0] + cached.s + cached.j[0] + cached.kappa)) *
+                    std::sqrt((2 * cached.j[0] + 1) * (2 * cached.j[1] + 1)) *
                     WignerSymbols::wigner6j(cached.s, cached.j[0], cached.l[0], cached.j[1],
                                             cached.s, cached.kappa);
             }
@@ -933,8 +937,8 @@ int MatrixElementCache::update() {
 
         for (auto &cached : cache_reduced_multipole_missing) {
 
-            double val = pow(-1, cached.l[0]) *
-                sqrt((2 * cached.l[0] + 1) * (2 * cached.l[1] + 1)) *
+            double val = std::pow(-1, cached.l[0]) *
+                std::sqrt((2 * cached.l[0] + 1) * (2 * cached.l[1] + 1)) *
                 WignerSymbols::wigner3j(
                              cached.l[0], cached.kappa, cached.l[1], 0, 0,
                              0); // TODO call WignerSymbols::wigner3j(cached.kappa,

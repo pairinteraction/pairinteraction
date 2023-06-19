@@ -23,8 +23,11 @@
 #include "Basisnames.hpp"
 #include "Serializable.hpp"
 #include "StateOld.hpp"
-#include "dtypes.hpp"
+#include "Symmetry.hpp"
 #include "utils.hpp"
+
+#include "EigenCompat.hpp"
+#include <Eigen/SparseCore>
 
 #include <cmath>
 #include <cstdint>
@@ -34,26 +37,52 @@
 #include <stdexcept>
 #include <vector>
 
+typedef double storage_double;
+
 const uint8_t csr_not_csc = 0x01;      // xxx0: csc, xxx1: csr
 const uint8_t complex_not_real = 0x02; // xx0x: real, xx1x: complex
 
+template <typename Scalar>
+class Hamiltonianmatrix;
+
+template <typename Scalar>
+Hamiltonianmatrix<Scalar> operator+(Hamiltonianmatrix<Scalar> lhs,
+                                    const Hamiltonianmatrix<Scalar> &rhs);
+template <typename Scalar>
+Hamiltonianmatrix<Scalar> operator-(Hamiltonianmatrix<Scalar> lhs,
+                                    const Hamiltonianmatrix<Scalar> &rhs);
+template <typename Scalar, typename T>
+Hamiltonianmatrix<Scalar> operator*(const T &lhs, Hamiltonianmatrix<Scalar> rhs);
+template <typename Scalar, typename T>
+Hamiltonianmatrix<Scalar> operator*(Hamiltonianmatrix<Scalar> lhs, const T &rhs);
+
+template <typename Scalar>
+Hamiltonianmatrix<Scalar>
+combine(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<Scalar> &rhs,
+        const double &deltaE, const std::shared_ptr<BasisnamesTwo> &basis_two, const Symmetry &sym);
+template <typename Scalar>
+void energycutoff(const Hamiltonianmatrix<Scalar> &lhs, const Hamiltonianmatrix<Scalar> &rhs,
+                  const double &deltaE, std::vector<bool> &necessary);
+
+template <typename Scalar>
 class Hamiltonianmatrix : public Serializable {
 public:
     Hamiltonianmatrix();
-    Hamiltonianmatrix(const eigen_sparse_t &entries, const eigen_sparse_t &basis);
+    Hamiltonianmatrix(const Eigen::SparseMatrix<Scalar> &entries,
+                      const Eigen::SparseMatrix<Scalar> &basis);
     Hamiltonianmatrix(size_t szBasis, size_t szEntries);
-    eigen_sparse_t &entries();
-    const eigen_sparse_t &entries() const;
-    eigen_sparse_t &basis();
-    const eigen_sparse_t &basis() const;
+    Eigen::SparseMatrix<Scalar> &entries();
+    const Eigen::SparseMatrix<Scalar> &entries() const;
+    Eigen::SparseMatrix<Scalar> &basis();
+    const Eigen::SparseMatrix<Scalar> &basis() const;
     size_t num_basisvectors() const;
     size_t num_coordinates() const;
-    void addBasis(idx_t row, idx_t col, scalar_t val);
-    void addEntries(idx_t row, idx_t col, scalar_t val);
+    void addBasis(idx_t row, idx_t col, Scalar val);
+    void addEntries(idx_t row, idx_t col, Scalar val);
     void compress(size_t nBasis, size_t nCoordinates);
     std::vector<Hamiltonianmatrix> findSubs() const;
     Hamiltonianmatrix abs() const;
-    Hamiltonianmatrix changeBasis(const eigen_sparse_t &basis) const;
+    Hamiltonianmatrix changeBasis(const Eigen::SparseMatrix<Scalar> &basis) const;
     void applyCutoff(double cutoff);
     void findUnnecessaryStates(std::vector<bool> &isNecessaryCoordinate) const;
     void removeUnnecessaryBasisvectors(const std::vector<bool> &isNecessaryCoordinate);
@@ -61,10 +90,12 @@ public:
     void removeUnnecessaryStates(const std::vector<bool> &isNecessaryCoordinate);
     Hamiltonianmatrix getBlock(const std::vector<ptrdiff_t> &indices);
     void diagonalize();
-    friend Hamiltonianmatrix operator+(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
-    friend Hamiltonianmatrix operator-(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
-    friend Hamiltonianmatrix operator*(const scalar_t &lhs, Hamiltonianmatrix rhs);
-    friend Hamiltonianmatrix operator*(Hamiltonianmatrix lhs, const scalar_t &rhs);
+    friend Hamiltonianmatrix operator+<>(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
+    friend Hamiltonianmatrix operator-<>(Hamiltonianmatrix lhs, const Hamiltonianmatrix &rhs);
+    template <typename S, typename T>
+    friend Hamiltonianmatrix<S> operator*(const T &lhs, Hamiltonianmatrix<S> rhs); // NOLINT
+    template <typename S, typename T>
+    friend Hamiltonianmatrix<S> operator*(Hamiltonianmatrix<S> lhs, const T &rhs); // NOLINT
     Hamiltonianmatrix &operator+=(const Hamiltonianmatrix &rhs);
     Hamiltonianmatrix &operator-=(const Hamiltonianmatrix &rhs);
     bytes_t &serialize() override;
@@ -75,12 +106,12 @@ public:
     uint64_t hashBasis();
     void save(const std::string &fname);
     bool load(const std::string &fname);
-    friend Hamiltonianmatrix combine(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
-                                     const double &deltaE,
-                                     const std::shared_ptr<BasisnamesTwo> &basis_two,
-                                     const Symmetry &sym);
-    friend void energycutoff(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
-                             const double &deltaE, std::vector<bool> &necessary);
+    friend Hamiltonianmatrix combine<>(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
+                                       const double &deltaE,
+                                       const std::shared_ptr<BasisnamesTwo> &basis_two,
+                                       const Symmetry &sym);
+    friend void energycutoff<>(const Hamiltonianmatrix &lhs, const Hamiltonianmatrix &rhs,
+                               const double &deltaE, std::vector<bool> &necessary);
 
     template <typename T, typename std::enable_if<utils::is_complex<T>::value>::type * = nullptr>
     void mergeComplex(std::vector<storage_double> &real, std::vector<storage_double> &imag,
@@ -119,11 +150,49 @@ public:
     }
 
 protected:
-    eigen_sparse_t entries_;
-    eigen_sparse_t basis_;
+    Eigen::SparseMatrix<Scalar> entries_;
+    Eigen::SparseMatrix<Scalar> basis_;
     bytes_t bytes;
-    std::vector<eigen_triplet_t> triplets_basis;
-    std::vector<eigen_triplet_t> triplets_entries;
+    std::vector<Eigen::Triplet<Scalar>> triplets_basis;
+    std::vector<Eigen::Triplet<Scalar>> triplets_entries;
 };
+
+extern template class Hamiltonianmatrix<std::complex<double>>;
+extern template Hamiltonianmatrix<std::complex<double>>
+operator+(Hamiltonianmatrix<std::complex<double>> lhs,
+          const Hamiltonianmatrix<std::complex<double>> &rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+operator-(Hamiltonianmatrix<std::complex<double>> lhs,
+          const Hamiltonianmatrix<std::complex<double>> &rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+operator*(const std::complex<double> &lhs, Hamiltonianmatrix<std::complex<double>> rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+operator*(Hamiltonianmatrix<std::complex<double>> lhs, const std::complex<double> &rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+operator*(const double &lhs, Hamiltonianmatrix<std::complex<double>> rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+operator*(Hamiltonianmatrix<std::complex<double>> lhs, const double &rhs);
+extern template Hamiltonianmatrix<std::complex<double>>
+combine(const Hamiltonianmatrix<std::complex<double>> &lhs,
+        const Hamiltonianmatrix<std::complex<double>> &rhs, const double &deltaE,
+        const std::shared_ptr<BasisnamesTwo> &basis_two, const Symmetry &sym);
+extern template void energycutoff(const Hamiltonianmatrix<std::complex<double>> &lhs,
+                                  const Hamiltonianmatrix<std::complex<double>> &rhs,
+                                  const double &deltaE, std::vector<bool> &necessary);
+extern template class Hamiltonianmatrix<double>;
+extern template Hamiltonianmatrix<double> operator+(Hamiltonianmatrix<double> lhs,
+                                                    const Hamiltonianmatrix<double> &rhs);
+extern template Hamiltonianmatrix<double> operator-(Hamiltonianmatrix<double> lhs,
+                                                    const Hamiltonianmatrix<double> &rhs);
+extern template Hamiltonianmatrix<double> operator*(const double &lhs,
+                                                    Hamiltonianmatrix<double> rhs);
+extern template Hamiltonianmatrix<double> operator*(Hamiltonianmatrix<double> lhs,
+                                                    const double &rhs);
+extern template Hamiltonianmatrix<double>
+combine(const Hamiltonianmatrix<double> &lhs, const Hamiltonianmatrix<double> &rhs,
+        const double &deltaE, const std::shared_ptr<BasisnamesTwo> &basis_two, const Symmetry &sym);
+extern template void energycutoff(const Hamiltonianmatrix<double> &lhs,
+                                  const Hamiltonianmatrix<double> &rhs, const double &deltaE,
+                                  std::vector<bool> &necessary);
 
 #endif // HAMILTONIANMATRIX_H

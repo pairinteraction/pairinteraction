@@ -18,8 +18,13 @@
  */
 
 #include "MatrixElements.hpp"
+
+#include "Constants.hpp"
 #include "QuantumDefect.hpp"
 #include "SQLite.hpp"
+
+#include <fmt/format.h>
+
 #include <cctype>
 #include <iostream>
 #include <limits>
@@ -28,11 +33,9 @@
 #include <string>
 #include <utility>
 
-#include <fmt/format.h>
-
 bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2, int q) {
     bool validL = state1.l == state2.l;
-    bool validJ = fabs(state1.j - state2.j) <= 1;
+    bool validJ = std::fabs(state1.j - state2.j) <= 1;
     bool validM = state1.m == state2.m + q;
     bool validQ = abs(q) <= 1;
     return validL && validJ && validM && validQ;
@@ -40,8 +43,8 @@ bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2
 
 bool selectionRulesMomentum(StateOneOld const &state1, StateOneOld const &state2) {
     bool validL = state1.l == state2.l;
-    bool validJ = fabs(state1.j - state2.j) <= 1;
-    bool validM = (fabs(state1.m - state2.m) <= 1);
+    bool validJ = std::fabs(state1.j - state2.j) <= 1;
+    bool validM = (std::fabs(state1.m - state2.m) <= 1);
     return validL && validJ && validM;
 }
 
@@ -49,21 +52,21 @@ bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state
                              int q) {
     bool validL =
         (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
-    bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
+    bool validJ = (std::fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
     bool validM = state1.m == state2.m + q;
     bool validQ = abs(q) <= kappa;
     bool noZero = !(kappa == 2 && state1.j == state2.j && state2.j == 1.5 &&
-                    state1.m == -state2.m && fabs(state1.m - state2.m) == 1);
+                    state1.m == -state2.m && std::fabs(state1.m - state2.m) == 1);
     return validL && validJ && validM && validQ && noZero;
 }
 
 bool selectionRulesMultipole(StateOneOld const &state1, StateOneOld const &state2, int kappa) {
     bool validL =
         (abs(state1.l - state2.l) <= kappa) && (kappa % 2 == abs(state1.l - state2.l) % 2);
-    bool validJ = (fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
-    bool validM = (fabs(state1.m - state2.m) <= kappa);
+    bool validJ = (std::fabs(state1.j - state2.j) <= kappa) && (state1.j + state2.j >= kappa);
+    bool validM = (std::fabs(state1.m - state2.m) <= kappa);
     bool noZero = !(kappa == 2 && state1.j == state2.j && state2.j == 1.5 &&
-                    state1.m == -state2.m && fabs(state1.m - state2.m) == 1);
+                    state1.m == -state2.m && std::fabs(state1.m - state2.m) == 1);
     return validL && validJ && validM && noZero;
 }
 
@@ -137,11 +140,11 @@ double MatrixElements::getMagneticMomentum(StateOneOld const &state_row,
         (gL *
              cache_reduced_commutes_s[1][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
                                                      {{state_row.j, state_col.j}}, {{0, 0}})] *
-             sqrt(state_row.l * (state_row.l + 1) * (2 * state_row.l + 1)) +
+             std::sqrt(state_row.l * (state_row.l + 1) * (2 * state_row.l + 1)) +
          gS *
              cache_reduced_commutes_l[1][StateTwoOld({{0, 0}}, {{state_row.l, state_col.l}},
                                                      {{state_row.j, state_col.j}}, {{0, 0}})] *
-             sqrt(
+             std::sqrt(
                  0.5 * (0.5 + 1) *
                  (2 * 0.5 +
                   1))); // TODO give the radial matrix element the unit au2GHz / au2G * muB (for the
@@ -477,7 +480,7 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                 auto state = cache.first;
                 float q = state.m[0] - state.m[1];
 
-                cache.second = pow(-1, state.j[0] - state.m[0]) *
+                cache.second = std::pow(-1, state.j[0] - state.m[0]) *
                     WignerSymbols::wigner3j(state.j[0], kappa, state.j[1], -state.m[0], q,
                                             state.m[1]);
 
@@ -503,8 +506,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
                     state.j[1] >= std::abs(state.j[0] - kappa) &&
                     state.j[1] <= state.j[0] + kappa && state.j[1] >= std::abs(state.l[1] - 0.5) &&
                     state.j[1] <= state.l[1] + 0.5) {
-                    cache.second = pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) *
-                        sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
+                    cache.second = std::pow(-1, state.l[0] + 0.5 + state.j[1] + kappa) *
+                        std::sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
                         WignerSymbols::wigner6j(state.l[0], state.j[0], 0.5, state.j[1], state.l[1],
                                                 kappa);
                 } else {
@@ -525,8 +528,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) *
-                    sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
+                cache.second = std::pow(-1, state.l[0] + 0.5 + state.j[0] + kappa) *
+                    std::sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
                     WignerSymbols::wigner6j(0.5, state.j[0], state.l[0], state.j[1], 0.5, kappa);
 
                 ss.str(std::string());
@@ -543,8 +546,8 @@ void MatrixElements::precalculate(const std::shared_ptr<const BasisnamesOne> &ba
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0]) *
-                    sqrt((2 * state.l[0] + 1) * (2 * state.l[1] + 1)) *
+                cache.second = std::pow(-1, state.l[0]) *
+                    std::sqrt((2 * state.l[0] + 1) * (2 * state.l[1] + 1)) *
                     WignerSymbols::wigner3j(state.l[0], kappa, state.l[1], 0, 0, 0);
 
                 ss.str(std::string());
@@ -854,7 +857,7 @@ void MatrixElements::precalculate(const std::vector<StateOneOld> &basis_one, int
                 auto state = cache.first;
                 float q = state.m[0] - state.m[1];
 
-                cache.second = pow(-1, state.j[0] - state.m[0]) *
+                cache.second = std::pow(-1, state.j[0] - state.m[0]) *
                     WignerSymbols::wigner3j(state.j[0], kappa, state.j[1], -state.m[0], q,
                                             state.m[1]);
 
@@ -895,8 +898,8 @@ void MatrixElements::precalculate(const std::vector<StateOneOld> &basis_one, int
                     state.j[1] >= std::abs(state.j[0] - kappa) &&
                     state.j[1] <= state.j[0] + kappa && state.j[1] >= std::abs(state.l[1] - s) &&
                     state.j[1] <= state.l[1] + s) {
-                    cache.second = pow(-1, state.l[0] + s + state.j[1] + kappa) *
-                        sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
+                    cache.second = std::pow(-1, state.l[0] + s + state.j[1] + kappa) *
+                        std::sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
                         WignerSymbols::wigner6j(state.l[0], state.j[0], s, state.j[1], state.l[1],
                                                 kappa);
                 } else {
@@ -932,8 +935,8 @@ void MatrixElements::precalculate(const std::vector<StateOneOld> &basis_one, int
                     state.j[1] >= std::abs(state.j[0] - kappa) &&
                     state.j[1] <= state.j[0] + kappa && state.j[1] >= std::abs(s - state.l[0]) &&
                     state.j[1] <= s + state.l[0]) {
-                    cache.second = pow(-1, state.l[0] + s + state.j[0] + kappa) *
-                        sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
+                    cache.second = std::pow(-1, state.l[0] + s + state.j[0] + kappa) *
+                        std::sqrt((2 * state.j[0] + 1) * (2 * state.j[1] + 1)) *
                         WignerSymbols::wigner6j(s, state.j[0], state.l[0], state.j[1], s, kappa);
                 } else {
                     cache.second = 0;
@@ -961,8 +964,8 @@ void MatrixElements::precalculate(const std::vector<StateOneOld> &basis_one, int
             if (cache.second == std::numeric_limits<double>::max()) {
                 auto state = cache.first;
 
-                cache.second = pow(-1, state.l[0]) *
-                    sqrt((2 * state.l[0] + 1) * (2 * state.l[1] + 1)) *
+                cache.second = std::pow(-1, state.l[0]) *
+                    std::sqrt((2 * state.l[0] + 1) * (2 * state.l[1] + 1)) *
                     WignerSymbols::wigner3j(state.l[0], kappa, state.l[1], 0, 0, 0);
 
                 if (cache.second > 1e9) {

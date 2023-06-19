@@ -1,7 +1,7 @@
 import sqlite3
 import unittest
 
-from pairinteraction import picomplex as pi
+from pairinteraction import pireal as pi
 
 
 class TestQuantumDefect(unittest.TestCase):

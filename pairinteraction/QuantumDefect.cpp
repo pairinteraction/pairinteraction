@@ -18,6 +18,8 @@
  */
 
 #include "QuantumDefect.hpp"
+#include "Cache.hpp"
+#include "Constants.hpp"
 #include "EmbeddedDatabase.hpp"
 #include "SQLite.hpp"
 
@@ -183,8 +185,8 @@ void QuantumDefect::setup(sqlite3 *db, std::string const &db_name) {
         double d6 = stmt.get<double>(3);
         double d8 = stmt.get<double>(4);
         Ry = stmt.get<double>(5);
-        e.nstar -= d0 + d2 / pow(n - d0, 2) + d4 / pow(n - d0, 4) + d6 / pow(n - d0, 6) +
-            d8 / pow(n - d0, 8);
+        e.nstar -= d0 + d2 / std::pow(n - d0, 2) + d4 / std::pow(n - d0, 4) +
+            d6 / std::pow(n - d0, 6) + d8 / std::pow(n - d0, 8);
     } else {
         throw no_defect(*this);
     }

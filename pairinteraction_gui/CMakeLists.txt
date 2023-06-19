@@ -49,8 +49,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
   )
   add_dependencies(pyinstaller gui)
 
-  add_dependencies(pyinstaller _pireal)
-  add_dependencies(pyinstaller _picomplex)
+  add_dependencies(pyinstaller _binding)
   add_dependencies(pyinstaller database)
 
 else( )
