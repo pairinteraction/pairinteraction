@@ -22,7 +22,6 @@
 
 #include "State.hpp"
 #include "serialization_eigen.hpp"
-#include "serialization_path.hpp"
 #include "utils.hpp"
 
 #include <boost/multi_index/hashed_index.hpp>

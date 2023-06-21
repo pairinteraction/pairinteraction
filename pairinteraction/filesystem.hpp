@@ -11,6 +11,8 @@
 #endif
 // clang-format on
 
+#include <cereal/types/string.hpp>
+
 #include <memory>
 
 #include <cstdio>
@@ -47,6 +49,17 @@ inline path create_temp_directory() {
 #error "Compiler does support not mkdtemp()"
 #endif
     return dirname;
+}
+
+template <class Archive>
+void CEREAL_LOAD_MINIMAL_FUNCTION_NAME(Archive const & /* unused */, path &p,
+                                       std::string const &s) {
+    p = path(s);
+}
+
+template <class Archive>
+std::string CEREAL_SAVE_MINIMAL_FUNCTION_NAME(Archive const & /* unused */, path const &p) {
+    return p.string();
 }
 
 } // namespace fs

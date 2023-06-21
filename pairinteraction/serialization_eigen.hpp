@@ -22,95 +22,89 @@
 
 #include <cereal/archives/binary.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 
 #include "EigenCompat.hpp"
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
-template <bool is_loading>
-struct serializer;
+template <typename T, typename S>
+struct ArrayData {
+    T *data;
+    S size;
 
-template <>
-struct serializer<false> {
-    void serialize(cereal::BinaryOutputArchive &ar, const void *data, size_t size,
-                   const char * /* name */) {
-        ar.saveBinary(data, size);
-    }
-    void serialize(cereal::JSONOutputArchive &ar, const void *data, size_t size, const char *name) {
-        ar.saveBinaryValue(data, size, name);
+    template <typename Archive>
+    void CEREAL_SERIALIZE_FUNCTION_NAME(Archive &ar) {
+        using namespace cereal;
+        ar(make_size_tag(static_cast<size_type>(size)));
+        if constexpr (cereal::traits::is_text_archive<Archive>::value) { // NOLINT
+            for (S i = 0; i < size; ++i) {
+                ar(data[i]);
+            }
+        } else { // NOLINT
+            ar(binary_data(data, size * sizeof(*data)));
+        }
     }
 };
 
-template <>
-struct serializer<true> {
-    void serialize(cereal::BinaryInputArchive &ar, void *data, size_t size,
-                   const char * /* name */) {
-        ar.loadBinary(data, size);
-    }
-    void serialize(cereal::JSONInputArchive &ar, void *data, size_t size, const char *name) {
-        ar.loadBinaryValue(data, size, name);
-    }
-};
+template <typename T, typename S>
+ArrayData(T, S) -> ArrayData<std::remove_pointer_t<T>, std::decay_t<S>>;
 
 namespace cereal {
 
-template <class Archive, typename _Scalar, int _Options, typename _Index>
-void serialize(Archive &ar, Eigen::SparseMatrix<_Scalar, _Options, _Index> &m,
-               unsigned int /* version */) {
-    _Index innerSize;
-    _Index outerSize;
-    _Index valuesSize;
+template <typename Archive, typename Scalar, int Options, typename StorageIndex>
+void CEREAL_SERIALIZE_FUNCTION_NAME(Archive &ar,
+                                    Eigen::SparseMatrix<Scalar, Options, StorageIndex> &m) {
+    StorageIndex innerSize;
+    StorageIndex outerSize;
+    StorageIndex valuesSize;
 
-    if (Archive::is_saving::value) {
+    if constexpr (Archive::is_saving::value) { // NOLINT
+        m.makeCompressed();
         innerSize = m.innerSize();
         outerSize = m.outerSize();
         valuesSize = m.nonZeros();
-
-        m.makeCompressed();
     }
 
-    ar &CEREAL_NVP(innerSize);
-    ar &CEREAL_NVP(outerSize);
-    ar &CEREAL_NVP(valuesSize);
+    ar(CEREAL_NVP(innerSize));
+    ar(CEREAL_NVP(outerSize));
+    ar(CEREAL_NVP(valuesSize));
 
-    if (Archive::is_loading::value) {
-        _Index rows = (m.IsRowMajor) ? outerSize : innerSize;
-        _Index cols = (m.IsRowMajor) ? innerSize : outerSize;
+    if constexpr (Archive::is_loading::value) { // NOLINT
+        StorageIndex const rows = (m.IsRowMajor) ? outerSize : innerSize;
+        StorageIndex const cols = (m.IsRowMajor) ? innerSize : outerSize;
         m.resize(rows, cols);
         m.resizeNonZeros(valuesSize);
     }
 
-    serializer<Archive::is_loading::value> s;
-    s.serialize(ar, m.innerIndexPtr(), valuesSize * sizeof(_Index), "innerIndexPtr");
-    s.serialize(ar, m.outerIndexPtr(), (outerSize + 1) * sizeof(_Index), "outerIndexPtr");
-    s.serialize(ar, m.valuePtr(), valuesSize * sizeof(_Scalar), "valuePtr");
+    ar(make_nvp("innerIndexPtr", ArrayData{m.innerIndexPtr(), valuesSize}));
+    ar(make_nvp("outerIndexPtr", ArrayData{m.outerIndexPtr(), outerSize + 1}));
+    ar(make_nvp("valuePtr", ArrayData{m.valuePtr(), valuesSize}));
 
-    if (Archive::is_loading::value) {
+    if constexpr (Archive::is_loading::value) { // NOLINT
         m.finalize();
     }
 }
 
-template <class Archive, typename _Scalar, int _Rows, int _Cols, int _Options, int _MaxRows,
-          int _MaxCols>
-void serialize(Archive &ar, Eigen::Matrix<_Scalar, _Rows, _Cols, _Options, _MaxRows, _MaxCols> &m,
-               unsigned int /* version */) {
-    int rows;
-    int cols;
+template <class Archive, typename Scalar, int Rows, int Cols, int Options, int MaxRows, int MaxCols>
+void CEREAL_SERIALIZE_FUNCTION_NAME(
+    Archive &ar, Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols> &m) {
+    Eigen::Index rows;
+    Eigen::Index cols;
 
-    if (Archive::is_saving::value) {
+    if constexpr (Archive::is_saving::value) { // NOLINT
         rows = m.rows();
         cols = m.cols();
     }
 
-    ar &CEREAL_NVP(rows);
-    ar &CEREAL_NVP(cols);
+    ar(CEREAL_NVP(rows));
+    ar(CEREAL_NVP(cols));
 
-    if (Archive::is_loading::value) {
+    if constexpr (Archive::is_loading::value) { // NOLINT
         m.resize(rows, cols);
     }
 
-    serializer<Archive::is_loading::value> s;
-    s.serialize(ar, m.data(), rows * cols * sizeof(_Scalar), "data");
+    ar(make_nvp("data", ArrayData{m.data(), rows * cols}));
 }
 
 } // namespace cereal
