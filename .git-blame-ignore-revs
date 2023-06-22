@@ -21,3 +21,6 @@ a3e059110584c0ed44a707e855df6adea5f70c78
 
 # Fixup pre-commit formatting
 c3464ca94f536d0a7c86b5dd8157801532cbd253
+
+# Apply formatting changes suggested by Ruff
+1019d080bf9fbde61f019815fee931053823d381
