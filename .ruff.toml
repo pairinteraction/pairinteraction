@@ -1,0 +1,10 @@
+line-length = 120
+target-version = "py38"
+select = ["F", "E", "B", "C", "W", "I001", "UP"]
+extend-ignore = ["E741", "C901", "B905"]
+
+[per-file-ignores]
+"pairinteraction_gui/app.py" = ["E402"]
+
+[flake8-tidy-imports]
+ban-relative-imports = "all"
