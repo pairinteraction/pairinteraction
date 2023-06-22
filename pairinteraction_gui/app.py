@@ -120,7 +120,7 @@ from time import time
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 import pyqtgraph as pg
 from pyqtgraph import exporters
-from pairinteraction_gui.pairinteraction_app.plotter import Ui_plotwindow
+from pairinteraction_gui.plotter import Ui_plotwindow
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 20)
@@ -135,9 +135,9 @@ if __name__ == "__main__":
     splash.progress("Import Modules ...", 40)
 
 # Own classes
-from pairinteraction_gui.pairinteraction_app.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
-from pairinteraction_gui.pairinteraction_app.unitmanagement import Quantity, Units
-from pairinteraction_gui.pairinteraction_app.guiadditions import (
+from pairinteraction_gui.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
+from pairinteraction_gui.unitmanagement import Quantity, Units
+from pairinteraction_gui.guiadditions import (
     GuiDict,
     DoubledeltaValidator,
     DoublenoneValidator,
@@ -145,11 +145,11 @@ from pairinteraction_gui.pairinteraction_app.guiadditions import (
     DoubleValidator,
 )
 
-from pairinteraction_gui.pairinteraction_app.pyqtgraphadditions import PointsItem, MultiLine
-from pairinteraction_gui.pairinteraction_app.loader import Eigensystem
-from pairinteraction_gui.pairinteraction_app.version import version_program, version_settings, version_cache
-from pairinteraction_gui.pairinteraction_app.pipy_thread import PipyThread
-from pairinteraction_gui.pairinteraction_app.worker import Worker, AllQueues
+from pairinteraction_gui.pyqtgraphadditions import PointsItem, MultiLine
+from pairinteraction_gui.loader import Eigensystem
+from pairinteraction_gui.version import version_program, version_settings, version_cache
+from pairinteraction_gui.pipy_thread import PipyThread
+from pairinteraction_gui.worker import Worker, AllQueues
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 80)
@@ -571,10 +571,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         if os.path.exists(os.path.join(self.path_base, "conf", "example.sconf")):
             self.path_configurationdir = os.path.join(self.path_base, "conf")
-        elif os.path.exists(os.path.join(self.path_base, "../conf", "example.sconf")):
-            self.path_configurationdir = os.path.join(self.path_base, "../conf")
-        elif os.path.exists(os.path.join(self.path_base, "./pairinteraction", "pairinteraction-real" + ext)):
-            self.path_workingdir = os.path.join(self.path_base, "./pairinteraction")
         else:
             raise Exception("Directory containing configurations not found.")
 

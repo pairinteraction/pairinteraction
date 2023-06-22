@@ -20,13 +20,11 @@ if(NOT PYUIC_BINARY)
   message(FATAL_ERROR "Python User Interface Compiler not found")
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app/version.py)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/version.py)
 add_custom_target(gui ALL
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/conf ${CMAKE_CURRENT_BINARY_DIR}/conf
+  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/start_pairinteraction_gui ${CMAKE_BINARY_DIR}/start_pairinteraction_gui
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction_app ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/pipy ${CMAKE_CURRENT_BINARY_DIR}/pipy
-  COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
+  COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
 # Compile Python scripts
@@ -39,7 +37,7 @@ if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app
+    DEPENDS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui ${CMAKE_CURRENT_BINARY_DIR}
   )
 
   add_custom_target(pyinstaller ALL
@@ -54,8 +52,8 @@ else( )
 
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
   add_custom_command(TARGET gui POST_BUILD
-    COMMAND ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app
+    COMMAND ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}
   )
 
 endif( )
@@ -80,9 +78,7 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
 
 elseif( CMAKE_HOST_UNIX )
 
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/conf DESTINATION share/pairinteraction/pairinteraction_gui)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pairinteraction_app DESTINATION share/pairinteraction/pairinteraction_gui)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/pipy DESTINATION share/pairinteraction/pairinteraction_gui)
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION share/pairinteraction/pairinteraction_gui)
   install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")

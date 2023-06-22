@@ -20,4 +20,4 @@ import runpy
 
 if __name__ == "__main__":
 
-    runpy.run_module("pairinteraction_gui.pairinteraction_app.app", {}, "__main__")
+    runpy.run_module("pairinteraction_gui.app", {}, "__main__")

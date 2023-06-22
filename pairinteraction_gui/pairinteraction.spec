@@ -5,10 +5,10 @@ import os
 block_cipher = None
 
 a = Analysis(
-    ["pairinteraction_gui/pairinteraction_app/app.py"],
+    ["pairinteraction_gui/app.py"],
     pathex=["."],
     binaries=[],
-    datas=[("pairinteraction_gui/pairinteraction_app/icon.png", "."), ("pairinteraction_gui/conf", "conf")],
+    datas=[("pairinteraction_gui/icon.png", "."), ("pairinteraction_gui/conf", "conf")],
     hiddenimports=["scipy.integrate", "scipy._lib.messagestream"],
     hookspath=[],
     runtime_hooks=[],
