@@ -1,6 +1,6 @@
 line-length = 120
 target-version = "py38"
-select = ["F", "E", "B", "C", "W", "I001", "UP"]
+select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
 extend-ignore = ["E741", "C901", "B905"]
 
 [per-file-ignores]
