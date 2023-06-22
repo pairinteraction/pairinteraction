@@ -211,7 +211,7 @@ void SystemTwo<Scalar>::initializeBasis() {
     /// Check whether the single atom states fit to the symmetries /////
     ////////////////////////////////////////////////////////////////////
 
-    if (sym_permutation != NA || sym_permutation != NA) {
+    if (sym_permutation != NA) {
         // TODO check system1 == system2
     }
 
