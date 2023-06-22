@@ -16,15 +16,11 @@
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 import collections.abc
 import locale
-from abc import ABCMeta
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 
-from PyQt5 import QtCore
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from pairinteraction_gui.unitmanagement import Quantity
-
 
 # === Dictionary to manage the elements of the GUI ===
 

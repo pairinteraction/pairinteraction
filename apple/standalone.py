@@ -22,7 +22,6 @@ FNULL = open(os.devnull, "w")
 
 
 def standalone(file):
-
     # Copy dependency
     if file not in executables:
         file_new = os.path.join(librarypath, os.path.basename(file))
@@ -54,7 +53,6 @@ def standalone(file):
         l = l.decode("utf-8")
 
         if l[0] == "\t":
-
             # Get path of dependeny
             libpath_original = l.strip().split(" (", 1)[0]
 
@@ -83,7 +81,6 @@ def standalone(file):
 
             # If no standard library and no installed library, update path to dependency
             if not libpath_abs.startswith("/System/Library") and not libpath_abs.startswith("/usr/lib"):
-
                 if not os.path.isfile(libpath):
                     raise RuntimeError(f"Error in making {file} standalone. Library {libpath_original} not found!")
 

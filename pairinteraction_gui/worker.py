@@ -16,8 +16,7 @@
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 from queue import Queue
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtCore import QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class Worker(QThread):

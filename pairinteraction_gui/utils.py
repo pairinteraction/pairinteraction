@@ -19,7 +19,6 @@ import pickle
 
 import numpy as np
 
-
 # === Calculate and cache Wigner d-matrix elements ===
 
 
@@ -109,7 +108,7 @@ class Wignerd:
         return size, [j - i for i in range(int(2 * j + 1))]
 
     def _eval_wignerd(self, j, m, mp, beta):
-        from numpy import pi, sin, cos, sqrt
+        from numpy import cos, pi, sin, sqrt
 
         try:
             from scipy.misc import factorial

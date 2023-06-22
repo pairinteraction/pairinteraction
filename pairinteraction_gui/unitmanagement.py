@@ -19,7 +19,6 @@ import locale
 from pint import UnitRegistry
 from scipy import constants
 
-
 # === Initialize unit registry ===
 
 locale.setlocale(locale.LC_NUMERIC, "C")

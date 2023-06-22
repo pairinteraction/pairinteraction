@@ -19,7 +19,6 @@ class PerturbationTest(unittest.TestCase):
             pass
 
     def test_perturbation_zero_angle(self):
-
         distance = 5
         deltaN = 2
 
@@ -73,7 +72,6 @@ class PerturbationTest(unittest.TestCase):
         np.testing.assert_allclose(hamiltonian_schrieffer_wolff.A, hamiltonian_second_order, rtol=1e-2)
 
     def test_perturbation_efield(self):
-
         distance = 5
         efieldz = 0.5
         deltaN = 2
@@ -176,7 +174,6 @@ class PerturbationTest(unittest.TestCase):
         np.testing.assert_allclose(np.sort(energies_exact), np.sort(energies_schrieffer_wolff), rtol=1e-12)
 
     def test_perturbation_nonzero_angle(self):
-
         theta = np.pi / 3
         distance = 5
         deltaN = 2

@@ -8,9 +8,8 @@ import os
 
 import numpy as np
 
-from pairinteraction import picomplex
-from pairinteraction import pireal
-from pairinteraction_gui.pipy import Config
+from pairinteraction import picomplex, pireal
+from pairinteraction_gui.pipy.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +92,7 @@ class Atom:
     @property
     def noStates(self):
         if self._noStates is None:
-            self.system  # build system, there self._NoStates will be set
+            _ = self.system  # build system, there self._NoStates will be set
         return self._noStates
 
     def _createBasis(self):

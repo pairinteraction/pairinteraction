@@ -140,7 +140,6 @@ class RotationTest(unittest.TestCase):
             self.assertAlmostEqual(state.getM(), M)
 
     def test_rotation_hamiltonian(self):
-
         # Hamiltonian (in canonical basis) and overlaps after rotating the system with/without atom-field interactions
         system_one_tmp = pi.SystemOne(self.system_one)
         system_one_tmp.setEfield([0.2, 0, 0.3])

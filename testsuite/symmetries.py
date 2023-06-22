@@ -9,7 +9,6 @@ from pairinteraction import picomplex as pi
 
 
 class TestPythoninterfaceSymmetries(unittest.TestCase):
-
     #######################################################
     ### Preparations ######################################
     #######################################################

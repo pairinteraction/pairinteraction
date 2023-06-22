@@ -23,12 +23,12 @@ import sys
 
 try:
     from PyQt5 import QtCore, QtGui, QtWidgets
-except ImportError:
+except ImportError as err:
     raise ImportError(
         "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
         "Python distribution, you can install it by executing 'conda install pyqt' in the command line. "
         "Otherwise, we recommend installing it from the Python Package Index by 'pip install pyqt5'."
-    )
+    ) from err
 
 # Allow multiprocessing to take over when it spawns its worker processes if used in a frozen executable
 multiprocessing.freeze_support()
@@ -109,17 +109,17 @@ import signal
 import subprocess
 import webbrowser
 import zipfile
-from datetime import datetime
-from datetime import timedelta
-from io import BytesIO
-from io import StringIO
+from datetime import datetime, timedelta
+from io import BytesIO, StringIO
 from operator import itemgetter
 from time import time
 
+import pyqtgraph as pg
+
 # GUI
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
-import pyqtgraph as pg
 from pyqtgraph import exporters
+
 from pairinteraction_gui.plotter import Ui_plotwindow
 
 if __name__ == "__main__":
@@ -127,29 +127,27 @@ if __name__ == "__main__":
 
 # Numerics
 import numpy as np
-from scipy import sparse
+from scipy import io, sparse
 from scipy.ndimage import gaussian_filter
-from scipy import io
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 40)
 
 # Own classes
-from pairinteraction_gui.utils import Wignerd, csc_happend, csr_vappend, csr_keepmax, bytescale
-from pairinteraction_gui.unitmanagement import Quantity, Units
 from pairinteraction_gui.guiadditions import (
-    GuiDict,
     DoubledeltaValidator,
     DoublenoneValidator,
     DoublepositiveValidator,
     DoubleValidator,
+    GuiDict,
 )
-
-from pairinteraction_gui.pyqtgraphadditions import PointsItem, MultiLine
 from pairinteraction_gui.loader import Eigensystem
-from pairinteraction_gui.version import version_program, version_settings, version_cache
 from pairinteraction_gui.pipy_thread import PipyThread
-from pairinteraction_gui.worker import Worker, AllQueues
+from pairinteraction_gui.pyqtgraphadditions import MultiLine, PointsItem
+from pairinteraction_gui.unitmanagement import Quantity, Units
+from pairinteraction_gui.utils import Wignerd, bytescale, csc_happend, csr_keepmax, csr_vappend
+from pairinteraction_gui.version import version_cache, version_program, version_settings
+from pairinteraction_gui.worker import AllQueues, Worker
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 80)
@@ -470,7 +468,6 @@ class AboutDialog(QtWidgets.QDialog):
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None, splash=None):
-
         if splash is None:
 
             class SplashScreenMocked:
@@ -1566,7 +1563,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dataamount = 0
         while not dataqueue.empty() and dataamount < 5000:  # stop loop if enough data is collected
-
             # --- load eigenvalues (energies, y value) and eigenvectors (basis) ---
             filestep, numBlocks, blocknumber, filename = dataqueue.get()
 
@@ -1696,7 +1692,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
             # --- draw labels at filestep 0 ---
             if self.ui.groupbox_plot_labels.isChecked() and filestep == 0:
-
                 # probability to find a label inside a basis element
                 if self.labelprob_energy.get(bn, None) is None:
                     # nBasis, nLabels # TODO !!! tocsr
@@ -1736,7 +1731,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
                     # draw the labels
                     for labelstate, labelenergy in zip(self.labelstates[idx][bn][boolarr], labelenergies):
-
                         if self.leftSmallerRight[idx]:
                             anchorX = 0
                         else:
@@ -2228,7 +2222,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # --- plot the stored data ---
         if self.ui.groupbox_plot_points.isChecked() and len(x) > 0:
-
             # get size and alpha value of points
             size = self.ui.spinbox_plot_szPoint.value()
             alpha = self.ui.spinbox_plot_transpPoint.value() * 255
@@ -3359,7 +3352,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 print("WARNING: Save data, although no eigenvalues were found.")
 
             if self.ui.radiobutton_system_quantizationZ.isChecked() and self.angle != 0:
-
                 # find relevant states
                 statesum = np.zeros(data["numStates"], dtype=float)
                 for s in range(data["numSteps"]):
@@ -3646,7 +3638,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         dialog = QPrintDialog(self.printer, self)
         if dialog.exec_() == QPrintDialog.Accepted:
-
             tabname = self.ui.tabwidget_plotter.tabText(idx)
 
             # TODO check if results exist !!!!!!!!!!!!!!!!!!

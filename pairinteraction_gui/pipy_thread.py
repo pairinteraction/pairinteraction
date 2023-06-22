@@ -13,7 +13,6 @@ from PyQt5.QtCore import QThread
 
 from pairinteraction_gui import pipy
 
-
 SPIN_DICT = {"Li": 0.5, "Na": 0.5, "K": 0.5, "Rb": 0.5, "Cs": 0.5, "Sr1": 0, "Sr3": 1}
 
 
@@ -339,7 +338,7 @@ def params_to_settings(params):
     )
     if no_steps:
         listoptions["steps"] = 1
-    config["isReal"] = all([listoptions.get(k, 0) == 0 for k in ["minBy", "maxBy", "minEy", "maxEy"]])
+    config["isReal"] = all(listoptions.get(k, 0) == 0 for k in ["minBy", "maxBy", "minEy", "maxEy"])
 
     if config["nAtoms"] == 2:
         # FIXME: make this symmetry conditions nicer

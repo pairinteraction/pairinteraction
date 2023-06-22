@@ -17,7 +17,6 @@
 import numpy as np
 import pyqtgraph as pg
 
-
 # === Points item (can be used with pyqtgraph) ===
 
 

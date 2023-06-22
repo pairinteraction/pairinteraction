@@ -10,7 +10,6 @@ from pairinteraction import pireal as pi
 
 
 class TestPythoninterfaceMultiprocessing(unittest.TestCase):
-
     #######################################################
     ### Preparations ######################################
     #######################################################
@@ -62,7 +61,6 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         line_val = []
 
         for i in range(len(stark_shifted_systems)):
-
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
                 connections = stark_shifted_systems[i - 1].getConnections(stark_shifted_systems[i], 0.001)
@@ -136,7 +134,6 @@ class TestPythoninterfaceMultiprocessing(unittest.TestCase):
         line_val = []
 
         for i in range(len(dipole_interacting_systems)):
-
             # Get line segments pointing from iFirst to iSecond
             if i > 0:
                 connections = dipole_interacting_systems[i - 1].getConnections(dipole_interacting_systems[i], 0.001)

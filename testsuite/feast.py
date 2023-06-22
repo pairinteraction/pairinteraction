@@ -12,7 +12,6 @@ class FeastTest(unittest.TestCase):
 
     @unittest.skipIf(not pi.mkl_enabled, "The program was compiled without MKL support.")
     def test_diagonalization_full(self):
-
         # Setup states
         state_one = pi.StateOne("Cs", 60, 0, 0.5, 0.5)
 
@@ -40,7 +39,6 @@ class FeastTest(unittest.TestCase):
 
     @unittest.skipIf(not pi.mkl_enabled, "The program was compiled without MKL support.")
     def test_diagonalization_bounded(self):
-
         # Setup states
         state_one = pi.StateOne("Cs", 60, 0, 0.5, 0.5)
 
