@@ -288,9 +288,13 @@ class Atom:
             os.makedirs(pathCache, exist_ok=True)
             logger.debug("Using cache at %s", pathCache)
             pi = pireal if self.config.isReal() else picomplex
-            if self.config.method() == "WHITTAKER":
-                pi.MatrixElementCache.setMethod(pi.WHITTAKER)
             self._cache = pi.MatrixElementCache(pathCache)
+            if self.config.method() == "WHITTAKER":
+                self._cache.setMethod(pi.WHITTAKER)
+            elif self.config.method() == "NUMEROV":
+                self._cache.setMethod(pi.NUMEROV)
+            else:
+                raise ValueError("Unknown MatrixElementCache method " + self.config.method())
         return self._cache
 
     def delete(self):
