@@ -3528,6 +3528,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @QtCore.pyqtSlot()
     def clearCache(self):
+        self.abortCalculation()
         for name in os.listdir(self.path_cache):
             path = os.path.join(self.path_cache, name)
             if os.path.isfile(path):
