@@ -16,6 +16,12 @@
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 from queue import Queue
 
+# FIXME once we assume PyQt5.version >= 5.15, we can remove the except
+# https://www.riverbankcomputing.com/static/Docs/PyQt5/incompatibilities.html#importing-the-sip-module
+try:
+    from PyQt5 import sip
+except ImportError:
+    import sip
 from PyQt5.QtCore import QThread, pyqtSignal
 
 
@@ -29,7 +35,8 @@ class Worker(QThread):
 
     def __del__(self):
         self.exiting = True
-        self.wait()
+        if not sip.isdeleted(self):
+            self.wait()
 
     def execute(self, stdout):
         self.stdout = stdout
