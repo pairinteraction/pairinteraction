@@ -341,6 +341,29 @@ class handle final {
         }
     }
 
+    // https://www.sqlite.org/backup.html
+    int loadOrSaveDb(sqlite3 *pInMemory, const char *zFilename, bool const isSave) {
+        int rc = SQLITE_OK;
+        int flags = isSave ? (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE) : SQLITE_OPEN_READONLY;
+        sqlite3 *pFile = nullptr;
+
+        rc = sqlite3_open_v2(zFilename, &pFile, flags, nullptr);
+        if (rc == SQLITE_OK) {
+            sqlite3 *pFrom = (isSave ? pInMemory : pFile);
+            sqlite3 *pTo = (isSave ? pFile : pInMemory);
+
+            sqlite3_backup *pBackup = sqlite3_backup_init(pTo, "main", pFrom, "main");
+            if (pBackup != nullptr) {
+                (void)sqlite3_backup_step(pBackup, -1);
+                (void)sqlite3_backup_finish(pBackup);
+            }
+            rc = sqlite3_errcode(pTo);
+        }
+
+        (void)sqlite3_close(pFile);
+        return rc;
+    }
+
 public:
     /** \brief Conversion operator
      *
@@ -397,6 +420,28 @@ public:
             install_busy_handler();
         }
         return *this;
+    }
+
+    /** \brief Load database from file
+     *
+     * Useful to read a database from file into memory.
+     */
+    void load(std::string const &filename) {
+        int rc = loadOrSaveDb(m_db.get(), filename.c_str(), false);
+        if (!(rc == SQLITE_OK || rc == SQLITE_DONE)) {
+            throw error(rc, sqlite3_errstr(rc));
+        }
+    }
+
+    /** \brief Save database to file
+     *
+     * Useful to save in-memory database to file.
+     */
+    void save(std::string const &filename) {
+        int rc = loadOrSaveDb(m_db.get(), filename.c_str(), true);
+        if (!(rc == SQLITE_OK || rc == SQLITE_DONE)) {
+            throw error(rc, sqlite3_errstr(rc));
+        }
     }
 };
 

@@ -39,6 +39,8 @@ TEST_CASE("sqlite_query_test") // NOLINT
     CHECK_THROWS_AS(sqlite::handle("no such database", SQLITE_OPEN_READWRITE), sqlite::error);
     // Open an in-memory database for tests
     sqlite::handle db(":memory:");
+    CHECK_THROWS_AS(db.load("no such database"), sqlite::error);
+    CHECK_NOTHROW(db.load("pairinteraction/databases/quantum_defects.db"));
 
     sqlite::statement stmt(db);
     CHECK_NOTHROW(stmt.set("This is not valid SQL"));
@@ -104,4 +106,6 @@ TEST_CASE("sqlite_query_test") // NOLINT
 #ifndef NDEBUG
     CHECK_THROWS_AS(*(stmt.end()), std::out_of_range);
 #endif
+
+    CHECK_NOTHROW(db.save("test.db"));
 }
