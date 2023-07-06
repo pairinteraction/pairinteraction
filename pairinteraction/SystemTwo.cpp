@@ -31,6 +31,14 @@
 #include <vector>
 
 template <typename Scalar>
+SystemTwo<Scalar>::SystemTwo()
+    : minimal_le_roy_radius(std::numeric_limits<double>::max()),
+      distance(std::numeric_limits<double>::max()), distance_x(0), distance_y(0),
+      distance_z(std::numeric_limits<double>::max()), GTbool(false),
+      surface_distance(std::numeric_limits<double>::max()), ordermax(3), sym_permutation(NA),
+      sym_inversion(NA), sym_reflection(NA), sym_rotation({ARB}) {}
+
+template <typename Scalar>
 SystemTwo<Scalar>::SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2,
                              MatrixElementCache &cache)
     : SystemBase<Scalar, StateTwo>(cache), species({{b1.getSpecies(), b2.getSpecies()}}),
@@ -248,6 +256,8 @@ void SystemTwo<Scalar>::initializeBasis() {
     ////////////////////////////////////////////////////////////////////
     /// Build two atom states //////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
+
+    auto &cache = *this->m_cache;
 
     /// Combine one atom states ////////////////////////////////////////
 
@@ -477,7 +487,7 @@ void SystemTwo<Scalar>::initializeBasis() {
         double energy = 0;
         for (int idx = 0; idx < 2; ++idx) {
             if (!state.isArtificial(idx)) {
-                energy += state.getEnergy(idx, this->cache);
+                energy += state.getEnergy(idx, cache);
             }
         }
 
@@ -666,6 +676,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
     greentensor_terms_qd.clear();
     angle_terms.clear();
 
+    auto &cache = *this->m_cache;
+
     double tolerance = 1e-16;
 
     if (distance_y != 0 || surface_distance != std::numeric_limits<double>::max() ||
@@ -791,8 +803,8 @@ void SystemTwo<Scalar>::initializeInteraction() {
     auto states1 = this->getStatesFirst();
     auto states2 = this->getStatesSecond();
     for (unsigned int kappa = 1; kappa <= ordermax - 2; ++kappa) {
-        this->cache.precalculateMultipole(states1, kappa);
-        this->cache.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
+        cache.precalculateMultipole(states1, kappa);
+        cache.precalculateMultipole(states2, kappa); // TODO check whether system1 == system2
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -868,16 +880,16 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         double vec1_entry = 0;
                         if (i1 == 0 && std::abs(q1) == 1) { // Calculate x-entry
                             vec1_entry = 1 / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getFirstState(),
-                                                              c.state.getFirstState());
+                                cache.getElectricDipole(r.state.getFirstState(),
+                                                        c.state.getFirstState());
                             vec1_entry *= (q1 == 1) ? -1 : 1;
                         } else if (i1 == 1 && std::abs(q1) == 1) { // Calculate y-entry
                             vec1_entry = 1 / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getFirstState(),
-                                                              c.state.getFirstState());
+                                cache.getElectricDipole(r.state.getFirstState(),
+                                                        c.state.getFirstState());
                         } else if (i1 == 2 && q1 == 0) { // Calculate z-entry
-                            vec1_entry = this->cache.getElectricDipole(r.state.getFirstState(),
-                                                                       c.state.getFirstState());
+                            vec1_entry = cache.getElectricDipole(r.state.getFirstState(),
+                                                                 c.state.getFirstState());
                         } else {
                             continue;
                         }
@@ -886,16 +898,16 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         double vec2_entry = 0;
                         if (i2 == 0 && std::abs(q2) == 1) { // Calculate x-entry
                             vec2_entry = 1 / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getSecondState(),
-                                                              c.state.getSecondState());
+                                cache.getElectricDipole(r.state.getSecondState(),
+                                                        c.state.getSecondState());
                             vec2_entry *= (q2 == 1) ? -1 : 1;
                         } else if (i2 == 1 && std::abs(q2) == 1) { // Calculate y-entry
                             vec2_entry = 1 / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getSecondState(),
-                                                              c.state.getSecondState());
+                                cache.getElectricDipole(r.state.getSecondState(),
+                                                        c.state.getSecondState());
                         } else if (i2 == 2 && q2 == 0) { // Calculate z-entry
-                            vec2_entry = this->cache.getElectricDipole(r.state.getSecondState(),
-                                                                       c.state.getSecondState());
+                            vec2_entry = cache.getElectricDipole(r.state.getSecondState(),
+                                                                 c.state.getSecondState());
                         } else {
                             continue;
                         }
@@ -933,16 +945,16 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         // dipole vector of atom1
                         if (i1 == 0 && std::abs(q1) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getFirstState(),
-                                                              c.state.getFirstState());
+                                cache.getElectricDipole(r.state.getFirstState(),
+                                                        c.state.getFirstState());
                             vec_entry *= (q1 == 1) ? -1. : 1.;
                         } else if (i1 == 1 && std::abs(q1) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getFirstState(),
-                                                              c.state.getFirstState());
+                                cache.getElectricDipole(r.state.getFirstState(),
+                                                        c.state.getFirstState());
                         } else if (i1 == 2 && q1 == 0) {
-                            vec_entry = this->cache.getElectricDipole(r.state.getFirstState(),
-                                                                      c.state.getFirstState());
+                            vec_entry = cache.getElectricDipole(r.state.getFirstState(),
+                                                                c.state.getFirstState());
                         } else {
                             continue;
                         }
@@ -950,71 +962,71 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i2 == 0 && i3 == 0) {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.); // with std::sqrt(2kappa +1 /4pi)
                             } else if (q2 == 0) {
                                 matrix_entry = -std::sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         } else if (i2 == 0 && i3 == 1) {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 2) ? -1. : 1.;
                             }
                         } else if (i2 == 0 && i3 == 2) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 1) ? -1. : 1.;
                             }
                         } else if (i2 == 1 && i3 == 0) {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 2) ? -1. : 1.;
                             }
                         } else if (i2 == 1 && i3 == 1) {
                             if (std::abs(q2) == 2) {
                                 matrix_entry =
-                                    -this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                      c.state.getSecondState(), 2) *
+                                    -cache.getElectricMultipole(r.state.getSecondState(),
+                                                                c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.); // with std::sqrt(2kappa +1 /4pi)
                             } else if (q2 == 0) {
                                 matrix_entry = -std::sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         } else if (i2 == 1 && i3 == 2) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                             }
                         } else if (i2 == 2 && i3 == 0) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q2 == 1) ? -1. : 1.;
                             }
@@ -1022,19 +1034,19 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         } else if (i2 == 2 && i3 == 1) {
                             if (std::abs(q2) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getSecondState(),
-                                                                     c.state.getSecondState(), 2) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), 2) *
                                     std::sqrt(5. / 4.);
                             }
                         } else if (i2 == 2 && i3 == 2) {
                             if (q2 == 0) {
                                 matrix_entry = std::sqrt(8. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 2) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getSecondState(), c.state.getSecondState(), 0) *
+                                        cache.getElectricMultipole(r.state.getSecondState(),
+                                                                   c.state.getSecondState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         }
@@ -1076,16 +1088,16 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         // dipole vector of atom 2
                         if (i3 == 0 && std::abs(q2) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getSecondState(),
-                                                              c.state.getSecondState());
+                                cache.getElectricDipole(r.state.getSecondState(),
+                                                        c.state.getSecondState());
                             vec_entry *= (q2 == 1) ? -1. : 1.;
                         } else if (i3 == 1 && std::abs(q2) == 1) {
                             vec_entry = 1. / std::sqrt(2.) *
-                                this->cache.getElectricDipole(r.state.getSecondState(),
-                                                              c.state.getSecondState());
+                                cache.getElectricDipole(r.state.getSecondState(),
+                                                        c.state.getSecondState());
                         } else if (i3 == 2 && q2 == 0) {
-                            vec_entry = this->cache.getElectricDipole(r.state.getSecondState(),
-                                                                      c.state.getSecondState());
+                            vec_entry = cache.getElectricDipole(r.state.getSecondState(),
+                                                                c.state.getSecondState());
                         } else {
                             continue;
                         }
@@ -1093,71 +1105,71 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         if (i1 == 0 && i2 == 0) {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                             } else if (q1 == 0) {
                                 matrix_entry = -std::sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         } else if (i1 == 0 && i2 == 1) {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 2) ? -1. : 1.;
                             }
                         } else if (i1 == 0 && i2 == 2) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 1) ? -1. : 1.;
                             }
                         } else if (i1 == 1 && i2 == 0) {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 2) ? -1. : 1.;
                             }
                         } else if (i1 == 1 && i2 == 1) {
                             if (std::abs(q1) == 2) {
                                 matrix_entry =
-                                    -this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                      c.state.getFirstState(), 2) *
+                                    -cache.getElectricMultipole(r.state.getFirstState(),
+                                                                c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                             } else if (q1 == 0) {
                                 matrix_entry = -std::sqrt(2. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         } else if (i1 == 1 && i2 == 2) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                             }
                         } else if (i1 == 2 && i2 == 0) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                                 matrix_entry *= (q1 == 1) ? -1. : 1.;
                             }
@@ -1165,19 +1177,19 @@ void SystemTwo<Scalar>::initializeInteraction() {
                         } else if (i1 == 2 && i2 == 1) {
                             if (std::abs(q1) == 1) {
                                 matrix_entry =
-                                    this->cache.getElectricMultipole(r.state.getFirstState(),
-                                                                     c.state.getFirstState(), 2) *
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), 2) *
                                     std::sqrt(5. / 4.);
                             }
                         } else if (i1 == 2 && i2 == 2) {
                             if (q1 == 0) {
                                 matrix_entry = std::sqrt(8. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 2) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 2) *
                                         std::sqrt(5. / 4.) +
                                     std::sqrt(10. / 3.) *
-                                        this->cache.getElectricMultipole(
-                                            r.state.getFirstState(), c.state.getFirstState(), 0) *
+                                        cache.getElectricMultipole(r.state.getFirstState(),
+                                                                   c.state.getFirstState(), 0) *
                                         std::sqrt(1. / 4.);
                             }
                         }
@@ -1210,10 +1222,10 @@ void SystemTwo<Scalar>::initializeInteraction() {
 
                     if (interaction_angulardipole_keys.count(key) != 0) {
                         double val = coulombs_constant *
-                            this->cache.getElectricDipole(r.state.getFirstState(),
-                                                          c.state.getFirstState()) *
-                            this->cache.getElectricDipole(r.state.getSecondState(),
-                                                          c.state.getSecondState());
+                            cache.getElectricDipole(r.state.getFirstState(),
+                                                    c.state.getFirstState()) *
+                            cache.getElectricDipole(r.state.getSecondState(),
+                                                    c.state.getSecondState());
 
                         this->addTriplet(interaction_angulardipole_triplets[key], r.idx, c.idx,
                                          val);
@@ -1242,10 +1254,10 @@ void SystemTwo<Scalar>::initializeInteraction() {
 
                                 val += coulombs_constant * std::pow(-1, kappa2) *
                                     std::sqrt(binomials) *
-                                    this->cache.getElectricMultipole(
-                                        r.state.getFirstState(), c.state.getFirstState(), kappa1) *
-                                    this->cache.getElectricMultipole(
-                                        r.state.getSecondState(), c.state.getSecondState(), kappa2);
+                                    cache.getElectricMultipole(r.state.getFirstState(),
+                                                               c.state.getFirstState(), kappa1) *
+                                    cache.getElectricMultipole(r.state.getSecondState(),
+                                                               c.state.getSecondState(), kappa2);
                             }
                         }
 
@@ -1524,6 +1536,8 @@ void SystemTwo<Scalar>::onStatesChange() {
 template <typename Scalar>
 void SystemTwo<Scalar>::checkDistance(const double &distance) {
 
+    auto &cache = *this->m_cache;
+
     // Get the minimal Le Roy radius
     if (minimal_le_roy_radius == std::numeric_limits<double>::max()) {
 
@@ -1534,7 +1548,7 @@ void SystemTwo<Scalar>::checkDistance(const double &distance) {
                 continue;
             }
 
-            auto n = e.state.getNStar(this->cache);
+            auto n = e.state.getNStar(cache);
             auto l = e.state.getL();
 
             double le_roy_radius = 2 * au2um *
@@ -1551,7 +1565,7 @@ void SystemTwo<Scalar>::checkDistance(const double &distance) {
         if (crucial_state.isArtificial(0) || crucial_state.isArtificial(1)) {
             minimal_le_roy_radius = 0;
         } else {
-            minimal_le_roy_radius = crucial_state.getLeRoyRadius(this->cache);
+            minimal_le_roy_radius = crucial_state.getLeRoyRadius(cache);
         }
     }
 

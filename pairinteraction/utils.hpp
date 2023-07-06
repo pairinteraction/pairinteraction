@@ -24,13 +24,26 @@
 #include <array>
 #include <complex>
 #include <functional>
+#include <memory>
 #include <random>
+#include <stdexcept>
+#include <string>
 #include <type_traits>
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <rpc.h>
+#elif defined(__APPLE__)
+#include <CoreFoundation/CFBase.h>
+#include <CoreFoundation/CFString.h>
+#include <CoreFoundation/CFUUID.h>
+#include <unistd.h>
 #else
 #include <unistd.h>
+#include <uuid/uuid.h>
+#ifndef UUID_STR_LEN
+#define UUID_STR_LEN 37
+#endif
 #endif
 
 namespace utils {
@@ -188,6 +201,39 @@ struct hash<std::complex<T>> {
         return seed;
     }
 };
+
+static inline std::string generateUuid() {
+#ifdef _WIN32
+    ::UUID uuid;
+    if (::UuidCreate(&uuid) != RPC_S_OK) {
+        throw std::runtime_error("UuidCreate failed: " + std::to_string(::GetLastError()));
+    }
+    ::RPC_CSTR cstr;
+    if (::UuidToStringA(&uuid, &cstr) != RPC_S_OK) {
+        throw std::runtime_error("UuidToStringA failed: " + std::to_string(::GetLastError()));
+    }
+    std::string str(reinterpret_cast<const char *>(cstr));
+    ::RpcStringFreeA(&cstr);
+    return str;
+#elif defined(__APPLE__)
+    std::unique_ptr<std::remove_pointer_t<CFUUIDRef>, decltype(&CFRelease)> uuid{
+        CFUUIDCreate(kCFAllocatorDefault), &CFRelease};
+    std::unique_ptr<std::remove_pointer_t<CFStringRef>, decltype(&CFRelease)> cfstr{
+        CFUUIDCreateString(kCFAllocatorDefault, uuid.get()), &CFRelease};
+    CFIndex const bufferSize = CFStringGetLength(cfstr.get()) + 1;
+    auto buffer = std::make_unique<char[]>(bufferSize);
+    if (!CFStringGetCString(cfstr.get(), buffer.get(), bufferSize, kCFStringEncodingUTF8)) {
+        throw std::runtime_error("CFStringGetCString failed");
+    }
+    return buffer.get();
+#else
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char cstr[UUID_STR_LEN];
+    uuid_unparse_lower(uuid, cstr);
+    return cstr;
+#endif
+}
 
 } // namespace utils
 

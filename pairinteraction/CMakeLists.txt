@@ -245,15 +245,24 @@ endif()
 find_package(fmt REQUIRED)
 target_link_libraries(pairinteraction PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
 
+find_package(cereal REQUIRED)
+#set(JUST_INSTALL_CEREAL ON)
+#FetchContent_Declare(
+#  cereal
+#  GIT_REPOSITORY https://github.com/USCiLab/cereal.git
+#  GIT_TAG        v1.3.2
+#  GIT_PROGRESS   TRUE
+#)
+#FetchContent_MakeAvailable(cereal)
+#get_target_property(CEREAL_IID cereal INTERFACE_INCLUDE_DIRECTORIES)
+#set_target_properties(cereal PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES "${CEREAL_IID}")
+target_link_libraries(pairinteraction PUBLIC cereal)
+
 find_package(SQLite3 REQUIRED)
 target_link_libraries(pairinteraction PUBLIC SQLite::SQLite3)
 
-find_package(Boost COMPONENTS serialization REQUIRED)
-target_link_libraries(pairinteraction PUBLIC Boost::boost Boost::serialization)
-if(MSVC)
-  target_link_libraries(pairinteraction PUBLIC Boost::disable_autolinking Boost::dynamic_linking)
-  target_compile_definitions(pairinteraction PUBLIC BOOST_UUID_FORCE_AUTO_LINK)
-endif()
+find_package(Boost REQUIRED)
+target_link_libraries(pairinteraction PUBLIC Boost::boost)
 
 if(NOT MSVC AND NOT APPLE)
   set(CMAKE_REQUIRED_LIBRARIES_SAVED ${CMAKE_REQUIRED_LIBRARIES})
@@ -263,6 +272,20 @@ if(NOT MSVC AND NOT APPLE)
   if(CAN_LINK_STDCXXFS)
     target_link_libraries(pairinteraction PUBLIC stdc++fs)
   endif()
+endif()
+
+if(MSVC)
+  target_link_libraries(pairinteraction PUBLIC rpcrt4.lib)
+elseif(APPLE)
+  target_link_libraries(pairinteraction PUBLIC "-framework CoreFoundation")
+else()
+  find_library(LibUUID_LIBRARY NAMES uuid)
+  find_path(LibUUID_INCLUDE_DIRS NAMES uuid/uuid.h)
+  add_library(LibUUID::LibUUID UNKNOWN IMPORTED)
+  set_target_properties(LibUUID::LibUUID PROPERTIES
+    IMPORTED_LOCATION "${LibUUID_LIBRARY}"
+    INTERFACE_INCLUDE_DIRECTORIES "${LibUUID_INCLUDE_DIRS}")
+  target_link_libraries(pairinteraction PUBLIC LibUUID::LibUUID)
 endif()
 
 if(WITH_GSL)

@@ -21,26 +21,25 @@
 #define SERIALIZATION_PATH_H
 
 #include "filesystem.hpp"
+#include <cereal/types/string.hpp>
 
-namespace boost {
-namespace serialization {
+namespace cereal {
 
 template <class Archive>
-void serialize(Archive &ar, fs::path &p, const unsigned int /* version */) {
+void serialize(Archive &ar, fs::path &p, unsigned int /* version */) {
     std::string s;
 
     if (Archive::is_saving::value) {
         s = p.string();
     }
 
-    ar &s;
+    ar &cereal::make_nvp("path", s);
 
     if (Archive::is_loading::value) {
         p = fs::path(s);
     }
 }
 
-} // namespace serialization
-} // namespace boost
+} // namespace cereal
 
 #endif // SERIALIZATION_PATH_H

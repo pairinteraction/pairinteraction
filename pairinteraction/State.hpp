@@ -27,16 +27,8 @@
 #include <iostream>
 #include <string>
 
-// clang-format off
-#if __has_include (<boost/serialization/version.hpp>)
-#    include <boost/serialization/version.hpp>
-#endif
-#if __has_include (<boost/serialization/library_version_type.hpp>)
-#    include <boost/serialization/library_version_type.hpp>
-#endif
-// clang-format on
-#include <boost/serialization/array.hpp>
-#include <boost/serialization/string.hpp>
+#include <cereal/types/array.hpp>
+#include <cereal/types/string.hpp>
 
 class MatrixElementCache;
 
@@ -93,9 +85,9 @@ private:
     size_t hashvalue;
 
     // Method for serialization
-    friend class boost::serialization::access;
+    friend class cereal::access;
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
+    void serialize(Archive &ar, unsigned int /* version */) {
         ar &species &element &n &l &j &m &s &hashvalue;
     }
 
@@ -176,9 +168,9 @@ private:
     size_t hashvalue;
 
     // Method for serialization
-    friend class boost::serialization::access;
+    friend class cereal::access;
     template <class Archive>
-    void serialize(Archive &ar, const unsigned int /*version*/) {
+    void serialize(Archive &ar, unsigned int /* version */) {
         ar &state_array &hashvalue;
     }
 };

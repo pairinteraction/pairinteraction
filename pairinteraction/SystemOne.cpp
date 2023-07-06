@@ -33,6 +33,10 @@
 #include <vector>
 
 template <typename Scalar>
+SystemOne<Scalar>::SystemOne()
+    : efield({{0, 0, 0}}), bfield({{0, 0, 0}}), sym_rotation({static_cast<float>(ARB)}) {}
+
+template <typename Scalar>
 SystemOne<Scalar>::SystemOne(std::string species, MatrixElementCache &cache)
     : SystemBase<Scalar, StateOne>(cache), efield({{0, 0, 0}}), bfield({{0, 0, 0}}),
       diamagnetism(true), charge(0), ordermax(0), distance(std::numeric_limits<double>::max()),
@@ -165,6 +169,8 @@ void SystemOne<Scalar>::initializeBasis() {
             "The number of basis elements is infinite. The basis has to be restricted.");
     }
 
+    auto &cache = *this->m_cache;
+
     ////////////////////////////////////////////////////////////////////
     /// Build one atom states //////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////
@@ -217,7 +223,7 @@ void SystemOne<Scalar>::initializeBasis() {
                     continue;
                 }
 
-                double energy = StateOne(species, n, l, j, s).getEnergy(this->cache);
+                double energy = StateOne(species, n, l, j, s).getEnergy(cache);
                 if (!this->checkIsEnergyValid(energy)) {
                     continue;
                 }
@@ -277,7 +283,7 @@ void SystemOne<Scalar>::initializeBasis() {
     // Add user-defined states
     for (const auto &state : this->states_to_add) {
         // Get energy of the state
-        double energy = state.isArtificial() ? 0 : state.getEnergy(this->cache);
+        double energy = state.isArtificial() ? 0 : state.getEnergy(cache);
 
         // In case of artificial states, symmetries won't work
         auto sym_reflection_local = sym_reflection;
@@ -334,6 +340,8 @@ void SystemOne<Scalar>::initializeInteraction() {
     /// Prepare the calculation of the interaction /////////////////////
     ////////////////////////////////////////////////////////////////////
 
+    auto &cache = *this->m_cache;
+
     // Check if something to do
     double tolerance = 1e-24;
 
@@ -383,26 +391,26 @@ void SystemOne<Scalar>::initializeInteraction() {
     // Precalculate matrix elements
     auto states_converted = this->getStates();
     for (const auto &i : erange) {
-        this->cache.precalculateElectricMomentum(states_converted, i);
+        cache.precalculateElectricMomentum(states_converted, i);
         if (i != 0) {
-            this->cache.precalculateElectricMomentum(states_converted, -i);
+            cache.precalculateElectricMomentum(states_converted, -i);
         }
     }
     for (const auto &i : brange) {
-        this->cache.precalculateMagneticMomentum(states_converted, i);
+        cache.precalculateMagneticMomentum(states_converted, i);
         if (i != 0) {
-            this->cache.precalculateMagneticMomentum(states_converted, -i);
+            cache.precalculateMagneticMomentum(states_converted, -i);
         }
     }
     for (const auto &i : drange) {
-        this->cache.precalculateDiamagnetism(states_converted, i[0], i[1]);
+        cache.precalculateDiamagnetism(states_converted, i[0], i[1]);
         if (i[1] != 0) {
-            this->cache.precalculateDiamagnetism(states_converted, i[0], -i[1]);
+            cache.precalculateDiamagnetism(states_converted, i[0], -i[1]);
         }
     }
     if (charge != 0) {
         for (unsigned int order = 1; order <= ordermax; ++order) {
-            this->cache.precalculateMultipole(states_converted, order);
+            cache.precalculateMultipole(states_converted, order);
         }
     }
 
@@ -438,7 +446,7 @@ void SystemOne<Scalar>::initializeInteraction() {
                 }
 
                 if (selectionRulesMultipoleNew(r.state, c.state, 1, i)) {
-                    Scalar value = this->cache.getElectricDipole(r.state, c.state);
+                    Scalar value = cache.getElectricDipole(r.state, c.state);
                     this->addTriplet(interaction_efield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic
                            // quantum numbers will not be fulfilled
@@ -452,7 +460,7 @@ void SystemOne<Scalar>::initializeInteraction() {
                 }
 
                 if (selectionRulesMomentumNew(r.state, c.state, i)) {
-                    Scalar value = this->cache.getMagneticDipole(r.state, c.state);
+                    Scalar value = cache.getMagneticDipole(r.state, c.state);
                     this->addTriplet(interaction_bfield_triplets[i], r.idx, c.idx, value);
                     break; // because for the other operators, the selection rule for the magnetic
                            // quantum numbers will not be fulfilled
@@ -467,7 +475,7 @@ void SystemOne<Scalar>::initializeInteraction() {
 
                 if (selectionRulesMultipoleNew(r.state, c.state, i[0], i[1])) {
                     Scalar value = 1. / (8 * electron_rest_mass) *
-                        this->cache.getDiamagnetism(r.state, c.state, i[0]);
+                        cache.getDiamagnetism(r.state, c.state, i[0]);
                     this->addTriplet(interaction_diamagnetism_triplets[i], r.idx, c.idx, value);
                 }
             }
@@ -479,7 +487,7 @@ void SystemOne<Scalar>::initializeInteraction() {
                     for (const auto &order : orange) {
                         if (selectionRulesMultipoleNew(r.state, c.state, order)) {
                             double val = -coulombs_constant * elementary_charge *
-                                this->cache.getElectricMultipole(r.state, c.state, order);
+                                cache.getElectricMultipole(r.state, c.state, order);
                             this->addTriplet(interaction_multipole_triplets[order], r.idx, c.idx,
                                              val);
                         }
