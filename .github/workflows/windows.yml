@@ -46,7 +46,7 @@ jobs:
           rd /s/q "webimage_extracted"
           exit /b %installer_exit_code%
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true

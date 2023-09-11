@@ -19,7 +19,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -62,7 +62,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -107,7 +107,7 @@ jobs:
     env:
       package: pairinteraction-install-opensuse.rpm
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -136,7 +136,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -161,7 +161,7 @@ jobs:
     env:
       package: pairinteraction-install-ubuntu.deb
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
