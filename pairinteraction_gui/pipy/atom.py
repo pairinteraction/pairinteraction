@@ -540,7 +540,7 @@ class AtomTwo(Atom):
 
         config = self.config
         update = {
-            **{f"atom{i}": atom.updateFromParams(atom_new) for i, atom in enumerate(self.atoms)},
+            **{f"atom{i}": atom.updateFromParams(atom_new) for i, atom in enumerate(self.atoms, 1)},
         }
         for k in ["angle", "distance", "inversion", "permutation", "reflection"]:
             if k in new:
@@ -574,6 +574,7 @@ class AtomTwo(Atom):
 
             if any(update.get(k, False) for k in ["atom1", "atom2", "inversion", "permutation", "reflection"]):
                 self._createSystem()
+                self._createBasis()
 
             return True
 
