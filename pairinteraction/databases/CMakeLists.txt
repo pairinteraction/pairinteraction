@@ -31,6 +31,10 @@ if( WITH_DMG )
 
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION pairinteraction/databases)
 
+elseif( SKBUILD )
+
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+
 else( )
 
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db DESTINATION share/pairinteraction/pairinteraction/databases)

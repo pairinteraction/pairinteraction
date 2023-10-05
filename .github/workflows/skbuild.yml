@@ -1,0 +1,81 @@
+name: skbuild
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+  workflow_dispatch:
+
+# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 2
+  CTEST_OUTPUT_ON_FAILURE: 1
+  VERBOSE: 1
+
+jobs:
+  sdist:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Build SDist
+      run: pipx run build --sdist
+
+    - name: Check metadata
+      run: pipx run twine check dist/*
+
+    - uses: actions/upload-artifact@v3
+      with:
+        path: dist/*.tar.gz
+
+  wheel:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: ubuntu-latest # runs in container anyway
+          CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
+          CMAKE_ARGS: "-DBUILD_TESTING=Off"
+        - os: macos-12
+          CXXFLAGS: "-Wall -Wextra -Wpedantic"
+          CMAKE_ARGS: "-DBUILD_TESTING=Off"
+        - os: windows-2019
+          CXXFLAGS: "/Ox /arch:AVX2"
+          CMAKE_ARGS: "-DBUILD_TESTING=Off -DMKL_THREADING=intel_thread"
+    name: Wheel on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        submodules: true
+
+    - name: Install Intel oneAPI Math Kernel Library (oneMKL)
+      if: runner.os == 'Windows'
+      uses: ./.github/actions/install-intel-mkl
+
+    - name: Install Windows dependencies
+      if: runner.os == 'Windows'
+      uses: ./.github/actions/setup-vcpkg
+
+    - name: Install macOS dependencies
+      if: runner.os == 'macOS'
+      run: brew install boost cereal doctest eigen fmt gsl lapack
+
+    - uses: pypa/cibuildwheel@v2.16
+      env:
+        CMAKE_ARGS: ${{ matrix.CMAKE_ARGS }}
+        CXXFLAGS: ${{ matrix.CXXFLAGS }}
+        CIBW_MANYLINUX_X86_64_IMAGE: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
+        CIBW_ENVIRONMENT_LINUX: CMAKE_ARGS='${{ matrix.CMAKE_ARGS }}' CXXFLAGS='${{ matrix.CXXFLAGS }}'
+        CIBW_ENVIRONMENT_PASS_LINUX: CMAKE_ARGS CXXFLAGS VERBOSE
+        CIBW_TEST_COMMAND_WINDOWS: "" # wheels are still broken :(
+
+    - name: Upload wheels
+      uses: actions/upload-artifact@v3
+      with:
+        path: wheelhouse/*.whl

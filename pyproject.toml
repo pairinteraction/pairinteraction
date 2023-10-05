@@ -1,0 +1,55 @@
+[build-system]
+requires = [
+    "scikit-build-core",
+    "swig",
+    "numpy",
+    "pyqt5",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "pairinteraction"
+version = "0.9.9"
+description = "A Rydberg Interaction Calculator"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "GPL-3.0-or-later OR LGPL-3.0-or-later" }
+authors = [
+    { name = "Sebastian Weber" },
+    { name = "Henri Menke" },
+]
+homepage = "https://www.pairinteraction.org"
+repository = "https://github.com/pairinteraction/pairinteraction"
+dependencies = [
+    "numpy",
+    "pint",
+    "pyqt5",
+    "pyqtgraph",
+    "scipy",
+]
+
+[tool.scikit-build]
+cmake.verbose = true
+wheel.packages = []
+wheel.py-api = "py3"
+
+[tool.cibuildwheel]
+build = [
+  "cp38-manylinux_x86_64",
+  "cp38-win_amd64",
+  "cp38-macosx_x86_64",
+]
+build-verbosity = 1
+test-command = [
+  "python -c \"from pairinteraction import pireal as pi; v = pi.VectorDouble(1, 3.14); assert v[0] == 3.14\"",
+  "python -c \"from pairinteraction import picomplex as pi; v = pi.VectorDouble(1, 3.14); assert v[0] == 3.14\"",
+  "python -c \"from pairinteraction_gui import app; assert type(app.version_program) is str\"",
+]
+
+[tool.cibuildwheel.windows]
+before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
+repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
+
+# MACOSX_DEPLOYMENT_TARGET=11.0 is broken: https://github.com/pypa/pip/issues/11789
+[tool.cibuildwheel.macos.environment]
+MACOSX_DEPLOYMENT_TARGET = "10.15"

@@ -39,7 +39,9 @@ target_compile_definitions(pairinteraction PUBLIC $<$<CXX_COMPILER_ID:MSVC>:NOMI
 add_executable(pairinteraction-backend-deprecated ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 target_compile_features(pairinteraction-backend-deprecated PRIVATE cxx_std_17)
-set_target_properties(pairinteraction-backend-deprecated PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(pairinteraction-backend-deprecated PROPERTIES
+  CXX_EXTENSIONS OFF
+  INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
 
 target_link_libraries(pairinteraction-backend-deprecated pairinteraction)
 
@@ -312,6 +314,11 @@ if(WITH_PYTHON)
     string(REPLACE "python3${Python3_VERSION_MINOR}.lib" "python3.lib" Python3_LIBRARIES_GENERALIZED ${Python3_LIBRARIES})
     message(STATUS "Unpatched Python3 libraries: ${Python3_LIBRARIES}")
     message(STATUS "  Patched Python3 libraries: ${Python3_LIBRARIES_GENERALIZED}")
+    foreach(Python3_LIBRARY ${Python3_LIBRARIES_GENERALIZED})
+      if(NOT EXISTS ${Python3_LIBRARY})
+        message(FATAL_ERROR "${Python3_LIBRARY}: No such file or directory")
+      endif()
+    endforeach()
   endif()
 
   include(UseSWIG)
@@ -325,13 +332,15 @@ if(WITH_PYTHON)
     SWIG_COMPILE_OPTIONS "-Wall;-py3"
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
-    SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
+    SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+    INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
   target_link_options(binding PUBLIC
     $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
   target_link_libraries(binding PUBLIC pairinteraction $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
   target_copy_mkl_dlls(binding)
+  get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
 
 endif()
 
@@ -354,7 +363,7 @@ if( WITH_DMG )
 
   if(WITH_PYTHON)
     install(TARGETS binding LIBRARY DESTINATION pairinteraction)
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION pairinteraction)
+    install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION pairinteraction)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION pairinteraction)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION pairinteraction)
   endif()
@@ -369,17 +378,24 @@ if( WITH_DMG )
 
   install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/pairinteraction/libraries ${bin1} ${bin2} ${bin3})")
 
-elseif ( NOT WIN32 )
-
-  if(WITH_PYTHON)
-    # Hopefully better in the future... https://gitlab.kitware.com/cmake/cmake/-/issues/24213
-    set(PY_MOD_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/pairinteraction")
-    install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION ${PY_MOD_DIR})
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
-    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
-  endif()
+elseif(SKBUILD)
+  install(TARGETS binding LIBRARY DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(TARGETS pairinteraction LIBRARY DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(FILES ${MKL_DLLS_TO_COPY} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+elseif(WITH_PYTHON)
+  # Hopefully better in the future... https://gitlab.kitware.com/cmake/cmake/-/issues/24213
+  set(PY_MOD_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/pairinteraction")
+  install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
   install(TARGETS pairinteraction LIBRARY DESTINATION lib)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
-
-endif( )
+  install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION ${PY_MOD_DIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
+else()
+  install(TARGETS pairinteraction LIBRARY DESTINATION lib)
+  install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
+endif()

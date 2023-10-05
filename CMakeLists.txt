@@ -197,7 +197,7 @@ elseif(APPLE AND WITH_DMG)
     COMMAND ${Python3_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
   )
 
-elseif(UNIX)
+elseif(UNIX AND NOT SKBUILD)
 
   add_subdirectory(dist/flatpak)
 

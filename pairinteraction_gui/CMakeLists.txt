@@ -29,7 +29,7 @@ add_custom_target(gui ALL
 
 # Compile Python scripts
 
-if ( CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG) )
+if ( NOT SKBUILD AND (CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG)) )
 
   find_program(PYINSTALLER NAMES pyinstaller)
 
@@ -52,7 +52,8 @@ else( )
 
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
   add_custom_command(TARGET gui POST_BUILD
-    COMMAND ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}
+    COMMAND ${CMAKE_COMMAND} -E env "PYTHONPYCACHEPREFIX=${CMAKE_BINARY_DIR}/__pycache__"
+      ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}
   )
 
@@ -75,6 +76,11 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
   set(filepath \${CMAKE_INSTALL_PREFIX}/pairinteraction_gui/pairinteraction_gui)
   set(iconpath ${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns)
   install(CODE "execute_process(COMMAND ${FILEICON} set ${filepath} ${iconpath})")
+
+elseif( SKBUILD )
+
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION ${SKBUILD_PLATLIB_DIR})
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui DESTINATION ${SKBUILD_SCRIPTS_DIR})
 
 elseif( CMAKE_HOST_UNIX )
 
