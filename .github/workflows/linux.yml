@@ -71,14 +71,8 @@ jobs:
     - name: Setup Python
       run: |
         echo "/opt/python/cp38-cp38/bin" >> $GITHUB_PATH
-    - uses: actions/cache@v3
-      with:
-        path: ${{ runner.temp }}/cache-pip
-        key: ${{ runner.os }}-cache-pip-${{ hashFiles('requirements.txt') }}
-        restore-keys:
-          ${{ runner.os }}-cache-pip-
     - name: Install dependencies
-      run: pip3 --cache-dir "${{ runner.temp }}/cache-pip" install -r requirements.txt
+      run: pip3 install -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build

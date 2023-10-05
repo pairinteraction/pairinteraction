@@ -29,6 +29,7 @@ file(GLOB pairinteraction_SRCS *.h *.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pairinteraction SHARED ${pairinteraction_SRCS})
+set_target_properties(pairinteraction PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
 target_compile_features(pairinteraction PRIVATE cxx_std_17)
 set_target_properties(pairinteraction PROPERTIES CXX_EXTENSIONS OFF)
@@ -290,12 +291,6 @@ endif()
 
 # Generate interface with SWIG
 if(WITH_PYTHON)
-  # FIXME: The OLD behavior for policy CMP0078 will be removed from a future version
-  # of CMake.
-  if(POLICY CMP0078)
-    cmake_policy(SET CMP0078 OLD)
-  endif()
-
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "from .binding import *" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/pireal.py "from .binding import *\nSystemOne,SystemTwo=SystemOneReal,SystemTwoReal" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py "from .binding import *\nSystemOne,SystemTwo=SystemOneComplex,SystemTwoComplex" )
@@ -313,24 +308,24 @@ if(WITH_PYTHON)
     message(STATUS "  Patched Python3 libraries: ${Python3_LIBRARIES_GENERALIZED}")
   endif()
 
-  include(${SWIG_USE_FILE})
-  set(UseSWIG_TARGET_NAME_PREFERENCE LEGACY)
+  include(UseSWIG)
+  set(UseSWIG_MODULE_VERSION 1)
 
   set_property(SOURCE Interface.i PROPERTY CPLUSPLUS ON)
   swig_add_library(binding LANGUAGE python SOURCES Interface.i)
-  target_compile_features(${SWIG_MODULE_binding_REAL_NAME} PRIVATE cxx_std_17)
-  set_target_properties(${SWIG_MODULE_binding_REAL_NAME} PROPERTIES
+  target_compile_features(binding PRIVATE cxx_std_17)
+  set_target_properties(binding PROPERTIES
     CXX_EXTENSIONS OFF
     SWIG_COMPILE_OPTIONS "-Wall;-py3"
     SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON
     SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
     SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
-  target_link_options(${SWIG_MODULE_binding_REAL_NAME} PUBLIC
+  target_link_options(binding PUBLIC
     $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
-  swig_link_libraries(binding PUBLIC pairinteraction $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
-  target_copy_mkl_dlls(${SWIG_MODULE_binding_REAL_NAME})
+  target_link_libraries(binding PUBLIC pairinteraction $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
+  target_copy_mkl_dlls(binding)
 
 endif()
 
@@ -346,8 +341,10 @@ if( WITH_DMG )
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
   if(WITH_PYTHON)
-    install(TARGETS ${SWIG_MODULE_binding_REAL_NAME} LIBRARY DESTINATION pairinteraction)
+    install(TARGETS binding LIBRARY DESTINATION pairinteraction)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION pairinteraction)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION pairinteraction)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION pairinteraction)
   endif()
   install(TARGETS pairinteraction LIBRARY DESTINATION pairinteraction)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION pairinteraction)
@@ -363,13 +360,12 @@ if( WITH_DMG )
 elseif ( NOT WIN32 )
 
   if(WITH_PYTHON)
-    set(PY_VERSION "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
-    set(PY_MOD_DIR "lib/python${PY_VERSION}/dist-packages/pairinteraction")
-
-    install(TARGETS ${SWIG_MODULE_binding_REAL_NAME} LIBRARY DESTINATION ${PY_MOD_DIR})
+    set(PY_MOD_DIR "${Python3_SITESEARCH}/pairinteraction")
+    install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION ${PY_MOD_DIR})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
   endif()
-
   install(TARGETS pairinteraction LIBRARY DESTINATION lib)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
 
