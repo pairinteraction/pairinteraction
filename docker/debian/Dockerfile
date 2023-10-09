@@ -9,16 +9,16 @@ RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git \
     pyqt5-dev-tools \
-    libboost-dev libboost-serialization-dev \
+    libboost-dev \
     doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
     libsqlite3-dev sqlite3 \
-    swig python3 python3-dev \
+    swig python3 python3-dev python3-skbuild \
     python3-numpy python3-scipy \
-    locales python3-psutil python3-pyqtgraph python3-pint \
+    locales python3-pyqtgraph python3-pint \
     dpkg rpm \
     lcov \
     doxygen graphviz ca-certificates rsync \
-    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme python3-breathe \
+    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
     jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
     intel-oneapi-mkl-devel \
