@@ -1007,11 +1007,12 @@ void SystemBase<Scalar, State>::applySchriefferWolffTransformation(
         for (const auto &entry : system0.states) {
             auto state_iter = states.template get<1>().find(entry.state);
 
-            // Check that all the states of system0 occur (since we already checked that the
-            // number of states is the same, this ensures that all the states are the same)
+            // Check that all the states of system0 occur in the perturbed system
             if (state_iter == states.template get<1>().end()) {
                 throw std::runtime_error(
-                    "The unperturbed system contains states that are not occuring.");
+                    "The unperturbed system contains states that are not occuring. "
+                    "This might happen if you did not use the same system as basis for the "
+                    "unperturbed and perturbed system.");
             }
             size_t newidx = state_iter->idx;
 
