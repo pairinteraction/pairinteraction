@@ -3,7 +3,6 @@ FROM quay.io/pypa/manylinux2014_x86_64
 RUN yum install -y \
     boost169-devel \
     cereal-devel \
-    cmake3 \
     doctest-devel \
     eigen3-devel \
     fmt-devel \
