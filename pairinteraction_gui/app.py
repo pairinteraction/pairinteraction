@@ -3231,14 +3231,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 data["numStates"] = [[v.shape[0]] for v in data["states"]]
 
             # save overlaps
-            if len(self.stateidx_field[idx]) == 1 and NO_BN in self.stateidx_field[idx]:
-                data["numOverlapvectors"] = self.stateidx_field[idx][NO_BN].shape[0]
-                data["overlapvectors"] = self.stateidx_field[idx][NO_BN]
-            elif len(self.stateidx_field[idx]) > 0:
-                _stateidx = self.stateidx_field[idx]
-                keys = [k for k in _stateidx.keys() if _stateidx[k] is not None]
-                data["numOverlapvectors"] = [[_stateidx[k].shape[0]] for k in keys]
-                data["overlapvectors"] = [[_stateidx[k]] for k in keys]
+            stateidx = self.stateidx_field[idx]
+            if len(stateidx) == 1 and NO_BN in stateidx:
+                if stateidx[NO_BN] is not None:
+                    data["numOverlapvectors"] = stateidx[NO_BN].shape[0]
+                    data["overlapvectors"] = stateidx[NO_BN]
+            elif len(stateidx) > 0:
+                keys = [k for k in stateidx.keys() if stateidx[k] is not None]
+                data["numOverlapvectors"] = [[stateidx[k].shape[0]] for k in keys]
+                data["overlapvectors"] = [[stateidx[k]] for k in keys]
 
             # save data
             # TODO Variablen an anderer Stelle anlegen
