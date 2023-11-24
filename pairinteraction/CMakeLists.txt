@@ -360,7 +360,8 @@ if( WITH_DMG )
 elseif ( NOT WIN32 )
 
   if(WITH_PYTHON)
-    set(PY_MOD_DIR "${Python3_SITEARCH}/pairinteraction")
+    # Hopefully better in the future... https://gitlab.kitware.com/cmake/cmake/-/issues/24213
+    set(PY_MOD_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/pairinteraction")
     install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION ${PY_MOD_DIR})
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
