@@ -360,7 +360,7 @@ if( WITH_DMG )
 elseif ( NOT WIN32 )
 
   if(WITH_PYTHON)
-    set(PY_MOD_DIR "${Python3_SITESEARCH}/pairinteraction")
+    set(PY_MOD_DIR "${Python3_SITEARCH}/pairinteraction")
     install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/binding.py DESTINATION ${PY_MOD_DIR})
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
