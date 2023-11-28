@@ -26,33 +26,13 @@ jobs:
   build:
     runs-on: windows-2019
     steps:
-      # https://www.intel.com/content/www/us/en/developer/articles/tool/oneapi-standalone-components.html
-      # https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-windows/2023-1/install-with-command-line.html
-      # https://github.com/oneapi-src/oneapi-ci
-      - name: Install Intel oneAPI Math Kernel Library (oneMKL)
-        shell: cmd
-        run: |
-          @echo on
-
-          REM SPDX-FileCopyrightText: 2022 Intel Corporation
-          REM
-          REM SPDX-License-Identifier: MIT
-
-          set URL=https:/registrationcenter-download.intel.com/akdlm/IRC_NAS/c961e083-5685-4f0b-ada5-c6cf16f561dd/w_BaseKit_p_2023.1.0.47256_offline.exe
-          set COMPONENTS=intel.oneapi.win.mkl.devel:intel.oneapi.win.tbb.devel:intel.oneapi.win.dpl
-
-          curl.exe --output %TEMP%\webimage.exe --url %URL% --retry 5 --retry-delay 5
-          start /b /wait %TEMP%\webimage.exe -s -x -f webimage_extracted --log extract.log
-          del %TEMP%\webimage.exe
-          webimage_extracted\bootstrapper.exe -s --action install --components=%COMPONENTS% --eula=accept -p=NEED_VS2017_INTEGRATION=0 -p=NEED_VS2019_INTEGRATION=0 -p=NEED_VS2022_INTEGRATION=0 --log-dir=.
-          set installer_exit_code=%ERRORLEVEL%
-          rd /s/q "webimage_extracted"
-          exit /b %installer_exit_code%
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           submodules: true
+
+      - name: Install Intel oneAPI Math Kernel Library (oneMKL)
+        uses: ./.github/actions/install-intel-mkl
 
       # https://learn.microsoft.com/en-us/vcpkg/users/binarycaching#gha
       - uses: actions/github-script@v7
