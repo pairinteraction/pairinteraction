@@ -96,6 +96,10 @@ if(WITH_LTO)
   endif()
 endif()
 
+# Windows specific build instructions
+
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
+
 # Mac OS X specific build instructions
 
 set(CMAKE_MACOSX_RPATH TRUE)
