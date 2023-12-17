@@ -61,7 +61,7 @@ jobs:
           wheel unpack dist/*.whl -d wheelhouse/
           chmod +x wheelhouse/*/pairinteraction/pairinteraction-* wheelhouse/*/*.data/scripts/start_pairinteraction_gui
           cd wheelhouse/*/pairinteraction
-          python ../../../../apple/standalone.py .libs _binding.so pairinteraction-backend-deprecated
+          python ../../../../dist/apple/standalone.py .libs _binding.so pairinteraction-backend-deprecated
           cd ../../..
           wheel pack wheelhouse/* -d wheelhouse/
         working-directory: build/
