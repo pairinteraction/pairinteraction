@@ -175,12 +175,11 @@ if(WITH_LAPACK AND MKL_FOUND AND (NOT BLA_VENDOR OR BLA_VENDOR MATCHES "All" OR 
       get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY_PATH}" REALPATH)
       target_link_options(pairinteraction PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
     endif()
-    target_link_libraries(pairinteraction PUBLIC MKL::MKL)
-    target_compile_definitions(pairinteraction PUBLIC WITH_INTEL_MKL)
   else()
-    target_link_libraries(pairinteraction PUBLIC PkgConfig::MKL)
-    target_compile_definitions(pairinteraction PUBLIC WITH_INTEL_MKL)
+    add_library(MKL::MKL ALIAS PkgConfig::MKL)
   endif()
+  target_link_libraries(pairinteraction PUBLIC MKL::MKL)
+  target_compile_definitions(pairinteraction PUBLIC WITH_INTEL_MKL)
 
   # Using Intel MKL from Eigen
   message(STATUS "Using Intel MKL from Eigen")
@@ -191,13 +190,17 @@ if(WITH_LAPACK AND MKL_FOUND AND (NOT BLA_VENDOR OR BLA_VENDOR MATCHES "All" OR 
 
 elseif(WITH_LAPACK AND LAPACK_FOUND)
   # Use a different lapack vendor
-  target_link_options(pairinteraction PUBLIC ${LAPACK_LINKER_FLAGS})
-  target_link_libraries(pairinteraction PUBLIC ${LAPACK_LIBRARIES})
+  if(NOT TARGET LAPACK::LAPACK)
+    add_library(LAPACK::LAPACK INTERFACE IMPORTED)
+    set_target_properties(LAPACK::LAPACK PROPERTIES
+      INTERFACE_LINK_LIBRARIES "${LAPACK_LIBRARIES}")
+    set_target_properties(LAPACK::LAPACK PROPERTIES
+      INTERFACE_LINK_OPTIONS "${LAPACK_LINKER_FLAGS}")
+  endif()
+  target_link_libraries(pairinteraction PUBLIC LAPACK::LAPACK)
 
   # Some systems have LAPACKE in a separate library for some reason. The
   # following attempts to detect that. Static linking is preferred.
-  add_library(LAPACKE_TARGET INTERFACE)
-  add_library(LAPACKE::LAPACKE ALIAS LAPACKE_TARGET)
   find_library(LAPACKE_LIBRARY
     NAMES liblapacke.a liblapacke.dylib lapacke
     PATH_SUFFIXES lib
@@ -223,11 +226,14 @@ elseif(WITH_LAPACK AND LAPACK_FOUND)
   set(CMAKE_REQUIRED_LIBRARIES ${CMAKE_REQUIRED_LIBRARIES_SAVED})
 
   if(LAPACKE_WORKS)
+    add_library(LAPACKE::LAPACKE INTERFACE IMPORTED)
     if(LAPACKE_LIBRARY)
-      target_link_libraries(LAPACKE_TARGET INTERFACE "${LAPACKE_LIBRARY}")
+      set_target_properties(LAPACKE::LAPACKE PROPERTIES
+        INTERFACE_LINK_LIBRARIES "${LAPACKE_LIBRARY}")
     endif()
     if(LAPACKE_INCLUDE_DIR)
-      target_include_directories(LAPACKE_TARGET SYSTEM INTERFACE "${LAPACKE_INCLUDE_DIR}")
+      set_target_properties(LAPACKE::LAPACKE PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${LAPACKE_INCLUDE_DIR}")
     endif()
   elseif(NOT LAPACKE_WORKS)
     message(FATAL_ERROR "No working LAPACKE detected")
