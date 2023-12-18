@@ -25,7 +25,7 @@ jobs:
     env:
       package: pairinteraction-install-osx.dmg
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -72,11 +72,11 @@ jobs:
         with:
           limit-access-to-actor: true
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.package }}
           path: build/${{ env.package }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pairinteraction-macos-wheel
           path: build/wheelhouse/*.whl

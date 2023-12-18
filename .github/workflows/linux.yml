@@ -20,7 +20,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-debian:docker
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -102,7 +102,7 @@ jobs:
     env:
       package: pairinteraction-install-opensuse.rpm
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -121,7 +121,7 @@ jobs:
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package
       run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.package }}
         path: build/${{ env.package }}
@@ -131,7 +131,7 @@ jobs:
     container:
       image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -156,7 +156,7 @@ jobs:
     env:
       package: pairinteraction-install-ubuntu.deb
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0
         submodules: true
@@ -175,7 +175,7 @@ jobs:
       run: cmake --build build/ --target doc -- --keep-going
     - name: Package
       run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: ${{ env.package }}
         path: build/${{ env.package }}

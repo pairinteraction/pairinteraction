@@ -24,7 +24,7 @@ jobs:
   build:
     runs-on: windows-2019
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           submodules: true
@@ -85,11 +85,11 @@ jobs:
         with:
           limit-access-to-actor: true
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pairinteraction-install-windows.exe
           path: build/pairinteraction-install-windows.exe
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: pairinteraction-windows-wheel
           path: build/wheelhouse/*.whl
