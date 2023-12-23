@@ -209,6 +209,9 @@ rst_epilog = """
 .. |codecov| image:: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
              :target: https://{user}.github.io/{repo}/coverage/html/index.html
              :alt: Code Coverage Report
+.. |benchs| image:: https://img.shields.io/badge/code-benchmarks-blue.svg?style=flat
+            :target: https://{user}.github.io/{repo}/dev/bench/index.html
+            :alt: Continuous Benchmarking
 .. |pypi| image:: {pypi_image}
           :target: {pypi_target}
           :alt: PyPI Package
