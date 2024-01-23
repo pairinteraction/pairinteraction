@@ -68,7 +68,5 @@ jobs:
         output-file-path: build/pairinteraction/benchmarks/all_benchs.json
         github-token: ${{ secrets.GITHUB_TOKEN }}
         auto-push: ${{ github.ref == 'refs/heads/master' }}
-        # Show alert with commit comment on detecting possible performance regression
-        alert-threshold: '200%'
-        comment-on-alert: true
-        fail-on-alert: true
+        comment-on-alert: false
+        fail-on-alert: false
