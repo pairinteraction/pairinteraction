@@ -17,8 +17,20 @@ RUN apt-get update -qq \
     jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
     python3-matplotlib \
   && apt-get clean -qq \
-  && rm -rf /var/lib/apt/lists/* \
-  && pip3 install 'autopep8==1.3.5'
+  && rm -rf /var/lib/apt/lists/*
+
+RUN apt-get update -y && apt-get install -y debhelper dh-python \
+ && mkdir -p /src && cd /src \
+ && curl -LOOO http://archive.ubuntu.com/ubuntu/pool/universe/s/sphinxcontrib-mermaid/sphinxcontrib-mermaid_0.7.1{-3.dsc,.orig.tar.gz,-3.debian.tar.xz} \
+ && dpkg-source -x sphinxcontrib-mermaid_0.7.1-3.dsc \
+ && cd sphinxcontrib-mermaid-0.7.1 \
+ && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage -b -d -uc -us \
+ && cd - \
+ && apt-get install ./python3-sphinxcontrib-mermaid_0.7.1-3_all.deb \
+ && cd / && rm -rf /src \
+ && apt-get purge --autoremove -y debhelper dh-python \
+ && apt-get clean -qq \
+ && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \

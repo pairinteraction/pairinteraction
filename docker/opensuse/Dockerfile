@@ -18,6 +18,13 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     python3-matplotlib \
   && zypper clean
 
+COPY python-sphinxcontrib-mermaid.spec /
+RUN zypper -n install --no-recommends rpm-build fdupes python3-setuptools \
+ && rpmbuild --undefine=_disable_source_fetch -bb /python-sphinxcontrib-mermaid.spec \
+ && rpm -ivh /usr/src/packages/RPMS/noarch/python3-sphinxcontrib-mermaid-0.7.1-0.noarch.rpm \
+ && rm -rf /usr/src /python-sphinxcontrib-mermaid.spec \
+ && zypper clean
+
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
   && rm julia-1.0.5-linux-x86_64.tar.gz \
