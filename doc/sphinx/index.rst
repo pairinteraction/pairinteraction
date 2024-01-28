@@ -170,6 +170,7 @@ Screenshots
 
    installation.rst
    tutorials.rst
+   development.rst
 
 .. toctree::
     :hidden:

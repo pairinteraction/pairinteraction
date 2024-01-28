@@ -46,8 +46,19 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "nbsphinx",
+    "sphinxcontrib.mermaid",
 ]
 
+html_js_files = [
+    (
+        "https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js",
+        {
+            "integrity": "sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==",
+            "crossorigin": "anonymous",
+            "referrerpolicy": "no-referrer",
+        },
+    )
+]
 html_css_files = ["gallery.css"]
 
 # Disable cell numbers in jupyter notebooks and show link to ipynb file
@@ -68,6 +79,9 @@ nbsphinx_prolog = """
       <a class="reference external" href="{{ docname|e }}">{{ docname|e }}</a>.
     </div>
 """
+
+# We want to use the version from cdnjs
+mermaid_version = ""
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
