@@ -115,9 +115,12 @@ void load(Archive &ar,
 
 } // namespace cereal
 
-template <class Scalar, class State>
+template <class Scalar_, class State_>
 class SystemBase {
 public:
+    using Scalar = Scalar_;
+    using State = State_;
+
     virtual ~SystemBase() = default;
 
     void setMinimalNorm(const double &threshold);

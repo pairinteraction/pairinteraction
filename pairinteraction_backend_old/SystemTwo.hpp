@@ -37,13 +37,12 @@
 #include <set>
 #include <type_traits>
 
-template <typename Scalar_>
-class SystemTwo : public SystemBase<Scalar_, StateTwo> {
+template <typename Scalar>
+class SystemTwo : public SystemBase<Scalar, StateTwo> {
 public:
-    using Scalar = Scalar_;
-    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2,
+    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2,
               MatrixElementCache &cache);
-    SystemTwo(const SystemOne<Scalar_> &b1, const SystemOne<Scalar_> &b2, MatrixElementCache &cache,
+    SystemTwo(const SystemOne<Scalar> &b1, const SystemOne<Scalar> &b2, MatrixElementCache &cache,
               bool memory_saving);
 
     const std::array<std::string, 2> &getSpecies();
@@ -66,25 +65,25 @@ protected:
     void initializeBasis() override;
     void initializeInteraction() override;
     void addInteraction() override;
-    void transformInteraction(const Eigen::SparseMatrix<Scalar_> &transformator) override;
+    void transformInteraction(const Eigen::SparseMatrix<Scalar> &transformator) override;
     void deleteInteraction() override;
-    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices,
+    Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices,
                                               double alpha, double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta,
+    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta,
                                                    double gamma) override;
-    void incorporate(SystemBase<Scalar_, StateTwo> &system) override;
+    void incorporate(SystemBase<Scalar, StateTwo> &system) override;
     void onStatesChange() override;
 
 private:
     std::array<std::string, 2> species;
-    SystemOne<Scalar_> system1; // is needed in the initializeBasis method and afterwards deleted
-    SystemOne<Scalar_> system2; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar> system1; // is needed in the initializeBasis method and afterwards deleted
+    SystemOne<Scalar> system2; // is needed in the initializeBasis method and afterwards deleted
 
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_angulardipole;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_multipole;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_dd;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_dq;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_greentensor_qd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_angulardipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_multipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dd;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_dq;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_greentensor_qd;
 
     double minimal_le_roy_radius;
     double distance;
@@ -112,8 +111,8 @@ private:
 
     void checkDistance(const double &distance);
 
-    void addBasisvectors(const StateTwo &state, const size_t &col_new, const Scalar_ &value_new,
-                         std::vector<Eigen::Triplet<Scalar_>> &basisvectors_triplets,
+    void addBasisvectors(const StateTwo &state, const size_t &col_new, const Scalar &value_new,
+                         std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
                          std::vector<double> &sqnorm_list);
 
     template <typename T>
@@ -184,7 +183,7 @@ private:
 
     template <class Archive>
     void serialize(Archive &ar, unsigned int /* version */) {
-        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar_, StateTwo>>(this));
+        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar, StateTwo>>(this));
         ar &CEREAL_NVP(species) & CEREAL_NVP(system1) & CEREAL_NVP(system2);
         ar &CEREAL_NVP(distance) & CEREAL_NVP(distance_x) & CEREAL_NVP(distance_y) &
             CEREAL_NVP(distance_z) & CEREAL_NVP(surface_distance) & CEREAL_NVP(ordermax);

@@ -21,6 +21,7 @@
 #define SYMMETRY_H
 
 #include <array>
+#include <cstddef>
 #include <climits>
 
 enum parity_t {
