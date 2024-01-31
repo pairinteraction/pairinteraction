@@ -50,10 +50,10 @@ if ( NOT SKBUILD AND (CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG)) )
 
 else( )
 
-  find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  find_package(Python COMPONENTS Interpreter REQUIRED)
   add_custom_command(TARGET gui POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E env "PYTHONPYCACHEPREFIX=${CMAKE_BINARY_DIR}/__pycache__"
-      ${Python3_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}
+      ${Python_EXECUTABLE} -m compileall -q ${CMAKE_CURRENT_BINARY_DIR}
     DEPENDS ${CMAKE_CURRENT_BINARY_DIR}
   )
 

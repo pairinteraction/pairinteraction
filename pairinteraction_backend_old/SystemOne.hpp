@@ -36,13 +36,12 @@
 #include <set>
 #include <unordered_map>
 
-template <typename Scalar_>
+template <typename Scalar>
 class SystemTwo;
 
-template <typename Scalar_>
-class SystemOne : public SystemBase<Scalar_, StateOne> {
+template <typename Scalar>
+class SystemOne : public SystemBase<Scalar, StateOne> {
 public:
-    using Scalar = Scalar_;
     SystemOne(std::string species, MatrixElementCache &cache);
     SystemOne(std::string species, MatrixElementCache &cache, bool memory_saving);
 
@@ -66,31 +65,31 @@ protected:
     void initializeBasis() override;
     void initializeInteraction() override;
     void addInteraction() override;
-    void transformInteraction(const Eigen::SparseMatrix<Scalar_> &transformator) override;
+    void transformInteraction(const Eigen::SparseMatrix<Scalar> &transformator) override;
     void deleteInteraction() override;
-    Eigen::SparseMatrix<Scalar_> rotateStates(const std::vector<size_t> &states_indices,
+    Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices,
                                               double alpha, double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar_> buildStaterotator(double alpha, double beta,
+    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta,
                                                    double gamma) override;
-    void incorporate(SystemBase<Scalar_, StateOne> &system) override;
+    void incorporate(SystemBase<Scalar, StateOne> &system) override;
 
 private:
     std::array<double, 3> efield, bfield;
-    std::unordered_map<int, Scalar_> efield_spherical, bfield_spherical;
+    std::unordered_map<int, Scalar> efield_spherical, bfield_spherical;
     bool diamagnetism;
-    std::unordered_map<std::array<int, 2>, Scalar_, utils::hash<std::array<int, 2>>>
+    std::unordered_map<std::array<int, 2>, Scalar, utils::hash<std::array<int, 2>>>
         diamagnetism_terms;
     int charge;
     unsigned int ordermax;
     double distance;
     std::string species;
 
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_efield;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_bfield;
-    std::unordered_map<std::array<int, 2>, Eigen::SparseMatrix<Scalar_>,
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_efield;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_bfield;
+    std::unordered_map<std::array<int, 2>, Eigen::SparseMatrix<Scalar>,
                        utils::hash<std::array<int, 2>>>
         interaction_diamagnetism;
-    std::unordered_map<int, Eigen::SparseMatrix<Scalar_>> interaction_multipole;
+    std::unordered_map<int, Eigen::SparseMatrix<Scalar>> interaction_multipole;
     parity_t sym_reflection;
     std::set<float> sym_rotation;
 
@@ -99,19 +98,19 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     void addSymmetrizedBasisvectors(const StateOne &state, size_t &idx, const double &energy,
-                                    std::vector<Eigen::Triplet<Scalar_>> &basisvectors_triplets,
-                                    std::vector<Eigen::Triplet<Scalar_>> &hamiltonian_triplets,
+                                    std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets,
+                                    std::vector<Eigen::Triplet<Scalar>> &hamiltonian_triplets,
                                     parity_t &sym_reflection_local);
 
-    void addBasisvectors(const StateOne &state, const size_t &idx, const Scalar_ &value,
-                         std::vector<Eigen::Triplet<Scalar_>> &basisvectors_triplets);
+    void addBasisvectors(const StateOne &state, const size_t &idx, const Scalar &value,
+                         std::vector<Eigen::Triplet<Scalar>> &basisvectors_triplets);
 
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, double> &field_spherical);
     void changeToSphericalbasis(std::array<double, 3> field,
                                 std::unordered_map<int, std::complex<double>> &field_spherical);
-    void addTriplet(std::vector<Eigen::Triplet<Scalar_>> &triplets, size_t r_idx, size_t c_idx,
-                    Scalar_ val);
+    void addTriplet(std::vector<Eigen::Triplet<Scalar>> &triplets, size_t r_idx, size_t c_idx,
+                    Scalar val);
     void rotateVector(std::array<double, 3> &field, std::array<double, 3> &to_z_axis,
                       std::array<double, 3> &to_y_axis);
     void rotateVector(std::array<double, 3> &field, double alpha, double beta, double gamma);
@@ -162,12 +161,12 @@ private:
     ////////////////////////////////////////////////////////////////////
 
     friend class cereal::access;
-    friend class SystemTwo<Scalar_>;
+    friend class SystemTwo<Scalar>;
     SystemOne();
 
     template <class Archive>
     void serialize(Archive &ar, unsigned int /* version */) {
-        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar_, StateOne>>(this));
+        ar &cereal::make_nvp("base_class", cereal::base_class<SystemBase<Scalar, StateOne>>(this));
         ar &CEREAL_NVP(species);
         ar &CEREAL_NVP(efield) & CEREAL_NVP(bfield) & CEREAL_NVP(diamagnetism) &
             CEREAL_NVP(sym_reflection) & CEREAL_NVP(sym_rotation);

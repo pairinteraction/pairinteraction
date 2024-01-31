@@ -26,6 +26,7 @@ configure_file(version.hpp.in ${CMAKE_CURRENT_BINARY_DIR}/version.hpp)
 # Add the executables
 
 file(GLOB pairinteraction_SRCS *.h *.cpp)
+list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/binding.cpp)
 list(REMOVE_ITEM pairinteraction_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 
 add_library(pairinteraction SHARED ${pairinteraction_SRCS})
@@ -297,42 +298,31 @@ if(WITH_PYTHON)
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/pireal.py "from .binding import *\nSystemOne,SystemTwo=SystemOneReal,SystemTwoReal" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py "from .binding import *\nSystemOne,SystemTwo=SystemOneComplex,SystemTwoComplex" )
 
-  find_package(SWIG 3.0 COMPONENTS python REQUIRED)
   if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
-    find_package(Python3 COMPONENTS Interpreter Development NumPy REQUIRED)
+    find_package(Python REQUIRED
+      COMPONENTS Interpreter Development NumPy
+      OPTIONAL_COMPONENTS Development.SABIModule)
   else()
-    find_package(Python3 COMPONENTS Interpreter Development.Module NumPy REQUIRED)
+    find_package(Python REQUIRED
+      COMPONENTS Interpreter Development.Module NumPy
+      OPTIONAL_COMPONENTS Development.SABIModule)
   endif()
 
-  if(MSVC)
-    string(REPLACE "python3${Python3_VERSION_MINOR}.lib" "python3.lib" Python3_LIBRARIES_GENERALIZED ${Python3_LIBRARIES})
-    message(STATUS "Unpatched Python3 libraries: ${Python3_LIBRARIES}")
-    message(STATUS "  Patched Python3 libraries: ${Python3_LIBRARIES_GENERALIZED}")
-    foreach(Python3_LIBRARY ${Python3_LIBRARIES_GENERALIZED})
-      if(NOT EXISTS ${Python3_LIBRARY})
-        message(FATAL_ERROR "${Python3_LIBRARY}: No such file or directory")
-      endif()
-    endforeach()
+  FetchContent_Declare(nanobind
+    GIT_REPOSITORY https://github.com/wjakob/nanobind.git
+    GIT_TAG        v1.8.0)
+  FetchContent_GetProperties(nanobind)
+  if(NOT nanobind_POPULATED)
+    FetchContent_Populate(nanobind)
   endif()
+  list(APPEND CMAKE_PREFIX_PATH ${nanobind_SOURCE_DIR})
+  find_package(nanobind CONFIG REQUIRED)
 
-  include(UseSWIG)
-  set(UseSWIG_MODULE_VERSION 1)
+  nanobind_add_module(binding STABLE_ABI NB_STATIC binding.cpp)
 
-  set_property(SOURCE Interface.i PROPERTY CPLUSPLUS ON)
-  swig_add_library(binding LANGUAGE python SOURCES Interface.i)
   target_compile_features(binding PRIVATE cxx_std_17)
-  set_target_properties(binding PROPERTIES
-    CXX_EXTENSIONS OFF
-    SWIG_COMPILE_OPTIONS "-Wall;-py3"
-    SWIG_USE_TARGET_INCLUDE_DIRECTORIES ON
-    SWIG_GENERATED_INCLUDE_DIRECTORIES "${Python3_INCLUDE_DIRS};${Python3_NumPy_INCLUDE_DIRS}"
-    SWIG_GENERATED_COMPILE_OPTIONS $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-    INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
-  target_link_options(binding PUBLIC
-    $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
-    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
-    $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python3_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
-  target_link_libraries(binding PUBLIC pairinteraction $<$<CXX_COMPILER_ID:MSVC>:${Python3_LIBRARIES_GENERALIZED}>)
+  set_target_properties(binding PROPERTIES CXX_EXTENSIONS OFF)
+  target_link_libraries(binding PUBLIC pairinteraction Python::NumPy)
   target_copy_mkl_dlls(binding)
   get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
 
@@ -341,11 +331,10 @@ endif()
 # CPack
 
 if( WITH_DMG )
-  find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  find_package(Python COMPONENTS Interpreter REQUIRED)
 
   if(WITH_PYTHON)
     install(TARGETS binding LIBRARY DESTINATION pairinteraction)
-    install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION pairinteraction)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION pairinteraction)
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION pairinteraction)
   endif()
@@ -358,7 +347,7 @@ if( WITH_DMG )
     set(bin3 \${CMAKE_INSTALL_PREFIX}/pairinteraction/_binding.so)
   endif()
 
-  install(CODE "execute_process(COMMAND ${Python3_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/pairinteraction/libraries ${bin1} ${bin2} ${bin3})")
+  install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/pairinteraction/libraries ${bin1} ${bin2} ${bin3})")
 
 elseif(SKBUILD)
   install(TARGETS binding LIBRARY DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
@@ -370,7 +359,7 @@ elseif(SKBUILD)
   install(FILES ${MKL_DLLS_TO_COPY} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
 elseif(WITH_PYTHON)
   # Hopefully better in the future... https://gitlab.kitware.com/cmake/cmake/-/issues/24213
-  set(PY_MOD_DIR "lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages/pairinteraction")
+  set(PY_MOD_DIR "lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/pairinteraction")
   install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
   install(TARGETS pairinteraction LIBRARY DESTINATION lib)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
