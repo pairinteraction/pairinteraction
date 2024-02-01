@@ -310,7 +310,7 @@ if(WITH_PYTHON)
 
   FetchContent_Declare(nanobind
     GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-    GIT_TAG        v1.8.0)
+    GIT_TAG        72831bb)
   FetchContent_GetProperties(nanobind)
   if(NOT nanobind_POPULATED)
     FetchContent_Populate(nanobind)
