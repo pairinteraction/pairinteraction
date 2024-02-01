@@ -1,3 +1,6 @@
+#include <streambuf>
+#include <sstream>
+
 #include "Constants.hpp"
 #include "Interface.hpp"
 #include "MatrixElementCache.hpp"
@@ -22,6 +25,31 @@
 namespace nb = nanobind;
 
 using namespace nb::literals;
+
+struct array_source : std::streambuf {
+    array_source(char *buffer, size_t len) {
+        this->setg(buffer, buffer, buffer + len);
+    }
+};
+
+template <typename T>
+PyObject* __getstate__(T const &self, std::string const &cls) {
+    std::stringstream ss;
+    cereal::BinaryOutputArchive ar(ss);
+    ar << cereal::make_nvp(cls, self);
+    return PyBytes_FromStringAndSize(ss.str().data(), ss.str().length());
+}
+
+template <typename T>
+void __setstate__(PyObject* const sState, T &self, std::string const &cls) {
+    char *buffer;
+    Py_ssize_t len;
+    PyBytes_AsStringAndSize(sState, &buffer, &len);
+    array_source asource(buffer, static_cast<size_t>(len));
+    std::istream ss(&asource);
+    cereal::BinaryInputArchive ar(ss);
+    ar >> cereal::make_nvp(cls, self);
+}
 
 template <typename System, typename NBClass>
 void add_system_base_methods(NBClass &system) {
@@ -114,7 +142,15 @@ void declare_systems(nb::module_ &m, std::string const &type) {
         .def("setRydIonOrder", &SystemOne<Scalar>::setRydIonOrder)
         .def("setRydIonDistance", &SystemOne<Scalar>::setRydIonDistance)
         .def("setConservedParityUnderReflection", &SystemOne<Scalar>::setConservedParityUnderReflection)
-        .def("setConservedMomentaUnderRotation", &SystemOne<Scalar>::setConservedMomentaUnderRotation);
+        .def("setConservedMomentaUnderRotation", &SystemOne<Scalar>::setConservedMomentaUnderRotation)
+        .def("__getstate__", [pyclass_name_system_one] (SystemOne<Scalar> const &self) -> nb::handle {
+            return __getstate__(self, pyclass_name_system_one);
+        })
+        .def("__setstate__", [pyclass_name_system_one] (SystemOne<Scalar> &self, nb::handle buf) {
+            MatrixElementCache tmp;
+            new (&self) SystemOne<Scalar>("", tmp);
+            __setstate__(buf.ptr(), self, pyclass_name_system_one);
+        });
 
     std::string pyclass_name_system_two_base = "_SystemStateTwo" + type;
     nb::class_<SystemBase<Scalar, StateTwo>> system_two_base(m, pyclass_name_system_two_base.c_str());
@@ -140,7 +176,17 @@ void declare_systems(nb::module_ &m, std::string const &type) {
         .def("setConservedParityUnderInversion", &SystemTwo<Scalar>::setConservedParityUnderInversion)
         .def("setConservedParityUnderReflection", &SystemTwo<Scalar>::setConservedParityUnderReflection)
         .def("setConservedMomentaUnderRotation", &SystemTwo<Scalar>::setConservedMomentaUnderRotation)
-        .def("setOneAtomBasisvectors", &SystemTwo<Scalar>::setOneAtomBasisvectors);
+        .def("setOneAtomBasisvectors", &SystemTwo<Scalar>::setOneAtomBasisvectors)
+        .def("__getstate__", [pyclass_name_system_two] (SystemTwo<Scalar> const &self) -> nb::handle {
+            return __getstate__(self, pyclass_name_system_two);
+        })
+        .def("__setstate__", [pyclass_name_system_two] (SystemTwo<Scalar> &self, nb::handle buf) {
+            MatrixElementCache tmp;
+            SystemOne<Scalar> s1("", tmp);
+            SystemOne<Scalar> s2("", tmp);
+            new (&self) SystemTwo<Scalar>(s1, s2, tmp);
+            __setstate__(buf.ptr(), self, pyclass_name_system_two);
+        });
 }
 
 NB_MODULE(binding, m) {
@@ -220,7 +266,14 @@ NB_MODULE(binding, m) {
         .def("getDefectDB", &MatrixElementCache::getDefectDB)
         .def("setMethod", &MatrixElementCache::setMethod)
         .def("loadElectricDipoleDB", &MatrixElementCache::loadElectricDipoleDB)
-        .def("size", &MatrixElementCache::size);
+        .def("size", &MatrixElementCache::size)
+        .def("__getstate__", [] (MatrixElementCache const &self) -> nb::handle {
+            return __getstate__(self, "MatrixElementCache");
+        })
+        .def("__setstate__", [] (MatrixElementCache &self, nb::handle buf) {
+            new (&self) MatrixElementCache;
+            __setstate__(buf.ptr(), self, "MatrixElementCache");
+        });
 
     // State.hpp
 
@@ -249,7 +302,15 @@ NB_MODULE(binding, m) {
         .def(nb::self ^ nb::self)
         .def(nb::self != nb::self)
         .def(nb::self < nb::self)
-        .def(nb::self <= nb::self);
+        .def(nb::self <= nb::self)
+        .def("__getstate__", [] (StateOne const &self) -> nb::handle {
+            return __getstate__(self, "StateOne");
+        })
+        .def("__setstate__", [] (StateOne &self, nb::handle buf) {
+            new (&self) StateOne;
+            __setstate__(buf.ptr(), self, "StateOne");
+        });
+
 
     nb::class_<StateTwo> state_two(m, "StateTwo");
     state_two
@@ -295,7 +356,15 @@ NB_MODULE(binding, m) {
         .def(nb::self ^ nb::self)
         .def(nb::self != nb::self)
         .def(nb::self < nb::self)
-        .def(nb::self <= nb::self);
+        .def(nb::self <= nb::self)
+        .def("__getstate__", [] (StateTwo const &self) -> nb::handle {
+            return __getstate__(self, "StateTwo");
+        })
+        .def("__setstate__", [] (StateTwo &self, nb::handle buf) {
+            new (&self) StateTwo;
+            __setstate__(buf.ptr(), self, "StateTwo");
+        });
+
 
     // QuantumDefect.hpp
 
