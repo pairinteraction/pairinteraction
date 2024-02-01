@@ -75,23 +75,8 @@ option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
-option(WITH_LTO      "Build with link-time optimization"    OFF)
 option(WITH_GSL      "Use the GNU scientific library for Whittaker functions" ON)
 option(WITH_LAPACK   "Use BLAS and LAPACK to speed up linear algebra" ON)
-if(CMAKE_VERSION VERSION_GREATER 3.5.2 AND CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  option(WITH_CLANG_TIDY "Run Clang-Tidy during compilation" OFF)
-endif()
-
-# Enable link-time optimization if available
-if(WITH_LTO)
-  include(CheckIPOSupported OPTIONAL RESULT_VARIABLE CHECK_IPO_SUPPORTED)
-  if(CHECK_IPO_SUPPORTED)
-    check_ipo_supported(RESULT IPO_SUPPORTED)
-    if(IPO_SUPPORTED)
-      set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-    endif()
-  endif()
-endif()
 
 # Windows specific build instructions
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)

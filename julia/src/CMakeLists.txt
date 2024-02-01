@@ -32,7 +32,9 @@ set_property(TARGET JlCxx::cxxwrap_julia PROPERTY INTERFACE_COMPILE_OPTIONS)
 add_library(pairinteraction_jl SHARED julia_hooks_pi.cpp)
 
 target_compile_features(pairinteraction_jl PRIVATE cxx_std_17)
-set_target_properties(pairinteraction_jl PROPERTIES CXX_EXTENSIONS OFF)
+set_target_properties(pairinteraction_jl PROPERTIES
+  CXX_EXTENSIONS OFF
+  CXX_CLANG_TIDY "")
 
 target_link_libraries(pairinteraction_jl PUBLIC pairinteraction JlCxx::cxxwrap_julia)
 
