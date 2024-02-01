@@ -20,7 +20,7 @@
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 #include <nanobind/eigen/dense.h>
-//#include <nanobind/eigen/sparse.h>
+#include <nanobind/eigen/sparse.h>
 
 namespace nb = nanobind;
 
