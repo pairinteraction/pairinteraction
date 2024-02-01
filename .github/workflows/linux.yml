@@ -107,6 +107,7 @@ jobs:
         path: build/artifact/
 
   opensuse:
+    if: false # disabled until OpenSUSE upgrades Python
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/pairinteraction/pairinteraction-opensuse:docker
