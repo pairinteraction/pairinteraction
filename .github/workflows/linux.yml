@@ -141,7 +141,7 @@ jobs:
   static-analysis:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-static-analysis:docker
+      image: ghcr.io/pairinteraction/pairinteraction-static-analysis-new:docker
     steps:
     - uses: actions/checkout@v4
       with:
@@ -150,7 +150,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOC=On -DWITH_GUI=Off
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-config=" -DWITH_JULIA=On -DWITH_DOC=On -DWITH_GUI=Off
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

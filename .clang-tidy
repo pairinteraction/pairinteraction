@@ -1,5 +1,5 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,misc-*,modernize-*,-modernize-use-using,performance-*,readability-*,cert-*,-cert-flp30-c,-clang-analyzer-security.FloatLoopCounter,-clang-analyzer-optin.performance.Padding'
+Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,misc-*,-misc-non-private-member-variables-in-classes,modernize-*,-modernize-use-trailing-return-type,-modernize-use-using,-modernize-use-nodiscard,modernize-use-default-member-init,performance-*,readability-*,-readability-magic-numbers,-readability-convert-member-functions-to-static,cert-*,-cert-flp30-c,-clang-analyzer-security.FloatLoopCounter,-clang-analyzer-optin.performance.Padding'
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 AnalyzeTemporaryDtors: false

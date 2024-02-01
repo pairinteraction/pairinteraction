@@ -51,13 +51,6 @@ target_link_libraries(pairinteraction-backend-deprecated pairinteraction)
 target_include_directories(pairinteraction PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(pairinteraction PUBLIC ${CMAKE_CURRENT_BINARY_DIR})
 
-# Set up clang-tidy
-
-if(WITH_CLANG_TIDY)
-  set(CLANG_TIDY_COMMAND_LINE "${CLANG_TIDY_EXE}" "-config=" "-warnings-as-errors=*")
-  set_target_properties(pairinteraction PROPERTIES CXX_CLANG_TIDY "${CLANG_TIDY_COMMAND_LINE}")
-endif()
-
 # Generate coverage report
 
 if( WITH_COVERAGE )
@@ -96,7 +89,9 @@ if(NOT wignersymbols_POPULATED)
 endif()
 add_library(wignerSymbols STATIC ${wignersymbols_SOURCE_DIR}/src/wignerSymbols-cpp.cpp)
 target_include_directories(pairinteraction SYSTEM PUBLIC ${wignersymbols_SOURCE_DIR}/include)
-set_target_properties(wignerSymbols PROPERTIES POSITION_INDEPENDENT_CODE ON)
+set_target_properties(wignerSymbols PROPERTIES
+  POSITION_INDEPENDENT_CODE ON
+  CXX_CLANG_TIDY "")
 target_link_libraries(pairinteraction PRIVATE wignerSymbols)
 
 # Eigen
@@ -319,9 +314,12 @@ if(WITH_PYTHON)
   find_package(nanobind CONFIG REQUIRED)
 
   nanobind_add_module(binding STABLE_ABI NB_STATIC binding.cpp)
+  set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
   target_compile_features(binding PRIVATE cxx_std_17)
-  set_target_properties(binding PROPERTIES CXX_EXTENSIONS OFF)
+  set_target_properties(binding PROPERTIES
+    CXX_EXTENSIONS OFF
+    CXX_CLANG_TIDY "")
   target_link_libraries(binding PUBLIC pairinteraction Python::NumPy)
   target_copy_mkl_dlls(binding)
   get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
