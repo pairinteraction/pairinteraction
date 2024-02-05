@@ -303,6 +303,12 @@ if(WITH_PYTHON)
       OPTIONAL_COMPONENTS Development.SABIModule)
   endif()
 
+  if(MSVC)
+    string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
+    message(STATUS "Unpatched Python libraries: ${Python_LIBRARIES}")
+    message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
+  endif()
+
   FetchContent_Declare(nanobind
     GIT_REPOSITORY https://github.com/wjakob/nanobind.git
     GIT_TAG        72831bb)
@@ -313,14 +319,22 @@ if(WITH_PYTHON)
   list(APPEND CMAKE_PREFIX_PATH ${nanobind_SOURCE_DIR})
   find_package(nanobind CONFIG REQUIRED)
 
-  nanobind_add_module(binding STABLE_ABI NB_STATIC binding.cpp)
+  nanobind_build_library(nanobind-static)
   set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
+  add_library(binding MODULE binding.cpp)
   target_compile_features(binding PRIVATE cxx_std_17)
   set_target_properties(binding PROPERTIES
     CXX_EXTENSIONS OFF
-    CXX_CLANG_TIDY "")
-  target_link_libraries(binding PUBLIC pairinteraction Python::NumPy)
+    CXX_CLANG_TIDY ""
+    PREFIX "")
+  target_include_directories(binding PUBLIC "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
+  target_compile_options(binding PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
+  target_link_options(binding PUBLIC
+    $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
+    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
+    $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
+  target_link_libraries(binding PUBLIC pairinteraction nanobind-static $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>)
   target_copy_mkl_dlls(binding)
   get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
 
