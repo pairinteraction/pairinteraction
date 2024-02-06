@@ -356,7 +356,7 @@ if( WITH_DMG )
   set(bin1 \${CMAKE_INSTALL_PREFIX}/pairinteraction/libpairinteraction.dylib)
   set(bin2 \${CMAKE_INSTALL_PREFIX}/pairinteraction/pairinteraction-backend-deprecated)
   if(WITH_PYTHON)
-    set(bin3 \${CMAKE_INSTALL_PREFIX}/pairinteraction/_binding.so)
+    set(bin3 \${CMAKE_INSTALL_PREFIX}/pairinteraction/binding.so)
   endif()
 
   install(CODE "execute_process(COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/standalone.py \${CMAKE_INSTALL_PREFIX}/pairinteraction/libraries ${bin1} ${bin2} ${bin3})")
