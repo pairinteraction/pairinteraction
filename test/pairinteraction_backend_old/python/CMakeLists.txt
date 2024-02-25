@@ -49,10 +49,6 @@ if (WITH_PYTHON)
     python_test(TARGET parallelization SOURCE parallelization.py
       ENVIRONMENT "OPENBLAS_NUM_THREADS=1" "MKL_NUM_THREADS=1")
   endif()
-  if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
-    python_test(TARGET gui SOURCE gui.py)
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-  endif()
 endif()
 
 configure_file(

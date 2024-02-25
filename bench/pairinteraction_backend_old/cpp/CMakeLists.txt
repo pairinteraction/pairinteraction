@@ -27,7 +27,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(GoogleBenchmark)
 
-add_custom_target(run_benchmarks)
+add_custom_target(bench)
 
 function(benchmark)
   cmake_parse_arguments(BENCH "" "TARGET" "SOURCE" ${ARGN})
@@ -39,7 +39,7 @@ function(benchmark)
     ${BENCH_TARGET} --benchmark_format=json --benchmark_out=${BENCH_TARGET}.json
     DEPENDS ${BENCH_TARGET}
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
-  add_dependencies(run_benchmarks run-${BENCH_TARGET})
+  add_dependencies(bench run-${BENCH_TARGET})
 endfunction()
 
 benchmark(TARGET integration_bench SOURCE integration_bench.cpp)
