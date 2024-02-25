@@ -29,14 +29,12 @@ if(POLICY CMP0128)
   cmake_policy(SET CMP0128 NEW)
 endif()
 
-# set version of settings and cache
-
+# Set version of settings and cache
 set(VERSION_SETTINGS "v18")
 set(VERSION_CACHE "v18")
 set(VERSION_SOFTWARE_DEFAULT "v0.0.0")
 
-# get software version info from git
-
+# Get software version info from git
 if(NOT VERSION_SOFTWARE)
   find_package(Git)
   if(GIT_FOUND)
@@ -61,8 +59,7 @@ endif()
 string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
 string(REGEX REPLACE "-(pre)?alpha" "a" VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA ${VERSION_WITHOUT_LEADING_V})
 
-# default build type is "Release with debug info"
-
+# Default build type is "Release with debug info"
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
@@ -70,7 +67,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Build options
-
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
 option(WITH_JULIA    "Build a Julia compatible .so"         OFF)
@@ -98,11 +94,9 @@ if(WITH_LTO)
 endif()
 
 # Windows specific build instructions
-
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # Mac OS X specific build instructions
-
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/dist/apple")
 if( WITH_DMG )
@@ -114,7 +108,6 @@ endif( )
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C ${CMAKE_BUILD_TYPE})
 
 # Perform static analysis using clang-tidy
-
 if(WITH_CLANG_TIDY)
   string(REGEX REPLACE "^([1-9]+\\.[0-9]+).*$" "\\1" CLANG_MINOR_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
   find_program(
@@ -130,7 +123,6 @@ if(WITH_CLANG_TIDY)
 endif()
 
 # Build instructions
-
 if( WITH_BACKEND )
   add_subdirectory(pairinteraction_backend_old)
   add_subdirectory(pairinteraction_backend_old/databases)
@@ -159,7 +151,6 @@ if ( WITH_DOC )
 endif( )
 
 # Concatenate licenses
-
 set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES.txt")
 
 file(READ "${CMAKE_SOURCE_DIR}/LICENSE.txt" LICENSESTXT)
@@ -172,7 +163,6 @@ endif()
 file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
-
 configure_file(setup.py.in ${CMAKE_BINARY_DIR}/setup.py @ONLY)
 configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 
@@ -247,7 +237,6 @@ endif()
 include(CPack)
 
 # Print found packages
-
 include(FeatureSummary)
 feature_summary(WHAT ALL)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
