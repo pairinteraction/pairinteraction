@@ -254,21 +254,15 @@ endif()
 find_package(fmt REQUIRED)
 target_link_libraries(pairinteraction PUBLIC $<IF:$<TARGET_EXISTS:fmt::fmt-header-only>,fmt::fmt-header-only,fmt::fmt>)
 
-find_package(cereal CONFIG)
-if(NOT cereal_FOUND)
-  # Workaround for CMake support files missing in Ubuntu
-  # https://bugs.launchpad.net/ubuntu/+source/libcereal/+bug/1978462
-  add_library(CEREAL_TARGET INTERFACE)
-  add_library(cereal::cereal ALIAS CEREAL_TARGET)
-  find_path(CEREAL_INCLUDE_DIR cereal/cereal.hpp)
-  if(NOT CEREAL_INCLUDE_DIR)
-    message(FATAL_ERROR "Cereal could not be found")
-  endif()
-  target_include_directories(CEREAL_TARGET SYSTEM INTERFACE "${CEREAL_INCLUDE_DIR}")
-elseif(NOT TARGET cereal::cereal)
-  # Workaround for missing imported target
-  add_library(cereal::cereal ALIAS cereal)
+# We do not directly use "find_package(cereal CONFIG)" because of missing CMake support files in Ubuntu
+# https://bugs.launchpad.net/ubuntu/+source/libcereal/+bug/1978462
+add_library(CEREAL_TARGET INTERFACE)
+add_library(cereal::cereal ALIAS CEREAL_TARGET)
+find_path(CEREAL_INCLUDE_DIR cereal/cereal.hpp)
+if(NOT CEREAL_INCLUDE_DIR)
+  message(FATAL_ERROR "Cereal could not be found")
 endif()
+target_include_directories(CEREAL_TARGET SYSTEM INTERFACE "${CEREAL_INCLUDE_DIR}")
 target_link_libraries(pairinteraction PUBLIC cereal::cereal)
 
 find_package(SQLite3 REQUIRED)
@@ -342,18 +336,6 @@ if(WITH_PYTHON)
   target_copy_mkl_dlls(binding)
   get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
 
-endif()
-
-# Incude benchmarks
-
-if(WITH_BENCHS)
-  add_subdirectory(benchmarks)
-endif()
-
-# Include test cases
-
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-  add_subdirectory(unit_test)
 endif()
 
 # CPack

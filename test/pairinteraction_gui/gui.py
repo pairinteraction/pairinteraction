@@ -17,7 +17,7 @@ from scipy.io import loadmat
 
 from pairinteraction_gui.app import MainWindow
 
-PATH = os.path.join("reference_data", "gui")
+PATH = os.path.join("reference_data")
 
 app = QtWidgets.QApplication(sys.argv)
 

@@ -29,7 +29,7 @@ jobs:
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build/ -DMKL_THREADING=gnu_thread -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOCS=On
+        cmake -S . -B build/ -DMKL_THREADING=gnu_thread -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On -DWITH_DOC=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -130,7 +130,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -159,7 +159,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOCS=On -DWITH_GUI=Off
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_CLANG_TIDY=On -DWITH_JULIA=On -DWITH_DOC=On -DWITH_GUI=Off
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -184,7 +184,7 @@ jobs:
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOCS=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

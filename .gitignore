@@ -4,13 +4,6 @@
 # Ignore python byte-compiled libraries
 *.pyc
 
-bin/
-__pycache__/
-obj/
-/old/examples/*
-/build
-_build
-
 # Mac specific files
 ._*
 .DS_Store
@@ -23,3 +16,10 @@ _build
 # Ignore files resulting from executing a jupyter notebook
 /doc/sphinx/examples_python/.ipynb_checkpoints
 /doc/sphinx/examples_python/cache
+
+# Ignore build and cache directories
+bin/
+__pycache__/
+obj/
+build/
+.ruff_cache/

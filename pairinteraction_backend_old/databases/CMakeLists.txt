@@ -20,10 +20,10 @@ find_program(SQLITE3_BINARY NAMES sqlite3 sqlite REQUIRED)
 add_custom_target(database ALL)
 add_custom_command(TARGET database
   COMMAND ${SQLITE3_BINARY} ${CMAKE_CURRENT_BINARY_DIR}/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/testsuite/pairinteraction/databases
-  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/testsuite/pairinteraction/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/pairinteraction.jl/test/pairinteraction/databases
-  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/pairinteraction.jl/test/pairinteraction/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/pairinteraction_backend_old/python/pairinteraction/databases
+  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/test/pairinteraction_backend_old/python/pairinteraction/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/julia/test/pairinteraction/databases
+  COMMAND ${SQLITE3_BINARY} ${CMAKE_BINARY_DIR}/julia/test/pairinteraction/databases/quantum_defects.db < ${CMAKE_CURRENT_SOURCE_DIR}/quantum_defects.sql
 )
 add_dependencies(check database)
 

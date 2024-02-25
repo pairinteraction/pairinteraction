@@ -32,11 +32,11 @@ jobs:
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build/ -DMKL_THREADING=gnu_thread -DBUILD_TESTING=Off -DWITH_BENCHS=On
+        cmake -S . -B build/ -DMKL_THREADING=gnu_thread -DBUILD_TESTING=Off -DWITH_BENCH=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Benchmark
-      run: cmake --build build/ --target run_benchmarks -- --keep-going
+      run: cmake --build build/ --target bench -- --keep-going
     - name: Collect results
       run: |
         python3 - <<-EOF
