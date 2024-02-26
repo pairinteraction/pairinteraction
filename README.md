@@ -9,13 +9,26 @@
 [![License][license-svg]][gpl-link]
 
 The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
-Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases).
 
-For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling `pip install pairinteraction`. If pairinteraction was installed from the command line, the graphical user interface can be started by executing `start_pairinteraction_gui`.
+Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases). For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling
 
-## Please cite us
+```bash
+pip install pairinteraction
+```
+
+If pairinteraction was installed via pip, the graphical user interface can be started by executing `start_pairinteraction_gui` from the command line.
+
+## Please cite as
 
 > Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
+
+The pairinteraction software relies on quantum defects provided by the community.
+Please consider citing relevant publications for your atomic species alongside pairinteraction:
+*Rb* [add link to copy a bibtex entry], TODO add all species with the name that we use within the software.
+
+## Credits
+
+TODO: Update credits. Maintainers, list of contributors.
 
 ## License
 
