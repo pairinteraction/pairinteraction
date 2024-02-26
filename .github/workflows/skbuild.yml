@@ -23,9 +23,7 @@ jobs:
         submodules: true
 
     - name: Build SDist
-      run: |
-        rm -rf dist
-        pipx run build --sdist
+      run: pipx run build --sdist
 
     - name: Check metadata
       run: pipx run twine check dist/*

@@ -98,7 +98,7 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
-set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/dist/apple")
+set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/extra/apple")
 if( WITH_DMG )
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
@@ -174,7 +174,7 @@ configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 if(WIN32)
 
   # NSIS installer is built externally
-  add_subdirectory(dist/win32)
+  add_subdirectory(extra/win32)
 
 elseif(APPLE AND WITH_DMG)
 
@@ -201,7 +201,7 @@ elseif(APPLE AND WITH_DMG)
 
 elseif(UNIX AND NOT SKBUILD)
 
-  add_subdirectory(dist/flatpak)
+  add_subdirectory(extra/flatpak)
 
   install(FILES ${CMAKE_SOURCE_DIR}/README.md
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
