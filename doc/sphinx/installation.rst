@@ -54,7 +54,7 @@ Requirements
 Before compiling the source code, you have to install the following tools and dependencies:
 
 Build tools
-    `CMake`_ for running the build system, `poetry`_ for managing the Python dependencies
+    `CMake`_ for running the build system (at least CMake 3.16 is required), `poetry`_ for managing the Python dependencies
 
 Dependencies for the C++ backend
     If you are using GNU/Linux or OS X, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration.
@@ -70,13 +70,22 @@ Dependencies for the Python library
 Automatic Build
 ^^^^^^^^^^^^^^^
 
+.. note::
+    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running
+    ``pip install git+https://github.com/pairinteraction/pairinteraction``. Similarly, you can add the most recent version of pairinteraction to a Python project that is managed by poetry by running ``poetry add git+https://github.com/pairinteraction/pairinteraction``.
+
 After cloning the repository and installing the requirements, you can build and install the software into a local virtual Python environment by running the following command within the pairinteraction repository:
 
 .. code-block:: bat
 
     poetry install
 
-This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing ``poetry run start_pairinteraction_gui`` from the command line.
+This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
+
+.. code-block:: bat
+
+    poetry run start_pairinteraction_gui
+
 To use Python library, you have to run your python code in the virtual environment created by poetry. This can be done by running ``poetry run python your_script.py``.
 Alternatively, you can build and install the software system-wide by running ``pip install -e .`` from the root directory of the pairinteraction repository.
 
@@ -108,7 +117,13 @@ Then you can build the software using CMake:
     cmake ..
     cmake --build . --config Release
 
-This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing ``./start_pairinteraction_gui`` in the build directory.
+This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
+
+.. code-block:: bat
+
+    ./start_pairinteraction_gui
+
+in the build directory.
 To use the Python library, you have to extend the Python package search path to accommodate pairinteraction by adding your build directory to ``PYTHONPATH``.
 This can be done e.g. by adding the following lines to the top of a Python script:
 
