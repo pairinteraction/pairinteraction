@@ -170,6 +170,7 @@ Screenshots
 
    installation.rst
    tutorials.rst
+   contributing.rst
    development.rst
 
 .. toctree::

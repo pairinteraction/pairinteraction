@@ -181,7 +181,7 @@ Note that some targets require specific build options to be enabled in addition 
 | ``all``      | Build the software (default target)       |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``test``     | Run the test suite, including C++ tests   |                      |
-|              | that are not run by pytest.               |                      |
+|              | that are not run by pytest                |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``bench``    | Run the benchmark suite                   | ``WITH_BENCH=ON``    |
 +--------------+-------------------------------------------+----------------------+
