@@ -1,7 +1,7 @@
 pairinteraction package
 =======================
 
-.. automodule:: pairinteraction.binding
+.. automodule:: pairinteraction_backend_old.binding
    :members:
    :inherited-members:
    :show-inheritance:

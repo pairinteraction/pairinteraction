@@ -6,7 +6,6 @@ Development
 TODOs
 -----
 
-- Why are the Note/Warning etc. boxes not ending on my local machine?
 - Why is the `mermaid` support not working in the `mermaid` test below on my local machine? The text is displayed, but the diagram is not rendered.
 - Move logic to find dependencies to the top-level `CMakeLists.txt` file
 - Do we need individual packages for python distributions or is flatpack enough?
