@@ -1,7 +1,7 @@
 .. _Development:
 
-Development
-===========
+Development [TODO should be remove before a new release]
+========================================================
 
 TODOs
 -----
