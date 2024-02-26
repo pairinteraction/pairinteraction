@@ -63,7 +63,8 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
     Eigen::SparseMatrix<Scalar> basis_one_reference, basis_two_reference;
 
     if (!dump_new_reference_data) {
-        std::ifstream ifs("./pairinteraction/unit_test/integration_test_referencedata.json");
+        std::ifstream ifs(
+            "./test/pairinteraction_backend_old/cpp/integration_test_referencedata.json");
         cereal::JSONInputArchive ia(ifs);
         ia >> cereal::make_nvp("hamiltonian_one", hamiltonian_one_reference) >>
             cereal::make_nvp("basis_one", basis_one_reference) >>
@@ -198,14 +199,15 @@ TEST_CASE_FIXTURE(F, "integration_test") // NOLINT
 
     if (dump_new_reference_data) {
         {
-            std::ofstream ofs("../pairinteraction/unit_test/integration_test_referencedata.json");
+            std::ofstream ofs(
+                "../test/pairinteraction_backend_old/cpp/integration_test_referencedata.json");
             cereal::JSONOutputArchive oa(ofs);
             oa << CEREAL_NVP(hamiltonian_one) << CEREAL_NVP(basis_one)
                << CEREAL_NVP(hamiltonian_two) << CEREAL_NVP(basis_two);
         }
 
         // ATTENTION
-        // After generating integration_test_referencedata.txt, we possibly have to manually modify
+        // After generating integration_test_referencedata.json, we possibly have to manually modify
         // the Boost serialization library version - the beginning of the file should read "22
         // serialization::archive 12". Otherwise, unsupported version exceptions are thrown with
         // older versions of Boost even though they are compatible.

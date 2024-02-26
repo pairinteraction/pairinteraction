@@ -71,8 +71,8 @@ option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
 option(WITH_JULIA    "Build a Julia compatible .so"         OFF)
 option(WITH_GUI      "Build with Python GUI"                ON)
-option(WITH_DOC      "Generate documentation"               ON)
-option(WITH_BENCH    "Compile the benchmarks"               ON)
+option(WITH_DOC      "Generate documentation"               OFF)
+option(WITH_BENCH    "Compile the benchmarks"               OFF)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
 option(WITH_LTO      "Build with link-time optimization"    OFF)
@@ -245,4 +245,13 @@ if(WITH_GSL)
   message(STATUS "License compatibility: GPL v3")
 else()
   message(STATUS "License compatibility: LGPL v3")
+endif()
+
+# HACK: Copy the "pairinteraction" directory to the build directory # TODO re
+if(NOT SKBUILD)
+  add_custom_target(
+    copy_pairinteraction
+    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/pairinteraction ${CMAKE_BINARY_DIR}/pairinteraction
+  )
+  add_dependencies(pairinteraction copy_pairinteraction)
 endif()

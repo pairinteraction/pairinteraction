@@ -574,13 +574,15 @@ class MainWindow(QtWidgets.QMainWindow):
         if os.path.exists(os.path.join(self.path_base, "pairinteraction-backend-deprecated" + ext)):
             self.path_workingdir = self.path_base
         elif os.path.exists(
-            os.path.join(self.path_base, "../../pairinteraction", "pairinteraction-backend-deprecated" + ext)
+            os.path.join(
+                self.path_base, "../../pairinteraction_backend_old", "pairinteraction-backend-deprecated" + ext
+            )
         ):
-            self.path_workingdir = os.path.join(self.path_base, "../../pairinteraction")
+            self.path_workingdir = os.path.join(self.path_base, "../../pairinteraction_backend_old")
         elif os.path.exists(
-            os.path.join(self.path_base, "../pairinteraction", "pairinteraction-backend-deprecated" + ext)
+            os.path.join(self.path_base, "../pairinteraction_backend_old", "pairinteraction-backend-deprecated" + ext)
         ):
-            self.path_workingdir = os.path.join(self.path_base, "../pairinteraction")
+            self.path_workingdir = os.path.join(self.path_base, "../pairinteraction_backend_old")
         else:
             raise Exception("Directory containing executables not found.")
 

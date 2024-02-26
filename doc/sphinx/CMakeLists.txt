@@ -32,7 +32,7 @@ endif()
 
 set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
-set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction")
+set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction_backend_old")
 
 # Sphinx cache with pickled ReST documents
 set(SPHINX_CACHE_DIR "${SPHINX_BASE}/_doctrees")
