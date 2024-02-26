@@ -45,7 +45,6 @@ unit_test(TARGET integration SOURCE integration_test.cpp)
 unit_test(TARGET cache SOURCE cache_test.cpp)
 unit_test(TARGET utils SOURCE utils_test.cpp)
 
-
 # Copy test dependencies
 add_custom_command(TARGET integration PRE_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/integration_test_referencedata.json ${CMAKE_CURRENT_BINARY_DIR}/integration_test_referencedata.json

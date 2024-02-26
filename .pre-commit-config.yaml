@@ -1,4 +1,4 @@
-exclude: ^pairinteraction/unit_test/integration_test_referencedata.txt$|^LICENSE(.*).txt$
+exclude: ^LICENSE(.*).txt$
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.5.0

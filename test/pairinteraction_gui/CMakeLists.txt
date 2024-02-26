@@ -29,8 +29,9 @@ endfunction(PYTHON_TEST)
 
 # Add Python test cases
 if (WITH_PYTHON)
-  # if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
-  #   python_test(TARGET gui SOURCE gui.py)
-  #   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-  # endif() # TODO somehow this test times out on my machine
+  find_package(Python3 COMPONENTS Interpreter REQUIRED)
+  if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
+    python_test(TARGET gui SOURCE gui.py)
+    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+  endif()
 endif()

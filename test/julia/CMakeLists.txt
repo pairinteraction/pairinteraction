@@ -27,7 +27,7 @@ function(JULIA_TEST)
   # Parse arguments
   cmake_parse_arguments(UT "" "TARGET" "SOURCE" ${ARGN} )
   # Copy test to binary directory
-  configure_file(${CMAKE_SOURCE_DIR}/julia/test/${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
   add_test(NAME "julia.${UT_TARGET}" COMMAND ${Julia_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties("julia.${UT_TARGET}"

@@ -71,8 +71,8 @@ jobs:
       - name: Tests
         run: |
           Copy-Item pairinteraction\Release\* pairinteraction\ -Recurse -Force -Verbose
-          New-Item -Path pairinteraction\unit_test\Release\ -ItemType Directory -Force
-          Copy-Item pairinteraction\Release\* pairinteraction\unit_test\Release -Recurse -Force -Verbose
+          New-Item -Path pairinteraction\test\pairinteraction_backend_old\cpp\Release\ -ItemType Directory -Force
+          Copy-Item pairinteraction\Release\* pairinteraction\test\pairinteraction_backend_old\cpp\Release -Recurse -Force -Verbose
           cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
         env:

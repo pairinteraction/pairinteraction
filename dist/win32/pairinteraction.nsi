@@ -19,6 +19,7 @@
 
 !define APP_NAME "pairinteraction"
 !define LIBNAME "pairinteraction"
+!define BACKNAME "pairinteraction_backend_old"
 !define GUINAME "pairinteraction_gui"
 !define BUILD_DIR "..\build"
 !define PROGDIR $PROGRAMFILES64
@@ -82,13 +83,18 @@ SectionGroupEnd
 SectionGroup /e "${APP_NAME}"
   Section 'Backend'
     SectionIn RO
+
     SetOutPath "$INSTDIR"
     File "..\LICENSE*"
+
+    SetOutPath "$INSTDIR\${BACKNAME}"
+    File "${BUILD_DIR}\${BACKNAME}\Release\*"
+    File "${BUILD_DIR}\${BACKNAME}\binding.py"
+    SetOutPath "$INSTDIR\${BACKNAME}\databases"
+    File "${BUILD_DIR}\${BACKNAME}\databases\*.db"
+
     SetOutPath "$INSTDIR\${LIBNAME}"
-    File "${BUILD_DIR}\${LIBNAME}\Release\*"
-    File "${BUILD_DIR}\${LIBNAME}\binding.py"
-    SetOutPath "$INSTDIR\${LIBNAME}\databases"
-    File "${BUILD_DIR}\${LIBNAME}\databases\*.db"
+    File /r "${BUILD_DIR}\dist\${LIBNAME}\*"
 
     writeUninstaller "$INSTDIR\uninstall.exe"
 
@@ -100,7 +106,7 @@ SectionGroup /e "${APP_NAME}"
 
   Section 'GUI (Recommended)'
     SetOutPath "$INSTDIR\${GUINAME}"
-    File /r "${BUILD_DIR}\dist\pairinteraction_gui\*"
+    File /r "${BUILD_DIR}\dist\${GUINAME}\*"
   SectionEnd
 SectionGroupEnd
 
@@ -129,6 +135,7 @@ functionEnd
 
 Section 'uninstall'
   RMDir /r "$INSTDIR\${LIBNAME}"
+  RMDir /r "$INSTDIR\${BACKNAME}"
   RMDir /r "$INSTDIR\${GUINAME}"
 
   delete "$INSTDIR\LICENSE*"

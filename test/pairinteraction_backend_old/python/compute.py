@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 
-import pairinteraction.pireal as pi
+from pairinteraction import pireal as pi
 
 
 class TestCompute(unittest.TestCase):
