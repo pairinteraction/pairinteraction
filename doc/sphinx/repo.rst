@@ -1,7 +1,7 @@
 Contributing to the Repository
 ==============================
 
-If you're interested in creating tutorials, adding features, or addressing bugs, you'll need to make changes to files within the pairinteraction repository. 
+If you're interested in creating tutorials, adding features, or addressing bugs, you'll need to make changes to files within the pairinteraction repository.
 Below, we offer guidance to help you navigate this process effectively, assuming a basic familiarity with Git and GitHub. For newcomers, we encourage exploring `GitHub's educational resources`_.
 
 .. _GitHub's educational resources: https://docs.github.com/en/get-started

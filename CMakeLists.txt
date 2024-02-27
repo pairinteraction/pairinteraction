@@ -124,6 +124,7 @@ endif()
 
 # Find dependencies # TODO add all dependencies
 find_package(doctest  REQUIRED)
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 # Build instructions
 if( WITH_BACKEND )

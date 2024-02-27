@@ -18,7 +18,7 @@ For usage examples visit the :ref:`tutorials <Tutorials>` section of the documen
 Stay tuned by `signing up`_ for the newsletter so whenever there are updates to the software or new publications about pairinteraction we can contact you.
 If you have a question that is related to problems, bugs, or suggests an improvement, consider raising an :github:`issue <issues>` on :github:`GitHub <>`.
 
-Binary builds are available through :github:`GitHub Releases <releases>`. 
+Binary builds are available through :github:`GitHub Releases <releases>`.
 For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling
 
 .. code-block:: bash
@@ -32,7 +32,7 @@ interface can be started by executing ``start_pairinteraction_gui`` from the com
 
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
     *Tutorial: Calculation of Rydberg interaction potentials*,
-    `J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017) <https://doi.org/10.1088/1361-6455/aa743a>`_, `arXiv:1612.08053 <https://arxiv.org/abs/1612.08053>`_ 
+    `J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017) <https://doi.org/10.1088/1361-6455/aa743a>`_, `arXiv:1612.08053 <https://arxiv.org/abs/1612.08053>`_
 
 The pairinteraction software relies on quantum defects provided by the community.
 Please consider citing relevant publications for your atomic species alongside pairinteraction:
@@ -52,16 +52,16 @@ User Guide
 
     :doc:`installation` - Whether you prefer binary installers or compiling from source, we've got all the information you need.
 
-    :doc:`tutorials` - Covering both the graphical user interface and the Python library, 
+    :doc:`tutorials` - Covering both the graphical user interface and the Python library,
     these tutorials enable you to leverage pairinteraction for your projects.
 
 Contributer Guide
     Interested in contributing to the Pairinteraction project? We welcome contributions from everyone, regardless of your experience level!
 
-    :doc:`ways` - Not sure where to start? Discover the many ways you can contribute to improving pairinteraction, 
+    :doc:`ways` - Not sure where to start? Discover the many ways you can contribute to improving pairinteraction,
     from contributions to the repository to providing quantum defects.
 
-    :doc:`repo` - Ready to dive into development? Here's how to set up your environment for pairinteraction development, 
+    :doc:`repo` - Ready to dive into development? Here's how to set up your environment for pairinteraction development,
     ensuring you have all the tools you need.
 
 :doc:`API Reference <modules>`
