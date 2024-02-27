@@ -18,9 +18,6 @@
 # Add current directory to search path
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-# Find the doctest unit test framework
-find_package(doctest REQUIRED)
-
 # To add test cases easier we use the following function
 function(UNIT_TEST)
   # Parse arguments

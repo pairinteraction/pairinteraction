@@ -122,8 +122,12 @@ if(WITH_CLANG_TIDY)
   endif()
 endif()
 
+# Find dependencies # TODO add all dependencies
+find_package(doctest  REQUIRED)
+
 # Build instructions
 if( WITH_BACKEND )
+  add_subdirectory(pairinteraction_backend)
   add_subdirectory(pairinteraction_backend_old)
   add_subdirectory(pairinteraction_backend_old/databases)
   if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
