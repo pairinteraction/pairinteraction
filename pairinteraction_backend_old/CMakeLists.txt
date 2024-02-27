@@ -287,7 +287,7 @@ if(WITH_GSL)
   target_compile_definitions(pairinteraction PUBLIC WITH_GSL)
 endif()
 
-# Generate interface with SWIG
+# Python interface
 if(WITH_PYTHON)
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "from .binding import *" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/pireal.py "from .binding import *\nSystemOne,SystemTwo=SystemOneReal,SystemTwoReal" )
@@ -327,7 +327,8 @@ if(WITH_PYTHON)
   set_target_properties(binding PROPERTIES
     CXX_EXTENSIONS OFF
     CXX_CLANG_TIDY ""
-    PREFIX "")
+    PREFIX ""
+    INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
   target_include_directories(binding PUBLIC "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
   target_compile_options(binding PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
   target_link_options(binding PUBLIC
@@ -336,7 +337,6 @@ if(WITH_PYTHON)
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
   target_link_libraries(binding PUBLIC pairinteraction nanobind-static $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>)
   target_copy_mkl_dlls(binding)
-  get_property(SWIG_MODULE_binding_SUPPORT_FILES TARGET binding PROPERTY SWIG_SUPPORT_FILES)
 
 endif()
 
@@ -365,7 +365,6 @@ elseif(SKBUILD)
   install(TARGETS binding LIBRARY DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(TARGETS pairinteraction LIBRARY DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
-  install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(FILES ${MKL_DLLS_TO_COPY} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
@@ -375,7 +374,6 @@ elseif(WITH_PYTHON)
   install(TARGETS binding LIBRARY DESTINATION ${PY_MOD_DIR})
   install(TARGETS pairinteraction LIBRARY DESTINATION lib)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION share/pairinteraction/pairinteraction)
-  install(FILES ${SWIG_MODULE_binding_SUPPORT_FILES} DESTINATION ${PY_MOD_DIR})
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${PY_MOD_DIR})
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${PY_MOD_DIR})
 else()

@@ -1,7 +1,7 @@
 [build-system]
 requires = [
     "scikit-build-core",
-    "swig",
+    "nanobind",
     "numpy",
     "pyqt5",
 ]
