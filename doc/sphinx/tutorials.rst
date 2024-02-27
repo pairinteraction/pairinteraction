@@ -4,7 +4,7 @@ Tutorials
 =========
 
 The pairinteraction software comes with a graphical user interface (GUI) and a Python API.
-The GUI provides a quick way to calculate Rybderg interaction potentials and energy shifts in the presence of external fields. 
+The GUI provides a quick way to calculate Rybderg interaction potentials and energy shifts in the presence of external fields.
 The Python API is designed to automatize calculations and to have more fine-grained control.
 
 Graphical User Interface
@@ -33,7 +33,7 @@ Python API
 
 .. rubric:: Introduction
 
-Here we show the basic usage of the API. The tutorial introduces the basic concepts and covers topics such as the calculation of C3/C6 coefficients, non-perturbative calculations, and effective Hamiltonians. 
+Here we show the basic usage of the API. The tutorial introduces the basic concepts and covers topics such as the calculation of C3/C6 coefficients, non-perturbative calculations, and effective Hamiltonians.
 
 .. nbgallery::
 

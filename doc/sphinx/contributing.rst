@@ -13,7 +13,7 @@ Reporting Issues
 
 Contributing New Quantum Defects
     Precise quantum defects are crucial for our software's accuracy. We particularly seek improvements for species with two-valence electrons, where data remains sparse. If you've conducted research that provides new quantum defects, sharing your data would significantly benefit the community. We highlight such contributions in our :doc:`README <index>` to ensure both the software and your research receive appropriate recognition and citation.
-    
+
 Writing Tutorials
     Share your knowledge by writing tutorials. If you've published research utilizing pairinteraction, consider contributing a tutorial. This not only aids others in replicating your results but also enhances the visibility of your work. Your tutorial can serve as a practical guide for applying pairinteraction to solve complex problems.
 
@@ -23,7 +23,7 @@ Developing Features or Resolving Bugs
 Contributing to the Repository
 ------------------------------
 
-If you're interested in creating tutorials, adding features, or addressing bugs, you'll need to make changes to files within the pairinteraction repository. 
+If you're interested in creating tutorials, adding features, or addressing bugs, you'll need to make changes to files within the pairinteraction repository.
 Below, we offer guidance to help you navigate this process effectively, assuming a basic familiarity with Git and GitHub. For newcomers, we encourage exploring `GitHub's educational resources`_.
 
 .. _GitHub's educational resources: https://docs.github.com/en/get-started
