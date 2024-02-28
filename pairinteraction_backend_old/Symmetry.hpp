@@ -21,8 +21,8 @@
 #define SYMMETRY_H
 
 #include <array>
-#include <cstddef>
 #include <climits>
+#include <cstddef>
 
 enum parity_t {
     NA = INT_MAX,
