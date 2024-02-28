@@ -54,4 +54,9 @@ private:
     bool is_standard_basis;
 };
 
+extern template class Basis<float, false>;
+extern template class Basis<double, false>;
+extern template class Basis<float, true>;
+extern template class Basis<double, true>;
+
 #endif // BASIS_HPP

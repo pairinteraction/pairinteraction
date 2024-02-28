@@ -39,4 +39,9 @@ private:
     T max_quantum_number_j{std::numeric_limits<T>::max()};
 };
 
+extern template class BasisAtom<float, false>;
+extern template class BasisAtom<double, false>;
+extern template class BasisAtom<float, true>;
+extern template class BasisAtom<double, true>;
+
 #endif // BASISATOM_HPP

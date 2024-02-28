@@ -32,4 +32,7 @@ private:
     bool is_assembled{false};
 };
 
+extern template class Ket<float>;
+extern template class Ket<double>;
+
 #endif // KET_HPP
