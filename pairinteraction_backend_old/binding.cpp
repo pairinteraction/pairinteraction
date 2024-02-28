@@ -1,17 +1,19 @@
-#include <streambuf>
 #include <sstream>
+#include <streambuf>
 
 #include "Constants.hpp"
 #include "Interface.hpp"
 #include "MatrixElementCache.hpp"
 #include "PerturbativeInteraction.hpp"
+#include "QuantumDefect.hpp"
 #include "State.hpp"
 #include "Symmetry.hpp"
 #include "SystemBase.hpp"
 #include "SystemOne.hpp"
 #include "SystemTwo.hpp"
-#include "QuantumDefect.hpp"
 
+#include <nanobind/eigen/dense.h>
+#include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/operators.h>
 #include <nanobind/stl/array.h>
@@ -19,21 +21,17 @@
 #include <nanobind/stl/set.h>
 #include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
-#include <nanobind/eigen/dense.h>
-#include <nanobind/eigen/sparse.h>
 
 namespace nb = nanobind;
 
 using namespace nb::literals;
 
 struct array_source : std::streambuf {
-    array_source(char *buffer, size_t len) {
-        this->setg(buffer, buffer, buffer + len);
-    }
+    array_source(char *buffer, size_t len) { this->setg(buffer, buffer, buffer + len); }
 };
 
 template <typename T>
-PyObject* __getstate__(T const &self, std::string const &cls) {
+PyObject *__getstate__(T const &self, std::string const &cls) {
     std::stringstream ss;
     cereal::BinaryOutputArchive ar(ss);
     ar << cereal::make_nvp(cls, self);
@@ -41,7 +39,7 @@ PyObject* __getstate__(T const &self, std::string const &cls) {
 }
 
 template <typename T>
-void __setstate__(PyObject* const sState, T &self, std::string const &cls) {
+void __setstate__(PyObject *const sState, T &self, std::string const &cls) {
     char *buffer;
     Py_ssize_t len;
     PyBytes_AsStringAndSize(sState, &buffer, &len);
@@ -54,8 +52,7 @@ void __setstate__(PyObject* const sState, T &self, std::string const &cls) {
 template <typename System, typename NBClass>
 void add_system_base_methods(NBClass &system) {
     using State = typename System::State;
-    system
-        .def("setMinimalNorm", &System::setMinimalNorm)
+    system.def("setMinimalNorm", &System::setMinimalNorm)
         .def("restrictEnergy", &System::restrictEnergy)
 
         .def("restrictN", nb::overload_cast<int, int>(&System::restrictN))
@@ -74,19 +71,33 @@ void add_system_base_methods(NBClass &system) {
         .def("getOverlap", nb::overload_cast<const std::vector<State> &>(&System::getOverlap))
         .def("getOverlap", nb::overload_cast<const size_t &>(&System::getOverlap))
         .def("getOverlap", nb::overload_cast<const std::vector<size_t> &>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const State &, std::array<double, 3>, std::array<double, 3>>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const std::vector<State> &, std::array<double, 3>, std::array<double, 3>>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const size_t &, std::array<double, 3>, std::array<double, 3>>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const std::vector<size_t> &, std::array<double, 3>, std::array<double, 3>>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const State &, double, double, double>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const size_t &, double, double, double>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const std::vector<State> &, double, double, double>(&System::getOverlap))
-        .def("getOverlap", nb::overload_cast<const std::vector<size_t> &, double, double, double>(&System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const State &, std::array<double, 3>, std::array<double, 3>>(
+                 &System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const std::vector<State> &, std::array<double, 3>,
+                               std::array<double, 3>>(&System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const size_t &, std::array<double, 3>, std::array<double, 3>>(
+                 &System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const std::vector<size_t> &, std::array<double, 3>,
+                               std::array<double, 3>>(&System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const State &, double, double, double>(&System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const size_t &, double, double, double>(&System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const std::vector<State> &, double, double, double>(
+                 &System::getOverlap))
+        .def("getOverlap",
+             nb::overload_cast<const std::vector<size_t> &, double, double, double>(
+                 &System::getOverlap))
 
         .def("getStates", &System::getStates)
         .def("getStatesMultiIndex", &System::getStatesMultiIndex)
         .def("getBasisvectors", &System::getBasisvectors)
-        .def("getHamiltonian",  &System::getHamiltonian)
+        .def("getHamiltonian", &System::getHamiltonian)
         .def("getNumBasisvectors", &System::getNumBasisvectors)
         .def("getNumStates", &System::getNumStates)
         .def("getMainStates", &System::getMainStates)
@@ -101,7 +112,8 @@ void add_system_base_methods(NBClass &system) {
         .def("diagonalize", nb::overload_cast<double>(&System::diagonalize))
         .def("canonicalize", &System::canonicalize)
         .def("unitarize", &System::unitarize)
-        .def("rotate", nb::overload_cast<std::array<double, 3>, std::array<double, 3>>(&System::rotate))
+        .def("rotate",
+             nb::overload_cast<std::array<double, 3>, std::array<double, 3>>(&System::rotate))
         .def("rotate", nb::overload_cast<double, double, double>(&System::rotate))
         .def("add", &System::add)
         .def("constrainBasisvectors", &System::constrainBasisvectors)
@@ -110,7 +122,8 @@ void add_system_base_methods(NBClass &system) {
         .def("getStateIndex", nb::overload_cast<const State &>(&System::getStateIndex))
         .def("getStateIndex", nb::overload_cast<const std::vector<State> &>(&System::getStateIndex))
         .def("getBasisvectorIndex", nb::overload_cast<const State &>(&System::getBasisvectorIndex))
-        .def("getBasisvectorIndex", nb::overload_cast<const std::vector<State> &>(&System::getBasisvectorIndex))
+        .def("getBasisvectorIndex",
+             nb::overload_cast<const std::vector<State> &>(&System::getBasisvectorIndex))
         .def("forgetStatemixing", &System::forgetStatemixing)
         .def("getHamiltonianEntry", &System::getHamiltonianEntry)
         .def("setHamiltonianEntry", &System::setHamiltonianEntry)
@@ -120,49 +133,63 @@ void add_system_base_methods(NBClass &system) {
 template <typename Scalar>
 void declare_systems(nb::module_ &m, std::string const &type) {
     std::string pyclass_name_system_one_base = "_SystemStateOne" + type;
-    nb::class_<SystemBase<Scalar, StateOne>> system_one_base(m, pyclass_name_system_one_base.c_str());
+    nb::class_<SystemBase<Scalar, StateOne>> system_one_base(m,
+                                                             pyclass_name_system_one_base.c_str());
     add_system_base_methods<SystemBase<Scalar, StateOne>>(system_one_base);
 
     std::string pyclass_name_system_one = "SystemOne" + type;
-    nb::class_<SystemOne<Scalar>, SystemBase<Scalar, StateOne>> system_one(m, pyclass_name_system_one.c_str());
+    nb::class_<SystemOne<Scalar>, SystemBase<Scalar, StateOne>> system_one(
+        m, pyclass_name_system_one.c_str());
     add_system_base_methods<SystemOne<Scalar>>(system_one);
-    system_one
-        .def(nb::init<SystemOne<Scalar> const &>())
+    system_one.def(nb::init<SystemOne<Scalar> const &>())
         .def(nb::init<std::string, MatrixElementCache &>())
         .def(nb::init<std::string, MatrixElementCache &, bool>())
         .def("getSpecies", &SystemOne<Scalar>::getSpecies)
         .def("setEfield", nb::overload_cast<std::array<double, 3>>(&SystemOne<Scalar>::setEfield))
-        .def("setEfield", nb::overload_cast<std::array<double, 3>, std::array<double, 3>, std::array<double, 3>>(&SystemOne<Scalar>::setEfield))
-        .def("setEfield", nb::overload_cast<std::array<double, 3>, double, double, double>(&SystemOne<Scalar>::setEfield))
+        .def("setEfield",
+             nb::overload_cast<std::array<double, 3>, std::array<double, 3>, std::array<double, 3>>(
+                 &SystemOne<Scalar>::setEfield))
+        .def("setEfield",
+             nb::overload_cast<std::array<double, 3>, double, double, double>(
+                 &SystemOne<Scalar>::setEfield))
         .def("setBfield", nb::overload_cast<std::array<double, 3>>(&SystemOne<Scalar>::setBfield))
-        .def("setBfield", nb::overload_cast<std::array<double, 3>, std::array<double, 3>, std::array<double, 3>>(&SystemOne<Scalar>::setBfield))
-        .def("setBfield", nb::overload_cast<std::array<double, 3>, double, double, double>(&SystemOne<Scalar>::setBfield))
+        .def("setBfield",
+             nb::overload_cast<std::array<double, 3>, std::array<double, 3>, std::array<double, 3>>(
+                 &SystemOne<Scalar>::setBfield))
+        .def("setBfield",
+             nb::overload_cast<std::array<double, 3>, double, double, double>(
+                 &SystemOne<Scalar>::setBfield))
         .def("enableDiamagnetism", &SystemOne<Scalar>::enableDiamagnetism)
         .def("setIonCharge", &SystemOne<Scalar>::setIonCharge)
         .def("setRydIonOrder", &SystemOne<Scalar>::setRydIonOrder)
         .def("setRydIonDistance", &SystemOne<Scalar>::setRydIonDistance)
-        .def("setConservedParityUnderReflection", &SystemOne<Scalar>::setConservedParityUnderReflection)
-        .def("setConservedMomentaUnderRotation", &SystemOne<Scalar>::setConservedMomentaUnderRotation)
-        .def("__getstate__", [pyclass_name_system_one] (SystemOne<Scalar> const &self) -> nb::handle {
-            return __getstate__(self, pyclass_name_system_one);
-        })
-        .def("__setstate__", [pyclass_name_system_one] (SystemOne<Scalar> &self, nb::handle buf) {
+        .def("setConservedParityUnderReflection",
+             &SystemOne<Scalar>::setConservedParityUnderReflection)
+        .def("setConservedMomentaUnderRotation",
+             &SystemOne<Scalar>::setConservedMomentaUnderRotation)
+        .def("__getstate__",
+             [pyclass_name_system_one](SystemOne<Scalar> const &self) -> nb::handle {
+                 return __getstate__(self, pyclass_name_system_one);
+             })
+        .def("__setstate__", [pyclass_name_system_one](SystemOne<Scalar> &self, nb::handle buf) {
             MatrixElementCache tmp;
             new (&self) SystemOne<Scalar>("", tmp);
             __setstate__(buf.ptr(), self, pyclass_name_system_one);
         });
 
     std::string pyclass_name_system_two_base = "_SystemStateTwo" + type;
-    nb::class_<SystemBase<Scalar, StateTwo>> system_two_base(m, pyclass_name_system_two_base.c_str());
+    nb::class_<SystemBase<Scalar, StateTwo>> system_two_base(m,
+                                                             pyclass_name_system_two_base.c_str());
     add_system_base_methods<SystemBase<Scalar, StateTwo>>(system_two_base);
 
     std::string pyclass_name_system_two = "SystemTwo" + type;
-    nb::class_<SystemTwo<Scalar>, SystemBase<Scalar, StateTwo>> system_two(m, pyclass_name_system_two.c_str());
+    nb::class_<SystemTwo<Scalar>, SystemBase<Scalar, StateTwo>> system_two(
+        m, pyclass_name_system_two.c_str());
     add_system_base_methods<SystemTwo<Scalar>>(system_two);
-    system_two
-        .def(nb::init<SystemTwo<Scalar> const &>())
+    system_two.def(nb::init<SystemTwo<Scalar> const &>())
         .def(nb::init<const SystemOne<Scalar> &, const SystemOne<Scalar> &, MatrixElementCache &>())
-        .def(nb::init<const SystemOne<Scalar> &, const SystemOne<Scalar> &, MatrixElementCache &, bool>())
+        .def(nb::init<const SystemOne<Scalar> &, const SystemOne<Scalar> &, MatrixElementCache &,
+                      bool>())
         .def("getSpecies", &SystemTwo<Scalar>::getSpecies)
         .def("getStatesFirst", &SystemTwo<Scalar>::getStatesFirst)
         .def("getStatesSecond", &SystemTwo<Scalar>::getStatesSecond)
@@ -172,15 +199,20 @@ void declare_systems(nb::module_ &m, std::string const &type) {
         .def("setDistance", &SystemTwo<Scalar>::setDistance)
         .def("setDistanceVector", &SystemTwo<Scalar>::setDistanceVector)
         .def("setOrder", &SystemTwo<Scalar>::setOrder)
-        .def("setConservedParityUnderPermutation", &SystemTwo<Scalar>::setConservedParityUnderPermutation)
-        .def("setConservedParityUnderInversion", &SystemTwo<Scalar>::setConservedParityUnderInversion)
-        .def("setConservedParityUnderReflection", &SystemTwo<Scalar>::setConservedParityUnderReflection)
-        .def("setConservedMomentaUnderRotation", &SystemTwo<Scalar>::setConservedMomentaUnderRotation)
+        .def("setConservedParityUnderPermutation",
+             &SystemTwo<Scalar>::setConservedParityUnderPermutation)
+        .def("setConservedParityUnderInversion",
+             &SystemTwo<Scalar>::setConservedParityUnderInversion)
+        .def("setConservedParityUnderReflection",
+             &SystemTwo<Scalar>::setConservedParityUnderReflection)
+        .def("setConservedMomentaUnderRotation",
+             &SystemTwo<Scalar>::setConservedMomentaUnderRotation)
         .def("setOneAtomBasisvectors", &SystemTwo<Scalar>::setOneAtomBasisvectors)
-        .def("__getstate__", [pyclass_name_system_two] (SystemTwo<Scalar> const &self) -> nb::handle {
-            return __getstate__(self, pyclass_name_system_two);
-        })
-        .def("__setstate__", [pyclass_name_system_two] (SystemTwo<Scalar> &self, nb::handle buf) {
+        .def("__getstate__",
+             [pyclass_name_system_two](SystemTwo<Scalar> const &self) -> nb::handle {
+                 return __getstate__(self, pyclass_name_system_two);
+             })
+        .def("__setstate__", [pyclass_name_system_two](SystemTwo<Scalar> &self, nb::handle buf) {
             MatrixElementCache tmp;
             SystemOne<Scalar> s1("", tmp);
             SystemOne<Scalar> s2("", tmp);
@@ -227,8 +259,7 @@ NB_MODULE(binding, m) {
         .export_values();
 
     nb::class_<Symmetry> symmetry(m, "Symmetry");
-    symmetry
-        .def(nb::init<>())
+    symmetry.def(nb::init<>())
         .def_rw("inversion", &Symmetry::inversion)
         .def_rw("reflection", &Symmetry::reflection)
         .def_rw("permutation", &Symmetry::permutation)
@@ -242,20 +273,28 @@ NB_MODULE(binding, m) {
         .value("WHITTAKER", WHITTAKER)
         .export_values();
 
-    m.def("selectionRulesMomentumNew", nb::overload_cast<StateOne const &, StateOne const &, int>(&selectionRulesMomentumNew));
-    m.def("selectionRulesMomentumNew", nb::overload_cast<StateOne const &, StateOne const &>(&selectionRulesMomentumNew));
-    m.def("selectionRulesMultipoleNew", nb::overload_cast<StateOne const &, StateOne const &, int, int>(&selectionRulesMultipoleNew));
-    m.def("selectionRulesMultipoleNew", nb::overload_cast<StateOne const &, StateOne const &, int>(&selectionRulesMultipoleNew));
+    m.def("selectionRulesMomentumNew",
+          nb::overload_cast<StateOne const &, StateOne const &, int>(&selectionRulesMomentumNew));
+    m.def("selectionRulesMomentumNew",
+          nb::overload_cast<StateOne const &, StateOne const &>(&selectionRulesMomentumNew));
+    m.def("selectionRulesMultipoleNew",
+          nb::overload_cast<StateOne const &, StateOne const &, int, int>(
+              &selectionRulesMultipoleNew));
+    m.def("selectionRulesMultipoleNew",
+          nb::overload_cast<StateOne const &, StateOne const &, int>(&selectionRulesMultipoleNew));
 
     nb::class_<MatrixElementCache> matrix_element_cache(m, "MatrixElementCache");
-    matrix_element_cache
-        .def(nb::init<>())
+    matrix_element_cache.def(nb::init<>())
         .def(nb::init<std::string>())
         .def("getElectricDipole", &MatrixElementCache::getElectricDipole)
-        .def("getElectricMultipole", nb::overload_cast<const StateOne &, const StateOne &, int>(&MatrixElementCache::getElectricMultipole))
+        .def("getElectricMultipole",
+             nb::overload_cast<const StateOne &, const StateOne &, int>(
+                 &MatrixElementCache::getElectricMultipole))
         .def("getDiamagnetism", &MatrixElementCache::getDiamagnetism)
         .def("getMagneticDipole", &MatrixElementCache::getMagneticDipole)
-        .def("getElectricMultipole", nb::overload_cast<const StateOne &, const StateOne &, int, int>(&MatrixElementCache::getElectricMultipole))
+        .def("getElectricMultipole",
+             nb::overload_cast<const StateOne &, const StateOne &, int, int>(
+                 &MatrixElementCache::getElectricMultipole))
         .def("getRadial", &MatrixElementCache::getRadial)
         .def("precalculateElectricMomentum", &MatrixElementCache::precalculateElectricMomentum)
         .def("precalculateMagneticMomentum", &MatrixElementCache::precalculateMagneticMomentum)
@@ -267,10 +306,11 @@ NB_MODULE(binding, m) {
         .def("setMethod", &MatrixElementCache::setMethod)
         .def("loadElectricDipoleDB", &MatrixElementCache::loadElectricDipoleDB)
         .def("size", &MatrixElementCache::size)
-        .def("__getstate__", [] (MatrixElementCache const &self) -> nb::handle {
-            return __getstate__(self, "MatrixElementCache");
-        })
-        .def("__setstate__", [] (MatrixElementCache &self, nb::handle buf) {
+        .def("__getstate__",
+             [](MatrixElementCache const &self) -> nb::handle {
+                 return __getstate__(self, "MatrixElementCache");
+             })
+        .def("__setstate__", [](MatrixElementCache &self, nb::handle buf) {
             new (&self) MatrixElementCache;
             __setstate__(buf.ptr(), self, "MatrixElementCache");
         });
@@ -278,8 +318,7 @@ NB_MODULE(binding, m) {
     // State.hpp
 
     nb::class_<StateOne> state_one(m, "StateOne");
-    state_one
-        .def(nb::init<std::string, int, int, float, float>())
+    state_one.def(nb::init<std::string, int, int, float, float>())
         .def(nb::init<std::string>())
         .def("__str__", &StateOne::str)
         .def("getN", &StateOne::getN)
@@ -303,19 +342,17 @@ NB_MODULE(binding, m) {
         .def(nb::self != nb::self)
         .def(nb::self < nb::self)
         .def(nb::self <= nb::self)
-        .def("__getstate__", [] (StateOne const &self) -> nb::handle {
-            return __getstate__(self, "StateOne");
-        })
-        .def("__setstate__", [] (StateOne &self, nb::handle buf) {
+        .def("__getstate__",
+             [](StateOne const &self) -> nb::handle { return __getstate__(self, "StateOne"); })
+        .def("__setstate__", [](StateOne &self, nb::handle buf) {
             new (&self) StateOne;
             __setstate__(buf.ptr(), self, "StateOne");
         });
 
-
     nb::class_<StateTwo> state_two(m, "StateTwo");
     state_two
-        .def(nb::init<std::array<std::string, 2>, std::array<int, 2>,
-             std::array<int, 2>, std::array<float, 2>, std::array<float, 2>>())
+        .def(nb::init<std::array<std::string, 2>, std::array<int, 2>, std::array<int, 2>,
+                      std::array<float, 2>, std::array<float, 2>>())
         .def(nb::init<std::array<std::string, 2>>())
         .def(nb::init<StateOne, StateOne>())
         .def("__str__", &StateTwo::str)
@@ -342,9 +379,11 @@ NB_MODULE(binding, m) {
         .def("getSpecies", nb::overload_cast<int>(&StateTwo::getSpecies, nb::const_))
         .def("getElement", nb::overload_cast<int>(&StateTwo::getElement, nb::const_))
         .def("getEnergy", nb::overload_cast<int>(&StateTwo::getEnergy, nb::const_))
-        .def("getEnergy", nb::overload_cast<int, MatrixElementCache &>(&StateTwo::getEnergy, nb::const_))
+        .def("getEnergy",
+             nb::overload_cast<int, MatrixElementCache &>(&StateTwo::getEnergy, nb::const_))
         .def("getNStar", nb::overload_cast<int>(&StateTwo::getNStar, nb::const_))
-        .def("getNStar", nb::overload_cast<int, MatrixElementCache &>(&StateTwo::getNStar, nb::const_))
+        .def("getNStar",
+             nb::overload_cast<int, MatrixElementCache &>(&StateTwo::getNStar, nb::const_))
         .def("getLabel", nb::overload_cast<int>(&StateTwo::getLabel, nb::const_))
         .def("isArtificial", nb::overload_cast<int>(&StateTwo::isArtificial, nb::const_))
         .def("isGeneralized", nb::overload_cast<int>(&StateTwo::isGeneralized, nb::const_))
@@ -357,20 +396,17 @@ NB_MODULE(binding, m) {
         .def(nb::self != nb::self)
         .def(nb::self < nb::self)
         .def(nb::self <= nb::self)
-        .def("__getstate__", [] (StateTwo const &self) -> nb::handle {
-            return __getstate__(self, "StateTwo");
-        })
-        .def("__setstate__", [] (StateTwo &self, nb::handle buf) {
+        .def("__getstate__",
+             [](StateTwo const &self) -> nb::handle { return __getstate__(self, "StateTwo"); })
+        .def("__setstate__", [](StateTwo &self, nb::handle buf) {
             new (&self) StateTwo;
             __setstate__(buf.ptr(), self, "StateTwo");
         });
 
-
     // QuantumDefect.hpp
 
     nb::class_<QuantumDefect> quantum_defect(m, "QuantumDefect");
-    quantum_defect
-        .def(nb::init<std::string const &, int, int, double>())
+    quantum_defect.def(nb::init<std::string const &, int, int, double>())
         .def(nb::init<std::string const &, int, int, double, std::string const &>())
         .def_prop_ro("species", [](QuantumDefect &qd) { return qd.species; })
         .def_prop_ro("n", [](QuantumDefect &qd) { return qd.n; })
@@ -395,8 +431,7 @@ NB_MODULE(binding, m) {
     m.def("g", &model_potential::g);
 
     nb::class_<Numerov> numerov(m, "Numerov");
-    numerov
-        .def(nb::init<QuantumDefect const &>())
+    numerov.def(nb::init<QuantumDefect const &>())
         .def_ro_static("dx", &Numerov::dx)
         .def("integrate", &Numerov::integrate)
         .def_static("power_kernel", &Numerov::power_kernel);
@@ -406,8 +441,7 @@ NB_MODULE(binding, m) {
     m.def("RadialWFWhittaker", &whittaker_functions::RadialWFWhittaker);
 
     nb::class_<Whittaker> whittaker(m, "Whittaker");
-    whittaker
-        .def(nb::init<QuantumDefect const &>())
+    whittaker.def(nb::init<QuantumDefect const &>())
         .def_ro_static("dx", &Whittaker::dx)
         .def("integrate", &Whittaker::integrate)
         .def_static("power_kernel", &Whittaker::power_kernel);
@@ -415,21 +449,22 @@ NB_MODULE(binding, m) {
     // PerturbativeInteraction.hpp
 
     nb::class_<PerturbativeInteraction> perturbative_interaction(m, "PerturbativeInteraction");
-    perturbative_interaction
-        .def(nb::init<MatrixElementCache &>())
+    perturbative_interaction.def(nb::init<MatrixElementCache &>())
         .def(nb::init<double, MatrixElementCache &>())
         .def("getC6", nb::overload_cast<const StateTwo &, double>(&PerturbativeInteraction::getC6))
-        .def("getC6", nb::overload_cast<const std::vector<StateTwo> &, double>(&PerturbativeInteraction::getC6))
+        .def("getC6",
+             nb::overload_cast<const std::vector<StateTwo> &, double>(
+                 &PerturbativeInteraction::getC6))
         .def("getC3", &PerturbativeInteraction::getC3)
         .def("getEnergy", &PerturbativeInteraction::getEnergy);
 
     // WignerD.hpp
 
     nb::class_<WignerD> wigner_d(m, "WignerD");
-    wigner_d
-        .def(nb::init<>())
+    wigner_d.def(nb::init<>())
         .def("__call__", nb::overload_cast<float, float, float, double>(&WignerD::operator()))
-        .def("__call__", nb::overload_cast<float, float, float, double, double, double>(&WignerD::operator()));
+        .def("__call__",
+             nb::overload_cast<float, float, float, double, double, double>(&WignerD::operator()));
 
     // SystemOne.hpp SystemTwo.hpp
     declare_systems<double>(m, "Real");

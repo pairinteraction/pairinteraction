@@ -68,9 +68,8 @@ protected:
     void transformInteraction(const Eigen::SparseMatrix<Scalar> &transformator) override;
     void deleteInteraction() override;
     Eigen::SparseMatrix<Scalar> rotateStates(const std::vector<size_t> &states_indices,
-                                              double alpha, double beta, double gamma) override;
-    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta,
-                                                   double gamma) override;
+                                             double alpha, double beta, double gamma) override;
+    Eigen::SparseMatrix<Scalar> buildStaterotator(double alpha, double beta, double gamma) override;
     void incorporate(SystemBase<Scalar, StateOne> &system) override;
 
 private:
