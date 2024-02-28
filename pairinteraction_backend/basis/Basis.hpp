@@ -3,28 +3,28 @@
 
 #include <Eigen/SparseCore>
 #include <complex>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "state/State.hpp"
+#include "ket/Ket.hpp"
 
 template <typename T, bool is_complex>
 class Basis {
 public:
     Basis();
-    T get_energy(size_t index) const;
-    float get_quantum_number_f(size_t index) const;
-    float get_quantum_number_m(size_t index) const;
-    int get_parity(size_t index) const;
-    std::string get_label(size_t index) const;
-
-    virtual State<T> get_state(size_t index) const = 0;
+    const Ket<T> &get_ket(size_t index);
+    T get_energy(size_t index);
+    float get_quantum_number_f(size_t index);
+    float get_quantum_number_m(size_t index);
+    int get_parity(size_t index);
+    std::string get_label(size_t index);
 
     class Iterator {
     public:
         Iterator(const Basis<T, is_complex> &basis, size_t index);
         bool operator!=(const Iterator &other) const;
-        State<T> operator*() const;
+        const Ket<T> &operator*() const;
         Iterator &operator++();
 
     private:
@@ -32,15 +32,15 @@ public:
         size_t index;
     };
 
-    Iterator begin() const;
-    Iterator end() const;
+    Iterator begin();
+    Iterator end();
 
 protected:
-    void reserve_coefficients(int n);
-    void add_coefficients(T energy, float f, float m, int p, std::string label);
-    void assemble_coefficients();
-    bool is_assembled;
-    bool is_standard_basis;
+    virtual void ensure_assembled_kets() = 0;
+    void ensure_assembled();
+    void ensure_not_assembled() const;
+    void ensure_standard_basis() const;
+    std::vector<std::shared_ptr<Ket<T>>> kets; // TODO const Ket?
 
 private:
     using scalar_t = typename std::conditional<is_complex, std::complex<T>, T>::type;
@@ -50,7 +50,8 @@ private:
     std::vector<int> parities;
     std::vector<std::string> labels;
     Eigen::SparseMatrix<scalar_t> coefficients;
-    size_t num_coefficients;
+    bool is_assembled;
+    bool is_standard_basis;
 };
 
 #endif // BASIS_HPP
