@@ -41,4 +41,7 @@ private:
     T quantum_number_j_std{std::numeric_limits<T>::max()};
 };
 
+extern template class KetAtom<float>;
+extern template class KetAtom<double>;
+
 #endif // KETATOM_HPP
