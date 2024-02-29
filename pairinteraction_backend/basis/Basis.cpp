@@ -1,8 +1,7 @@
 #include "basis/Basis.hpp"
 
 template <typename T>
-Basis<T>::Basis(std::vector<std::shared_ptr<const Ket<real_t<T>>>> &&kets)
-    : kets(std::move(kets)), is_standard_basis(true) {
+Basis<T>::Basis(KetPtrVec &&kets) : kets(std::move(kets)), is_standard_basis(true) {
     energies.reserve(kets.size());
     quantum_numbers_f.reserve(kets.size());
     quantum_numbers_m.reserve(kets.size());

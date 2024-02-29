@@ -1,11 +1,11 @@
 // #pragma once
 
-// #include "Basis.hpp"
+// #include "basis/Basis.hpp"
 
 // #include <limits>
 
-// template <typename T, bool is_complex>
-// class BasisAtom : public Basis<T, is_complex> {
+// template <typename T>
+// class BasisAtom : public Basis<T> {
 // public:
 //     BasisAtom();
 //     void restrict_energy(T min, T max);
@@ -19,8 +19,7 @@
 //     void restrict_quantum_number_j(T min, T max);
 
 // private:
-//     void ensure_assembled_kets() override;
-//     T min_energy{std::numeric_limits<T>::lowest()};
+//     T min_energy;
 //     T max_energy{std::numeric_limits<T>::max()};
 //     float min_quantum_number_f{std::numeric_limits<float>::lowest()};
 //     float max_quantum_number_f{std::numeric_limits<float>::max()};
