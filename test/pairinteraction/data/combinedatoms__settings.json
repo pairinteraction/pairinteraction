@@ -1,0 +1,114 @@
+{
+    "atom1": {
+        "species": "Rb",
+        "min_n": 34,
+        "max_n": 41,
+        "min_l": 0,
+        "max_l": 4,
+        "min_energy": -2967.980376658483,
+        "max_energy": -2605.836006757706,
+        "efield_z": 3.19,
+        "bfield_z": 63.7,
+        "states_of_interest": [
+            {
+                "species": "Rb",
+                "n": 37,
+                "l": 0,
+                "j": 0.5,
+                "m": 0.5
+            },
+            {
+                "species": "Rb",
+                "n": 37,
+                "l": 1,
+                "j": 1.5,
+                "m": 1.5
+            },
+            {
+                "species": "Rb",
+                "n": 38,
+                "l": 0,
+                "j": 0.5,
+                "m": 0.5
+            }
+        ]
+    },
+    "atom2": "atom1",
+    "interactions": {
+        "conserved_total_m": null,
+        "conserved_parity_under_inversion": {
+            "list": [
+                1,
+                1,
+                1
+            ]
+        },
+        "conserved_parity_under_reflection": -1,
+        "conserved_parity_under_permutation": null,
+        "distance": {
+            "list": [
+                3.0,
+                6.5,
+                10.0
+            ]
+        },
+        "angle": 0.615,
+        "combined_states_of_interest": [
+            {
+                "atom1": {
+                    "species": "Rb",
+                    "n": 37,
+                    "l": 1,
+                    "j": 1.5,
+                    "m": 1.5
+                },
+                "atom2": {
+                    "species": "Rb",
+                    "n": 37,
+                    "l": 1,
+                    "j": 1.5,
+                    "m": 1.5
+                }
+            },
+            {
+                "atom1": {
+                    "species": "Rb",
+                    "n": 37,
+                    "l": 0,
+                    "j": 0.5,
+                    "m": 0.5
+                },
+                "atom2": {
+                    "species": "Rb",
+                    "n": 38,
+                    "l": 0,
+                    "j": 0.5,
+                    "m": 0.5
+                }
+            },
+            {
+                "atom1": {
+                    "species": "Rb",
+                    "n": 38,
+                    "l": 0,
+                    "j": 0.5,
+                    "m": 0.5
+                },
+                "atom2": {
+                    "species": "Rb",
+                    "n": 37,
+                    "l": 0,
+                    "j": 0.5,
+                    "m": 0.5
+                }
+            }
+        ],
+        "delta_energy": 3.0,
+        "delta_energy_after_diagonalization": 3.0,
+        "use_delta_energy_after_fields": true
+    },
+    "numerics": {
+        "rydberg_rydberg_multipole_order": 3,
+        "precision_sparse_matrices": 1e-05
+    }
+}
