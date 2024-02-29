@@ -1,43 +1,33 @@
-// #pragma once
+#pragma once
 
-// #include "basis/Basis.hpp"
+#include "basis/Basis.hpp"
+#include "basis/BasisAtomCreator.hpp"
+#include "ket/KetAtom.hpp"
 
-// #include <limits>
+#include <complex>
+#include <limits>
 
-// template <typename T>
-// class BasisAtom : public Basis<T> {
-// public:
-//     BasisAtom();
-//     void restrict_energy(T min, T max);
-//     void restrict_quantum_number_f(float min, float max);
-//     void restrict_quantum_number_m(float min, float max);
-//     void restrict_parity(int parity);
-//     void restrict_quantum_number_n(int n);
-//     void restrict_quantum_number_nu(T min, T max);
-//     void restrict_quantum_number_l(T min, T max);
-//     void restrict_quantum_number_s(T min, T max);
-//     void restrict_quantum_number_j(T min, T max);
+template <typename T>
+class BasisAtomCreator;
 
-// private:
-//     T min_energy;
-//     T max_energy{std::numeric_limits<T>::max()};
-//     float min_quantum_number_f{std::numeric_limits<float>::lowest()};
-//     float max_quantum_number_f{std::numeric_limits<float>::max()};
-//     float min_quantum_number_m{std::numeric_limits<float>::lowest()};
-//     float max_quantum_number_m{std::numeric_limits<float>::max()};
-//     int parity{std::numeric_limits<int>::max()};
-//     int quantum_number_n{std::numeric_limits<int>::max()};
-//     T min_quantum_number_nu{std::numeric_limits<T>::lowest()};
-//     T max_quantum_number_nu{std::numeric_limits<T>::max()};
-//     T min_quantum_number_l{std::numeric_limits<T>::lowest()};
-//     T max_quantum_number_l{std::numeric_limits<T>::max()};
-//     T min_quantum_number_s{std::numeric_limits<T>::lowest()};
-//     T max_quantum_number_s{std::numeric_limits<T>::max()};
-//     T min_quantum_number_j{std::numeric_limits<T>::lowest()};
-//     T max_quantum_number_j{std::numeric_limits<T>::max()};
-// };
+/**
+ * @class BasisAtom
+ *
+ * @brief Class for creating a basis of atomic kets.
+ *
+ * @tparam T Complex number type.
+ */
+template <typename T>
+class BasisAtom : public Basis<T> {
+public:
+    // const KetAtom<real_t<T>> &Iterator::operator*() const override; // TODO can we make such a
+    // thing work?
+private:
+    friend class BasisAtomCreator<T>;
+    BasisAtom(std::vector<std::shared_ptr<const Ket<real_t<T>>>> &&kets);
+};
 
-// extern template class BasisAtom<float, false>;
-// extern template class BasisAtom<double, false>;
-// extern template class BasisAtom<float, true>;
-// extern template class BasisAtom<double, true>;
+extern template class BasisAtom<float>;
+extern template class BasisAtom<double>;
+extern template class BasisAtom<std::complex<float>>;
+extern template class BasisAtom<std::complex<double>>;
