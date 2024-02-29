@@ -46,7 +46,10 @@ extensions = [
     "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
-    "nbsphinx"
+    "nbsphinx",
+    "sphinxcontrib.autodoc_pydantic",
+    "sphinx.ext.graphviz",
+    "sphinx.ext.inheritance_diagram",
 ]
 
 html_js_files = [
@@ -238,3 +241,20 @@ rst_epilog = """
 """.format(
     repo_slug=repo_slug, user=user, repo=repo, pypi_image=pypi_image, pypi_target=pypi_target
 )
+
+
+# -- Options for autosummary, autodoc and pautodoc_pydantic ----------------------------------------------
+autodoc_default_options = {
+    "private-members": False,
+    "inherited-members": False,
+    "imported-members": False,
+}
+autosummary_imported_members = False
+
+autodoc_pydantic_model_show_config_summary = False
+autodoc_pydantic_model_show_validator_summary = False
+autodoc_pydantic_model_show_validator_members = True
+autodoc_pydantic_field_list_validators = True
+autodoc_pydantic_model_summary_list_order = "bysource"
+autodoc_pydantic_model_member_order = "bysource"
+autodoc_pydantic_model_erdantic_figure = True
