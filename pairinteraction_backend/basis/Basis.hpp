@@ -8,6 +8,14 @@
 
 #include "ket/Ket.hpp"
 
+/**
+ * @struct make_real
+ *
+ * @brief Helper struct to extract the real type from a scalar type.
+ *
+ * @tparam T The type from which to extract the real type.
+ */
+
 template <typename T>
 struct make_real {
     using type = T;
@@ -18,8 +26,30 @@ struct make_real<std::complex<T>> {
     using type = T;
 };
 
+/**
+ * @typedef real_t
+ *
+ * @brief Helper type to extract the real type from a scalar type
+ *
+ * @tparam T The type from which to extract the real type.
+ */
+
 template <typename T>
 using real_t = typename make_real<T>::type;
+
+/**
+ * @class Basis
+ *
+ * @brief Base class for a basis
+ *
+ * This base class represents a basis. It comprises a list of ket states and a matrix of
+ * coefficients. It is meant to be used as a base class for specific basis implementations. Its
+ * constructor is protected to indicate that derived classes should not allow direct instantiation.
+ * Instead, a factory class should be provided that is a friend of the derived class and can create
+ * instances of it.
+ *
+ * @tparam T Complex number type.
+ */
 
 template <typename T>
 class Basis {
@@ -48,8 +78,9 @@ public:
     Iterator end() const;
 
 protected:
-    Basis(std::vector<std::shared_ptr<const Ket<real_t<T>>>> &&kets);
-    std::vector<std::shared_ptr<const Ket<real_t<T>>>> kets;
+    using KetPtrVec = std::vector<std::shared_ptr<const Ket<real_t<T>>>>;
+    Basis(KetPtrVec &&kets);
+    KetPtrVec kets;
 
 private:
     std::vector<real_t<T>> energies;

@@ -3,6 +3,19 @@
 #include <iostream>
 #include <string>
 
+/**
+ * @class Ket
+ *
+ * @brief Base class for a ket.
+ *
+ * This base class represents a ket. It is
+ * meant to be used as a base class for specific ket implementations. Its constructor is protected
+ * to indicate that derived classes should not allow direct instantiation. Instead, a factory class
+ * should be provided that is a friend of the derived class and can create instances of it.
+ *
+ * @tparam T Real number type.
+ */
+
 template <typename T>
 class Ket {
 public:
