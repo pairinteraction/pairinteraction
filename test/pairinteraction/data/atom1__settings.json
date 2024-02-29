@@ -1,0 +1,78 @@
+{
+    "atom1": {
+        "species": "Rb",
+        "min_n": 76,
+        "max_n": 83,
+        "min_l": 0,
+        "max_l": 4,
+        "min_m": -9.5,
+        "max_m": 10.5,
+        "min_energy": -604.2349676362819,
+        "max_energy": -516.7653702909081,
+        "min_energy_after_diagonalization": -584.2349676362819,
+        "max_energy_after_diagonalization": -536.7653702909081,
+        "efield_x": 0.1,
+        "efield_y": {
+            "list": [
+                0,
+                0.1,
+                0.2
+            ]
+        },
+        "efield_z": {
+            "list": [
+                0.0,
+                0.5,
+                1.0
+            ]
+        },
+        "bfield_x": 0.1,
+        "bfield_y": 0.2,
+        "bfield_z": {
+            "list": [
+                1,
+                2,
+                3
+            ]
+        },
+        "states_of_interest": [
+            {
+                "species": "Rb",
+                "n": 80,
+                "l": 0,
+                "j": 0.5,
+                "m": 0.5
+            },
+            {
+                "species": "Rb",
+                "n": 79,
+                "l": 1,
+                "j": 1.5,
+                "m": 0.5
+            }
+        ],
+        "additionally_included_states": [
+            {
+                "species": "Rb",
+                "n": 10,
+                "l": 0,
+                "j": 0.5,
+                "m": 0.5
+            }
+        ]
+    },
+    "numerics": {
+        "quantization_axis": [
+            0.0,
+            0.0,
+            1.0
+        ],
+        "use_diamagnetism": true,
+        "database_directory": null,
+        "precision_sparse_matrices": 1e-10,
+        "diagonalization_method": "lapacke",
+        "path_cache": "./cache/",
+        "diagonalize_threshold": 1e-10,
+        "radial_wavefunction_method": "numerov"
+    }
+}

@@ -1,0 +1,52 @@
+{
+  "atom1": {
+    "bfield_z": 63.7,
+    "delta_energy": 100,
+    "delta_l": 3,
+    "delta_n": 3,
+    "efield_z": 3.19,
+    "species": "Rb",
+    "states_of_interest": [
+      {
+        "j": 0.5,
+        "l": 0,
+        "m": 0.5,
+        "n": 37
+      },
+      {
+        "j": 1.5,
+        "l": 1,
+        "m": 1.5,
+        "n": 37
+      },
+      {
+        "j": 0.5,
+        "l": 0,
+        "m": 0.5,
+        "n": 38
+      }
+    ]
+  },
+  "atom2": "atom1",
+  "interactions": {
+    "angle": 0.615,
+    "combined_states_of_interest": [
+      {
+        "atom1": 1,
+        "atom2": 1
+      }
+    ],
+    "conserved_total_m": null,
+    "conserved_parity_under_permutation": [-1, 1],
+    "delta_energy": 3,
+    "distance": 3
+  },
+  "numerics": {
+    "diagonalize_threshold": 1e-10,
+    "path_cache": "./cache/",
+    "precision_sparse_matrices": 0.000001,
+    "radial_wavefunction_method": "numerov",
+    "use_diamagnetism": false,
+    "quantization_axis": "z"
+  }
+}
