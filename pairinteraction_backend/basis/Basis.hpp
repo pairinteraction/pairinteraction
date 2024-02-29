@@ -66,7 +66,7 @@ public:
     public:
         Iterator(const Basis<T> &basis, size_t index);
         bool operator!=(const Iterator &other) const;
-        const Ket<real_t<T>> &operator*() const;
+        virtual const Ket<real_t<T>> &operator*() const;
         Iterator &operator++();
 
     private:
