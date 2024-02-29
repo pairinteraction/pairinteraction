@@ -111,6 +111,35 @@ endif()
 find_package(doctest  REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
+if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
+  find_package(Python REQUIRED
+    COMPONENTS Interpreter Development NumPy
+    OPTIONAL_COMPONENTS Development.SABIModule)
+else()
+  find_package(Python REQUIRED
+    COMPONENTS Interpreter Development.Module NumPy
+    OPTIONAL_COMPONENTS Development.SABIModule)
+endif()
+
+if(MSVC)
+  string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
+  message(STATUS "Unpatched Python libraries: ${Python_LIBRARIES}")
+  message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
+endif()
+
+include(FetchContent)
+FetchContent_Declare(nanobind
+  GIT_REPOSITORY https://github.com/wjakob/nanobind.git
+  GIT_TAG        72831bb)
+FetchContent_GetProperties(nanobind)
+if(NOT nanobind_POPULATED)
+  FetchContent_Populate(nanobind)
+endif()
+list(APPEND CMAKE_PREFIX_PATH ${nanobind_SOURCE_DIR})
+find_package(nanobind CONFIG REQUIRED)
+nanobind_build_library(nanobind-static)
+set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
+
 # Build instructions
 if( WITH_BACKEND )
   add_subdirectory(pairinteraction_backend)

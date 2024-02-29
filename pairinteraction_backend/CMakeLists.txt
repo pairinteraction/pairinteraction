@@ -21,6 +21,36 @@ target_compile_definitions(pairinteraction_backend
         $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
+target_compile_features(pairinteraction_backend
+    PRIVATE
+        cxx_std_17
+)
+set_target_properties(pairinteraction_backend
+    PROPERTIES
+        CXX_EXTENSIONS OFF
+        CXX_CLANG_TIDY ""
+        PREFIX ""
+        INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>
+)
+target_include_directories(pairinteraction_backend
+    PRIVATE
+        "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}"
+)
+target_compile_options(pairinteraction_backend
+    PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+)
+target_link_options(pairinteraction_backend
+    PRIVATE
+        $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
+        $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
+        $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
+)
+target_link_libraries(pairinteraction_backend
+    PRIVATE
+        nanobind-static $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
+)
+
 if (BUILD_TESTING)
 
     # Build an executable for running the tests
@@ -37,6 +67,35 @@ if (BUILD_TESTING)
         PRIVATE
             doctest::doctest
             Eigen3::Eigen
+    )
+    target_compile_features(pairinteraction_backend_test
+        PRIVATE
+            cxx_std_17
+    )
+    set_target_properties(pairinteraction_backend_test
+        PROPERTIES
+            CXX_EXTENSIONS OFF
+            CXX_CLANG_TIDY ""
+            PREFIX ""
+            INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>
+    )
+    target_include_directories(pairinteraction_backend_test
+        PRIVATE
+            "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}"
+    )
+    target_compile_options(pairinteraction_backend_test
+        PRIVATE
+            $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
+    )
+    target_link_options(pairinteraction_backend_test
+        PRIVATE
+            $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
+            $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
+            $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
+    )
+    target_link_libraries(pairinteraction_backend_test
+        PRIVATE
+            nanobind-static $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
     )
 
     # TODO can we avoid building a separate executable but link the library to the test target?
