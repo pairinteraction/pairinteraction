@@ -20,8 +20,14 @@ class BasisAtomCreator;
 template <typename T>
 class BasisAtom : public Basis<T> {
 public:
-    // const KetAtom<real_t<T>> &Iterator::operator*() const override; // TODO can we make such a
-    // thing work?
+    class IteratorAtom : public Basis<T>::Iterator {
+    public:
+        IteratorAtom(const BasisAtom<T> &basis, size_t index);
+        const KetAtom<real_t<T>> &operator*() const override;
+    };
+    IteratorAtom begin() const; // TODO this hides "Iterator begin() const", is it fine?
+    IteratorAtom end() const;
+
 private:
     friend class BasisAtomCreator<T>;
     BasisAtom(std::vector<std::shared_ptr<const Ket<real_t<T>>>> &&kets);

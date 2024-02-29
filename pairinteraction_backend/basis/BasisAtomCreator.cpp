@@ -89,6 +89,6 @@ template class BasisAtomCreator<std::complex<double>>;
 DOCTEST_TEST_CASE("create a basis for rubidium") {
     auto basis = BasisAtomCreator<float>("Rb").create();
     for (const auto &ket : basis) {
-        CHECK(dynamic_cast<const KetAtom<float> &>(ket).get_species() == "Rb");
+        CHECK(ket.get_species() == "Rb");
     }
 }
