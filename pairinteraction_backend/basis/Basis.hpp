@@ -51,12 +51,52 @@ using real_t = typename make_real<T>::type;
  * @tparam T Complex number type.
  */
 
+// TODO: CRTP
+
+// https://pixorblog.wordpress.com/2019/08/14/curiously-recurring-template-pattern-crtp-in-depth/
+
+// https://www.fluentcpp.com/2020/09/11/replacing-crtp-static-polymorphism-with-concepts/
+
+// https://pixorblog.wordpress.com/2019/08/14/curiously-recurring-template-pattern-crtp-in-depth/
+
+// https://stackoverflow.com/questions/76229523/why-is-a-nested-c-template-argument-not-deduced-even-though-it-is-constrained
+
+#include "ket/KetAtom.hpp"
+
 template <typename T>
+class BasisAtom;
+
+template <typename T>
+struct Crtp_Type_Traits;
+
+template <typename T>
+struct Crtp_Type_Traits<BasisAtom<T>> {
+    using MyKet_type = KetAtom<real_t<T>>;
+    using MyScalar_type = T;
+};
+
+// template <typename Derived>
+// class Basis;
+
+// template <typename Scalar>
+// template <class T> requires std::derived_from<T, Basis<T<Scalar>>>
+// struct DerivedTraits
+// {
+//     using Scalar = Scalar;
+//     using Real = real_t<Scalar>;
+//     using Ket = Ket<Real>;
+// };
+
+template <typename Derived>
 class Basis {
 public:
-    Basis() = delete;
-    const Ket<real_t<T>> &get_ket(size_t index) const;
-    real_t<T> get_energy(size_t index) const;
+    using Scalar = typename Crtp_Type_Traits<Derived>::MyScalar_type; // TODO remove
+    using Real = real_t<Scalar>;                                      // TODO remove
+    using KetType = Crtp_Type_Traits<Derived>::MyKet_type;            // TODO remove
+
+    const Derived &derived() const;
+    const auto &get_ket(size_t index) const;
+    Real get_energy(size_t index) const;
     float get_quantum_number_f(size_t index) const;
     float get_quantum_number_m(size_t index) const;
     int get_parity(size_t index) const;
@@ -64,13 +104,13 @@ public:
 
     class Iterator {
     public:
-        Iterator(const Basis<T> &basis, size_t index);
+        Iterator(const Basis<Derived> &basis, size_t index);
         bool operator!=(const Iterator &other) const;
-        virtual const Ket<real_t<T>> &operator*() const;
+        const KetType &operator*() const; // TODO auto
         Iterator &operator++();
 
     private:
-        const Basis<T> &basis;
+        const Basis<Derived> &basis;
         size_t index;
     };
 
@@ -78,21 +118,19 @@ public:
     Iterator end() const;
 
 protected:
-    using KetPtrVec = std::vector<std::shared_ptr<const Ket<real_t<T>>>>;
-    Basis(KetPtrVec &&kets);
-    KetPtrVec kets;
+    Basis();
 
 private:
-    std::vector<real_t<T>> energies;
+    std::vector<Real> energies;
     std::vector<float> quantum_numbers_f;
     std::vector<float> quantum_numbers_m;
     std::vector<int> parities;
     std::vector<std::string> labels;
-    Eigen::SparseMatrix<T> coefficients;
+    Eigen::SparseMatrix<Scalar> coefficients;
     bool is_standard_basis;
 };
 
-extern template class Basis<float>;
-extern template class Basis<double>;
-extern template class Basis<std::complex<float>>;
-extern template class Basis<std::complex<double>>;
+extern template class Basis<BasisAtom<float>>;
+extern template class Basis<BasisAtom<double>>;
+extern template class Basis<BasisAtom<std::complex<float>>>;
+extern template class Basis<BasisAtom<std::complex<double>>>;

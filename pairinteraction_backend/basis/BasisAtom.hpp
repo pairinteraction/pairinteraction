@@ -15,22 +15,26 @@ class BasisAtomCreator;
  *
  * @brief Class for creating a basis of atomic kets.
  *
- * @tparam T Complex number type.
+ * @tparam Scalar Complex number type.
  */
-template <typename T>
-class BasisAtom : public Basis<T> {
+template <typename Scalar>
+class BasisAtom : public Basis<BasisAtom<Scalar>> {
 public:
-    class IteratorAtom : public Basis<T>::Iterator {
-    public:
-        IteratorAtom(const BasisAtom<T> &basis, size_t index);
-        const KetAtom<real_t<T>> &operator*() const override;
-    };
-    IteratorAtom begin() const; // TODO this hides "Iterator begin() const", is it fine?
-    IteratorAtom end() const;
+    using Real = real_t<Scalar>;
+    using MyScalar = Scalar;
+    using MyKet = KetAtom<real_t<Scalar>>;
+    using KetPtrVec = std::vector<std::shared_ptr<const KetAtom<Real>>>;
+
+    const KetPtrVec &get_kets() const { return kets; } // TODO to source or remove
+
+    const KetAtom<Real> &get_ket(size_t index) const {
+        return *kets[index];
+    } // TODO to source or remove
 
 private:
-    friend class BasisAtomCreator<T>;
-    BasisAtom(std::vector<std::shared_ptr<const Ket<real_t<T>>>> &&kets);
+    friend class BasisAtomCreator<Scalar>;
+    BasisAtom(KetPtrVec &&kets);
+    KetPtrVec kets; // TODO move to Basis.hpp
 };
 
 extern template class BasisAtom<float>;

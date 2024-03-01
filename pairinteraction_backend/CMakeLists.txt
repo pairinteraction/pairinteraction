@@ -23,7 +23,7 @@ target_compile_definitions(pairinteraction_backend
 
 target_compile_features(pairinteraction_backend
     PRIVATE
-        cxx_std_17
+        cxx_std_20 # TODO is this fine or better -fconcepts?
 )
 set_target_properties(pairinteraction_backend
     PROPERTIES
@@ -70,7 +70,7 @@ if (BUILD_TESTING)
     )
     target_compile_features(pairinteraction_backend_test
         PRIVATE
-            cxx_std_17
+            cxx_std_20 # TODO is this fine or better -fconcepts?
     )
     set_target_properties(pairinteraction_backend_test
         PROPERTIES
