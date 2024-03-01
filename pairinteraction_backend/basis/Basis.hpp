@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "ket/Ket.hpp"
+#include "utils/Traits.hpp"
 
 /**
  * @struct make_real
@@ -63,17 +64,14 @@ using real_t = typename make_real<T>::type;
 
 #include "ket/KetAtom.hpp"
 
-template <typename T>
-class BasisAtom;
+template <typename Derived> class Basis;
 
-template <typename T>
-struct Crtp_Type_Traits;
+namespace internal {
 
-template <typename T>
-struct Crtp_Type_Traits<BasisAtom<T>> {
-    using MyKet_type = KetAtom<real_t<T>>;
-    using MyScalar_type = T;
-};
+template <typename Derived>
+struct traits<Basis<Derived>> : traits<Derived> {};
+
+}
 
 // template <typename Derived>
 // class Basis;
@@ -90,9 +88,10 @@ struct Crtp_Type_Traits<BasisAtom<T>> {
 template <typename Derived>
 class Basis {
 public:
-    using Scalar = typename Crtp_Type_Traits<Derived>::MyScalar_type; // TODO remove
-    using Real = real_t<Scalar>;                                      // TODO remove
-    using KetType = Crtp_Type_Traits<Derived>::MyKet_type;            // TODO remove
+    using Scalar = typename internal::traits<Derived>::Scalar;   // TODO remove
+    using Real = real_t<Scalar>;                                 // TODO remove
+    using KetType = typename internal::traits<Derived>::KetType; // TODO remove
+    //using KetType = decltype(std::declval<Derived>().get_ket(std::declval<size_t>())); // TODO remove
 
     const Derived &derived() const;
     const auto &get_ket(size_t index) const;
@@ -129,8 +128,3 @@ private:
     Eigen::SparseMatrix<Scalar> coefficients;
     bool is_standard_basis;
 };
-
-extern template class Basis<BasisAtom<float>>;
-extern template class Basis<BasisAtom<double>>;
-extern template class Basis<BasisAtom<std::complex<float>>>;
-extern template class Basis<BasisAtom<std::complex<double>>>;

@@ -10,6 +10,18 @@
 template <typename T>
 class BasisAtomCreator;
 
+template <typename Scalar> class BasisAtom;
+
+namespace internal {
+
+template <typename Scalar_>
+struct traits<BasisAtom<Scalar_>> {
+    using Scalar = Scalar_;
+    using KetType = KetAtom<real_t<Scalar_>>;
+};
+
+}
+
 /**
  * @class BasisAtom
  *
@@ -20,9 +32,11 @@ class BasisAtomCreator;
 template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
 public:
+    using Type = BasisAtom<Scalar>;
+    using Base = Basis<BasisAtom<Scalar>>;
     using Real = real_t<Scalar>;
     using MyScalar = Scalar;
-    using MyKet = KetAtom<real_t<Scalar>>;
+    using MyKet = typename internal::traits<Type>::KetType;
     using KetPtrVec = std::vector<std::shared_ptr<const KetAtom<Real>>>;
 
     const KetPtrVec &get_kets() const { return kets; } // TODO to source or remove
@@ -36,6 +50,11 @@ private:
     BasisAtom(KetPtrVec &&kets);
     KetPtrVec kets; // TODO move to Basis.hpp
 };
+
+extern template class Basis<BasisAtom<float>>;
+extern template class Basis<BasisAtom<double>>;
+extern template class Basis<BasisAtom<std::complex<float>>>;
+extern template class Basis<BasisAtom<std::complex<double>>>;
 
 extern template class BasisAtom<float>;
 extern template class BasisAtom<double>;
