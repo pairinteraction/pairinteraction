@@ -1,4 +1,6 @@
-#include "basis/BasisAtomCreator.hpp"
+#include "basis/BasisAtomCreator.hpp" // TODO all includes needed?
+#include "basis/Basis.hpp"
+#include "basis/BasisAtom.hpp"
 #include "ket/Ket.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
@@ -64,7 +66,7 @@ BasisAtom<T> BasisAtomCreator<T>::create() const {
 
     // TODO perform database request
 
-    std::vector<std::shared_ptr<const Ket<real_t<T>>>> kets;
+    std::vector<std::shared_ptr<const KetAtom<real_t<T>>>> kets;
     kets.reserve(2);
     kets.push_back(std::make_shared<const KetAtom<real_t<T>>>(
         KetAtomCreator<real_t<T>>(species, 60, 1, 0.5, -0.5).create()));
