@@ -19,4 +19,6 @@ Note that this part of the documentation is under construction, the `tutorials`_
     :recursive:
 
     validator
+    simulator
+    simulator_old
     pairinteraction_backend_old
