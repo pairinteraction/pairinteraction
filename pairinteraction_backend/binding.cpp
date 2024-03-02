@@ -2,6 +2,4 @@
 
 #include <nanobind/nanobind.h>
 
-NB_MODULE(binding, m) {
-    bind_ket(m);
-}
+NB_MODULE(binding, m) { bind_ket(m); }

@@ -2,32 +2,32 @@
 
 #include <limits>
 
-template <typename T>
-Ket<T>::Ket(T energy, float f, float m, int p, std::string label)
+template <typename Real>
+Ket<Real>::Ket(Real energy, float f, float m, int p, std::string label)
     : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p), label(label) {}
 
-template <typename T>
-T Ket<T>::get_energy() const {
+template <typename Real>
+Real Ket<Real>::get_energy() const {
     return energy;
 }
 
-template <typename T>
-float Ket<T>::get_quantum_number_f() const {
+template <typename Real>
+float Ket<Real>::get_quantum_number_f() const {
     return quantum_number_f;
 }
 
-template <typename T>
-float Ket<T>::get_quantum_number_m() const {
+template <typename Real>
+float Ket<Real>::get_quantum_number_m() const {
     return quantum_number_m;
 }
 
-template <typename T>
-int Ket<T>::get_parity() const {
+template <typename Real>
+int Ket<Real>::get_parity() const {
     return parity;
 }
 
-template <typename T>
-std::string Ket<T>::get_label() const {
+template <typename Real>
+std::string Ket<Real>::get_label() const {
     return label;
 }
 

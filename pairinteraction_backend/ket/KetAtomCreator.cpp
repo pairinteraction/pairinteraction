@@ -3,74 +3,84 @@
 #include <cmath>
 #include <limits>
 
-template <typename T>
-KetAtomCreator<T>::KetAtomCreator(std::string species) : species(species) {}
+template <typename Real>
+KetAtomCreator<Real>::KetAtomCreator(std::string species) : species(species) {}
 
-template <typename T>
-KetAtomCreator<T>::KetAtomCreator(std::string species, int n, T l, float j, float m)
+template <typename Real>
+KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, float j, float m)
     : species(species), quantum_number_n(n), quantum_number_l(l), quantum_number_f(j),
       quantum_number_j(j), quantum_number_m(m), quantum_number_s(0.5) {}
 
-template <typename T>
-void KetAtomCreator<T>::set_energy(T value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_energy(Real value) {
     energy.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_f(float value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_f(float value) {
     quantum_number_f.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_m(float value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_m(float value) {
     quantum_number_m.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_parity(int value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_parity(int value) {
     parity.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_n(int value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_n(int value) {
     quantum_number_n.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_nu(T value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_nu(Real value) {
     quantum_number_nu.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_l(T value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_l(Real value) {
     quantum_number_l.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_s(T value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_s(Real value) {
     quantum_number_s.emplace(value);
+    return *this;
 }
 
-template <typename T>
-void KetAtomCreator<T>::set_quantum_number_j(T value) {
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_j(Real value) {
     quantum_number_j.emplace(value);
+    return *this;
 }
 
-template <typename T>
-KetAtom<T> KetAtomCreator<T>::create() const {
+template <typename Real>
+KetAtom<Real> KetAtomCreator<Real>::create() const {
 
     // TODO perform database request
 
-    return KetAtom<T>(energy.value_or(std::numeric_limits<T>::quiet_NaN()),
-                      quantum_number_f.value_or(std::numeric_limits<float>::quiet_NaN()),
-                      quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
-                      parity.value_or(std::pow(
-                          -1, quantum_number_l.value_or(std::numeric_limits<T>::quiet_NaN()))),
-                      "", species, quantum_number_n.value_or(0),
-                      quantum_number_nu.value_or(std::numeric_limits<T>::quiet_NaN()), 0,
-                      quantum_number_l.value_or(std::numeric_limits<T>::quiet_NaN()), 0,
-                      quantum_number_s.value_or(std::numeric_limits<T>::quiet_NaN()), 0,
-                      quantum_number_j.value_or(std::numeric_limits<T>::quiet_NaN()), 0);
+    return KetAtom<Real>(
+        energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
+        quantum_number_f.value_or(std::numeric_limits<float>::quiet_NaN()),
+        quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
+        parity.value_or(
+            std::pow(-1, quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()))),
+        "", species, quantum_number_n.value_or(0),
+        quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
+        quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
+        quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
+        quantum_number_j.value_or(std::numeric_limits<Real>::quiet_NaN()), 0);
 }
 
 // Explicit instantiations
