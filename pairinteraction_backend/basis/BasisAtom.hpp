@@ -1,26 +1,25 @@
 #pragma once
 
 #include "basis/Basis.hpp"
-#include "basis/BasisAtomCreator.hpp"
 #include "ket/KetAtom.hpp"
+#include "utils/Traits.hpp"
 
 #include <complex>
-#include <limits>
 
+// Specialize BasisTraits for BasisAtom
 template <typename T>
 class BasisAtomCreator;
 
-template <typename Scalar> class BasisAtom;
+template <typename Scalar>
+class BasisAtom;
 
-namespace internal {
-
-template <typename Scalar_>
-struct traits<BasisAtom<Scalar_>> {
-    using Scalar = Scalar_;
-    using KetType = KetAtom<real_t<Scalar_>>;
+template <typename Scalar>
+struct internal::BasisTraits<BasisAtom<Scalar>> {
+    using scalar_t = Scalar;
+    using real_t = typename internal::NumTraits<Scalar>::real_t;
+    using ket_t = KetAtom<real_t>;
+    using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
-
-}
 
 /**
  * @class BasisAtom
@@ -33,28 +32,12 @@ template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
 public:
     using Type = BasisAtom<Scalar>;
-    using Base = Basis<BasisAtom<Scalar>>;
-    using Real = real_t<Scalar>;
-    using MyScalar = Scalar;
-    using MyKet = typename internal::traits<Type>::KetType;
-    using KetPtrVec = std::vector<std::shared_ptr<const KetAtom<Real>>>;
-
-    const KetPtrVec &get_kets() const { return kets; } // TODO to source or remove
-
-    const KetAtom<Real> &get_ket(size_t index) const {
-        return *kets[index];
-    } // TODO to source or remove
+    using ketvec_t = typename internal::BasisTraits<Type>::ketvec_t;
 
 private:
     friend class BasisAtomCreator<Scalar>;
-    BasisAtom(KetPtrVec &&kets);
-    KetPtrVec kets; // TODO move to Basis.hpp
+    BasisAtom(ketvec_t &&kets);
 };
-
-extern template class Basis<BasisAtom<float>>;
-extern template class Basis<BasisAtom<double>>;
-extern template class Basis<BasisAtom<std::complex<float>>>;
-extern template class Basis<BasisAtom<std::complex<double>>>;
 
 extern template class BasisAtom<float>;
 extern template class BasisAtom<double>;

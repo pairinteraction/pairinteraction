@@ -6,7 +6,7 @@
 
 #include "ket/KetAtom.hpp"
 
-template <typename T>
+template <typename Real>
 class KetAtom;
 
 /**
@@ -14,35 +14,35 @@ class KetAtom;
  *
  * @brief Builder class for creating KetAtom objects.
  *
- * @tparam T Real number type.
+ * @tparam Real Real number type.
  */
-template <typename T>
+template <typename Real>
 class KetAtomCreator {
 public:
     KetAtomCreator(std::string species);
-    KetAtomCreator(std::string species, int n, T l, float j, float m);
-    void set_energy(T value);
-    void set_quantum_number_f(float value);
-    void set_quantum_number_m(float value);
-    void set_parity(int value);
-    void set_quantum_number_n(int value);
-    void set_quantum_number_nu(T value);
-    void set_quantum_number_l(T value);
-    void set_quantum_number_s(T value);
-    void set_quantum_number_j(T value);
-    KetAtom<T> create() const;
+    KetAtomCreator(std::string species, int n, Real l, float j, float m);
+    KetAtomCreator<Real> &set_energy(Real value);
+    KetAtomCreator<Real> &set_quantum_number_f(float value);
+    KetAtomCreator<Real> &set_quantum_number_m(float value);
+    KetAtomCreator<Real> &set_parity(int value);
+    KetAtomCreator<Real> &set_quantum_number_n(int value);
+    KetAtomCreator<Real> &set_quantum_number_nu(Real value);
+    KetAtomCreator<Real> &set_quantum_number_l(Real value);
+    KetAtomCreator<Real> &set_quantum_number_s(Real value);
+    KetAtomCreator<Real> &set_quantum_number_j(Real value);
+    KetAtom<Real> create() const;
 
 private:
     std::string species;
-    std::optional<T> energy;
+    std::optional<Real> energy;
     std::optional<float> quantum_number_f;
     std::optional<float> quantum_number_m;
     std::optional<int> parity;
     std::optional<int> quantum_number_n;
-    std::optional<T> quantum_number_nu;
-    std::optional<T> quantum_number_l;
-    std::optional<T> quantum_number_s;
-    std::optional<T> quantum_number_j;
+    std::optional<Real> quantum_number_nu;
+    std::optional<Real> quantum_number_l;
+    std::optional<Real> quantum_number_s;
+    std::optional<Real> quantum_number_j;
 };
 
 extern template class KetAtomCreator<float>;

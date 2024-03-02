@@ -1,41 +1,42 @@
 #include "ket/KetAtom.hpp"
 #include <string>
 
-template <typename T>
-KetAtom<T>::KetAtom(T energy, float f, float m, int p, std::string label, std::string species,
-                    int n, T nu_exp, T nu_std, T l_exp, T l_std, T s_exp, T s_std, T j_exp, T j_std)
-    : Ket<T>(energy, f, m, p, label), species(species), quantum_number_n(n),
+template <typename Real>
+KetAtom<Real>::KetAtom(Real energy, float f, float m, int p, std::string label, std::string species,
+                       int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp,
+                       Real s_std, Real j_exp, Real j_std)
+    : Ket<Real>(energy, f, m, p, label), species(species), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
       quantum_number_j_exp(j_exp), quantum_number_j_std(j_std) {}
 
-template <typename T>
-std::string KetAtom<T>::get_species() const {
+template <typename Real>
+std::string KetAtom<Real>::get_species() const {
     return species;
 }
 
-template <typename T>
-int KetAtom<T>::get_quantum_number_n() const {
+template <typename Real>
+int KetAtom<Real>::get_quantum_number_n() const {
     return quantum_number_n;
 }
 
-template <typename T>
-T KetAtom<T>::get_quantum_number_nu() const {
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_nu() const {
     return quantum_number_nu_exp;
 }
 
-template <typename T>
-T KetAtom<T>::get_quantum_number_l() const {
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_l() const {
     return quantum_number_l_exp;
 }
 
-template <typename T>
-T KetAtom<T>::get_quantum_number_s() const {
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_s() const {
     return quantum_number_s_exp;
 }
 
-template <typename T>
-T KetAtom<T>::get_quantum_number_j() const {
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_j() const {
     return quantum_number_j_exp;
 }
 
