@@ -78,6 +78,7 @@ add_custom_target(livehtml
   COMMAND
     # sphinx-autobuild
     "${SPHINX_AUTOBUILD_EXECUTABLE}"
+    --ignore "_autosummary"
     -b html
     -c "${SPHINX_BASE}"
     -d "${SPHINX_CACHE_DIR}"
