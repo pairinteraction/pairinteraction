@@ -16,6 +16,11 @@ TODOs
 - Rename examples folder in sphinx, e.g. examples_cpp to examples/pairinteraction_backend
 - Do we need the subfolders cpp and python below pairinteraction_backend?
 
+Literature
+----------
+
+- Angular Momentum Coupling and Rabi Frequencies for Simple Atomic Transitions, https://arxiv.org/pdf/0804.4528.pdf
+
 Test of the `mermaid` Support
 -----------------------------
 
