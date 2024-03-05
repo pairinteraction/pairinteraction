@@ -85,11 +85,16 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 
 // Explicit instantiations
 #include "basis/BasisAtom.hpp"
+#include "basis/BasisClassicalLight.hpp"
 
 template class Basis<BasisAtom<float>>;
 template class Basis<BasisAtom<double>>;
 template class Basis<BasisAtom<std::complex<float>>>;
 template class Basis<BasisAtom<std::complex<double>>>;
+template class Basis<BasisClassicalLight<float>>;
+template class Basis<BasisClassicalLight<double>>;
+template class Basis<BasisClassicalLight<std::complex<float>>>;
+template class Basis<BasisClassicalLight<std::complex<double>>>;
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Test cases

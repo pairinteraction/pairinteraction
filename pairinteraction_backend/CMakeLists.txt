@@ -2,7 +2,7 @@
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
 list(FILTER SOURCES EXCLUDE REGEX ".*main\\.cpp$")
 
-add_library(pairinteraction_backend OBJECT ${SOURCES})
+add_library(pairinteraction_backend SHARED ${SOURCES})
 
 target_include_directories(pairinteraction_backend
     PUBLIC
@@ -39,34 +39,25 @@ set_target_properties(pairinteraction_backend
 )
 
 target_compile_options(pairinteraction_backend
-    PUBLIC
-        $<$<CXX_COMPILER_ID:MSVC>:/bigobj>
-        -fPIC
+    PRIVATE
+        $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>
 )
 
 target_link_options(pairinteraction_backend
-    PUBLIC
+    PRIVATE
         $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
         $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
         $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
 )
 
-# Build a shared library
-add_library(pairinteraction_backend_shared SHARED $<TARGET_OBJECTS:pairinteraction_backend>)
-target_link_libraries(pairinteraction_backend_shared
-PRIVATE
-    nanobind-static
-)
-
 # Build an executable for running the tests
 if (BUILD_TESTING)
-    add_executable(pairinteraction_backend_test main.cpp
-        $<TARGET_OBJECTS:pairinteraction_backend>
-    )
+    add_executable(pairinteraction_backend_test main.cpp)
 
     target_link_libraries(pairinteraction_backend_test
         PRIVATE
-            nanobind-static
+            pairinteraction_backend
+            Python::Python
     )
 
     # Add tests
