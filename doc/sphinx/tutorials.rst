@@ -33,10 +33,12 @@ Python API
 
 .. rubric:: Introduction
 
-Here we show the basic usage of the API. The tutorial introduces the basic concepts and covers topics such as the calculation of C3/C6 coefficients, non-perturbative calculations, and effective Hamiltonians.
+Here we show the usage of the API. The first tutorial serves as a quick start guide. The second tutorial provides an in-depth introduction, covering
+the basic concepts and topics such as the calculation of C3/C6 coefficients, non-perturbative calculations, and effective Hamiltonians.
 
 .. nbgallery::
 
+   examples_python/quick_start
    examples_python/introduction
 
 

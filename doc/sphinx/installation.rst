@@ -4,26 +4,26 @@ Installation
 ============
 
 This guide provides installation instructions for the `pairinteraction` software, catering to users of all levels.
-It offers two primary installation methods:
+It offers three different installation methods:
 
-- **Binary Installers:** Ideal for most users, this method employs `pip` for straightforward installation from the
+- **Using pip:** Ideal for most users, this method employs `pip` for straightforward installation from the
   Python Package Index, providing access to the software's Python library and graphical interface.
-  OS-specific alternatives are also provided.
+
+- **Binary Installers:** If you are mainly interested in the graphical interface, you can download
+  an installer for pairinteraction (Windows, OS X) or use the `Flatpak` package manager (GNU/Linux).
 
 - **Building from Source:** Aimed at developers and experienced users, this approach involves compiling the software from source,
   detailing necessary dependencies, and offering steps for either an automated build with `poetry` / `pip` or a manual build.
   The latter allows for additional customization and the execution of different targets, such as generating documentation.
 
-Binary Installers
------------------
-
-All binary builds come with an easy-to-use graphical user interface for pair potential calculations, taking into
-account electric and magnetic fields. In addition, a Python library is provided which can be used to
+All methods install the graphical user interface of pairinteraction. It allows for calculating pair potential, taking into
+account electric and magnetic fields. In addition, all methods except for the binary installers, provide a Python library which can be used to
 write your own code and have more fine-grained control over what pairinteraction does. Quantities as matrix elements,
 eigenenergies, or excitation dynamics can be calculated. For usage examples
-visit the :ref:`tutorials <Tutorials>` section of the documentation or
-download the :github:`Python <tree/master/doc/sphinx/examples_python>`
-example programs.
+visit the :ref:`tutorials <Tutorials>` section of the documentation.
+
+Using pip
+---------
 
 We recommend installing pairinteraction from the `Python Package Index`_ by calling
 
@@ -38,8 +38,11 @@ The graphical user interface can be started by executing
 
     start_pairinteraction_gui
 
-Alternatively, if you are mainly interested in the graphical user interface, you can install a package from :github:`GitHub Releases <releases>` (Windows, OS X) or
-from `Flatpak`_ (GNU/Linux). For the installation of the Flatpak package, you have to `install Flatpak`_ first and
+Binary Installers
+-----------------
+
+Alternatively, if you are mainly interested in the graphical user interface, you can download an installer for pairinteraction from :github:`GitHub Releases <releases>` (Windows, OS X) or
+use the `Flatpak`_ package manager (GNU/Linux). For the installation of the Flatpak package, you have to `install Flatpak`_ first and
 then run ``flatpak install org.pairinteraction.Pairinteraction`` from the command line.
 
 .. _Python Package Index: https://pypi.org/project/pairinteraction
@@ -164,13 +167,15 @@ Running the different build commands manually has the advantage that you can pas
 +---------------------+--------------------------------------+---------+
 | ``WITH_BENCH``      | Compile the benchmarks               | OFF     |
 +---------------------+--------------------------------------+---------+
-| ``WITH_DMG``        | Generate a DMG file (Mac OS X only)  | OFF     |
+| ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
+|                     | only)                                |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
 +---------------------+--------------------------------------+---------+
 | ``WITH_LTO``        | Build with link-time optimization    | OFF     |
 +---------------------+--------------------------------------+---------+
-| ``WITH_CLANG_TIDY`` | Run Clang-Tidy during compilation    | OFF     |
+| ``WITH_CLANG_TIDY`` | Run the C++ linter tool Clang-Tidy   | OFF     |
+|                     | during compilation                   |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_JULIA``      | Build a Julia compatible .so         | OFF     |
 +---------------------+--------------------------------------+---------+
