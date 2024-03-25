@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1710722715025,
+  "lastUpdate": 1711327560147,
   "repoUrl": "https://github.com/pairinteraction/pairinteraction",
   "entries": {
     "C++ Benchmark": [
@@ -752,6 +752,52 @@ window.BENCHMARK_DATA = {
             "value": 34772544.687498905,
             "unit": "ns/iter",
             "extra": "iterations: 16\ncpu: 34770651.5 ns\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Henri Menke",
+            "username": "hmenke",
+            "email": "henri@henrimenke.de"
+          },
+          "committer": {
+            "name": "Henri Menke",
+            "username": "hmenke",
+            "email": "henri@henrimenke.de"
+          },
+          "id": "40b26692abd9aaefe8d43db864dbd82dafd05644",
+          "message": "Folder dist is reserved by pip",
+          "timestamp": "2024-02-26T08:39:25Z",
+          "url": "https://github.com/pairinteraction/pairinteraction/commit/40b26692abd9aaefe8d43db864dbd82dafd05644"
+        },
+        "date": 1711327559541,
+        "tool": "googlecpp",
+        "benches": [
+          {
+            "name": "benchmark_integration",
+            "value": 78733637.0000032,
+            "unit": "ns/iter",
+            "extra": "iterations: 7\ncpu: 78730622.85714288 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_zheev",
+            "value": 48217975.61538688,
+            "unit": "ns/iter",
+            "extra": "iterations: 13\ncpu: 48161135.53846155 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_zheevd",
+            "value": 35895845.99999877,
+            "unit": "ns/iter",
+            "extra": "iterations: 19\ncpu: 35891505.473684214 ns\nthreads: 1"
+          },
+          {
+            "name": "BM_Eigen",
+            "value": 53512531.58333691,
+            "unit": "ns/iter",
+            "extra": "iterations: 12\ncpu: 53468485.08333335 ns\nthreads: 1"
           }
         ]
       }
