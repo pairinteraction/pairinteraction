@@ -1,0 +1,1145 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Introduction to the pairinteraction Library &mdash; pairinteraction 0.9.9 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script crossorigin="anonymous" integrity="sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==" referrerpolicy="no-referrer" src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+        <script >mermaid.initialize({startOnLoad:true});</script>
+    
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../index.html" class="icon icon-home"> pairinteraction
+          
+
+          
+            
+            <img src="../_static/logo48x48.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.9.9
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Documentation</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">1. Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials.html">2. Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../development.html">3. Development</a></li>
+</ul>
+<p class="caption"><span class="caption-text">Indices and Tables</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules.html">Modules</a></li>
+</ul>
+
+            
+          
+<style>
+a.gitbutton {
+  display: block;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #fff;
+  padding-top: 10px;
+  padding-left: 85px;
+  padding-right: 0px;
+  margin: 22px;
+  width: 240px;
+  height: 60px;
+  background: transparent url("../_static/buttons/github.svg") 0 0 no-repeat;
+}
+a.gitbutton small {
+  display: block;
+  font-size: 11px;
+}
+button.toctree-expand {
+  display: none;
+}
+</style>
+<a href="https://github.com/pairinteraction/pairinteraction/releases" class="gitbutton">Download<small>pairinteraction on GitHub</small></a>
+
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">pairinteraction</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Introduction to the pairinteraction Library</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="../_sources/examples_python/introduction.nbconvert.ipynb.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  
+<style>
+/* CSS for nbsphinx extension */
+
+/* remove conflicting styling from Sphinx themes */
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt *,
+div.nbinput.container div.input_area pre,
+div.nboutput.container div.output_area pre,
+div.nbinput.container div.input_area .highlight,
+div.nboutput.container div.output_area .highlight {
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+}
+
+div.nbinput.container > div[class*=highlight],
+div.nboutput.container > div[class*=highlight] {
+    margin: 0;
+}
+
+div.nbinput.container div.prompt *,
+div.nboutput.container div.prompt * {
+    background: none;
+}
+
+div.nboutput.container div.output_area .highlight,
+div.nboutput.container div.output_area pre {
+    background: unset;
+}
+
+div.nboutput.container div.output_area div.highlight {
+    color: unset;  /* override Pygments text color */
+}
+
+/* avoid gaps between output lines */
+div.nboutput.container div[class*=highlight] pre {
+    line-height: normal;
+}
+
+/* input/output containers */
+div.nbinput.container,
+div.nboutput.container {
+    display: -webkit-flex;
+    display: flex;
+    align-items: flex-start;
+    margin: 0;
+    width: 100%;
+}
+@media (max-width: 540px) {
+    div.nbinput.container,
+    div.nboutput.container {
+        flex-direction: column;
+    }
+}
+
+/* input container */
+div.nbinput.container {
+    padding-top: 5px;
+}
+
+/* last container */
+div.nblast.container {
+    padding-bottom: 5px;
+}
+
+/* input prompt */
+div.nbinput.container div.prompt pre {
+    color: #307FC1;
+}
+
+/* output prompt */
+div.nboutput.container div.prompt pre {
+    color: #BF5B3D;
+}
+
+/* all prompts */
+div.nbinput.container div.prompt,
+div.nboutput.container div.prompt {
+    width: 4.5ex;
+    padding-top: 5px;
+    position: relative;
+    user-select: none;
+}
+
+div.nbinput.container div.prompt > div,
+div.nboutput.container div.prompt > div {
+    position: absolute;
+    right: 0;
+    margin-right: 0.3ex;
+}
+
+@media (max-width: 540px) {
+    div.nbinput.container div.prompt,
+    div.nboutput.container div.prompt {
+        width: unset;
+        text-align: left;
+        padding: 0.4em;
+    }
+    div.nboutput.container div.prompt.empty {
+        padding: 0;
+    }
+
+    div.nbinput.container div.prompt > div,
+    div.nboutput.container div.prompt > div {
+        position: unset;
+    }
+}
+
+/* disable scrollbars on prompts */
+div.nbinput.container div.prompt pre,
+div.nboutput.container div.prompt pre {
+    overflow: hidden;
+}
+
+/* input/output area */
+div.nbinput.container div.input_area,
+div.nboutput.container div.output_area {
+    -webkit-flex: 1;
+    flex: 1;
+    overflow: auto;
+}
+@media (max-width: 540px) {
+    div.nbinput.container div.input_area,
+    div.nboutput.container div.output_area {
+        width: 100%;
+    }
+}
+
+/* input area */
+div.nbinput.container div.input_area {
+    border: 1px solid #e0e0e0;
+    border-radius: 2px;
+    /*background: #f5f5f5;*/
+}
+
+/* override MathJax center alignment in output cells */
+div.nboutput.container div[class*=MathJax] {
+    text-align: left !important;
+}
+
+/* override sphinx.ext.imgmath center alignment in output cells */
+div.nboutput.container div.math p {
+    text-align: left;
+}
+
+/* standard error */
+div.nboutput.container div.output_area.stderr {
+    background: #fdd;
+}
+
+/* ANSI colors */
+.ansi-black-fg { color: #3E424D; }
+.ansi-black-bg { background-color: #3E424D; }
+.ansi-black-intense-fg { color: #282C36; }
+.ansi-black-intense-bg { background-color: #282C36; }
+.ansi-red-fg { color: #E75C58; }
+.ansi-red-bg { background-color: #E75C58; }
+.ansi-red-intense-fg { color: #B22B31; }
+.ansi-red-intense-bg { background-color: #B22B31; }
+.ansi-green-fg { color: #00A250; }
+.ansi-green-bg { background-color: #00A250; }
+.ansi-green-intense-fg { color: #007427; }
+.ansi-green-intense-bg { background-color: #007427; }
+.ansi-yellow-fg { color: #DDB62B; }
+.ansi-yellow-bg { background-color: #DDB62B; }
+.ansi-yellow-intense-fg { color: #B27D12; }
+.ansi-yellow-intense-bg { background-color: #B27D12; }
+.ansi-blue-fg { color: #208FFB; }
+.ansi-blue-bg { background-color: #208FFB; }
+.ansi-blue-intense-fg { color: #0065CA; }
+.ansi-blue-intense-bg { background-color: #0065CA; }
+.ansi-magenta-fg { color: #D160C4; }
+.ansi-magenta-bg { background-color: #D160C4; }
+.ansi-magenta-intense-fg { color: #A03196; }
+.ansi-magenta-intense-bg { background-color: #A03196; }
+.ansi-cyan-fg { color: #60C6C8; }
+.ansi-cyan-bg { background-color: #60C6C8; }
+.ansi-cyan-intense-fg { color: #258F8F; }
+.ansi-cyan-intense-bg { background-color: #258F8F; }
+.ansi-white-fg { color: #C5C1B4; }
+.ansi-white-bg { background-color: #C5C1B4; }
+.ansi-white-intense-fg { color: #A1A6B2; }
+.ansi-white-intense-bg { background-color: #A1A6B2; }
+
+.ansi-default-inverse-fg { color: #FFFFFF; }
+.ansi-default-inverse-bg { background-color: #000000; }
+
+.ansi-bold { font-weight: bold; }
+.ansi-underline { text-decoration: underline; }
+
+
+div.nbinput.container div.input_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight] > pre,
+div.nboutput.container div.output_area div[class*=highlight].math,
+div.nboutput.container div.output_area.rendered_html,
+div.nboutput.container div.output_area > div.output_javascript,
+div.nboutput.container div.output_area:not(.rendered_html) > img{
+    padding: 5px;
+    margin: 0;
+}
+
+/* fix copybtn overflow problem in chromium (needed for 'sphinx_copybutton') */
+div.nbinput.container div.input_area > div[class^='highlight'],
+div.nboutput.container div.output_area > div[class^='highlight']{
+    overflow-y: hidden;
+}
+
+/* hide copybtn icon on prompts (needed for 'sphinx_copybutton') */
+.prompt a.copybtn {
+    display: none;
+}
+
+/* Some additional styling taken form the Jupyter notebook CSS */
+div.rendered_html table {
+  border: none;
+  border-collapse: collapse;
+  border-spacing: 0;
+  color: black;
+  font-size: 12px;
+  table-layout: fixed;
+}
+div.rendered_html thead {
+  border-bottom: 1px solid black;
+  vertical-align: bottom;
+}
+div.rendered_html tr,
+div.rendered_html th,
+div.rendered_html td {
+  text-align: right;
+  vertical-align: middle;
+  padding: 0.5em 0.5em;
+  line-height: normal;
+  white-space: normal;
+  max-width: none;
+  border: none;
+}
+div.rendered_html th {
+  font-weight: bold;
+}
+div.rendered_html tbody tr:nth-child(odd) {
+  background: #f5f5f5;
+}
+div.rendered_html tbody tr:hover {
+  background: rgba(66, 165, 245, 0.2);
+}
+
+/* CSS overrides for sphinx_rtd_theme */
+
+/* 24px margin */
+.nbinput.nblast.container,
+.nboutput.nblast.container {
+    margin-bottom: 19px;  /* padding has already 5px */
+}
+
+/* ... except between code cells! */
+.nblast.container + .nbinput.container {
+    margin-top: -19px;
+}
+
+.admonition > p:before {
+    margin-right: 4px;  /* make room for the exclamation icon */
+}
+
+/* Fix math alignment, see https://github.com/rtfd/sphinx_rtd_theme/pull/686 */
+.math {
+    text-align: unset;
+}
+</style>
+<style>
+    .nbinput .prompt,
+    .nboutput .prompt {
+        display: none;
+    }
+</style>
+
+<div class="admonition note">
+  This page was generated from the Jupyter notebook
+  <a class="reference external" href="introduction.nbconvert.ipynb">introduction.nbconvert.ipynb</a>.
+</div><div class="section" id="Introduction-to-the-pairinteraction-Library">
+<h1>Introduction to the pairinteraction Library<a class="headerlink" href="#Introduction-to-the-pairinteraction-Library" title="Permalink to this headline">¶</a></h1>
+<p>In addition to the <a class="reference external" href="../_static/slides/screen-win64.png">graphical user interface</a>, the pairinteraction software includes a library. The library can be used to write your own code and have more fine-grained control over what pairinteraction does, e.g. for searching optimal experimental parameters or calculating effective Hamiltonians and simulating Rydberg experiments.</p>
+<p>The library is fully written in C++ to obtain high performance. It provides a Python API generated with <a class="reference external" href="http://www.swig.org">SWIG</a> so that one can work with all the functionality of the library in Python. The Python functions mirror the eponymous wrapped C++ functions. Thus, it is straight forward to transfer code between the two programming languages. The following introduction, which can be
+<a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/doc/sphinx/examples_python/introduction.ipynb">downloaded</a> as a Jupyter notebook, shows the basic usage of the pairinteraction library in Python 3. The physics behind the presented calculations is reviewed in the pairinteraction paper <a class="reference external" href="https://doi.org/10.1088/1361-6455/aa743a">J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)</a>.</p>
+<div class="section" id="Units">
+<h2>Units<a class="headerlink" href="#Units" title="Permalink to this headline">¶</a></h2>
+<p>In the unit system used by the pairinteraction software, energies are given as frequencies in <span class="math notranslate nohighlight">\(\text{GHz}\)</span>. To obtain actual energies, the frequencies must be multiplied by Planck’s constant <span class="math notranslate nohighlight">\(h\)</span>. Length has the unit <span class="math notranslate nohighlight">\(\mu\text{m}\)</span>, the magnetic field <span class="math notranslate nohighlight">\(\text{G}\)</span>, and the electric field <span class="math notranslate nohighlight">\(\text{V/cm}\)</span>.</p>
+</div>
+<div class="section" id="Preparations">
+<h2>Preparations<a class="headerlink" href="#Preparations" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="Installation">
+<h3>Installation<a class="headerlink" href="#Installation" title="Permalink to this headline">¶</a></h3>
+<p>For using the Python API of the pairinteraction library, Python 3 must be installed. For Windows or macOS, we recommend the installation of the Python 3 distribution <a class="reference external" href="https://www.anaconda.com/distribution/">Anaconda</a>. Then, the pairinteraction library and all its dependencies can be installed via pip by calling <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">pairinteraction</span></code> from the command line.</p>
+<p>Alternatively, we can install the pairinteraction library as part of the binary builds of the pairinteraction software available through <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/releases">GitHub Releases</a>. However, for Windows and macOS, this requires manual <a class="reference internal" href="../installation.html#python-library"><span class="std std-ref">installation of dependencies and modifying the Python path</span></a>. It is also possible to <a class="reference internal" href="../installation.html#building-from-source"><span class="std std-ref">build pairinteraction from source</span></a>.</p>
+</div>
+<div class="section" id="Importing-the-Library">
+<h3>Importing the Library<a class="headerlink" href="#Importing-the-Library" title="Permalink to this headline">¶</a></h3>
+<p>Our code starts with loading the required modules for the calculations. We use the module <code class="docutils literal notranslate"><span class="pre">pireal</span></code> of the pairinteraction library as the calculations shown in this introduction require only real-valued matrix elements (if one considers electric or magnetic fields with a non-zero <span class="math notranslate nohighlight">\(y\)</span>-value, complex matrix elements occur due to the definition of the spherical basis and one must use <code class="docutils literal notranslate"><span class="pre">picomplex</span></code>).</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># We call an IPython magic function to make the output of plotting commands displayed inline.</span>
+<span class="o">%</span><span class="k">matplotlib</span> inline
+
+<span class="c1"># Arrays</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Plotting</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="c1"># Operating system interfaces</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># If the pairinteraction library was not installed via pip or using a Linux package manager,</span>
+<span class="c1"># we have to manually add the library path to the Python package search path. If the library</span>
+<span class="c1"># was for example installed using the Windows or macOS installers from GitHub releases, this</span>
+<span class="c1"># can be done by uncomment the following code block:</span>
+<span class="c1">#</span>
+<span class="c1"># import sys</span>
+<span class="c1"># if sys.platform == &quot;darwin&quot;:</span>
+<span class="c1">#     sys.path.append(&quot;/Applications/pairinteraction.app/Contents/Resources&quot;)</span>
+<span class="c1"># elif sys.platform == &quot;win32&quot;:</span>
+<span class="c1">#     sys.path.append(&quot;C:\Program Files\pairinteraction&quot;)</span>
+
+<span class="c1"># pairinteraction :-)</span>
+<span class="kn">from</span> <span class="nn">pairinteraction</span> <span class="kn">import</span> <span class="n">pireal</span> <span class="k">as</span> <span class="n">pi</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Creating-a-Cache-for-Matrix-Elements">
+<h3>Creating a Cache for Matrix Elements<a class="headerlink" href="#Creating-a-Cache-for-Matrix-Elements" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class provides methods for evaluating matrix elements. Each Python script using the pairinteraction library typically requires one instance of this class. The instance is then passed to every object of the pairinteraction library which needs to evaluates matrix elements. To speed up calculations, the intermediate results of the calculation of matrix elements are cached into memory. If a directory name is passed to the constructor of the class, the specified directory
+is used to store a SQLite database which holds the intermediate results, making them available to future program runs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="s2">&quot;./cache&quot;</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s2">&quot;./cache&quot;</span><span class="p">)</span>
+<span class="n">cache</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">MatrixElementCache</span><span class="p">(</span><span class="s2">&quot;./cache&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Defining-States">
+<h2>Defining States<a class="headerlink" href="#Defining-States" title="Permalink to this headline">¶</a></h2>
+<p>Rydberg states are defined in the fine structure basis by specifying the <em>species</em> and the quantum numbers <span class="math notranslate nohighlight">\(n\)</span>, <span class="math notranslate nohighlight">\(l\)</span>, <span class="math notranslate nohighlight">\(j\)</span>, <span class="math notranslate nohighlight">\(m_j\)</span>. The pairinteraction software natively supports as species the alkali metals lithium (<code class="docutils literal notranslate"><span class="pre">&quot;Li&quot;</span></code>), sodium (<code class="docutils literal notranslate"><span class="pre">&quot;Na&quot;</span></code>), potassium (<code class="docutils literal notranslate"><span class="pre">&quot;K&quot;</span></code>), rubidium (<code class="docutils literal notranslate"><span class="pre">&quot;Rb&quot;</span></code>), caesium (<code class="docutils literal notranslate"><span class="pre">&quot;Cs&quot;</span></code>). In addition, there is experimental support for the alkaline earth metal strontium in its singlet (<code class="docutils literal notranslate"><span class="pre">&quot;Sr1&quot;</span></code>) and triplet state (<code class="docutils literal notranslate"><span class="pre">&quot;Sr3&quot;</span></code>). The species-specific quantum
+defects and model potential parameters are stored in a database, created from a <a class="reference external" href="https://github.com/pairinteraction/pairinteraction/blob/master/pairinteraction/databases/quantum_defects.sql">SQL file</a>. Note that we do not differentiate between isotopes as they possess nearly identical quantum defects.</p>
+<p>The user can add further species to pairinteraction by inserting their quantum defects and model potential parameters into the SQL file. In order to make pairinteraction use the new SQL file, its path must be passed to the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> object by executing <code class="docutils literal notranslate"><span class="pre">cache.setDefectDB(&quot;path/to/new_quantum_defects.sql&quot;)</span></code>.</p>
+<div class="section" id="Single-Atom-States">
+<h3>Single Atom States<a class="headerlink" href="#Single-Atom-States" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">StateOne</span></code> class allows for defining states of single Rydberg atoms. For example, the state with the quantum numbers <span class="math notranslate nohighlight">\(n=61\)</span>, <span class="math notranslate nohighlight">\(l=0\)</span>, <span class="math notranslate nohighlight">\(j=1/2\)</span>, <span class="math notranslate nohighlight">\(m_j=-1/2\)</span> of a rubidium atom is written as:</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="Pair-States">
+<h3>Pair States<a class="headerlink" href="#Pair-States" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">StateTwo</span></code> class allows for defining states of two Rydberg atoms. Such a pair state can be defined as a combination of two single atom states.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state1</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">state2</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">(</span><span class="n">state1</span><span class="p">,</span> <span class="n">state2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>Alternatively, a pair state can be initialized by specifying all parameters in pairs.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">61</span><span class="p">,</span> <span class="mi">60</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<p>Afte the initialization of a pair state, the state of the first atom can be obtained by <code class="docutils literal notranslate"><span class="pre">StateTwo.getFirstState()</span></code> and the state of the second atom by <code class="docutils literal notranslate"><span class="pre">StateTwo.getSecondState()</span></code>.</p>
+<p>The classes <code class="docutils literal notranslate"><span class="pre">StateOne</span></code> and <code class="docutils literal notranslate"><span class="pre">StateTwo</span></code> own methods for receiving the properties of the states. Species are obtained by <code class="docutils literal notranslate"><span class="pre">State[...].getSpecies()</span></code> and quantum numbers by <code class="docutils literal notranslate"><span class="pre">State[...].getN()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getL()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getJ()</span></code>, <code class="docutils literal notranslate"><span class="pre">State[...].getM()</span></code>.</p>
+</div>
+</div>
+<div class="section" id="Application-1:-Energy-Levels">
+<h2>Application 1: Energy Levels<a class="headerlink" href="#Application-1:-Energy-Levels" title="Permalink to this headline">¶</a></h2>
+<p>The energy of a single atom state or the total energy of a pair state is received by calling the method <code class="docutils literal notranslate"><span class="pre">State[...].getEnergy()</span></code>. Similarly, effective principal quantum numbers <span class="math notranslate nohighlight">\(n^*\)</span> are obtained by <code class="docutils literal notranslate"><span class="pre">State[...].getNStar()</span></code>. Note that we must pass the previously created instance of the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class to these methods, if we <a class="reference external" href="#defining-states">specified a user-defined database</a> for quantum defects and model potential parameters.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define Rydberg state</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+<span class="c1"># Get the energy of the state</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The energy of </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span><span class="si">}</span><span class="s2"> GHz.&quot;</span><span class="p">)</span>
+
+<span class="c1"># Get the effective principal quantum number of the state</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The effective principal quantum number of </span><span class="si">{</span><span class="n">state</span><span class="si">}</span><span class="s2"> is </span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">getNStar</span><span class="p">()</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The energy of |Rb, 61 S_1/2, mj=1/2&gt; is -982.3898169877917 GHz.
+The effective principal quantum number of |Rb, 61 S_1/2, mj=1/2&gt; is 57.86876593760547.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Application-2:-Matrix-Elements">
+<h2>Application 2: Matrix Elements<a class="headerlink" href="#Application-2:-Matrix-Elements" title="Permalink to this headline">¶</a></h2>
+<p>The instance of the <code class="docutils literal notranslate"><span class="pre">MatrixElementCache</span></code> class can be used directly to calculate matrix elements <span class="math notranslate nohighlight">\(\langle f \rvert A_q \lvert i \rangle\)</span>, where <span class="math notranslate nohighlight">\(A_q\)</span> is an operator in spherical coordinates, <span class="math notranslate nohighlight">\(\lvert i \rangle=\lvert n',l',j',m_j'\rangle\)</span> is the initial Rydberg state, and <span class="math notranslate nohighlight">\(\langle f\rvert =\langle n, l, j, m \rvert\)</span> the final Rydberg state. The order <span class="math notranslate nohighlight">\(q\)</span> of the operator <span class="math notranslate nohighlight">\(A_q\)</span> is assumed to equal <span class="math notranslate nohighlight">\(m_j-m_j'\)</span>. The following matrix elements are supported:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricDipole(state_f,</span> <span class="pre">state_i)</span></code> returns the matrix element of the electric dipole operator <span class="math notranslate nohighlight">\(d_q = \sqrt{\frac{4\pi}{3}} e r Y_{1q}\)</span> in units of <span class="math notranslate nohighlight">\(\text{GHz}^1(\text{V}/\text{cm})^{-1}\)</span>, so that <span class="math notranslate nohighlight">\(\langle f \rvert d~E \lvert i \rangle\)</span> and <span class="math notranslate nohighlight">\(\langle f \rvert \frac{d~d}{4\pi\epsilon_0 R^3} \lvert i \rangle\)</span> have the unit of an energy in the <a class="reference external" href="#units">unit system</a> used by the pairinteraction software.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getElectricMultipole(state_f,</span> <span class="pre">state_i,</span> <span class="pre">kappa_radial,</span> <span class="pre">kappa_angular)</span></code> returns the matrix element of a generalized form of the electric multipole operator <span class="math notranslate nohighlight">\(p_{\kappa_\text{radial}, \kappa_\text{angular},q} = \sqrt{\frac{4\pi}{2\kappa_\text{angular}+1}} e r^{\kappa_\text{radial}} Y_{\kappa_\text{angular} q}\)</span> in units of <span class="math notranslate nohighlight">\(\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu\text{m}^{\kappa_\text{radial}-1}\)</span>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getMagneticDipole(state_f,</span> <span class="pre">state_i)</span></code> returns the matrix element of the magnetic dipole operator <span class="math notranslate nohighlight">\(\mu_q = - \frac{\mu_B}{\hbar} (g_l l_q + g_s s_q)\)</span> in units of <span class="math notranslate nohighlight">\(GHz^1 G^{-1}\)</span>, so that <span class="math notranslate nohighlight">\(\langle f \rvert \mu ~B \lvert i \rangle\)</span> has the unit of an energy in the used unit system.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MatrixElementCache.getRadial(state_f,</span> <span class="pre">state_i,</span> <span class="pre">kappa)</span></code> returns the matrix element of the radial operator <span class="math notranslate nohighlight">\(r^\kappa\)</span> in units of <span class="math notranslate nohighlight">\(\mu\text{m}^\kappa\)</span>.</p></li>
+</ul>
+<p>Note that by default, Numerov’s method is used for calculating radial wave functions. If Whittaker functions should be used instead, call <code class="docutils literal notranslate"><span class="pre">MatrixElementCache.setMethod(pi.WHITTAKER)</span></code>. Take attention that for small principal quantum numbers, these methods are not accurate. In this case, we can call <code class="docutils literal notranslate"><span class="pre">MatrixElementCache.loadElectricDipoleDB(&quot;path/to/database.csv&quot;,</span> <span class="pre">&quot;species&quot;)</span></code> to load <a class="reference external" href="https://github.com/nikolasibalic/ARC-Alkali-Rydberg-Calculator/blob/master/arc/data">literature values</a> of
+electric dipole matrix elements that come with the <a class="reference external" href="https://arc-alkali-rydberg-calculator.readthedocs.io/en/latest/">ARC software</a>.</p>
+<p>The calculation of matrix elements of more complex operators can often be reduced to the calculation of the matrix elements stated above. Sometimes, additional constants occure in the expressions of the operators. The library provides the following constants in the unit system of the pairinteraction software:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">coulombs_constant</span></code> with value <span class="math notranslate nohighlight">\(1/(4\pi\epsilon_0) = 0.5955214763029308~\text{GHz}^{-1}(\text{V}/\text{cm})^2 \mu\text{m}^3\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">electron_rest_mass</span></code> with value <span class="math notranslate nohighlight">\(m_e = 1374779.2437085041~\text{GHz}^1(\text{V}/\text{cm})^{-2}\text{G}^2\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">elementary_charge</span></code> with value <span class="math notranslate nohighlight">\(e = 24.17989262349962~\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu \text{m}^{-1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">bohr_magneton</span></code> with value <span class="math notranslate nohighlight">\(\mu_B = 0.0013996245041347061~\text{GHz}^1\text{G}^{-1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">reduced_planck_constant</span></code> with value <span class="math notranslate nohighlight">\(\hbar = 159.15494309517~\text{GHz}^1(\text{V}/\text{cm})^{-1}\mu \text{m}^{1}\text{G}^{1}\)</span></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">speed_of_light</span></code> with value <span class="math notranslate nohighlight">\(c = 299.79245799420306~(\text{V}/\text{cm})^{1}\text{G}^{-1}\)</span></p></li>
+</ul>
+<p>As an example, we show how to calculate a matrix element of the dipole-dipole interaction operator <span class="math notranslate nohighlight">\(V_{dd} = \frac{-2d_0d_0-d_+d_- - d_-d_+}{4 \pi \epsilon_0 R^3}\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Function for calculating a matrix element of the dipole-dipole interaction operator</span>
+
+
+<span class="k">def</span> <span class="nf">getDipoleDipole</span><span class="p">(</span><span class="n">state_f</span><span class="p">,</span> <span class="n">state_i</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+    <span class="n">q</span> <span class="o">=</span> <span class="n">state_f</span><span class="o">.</span><span class="n">getM</span><span class="p">()</span> <span class="o">-</span> <span class="n">state_i</span><span class="o">.</span><span class="n">getM</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">prefactor</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+    <span class="k">elif</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">prefactor</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">q</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">q</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">prefactor</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">prefactor</span>
+        <span class="o">*</span> <span class="n">pi</span><span class="o">.</span><span class="n">coulombs_constant</span>
+        <span class="o">/</span> <span class="n">distance</span><span class="o">**</span><span class="mi">3</span>
+        <span class="o">*</span> <span class="n">cache</span><span class="o">.</span><span class="n">getElectricDipole</span><span class="p">(</span><span class="n">state_f</span><span class="o">.</span><span class="n">getFirstState</span><span class="p">(),</span> <span class="n">state_i</span><span class="o">.</span><span class="n">getFirstState</span><span class="p">())</span>
+        <span class="o">*</span> <span class="n">cache</span><span class="o">.</span><span class="n">getElectricDipole</span><span class="p">(</span><span class="n">state_f</span><span class="o">.</span><span class="n">getSecondState</span><span class="p">(),</span> <span class="n">state_i</span><span class="o">.</span><span class="n">getSecondState</span><span class="p">())</span>
+    <span class="p">)</span>
+
+
+<span class="c1"># Define Rydberg states</span>
+<span class="n">state_i</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="s2">&quot;Rb&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">61</span><span class="p">,</span> <span class="mi">61</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="n">state_f</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="s2">&quot;Rb&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">61</span><span class="p">,</span> <span class="mi">61</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+
+<span class="c1"># Get the matrix element at an interatomic distance of 10 um</span>
+<span class="n">distance</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># um</span>
+<span class="n">matrixelement</span> <span class="o">=</span> <span class="n">getDipoleDipole</span><span class="p">(</span><span class="n">state_f</span><span class="p">,</span> <span class="n">state_i</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The matrix element has the value </span><span class="si">{</span><span class="n">matrixelement</span><span class="si">}</span><span class="s2"> GHz.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The matrix element has the value -0.0032526369083339785 GHz.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Application-3:-Dispersion-Coefficients">
+<h2>Application 3: Dispersion Coefficients<a class="headerlink" href="#Application-3:-Dispersion-Coefficients" title="Permalink to this headline">¶</a></h2>
+<p>We consider two interacting Rydberg atoms. We call the interatomic distance <span class="math notranslate nohighlight">\(R\)</span> and the angle between the interatomic axis and the quantization axis the interaction angle <span class="math notranslate nohighlight">\(\theta\)</span>. At large interatomic distances, the energy shifts of Rydberg pair states due to the interaction can be estimated perturbatively.</p>
+<div class="section" id="Non-degenerate-States">
+<h3>Non-degenerate States<a class="headerlink" href="#Non-degenerate-States" title="Permalink to this headline">¶</a></h3>
+<p>For the beginning, we assume that the Rydberg pair state <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span>, for which we calculate the energy shift, has no degenerate states it can couple to. Thus <em>second order non-degenerate perturbation theory</em> is applicable and the energy shift is <span class="math notranslate nohighlight">\(C_6 / R^6\)</span>, where <span class="math notranslate nohighlight">\(C_6\)</span> is the dispersion coefficient of the van der Waals interaction. For the calculation of the <span class="math notranslate nohighlight">\(C_6\)</span> coefficient, we only consider states that couple significantly to <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span>. We
+ensure this by requiring that the difference between the principal quantum numbers of <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span> and of the considered states is less than or equal to a constant <span class="math notranslate nohighlight">\(\Delta N\)</span>, which can be set by the user to achieve convergence.</p>
+<p>The example show how to use the method <code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC6(state,</span> <span class="pre">deltaN)</span></code> to calculate the <span class="math notranslate nohighlight">\(C_6\)</span> coefficient in units of <span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^6\)</span>, passing the state <span class="math notranslate nohighlight">\(\lvert rr \rangle\)</span> and <span class="math notranslate nohighlight">\(\Delta N\)</span> as arguments.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[8]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define Rydberg state for which the C6 coefficient should be calculated</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+
+<span class="c1"># Angle between the interatomic axis and the quantization axis</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># rad</span>
+
+<span class="c1"># Use only states with similar principal quantum numbers for the calculation</span>
+<span class="n">deltaN</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># Get the C6 coefficient</span>
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">PerturbativeInteraction</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The C6 coefficient is </span><span class="si">{</span><span class="n">calculator</span><span class="o">.</span><span class="n">getC6</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">deltaN</span><span class="p">)</span><span class="si">}</span><span class="s2"> GHz um^6.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+The C6 coefficient is 1.2105362290320048 GHz um^6.
+</pre></div></div>
+</div>
+</div>
+<div class="section" id="Degenerate-States">
+<h3>Degenerate States<a class="headerlink" href="#Degenerate-States" title="Permalink to this headline">¶</a></h3>
+<p>In case of degenerate states, we must take into account the full subspace of degenerate states and use degenerate perturbation theory. Instead of a scalar dispersion coefficient, we obtain a matrix of the dimension of the degenerate subspace. If the states within the degenerate subspace couple in second order, we are still in the van der Waals regime and must apply <em>second order degenerate perturbation theory</em>. As in the non-degenerate case, we use the method
+<code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC6(degenerate_states,</span> <span class="pre">deltaN)</span></code>, but now passing a list of the degenerate states as its first argument. The entries of the returned matrix are of unit <span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^6\)</span>. If the states within the degenerate subspace couple directly, we are in the resonant dipole-dipole regime and must apply <em>first order degenerate perturbation theory</em>. We use the method <code class="docutils literal notranslate"><span class="pre">PerturbativeInteraction.getC3(degenerate_states)</span></code>, whose returned matrix has the unit
+<span class="math notranslate nohighlight">\(\text{GHz}\,\mu\text{m}^3\)</span>.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[9]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define degenerate subspace of Rydberg states that couple in second order</span>
+<span class="n">degenerate_states</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span> <span class="p">[</span><span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">m1</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">m2</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">]</span>
+<span class="p">]</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Basis of the degenerate subspace:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">state</span><span class="p">)</span> <span class="k">for</span> <span class="n">state</span> <span class="ow">in</span> <span class="n">degenerate_states</span><span class="p">))</span>
+
+<span class="c1"># Angle between the interatomic axis and the quantization axis</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span>  <span class="c1"># rad</span>
+
+<span class="c1"># Use only states with similar principal quantum numbers for the calculation</span>
+<span class="n">deltaN</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="c1"># Get the C6 matrix</span>
+<span class="n">calculator</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">PerturbativeInteraction</span><span class="p">(</span><span class="n">theta</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">C6 matrix in the basis of the degenerate subspace, in GHz um^6:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">calculator</span><span class="o">.</span><span class="n">getC6</span><span class="p">(</span><span class="n">degenerate_states</span><span class="p">,</span> <span class="n">deltaN</span><span class="p">),</span> <span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Basis of the degenerate subspace:
+|Cs, 42 S_1/2, mj=-1/2&gt;|Cs, 42 S_1/2, mj=-1/2&gt;
+|Cs, 42 S_1/2, mj=-1/2&gt;|Cs, 42 S_1/2, mj=1/2&gt;
+|Cs, 42 S_1/2, mj=1/2&gt;|Cs, 42 S_1/2, mj=-1/2&gt;
+|Cs, 42 S_1/2, mj=1/2&gt;|Cs, 42 S_1/2, mj=1/2&gt;
+
+C6 matrix in the basis of the degenerate subspace, in GHz um^6:
+[[ 1.25  0.02  0.02 -0.04]
+ [ 0.02  1.21  0.03 -0.02]
+ [ 0.02  0.03  1.21 -0.02]
+ [-0.04 -0.02 -0.02  1.25]]
+</pre></div></div>
+</div>
+</div>
+</div>
+<div class="section" id="Application-4:-Non-perturbative-Calculations">
+<h2>Application 4: Non-perturbative Calculations<a class="headerlink" href="#Application-4:-Non-perturbative-Calculations" title="Permalink to this headline">¶</a></h2>
+<p>In many recent Rydberg experiments, the measurements are so precise that deviations from the perturbative description are getting significant. In addition, there are Rydberg systems where perturbative calculations are not working at all because splittings between energy levels are smaller than interaction energies. This especially happens for short interatomic distances or in the presence of electric fields. To study these systems, we must diagonalize their Hamiltonians.</p>
+<p>We can apply the pairinteraction library to construct and diagonalize Hamiltonians of Rydberg systems. For systems consisting of one single Rydberg atom, the class <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> is provided. For two Rydberg atoms, the class <code class="docutils literal notranslate"><span class="pre">SystemTwo</span></code> is given. Both of these classes are used in a similar way:</p>
+<ul class="simple">
+<li><p>First, we tell which Rydberg states should be considered, letting the software create a <strong>list of relevant Rydberg states</strong>. The Rydberg states can be obtained by <code class="docutils literal notranslate"><span class="pre">System[...].getStates()</span></code>.</p></li>
+<li><p>Second, we specify whether symmetries of the systems should be taken into account to speed up calculations. The software generates a <strong>list of basis vectors</strong>, where each basis vector is a linear combination of the previously given Rydberg states. If symmetries are specified, they are applied to reduce the size of the basis. The basis vectors can be obtained as the columns of the NumPy <code class="docutils literal notranslate"><span class="pre">csc_matrix</span></code> returned by <code class="docutils literal notranslate"><span class="pre">System[...].getBasisvectors()</span></code>.</p></li>
+<li><p>Third, we set up the interactions. The software builds a <strong>matrix representation of the Hamiltonian</strong> in the previously generated basis. The Hamiltonian can be obtained by <code class="docutils literal notranslate"><span class="pre">System[...].getHamiltonian()</span></code> as a NumPy <code class="docutils literal notranslate"><span class="pre">csc_matrix</span></code>.</p></li>
+</ul>
+<p>Note that some Rydberg states might rarely occur within basis vectors or some basis vectors might have neglectable norm (if we e.g. remove some states which were solely needed for getting Stark shifted energies correct). To accelerate calculations, the software removes states with overlaps <span class="math notranslate nohighlight">\(&lt;0.05\)</span> and basis vectors with norms <span class="math notranslate nohighlight">\(&lt;0.05\)</span>. In order to change the threshold, call <code class="docutils literal notranslate"><span class="pre">System[...].setMinimalNorm()</span></code>.</p>
+<p>After calling the method <code class="docutils literal notranslate"><span class="pre">System[...].diagonalize()</span></code>, the diagonal entries of the Hamiltonian contain the eigenenergies of the system and the list of basis vectors contains the eigenvectors. For speeding up calculations, the method can be called with a threshold. Values smaller than the threshold are pruned of the eigenvectors.</p>
+<div class="section" id="Systems-of-One-Rydberg-Atom,-Calculate-Stark-and-Zeeman-Maps">
+<h3>Systems of One Rydberg Atom, Calculate Stark and Zeeman Maps<a class="headerlink" href="#Systems-of-One-Rydberg-Atom,-Calculate-Stark-and-Zeeman-Maps" title="Permalink to this headline">¶</a></h3>
+<p>The <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> class defines systems consisting of single Rydberg atoms. Optionally, an electric field can be passed to <code class="docutils literal notranslate"><span class="pre">SystemOne.setEfield(field)</span></code> as a vector containing the <span class="math notranslate nohighlight">\(x,y,z\)</span>-coordinates of the field in units of <span class="math notranslate nohighlight">\(\text{V}/\text{cm}\)</span> (the quantization axis points along <span class="math notranslate nohighlight">\(z\)</span>). <code class="docutils literal notranslate"><span class="pre">SystemOne.setBfield(field)</span></code> allows for applying a magnetic field in units of <span class="math notranslate nohighlight">\(\text{G}\)</span>.</p>
+<p>As an example, we show how to calculate a Stark map.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define values of E-field pointing into the direction of the quantization axis</span>
+<span class="n">array_efield</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># V/cm</span>
+
+<span class="c1"># Define state for which the Stark map should be calculated</span>
+<span class="n">state</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="mi">61</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+
+<span class="c1"># Initialize a system comprising one rubidium Rydberg atom</span>
+<span class="n">system</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemOne</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">getSpecies</span><span class="p">(),</span> <span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Consider only states with similar energy and quantum numbers as the defined state</span>
+<span class="n">system</span><span class="o">.</span><span class="n">restrictEnergy</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">100</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">restrictN</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">restrictL</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Because E-field points along quantization axis, the magnetic quantum number is conserved</span>
+<span class="n">system</span><span class="o">.</span><span class="n">setConservedMomentaUnderRotation</span><span class="p">([</span><span class="n">state</span><span class="o">.</span><span class="n">getM</span><span class="p">()])</span>
+
+<span class="c1"># Diagonalize the Hamiltonian of the system for different E-fields</span>
+<span class="n">array_eigenvalues</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">array_overlaps</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">efield</span> <span class="ow">in</span> <span class="n">array_efield</span><span class="p">:</span>
+    <span class="n">system</span><span class="o">.</span><span class="n">setEfield</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">efield</span><span class="p">])</span>
+
+    <span class="c1"># Diagonalize system, pruning values smaller than 1e-3 from eigenvectors</span>
+    <span class="n">system</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>
+
+    <span class="c1"># Store the eigenenergies</span>
+    <span class="n">array_eigenvalues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">getHamiltonian</span><span class="p">()</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">state</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">())</span>
+
+    <span class="c1"># Store the overlap of the eigenstates with the defined state</span>
+    <span class="n">array_overlaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system</span><span class="o">.</span><span class="n">getOverlap</span><span class="p">(</span><span class="n">state</span><span class="p">))</span>
+
+<span class="n">array_eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">array_eigenvalues</span><span class="p">)</span>
+<span class="n">array_overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">array_overlaps</span><span class="p">)</span>
+<span class="n">array_efield</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">array_efield</span><span class="p">,</span> <span class="n">system</span><span class="o">.</span><span class="n">getNumBasisvectors</span><span class="p">())</span>
+
+<span class="c1"># Plot Stark map, the color code visualizes overlap of eigenstates with defined state</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">array_efield</span><span class="p">,</span> <span class="n">array_eigenvalues</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">array_overlaps</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Electric field (V/cm)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (GHz)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mi">50</span><span class="p">,</span> <span class="mi">50</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_introduction.nbconvert_29_0.png" src="../_images/examples_python_introduction.nbconvert_29_0.png" />
+</div>
+</div>
+</div>
+<div class="section" id="Systems-of-Two-Rydberg-Atoms,-Calculate-Pair-Potentials">
+<h3>Systems of Two Rydberg Atoms, Calculate Pair Potentials<a class="headerlink" href="#Systems-of-Two-Rydberg-Atoms,-Calculate-Pair-Potentials" title="Permalink to this headline">¶</a></h3>
+<p>Two instances of the class <code class="docutils literal notranslate"><span class="pre">SystemOne</span></code> can be passed to the constructor of <code class="docutils literal notranslate"><span class="pre">SystemTwo</span></code> to define a system consisting of two Rydberg atoms. The class provides methods for specifying the interaction between the Rydberg atoms. For example, the interatomic distance in <span class="math notranslate nohighlight">\(\mu\text{m}\)</span> can be set by calling the method <code class="docutils literal notranslate"><span class="pre">SystemTwo.setDistance(distance)</span></code> and the interaction angle in <span class="math notranslate nohighlight">\(\text{rad}\)</span> by <code class="docutils literal notranslate"><span class="pre">SystemTwo.setAngle(theta)</span></code>.</p>
+<p>As an example, we show how to calculate pair potentials.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Define interatomic distances</span>
+<span class="n">array_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>  <span class="c1"># um</span>
+
+<span class="c1"># Define interaction angle</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># rad</span>
+
+<span class="sd">&quot;&quot;&quot; System containing single atom &quot;&quot;&quot;</span>
+
+<span class="c1"># Define single atom state</span>
+<span class="n">state_one</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateOne</span><span class="p">(</span><span class="s2">&quot;Rb&quot;</span><span class="p">,</span> <span class="mi">57</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">)</span>
+
+<span class="c1"># Initialize a system comprising one rubidium Rydberg atom</span>
+<span class="n">system_one</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemOne</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getSpecies</span><span class="p">(),</span> <span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Consider only states with similar energy and quantum numbers as the defined state</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictEnergy</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">40</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">40</span><span class="p">)</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictN</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictL</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Diagonalize one-atom system, pruning values smaller than 1e-3 from eigenvectors</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot; System containing two atoms &quot;&quot;&quot;</span>
+
+<span class="c1"># Define pair state, comprising two atoms in the state defined above</span>
+<span class="n">state_two</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">(</span><span class="n">state_one</span><span class="p">,</span> <span class="n">state_one</span><span class="p">)</span>
+
+<span class="c1"># Initialize a new system, comprising two of the single atom systems defined above</span>
+<span class="n">system_two</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemTwo</span><span class="p">(</span><span class="n">system_one</span><span class="p">,</span> <span class="n">system_one</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+
+<span class="c1"># Consider only pair states with similar energy as the defined pair state</span>
+<span class="n">system_two</span><span class="o">.</span><span class="n">restrictEnergy</span><span class="p">(</span><span class="n">state_two</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">4</span><span class="p">,</span> <span class="n">state_two</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># Because no electric field, parity under inversion is conserved</span>
+<span class="n">system_two</span><span class="o">.</span><span class="n">setConservedParityUnderInversion</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">ODD</span><span class="p">)</span>
+
+<span class="c1"># Because no multipole interaction of higher order, parity under permutation is conserved</span>
+<span class="n">system_two</span><span class="o">.</span><span class="n">setConservedParityUnderPermutation</span><span class="p">(</span><span class="n">pi</span><span class="o">.</span><span class="n">ODD</span><span class="p">)</span>
+
+<span class="c1"># If the interaction angle is zero, the total magnetic quantum number is conserved</span>
+<span class="k">if</span> <span class="n">theta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">system_two</span><span class="o">.</span><span class="n">setConservedMomentaUnderRotation</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">state_two</span><span class="o">.</span><span class="n">getM</span><span class="p">()))])</span>
+
+<span class="c1"># Set interaction angle</span>
+<span class="n">system_two</span><span class="o">.</span><span class="n">setAngle</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+
+<span class="c1"># Diagonalize the Hamiltonian of the system for different distances</span>
+<span class="n">array_eigenvalues</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">array_overlaps</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">array_distance</span><span class="p">:</span>
+    <span class="n">system_two</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
+
+    <span class="c1"># Diagonalize two-atom system, pruning values smaller than 1e-3 from eigenvectors</span>
+    <span class="n">system_two</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="mf">1e-3</span><span class="p">)</span>
+
+    <span class="c1"># Store the eigenenergies</span>
+    <span class="n">array_eigenvalues</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+        <span class="n">system_two</span><span class="o">.</span><span class="n">getHamiltonian</span><span class="p">()</span><span class="o">.</span><span class="n">diagonal</span><span class="p">()</span> <span class="o">-</span> <span class="n">state_two</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Store the overlap of the eigenstates with the defined state</span>
+    <span class="n">array_overlaps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">system_two</span><span class="o">.</span><span class="n">getOverlap</span><span class="p">(</span><span class="n">state_two</span><span class="p">))</span>
+
+<span class="n">array_eigenvalues</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">array_eigenvalues</span><span class="p">)</span>
+<span class="n">array_overlaps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">array_overlaps</span><span class="p">)</span>
+<span class="n">array_distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">array_distance</span><span class="p">,</span> <span class="n">system_two</span><span class="o">.</span><span class="n">getNumBasisvectors</span><span class="p">())</span>
+
+<span class="c1"># Plot pair potentials, the color code visualizes overlap of eigenstates with defined state</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">array_distance</span><span class="p">,</span> <span class="n">array_eigenvalues</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="n">array_overlaps</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Distance (um)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Energy (GHz)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="o">-</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">);</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<img alt="../_images/examples_python_introduction.nbconvert_31_0.png" src="../_images/examples_python_introduction.nbconvert_31_0.png" />
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="Application-5:-Effective-Hamiltonians">
+<h2>Application 5: Effective Hamiltonians<a class="headerlink" href="#Application-5:-Effective-Hamiltonians" title="Permalink to this headline">¶</a></h2>
+<p>Recent experimental progress allows for the realization of many-body systems, such as Ising-models, with Rydberg atoms. In order to obtain systems which are computationally tractable and obey vivid theoretical descriptions, one typically considers only a small subspace of atomic states and describes the interaction between them by an effective Hamiltonian.</p>
+<p>This restriction to a small subspace <span class="math notranslate nohighlight">\(S\)</span> is possible if the Hamiltonian can be written as <span class="math notranslate nohighlight">\(H=H_0 + H'\)</span>, where <span class="math notranslate nohighlight">\(H_0\)</span> leaves <span class="math notranslate nohighlight">\(S\)</span> invariant and <span class="math notranslate nohighlight">\(H'\)</span> is a small perturbation which couples states within <span class="math notranslate nohighlight">\(S\)</span> to states outside of <span class="math notranslate nohighlight">\(S\)</span>. We assume that this coupling is much smaller than the energy separation between states within <span class="math notranslate nohighlight">\(S\)</span> and states outside of <span class="math notranslate nohighlight">\(S\)</span>. In this case, one often applies degenerate perturbation theory of, e.g. second order, to
+obtain an effective Hamiltonian. Here we use a different approach. We calculate the effective Hamiltonian by the Schrieffer-Wolff transformation (<a class="reference external" href="https://doi.org/10.1103/PhysRev.149.491">Phys. Rev. 149, 491 (1966)</a>, <a class="reference external" href="https://doi.org/10.1016/j.aop.2011.06.004">Ann. Phys. 326, 2793 (2011)</a>). It has the benefit to work hassle-free also for complicated systems where standard perturbation theory is very hard to perform.</p>
+<p>In the following, we focus on a relatively simple system, where we already <a class="reference external" href="#degenerate-states">calculated the interaction in second order perturbation theory</a>. The system consists of two Caesium atoms in a Rydberg s-level, separated by <span class="math notranslate nohighlight">\(4\,\mathrm{\mu m}\)</span> with an interaction angle of <span class="math notranslate nohighlight">\(\pi/3\)</span>. Here we apply the Schrieffer-Wolff transformation to obtain the effective Hamiltonian that describes the interaction of the s-levels. We start our calculation by defining the subspace
+<span class="math notranslate nohighlight">\(S\)</span> conatining the s-levels.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state_two_subspace</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]),</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]),</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]),</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">StateTwo</span><span class="p">([</span><span class="s2">&quot;Cs&quot;</span><span class="p">,</span> <span class="s2">&quot;Cs&quot;</span><span class="p">],</span> <span class="p">[</span><span class="mi">42</span><span class="p">,</span> <span class="mi">42</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span> <span class="o">/</span> <span class="mi">2</span><span class="p">]),</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>The Hamiltonian acting on the full Hilbert space can be split into a unperturbed Hamiltonian which leaves <span class="math notranslate nohighlight">\(S\)</span> invariant and a perturbation which couples <span class="math notranslate nohighlight">\(S\)</span> to other states. We define a system containing the unperturbed Hamiltonian and a system containing the perturbed Hamiltonian.</p>
+<div class="nbinput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">state_one</span> <span class="o">=</span> <span class="n">state_two_subspace</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getFirstState</span><span class="p">()</span>
+<span class="n">system_one</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemOne</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getSpecies</span><span class="p">(),</span> <span class="n">cache</span><span class="p">)</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictEnergy</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">200</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">200</span><span class="p">)</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictN</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">-</span> <span class="mi">3</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getN</span><span class="p">()</span> <span class="o">+</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">system_one</span><span class="o">.</span><span class="n">restrictL</span><span class="p">(</span><span class="n">state_one</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">state_one</span><span class="o">.</span><span class="n">getL</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">system_two</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemTwo</span><span class="p">(</span><span class="n">system_one</span><span class="p">,</span> <span class="n">system_one</span><span class="p">,</span> <span class="n">cache</span><span class="p">)</span>
+<span class="n">system_two</span><span class="o">.</span><span class="n">restrictEnergy</span><span class="p">(</span>
+    <span class="n">state_two_subspace</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">-</span> <span class="mi">20</span><span class="p">,</span> <span class="n">state_two_subspace</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">getEnergy</span><span class="p">()</span> <span class="o">+</span> <span class="mi">20</span>
+<span class="p">)</span>
+
+<span class="c1"># System containing the unperturbed Hamiltonian, it&#39;s a copy of system_two</span>
+<span class="n">system_two_unperturbed</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemTwo</span><span class="p">(</span><span class="n">system_two</span><span class="p">)</span>
+
+<span class="c1"># System containing the perturbed Hamiltonian</span>
+<span class="n">system_two_perturbed</span> <span class="o">=</span> <span class="n">pi</span><span class="o">.</span><span class="n">SystemTwo</span><span class="p">(</span><span class="n">system_two</span><span class="p">)</span>
+<span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">setDistance</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">setAngle</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<p>We restrict the unperturbed system to <span class="math notranslate nohighlight">\(S\)</span>. As it does not couple the subspace to other states, this restriction can be done easily. Now the unperturbed system contains four basis vectors. The first basis vector represents the first state out of the subspace <span class="math notranslate nohighlight">\(S\)</span>, the second basis vector represents the second state, etc.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[14]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="n">system_two_unperturbed</span><span class="o">.</span><span class="n">constrainBasisvectors</span><span class="p">(</span>
+    <span class="n">system_two_unperturbed</span><span class="o">.</span><span class="n">getBasisvectorIndex</span><span class="p">(</span><span class="n">state_two_subspace</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1"># Print the unperturbed Hamiltonian</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;Unperturbed Hamiltonian:</span><span class="se">\n</span><span class="si">{</span><span class="n">system_two_unperturbed</span><span class="o">.</span><span class="n">getHamiltonian</span><span class="p">()</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+<span class="p">)</span>
+
+<span class="c1"># Print the corresponding basis vectors as columns (we just show the coefficients that</span>
+<span class="c1"># belong to the states contained in the considered subspace)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Basis vectors:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
+            <span class="n">system_two_unperturbed</span><span class="o">.</span><span class="n">getBasisvectors</span><span class="p">()[</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">system_two_unperturbed</span><span class="o">.</span><span class="n">getStateIndex</span><span class="p">(</span><span class="n">state_two_subspace</span><span class="p">))</span>
+            <span class="p">],</span>
+            <span class="mi">3</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Unperturbed Hamiltonian:
+[[-4568.44788286     0.             0.             0.        ]
+ [    0.         -4568.44788286     0.             0.        ]
+ [    0.             0.         -4568.44788286     0.        ]
+ [    0.             0.             0.         -4568.44788286]]
+
+Basis vectors:
+[[1. 0. 0. 0.]
+ [0. 1. 0. 0.]
+ [0. 0. 1. 0.]
+ [0. 0. 0. 1.]]
+</pre></div></div>
+</div>
+<p>The perturbation dresses these four basis vectors by admixing other states. Using the Schrieffer-Wolff transformation, we calculate the dressed basis vectors and unitarily transform the perturbed Hamiltonian into this basis.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[15]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre>
+<span></span><span class="c1"># Diagonalize the perturbed Hamiltonian, pruning values smaller than 1e-16 from</span>
+<span class="c1"># eigenvectors (if we prune too aggressively, the Schrieffer Wolff transformation fails)</span>
+<span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">diagonalize</span><span class="p">(</span><span class="mf">1e-16</span><span class="p">)</span>
+
+<span class="c1"># Apply the Schrieffer Wolff transformation on the perturbed Hamiltonian</span>
+<span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">applySchriefferWolffTransformation</span><span class="p">(</span><span class="n">system_two_unperturbed</span><span class="p">)</span>
+
+<span class="c1"># Print the effective Hamiltonian</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Effective Hamiltonian:</span><span class="se">\n</span><span class="si">{</span><span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">getHamiltonian</span><span class="p">()</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Print the corresponding basis vectors as columns (we just show the coefficients that</span>
+<span class="c1"># belong to the states contained in the considered subspace)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Dressed basis vectors:</span><span class="se">\n</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span>
+            <span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">getBasisvectors</span><span class="p">()[</span>
+                <span class="nb">list</span><span class="p">(</span><span class="n">system_two_perturbed</span><span class="o">.</span><span class="n">getStateIndex</span><span class="p">(</span><span class="n">state_two_subspace</span><span class="p">))</span>
+            <span class="p">],</span>
+            <span class="mi">5</span><span class="p">,</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">todense</span><span class="p">()</span>
+    <span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+Effective Hamiltonian:
+[[-4.56844757e+03  5.62139689e-06  5.62138098e-06 -9.73653209e-06]
+ [ 5.62139701e-06 -4.56844758e+03  7.57289763e-06 -5.62138780e-06]
+ [ 5.62138109e-06  7.57289763e-06 -4.56844758e+03 -5.62138666e-06]
+ [-9.73653232e-06 -5.62138780e-06 -5.62138678e-06 -4.56844757e+03]]
+
+Dressed basis vectors:
+[[0.99997 0.      0.      0.     ]
+ [0.      0.99997 0.      0.     ]
+ [0.      0.      0.99997 0.     ]
+ [0.      0.      0.      0.99997]]
+</pre></div></div>
+</div>
+<p>As the results show, the overlap of the dressed basis vectors with the states of the subspace <span class="math notranslate nohighlight">\(S\)</span> is still very large. Thus, we can neglect the admixture of the other states.</p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2017, Sebastian Weber, Henri Menke.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

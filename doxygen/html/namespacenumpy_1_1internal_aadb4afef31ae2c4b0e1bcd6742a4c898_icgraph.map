@@ -1,0 +1,5 @@
+<map id="numpy::internal::check_order_and_alignment" name="numpy::internal::check_order_and_alignment">
+<area shape="rect" id="node1" title="Check if a Numpy has given storage order and alignment." alt="" coords="200,27,371,69"/>
+<area shape="rect" id="node2" href="$namespacenumpy.html#a96b898cb85c300d8283beadd6a087ecd" title="Convert a Numpy array to an Eigen::SparseMatrix." alt="" coords="34,5,123,32"/>
+<area shape="rect" id="node3" href="$namespacenumpy_1_1internal.html#a9d12943d90137c9c91dceeb4775f1b14" title="Deconstruct a numpy array for conversion to dense Eigen type." alt="" coords="5,57,152,98"/>
+</map>

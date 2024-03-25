@@ -1,0 +1,4 @@
+<map id="numpy::as" name="numpy::as">
+<area shape="rect" id="node1" title="Convert a Numpy array to an Eigen::SparseMatrix." alt="" coords="5,13,95,39"/>
+<area shape="rect" id="node2" href="$namespacenumpy_1_1internal.html#aadb4afef31ae2c4b0e1bcd6742a4c898" title="Check if a Numpy has given storage order and alignment." alt="" coords="143,5,313,47"/>
+</map>

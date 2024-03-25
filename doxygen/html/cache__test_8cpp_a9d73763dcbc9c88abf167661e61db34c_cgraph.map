@@ -1,0 +1,6 @@
+<map id="TEST_CASE" name="TEST_CASE">
+<area shape="rect" id="node1" title=" " alt="" coords="5,56,100,83"/>
+<area shape="rect" id="node2" href="$classCache.html#a9da111abb508a5b5c5636f03079984d4" title="Clear the cache." alt="" coords="155,5,257,32"/>
+<area shape="rect" id="node3" href="$classCache.html#a0adeca8b45b32f08473f529ef708ec76" title="Restore something from the cache." alt="" coords="148,56,264,83"/>
+<area shape="rect" id="node4" href="$classCache.html#aea8bf4ae0b953bc577f21944caa2e81a" title="Save something in the cache." alt="" coords="155,107,257,133"/>
+</map>

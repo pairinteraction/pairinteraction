@@ -1,0 +1,246 @@
+{
+    "conserveM": [
+        true,
+        null
+    ],
+    "cores": [
+        0,
+        null
+    ],
+    "deltaEPair": [
+        550.0,
+        "gigahertz"
+    ],
+    "deltaESingle": [
+        550.0,
+        "gigahertz"
+    ],
+    "deltaJPair": [
+        0,
+        null
+    ],
+    "deltaJSingle": [
+        4,
+        null
+    ],
+    "deltaLPair": [
+        0,
+        null
+    ],
+    "deltaLSingle": [
+        4,
+        null
+    ],
+    "deltaMPair": [
+        0,
+        null
+    ],
+    "deltaMSingle": [
+        -1,
+        null
+    ],
+    "deltaNPair": [
+        0,
+        null
+    ],
+    "deltaNSingle": [
+        8,
+        null
+    ],
+    "diamagnetism": [
+        false,
+        null
+    ],
+    "exponent": [
+        6,
+        null
+    ],
+    "invE": [
+        false,
+        null
+    ],
+    "invO": [
+        true,
+        null
+    ],
+    "j1": [
+        0.5,
+        null
+    ],
+    "j2": [
+        0.5,
+        null
+    ],
+    "l1": [
+        1,
+        null
+    ],
+    "l2": [
+        1,
+        null
+    ],
+    "m1": [
+        0.5,
+        null
+    ],
+    "m2": [
+        0.5,
+        null
+    ],
+    "matCombined": [
+        false,
+        null
+    ],
+    "matSeparate": [
+        true,
+        null
+    ],
+    "maxBx": [
+        0.0,
+        "gauss"
+    ],
+    "maxBy": [
+        0.0,
+        "gauss"
+    ],
+    "maxBz": [
+        0.0,
+        "gauss"
+    ],
+    "maxE_storage": [
+        0.8,
+        "gigahertz"
+    ],
+    "maxEx": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "maxEy": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "maxEz": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "maxR": [
+        0.735,
+        "micrometer"
+    ],
+    "minBx": [
+        0.0,
+        "gauss"
+    ],
+    "minBy": [
+        0.0,
+        "gauss"
+    ],
+    "minBz": [
+        0.0,
+        "gauss"
+    ],
+    "minE_storage": [
+        0.7,
+        "gigahertz"
+    ],
+    "minEx": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "minEy": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "minEz": [
+        0.0,
+        "volt/centimeter"
+    ],
+    "minR": [
+        0.685,
+        "micrometer"
+    ],
+    "missingCalc": [
+        true,
+        null
+    ],
+    "missingWhittaker": [
+        false,
+        null
+    ],
+    "n1": [
+        36,
+        null
+    ],
+    "n2": [
+        36,
+        null
+    ],
+    "pairbasisDefined": [
+        false,
+        null
+    ],
+    "pairbasisSame": [
+        true,
+        null
+    ],
+    "perE": [
+        false,
+        null
+    ],
+    "perO": [
+        false,
+        null
+    ],
+    "precision": [
+        1e-12,
+        null
+    ],
+    "quantizationInteratomic": [
+        true,
+        null
+    ],
+    "quantizationZ": [
+        false,
+        null
+    ],
+    "refE": [
+        false,
+        null
+    ],
+    "refO": [
+        false,
+        null
+    ],
+    "samebasis": [
+        true,
+        null
+    ],
+    "sametrafo": [
+        true,
+        null
+    ],
+    "species1": [
+        "Rb",
+        null
+    ],
+    "species2": [
+        "Rb",
+        null
+    ],
+    "steps": [
+        80,
+        null
+    ],
+    "symAuto": [
+        false,
+        null
+    ],
+    "symManual": [
+        true,
+        null
+    ],
+    "theta": [
+        0.0,
+        "degree"
+    ]
+}

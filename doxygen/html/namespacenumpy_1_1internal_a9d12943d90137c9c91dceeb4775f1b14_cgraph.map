@@ -1,0 +1,4 @@
+<map id="numpy::internal::as_dense_impl" name="numpy::internal::as_dense_impl">
+<area shape="rect" id="node1" title="Deconstruct a numpy array for conversion to dense Eigen type." alt="" coords="5,5,152,47"/>
+<area shape="rect" id="node2" href="$namespacenumpy_1_1internal.html#aadb4afef31ae2c4b0e1bcd6742a4c898" title="Check if a Numpy has given storage order and alignment." alt="" coords="200,5,371,47"/>
+</map>

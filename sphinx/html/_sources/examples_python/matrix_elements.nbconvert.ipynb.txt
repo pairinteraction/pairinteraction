@@ -1,0 +1,165 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "# Calculation of Matrix Elements"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We show how to compute matrix elements using the pairinteraction Python API. As an introductory example, we consider Rubidium and calculate the values of the radial matrix element $\\left|\\left\\langle ns_{1/2},m_j=1/2 \\right| r \\left|n'p_{1/2},m_j=1/2\\right\\rangle\\right|$ as a function of the principal quantum numbers $n$ and $n'$. This [Jupyter notebook](https://github.com/pairinteraction/pairinteraction/blob/master/doc/sphinx/examples_python/matrix_elements.ipynb) is available on GitHub."
+   ]
+  },
+  {
+   "attachments": {},
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "As described in the [introduction](introduction.ipynb), we start our code with some preparations."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "%matplotlib inline\n",
+    "\n",
+    "# Arrays\n",
+    "import numpy as np\n",
+    "\n",
+    "# Plotting\n",
+    "import matplotlib.pyplot as plt\n",
+    "from matplotlib.ticker import MaxNLocator\n",
+    "\n",
+    "# Operating system interfaces\n",
+    "import os\n",
+    "\n",
+    "# pairinteraction :-)\n",
+    "from pairinteraction import pireal as pi\n",
+    "\n",
+    "# Create cache for matrix elements\n",
+    "if not os.path.exists(\"./cache\"):\n",
+    "    os.makedirs(\"./cache\")\n",
+    "cache = pi.MatrixElementCache(\"./cache\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We use pairinteraction's `StateOne` class to define the single-atom states $\\left|n,l,j,m_j\\right\\rangle$ for which the matrix elements should be calculated."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "array_n = range(51, 61)\n",
+    "array_nprime = range(51, 61)\n",
+    "array_state_final = [pi.StateOne(\"Rb\", n, 0, 0.5, 0.5) for n in array_n]\n",
+    "array_state_initial = [pi.StateOne(\"Rb\", n, 1, 0.5, 0.5) for n in array_nprime]"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "The method `MatrixElementCache.getRadial(state_f, state_i, power)` returns the value of the radial matrix element of $r^p$ in units of $\\mu\\text{m}^p$."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "matrixelements = np.empty((len(array_state_final), len(array_state_initial)))\n",
+    "for idx_f, state_f in enumerate(array_state_final):\n",
+    "    for idx_i, state_i in enumerate(array_state_initial):\n",
+    "        matrixelements[idx_f, idx_i] = np.abs(cache.getRadial(state_f, state_i, 1))"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "We visualize the calculated matrix elements with `matplotlib`."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "tags": [
+     "nbsphinx-thumbnail"
+    ]
+   },
+   "outputs": [
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "fig = plt.figure()\n",
+    "ax = fig.add_subplot(1, 1, 1)\n",
+    "ax.imshow(\n",
+    "    matrixelements,\n",
+    "    extent=(\n",
+    "        array_nprime[0] - 0.5,\n",
+    "        array_nprime[-1] + 0.5,\n",
+    "        array_n[0] - 0.5,\n",
+    "        array_n[-1] + 0.5,\n",
+    "    ),\n",
+    "    origin=\"lower\",\n",
+    ")\n",
+    "ax.set_ylabel(r\"n\")\n",
+    "ax.set_xlabel(r\"n'\")\n",
+    "ax.yaxis.set_major_locator(MaxNLocator(integer=True))\n",
+    "ax.xaxis.set_major_locator(MaxNLocator(integer=True));"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.2"
+  },
+  "vscode": {
+   "interpreter": {
+    "hash": "e7370f93d1d0cde622a1f8e1c04877d8463912d04d973331ad4851f04de6915a"
+   }
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}

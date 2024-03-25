@@ -1,0 +1,4 @@
+<map id="utils::randint" name="utils::randint">
+<area shape="rect" id="node1" title="Generate a random integer." alt="" coords="5,5,109,32"/>
+<area shape="rect" id="node2" href="$namespaceutils.html#a4637fd751127afd70d2dbc1d9356a73f" title="Thread&#45;local static random engine." alt="" coords="157,5,312,32"/>
+</map>

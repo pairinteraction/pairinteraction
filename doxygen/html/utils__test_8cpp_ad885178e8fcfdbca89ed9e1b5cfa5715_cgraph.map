@@ -1,0 +1,5 @@
+<map id="TEST_CASE" name="TEST_CASE">
+<area shape="rect" id="node1" title=" " alt="" coords="5,5,100,32"/>
+<area shape="rect" id="node2" href="$namespaceutils.html#ace8f48fccbe0565c3be15777badb4f4a" title="Generate a random integer." alt="" coords="148,5,252,32"/>
+<area shape="rect" id="node3" href="$namespaceutils.html#a4637fd751127afd70d2dbc1d9356a73f" title="Thread&#45;local static random engine." alt="" coords="300,5,455,32"/>
+</map>
