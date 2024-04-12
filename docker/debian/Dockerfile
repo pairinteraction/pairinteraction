@@ -10,7 +10,7 @@ RUN apt-get update -qq \
     cmake build-essential git \
     pyqt5-dev-tools \
     libboost-dev \
-    doctest-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
+    doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev python3-skbuild \
     python3-numpy python3-scipy \

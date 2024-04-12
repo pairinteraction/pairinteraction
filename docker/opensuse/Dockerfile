@@ -6,7 +6,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     python3-qt5-devel \
     sqlite3 sqlite3-devel \
     libboost_headers1_66_0-devel \
-    doctest-devel cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel openblas-devel \
+    doctest-devel spdlog-devel cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel openblas-devel \
     swig python3 python3-devel \
     python3-numpy python3-numpy-devel python3-scipy \
     python3-pyqtgraph python3-Pint \

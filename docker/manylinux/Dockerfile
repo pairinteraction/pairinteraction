@@ -4,6 +4,7 @@ RUN yum install -y \
     boost169-devel \
     cereal-devel \
     doctest-devel \
+    spdlog-devel \
     eigen3-devel \
     fmt-devel \
     fontconfig \
