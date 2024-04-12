@@ -40,6 +40,8 @@ template class Ket<double>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <doctest/doctest.h>
+#include <spdlog/fmt/ostr.h>
+#include <spdlog/spdlog.h>
 #include <sstream>
 
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
@@ -70,4 +72,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     std::stringstream ss;
     ss << ket;
     CHECK(ss.str() == "my_label");
+
+    // Output the label to the doctest log
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", ket);
 }
