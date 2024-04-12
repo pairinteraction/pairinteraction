@@ -109,6 +109,7 @@ endif()
 
 # Find dependencies # TODO add all dependencies
 find_package(doctest  REQUIRED)
+find_package(spdlog  REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 
 if(${CMAKE_VERSION} VERSION_LESS "3.18.0")

@@ -68,6 +68,7 @@ target_include_directories(pairinteraction_backend
 target_link_libraries(pairinteraction_backend
     PUBLIC
         doctest::doctest
+        spdlog::spdlog
         Eigen3::Eigen
         $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
     PRIVATE
@@ -117,7 +118,7 @@ if (BUILD_TESTING)
 
     # Add tests
     # To only build and run these tests, use
-    # "cmake --build . --target pairinteraction_backend_test && ctest --verbose -R pairinteraction_backend_test"
+    # "cmake --build . --target pairinteraction_backend_test && ./pairinteraction_backend/pairinteraction_backend_test -d"
     add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
 
 endif()
