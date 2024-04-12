@@ -15,7 +15,6 @@ TODOs
 - Adapt workflows so that the correct directories get packed into the releases
 - Rename examples folder in sphinx, e.g. examples_cpp to examples/pairinteraction_backend
 - Do we need the subfolders cpp and python below pairinteraction_backend?
-- Add libspdlog-dev to the dockerfiles
 
 Literature
 ----------

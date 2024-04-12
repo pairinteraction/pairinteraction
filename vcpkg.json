@@ -10,6 +10,7 @@
         "boost-uuid",
         "cereal",
         "doctest",
+        "spdlog",
         "eigen3",
         "fmt",
         "gsl",
