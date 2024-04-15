@@ -1,5 +1,5 @@
-Modules
-=======
+API Reference
+=============
 
 The module ``pireal`` can be used if matrix elements are purely real-valued. If one considers electric or magnetic fields with a non-zero :math:`y`-value, the module ``picomplex`` must be used.
 TODO dont use pireal and picomplex anymore?

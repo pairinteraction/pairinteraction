@@ -1,8 +1,6 @@
 Overview
 ========
 
-TODO: general introduction
-
 Features
 --------
 

@@ -6,7 +6,7 @@ Installation
 This guide provides installation instructions for the `pairinteraction` software, catering to users of all levels.
 It offers three different installation methods:
 
-- **Using pip:** Ideal for most users, this method employs `pip` for straightforward installation from the
+- **Using Pip:** Ideal for most users, this method employs `pip` for straightforward installation from the
   Python Package Index, providing access to the software's Python library and graphical interface.
 
 - **Binary Installers:** If you are mainly interested in the graphical interface, you can download
@@ -22,7 +22,7 @@ write your own code and have more fine-grained control over what pairinteraction
 eigenenergies, or excitation dynamics can be calculated. For usage examples
 visit the :ref:`tutorials <Tutorials>` section of the documentation.
 
-Using pip
+Using Pip
 ---------
 
 We recommend installing pairinteraction from the `Python Package Index`_ by calling
