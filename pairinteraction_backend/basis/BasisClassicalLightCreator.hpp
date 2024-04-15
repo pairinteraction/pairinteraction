@@ -12,7 +12,7 @@
 template <typename Scalar>
 class BasisClassicalLightCreator {
 public:
-    using real_t = typename internal::NumTraits<Scalar>::real_t;
+    using real_t = typename Traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
     BasisClassicalLightCreator();
     BasisClassicalLightCreator<Scalar> &set_energy(Scalar energy);

@@ -2,7 +2,7 @@
 
 #include <complex>
 
-namespace internal {
+namespace Traits {
 
 /**
  * @struct BasisTraits
@@ -34,4 +34,4 @@ struct NumTraits<std::complex<Numeric>> {
     using real_t = Numeric;
 };
 
-} // namespace internal
+} // namespace Traits

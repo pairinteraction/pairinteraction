@@ -1,18 +1,13 @@
 #include "basis/Basis.hpp"
+#include "utils/Euler.hpp"
+
+#include <numeric>
 
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets) : kets(std::move(kets)), is_standard_basis(true) {
-    energies.reserve(kets.size());
-    quantum_numbers_f.reserve(kets.size());
-    quantum_numbers_m.reserve(kets.size());
-    parities.reserve(kets.size());
-    labels.reserve(kets.size());
+    energy_of_states.reserve(kets.size());
     for (const auto &ket : kets) {
-        energies.push_back(ket->get_energy());
-        quantum_numbers_f.push_back(ket->get_quantum_number_f());
-        quantum_numbers_m.push_back(ket->get_quantum_number_m());
-        parities.push_back(ket->get_parity());
-        labels.push_back(ket->get_label());
+        energy_of_states.push_back(ket->get_energy());
     }
     coefficients = Eigen::SparseMatrix<scalar_t>(kets.size(), kets.size());
     coefficients.setIdentity();
@@ -24,33 +19,13 @@ const Derived &Basis<Derived>::derived() const {
 }
 
 template <typename Derived>
-const typename Basis<Derived>::ket_t &Basis<Derived>::get_ket(size_t index) const {
-    return *kets[index];
+const typename Basis<Derived>::ket_t &Basis<Derived>::get_ket(size_t index_ket) const {
+    return *kets[index_ket];
 }
 
 template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t index) const {
-    return energies[index];
-}
-
-template <typename Derived>
-float Basis<Derived>::get_quantum_number_f(size_t index) const {
-    return quantum_numbers_f[index];
-}
-
-template <typename Derived>
-float Basis<Derived>::get_quantum_number_m(size_t index) const {
-    return quantum_numbers_m[index];
-}
-
-template <typename Derived>
-int Basis<Derived>::get_parity(size_t index) const {
-    return parities[index];
-}
-
-template <typename Derived>
-std::string Basis<Derived>::get_label(size_t index) const {
-    return labels[index];
+typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t index_state) const {
+    return energy_of_states[index_state];
 }
 
 template <typename Derived>
@@ -84,33 +59,93 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 }
 
 template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter_according_to_kets() const {
+Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
+Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
+Basis<Derived>::get_rotator(std::array<real_t, 3> to_z_axis,
+                            std::array<real_t, 3> to_y_axis) const {
+    auto euler_angles = Euler::get_euler_angles(to_z_axis, to_y_axis);
+    return this->get_rotator(euler_angles[0], euler_angles[1], euler_angles[2]);
+}
+
+template <typename Derived>
+std::vector<int> Basis<Derived>::get_sorter_according_to_kets() const {
+    std::vector<float> index_ket_of_states;
+    throw std::runtime_error("Not implemented");
+
+    std::vector<int> sorter(index_ket_of_states.size());
+    std::iota(sorter.begin(), sorter.end(), 0);
+    std::stable_sort(sorter.begin(), sorter.end(),
+                     [&](int i, int j) { return index_ket_of_states[i] < index_ket_of_states[j]; });
+    return sorter;
 }
 
 template <typename Derived>
 std::vector<int> Basis<Derived>::get_sorter_according_to_energies() const {
-    throw std::runtime_error("Not implemented");
+    std::vector<int> sorter(energy_of_states.size());
+    std::iota(sorter.begin(), sorter.end(), 0);
+    std::stable_sort(sorter.begin(), sorter.end(),
+                     [&](int i, int j) { return energy_of_states[i] < energy_of_states[j]; });
+    return sorter;
 }
 
 template <typename Derived>
 std::vector<int> Basis<Derived>::get_sorter_according_to_quantum_number_m() const {
+    std::vector<float> quantum_number_m_of_states;
     throw std::runtime_error("Not implemented");
+
+    std::vector<int> sorter(quantum_number_m_of_states.size());
+    std::iota(sorter.begin(), sorter.end(), 0);
+    std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+        return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
+    });
+    return sorter;
 }
 
 template <typename Derived>
 std::vector<int> Basis<Derived>::get_sorter_according_to_parity() const {
+    std::vector<int> parity_of_states;
     throw std::runtime_error("Not implemented");
+
+    std::vector<int> sorter(parity_of_states.size());
+    std::iota(sorter.begin(), sorter.end(), 0);
+    std::stable_sort(sorter.begin(), sorter.end(),
+                     [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
+    return sorter;
 }
 
 template <typename Derived>
 void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
-    throw std::runtime_error("Not implemented");
+    coefficients = coefficients * transformator;
+}
+
+template <typename Derived>
+void Basis<Derived>::rotate(real_t alpha, real_t beta, real_t gamma) {
+    auto rotator = this->get_rotator(alpha, beta, gamma);
+    this->transform(rotator);
+}
+
+template <typename Derived>
+void Basis<Derived>::rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis) {
+    auto rotator = this->get_rotator(to_z_axis, to_y_axis);
+    this->transform(rotator);
 }
 
 template <typename Derived>
 void Basis<Derived>::sort(const std::vector<int> &sorter) {
-    throw std::runtime_error("Not implemented");
+    {
+        auto tmp(energy_of_states);
+        for (int i = 0; i < sorter.size(); ++i) {
+            energy_of_states[i] = tmp[sorter[i]];
+        }
+    }
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
+    perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
+    coefficients = coefficients * perm;
 }
 
 template <typename Derived>
@@ -135,6 +170,14 @@ template <typename Derived>
 void Basis<Derived>::sort_according_to_parity() {
     auto sorter = this->get_sorter_according_to_parity();
     this->sort(sorter);
+}
+
+template <typename Derived>
+void Basis<Derived>::set_eigen_basis(Eigen::SparseMatrix<scalar_t> evecs,
+                                     std::vector<real_t> evals) {
+    coefficients = evecs;
+    energy_of_states = evals;
+    is_standard_basis = false;
 }
 
 // Explicit instantiations
@@ -190,7 +233,7 @@ private:
 class BasisDerived;
 
 template <>
-struct internal::BasisTraits<BasisDerived> {
+struct Traits::BasisTraits<BasisDerived> {
     using scalar_t = float;
     using real_t = float;
     using ket_t = KetDerived;
@@ -200,7 +243,7 @@ struct internal::BasisTraits<BasisDerived> {
 class BasisDerived : public Basis<BasisDerived> {
 public:
     using Type = BasisDerived;
-    using ketvec_t = typename internal::BasisTraits<BasisDerived>::ketvec_t;
+    using ketvec_t = typename Traits::BasisTraits<BasisDerived>::ketvec_t;
 
 private:
     friend class BasisDerivedCreator;

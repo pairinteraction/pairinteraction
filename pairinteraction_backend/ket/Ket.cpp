@@ -71,7 +71,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     // Check that the label can be printed
     std::stringstream ss;
     ss << ket;
-    CHECK(ss.str() == "my_label");
+    DOCTEST_CHECK(ss.str() == "my_label");
 
     // Output the label to the doctest log
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", ket);
