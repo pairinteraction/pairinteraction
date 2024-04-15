@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <complex>
 #include <memory>
@@ -53,6 +54,19 @@ public:
 
     Iterator begin() const;
     Iterator end() const;
+
+    std::vector<int> get_sorter_according_to_kets() const;
+    std::vector<int> get_sorter_according_to_energies() const;
+    std::vector<int> get_sorter_according_to_quantum_number_m() const;
+    std::vector<int> get_sorter_according_to_parity() const;
+
+    // TODO rotate, get_rotator
+    void transform(const Eigen::SparseMatrix<scalar_t> &transformator);
+    void sort(const std::vector<int> &sorter);
+    void sort_according_to_kets();
+    void sort_according_to_energies();
+    void sort_according_to_quantum_number_m();
+    void sort_according_to_parity();
 
 protected:
     Basis(ketvec_t &&kets);

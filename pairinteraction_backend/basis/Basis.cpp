@@ -83,6 +83,60 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
     return *this;
 }
 
+template <typename Derived>
+std::vector<int> Basis<Derived>::get_sorter_according_to_kets() const {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+std::vector<int> Basis<Derived>::get_sorter_according_to_energies() const {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+std::vector<int> Basis<Derived>::get_sorter_according_to_quantum_number_m() const {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+std::vector<int> Basis<Derived>::get_sorter_according_to_parity() const {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+void Basis<Derived>::sort(const std::vector<int> &sorter) {
+    throw std::runtime_error("Not implemented");
+}
+
+template <typename Derived>
+void Basis<Derived>::sort_according_to_kets() {
+    auto sorter = this->get_sorter_according_to_kets();
+    this->sort(sorter);
+}
+
+template <typename Derived>
+void Basis<Derived>::sort_according_to_energies() {
+    auto sorter = this->get_sorter_according_to_energies();
+    this->sort(sorter);
+}
+
+template <typename Derived>
+void Basis<Derived>::sort_according_to_quantum_number_m() {
+    auto sorter = this->get_sorter_according_to_quantum_number_m();
+    this->sort(sorter);
+}
+
+template <typename Derived>
+void Basis<Derived>::sort_according_to_parity() {
+    auto sorter = this->get_sorter_according_to_parity();
+    this->sort(sorter);
+}
+
 // Explicit instantiations
 #include "basis/BasisAtom.hpp"
 #include "basis/BasisClassicalLight.hpp"
