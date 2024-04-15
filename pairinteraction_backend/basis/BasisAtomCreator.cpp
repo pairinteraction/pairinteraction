@@ -104,6 +104,6 @@ DOCTEST_TEST_CASE("create a basis for rubidium") {
                      .restrict_quantum_number_l(0, 2)
                      .create();
     for (const auto &ket : basis) {
-        CHECK(ket.get_species() == "Rb");
+        DOCTEST_CHECK(ket.get_species() == "Rb");
     }
 }

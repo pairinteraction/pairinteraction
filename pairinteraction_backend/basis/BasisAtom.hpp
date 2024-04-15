@@ -14,9 +14,9 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-struct internal::BasisTraits<BasisAtom<Scalar>> {
+struct Traits::BasisTraits<BasisAtom<Scalar>> {
     using scalar_t = Scalar;
-    using real_t = typename internal::NumTraits<Scalar>::real_t;
+    using real_t = typename Traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
@@ -32,7 +32,7 @@ template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
 public:
     using Type = BasisAtom<Scalar>;
-    using ketvec_t = typename internal::BasisTraits<Type>::ketvec_t;
+    using ketvec_t = typename Traits::BasisTraits<Type>::ketvec_t;
 
 private:
     friend class BasisAtomCreator<Scalar>;

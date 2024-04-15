@@ -95,14 +95,14 @@ template class KetAtomCreator<double>;
 
 DOCTEST_TEST_CASE("create a ket for rubidium") {
     auto ket = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create();
-    CHECK(ket.get_species() == "Rb");
-    CHECK(ket.get_quantum_number_n() == 60);
-    CHECK(ket.get_quantum_number_l() == 1);
-    CHECK(ket.get_quantum_number_f() == 0.5);
-    CHECK(ket.get_quantum_number_j() == 0.5);
-    CHECK(ket.get_quantum_number_m() == 0.5);
-    CHECK(ket.get_quantum_number_s() == 0.5);
-    CHECK(ket.get_parity() == -1);
+    DOCTEST_CHECK(ket.get_species() == "Rb");
+    DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
+    DOCTEST_CHECK(ket.get_quantum_number_l() == 1);
+    DOCTEST_CHECK(ket.get_quantum_number_f() == 0.5);
+    DOCTEST_CHECK(ket.get_quantum_number_j() == 0.5);
+    DOCTEST_CHECK(ket.get_quantum_number_m() == 0.5);
+    DOCTEST_CHECK(ket.get_quantum_number_s() == 0.5);
+    DOCTEST_CHECK(ket.get_parity() == -1);
 }
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
@@ -113,9 +113,9 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     creator.set_quantum_number_m(0);
     creator.set_quantum_number_s(0);
     auto ket = creator.create();
-    CHECK(ket.get_species() == "Sr88_mqdt");
-    CHECK(ket.get_quantum_number_nu() == 60);
-    CHECK(ket.get_quantum_number_f() == 1);
-    CHECK(ket.get_quantum_number_m() == 0);
-    CHECK(ket.get_parity() == -1);
+    DOCTEST_CHECK(ket.get_species() == "Sr88_mqdt");
+    DOCTEST_CHECK(ket.get_quantum_number_nu() == 60);
+    DOCTEST_CHECK(ket.get_quantum_number_f() == 1);
+    DOCTEST_CHECK(ket.get_quantum_number_m() == 0);
+    DOCTEST_CHECK(ket.get_parity() == -1);
 }

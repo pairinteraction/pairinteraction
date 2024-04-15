@@ -14,9 +14,9 @@ template <typename Scalar>
 class BasisClassicalLight;
 
 template <typename Scalar>
-struct internal::BasisTraits<BasisClassicalLight<Scalar>> {
+struct Traits::BasisTraits<BasisClassicalLight<Scalar>> {
     using scalar_t = Scalar;
-    using real_t = typename internal::NumTraits<Scalar>::real_t;
+    using real_t = typename Traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
@@ -32,7 +32,7 @@ template <typename Scalar>
 class BasisClassicalLight : public Basis<BasisClassicalLight<Scalar>> {
 public:
     using Type = BasisClassicalLight<Scalar>;
-    using ketvec_t = typename internal::BasisTraits<Type>::ketvec_t;
+    using ketvec_t = typename Traits::BasisTraits<Type>::ketvec_t;
 
 private:
     friend class BasisClassicalLightCreator<Scalar>;
