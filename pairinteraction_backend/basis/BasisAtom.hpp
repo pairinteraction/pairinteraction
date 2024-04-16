@@ -2,7 +2,7 @@
 
 #include "basis/Basis.hpp"
 #include "ket/KetAtom.hpp"
-#include "utils/Traits.hpp"
+#include "utils/traits.hpp"
 
 #include <complex>
 
@@ -14,9 +14,9 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-struct Traits::BasisTraits<BasisAtom<Scalar>> {
+struct traits::BasisTraits<BasisAtom<Scalar>> {
     using scalar_t = Scalar;
-    using real_t = typename Traits::NumTraits<Scalar>::real_t;
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
@@ -32,7 +32,7 @@ template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
 public:
     using Type = BasisAtom<Scalar>;
-    using ketvec_t = typename Traits::BasisTraits<Type>::ketvec_t;
+    using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
 private:
     friend class BasisAtomCreator<Scalar>;

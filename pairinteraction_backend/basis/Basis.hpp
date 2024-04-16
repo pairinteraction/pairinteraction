@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "ket/Ket.hpp"
-#include "utils/Traits.hpp"
+#include "utils/traits.hpp"
 
 /**
  * @class Basis
@@ -30,14 +30,35 @@
 template <typename Derived>
 class Basis {
 public:
-    using scalar_t = typename Traits::BasisTraits<Derived>::scalar_t;
-    using real_t = typename Traits::BasisTraits<Derived>::real_t;
-    using ket_t = typename Traits::BasisTraits<Derived>::ket_t;
-    using ketvec_t = typename Traits::BasisTraits<Derived>::ketvec_t;
+    using scalar_t = typename traits::BasisTraits<Derived>::scalar_t;
+    using real_t = typename traits::BasisTraits<Derived>::real_t;
+    using ket_t = typename traits::BasisTraits<Derived>::ket_t;
+    using ketvec_t = typename traits::BasisTraits<Derived>::ketvec_t;
 
     Basis() = delete;
+    size_t get_number_of_states() const;
+    size_t get_number_of_kets() const;
     const ket_t &get_ket(size_t index_ket) const;
     real_t get_energy(size_t index_state) const;
+    float get_quantum_number_f(size_t index_state) const;
+    float get_quantum_number_m(size_t index_state) const;
+    int get_parity(size_t index_state) const;
+
+    enum class Label : unsigned char {
+        ENERGY = 1 << 0,
+        QUANTUM_NUMBER_F = 1 << 1,
+        QUANTUM_NUMBER_M = 1 << 2,
+        PARITY = 1 << 3,
+        KET = 1 << 4
+    };
+
+    friend inline constexpr Label operator&(Label x, Label y) {
+        return static_cast<Label>(static_cast<unsigned char>(x) & static_cast<unsigned char>(y));
+    }
+
+    friend inline constexpr Label operator|(Label x, Label y) {
+        return static_cast<Label>(static_cast<unsigned char>(x) | static_cast<unsigned char>(y));
+    }
 
     class Iterator {
     public:
@@ -57,19 +78,13 @@ public:
     Eigen::SparseMatrix<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const;
     Eigen::SparseMatrix<scalar_t> get_rotator(std::array<real_t, 3> to_z_axis,
                                               std::array<real_t, 3> to_y_axis) const;
-    std::vector<int> get_sorter_according_to_kets() const;
-    std::vector<int> get_sorter_according_to_energies() const;
-    std::vector<int> get_sorter_according_to_quantum_number_m() const;
-    std::vector<int> get_sorter_according_to_parity() const;
+    std::vector<int> get_sorter(Label label) const;
 
     void transform(const Eigen::SparseMatrix<scalar_t> &transformator);
     void rotate(real_t alpha, real_t beta, real_t gamma);
     void rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis);
     void sort(const std::vector<int> &sorter);
-    void sort_according_to_kets();
-    void sort_according_to_energies();
-    void sort_according_to_quantum_number_m();
-    void sort_according_to_parity();
+    void sort(Label label);
 
     void set_eigen_basis(Eigen::SparseMatrix<scalar_t> evecs, std::vector<real_t> evals);
 
@@ -79,6 +94,10 @@ protected:
 private:
     const Derived &derived() const;
     std::vector<real_t> energy_of_states;
+    std::vector<float> quantum_number_f_of_states;
+    std::vector<float> quantum_number_m_of_states;
+    std::vector<int> parity_of_states;
+    std::vector<int> ket_of_states;
     Eigen::SparseMatrix<scalar_t> coefficients;
     bool is_standard_basis;
     ketvec_t kets;

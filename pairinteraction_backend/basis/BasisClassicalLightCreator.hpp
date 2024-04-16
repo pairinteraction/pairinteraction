@@ -2,7 +2,7 @@
 
 #include "basis/BasisClassicalLight.hpp"
 #include "ket/KetClassicalLight.hpp"
-#include "utils/Traits.hpp"
+#include "utils/traits.hpp"
 
 #include <complex>
 #include <limits>
@@ -12,7 +12,7 @@
 template <typename Scalar>
 class BasisClassicalLightCreator {
 public:
-    using real_t = typename Traits::NumTraits<Scalar>::real_t;
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
     BasisClassicalLightCreator();
     BasisClassicalLightCreator<Scalar> &set_energy(Scalar energy);

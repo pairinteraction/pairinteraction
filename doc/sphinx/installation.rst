@@ -27,14 +27,14 @@ Using Pip
 
 We recommend installing pairinteraction from the `Python Package Index`_ by calling
 
-.. code-block:: bat
+.. code-block:: bash
 
         pip install pairinteraction
 
 from the command line. This gives you access to the pairinteraction Python library and the graphical user interface.
 The graphical user interface can be started by executing
 
-.. code-block:: bat
+.. code-block:: bash
 
     start_pairinteraction_gui
 
@@ -56,7 +56,7 @@ Building from Source
 Advanced users, especially those who want to contribute to the development of pairinteraction, can build the software from source. The source code is available on
 :github:`GitHub <>` and can be cloned from the pairinteraction repository using the following command:
 
-.. code-block:: bat
+.. code-block:: bash
 
     git clone --single-branch https://github.com/pairinteraction/pairinteraction.git
 
@@ -90,13 +90,13 @@ Automatic Build
 
 After cloning the repository and installing the requirements, you can build and install the software into a local virtual Python environment by running the following command within the pairinteraction repository:
 
-.. code-block:: bat
+.. code-block:: bash
 
     poetry install
 
 This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
 
-.. code-block:: bat
+.. code-block:: bash
 
     poetry run start_pairinteraction_gui
 
@@ -105,7 +105,7 @@ Alternatively, you can build and install the software system-wide by running ``p
 
 Tests of the Python library and graphical user interface can be run by executing
 
-.. code-block:: bat
+.. code-block:: bash
 
     poetry run pytest
 
@@ -117,14 +117,14 @@ Manual Build
 
 If you want to build, e.g., the documentation of pairinteraction or have more control over the build process, you can run the tasks that have been executed by poetry manually. For this, you have to first install the Python dependencies manually:
 
-.. code-block:: bat
+.. code-block:: bash
 
     poetry export -f requirements.txt > requirements.txt
     pip install -r requirements.txt
 
 Then you can build the software using CMake:
 
-.. code-block:: bat
+.. code-block:: bash
 
     mkdir build
     cd build
@@ -133,7 +133,7 @@ Then you can build the software using CMake:
 
 This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
 
-.. code-block:: bat
+.. code-block:: bash
 
     ./start_pairinteraction_gui
 
