@@ -1,5 +1,6 @@
 #include "basis/Basis.hpp"
 #include "utils/euler.hpp"
+#include "utils/wigner.hpp"
 
 #include <numeric>
 #include <set>
@@ -89,15 +90,39 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
-    throw std::runtime_error("Not implemented");
+    Eigen::SparseMatrix<scalar_t> rotator(coefficients.rows(), coefficients.rows());
+
+    std::vector<Eigen::Triplet<scalar_t>> entries;
+
+    for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
+        float f = kets[idx_initial]->get_quantum_number_f();
+        float m_initial = kets[idx_initial]->get_quantum_number_m();
+        for (float m_final = -f; m_final <= f; ++m_final) {
+            // TODO scalar_t val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial,
+            // m_final, alpha,
+            //                                                           beta, gamma);
+
+            // TODO get the final index, probably via a lookup in a hash map
+            // int idx_final = 0;
+
+            throw std::runtime_error("Not implemented");
+
+            // TODO entries.emplace_back(idx_final, idx_initial, val);
+        }
+    }
+
+    rotator.setFromTriplets(entries.begin(), entries.end());
+    rotator.makeCompressed();
+
+    return rotator;
 }
 
 template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_rotator(std::array<real_t, 3> to_z_axis,
                             std::array<real_t, 3> to_y_axis) const {
-    auto euler_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
-    return this->get_rotator(euler_angles[0], euler_angles[1], euler_angles[2]);
+    auto euler_zyz_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
+    return this->get_rotator(euler_zyz_angles[0], euler_zyz_angles[1], euler_zyz_angles[2]);
 }
 
 template <typename Derived>
@@ -234,8 +259,9 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
     {
         std::vector<real_t> map_idx_to_max(coefficients.cols(), 0);
         for (int row = 0; row < coefficients.outerSize(); ++row) {
-            for (typename Eigen::SparseMatrix<scalar_t>::InnerIterator it(coefficients, row); it;
-                 ++it) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                     coefficients, row);
+                 it; ++it) {
                 if (std::abs(it.value()) > map_idx_to_max[it.col()]) {
                     map_idx_to_max[it.col()] = std::abs(it.value());
                     ket_of_states[it.col()] = row;
@@ -254,13 +280,22 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
 template <typename Derived>
 void Basis<Derived>::rotate(real_t alpha, real_t beta, real_t gamma) {
     auto rotator = this->get_rotator(alpha, beta, gamma);
-    this->transform(rotator);
+
+    is_standard_basis = false;
+    coefficients = rotator * coefficients;
+    sortation = Label::NONE;
+
+    float tolerance = 1e-16;
+
+    // TODO recalculate quantum_number_f_of_states, etc.
+
+    throw std::runtime_error("Not implemented");
 }
 
 template <typename Derived>
 void Basis<Derived>::rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis) {
-    auto rotator = this->get_rotator(to_z_axis, to_y_axis);
-    this->transform(rotator);
+    auto euler_zyz_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
+    this->rotate(euler_zyz_angles[0], euler_zyz_angles[1], euler_zyz_angles[2]);
 }
 
 template <typename Derived>

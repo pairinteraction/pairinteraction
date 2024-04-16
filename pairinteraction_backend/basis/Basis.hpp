@@ -95,7 +95,7 @@ private:
     std::vector<float> quantum_number_m_of_states;
     std::vector<int> parity_of_states;
     std::vector<int> ket_of_states;
-    Eigen::SparseMatrix<scalar_t> coefficients;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
     ketvec_t kets;
     bool is_standard_basis;
     Label sortation;

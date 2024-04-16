@@ -27,22 +27,29 @@ target_sources(backend PUBLIC
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.cpp
   ./system/SystemClassicalLight.hpp
-  ./utils/traits.hpp)
+  ./utils/euler.hpp
+  ./utils/maths.hpp
+  ./utils/traits.hpp
+  ./utils/wigner.hpp
+)
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(backend
   PUBLIC doctest::doctest Eigen3::Eigen
-  PRIVATE spdlog::spdlog)
+  PRIVATE spdlog::spdlog
+)
 
 target_compile_definitions(backend PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>)
+  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
+)
 
-target_compile_features(backend PUBLIC cxx_std_17)
+target_compile_features(backend PUBLIC cxx_std_20)
 
 set_target_properties(backend PROPERTIES
   CXX_EXTENSIONS OFF
-  POSITION_INDEPENDENT_CODE ON)
+  POSITION_INDEPENDENT_CODE ON
+)
 
 # Create bindings object
 add_library(bindings OBJECT)
@@ -61,7 +68,10 @@ target_sources(bindings PUBLIC
   ./system/System.hpp
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.hpp
+  ./utils/euler.hpp
+  ./utils/maths.hpp
   ./utils/traits.hpp
+  ./utils/wigner.hpp
   # Bindings
   ./basis/Basis.py.cpp
   ./basis/Basis.py.hpp
@@ -89,51 +99,62 @@ target_sources(bindings PUBLIC
   ./system/SystemAtom.py.hpp
   ./system/SystemClassicalLight.py.cpp
   ./system/SystemClassicalLight.py.hpp
-  ./binding.cpp)
+  ./binding.cpp
+)
 
 target_include_directories(bindings PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
-  "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
+  "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}"
+)
 
 target_link_libraries(bindings
   PUBLIC Eigen3::Eigen
-  PRIVATE nanobind-static)
+  PRIVATE nanobind-static
+)
 
-target_compile_features(bindings PUBLIC cxx_std_17)
+target_compile_features(bindings PUBLIC cxx_std_20)
 
 set_target_properties(bindings PROPERTIES
   CXX_EXTENSIONS OFF
-  POSITION_INDEPENDENT_CODE ON)
+  POSITION_INDEPENDENT_CODE ON
+)
 
 target_compile_options(bindings PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
+  $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>
+)
 
 # Assemble objects into libraries
 add_library(pairinteraction_backend SHARED
   $<TARGET_OBJECTS:backend>
-  $<TARGET_OBJECTS:bindings>)
+  $<TARGET_OBJECTS:bindings>
+)
 
 target_link_libraries(pairinteraction_backend
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-  PRIVATE nanobind-static)
+  PRIVATE nanobind-static
+)
 
 set_target_properties(pairinteraction_backend PROPERTIES
   PREFIX ""
-  INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
+  INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>
+)
 
 target_link_options(pairinteraction_backend PRIVATE
   $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
   $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
-  $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
+  $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
+)
 
 # Build an executable for running the tests
 if (BUILD_TESTING)
   add_executable(pairinteraction_backend_test
     $<TARGET_OBJECTS:backend>
-    main.cpp)
+    main.cpp
+  )
 
   target_link_libraries(pairinteraction_backend_test
-    PRIVATE spdlog::spdlog)
+    PRIVATE spdlog::spdlog
+  )
 
   # Add tests
   # To only build and run these tests, use
