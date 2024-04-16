@@ -74,5 +74,5 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     DOCTEST_CHECK(ss.str() == "my_label");
 
     // Output the label to the doctest log
-    //SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", ket); // FIXME: Cannot format an argument.
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
 }
