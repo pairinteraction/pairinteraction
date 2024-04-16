@@ -4,13 +4,12 @@
 #include <numeric>
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets) : kets(std::move(kets)), is_standard_basis(true) {
-    energy_of_states.reserve(this->kets.size());
+Basis<Derived>::Basis(ketvec_t &&kets)
+    : kets(std::move(kets)), is_standard_basis(true), sortation(Label::KET) {
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());
     for (const auto &ket : this->kets) {
-        energy_of_states.push_back(ket->get_energy());
         quantum_number_f_of_states.push_back(ket->get_quantum_number_f());
         quantum_number_m_of_states.push_back(ket->get_quantum_number_m());
         parity_of_states.push_back(ket->get_parity());
@@ -39,11 +38,6 @@ size_t Basis<Derived>::get_number_of_kets() const {
 template <typename Derived>
 const typename Basis<Derived>::ket_t &Basis<Derived>::get_ket(size_t index_ket) const {
     return *kets[index_ket];
-}
-
-template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t index_state) const {
-    return energy_of_states[index_state];
 }
 
 template <typename Derived>
@@ -110,11 +104,6 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
     std::vector<int> sorter(coefficients.cols());
     std::iota(sorter.begin(), sorter.end(), 0);
 
-    if ((label & Label::ENERGY) == Label::ENERGY) {
-        std::stable_sort(sorter.begin(), sorter.end(),
-                         [&](int i, int j) { return energy_of_states[i] < energy_of_states[j]; });
-    }
-
     if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F) {
         std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
@@ -141,8 +130,47 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
 }
 
 template <typename Derived>
+std::vector<int> Basis<Derived>::get_blocks(Label label) const {
+    if (label != sortation) {
+        throw std::invalid_argument("The basis is not sorted by the requested label.");
+    }
+
+    std::vector<int> blocks;
+    float last_quantum_number_f = quantum_number_f_of_states[0];
+    float last_quantum_number_m = quantum_number_m_of_states[0];
+    int last_parity = parity_of_states[0];
+    int last_ket = ket_of_states[0];
+    blocks.push_back(0);
+
+    for (size_t i = 0; i < coefficients.cols(); ++i) {
+        if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F &&
+            quantum_number_f_of_states[i] != last_quantum_number_f) {
+            blocks.push_back(i);
+        } else if ((label & Label::QUANTUM_NUMBER_M) == Label::QUANTUM_NUMBER_M &&
+                   quantum_number_m_of_states[i] != last_quantum_number_m) {
+            blocks.push_back(i);
+        } else if ((label & Label::PARITY) == Label::PARITY && parity_of_states[i] != last_parity) {
+            blocks.push_back(i);
+        } else if ((label & Label::KET) == Label::KET && ket_of_states[i] != last_ket) {
+            blocks.push_back(i);
+        }
+
+        last_quantum_number_f = quantum_number_f_of_states[i];
+        last_quantum_number_m = quantum_number_m_of_states[i];
+        last_parity = parity_of_states[i];
+        last_ket = ket_of_states[i];
+    }
+
+    return blocks;
+}
+
+template <typename Derived>
 void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
+    is_standard_basis = false;
     coefficients = coefficients * transformator;
+    sortation = Label::NONE;
+
+    throw std::runtime_error("Not implemented");
 }
 
 template <typename Derived>
@@ -159,12 +187,6 @@ void Basis<Derived>::rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 
 
 template <typename Derived>
 void Basis<Derived>::sort(const std::vector<int> &sorter) {
-    {
-        auto tmp(energy_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
-            energy_of_states[i] = tmp[sorter[i]];
-        }
-    }
     {
         auto tmp(quantum_number_f_of_states);
         for (int i = 0; i < sorter.size(); ++i) {
@@ -192,22 +214,14 @@ void Basis<Derived>::sort(const std::vector<int> &sorter) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
     perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
     coefficients = coefficients * perm;
+    sortation = Label::NONE;
 }
 
 template <typename Derived>
 void Basis<Derived>::sort(Label label) {
     auto sorter = this->get_sorter(label);
     this->sort(sorter);
-}
-
-template <typename Derived>
-void Basis<Derived>::set_eigen_basis(Eigen::SparseMatrix<scalar_t> evecs,
-                                     std::vector<real_t> evals) {
-    coefficients = evecs;
-    energy_of_states = evals;
-    is_standard_basis = false;
-
-    throw std::runtime_error("Not implemented");
+    sortation = label;
 }
 
 // Explicit instantiations
@@ -239,20 +253,19 @@ public:
 
 private:
     friend class KetDerivedCreator;
-    KetDerived(float energy, float f, float m, int p, std::string label, int new_property)
-        : Ket<float>(energy, f, m, p, label), new_property(new_property) {}
+    KetDerived(float f, float m, int p, std::string label, int new_property)
+        : Ket<float>(0, f, m, p, label), new_property(new_property) {}
     int new_property;
 };
 
 // Classes for creating an instance of the derived ket class
 class KetDerivedCreator {
 public:
-    KetDerivedCreator(float energy, float f, float m, int p, std::string label, int new_property)
-        : energy(energy), f(f), m(m), p(p), label(label), new_property(new_property) {}
-    KetDerived create() const { return KetDerived(energy, f, m, p, label, new_property); }
+    KetDerivedCreator(float f, float m, int p, std::string label, int new_property)
+        : f(f), m(m), p(p), label(label), new_property(new_property) {}
+    KetDerived create() const { return KetDerived(f, m, p, label, new_property); }
 
 private:
-    float energy;
     float f;
     float m;
     int p;
@@ -288,12 +301,12 @@ public:
     BasisDerived create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
+        kets.push_back(
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, "1s", 42).create()));
+        kets.push_back(
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, "2s", 42).create()));
         kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(3.0, 0.5, 0.5, 1, "1s", 42).create()));
-        kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(2.0, 0.5, 0.5, 1, "2s", 42).create()));
-        kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(2.0, 0.5, -0.5, 1, "3s", 42).create()));
+            KetDerivedCreator(0.5, -0.5, -1, "3s", 42).create()));
         return BasisDerived(std::move(kets));
     }
 };
@@ -301,16 +314,23 @@ public:
 DOCTEST_TEST_CASE("constructing a class derived from basis") {
     auto basis = BasisDerivedCreator().create();
 
-    // Sort the basis by energy and the m quantum number
-    basis.sort(BasisDerived::Label::ENERGY | BasisDerived::Label::QUANTUM_NUMBER_M);
-    float energy = std::numeric_limits<float>::lowest();
+    // Sort the basis by parity and the m quantum number
+    basis.sort(BasisDerived::Label::PARITY | BasisDerived::Label::QUANTUM_NUMBER_M);
+    int parity = std::numeric_limits<int>::lowest();
     float quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis.get_number_of_states(); ++i) {
-        DOCTEST_CHECK(basis.get_energy(i) >= energy);
+        DOCTEST_CHECK(basis.get_parity(i) >= parity);
         DOCTEST_CHECK(basis.get_quantum_number_m(i) >= quantum_number_m);
-        energy = basis.get_energy(i);
+        parity = basis.get_parity(i);
         quantum_number_m = basis.get_quantum_number_m(i);
     }
+
+    // Check that the blocks are correctly determined
+    auto blocks =
+        basis.get_blocks(BasisDerived::Label::PARITY | BasisDerived::Label::QUANTUM_NUMBER_M);
+    DOCTEST_CHECK(blocks[0] == 0);
+    DOCTEST_CHECK(blocks[1] == 1);
+    DOCTEST_CHECK(blocks[2] == 2);
 
     // Check that the kets can be iterated over and the new property can be obtained
     for (const auto &ket : basis) {
