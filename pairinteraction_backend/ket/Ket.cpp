@@ -40,6 +40,7 @@ template class Ket<double>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <doctest/doctest.h>
+#include <fmt/ostream.h>
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 #include <sstream>

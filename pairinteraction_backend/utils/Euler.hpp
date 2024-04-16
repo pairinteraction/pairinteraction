@@ -66,6 +66,7 @@ std::array<real_t, 3> get_euler_angles(std::array<real_t, 3> to_z_axis,
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <doctest/doctest.h>
+#include <fmt/ostream.h>
 #include <spdlog/fmt/ostr.h>
 #include <spdlog/spdlog.h>
 
