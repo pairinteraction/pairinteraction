@@ -118,7 +118,7 @@ if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
     OPTIONAL_COMPONENTS Development.SABIModule)
 else()
   find_package(Python REQUIRED
-    COMPONENTS Interpreter Development.Module Development.Embed NumPy
+    COMPONENTS Interpreter Development.Module NumPy
     OPTIONAL_COMPONENTS Development.SABIModule)
 endif()
 
