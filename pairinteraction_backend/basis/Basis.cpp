@@ -2,6 +2,7 @@
 #include "utils/euler.hpp"
 
 #include <numeric>
+#include <set>
 
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
@@ -170,7 +171,84 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
     coefficients = coefficients * transformator;
     sortation = Label::NONE;
 
-    throw std::runtime_error("Not implemented");
+    float tolerance = 1e-16;
+
+    Eigen::SparseMatrix<scalar_t> identity(transformator.cols(), transformator.cols());
+    identity.setIdentity();
+    if ((coefficients.adjoint() * coefficients - identity).norm() > tolerance) {
+        throw std::runtime_error("The transformation is not unitary.");
+    }
+
+    Eigen::SparseMatrix<float> probs =
+        (transformator.cwiseAbs2().transpose()).template cast<float>();
+
+    {
+        auto map = Eigen::Map<const Eigen::VectorXf>(quantum_number_f_of_states.data(),
+                                                     quantum_number_f_of_states.size());
+        Eigen::VectorXf val = probs * map;
+        Eigen::VectorXf sq = probs * map.cwiseAbs2();
+        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+
+        for (int i = 0; i < quantum_number_f_of_states.size(); ++i) {
+            if (diff[i] < tolerance) {
+                quantum_number_f_of_states[i] = val[i];
+            } else {
+                quantum_number_f_of_states[i] = std::numeric_limits<float>::max();
+            }
+        }
+    }
+
+    {
+        auto map = Eigen::Map<const Eigen::VectorXf>(quantum_number_m_of_states.data(),
+                                                     quantum_number_m_of_states.size());
+        Eigen::VectorXf val = probs * map;
+        Eigen::VectorXf sq = probs * map.cwiseAbs2();
+        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+
+        for (int i = 0; i < quantum_number_m_of_states.size(); ++i) {
+            if (diff[i] < tolerance) {
+                quantum_number_m_of_states[i] = val[i];
+            } else {
+                quantum_number_m_of_states[i] = std::numeric_limits<float>::max();
+            }
+        }
+    }
+
+    {
+        auto map =
+            Eigen::Map<const Eigen::VectorXi>(parity_of_states.data(), parity_of_states.size())
+                .template cast<float>();
+        Eigen::VectorXf val = probs * map;
+        Eigen::VectorXf sq = probs * map.cwiseAbs2();
+        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+
+        for (int i = 0; i < parity_of_states.size(); ++i) {
+            if (diff[i] < tolerance) {
+                parity_of_states[i] = static_cast<int>(val[i]);
+            } else {
+                parity_of_states[i] = std::numeric_limits<int>::max();
+            }
+        }
+    }
+
+    {
+        std::vector<real_t> map_idx_to_max(coefficients.cols(), 0);
+        for (int row = 0; row < coefficients.outerSize(); ++row) {
+            for (typename Eigen::SparseMatrix<scalar_t>::InnerIterator it(coefficients, row); it;
+                 ++it) {
+                if (std::abs(it.value()) > map_idx_to_max[it.col()]) {
+                    map_idx_to_max[it.col()] = std::abs(it.value());
+                    ket_of_states[it.col()] = row;
+                }
+            }
+        }
+
+        std::set<int> ket_of_states_set(ket_of_states.begin(), ket_of_states.end());
+        if (ket_of_states_set.size() != ket_of_states.size()) {
+            throw std::runtime_error(
+                "Failed to establish a unique mapping between the states and the kets.");
+        }
+    }
 }
 
 template <typename Derived>
