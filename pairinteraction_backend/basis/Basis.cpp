@@ -1,21 +1,39 @@
 #include "basis/Basis.hpp"
-#include "utils/Euler.hpp"
+#include "utils/euler.hpp"
 
 #include <numeric>
 
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets) : kets(std::move(kets)), is_standard_basis(true) {
-    energy_of_states.reserve(kets.size());
-    for (const auto &ket : kets) {
+    energy_of_states.reserve(this->kets.size());
+    quantum_number_f_of_states.reserve(this->kets.size());
+    quantum_number_m_of_states.reserve(this->kets.size());
+    parity_of_states.reserve(this->kets.size());
+    for (const auto &ket : this->kets) {
         energy_of_states.push_back(ket->get_energy());
+        quantum_number_f_of_states.push_back(ket->get_quantum_number_f());
+        quantum_number_m_of_states.push_back(ket->get_quantum_number_m());
+        parity_of_states.push_back(ket->get_parity());
     }
-    coefficients = Eigen::SparseMatrix<scalar_t>(kets.size(), kets.size());
+    ket_of_states.resize(this->kets.size());
+    std::iota(ket_of_states.begin(), ket_of_states.end(), 0);
+    coefficients = Eigen::SparseMatrix<scalar_t>(this->kets.size(), this->kets.size());
     coefficients.setIdentity();
 }
 
 template <typename Derived>
 const Derived &Basis<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_number_of_states() const {
+    return coefficients.cols();
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_number_of_kets() const {
+    return coefficients.rows();
 }
 
 template <typename Derived>
@@ -26,6 +44,21 @@ const typename Basis<Derived>::ket_t &Basis<Derived>::get_ket(size_t index_ket) 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_energy(size_t index_state) const {
     return energy_of_states[index_state];
+}
+
+template <typename Derived>
+float Basis<Derived>::get_quantum_number_f(size_t index_state) const {
+    return quantum_number_f_of_states[index_state];
+}
+
+template <typename Derived>
+float Basis<Derived>::get_quantum_number_m(size_t index_state) const {
+    return quantum_number_m_of_states[index_state];
+}
+
+template <typename Derived>
+int Basis<Derived>::get_parity(size_t index_state) const {
+    return parity_of_states[index_state];
 }
 
 template <typename Derived>
@@ -68,53 +101,42 @@ template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_rotator(std::array<real_t, 3> to_z_axis,
                             std::array<real_t, 3> to_y_axis) const {
-    auto euler_angles = Euler::get_euler_angles(to_z_axis, to_y_axis);
+    auto euler_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
     return this->get_rotator(euler_angles[0], euler_angles[1], euler_angles[2]);
 }
 
 template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter_according_to_kets() const {
-    std::vector<float> index_ket_of_states;
-    throw std::runtime_error("Not implemented");
-
-    std::vector<int> sorter(index_ket_of_states.size());
+std::vector<int> Basis<Derived>::get_sorter(Label label) const {
+    std::vector<int> sorter(coefficients.cols());
     std::iota(sorter.begin(), sorter.end(), 0);
-    std::stable_sort(sorter.begin(), sorter.end(),
-                     [&](int i, int j) { return index_ket_of_states[i] < index_ket_of_states[j]; });
-    return sorter;
-}
 
-template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter_according_to_energies() const {
-    std::vector<int> sorter(energy_of_states.size());
-    std::iota(sorter.begin(), sorter.end(), 0);
-    std::stable_sort(sorter.begin(), sorter.end(),
-                     [&](int i, int j) { return energy_of_states[i] < energy_of_states[j]; });
-    return sorter;
-}
+    if ((label & Label::ENERGY) == Label::ENERGY) {
+        std::stable_sort(sorter.begin(), sorter.end(),
+                         [&](int i, int j) { return energy_of_states[i] < energy_of_states[j]; });
+    }
 
-template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter_according_to_quantum_number_m() const {
-    std::vector<float> quantum_number_m_of_states;
-    throw std::runtime_error("Not implemented");
+    if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F) {
+        std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+            return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
+        });
+    }
 
-    std::vector<int> sorter(quantum_number_m_of_states.size());
-    std::iota(sorter.begin(), sorter.end(), 0);
-    std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
-        return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
-    });
-    return sorter;
-}
+    if ((label & Label::QUANTUM_NUMBER_M) == Label::QUANTUM_NUMBER_M) {
+        std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+            return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
+        });
+    }
 
-template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter_according_to_parity() const {
-    std::vector<int> parity_of_states;
-    throw std::runtime_error("Not implemented");
+    if ((label & Label::PARITY) == Label::PARITY) {
+        std::stable_sort(sorter.begin(), sorter.end(),
+                         [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
+    }
 
-    std::vector<int> sorter(parity_of_states.size());
-    std::iota(sorter.begin(), sorter.end(), 0);
-    std::stable_sort(sorter.begin(), sorter.end(),
-                     [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
+    if ((label & Label::KET) == Label::KET) {
+        std::stable_sort(sorter.begin(), sorter.end(),
+                         [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
+    }
+
     return sorter;
 }
 
@@ -143,32 +165,38 @@ void Basis<Derived>::sort(const std::vector<int> &sorter) {
             energy_of_states[i] = tmp[sorter[i]];
         }
     }
+    {
+        auto tmp(quantum_number_f_of_states);
+        for (int i = 0; i < sorter.size(); ++i) {
+            quantum_number_f_of_states[i] = tmp[sorter[i]];
+        }
+    }
+    {
+        auto tmp(quantum_number_m_of_states);
+        for (int i = 0; i < sorter.size(); ++i) {
+            quantum_number_m_of_states[i] = tmp[sorter[i]];
+        }
+    }
+    {
+        auto tmp(parity_of_states);
+        for (int i = 0; i < sorter.size(); ++i) {
+            parity_of_states[i] = tmp[sorter[i]];
+        }
+    }
+    {
+        auto tmp(ket_of_states);
+        for (int i = 0; i < sorter.size(); ++i) {
+            ket_of_states[i] = tmp[sorter[i]];
+        }
+    }
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
     perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
     coefficients = coefficients * perm;
 }
 
 template <typename Derived>
-void Basis<Derived>::sort_according_to_kets() {
-    auto sorter = this->get_sorter_according_to_kets();
-    this->sort(sorter);
-}
-
-template <typename Derived>
-void Basis<Derived>::sort_according_to_energies() {
-    auto sorter = this->get_sorter_according_to_energies();
-    this->sort(sorter);
-}
-
-template <typename Derived>
-void Basis<Derived>::sort_according_to_quantum_number_m() {
-    auto sorter = this->get_sorter_according_to_quantum_number_m();
-    this->sort(sorter);
-}
-
-template <typename Derived>
-void Basis<Derived>::sort_according_to_parity() {
-    auto sorter = this->get_sorter_according_to_parity();
+void Basis<Derived>::sort(Label label) {
+    auto sorter = this->get_sorter(label);
     this->sort(sorter);
 }
 
@@ -178,6 +206,8 @@ void Basis<Derived>::set_eigen_basis(Eigen::SparseMatrix<scalar_t> evecs,
     coefficients = evecs;
     energy_of_states = evals;
     is_standard_basis = false;
+
+    throw std::runtime_error("Not implemented");
 }
 
 // Explicit instantiations
@@ -198,6 +228,7 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <doctest/doctest.h>
+#include <spdlog/spdlog.h>
 
 #ifndef DOCTEST_CONFIG_DISABLE
 
@@ -233,7 +264,7 @@ private:
 class BasisDerived;
 
 template <>
-struct Traits::BasisTraits<BasisDerived> {
+struct traits::BasisTraits<BasisDerived> {
     using scalar_t = float;
     using real_t = float;
     using ket_t = KetDerived;
@@ -243,7 +274,7 @@ struct Traits::BasisTraits<BasisDerived> {
 class BasisDerived : public Basis<BasisDerived> {
 public:
     using Type = BasisDerived;
-    using ketvec_t = typename Traits::BasisTraits<BasisDerived>::ketvec_t;
+    using ketvec_t = typename traits::BasisTraits<BasisDerived>::ketvec_t;
 
 private:
     friend class BasisDerivedCreator;
@@ -258,17 +289,28 @@ public:
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
         kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(1.0, 0.5, 0.5, 1, "1s", 42).create()));
+            KetDerivedCreator(3.0, 0.5, 0.5, 1, "1s", 42).create()));
         kets.push_back(std::make_shared<const KetDerived>(
             KetDerivedCreator(2.0, 0.5, 0.5, 1, "2s", 42).create()));
         kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(3.0, 0.5, 0.5, 1, "3s", 42).create()));
+            KetDerivedCreator(2.0, 0.5, -0.5, 1, "3s", 42).create()));
         return BasisDerived(std::move(kets));
     }
 };
 
 DOCTEST_TEST_CASE("constructing a class derived from basis") {
     auto basis = BasisDerivedCreator().create();
+
+    // Sort the basis by energy and the m quantum number
+    basis.sort(BasisDerived::Label::ENERGY | BasisDerived::Label::QUANTUM_NUMBER_M);
+    float energy = std::numeric_limits<float>::lowest();
+    float quantum_number_m = std::numeric_limits<float>::lowest();
+    for (size_t i = 0; i < basis.get_number_of_states(); ++i) {
+        DOCTEST_CHECK(basis.get_energy(i) >= energy);
+        DOCTEST_CHECK(basis.get_quantum_number_m(i) >= quantum_number_m);
+        energy = basis.get_energy(i);
+        quantum_number_m = basis.get_quantum_number_m(i);
+    }
 
     // Check that the kets can be iterated over and the new property can be obtained
     for (const auto &ket : basis) {

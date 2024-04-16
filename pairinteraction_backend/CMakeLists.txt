@@ -27,7 +27,7 @@ target_sources(backend PUBLIC
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.cpp
   ./system/SystemClassicalLight.hpp
-  ./utils/Traits.hpp)
+  ./utils/traits.hpp)
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(backend
@@ -61,7 +61,7 @@ target_sources(bindings PUBLIC
   ./system/System.hpp
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.hpp
-  ./utils/Traits.hpp
+  ./utils/traits.hpp
   # Bindings
   ./basis/Basis.py.cpp
   ./basis/Basis.py.hpp

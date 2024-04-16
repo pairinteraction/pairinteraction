@@ -2,7 +2,7 @@
 
 #include "basis/BasisAtom.hpp"
 #include "ket/KetAtom.hpp"
-#include "utils/Traits.hpp"
+#include "utils/traits.hpp"
 #include <complex>
 #include <optional>
 #include <string>
@@ -17,7 +17,7 @@
 template <typename Scalar>
 class BasisAtomCreator {
 public:
-    using real_t = typename Traits::NumTraits<Scalar>::real_t;
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
     BasisAtomCreator(std::string species);
     BasisAtomCreator<Scalar> &restrict_energy(Scalar min, Scalar max);
