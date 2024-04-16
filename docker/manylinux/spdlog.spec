@@ -2,7 +2,7 @@
 %global debug_package   %{nil}
 
 Name:           spdlog
-Version:        1.8.5
+Version:        1.7.0
 Release:        1%{?dist}
 Summary:        Super fast C++ logging library
 Group:          Development/Libraries
@@ -56,8 +56,8 @@ popd
 %{_libdir}/pkgconfig/spdlog.pc
 
 %changelog
-* Tue Apr 16 2024 Henri Menke <henri@henrimenke.de> - 1.8.5-1
-- Update to 1.8.5
+* Tue Apr 16 2024 Henri Menke <henri@henrimenke.de> - 1.7.0-1
+- Update to 1.7.0
 
 * Sun Sep 04 2016 Daniel Kopecek <dkopecek@redhat.com> - 0.10.0-1
 - Update to 0.10.0

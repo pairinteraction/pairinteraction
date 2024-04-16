@@ -7,7 +7,7 @@ RUN yum-builddep -y spdlog.spec \
 
 FROM quay.io/pypa/manylinux2014_x86_64
 
-COPY --from=build /root/rpmbuild/RPMS/x86_64/spdlog-devel-1.8.5-1.el7.x86_64.rpm ./spdlog.rpm
+COPY --from=build /root/rpmbuild/RPMS/x86_64/spdlog-devel-1.7.0-1.el7.x86_64.rpm ./spdlog.rpm
 
 RUN yum install -y \
     boost169-devel \
