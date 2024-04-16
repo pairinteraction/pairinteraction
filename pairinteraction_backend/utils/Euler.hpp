@@ -78,16 +78,16 @@ DOCTEST_TEST_CASE("construction of rotation matrixes") {
     auto y_axis = Eigen::Matrix<double, 3, 1>{0, 1, 0};
     auto rotated_y_axis = rotator * y_axis;
     auto rotated_y_axis_reference = Eigen::Matrix<double, 3, 1>{1, 1, 0}.normalized();
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotation matrix:\n{}", rotator);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotated y-axis:\n{}", rotated_y_axis);
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotation matrix:\n{}", fmt::streamed(rotator));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotated y-axis:\n{}", fmt::streamed(rotated_y_axis));
     DOCTEST_CHECK((rotated_y_axis - rotated_y_axis_reference).norm() == 0);
 
     rotator = Euler::get_rotation_matrix<double>({1, 0, 0}, {0, 1, 0});
     auto z_axis = Eigen::Matrix<double, 3, 1>{0, 0, 1};
     auto rotated_z_axis = rotator * z_axis;
     auto rotated_z_axis_reference = Eigen::Matrix<double, 3, 1>{1, 0, 0};
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotation matrix:\n{}", rotator);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotated z-axis:\n{}", rotated_z_axis);
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotation matrix:\n{}", fmt::streamed(rotator));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Rotated z-axis:\n{}", fmt::streamed(rotated_z_axis));
     DOCTEST_CHECK((rotated_z_axis - rotated_z_axis_reference).norm() == 0);
 
     std::string error_msg = "The z-axis and the y-axis are not orhogonal.";
