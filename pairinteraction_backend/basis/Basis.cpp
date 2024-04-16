@@ -267,8 +267,6 @@ public:
     }
 };
 
-#endif // DOCTEST_CONFIG_DISABLE
-
 DOCTEST_TEST_CASE("constructing a class derived from basis") {
     auto basis = BasisDerivedCreator().create();
 
@@ -277,3 +275,5 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
         DOCTEST_CHECK(ket.get_new_property() == 42);
     }
 }
+
+#endif // DOCTEST_CONFIG_DISABLE
