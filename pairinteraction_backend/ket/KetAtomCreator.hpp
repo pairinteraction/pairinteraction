@@ -4,6 +4,7 @@
 #include <optional>
 #include <string>
 
+#include "cache/Cache.hpp"
 #include "ket/KetAtom.hpp"
 
 template <typename Real>
@@ -30,7 +31,7 @@ public:
     KetAtomCreator<Real> &set_quantum_number_l(Real value);
     KetAtomCreator<Real> &set_quantum_number_s(Real value);
     KetAtomCreator<Real> &set_quantum_number_j(Real value);
-    KetAtom<Real> create() const;
+    KetAtom<Real> create(Cache &cache) const;
 
 private:
     std::string species;
