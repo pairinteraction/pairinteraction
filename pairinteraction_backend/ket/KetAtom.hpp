@@ -27,9 +27,9 @@ public:
 
 private:
     friend class KetAtomCreator<Real>;
-    KetAtom(Real energy, float f, float m, int p, std::string label, std::string species, int n,
-            Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std, Real j_exp,
-            Real j_std);
+    KetAtom(Real energy, float f, float m, int p, std::string label, size_t id, std::string species,
+            int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
+            Real j_exp, Real j_std);
     std::string species;
     int quantum_number_n;
     Real quantum_number_nu_exp;

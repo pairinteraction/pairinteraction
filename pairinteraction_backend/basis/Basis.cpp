@@ -7,14 +7,17 @@
 
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
-    : kets(std::move(kets)), is_standard_basis(true), sortation(Label::KET) {
+    : kets(std::move(kets)), is_standard_basis(true), sorting(Label::KET) {
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());
+    ket_id_to_index.reserve(this->kets.size());
+    size_t index = 0;
     for (const auto &ket : this->kets) {
         quantum_number_f_of_states.push_back(ket->get_quantum_number_f());
         quantum_number_m_of_states.push_back(ket->get_quantum_number_m());
         parity_of_states.push_back(ket->get_parity());
+        ket_id_to_index[ket->get_id()] = index++;
     }
     ket_of_states.resize(this->kets.size());
     std::iota(ket_of_states.begin(), ket_of_states.end(), 0);
@@ -98,16 +101,11 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
         float f = kets[idx_initial]->get_quantum_number_f();
         float m_initial = kets[idx_initial]->get_quantum_number_m();
         for (float m_final = -f; m_final <= f; ++m_final) {
-            // TODO scalar_t val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial,
-            // m_final, alpha,
-            //                                                           beta, gamma);
-
-            // TODO get the final index, probably via a lookup in a hash map
-            // int idx_final = 0;
-
-            throw std::runtime_error("Not implemented");
-
-            // TODO entries.emplace_back(idx_final, idx_initial, val);
+            scalar_t val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
+                                                                       beta, gamma);
+            size_t idx_final = ket_id_to_index.at(
+                kets[idx_initial]->get_id_for_different_quantum_number_m(m_final));
+            entries.emplace_back(idx_final, idx_initial, val);
         }
     }
 
@@ -157,7 +155,7 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
 
 template <typename Derived>
 std::vector<int> Basis<Derived>::get_blocks(Label label) const {
-    if (label != sortation) {
+    if (label != sorting) {
         throw std::invalid_argument("The basis is not sorted by the requested label.");
     }
 
@@ -194,7 +192,7 @@ template <typename Derived>
 void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
     is_standard_basis = false;
     coefficients = coefficients * transformator;
-    sortation = Label::NONE;
+    sorting = Label::NONE;
 
     float tolerance = 1e-16;
 
@@ -279,17 +277,11 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
 
 template <typename Derived>
 void Basis<Derived>::rotate(real_t alpha, real_t beta, real_t gamma) {
+    if (!is_standard_basis) {
+        throw std::runtime_error("Only standard bases can be rotated.");
+    }
     auto rotator = this->get_rotator(alpha, beta, gamma);
-
-    is_standard_basis = false;
-    coefficients = rotator * coefficients;
-    sortation = Label::NONE;
-
-    float tolerance = 1e-16;
-
-    // TODO recalculate quantum_number_f_of_states, etc.
-
-    throw std::runtime_error("Not implemented");
+    this->transform(rotator);
 }
 
 template <typename Derived>
@@ -327,14 +319,14 @@ void Basis<Derived>::sort(const std::vector<int> &sorter) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
     perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
     coefficients = coefficients * perm;
-    sortation = Label::NONE;
+    sorting = Label::NONE;
 }
 
 template <typename Derived>
 void Basis<Derived>::sort(Label label) {
     auto sorter = this->get_sorter(label);
     this->sort(sorter);
-    sortation = label;
+    sorting = label;
 }
 
 // Explicit instantiations
@@ -366,23 +358,24 @@ public:
 
 private:
     friend class KetDerivedCreator;
-    KetDerived(float f, float m, int p, std::string label, int new_property)
-        : Ket<float>(0, f, m, p, label), new_property(new_property) {}
+    KetDerived(float f, float m, int p, std::string label, size_t id, int new_property)
+        : Ket<float>(0, f, m, p, label, id), new_property(new_property) {}
     int new_property;
 };
 
 // Classes for creating an instance of the derived ket class
 class KetDerivedCreator {
 public:
-    KetDerivedCreator(float f, float m, int p, std::string label, int new_property)
-        : f(f), m(m), p(p), label(label), new_property(new_property) {}
-    KetDerived create() const { return KetDerived(f, m, p, label, new_property); }
+    KetDerivedCreator(float f, float m, int p, std::string label, size_t id, int new_property)
+        : f(f), m(m), p(p), label(label), id(id), new_property(new_property) {}
+    KetDerived create() const { return KetDerived(f, m, p, label, new_property, id); }
 
 private:
     float f;
     float m;
     int p;
     std::string label;
+    size_t id;
     int new_property;
 };
 
@@ -414,12 +407,12 @@ public:
     BasisDerived create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
-        kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, "1s", 42).create()));
-        kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, "2s", 42).create()));
         kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(0.5, -0.5, -1, "3s", 42).create()));
+            KetDerivedCreator(0.5, 0.5, 1, "1s", 42, 1000).create()));
+        kets.push_back(std::make_shared<const KetDerived>(
+            KetDerivedCreator(0.5, 0.5, -1, "2s", 42, 2000).create()));
+        kets.push_back(std::make_shared<const KetDerived>(
+            KetDerivedCreator(0.5, -0.5, -1, "3s", 42, 3000).create()));
         return BasisDerived(std::move(kets));
     }
 };

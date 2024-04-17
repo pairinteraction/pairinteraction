@@ -6,6 +6,7 @@
 #include <complex>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "ket/Ket.hpp"
@@ -97,6 +98,7 @@ private:
     std::vector<int> ket_of_states;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
     ketvec_t kets;
+    std::unordered_map<size_t, size_t> ket_id_to_index;
     bool is_standard_basis;
-    Label sortation;
+    Label sorting;
 };

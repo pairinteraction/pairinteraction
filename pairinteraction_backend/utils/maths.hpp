@@ -4,8 +4,7 @@
 
 namespace maths {
 
-template <typename real_t>
-real_t binomial_coefficient(real_t n, real_t k) {
+double binomial_coefficient(double n, double k) {
     if (n < k || k < 0) {
         throw std::invalid_argument("It must be n >= k >= 0.");
     }
@@ -14,7 +13,7 @@ real_t binomial_coefficient(real_t n, real_t k) {
     }
 
     // Recursion (n, k) = (n - 1, k - 1) * n / k
-    real_t result = n - k + 1;
+    double result = n - k + 1;
     for (int i = 1; i < k; ++i) {
         result *= (n - k + 1 + i) / (i + 1);
     }
@@ -22,8 +21,7 @@ real_t binomial_coefficient(real_t n, real_t k) {
     return result;
 }
 
-template <typename real_t>
-real_t factorial(real_t n) {
+double factorial(double n) {
     if (n < 0) {
         throw std::invalid_argument("It must be n >= 0.");
     }
@@ -31,7 +29,7 @@ real_t factorial(real_t n) {
         return 1;
     }
 
-    real_t result = 1;
+    double result = 1;
     for (int i = 2; i <= n; ++i) {
         result *= i;
     }

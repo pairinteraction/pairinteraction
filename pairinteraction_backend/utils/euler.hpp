@@ -10,7 +10,7 @@ namespace euler {
  *
  * @brief Build a matrix that rotates the coordinate system to the new z-axis and y-axis.
  *
- * @tparam real_t The type of a real number.
+ * @tparam Real The type of a real number.
  *
  * @param to_z_axis The new z-axis.
  *
@@ -19,18 +19,18 @@ namespace euler {
  * @return The passive rotation matrix.
  */
 
-template <typename real_t>
-Eigen::Matrix<real_t, 3, 3> get_rotation_matrix(std::array<real_t, 3> to_z_axis,
-                                                std::array<real_t, 3> to_y_axis) {
-    auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<real_t, 3, 1>>(to_z_axis.data()).normalized();
-    auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<real_t, 3, 1>>(to_y_axis.data()).normalized();
+template <typename Real>
+Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_axis,
+                                              std::array<Real, 3> to_y_axis) {
+    auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_z_axis.data()).normalized();
+    auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_y_axis.data()).normalized();
 
-    real_t tolerance = 1e-16;
+    Real tolerance = 1e-16;
     if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) {
         throw std::runtime_error("The z-axis and the y-axis are not orhogonal.");
     }
 
-    Eigen::Matrix<real_t, 3, 3> rotator;
+    Eigen::Matrix<Real, 3, 3> rotator;
     rotator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
 
     return rotator;
@@ -41,7 +41,7 @@ Eigen::Matrix<real_t, 3, 3> get_rotation_matrix(std::array<real_t, 3> to_z_axis,
  *
  * @brief Extract the Euler angles alpha, beta, gamma
  *
- * @tparam real_t The type of a real number.
+ * @tparam Real The type of a real number.
  *
  * @param to_z_axis The new z-axis.
  *
@@ -50,12 +50,11 @@ Eigen::Matrix<real_t, 3, 3> get_rotation_matrix(std::array<real_t, 3> to_z_axis,
  * @return The Euler angles.
  */
 
-template <typename real_t>
-std::array<real_t, 3> get_euler_angles(std::array<real_t, 3> to_z_axis,
-                                       std::array<real_t, 3> to_y_axis) {
+template <typename Real>
+std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis, std::array<Real, 3> to_y_axis) {
     auto rotator = get_rotation_matrix(to_z_axis, to_y_axis);
-    std::array<real_t, 3> euler_zyz;
-    Eigen::Map<Eigen::Matrix<real_t, 3, 1>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);
+    std::array<Real, 3> euler_zyz;
+    Eigen::Map<Eigen::Matrix<Real, 3, 1>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);
     return euler_zyz;
 }
 

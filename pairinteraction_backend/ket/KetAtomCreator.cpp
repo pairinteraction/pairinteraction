@@ -76,7 +76,7 @@ KetAtom<Real> KetAtomCreator<Real>::create() const {
         quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
         parity.value_or(
             std::pow(-1, quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()))),
-        "", species, quantum_number_n.value_or(0),
+        "", 1000, species, quantum_number_n.value_or(0),
         quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
