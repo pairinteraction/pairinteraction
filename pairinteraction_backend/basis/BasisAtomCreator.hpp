@@ -1,11 +1,13 @@
 #pragma once
 
-#include "basis/BasisAtom.hpp"
-#include "ket/KetAtom.hpp"
-#include "utils/traits.hpp"
 #include <complex>
 #include <optional>
 #include <string>
+
+#include "basis/BasisAtom.hpp"
+#include "cache/Cache.hpp"
+#include "ket/KetAtom.hpp"
+#include "utils/traits.hpp"
 
 /**
  * @class BasisAtomCreator
@@ -29,7 +31,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_quantum_number_l(Scalar min, Scalar max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_s(Scalar min, Scalar max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_j(Scalar min, Scalar max);
-    BasisAtom<Scalar> create() const;
+    BasisAtom<Scalar> create(Cache &cache) const;
 
 private:
     std::string species;
