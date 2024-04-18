@@ -210,8 +210,8 @@ Note that some targets require specific build options to be enabled in addition 
 | ``doc``      | Synonym to make both, ``doxygen`` and     | ``WITH_DOC=ON``      |
 |              | ``sphinx`` documentation                  |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``livehtml`` | Build the Sphinx documentation and view   | ``WITH_DOC=ON``      |
-|              | it in a web server                        |                      |
+| ``livehtml`` | Build the Sphinx documentation, host      | ``WITH_DOC=ON``      |
+|              | it on http://127.0.0.1:8000               |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``win32``    | Create a package for Windows              |                      |
 +--------------+-------------------------------------------+----------------------+
@@ -230,3 +230,21 @@ processors can speed up the compilation process significantly.
 .. code-block:: bash
 
     cmake --build . --config Release -- -j 8
+
+Tips and Tricks
+"""""""""""""""
+
+**1. Using a Faster Build System**
+
+You can use the `ninja` build system and the `mold` linker to reduce the build time by a factor of 1.5-2. Under GNU/Linux, these tools are typically available in the package repositories of your distribution. For example, on Ubuntu, you can install them by running:
+
+.. code-block:: bash
+
+    sudo apt install ninja-build mold
+
+Then, you can tell CMake to build the software with these tools by running the following commands within the build directory. Note that ninja uses all available processors by default.
+
+.. code-block:: bash
+
+    cmake -GNinja -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
+    cmake --build . --config Release
