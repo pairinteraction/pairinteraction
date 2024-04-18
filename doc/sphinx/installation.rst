@@ -210,8 +210,8 @@ Note that some targets require specific build options to be enabled in addition 
 | ``doc``      | Synonym to make both, ``doxygen`` and     | ``WITH_DOC=ON``      |
 |              | ``sphinx`` documentation                  |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``livehtml`` | Build the Sphinx documentation, host      | ``WITH_DOC=ON``      |
-|              | it on http://127.0.0.1:8000               |                      |
+| ``livehtml`` | Build the Sphinx documentation and        | ``WITH_DOC=ON``      |
+|              | show it in a web browser                  |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``win32``    | Create a package for Windows              |                      |
 +--------------+-------------------------------------------+----------------------+
@@ -232,11 +232,11 @@ processors can speed up the compilation process significantly.
     cmake --build . --config Release -- -j 8
 
 Tips and Tricks
-"""""""""""""""
+^^^^^^^^^^^^^^^
 
 **1. Using a Faster Build System**
 
-You can use the `ninja` build system and the `mold` linker to reduce the build time by a factor of 1.5-2. Under GNU/Linux, these tools are typically available in the package repositories of your distribution. For example, on Ubuntu, you can install them by running:
+Under GNU/Linux, you can use the `ninja` build system and the `mold` linker to reduce the build time by a factor of about 1.5. These tools are typically available in the package repositories of your distribution. For example, on Ubuntu, you can install them by running:
 
 .. code-block:: bash
 
@@ -246,5 +246,91 @@ Then, you can tell CMake to build the software with these tools by running the f
 
 .. code-block:: bash
 
-    cmake -GNinja -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
+    cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
     cmake --build . --config Release
+
+**2. Building and Testing Only Parts of the Software**
+
+If you're developing and making changes to specific parts of the software, you can save time by using specific targets to build and test only those parts. You can read off the names of relevant targets from the ``CMakeLists.txt`` files located in the directories where you perform the changes. For example, you can build and test only the C++ backend by running the following commands within the build directory:
+
+.. code-block:: bash
+
+    cmake --build . --config Release --target pairinteraction_backend_test
+    ctest -V -C Release -R pairinteraction_backend_test
+
+However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software.
+
+**3. Debugging with GDB**
+
+For tracking down errors like segmentation faults, running a debug build with the GNU Debugger `GDB` can be very helpful.
+
+If CMake uses a multi-configuration generator (e.g., Ninja Multi-Config, Visual Studio Generators), you can build the software with debug symbols by using the ``--config Debug`` option. Afterwards, you can execute the build with GDB. For example:
+
+.. code-block:: bash
+
+    cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
+    cmake --build . --config Debug --target pairinteraction_backend_test
+    gdb -ex r --args pairinteraction_backend/Debug/pairinteraction_backend_test
+
+If you are using a single-configuration generator (e.g., Unix Makefiles), you must specify the build type directly:
+
+.. code-block:: bash
+
+    cmake -DCMAKE_BUILD_TYPE=Debug ..
+    cmake --build . --target pairinteraction_backend_test
+    gdb -ex r --args pairinteraction_backend/pairinteraction_backend_test
+
+If you have executed a build without GDB, a crash occurred, and a core dump was created, you can load the core dump into GDB:
+
+.. code-block:: bash
+
+    gdb path/to/my/executable path/to/core
+
+After starting the debugger, you can use `GDB's commands`_ to analyze the crash. Some of the most important commands are listed in the tables below.
+
++-------------------------+------------------------------------------------------------------+
+| Basics                                                                                     |
++=========================+==================================================================+
+| ``help COMMAND``        | Display help for the given COMMAND                               |
++-------------------------+------------------------------------------------------------------+
+| ``q``                   | Quit the debugger                                                |
++-------------------------+------------------------------------------------------------------+
+
++-------------------------+------------------------------------------------------------------+
+| Investigating a backtrace                                                                  |
++=========================+==================================================================+
+| ``bt``                  | Display a backtrace of the call stack                            |
++-------------------------+------------------------------------------------------------------+
+| ``frame NUMBER``        | Select the frame with the given NUMBER on the call stack         |
++-------------------------+------------------------------------------------------------------+
+| ``up`` / ``down``       | Select one frame up or down from the currently selected frame    |
++-------------------------+------------------------------------------------------------------+
+| ``list``                | Display code around the selected frame                           |
++-------------------------+------------------------------------------------------------------+
+| ``p EXPR``              | Display the value of EXPR                                        |
++-------------------------+------------------------------------------------------------------+
+
++-------------------------+------------------------------------------------------------------+
+| Debugging with multiple threads                                                            |
++=========================+==================================================================+
+| ``info threads``        | Display all threads running in the program, the first            |
+|                         | field is the thread number                                       |
++-------------------------+------------------------------------------------------------------+
+| ``thread NUMBER``       | Select the thread with the given NUMBER                          |
++-------------------------+------------------------------------------------------------------+
+
++-------------------------+------------------------------------------------------------------+
+| Breakpoints and stepping                                                                   |
++=========================+==================================================================+
+| ``b FUNCTIONNAME``      | Set breakpoint at FUNCTIONNAME                                   |
++-------------------------+------------------------------------------------------------------+
+| ``delete FUNCTIONNAME`` | Delete breakpoint at FUNCTIONNAME                                |
++-------------------------+------------------------------------------------------------------+
+| ``c``                   | Continue executing the program until the next breakpoint         |
++-------------------------+------------------------------------------------------------------+
+| ``n``                   | Execute next source-code line, stepping over function calls      |
++-------------------------+------------------------------------------------------------------+
+| ``s``                   | Execute next source-code line, stepping into function calls      |
++-------------------------+------------------------------------------------------------------+
+
+.. _gdb's commands: http://www.unknownroad.com/rtfm/gdbtut/gdbtoc.html

@@ -86,7 +86,7 @@ add_custom_target(livehtml
     "${SPHINX_HTML_DIR}"
   VERBATIM
   DEPENDS binding
-  COMMENT "Show a live preview of the documentation with Sphinx")
+  COMMENT "Show a live preview of the documentation with Sphinx, serving on http://127.0.0.1:8000")
 
 set_target_properties(livehtml PROPERTIES EXCLUDE_FROM_ALL ON)
 
