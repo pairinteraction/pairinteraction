@@ -132,17 +132,32 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
         std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
+
+        if (quantum_number_f_of_states[sorter.back()] == std::numeric_limits<float>::max()) {
+            throw std::invalid_argument(
+                "States cannot be labeled and thus not sorted by the quantum number f.");
+        }
     }
 
     if ((label & Label::QUANTUM_NUMBER_M) == Label::QUANTUM_NUMBER_M) {
         std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
+
+        if (quantum_number_m_of_states[sorter.back()] == std::numeric_limits<float>::max()) {
+            throw std::invalid_argument(
+                "States cannot be labeled and thus not sorted by the quantum number m.");
+        }
     }
 
     if ((label & Label::PARITY) == Label::PARITY) {
         std::stable_sort(sorter.begin(), sorter.end(),
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
+
+        if (parity_of_states[sorter.back()] == std::numeric_limits<int>::max()) {
+            throw std::invalid_argument(
+                "States cannot be labeled and thus not sorted by the parity.");
+        }
     }
 
     if ((label & Label::KET) == Label::KET) {
