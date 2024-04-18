@@ -163,7 +163,5 @@ if (BUILD_TESTING)
   )
 
   # Add tests
-  # To only build and run these tests, use
-  # "cmake --build . --target pairinteraction_backend_test && ./pairinteraction_backend/pairinteraction_backend_test -d"
   add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
 endif()
