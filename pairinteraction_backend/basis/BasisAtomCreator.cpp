@@ -72,17 +72,17 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(Sc
 }
 
 template <typename Scalar>
-BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Cache &cache) const {
+BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
 
     // TODO perform database request
-    (void)cache;
+    (void)database;
 
     std::vector<std::shared_ptr<const ket_t>> kets;
     kets.reserve(2);
     kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species, 60, 1, 0.5, -0.5).create(cache)));
+        KetAtomCreator<real_t>(species, 60, 1, 0.5, -0.5).create(database)));
     kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species, 60, 1, 0.5, 0.5).create(cache)));
+        KetAtomCreator<real_t>(species, 60, 1, 0.5, 0.5).create(database)));
 
     return BasisAtom<Scalar>(std::move(kets));
 }
@@ -100,11 +100,11 @@ template class BasisAtomCreator<std::complex<double>>;
 #include <doctest/doctest.h>
 
 DOCTEST_TEST_CASE("create a basis for rubidium") {
-    auto cache = Cache();
+    auto database = Database();
     auto basis = BasisAtomCreator<float>("Rb")
                      .restrict_quantum_number_n(60, 64)
                      .restrict_quantum_number_l(0, 2)
-                     .create(cache);
+                     .create(database);
     for (const auto &ket : basis) {
         DOCTEST_CHECK(ket.get_species() == "Rb");
     }
