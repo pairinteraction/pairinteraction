@@ -4,12 +4,15 @@
 #include <limits>
 
 template <typename Real>
-KetAtomCreator<Real>::KetAtomCreator(std::string species) : species(species) {}
-
-template <typename Real>
 KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, float j, float m)
     : species(species), quantum_number_n(n), quantum_number_l(l), quantum_number_f(j),
       quantum_number_j(j), quantum_number_m(m), quantum_number_s(0.5) {}
+
+template <typename Real>
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_species(std::string value) {
+    species.emplace(value);
+    return *this;
+}
 
 template <typename Real>
 KetAtomCreator<Real> &KetAtomCreator<Real>::set_energy(Real value) {
@@ -77,7 +80,7 @@ KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
         quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
         parity.value_or(
             std::pow(-1, quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()))),
-        "", 1000, species, quantum_number_n.value_or(0),
+        "", 1000, species.value(), quantum_number_n.value_or(0),
         quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
@@ -109,7 +112,8 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
     auto database = Database();
-    auto ket = KetAtomCreator<float>("Sr88_mqdt")
+    auto ket = KetAtomCreator<float>()
+                   .set_species("Sr88_mqdt")
                    .set_quantum_number_nu(60)
                    .set_quantum_number_l(1)
                    .set_quantum_number_f(1)

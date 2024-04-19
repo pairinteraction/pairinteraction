@@ -21,7 +21,8 @@ class BasisAtomCreator {
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
-    BasisAtomCreator(std::string species);
+    BasisAtomCreator() = default;
+    BasisAtomCreator<Scalar> &set_species(std::string value);
     BasisAtomCreator<Scalar> &restrict_energy(Scalar min, Scalar max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_f(float min, float max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_m(float min, float max);
@@ -34,7 +35,7 @@ public:
     BasisAtom<Scalar> create(Database &database) const;
 
 private:
-    std::string species;
+    std::optional<std::string> species;
     std::optional<Scalar> min_energy;
     std::optional<Scalar> max_energy;
     std::optional<float> min_quantum_number_f;
