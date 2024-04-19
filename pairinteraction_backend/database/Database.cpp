@@ -2,6 +2,10 @@
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
 
+#include <duckdb.hpp>
+#include <httplib.h>
+#include <nlohmann/json.hpp>
+
 template <typename Real>
 KetAtom<Real>
 Database::get_ket(std::string species, std::optional<Real> energy,
