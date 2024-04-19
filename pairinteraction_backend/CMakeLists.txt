@@ -31,6 +31,7 @@ target_sources(backend PUBLIC
   ./system/SystemClassicalLight.hpp
   ./utils/euler.hpp
   ./utils/maths.hpp
+  ./utils/path.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
 )
@@ -73,6 +74,7 @@ target_sources(bindings PUBLIC
   ./system/SystemClassicalLight.hpp
   ./utils/euler.hpp
   ./utils/maths.hpp
+  ./utils/path.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
   # Bindings

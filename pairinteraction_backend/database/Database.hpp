@@ -1,5 +1,6 @@
 #pragma once
 
+#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>
@@ -10,7 +11,7 @@ class KetAtom;
 
 class Database {
 public:
-    Database() = default;
+    Database(bool auto_update = true);
 
     template <typename Real>
     KetAtom<Real>
@@ -31,6 +32,10 @@ public:
              std::optional<Real> max_quantum_number_l, std::optional<Real> min_quantum_number_s,
              std::optional<Real> max_quantum_number_s, std::optional<Real> min_quantum_number_j,
              std::optional<Real> max_quantum_number_j);
+
+private:
+    std::filesystem::path db_path;
+    bool auto_update;
 };
 
 extern template KetAtom<float> Database::get_ket<float>(
