@@ -6,6 +6,8 @@
 
 #include <complex>
 
+class Database;
+
 // Specialize BasisTraits for BasisAtom
 template <typename T>
 class BasisAtomCreator;
@@ -36,7 +38,8 @@ public:
 
 private:
     friend class BasisAtomCreator<Scalar>;
-    BasisAtom(ketvec_t &&kets);
+    BasisAtom(ketvec_t &&kets, Database &database);
+    Database &database;
 };
 
 extern template class BasisAtom<float>;

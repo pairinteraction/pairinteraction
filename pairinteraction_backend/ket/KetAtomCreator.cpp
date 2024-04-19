@@ -1,5 +1,8 @@
 #include "ket/KetAtomCreator.hpp"
 
+#include "database/Database.hpp"
+#include "ket/KetAtom.hpp"
+
 #include <cmath>
 #include <limits>
 
@@ -84,7 +87,7 @@ KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
         quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
         quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-        quantum_number_j.value_or(std::numeric_limits<Real>::quiet_NaN()), 0);
+        quantum_number_j.value_or(std::numeric_limits<Real>::quiet_NaN()), 0, database);
 }
 
 // Explicit instantiations

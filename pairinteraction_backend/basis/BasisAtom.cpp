@@ -1,7 +1,8 @@
 #include "basis/BasisAtom.hpp"
 
 template <typename Scalar>
-BasisAtom<Scalar>::BasisAtom(ketvec_t &&kets) : Basis<BasisAtom<Scalar>>(std::move(kets)) {}
+BasisAtom<Scalar>::BasisAtom(ketvec_t &&kets, Database &database)
+    : Basis<BasisAtom<Scalar>>(std::move(kets)), database(database) {}
 
 // Explicit instantiations
 template class BasisAtom<float>;

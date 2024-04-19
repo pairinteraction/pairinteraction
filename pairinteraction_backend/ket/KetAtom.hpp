@@ -3,7 +3,8 @@
 #include <string>
 
 #include "ket/Ket.hpp"
-#include "ket/KetAtomCreator.hpp"
+
+class Database;
 
 template <typename Real>
 class KetAtomCreator;
@@ -29,7 +30,7 @@ private:
     friend class KetAtomCreator<Real>;
     KetAtom(Real energy, float f, float m, int p, std::string label, size_t id, std::string species,
             int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
-            Real j_exp, Real j_std);
+            Real j_exp, Real j_std, Database &database);
     std::string species;
     int quantum_number_n;
     Real quantum_number_nu_exp;
@@ -40,6 +41,7 @@ private:
     Real quantum_number_s_std;
     Real quantum_number_j_exp;
     Real quantum_number_j_std;
+    Database &database;
 };
 
 extern template class KetAtom<float>;
