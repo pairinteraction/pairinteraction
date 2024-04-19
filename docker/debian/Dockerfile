@@ -11,6 +11,7 @@ RUN apt-get update -qq \
     pyqt5-dev-tools \
     libboost-dev \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
+    libcpp-httplib-dev nlohmann-json3-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev python3-skbuild \
     python3-numpy python3-scipy \
