@@ -54,6 +54,13 @@ template class Ket<double>;
 #include <spdlog/spdlog.h>
 #include <sstream>
 
+#if FMT_VERSION < 90000
+namespace fmt {
+template <typename T>
+inline auto streamed(T&& v) { return std::forward<T>(v); }
+}
+#endif
+
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerived : public Ket<float> {
     private:
@@ -85,5 +92,5 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     DOCTEST_CHECK(ss.str() == "my_label");
 
     // Output the label to the doctest log
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", ket);
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
 }
