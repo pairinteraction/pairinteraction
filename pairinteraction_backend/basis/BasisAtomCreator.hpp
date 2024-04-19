@@ -28,21 +28,21 @@ public:
     using ket_t = KetAtom<real_t>;
     BasisAtomCreator() = default;
     BasisAtomCreator<Scalar> &set_species(std::string value);
-    BasisAtomCreator<Scalar> &restrict_energy(Scalar min, Scalar max);
+    BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_f(float min, float max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_m(float min, float max);
     BasisAtomCreator<Scalar> &restrict_parity(int parity);
     BasisAtomCreator<Scalar> &restrict_quantum_number_n(int min, int max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_nu(Scalar min, Scalar max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_l(Scalar min, Scalar max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_s(Scalar min, Scalar max);
-    BasisAtomCreator<Scalar> &restrict_quantum_number_j(Scalar min, Scalar max);
+    BasisAtomCreator<Scalar> &restrict_quantum_number_nu(real_t min, real_t max);
+    BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
+    BasisAtomCreator<Scalar> &restrict_quantum_number_s(real_t min, real_t max);
+    BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
     BasisAtom<Scalar> create(Database &database) const;
 
 private:
     std::optional<std::string> species;
-    std::optional<Scalar> min_energy;
-    std::optional<Scalar> max_energy;
+    std::optional<real_t> min_energy;
+    std::optional<real_t> max_energy;
     std::optional<float> min_quantum_number_f;
     std::optional<float> max_quantum_number_f;
     std::optional<float> min_quantum_number_m;
@@ -50,14 +50,14 @@ private:
     std::optional<int> parity;
     std::optional<int> min_quantum_number_n;
     std::optional<int> max_quantum_number_n;
-    std::optional<Scalar> min_quantum_number_nu;
-    std::optional<Scalar> max_quantum_number_nu;
-    std::optional<Scalar> min_quantum_number_l;
-    std::optional<Scalar> max_quantum_number_l;
-    std::optional<Scalar> min_quantum_number_s;
-    std::optional<Scalar> max_quantum_number_s;
-    std::optional<Scalar> min_quantum_number_j;
-    std::optional<Scalar> max_quantum_number_j;
+    std::optional<real_t> min_quantum_number_nu;
+    std::optional<real_t> max_quantum_number_nu;
+    std::optional<real_t> min_quantum_number_l;
+    std::optional<real_t> max_quantum_number_l;
+    std::optional<real_t> min_quantum_number_s;
+    std::optional<real_t> max_quantum_number_s;
+    std::optional<real_t> min_quantum_number_j;
+    std::optional<real_t> max_quantum_number_j;
 };
 
 extern template class BasisAtomCreator<float>;
