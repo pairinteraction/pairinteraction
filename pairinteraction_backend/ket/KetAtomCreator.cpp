@@ -74,20 +74,15 @@ KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_j(Real value) {
 template <typename Real>
 KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
 
-    // TODO perform database request
-    (void)database;
+    if (!species.has_value()) {
+        throw std::runtime_error("Species not set.");
+    }
 
-    return KetAtom<Real>(
-        energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
-        quantum_number_f.value_or(std::numeric_limits<float>::quiet_NaN()),
-        quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
-        parity.value_or(
-            std::pow(-1, quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()))),
-        "", 1000, species.value(), quantum_number_n.value_or(0),
-        quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-        quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-        quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-        quantum_number_j.value_or(std::numeric_limits<Real>::quiet_NaN()), 0, database);
+    auto ket = database.get_ket<Real>(species.value(), energy, quantum_number_f, quantum_number_m,
+                                      parity, quantum_number_n, quantum_number_nu, quantum_number_l,
+                                      quantum_number_s, quantum_number_j);
+
+    return ket;
 }
 
 // Explicit instantiations
