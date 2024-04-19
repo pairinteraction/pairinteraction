@@ -1,5 +1,6 @@
 #include "Ket.py.hpp"
 
+#include "database/Database.hpp"
 #include "Ket.hpp"
 #include "KetAtom.hpp"
 #include "KetAtomCreator.hpp"
@@ -42,8 +43,9 @@ template <typename T>
 static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
     std::string pylass_name = "KetAtomCreator" + type_name;
     nb::class_<KetAtomCreator<T>> pyclass(m, pylass_name.c_str());
-    pyclass.def(nb::init<std::string>())
+    pyclass.def(nb::init<>())
         .def(nb::init<std::string, int, T, float, float>())
+        .def("set_species", &KetAtomCreator<T>::set_species)
         .def("set_energy", &KetAtomCreator<T>::set_energy)
         .def("set_quantum_number_f", &KetAtomCreator<T>::set_quantum_number_f)
         .def("set_quantum_number_m", &KetAtomCreator<T>::set_quantum_number_m)
@@ -53,7 +55,10 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
         .def("set_quantum_number_l", &KetAtomCreator<T>::set_quantum_number_l)
         .def("set_quantum_number_s", &KetAtomCreator<T>::set_quantum_number_s)
         .def("set_quantum_number_j", &KetAtomCreator<T>::set_quantum_number_j)
-        .def("create", &KetAtomCreator<T>::create);
+        .def("create", [](KetAtomCreator<T> const &self) {
+            thread_local static Database db;
+            return self.create(db);
+        });
 }
 
 void bind_ket(nb::module_ &m) {
