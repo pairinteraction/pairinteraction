@@ -1,7 +1,6 @@
 #include "basis/BasisAtomCreator.hpp"
 #include "basis/BasisAtom.hpp"
 #include "database/Database.hpp"
-#include "ket/KetAtomCreator.hpp" // TODO remove this include when the database is implemented
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string value) {
@@ -10,7 +9,7 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string valu
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(Scalar min, Scalar max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, real_t max) {
     min_energy.emplace(min);
     max_energy.emplace(max);
     return *this;
@@ -46,32 +45,32 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_n(in
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_nu(Scalar min,
-                                                                               Scalar max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_nu(real_t min,
+                                                                               real_t max) {
     min_quantum_number_nu.emplace(min);
     max_quantum_number_nu.emplace(max);
     return *this;
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_l(Scalar min,
-                                                                              Scalar max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_l(real_t min,
+                                                                              real_t max) {
     min_quantum_number_l.emplace(min);
     max_quantum_number_l.emplace(max);
     return *this;
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_s(Scalar min,
-                                                                              Scalar max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_s(real_t min,
+                                                                              real_t max) {
     min_quantum_number_s.emplace(min);
     max_quantum_number_s.emplace(max);
     return *this;
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(Scalar min,
-                                                                              Scalar max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(real_t min,
+                                                                              real_t max) {
     min_quantum_number_j.emplace(min);
     max_quantum_number_j.emplace(max);
     return *this;
@@ -80,15 +79,16 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(Sc
 template <typename Scalar>
 BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
 
-    // TODO perform database request
-    (void)database;
+    if (!species.has_value()) {
+        throw std::runtime_error("Species not set.");
+    }
 
-    std::vector<std::shared_ptr<const ket_t>> kets;
-    kets.reserve(2);
-    kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species.value(), 60, 1, 0.5, -0.5).create(database)));
-    kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species.value(), 60, 1, 0.5, 0.5).create(database)));
+    auto kets = database.get_kets<real_t>(
+        species.value(), min_energy, max_energy, min_quantum_number_f, max_quantum_number_f,
+        min_quantum_number_m, max_quantum_number_m, parity, min_quantum_number_n,
+        max_quantum_number_n, min_quantum_number_nu, max_quantum_number_nu, min_quantum_number_l,
+        max_quantum_number_l, min_quantum_number_s, max_quantum_number_s, min_quantum_number_j,
+        max_quantum_number_j);
 
     return BasisAtom<Scalar>(std::move(kets), database);
 }
