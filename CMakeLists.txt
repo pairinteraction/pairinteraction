@@ -172,10 +172,7 @@ FetchContent_Declare(
     GIT_TAG v0.15.3
     GIT_SHALLOW TRUE
 )
-set(HTTPLIB_REQUIRE_OPENSSL FALSE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
-set(HTTPLIB_REQUIRE_ZLIB FALSE CACHE BOOL "Requires ZLIB to be found & linked, or fails build." FORCE)
-set(HTTPLIB_REQUIRE_BROTLI  FALSE CACHE BOOL "Requires Brotli to be found & linked, or fails build." FORCE)
-set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE FALSE CACHE BOOL "Uses OpenSSL (if available) to enable HTTPS support." FORCE)
+set(HTTPLIB_REQUIRE_OPENSSL TRUE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE FALSE CACHE BOOL "Uses ZLIB (if available) to enable Zlib compression support." FORCE)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE FALSE CACHE BOOL "Uses Brotli (if available) to enable Brotli decompression support." FORCE)
 FetchContent_MakeAvailable(httplib)

@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 template <typename Real>
@@ -34,8 +35,28 @@ public:
              std::optional<Real> max_quantum_number_j);
 
 private:
-    std::filesystem::path db_path;
+    struct LocalDatabase {
+        std::filesystem::path path{""};
+        int version{-1};
+    };
+    struct RemoteDatabase {
+        std::string url{""};
+        int version{-1};
+    };
+    const std::vector<std::string> database_repo_endpoints{
+        {"/repos/MultiQuantum/extending-pairinteraction-proposal/releases/latest",
+         "/repos/MultiQuantum/rubidium-pairinteraction-database/releases/latest",
+         "/repos/MultiQuantum/strontium-pairinteraction-database/releases/latest"}};
+    const std::string github_access_token{
+        "github_pat_11ACL5QGA0vJHuTHWEnkex_"
+        "hTQiAbwt2R8gLX92pUwR9GofZXq5ee4a1qfhX6SWSEpQQAL2CD3NRQRpm3H"};
+    std::filesystem::path databasedir;
     bool auto_update;
+    std::unordered_map<std::string, RemoteDatabase> remote_databases;
+    std::unordered_map<std::string, LocalDatabase> local_databases;
+    LocalDatabase get_local_database(std::string name);
+    RemoteDatabase get_remote_database(std::string name);
+    void ensure_presence_of_local_database(std::string name);
 };
 
 extern template KetAtom<float> Database::get_ket<float>(
