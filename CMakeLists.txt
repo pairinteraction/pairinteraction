@@ -141,6 +141,51 @@ find_package(nanobind CONFIG REQUIRED)
 nanobind_build_library(nanobind-static)
 set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
+if(MSVC)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-windows-amd64.zip)
+  set(DUCKDB_LIBNAME duckdb.dll)
+elseif(APPLE)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-osx-universal.zip)
+  set(DUCKDB_LIBNAME libduckdb.dylib)
+elseif(UNIX)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-linux-amd64.zip)
+  set(DUCKDB_LIBNAME libduckdb.so)
+endif()
+FetchContent_Declare(duckdb
+    URL ${DUCKDB_URL}
+    CONFIGURE_COMMAND ""
+    BUILD_COMMAND ""
+)
+FetchContent_GetProperties(duckdb)
+if(NOT duckdb_POPULATED)
+  FetchContent_Populate(duckdb)
+endif()
+add_library(duckdb INTERFACE)
+target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
+target_link_libraries(duckdb INTERFACE ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME})
+set_target_properties(duckdb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
+add_library(duckdb::duckdb ALIAS duckdb)
+
+FetchContent_Declare(
+    httplib
+    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
+    GIT_TAG v0.15.3
+    GIT_SHALLOW TRUE
+)
+set(HTTPLIB_REQUIRE_OPENSSL FALSE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
+set(HTTPLIB_REQUIRE_ZLIB FALSE CACHE BOOL "Requires ZLIB to be found & linked, or fails build." FORCE)
+set(HTTPLIB_REQUIRE_BROTLI  FALSE CACHE BOOL "Requires Brotli to be found & linked, or fails build." FORCE)
+set(HTTPLIB_USE_OPENSSL_IF_AVAILABLE FALSE CACHE BOOL "Uses OpenSSL (if available) to enable HTTPS support." FORCE)
+set(HTTPLIB_USE_ZLIB_IF_AVAILABLE FALSE CACHE BOOL "Uses ZLIB (if available) to enable Zlib compression support." FORCE)
+set(HTTPLIB_USE_BROTLI_IF_AVAILABLE FALSE CACHE BOOL "Uses Brotli (if available) to enable Brotli decompression support." FORCE)
+FetchContent_MakeAvailable(httplib)
+
+FetchContent_Declare(
+  nlohmann_json
+  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 # Build instructions
 if( WITH_BACKEND )
   add_subdirectory(pairinteraction_backend)
