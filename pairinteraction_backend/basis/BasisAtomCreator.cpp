@@ -1,7 +1,10 @@
 #include "basis/BasisAtomCreator.hpp"
 
 template <typename Scalar>
-BasisAtomCreator<Scalar>::BasisAtomCreator(std::string species) : species(species) {}
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string value) {
+    species.emplace(value);
+    return *this;
+}
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(Scalar min, Scalar max) {
@@ -80,9 +83,9 @@ BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
     std::vector<std::shared_ptr<const ket_t>> kets;
     kets.reserve(2);
     kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species, 60, 1, 0.5, -0.5).create(database)));
+        KetAtomCreator<real_t>(species.value(), 60, 1, 0.5, -0.5).create(database)));
     kets.push_back(std::make_shared<const ket_t>(
-        KetAtomCreator<real_t>(species, 60, 1, 0.5, 0.5).create(database)));
+        KetAtomCreator<real_t>(species.value(), 60, 1, 0.5, 0.5).create(database)));
 
     return BasisAtom<Scalar>(std::move(kets));
 }
@@ -101,7 +104,8 @@ template class BasisAtomCreator<std::complex<double>>;
 
 DOCTEST_TEST_CASE("create a basis for rubidium") {
     auto database = Database();
-    auto basis = BasisAtomCreator<float>("Rb")
+    auto basis = BasisAtomCreator<float>()
+                     .set_species("Rb")
                      .restrict_quantum_number_n(60, 64)
                      .restrict_quantum_number_l(0, 2)
                      .create(database);

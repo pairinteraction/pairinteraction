@@ -20,8 +20,9 @@ class KetAtom;
 template <typename Real>
 class KetAtomCreator {
 public:
-    KetAtomCreator(std::string species);
+    KetAtomCreator() = default;
     KetAtomCreator(std::string species, int n, Real l, float j, float m);
+    KetAtomCreator<Real> &set_species(std::string value);
     KetAtomCreator<Real> &set_energy(Real value);
     KetAtomCreator<Real> &set_quantum_number_f(float value);
     KetAtomCreator<Real> &set_quantum_number_m(float value);
@@ -34,7 +35,7 @@ public:
     KetAtom<Real> create(Database &database) const;
 
 private:
-    std::string species;
+    std::optional<std::string> species;
     std::optional<Real> energy;
     std::optional<float> quantum_number_f;
     std::optional<float> quantum_number_m;
