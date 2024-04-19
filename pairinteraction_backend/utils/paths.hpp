@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <filesystem>
 
-namespace path {
+namespace paths {
 
 std::filesystem::path get_home_directory() {
 #ifdef _WIN32
@@ -47,4 +47,4 @@ std::filesystem::path get_pairinteraction_cache_directory() {
     return path;
 }
 
-} // namespace path
+} // namespace paths
