@@ -111,14 +111,14 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
 DOCTEST_TEST_CASE("create a ket for strontium") {
     auto database = Database();
     auto ket = KetAtomCreator<float>()
-                   .set_species("Sr88_mqdt")
+                   .set_species("Sr87")
                    .set_quantum_number_nu(60)
                    .set_quantum_number_l(1)
                    .set_quantum_number_f(1)
                    .set_quantum_number_m(0)
                    .set_quantum_number_s(0)
                    .create(database);
-    DOCTEST_CHECK(ket.get_species() == "Sr88_mqdt");
+    DOCTEST_CHECK(ket.get_species() == "Sr87");
     DOCTEST_CHECK(ket.get_quantum_number_nu() == 60);
     DOCTEST_CHECK(ket.get_quantum_number_f() == 1);
     DOCTEST_CHECK(ket.get_quantum_number_m() == 0);

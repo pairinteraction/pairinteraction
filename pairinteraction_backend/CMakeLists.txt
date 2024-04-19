@@ -38,8 +38,8 @@ target_sources(backend PUBLIC
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(backend
-  PUBLIC doctest::doctest Eigen3::Eigen duckdb::duckdb nlohmann_json::nlohmann_json httplib::httplib
-  PRIVATE spdlog::spdlog
+  PUBLIC doctest::doctest Eigen3::Eigen duckdb::duckdb nlohmann_json::nlohmann_json
+  PRIVATE spdlog::spdlog httplib::httplib
 )
 
 target_compile_definitions(backend PUBLIC
@@ -160,7 +160,7 @@ if (BUILD_TESTING)
   )
 
   target_link_libraries(pairinteraction_backend_test
-    PRIVATE spdlog::spdlog
+    PRIVATE spdlog::spdlog httplib::httplib
   )
 
   # Add tests
