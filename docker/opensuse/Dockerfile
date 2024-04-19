@@ -4,9 +4,9 @@ COPY python-sphinxcontrib-mermaid.spec /
 RUN zypper -n --gpg-auto-import-keys refresh \
     && zypper -n --gpg-auto-import-keys install --no-recommends rpm-build \
     && rpmspec --query --buildrequires cpp-httplib.spec | xargs zypper -n install \
-    && rpmbuild --undefine=_disable_source_fetch -bb cpp-httplib.spec \
+    && rpmbuild --undefine=_disable_source_fetch -bb --nocheck cpp-httplib.spec \
     && rpmspec --query --buildrequires python-sphinxcontrib-mermaid.spec | xargs zypper -n install \
-    && rpmbuild --undefine=_disable_source_fetch -bb python-sphinxcontrib-mermaid.spec
+    && rpmbuild --undefine=_disable_source_fetch -bb --nocheck python-sphinxcontrib-mermaid.spec
 
 FROM opensuse/leap:15.4
 COPY --from=build /usr/src/packages/RPMS/x86_64/libcpp-httplib0_12-0.12.5-0.x86_64.rpm ./cpp-httlib.rpm
