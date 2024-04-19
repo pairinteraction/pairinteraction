@@ -4,10 +4,15 @@
 #include <optional>
 #include <string>
 
-#include "basis/BasisAtom.hpp"
-#include "database/Database.hpp"
-#include "ket/KetAtom.hpp"
 #include "utils/traits.hpp"
+
+template <typename Scalar>
+class BasisAtom;
+
+template <typename Real>
+class KetAtom;
+
+class Database;
 
 /**
  * @class BasisAtomCreator

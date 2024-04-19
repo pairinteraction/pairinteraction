@@ -1,4 +1,7 @@
 #include "basis/BasisAtomCreator.hpp"
+#include "basis/BasisAtom.hpp"
+#include "database/Database.hpp"
+#include "ket/KetAtomCreator.hpp" // TODO remove this include when the database is implemented
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string value) {
@@ -87,7 +90,7 @@ BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
     kets.push_back(std::make_shared<const ket_t>(
         KetAtomCreator<real_t>(species.value(), 60, 1, 0.5, 0.5).create(database)));
 
-    return BasisAtom<Scalar>(std::move(kets));
+    return BasisAtom<Scalar>(std::move(kets), database);
 }
 
 // Explicit instantiations

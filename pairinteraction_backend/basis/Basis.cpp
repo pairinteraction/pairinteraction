@@ -1,4 +1,5 @@
 #include "basis/Basis.hpp"
+#include "ket/Ket.hpp"
 #include "utils/euler.hpp"
 #include "utils/wigner.hpp"
 

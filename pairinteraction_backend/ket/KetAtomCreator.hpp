@@ -4,8 +4,7 @@
 #include <optional>
 #include <string>
 
-#include "database/Database.hpp"
-#include "ket/KetAtom.hpp"
+class Database;
 
 template <typename Real>
 class KetAtom;

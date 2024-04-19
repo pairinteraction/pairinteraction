@@ -9,8 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "ket/Ket.hpp"
 #include "utils/traits.hpp"
+
+template <typename Real>
+class Ket;
 
 /**
  * @class Basis
