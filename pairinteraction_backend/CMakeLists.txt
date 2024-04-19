@@ -62,7 +62,6 @@ target_sources(bindings PUBLIC
   ./basis/BasisAtomCreator.hpp
   ./basis/BasisClassicalLight.hpp
   ./basis/BasisClassicalLightCreator.hpp
-  ./database/Database.cpp
   ./database/Database.hpp
   ./ket/Ket.hpp
   ./ket/KetAtom.hpp

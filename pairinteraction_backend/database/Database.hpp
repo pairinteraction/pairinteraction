@@ -13,6 +13,14 @@ public:
     Database() = default;
 
     template <typename Real>
+    KetAtom<Real>
+    get_ket(std::string species, std::optional<Real> energy, std::optional<float> quantum_number_f,
+            std::optional<float> quantum_number_m, std::optional<int> parity,
+            std::optional<int> quantum_number_n, std::optional<Real> quantum_number_nu,
+            std::optional<Real> quantum_number_l, std::optional<Real> quantum_number_s,
+            std::optional<Real> quantum_number_j);
+
+    template <typename Real>
     std::vector<std::shared_ptr<const KetAtom<Real>>>
     get_kets(std::string species, std::optional<Real> min_energy, std::optional<Real> max_energy,
              std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
@@ -25,6 +33,18 @@ public:
              std::optional<Real> max_quantum_number_j);
 };
 
+extern template KetAtom<float> Database::get_ket<float>(
+    std::string species, std::optional<float> energy, std::optional<float> quantum_number_f,
+    std::optional<float> quantum_number_m, std::optional<int> parity,
+    std::optional<int> quantum_number_n, std::optional<float> quantum_number_nu,
+    std::optional<float> quantum_number_l, std::optional<float> quantum_number_s,
+    std::optional<float> quantum_number_j);
+extern template KetAtom<double> Database::get_ket<double>(
+    std::string species, std::optional<double> energy, std::optional<float> quantum_number_f,
+    std::optional<float> quantum_number_m, std::optional<int> parity,
+    std::optional<int> quantum_number_n, std::optional<double> quantum_number_nu,
+    std::optional<double> quantum_number_l, std::optional<double> quantum_number_s,
+    std::optional<double> quantum_number_j);
 extern template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get_kets<float>(
     std::string species, std::optional<float> min_energy, std::optional<float> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
