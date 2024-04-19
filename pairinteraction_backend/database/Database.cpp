@@ -1,10 +1,14 @@
 #include "database/Database.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
+#include "utils/path.hpp"
 
 #include <duckdb.hpp>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
+
+Database::Database(bool auto_update)
+    : db_path(path::get_pairinteraction_cache_directory() / "database"), auto_update(auto_update) {}
 
 template <typename Real>
 KetAtom<Real>
