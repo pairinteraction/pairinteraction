@@ -38,12 +38,13 @@ target_sources(backend PUBLIC
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(backend
-  PUBLIC doctest::doctest Eigen3::Eigen duckdb::duckdb nlohmann_json::nlohmann_json
-  PRIVATE spdlog::spdlog httplib::httplib
+  PUBLIC doctest::doctest Eigen3::Eigen nlohmann_json::nlohmann_json
+  PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
 )
 
 target_compile_definitions(backend PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  JSON_USE_IMPLICIT_CONVERSIONS=0
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -160,7 +161,7 @@ if (BUILD_TESTING)
   )
 
   target_link_libraries(pairinteraction_backend_test
-    PRIVATE spdlog::spdlog httplib::httplib
+    PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
   )
 
   # Add tests

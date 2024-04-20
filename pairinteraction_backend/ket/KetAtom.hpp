@@ -4,8 +4,6 @@
 
 #include "ket/Ket.hpp"
 
-class Database;
-
 template <typename Real>
 class KetAtomCreator;
 
@@ -19,6 +17,7 @@ class KetAtomCreator;
 template <typename Real>
 class KetAtom : public Ket<Real> {
 public:
+    std::string get_label() const override;
     std::string get_species() const;
     int get_quantum_number_n() const;
     Real get_quantum_number_nu() const;
@@ -28,9 +27,9 @@ public:
 
 private:
     friend class Database;
-    KetAtom(Real energy, float f, float m, int p, std::string label, size_t id, std::string species,
-            int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
-            Real j_exp, Real j_std, Database &database);
+    KetAtom(Real energy, float f, float m, int p, size_t id, std::string species, int n,
+            Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std, Real j_exp,
+            Real j_std);
     std::string species;
     int quantum_number_n;
     Real quantum_number_nu_exp;
@@ -41,7 +40,6 @@ private:
     Real quantum_number_s_std;
     Real quantum_number_j_exp;
     Real quantum_number_j_std;
-    Database &database;
 };
 
 extern template class KetAtom<float>;

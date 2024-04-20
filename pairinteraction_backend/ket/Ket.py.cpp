@@ -1,9 +1,9 @@
 #include "Ket.py.hpp"
 
-#include "database/Database.hpp"
 #include "Ket.hpp"
 #include "KetAtom.hpp"
 #include "KetAtomCreator.hpp"
+#include "database/Database.hpp"
 
 #include <sstream>
 

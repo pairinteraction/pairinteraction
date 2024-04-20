@@ -10,9 +10,33 @@
 template <typename Real>
 class KetAtom;
 
+namespace duckdb {
+class DuckDB;
+class Connection;
+} // namespace duckdb
+
+namespace httplib {
+class Client;
+} // namespace httplib
+
 class Database {
 public:
+    struct AvailabilitySpecies {
+        std::string name;
+        bool locally_available;
+        bool up_to_date;
+        bool fully_downloaded;
+    };
+
+    struct AvailabilityWigner {
+        bool locally_available;
+        bool up_to_date;
+    };
+
     Database(bool auto_update = true);
+    ~Database();
+    std::vector<AvailabilitySpecies> get_availability_of_species();
+    AvailabilityWigner get_availability_of_wigner_table();
 
     template <typename Real>
     KetAtom<Real>
@@ -32,31 +56,34 @@ public:
              std::optional<Real> max_quantum_number_nu, std::optional<Real> min_quantum_number_l,
              std::optional<Real> max_quantum_number_l, std::optional<Real> min_quantum_number_s,
              std::optional<Real> max_quantum_number_s, std::optional<Real> min_quantum_number_j,
-             std::optional<Real> max_quantum_number_j);
+             std::optional<Real> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
 
 private:
-    struct LocalDatabase {
-        std::filesystem::path path{""};
-        int version{-1};
+    struct Table {
+        std::filesystem::path local_path{""};
+        std::filesystem::path remote_path{""};
+        int local_version{-1};
+        int remote_version{-1};
     };
-    struct RemoteDatabase {
-        std::string url{""};
-        int version{-1};
-    };
+
     const std::vector<std::string> database_repo_endpoints{
         {"/repos/MultiQuantum/extending-pairinteraction-proposal/releases/latest",
          "/repos/MultiQuantum/rubidium-pairinteraction-database/releases/latest",
          "/repos/MultiQuantum/strontium-pairinteraction-database/releases/latest"}};
+
     const std::string github_access_token{
         "github_pat_11ACL5QGA0vJHuTHWEnkex_"
         "hTQiAbwt2R8gLX92pUwR9GofZXq5ee4a1qfhX6SWSEpQQAL2CD3NRQRpm3H"};
+
     std::filesystem::path databasedir;
     bool auto_update;
-    std::unordered_map<std::string, RemoteDatabase> remote_databases;
-    std::unordered_map<std::string, LocalDatabase> local_databases;
-    LocalDatabase get_local_database(std::string name);
-    RemoteDatabase get_remote_database(std::string name);
-    void ensure_presence_of_local_database(std::string name);
+    std::unique_ptr<duckdb::DuckDB> db;
+    std::unique_ptr<duckdb::Connection> con;
+    std::vector<httplib::Client> pool;
+    std::unordered_map<std::string, Table> tables;
+
+    void ensure_presence_of_table(std::string name);
+    void ensure_quantum_number_n_is_allowed(std::string name);
 };
 
 extern template KetAtom<float> Database::get_ket<float>(
@@ -80,7 +107,7 @@ extern template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get
     std::optional<float> max_quantum_number_nu, std::optional<float> min_quantum_number_l,
     std::optional<float> max_quantum_number_l, std::optional<float> min_quantum_number_s,
     std::optional<float> max_quantum_number_s, std::optional<float> min_quantum_number_j,
-    std::optional<float> max_quantum_number_j);
+    std::optional<float> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
 extern template std::vector<std::shared_ptr<const KetAtom<double>>> Database::get_kets<double>(
     std::string species, std::optional<double> min_energy, std::optional<double> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
@@ -90,4 +117,4 @@ extern template std::vector<std::shared_ptr<const KetAtom<double>>> Database::ge
     std::optional<double> max_quantum_number_nu, std::optional<double> min_quantum_number_l,
     std::optional<double> max_quantum_number_l, std::optional<double> min_quantum_number_s,
     std::optional<double> max_quantum_number_s, std::optional<double> min_quantum_number_j,
-    std::optional<double> max_quantum_number_j);
+    std::optional<double> max_quantum_number_j, std::vector<size_t> additional_ket_ids);

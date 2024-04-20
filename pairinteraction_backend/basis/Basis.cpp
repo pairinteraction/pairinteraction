@@ -370,27 +370,27 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 // A derived ket class
 class KetDerived : public Ket<float> {
 public:
+    std::string get_label() const override { return "my_label"; }
     int get_new_property() const { return new_property; }
 
 private:
     friend class KetDerivedCreator;
-    KetDerived(float f, float m, int p, std::string label, size_t id, int new_property)
-        : Ket<float>(0, f, m, p, label, id), new_property(new_property) {}
+    KetDerived(float f, float m, int p, size_t id, int new_property)
+        : Ket<float>(0, f, m, p, id), new_property(new_property) {}
     int new_property;
 };
 
 // Classes for creating an instance of the derived ket class
 class KetDerivedCreator {
 public:
-    KetDerivedCreator(float f, float m, int p, std::string label, size_t id, int new_property)
-        : f(f), m(m), p(p), label(label), id(id), new_property(new_property) {}
-    KetDerived create() const { return KetDerived(f, m, p, label, new_property, id); }
+    KetDerivedCreator(float f, float m, int p, size_t id, int new_property)
+        : f(f), m(m), p(p), id(id), new_property(new_property) {}
+    KetDerived create() const { return KetDerived(f, m, p, new_property, id); }
 
 private:
     float f;
     float m;
     int p;
-    std::string label;
     size_t id;
     int new_property;
 };
@@ -423,12 +423,12 @@ public:
     BasisDerived create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
+        kets.push_back(
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, 42, 1000).create()));
+        kets.push_back(
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, 42, 2000).create()));
         kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(0.5, 0.5, 1, "1s", 42, 1000).create()));
-        kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(0.5, 0.5, -1, "2s", 42, 2000).create()));
-        kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(0.5, -0.5, -1, "3s", 42, 3000).create()));
+            KetDerivedCreator(0.5, -0.5, -1, 42, 3000).create()));
         return BasisDerived(std::move(kets));
     }
 };

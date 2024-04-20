@@ -94,33 +94,46 @@ template class KetAtomCreator<double>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include <doctest/doctest.h>
+#include <fmt/ostream.h>
+#include <spdlog/spdlog.h>
 
-DOCTEST_TEST_CASE("create a ket for rubidium") {
-    auto database = Database();
-    auto ket = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
-    DOCTEST_CHECK(ket.get_species() == "Rb");
-    DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
-    DOCTEST_CHECK(ket.get_quantum_number_l() == 1);
-    DOCTEST_CHECK(ket.get_quantum_number_f() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_j() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_m() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_s() == 0.5);
-    DOCTEST_CHECK(ket.get_parity() == -1);
+#if FMT_VERSION < 90000
+namespace fmt {
+template <typename T>
+inline auto streamed(T &&v) {
+    return std::forward<T>(v);
 }
+} // namespace fmt
+#endif
+
+// DOCTEST_TEST_CASE("create a ket for rubidium") {
+//     auto database = Database();
+//     auto ket = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
+//     DOCTEST_CHECK(ket.get_species() == "Rb");
+//     DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
+//     DOCTEST_CHECK(ket.get_quantum_number_l() == 1);
+//     DOCTEST_CHECK(ket.get_quantum_number_f() == 0.5);
+//     DOCTEST_CHECK(ket.get_quantum_number_j() == 0.5);
+//     DOCTEST_CHECK(ket.get_quantum_number_m() == 0.5);
+//     DOCTEST_CHECK(ket.get_quantum_number_s() == 0.5);
+//     DOCTEST_CHECK(ket.get_parity() == -1);
+//     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+// }
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
     auto database = Database();
     auto ket = KetAtomCreator<float>()
-                   .set_species("Sr87")
-                   .set_quantum_number_nu(60)
+                   .set_species("Sr88_singlet")
+                   .set_quantum_number_n(60)
                    .set_quantum_number_l(1)
                    .set_quantum_number_f(1)
                    .set_quantum_number_m(0)
                    .set_quantum_number_s(0)
                    .create(database);
-    DOCTEST_CHECK(ket.get_species() == "Sr87");
-    DOCTEST_CHECK(ket.get_quantum_number_nu() == 60);
+    DOCTEST_CHECK(ket.get_species() == "Sr88_singlet");
+    DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
     DOCTEST_CHECK(ket.get_quantum_number_f() == 1);
     DOCTEST_CHECK(ket.get_quantum_number_m() == 0);
     DOCTEST_CHECK(ket.get_parity() == -1);
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
 }

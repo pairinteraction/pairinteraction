@@ -45,7 +45,7 @@ KetClassicalLight<Real> KetClassicalLightCreator<Real>::create() const {
         energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
         quantum_number_n_sigma_p.value_or(std::numeric_limits<int>::max()),
         quantum_number_n_pi.value_or(std::numeric_limits<int>::max()),
-        quantum_number_n_sigma_m.value_or(std::numeric_limits<int>::max()), "my label",
+        quantum_number_n_sigma_m.value_or(std::numeric_limits<int>::max()),
         1000); // TODO use a unique id instead 1000
 }
 

@@ -4,13 +4,13 @@
 #include "utils/paths.hpp"
 
 #include <duckdb.hpp>
+#include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <spdlog/spdlog.h>
-#include <sstream>
 
 #if FMT_VERSION < 90000
 namespace fmt {
@@ -23,7 +23,10 @@ inline auto streamed(T &&v) {
 
 Database::Database(bool auto_update)
     : databasedir(paths::get_pairinteraction_cache_directory() / "database"),
-      auto_update(auto_update) {
+      auto_update(auto_update), db(std::make_unique<duckdb::DuckDB>(nullptr)),
+      con(std::make_unique<duckdb::Connection>(*db)) {
+
+    const std::regex parquet_regex("^(\\w+)_v(\\d+)\\.parquet$");
 
     // Ensure the database directory exists
     if (!std::filesystem::exists(databasedir)) {
@@ -32,20 +35,46 @@ Database::Database(bool auto_update)
         throw std::runtime_error("Database path is not a directory.");
     }
 
-    // Get a dictionary of remotely available databases
+    // Create a pool of clients
     if (auto_update) {
-        // Create a pool of clients and call the different endpoints asynchronously
-        httplib::Result (httplib::Client::*gf)(const std::string &) = &httplib::Client::Get;
-        std::vector<httplib::Client> pool;
-        std::vector<std::future<httplib::Result>> futures;
-
-        for (const std::string &endpoint : database_repo_endpoints) {
+        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
             pool.emplace_back(httplib::Client("https://api.github.com"));
-            pool.back().set_default_headers({{"Accept", "application/vnd.github+json"},
-                                             {"X-GitHub-Api-Version", "2022-11-28"}});
             pool.back().set_bearer_token_auth(github_access_token);
+            pool.back().set_follow_location(true);
+            pool.front().set_keep_alive(true);
+        }
+    }
 
-            futures.push_back(std::async(std::launch::async, gf, &pool.back(), endpoint));
+    // Get a dictionary of locally available tables
+    for (const auto &entry : std::filesystem::directory_iterator(databasedir)) {
+        if (entry.is_regular_file()) {
+            std::smatch parquet_match;
+            std::string filename = entry.path().filename().string();
+            if (std::regex_match(filename, parquet_match, parquet_regex)) {
+                std::string name = parquet_match[1].str();
+                std::string version_str = parquet_match[2].str();
+                if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
+                    int version = std::stoi(version_str);
+                    if (version > tables[name].local_version) {
+                        tables[name].local_version = version;
+                        tables[name].local_path = entry.path();
+                    }
+                }
+            }
+        }
+    }
+
+    // Get a dictionary of remotely available tables
+    if (auto_update) {
+        // Call the different endpoints asynchronously
+        httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
+            &httplib::Client::Get;
+        std::vector<std::future<httplib::Result>> futures;
+        httplib::Headers headers = {{"X-GitHub-Api-Version", "2022-11-28"},
+                                    {"Accept", "application/vnd.github+json"}};
+        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
+            futures.push_back(
+                std::async(std::launch::async, gf, &pool[i], database_repo_endpoints[i], headers));
         }
 
         // Process the results
@@ -54,35 +83,96 @@ Database::Database(bool auto_update)
 
             // Check if the request was successful
             if (!res) {
-                SPDLOG_ERROR("Error accessing database repositories, no response");
+                SPDLOG_ERROR("Error accessing database repositories, no response.");
                 continue;
             } else if (res->status != 200) {
-                SPDLOG_ERROR("Error accessing database repositories, status {}", res->status);
+                SPDLOG_ERROR("Error accessing database repositories, status {}.", res->status);
                 continue;
             }
 
             // Parse the JSON response
-            const std::regex parquet_regex("^(\\w+)_v(\\d+)\\.parquet$");
             auto doc = nlohmann::json::parse(res->body);
             for (auto &asset : doc["assets"]) {
                 std::smatch parquet_match;
                 auto filename = asset["name"].get<std::string>();
                 if (std::regex_match(filename, parquet_match, parquet_regex)) {
-                    std::string database = parquet_match[1].str();
+                    std::string name = parquet_match[1].str();
                     std::string version_str = parquet_match[2].str();
                     if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
                         int version = std::stoi(version_str);
-                        if (remote_databases.count(database) != 0 &&
-                            remote_databases.at(database).version >= version) {
-                            continue;
+                        if (version > tables[name].remote_version) {
+                            tables[name].remote_version = version;
+                            tables[name].remote_path = asset["url"].get<std::string>().erase(0, 22);
                         }
-                        remote_databases[database] =
-                            RemoteDatabase{asset["url"].get<std::string>().erase(0, 22), version};
                     }
                 }
             }
         }
     }
+
+    // Print availability of tables
+    auto species_availability = get_availability_of_species();
+    auto wigner_availability = get_availability_of_wigner_table();
+    SPDLOG_INFO("Availability of database tables for species and Wigner 3j symbols:");
+    for (const auto &s : species_availability) {
+        SPDLOG_INFO("* {} (locally available: {}, up to date: {}, fully downloaded: {})", s.name,
+                    s.locally_available, s.up_to_date, s.fully_downloaded);
+    }
+    SPDLOG_INFO("* Wigner 3j symbols (locally available: {}, up to date: {})",
+                wigner_availability.locally_available, wigner_availability.up_to_date);
+}
+
+Database::~Database() = default;
+
+std::vector<Database::AvailabilitySpecies> Database::get_availability_of_species() {
+    std::vector<AvailabilitySpecies> availability;
+
+    // Get a list of all available species
+    for (const auto &[name, table] : tables) {
+        // Ensure that the table is a states table
+        if (name.size() < 7 || name.substr(name.size() - 7) != "_states") {
+            continue;
+        }
+
+        // Read off the species name
+        std::string species_name = name.substr(0, name.size() - 7);
+
+        // Append the species
+        availability.push_back({species_name, table.local_version != -1,
+                                table.local_version >= table.remote_version,
+                                table.local_version != -1});
+    }
+
+    // Check whether all tables are downloaded and the downloaded tables up to date
+    std::vector<std::string> identifier_of_tables = {"states",
+                                                     "matrix_elements_d",
+                                                     "matrix_elements_q",
+                                                     "matrix_elements_o",
+                                                     "matrix_elements_mu",
+                                                     "matrix_elements_dia"};
+    for (int i = 0; i < availability.size(); i++) {
+        for (const auto &identifier : identifier_of_tables) {
+            std::string name = availability[i].name + "_" + identifier;
+            if (tables.count(name) > 0) {
+                if (tables[name].local_version == -1) {
+                    availability[i].fully_downloaded = false;
+                } else if (tables[name].local_version < tables[name].remote_version) {
+                    availability[i].up_to_date = false;
+                }
+            }
+        }
+    }
+
+    return availability;
+}
+
+Database::AvailabilityWigner Database::get_availability_of_wigner_table() {
+    std::string name = "wigner";
+    if (tables.count(name) == 0) {
+        return {false, false};
+    }
+    return {tables[name].local_version != -1,
+            tables[name].local_version >= tables[name].remote_version};
 }
 
 template <typename Real>
@@ -93,21 +183,144 @@ Database::get_ket(std::string species, std::optional<Real> energy,
                   std::optional<Real> quantum_number_nu, std::optional<Real> quantum_number_l,
                   std::optional<Real> quantum_number_s, std::optional<Real> quantum_number_j) {
 
-    ensure_presence_of_local_database(species + "_states");
+    ensure_presence_of_table(species + "_states");
 
-    // TODO perform database request and delete the following mocked code
+    // Check that the specifications are valid
+    if (quantum_number_n.has_value()) {
+        ensure_quantum_number_n_is_allowed(species + "_states");
+    }
+    if (!quantum_number_m.has_value() && quantum_number_f.value_or(1) != 0) {
+        throw std::runtime_error("The quantum number m must be specified if f is not zero.");
+    }
+    if (quantum_number_f.has_value() &&
+        2 * quantum_number_f.value() != std::rintf(2 * quantum_number_f.value())) {
+        throw std::runtime_error("The quantum number f must be an integer or half-integer.");
+    }
+    if (quantum_number_f.has_value() && quantum_number_f.value() < 0) {
+        throw std::runtime_error("The quantum number f must be positive.");
+    }
+    if (quantum_number_m.has_value() &&
+        2 * quantum_number_m.value() != std::rintf(2 * quantum_number_m.value())) {
+        throw std::runtime_error("The quantum number m must be an integer or half-integer.");
+    }
 
-    auto ket =
-        KetAtom<Real>(energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
-                      quantum_number_f.value_or(std::numeric_limits<float>::quiet_NaN()),
-                      quantum_number_m.value_or(std::numeric_limits<float>::quiet_NaN()),
-                      parity.value_or(-1), "", 1000, species, quantum_number_n.value_or(0),
-                      quantum_number_nu.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-                      quantum_number_l.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-                      quantum_number_s.value_or(std::numeric_limits<Real>::quiet_NaN()), 0,
-                      quantum_number_j.value_or(std::numeric_limits<Real>::quiet_NaN()), 0, *this);
+    // Describe the state
+    std::string where = "";
+    std::string separator = "";
+    if (energy.has_value()) {
+        // The following condition derives from demanding that quantum number n that corresponds to
+        // the energy "E_n = -1/(2*n^2)" is not off by more than 1 from the actual quantum number n,
+        // i.e., "sqrt(-1/(2*E_n)) - sqrt(-1/(2*E_{n-1})) = 1"
+        where += separator +
+            fmt::format("SQRT(-1/(2*energy)) BETWEEN {} AND {}",
+                        std::sqrt(-1 / (2 * energy.value())) - 0.5,
+                        std::sqrt(-1 / (2 * energy.value())) + 0.5);
+        separator = " AND ";
+    }
+    if (quantum_number_f.has_value()) {
+        where += separator + fmt::format("f = {}", quantum_number_f.value());
+        separator = " AND ";
+    }
+    if (parity.has_value()) {
+        where += separator + fmt::format("parity = {}", parity.value());
+        separator = " AND ";
+    }
+    if (quantum_number_n.has_value()) {
+        where += separator + fmt::format("n = {}", quantum_number_n.value());
+        separator = " AND ";
+    }
+    if (quantum_number_nu.has_value()) {
+        where += separator +
+            fmt::format("exp_nu BETWEEN {} AND {}", quantum_number_nu.value() - 0.5,
+                        quantum_number_nu.value() + 0.5);
+        separator = " AND ";
+    }
+    if (quantum_number_l.has_value()) {
+        where += separator +
+            fmt::format("exp_l BETWEEN {} AND {}", quantum_number_l.value() - 0.5,
+                        quantum_number_l.value() + 0.5);
+        separator = " AND ";
+    }
+    if (quantum_number_s.has_value()) {
+        where += separator +
+            fmt::format("exp_s BETWEEN {} AND {}", quantum_number_s.value() - 0.5,
+                        quantum_number_s.value() + 0.5);
+        separator = " AND ";
+    }
+    if (quantum_number_j.has_value()) {
+        where += separator +
+            fmt::format("exp_j BETWEEN {} AND {}", quantum_number_j.value() - 0.5,
+                        quantum_number_j.value() + 0.5);
+        separator = " AND ";
+    }
+    if (separator.empty()) {
+        where += "FALSE";
+    }
 
-    return ket;
+    std::string orderby = "";
+    separator = "";
+    if (energy.has_value()) {
+        orderby += separator +
+            fmt::format("(SQRT(-1/(2*energy)) - {})^2", std::sqrt(-1 / (2 * energy.value())));
+        separator = " + ";
+    }
+    if (quantum_number_nu.has_value()) {
+        orderby += separator + fmt::format("(exp_nu - {})^2", quantum_number_nu.value());
+        separator = " + ";
+    }
+    if (quantum_number_l.has_value()) {
+        orderby += separator + fmt::format("(exp_l - {})^2", quantum_number_l.value());
+        separator = " + ";
+    }
+    if (quantum_number_s.has_value()) {
+        orderby += separator + fmt::format("(exp_s - {})^2", quantum_number_s.value());
+        separator = " + ";
+    }
+    if (quantum_number_j.has_value()) {
+        orderby += separator + fmt::format("(exp_j - {})^2", quantum_number_j.value());
+        separator = " + ";
+    }
+    if (separator.empty()) {
+        orderby += "id";
+    }
+
+    // Ask the database for the described state
+    auto result = con->Query(fmt::format(
+        R"(SELECT energy, f, parity, id, n, exp_nu, std_nu, exp_l, std_l, exp_s, std_s,
+        exp_j, std_j FROM {} WHERE {} ORDER BY {} ASC LIMIT 1)",
+        tables[species + "_states"].local_path, where, orderby));
+
+    if (result->HasError()) {
+        throw std::runtime_error("Error querying the database: " + result->GetError());
+    }
+
+    if (result->Collection().Count() == 0) {
+        throw std::runtime_error("No state found.");
+    }
+
+    // Construct the state
+    auto result_quantum_number_m = quantum_number_m.value_or(0);
+    auto result_energy = result->GetValue(0, 0).GetValue<double>();
+    auto result_quantum_number_f = result->GetValue(1, 0).GetValue<double>();
+    auto result_parity = result->GetValue(2, 0).GetValue<long>();
+    auto result_id = result->GetValue(3, 0).GetValue<long>() * 1000 + 500 +
+        static_cast<long>(2 * result_quantum_number_m);
+    auto result_quantum_number_n = result->GetValue(4, 0).GetValue<long>();
+    auto result_quantum_number_nu_exp = result->GetValue(5, 0).GetValue<double>();
+    auto result_quantum_number_nu_std = result->GetValue(6, 0).GetValue<double>();
+    auto result_quantum_number_l_exp = result->GetValue(7, 0).GetValue<double>();
+    auto result_quantum_number_l_std = result->GetValue(8, 0).GetValue<double>();
+    auto result_quantum_number_s_exp = result->GetValue(9, 0).GetValue<double>();
+    auto result_quantum_number_s_std = result->GetValue(10, 0).GetValue<double>();
+    auto result_quantum_number_j_exp = result->GetValue(11, 0).GetValue<double>();
+    auto result_quantum_number_j_std = result->GetValue(12, 0).GetValue<double>();
+
+    return KetAtom<Real>(result_energy, result_quantum_number_f, result_quantum_number_m,
+                         result_parity, result_id, species, result_quantum_number_n,
+                         result_quantum_number_nu_exp, result_quantum_number_nu_std,
+                         result_quantum_number_l_exp, result_quantum_number_l_std,
+                         result_quantum_number_s_exp, result_quantum_number_s_std,
+                         result_quantum_number_j_exp, result_quantum_number_j_std);
 }
 
 template <typename Real>
@@ -120,105 +333,209 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
     std::optional<Real> max_quantum_number_nu, std::optional<Real> min_quantum_number_l,
     std::optional<Real> max_quantum_number_l, std::optional<Real> min_quantum_number_s,
     std::optional<Real> max_quantum_number_s, std::optional<Real> min_quantum_number_j,
-    std::optional<Real> max_quantum_number_j) {
+    std::optional<Real> max_quantum_number_j, std::vector<size_t> additional_ket_ids) {
 
-    ensure_presence_of_local_database(species + "_states");
+    ensure_presence_of_table(species + "_states");
 
-    // TODO perform database request and delete the following mocked code
+    // Check that the specifications are valid
+    if (min_quantum_number_n.has_value() || max_quantum_number_n.has_value()) {
+        ensure_quantum_number_n_is_allowed(species + "_states");
+    }
 
-    Real energy = 0;
-    float quantum_number_f = 0;
-    float quantum_number_m = 0;
-    int p = -1;
-    size_t id = 1000;
-    int quantum_number_n = 0;
-    Real quantum_number_nu = 0;
-    Real quantum_number_l = 0;
-    Real quantum_number_s = 0;
-    Real quantum_number_j = 0;
+    // Describe the states
+    std::string where = "(";
+    std::string separator = "";
+    if (min_energy.has_value()) {
+        where += separator + fmt::format("energy >= {}", min_energy.value());
+        separator = " AND ";
+    }
+    if (max_energy.has_value()) {
+        where += separator + fmt::format("energy <= {}", max_energy.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_f.has_value()) {
+        where += separator + fmt::format("f >= {}", min_quantum_number_f.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_f.has_value()) {
+        where += separator + fmt::format("f <= {}", max_quantum_number_f.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_m.has_value()) {
+        where += separator + fmt::format("m >= {}", min_quantum_number_m.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_m.has_value()) {
+        where += separator + fmt::format("m <= {}", max_quantum_number_m.value());
+        separator = " AND ";
+    }
+    if (parity.has_value()) {
+        where += separator + fmt::format("parity = {}", parity.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_n.has_value()) {
+        where += separator + fmt::format("n >= {}", min_quantum_number_n.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_n.has_value()) {
+        where += separator + fmt::format("n <= {}", max_quantum_number_n.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_nu.has_value()) {
+        where += separator + fmt::format("exp_nu >= {}-2*std_nu", min_quantum_number_nu.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_nu.has_value()) {
+        where += separator + fmt::format("exp_nu <= {}+2*std_nu", max_quantum_number_nu.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_l.has_value()) {
+        where += separator + fmt::format("exp_l >= {}-2*std_l", min_quantum_number_l.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_l.has_value()) {
+        where += separator + fmt::format("exp_l <= {}+2*std_l", max_quantum_number_l.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_s.has_value()) {
+        where += separator + fmt::format("exp_s >= {}-2*std_s", min_quantum_number_s.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_s.has_value()) {
+        where += separator + fmt::format("exp_s <= {}+2*std_s", max_quantum_number_s.value());
+        separator = " AND ";
+    }
+    if (min_quantum_number_j.has_value()) {
+        where += separator + fmt::format("exp_j >= {}-2*std_j", min_quantum_number_j.value());
+        separator = " AND ";
+    }
+    if (max_quantum_number_j.has_value()) {
+        where += separator + fmt::format("exp_j <= {}+2*std_j", max_quantum_number_j.value());
+        separator = " AND ";
+    }
+    if (separator.empty()) {
+        where += "FALSE";
+    }
+    where += ")";
+    if (!additional_ket_ids.empty()) {
+        where += fmt::format(" OR id*1000+(2*m)::bigint+500 IN ({})",
+                             fmt::join(additional_ket_ids, ","));
+    }
 
+    // Ask the database for the described states
+    auto result = con->Query(fmt::format(
+        R"(WITH s AS (
+          SELECT * FROM (
+              SELECT *,
+              UNNEST(list_transform(generate_series(0,(2*f)::bigint),
+              x -> x::double-f)) AS m FROM {}
+          ) AS states_with_m WHERE {}
+        )
+        SELECT energy, f, m, parity, id*1000+(2*m)::bigint+500 AS row, n,
+        exp_nu, std_nu, exp_l, std_l, exp_s, std_s, exp_j, std_j
+        FROM s ORDER BY row ASC)",
+        tables[species + "_states"].local_path, where));
+
+    if (result->HasError()) {
+        throw std::runtime_error("Error querying the database: " + result->GetError());
+    }
+
+    if (result->Collection().Count() == 0) {
+        throw std::runtime_error("No states found.");
+    }
+
+    // TODO store the resulting table of states in memory and return an identifier together
+    // with the kets to store it in the basis
+
+    // Construct the states
+    auto &collection = result->Collection();
     std::vector<std::shared_ptr<const KetAtom<Real>>> kets;
-    kets.push_back(std::make_shared<const KetAtom<Real>>(
-        KetAtom<Real>(energy, quantum_number_f, quantum_number_m, p, species, id, species,
-                      quantum_number_n, quantum_number_nu, 0, quantum_number_l, 0, quantum_number_s,
-                      0, quantum_number_j, 0, *this)));
+    kets.reserve(collection.Count());
+    double last_energy = std::numeric_limits<double>::lowest();
+
+    for (auto &chunk : collection.Chunks()) {
+        auto chunk_energy = duckdb::FlatVector::GetData<double>(chunk.data[0]);
+        auto chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk.data[1]);
+        auto chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk.data[2]);
+        auto chunk_parity = duckdb::FlatVector::GetData<long>(chunk.data[3]);
+        auto chunk_id = duckdb::FlatVector::GetData<long>(chunk.data[4]);
+        auto chunk_quantum_number_n = duckdb::FlatVector::GetData<long>(chunk.data[5]);
+        auto chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk.data[6]);
+        auto chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk.data[7]);
+        auto chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk.data[8]);
+        auto chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk.data[9]);
+        auto chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk.data[10]);
+        auto chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk.data[11]);
+        auto chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk.data[12]);
+        auto chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk.data[13]);
+
+        for (size_t i = 0; i < chunk.size(); i++) {
+
+            // Check that the states are sorted by energy
+            if (chunk_energy[i] < last_energy) {
+                throw std::runtime_error("The states are not sorted by energy.");
+            }
+            last_energy = chunk_energy[i];
+
+            // Append a new state
+            kets.push_back(std::make_shared<const KetAtom<Real>>(
+                KetAtom<Real>(chunk_energy[i], chunk_quantum_number_f[i], chunk_quantum_number_m[i],
+                              chunk_parity[i], chunk_id[i], species, chunk_quantum_number_n[i],
+                              chunk_quantum_number_nu_exp[i], chunk_quantum_number_nu_std[i],
+                              chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
+                              chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
+                              chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i])));
+        }
+    }
 
     return kets;
 }
 
-Database::LocalDatabase Database::get_local_database(std::string name) {
-    // Loop over all parquet files in the database directory and find the one with the correct name
-    // and the highest version
-    LocalDatabase db;
-    const std::regex parquet_regex("^" + name + "_v(\\d+)\\.parquet$");
-    for (const auto &entry : std::filesystem::directory_iterator(databasedir)) {
-        if (entry.is_regular_file()) {
-            std::smatch parquet_match;
-            std::string filename = entry.path().filename().string();
-            if (std::regex_match(filename, parquet_match, parquet_regex)) {
-                std::string version_str = parquet_match[1].str();
-                if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
-                    int version = std::stoi(version_str);
-                    if (version > db.version) {
-                        db.version = version;
-                        db.path = entry.path();
-                    }
-                }
+void Database::ensure_presence_of_table(std::string name) {
+    if (tables.count(name) == 0 && auto_update) {
+        throw std::runtime_error("No database `" + name + "` found.");
+    }
+
+    if (tables.count(name) == 0 && !auto_update) {
+        throw std::runtime_error("No database `" + name +
+                                 "` found. Try setting auto_update to true.");
+    }
+
+    if (auto_update && tables[name].local_version < tables[name].remote_version) {
+        SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
+                    tables[name].local_version, tables[name].remote_version);
+        auto res = pool.front().Get(
+            tables[name].remote_path,
+            {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
+        if (!res || res->status != 200) {
+            SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path,
+                         fmt::streamed(res.error()));
+        } else {
+            if (tables[name].local_version != -1) {
+                std::filesystem::remove(tables[name].local_path);
             }
+            tables[name].local_version = tables[name].remote_version;
+            tables[name].local_path = databasedir /
+                (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
+            std::ofstream out(tables[name].local_path, std::ios::binary);
+            out << res->body;
+            out.close();
         }
     }
-    return db;
 }
 
-Database::RemoteDatabase Database::get_remote_database(std::string name) {
-    if (remote_databases.count(name) == 0) {
-        return RemoteDatabase();
+void Database::ensure_quantum_number_n_is_allowed(std::string name) {
+    auto result = con->Query(fmt::format(R"(SELECT n FROM {} LIMIT 1)", tables[name].local_path));
+    if (result->HasError()) {
+        throw std::runtime_error("Error querying the database: " + result->GetError());
     }
-    return remote_databases[name];
-}
-
-void Database::ensure_presence_of_local_database(std::string name) {
-    // Update the local database if necessary
-    if (local_databases.count(name) == 0) {
-        auto local_database = get_local_database(name);
-        if (auto_update) {
-            auto remote_database = get_remote_database(name);
-            if (local_database.version < remote_database.version) {
-                SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
-                            local_database.version, remote_database.version);
-
-                httplib::Client cli("https://api.github.com");
-                cli.set_default_headers({{"Accept", "application/octet-stream"},
-                                         {"X-GitHub-Api-Version", "2022-11-28"}});
-                cli.set_bearer_token_auth(github_access_token);
-                cli.set_follow_location(true);
-
-                auto res = cli.Get(remote_database.url);
-                if (!res || res->status != 200) {
-                    SPDLOG_ERROR("Error accessing `{}`: {}", remote_database.url,
-                                 fmt::streamed(res.error()));
-                } else {
-                    if (local_database.version != -1) {
-                        std::filesystem::remove(local_database.path);
-                    }
-                    local_database.version = remote_database.version;
-                    local_database.path = databasedir /
-                        (name + "_v" + std::to_string(remote_database.version) + ".parquet");
-                    std::ofstream out(local_database.path, std::ios::binary);
-                    out << res->body;
-                    out.close();
-                }
-            }
-        }
-        if (local_database.version == -1) {
-            if (auto_update) {
-                throw std::runtime_error("No database `" + name + "` found.");
-            } else {
-                throw std::runtime_error("No database `" + name + "` found." +
-                                         " Try setting auto_update to true.");
-            }
-        }
-        local_databases[name] = local_database;
+    if (result->Collection().Count() == 0) {
+        throw std::runtime_error("No state found.");
+    }
+    if (result->GetValue(0, 0).GetValue<long>() <= 0) {
+        throw std::runtime_error(
+            "The specified species does not have a well-defined principal quantum number n. "
+            "Use the effective principal quantum number nu instead.");
     }
 }
 
@@ -244,7 +561,7 @@ template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get_kets<f
     std::optional<float> max_quantum_number_nu, std::optional<float> min_quantum_number_l,
     std::optional<float> max_quantum_number_l, std::optional<float> min_quantum_number_s,
     std::optional<float> max_quantum_number_s, std::optional<float> min_quantum_number_j,
-    std::optional<float> max_quantum_number_j);
+    std::optional<float> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
 template std::vector<std::shared_ptr<const KetAtom<double>>> Database::get_kets<double>(
     std::string species, std::optional<double> min_energy, std::optional<double> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
@@ -254,4 +571,4 @@ template std::vector<std::shared_ptr<const KetAtom<double>>> Database::get_kets<
     std::optional<double> max_quantum_number_nu, std::optional<double> min_quantum_number_l,
     std::optional<double> max_quantum_number_l, std::optional<double> min_quantum_number_s,
     std::optional<double> max_quantum_number_s, std::optional<double> min_quantum_number_j,
-    std::optional<double> max_quantum_number_j);
+    std::optional<double> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
