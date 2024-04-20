@@ -12,13 +12,14 @@ class KetClassicalLightCreator;
 template <typename Real>
 class KetClassicalLight : public Ket<Real> {
 public:
+    std::string get_label() const override;
     int get_quantum_number_n_sigma_p() const;
     int get_quantum_number_n_pi() const;
     int get_quantum_number_n_sigma_m() const;
 
 private:
     friend class KetClassicalLightCreator<Real>;
-    KetClassicalLight(Real energy, int n_sigma_p, int n_pi, int n_sigma_m, std::string label,
+    KetClassicalLight(Real energy, int n_sigma_p, int n_pi, int n_sigma_m,
                       size_t id); // p can only be -1 for photons
                                   // But this I handle in KetClassicalLightCreator.
     int quantum_number_n_sigma_p;

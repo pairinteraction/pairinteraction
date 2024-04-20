@@ -25,7 +25,7 @@ public:
     float get_quantum_number_f() const;
     float get_quantum_number_m() const;
     int get_parity() const;
-    std::string get_label() const;
+    virtual std::string get_label() const = 0;
     size_t get_id() const;
     size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const;
 
@@ -34,12 +34,11 @@ public:
     }
 
 protected:
-    Ket(Real energy, float f, float m, int p, std::string label, size_t id);
+    Ket(Real energy, float f, float m, int p, size_t id);
     Real energy;
     float quantum_number_f;
     float quantum_number_m;
     int parity;
-    std::string label;
     size_t id;
 };
 

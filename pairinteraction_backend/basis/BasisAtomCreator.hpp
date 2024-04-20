@@ -3,6 +3,7 @@
 #include <complex>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "utils/traits.hpp"
 
@@ -37,6 +38,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_s(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
+    BasisAtomCreator<Scalar> &add_ket(const ket_t &ket);
     BasisAtom<Scalar> create(Database &database) const;
 
 private:
@@ -58,6 +60,8 @@ private:
     std::optional<real_t> max_quantum_number_s;
     std::optional<real_t> min_quantum_number_j;
     std::optional<real_t> max_quantum_number_j;
+    std::vector<size_t> additional_ket_ids;
+    std::optional<std::string> additional_ket_species;
 };
 
 extern template class BasisAtomCreator<float>;
