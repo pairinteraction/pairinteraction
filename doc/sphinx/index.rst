@@ -97,6 +97,8 @@ References
 Utility Tools
     :doc:`mqdt` - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 
+    :doc:`databases` - Find out how to make states and matrix elements available to pairinteraction.
+
 .. toctree::
     :maxdepth: 2
     :caption: User Guide
@@ -129,6 +131,7 @@ Utility Tools
     :hidden:
 
     mqdt.rst
+    databases.rst
 
 Credits
 =======
