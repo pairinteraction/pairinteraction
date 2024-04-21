@@ -33,6 +33,12 @@ public:
         bool up_to_date;
     };
 
+    template <typename Real>
+    struct KetsResult {
+        std::vector<std::shared_ptr<const KetAtom<Real>>> kets;
+        std::string table;
+    };
+
     Database(bool auto_update = true);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
@@ -47,7 +53,7 @@ public:
             std::optional<Real> quantum_number_j);
 
     template <typename Real>
-    std::vector<std::shared_ptr<const KetAtom<Real>>>
+    KetsResult<Real>
     get_kets(std::string species, std::optional<Real> min_energy, std::optional<Real> max_energy,
              std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
              std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
@@ -98,7 +104,7 @@ extern template KetAtom<double> Database::get_ket<double>(
     std::optional<int> quantum_number_n, std::optional<double> quantum_number_nu,
     std::optional<double> quantum_number_l, std::optional<double> quantum_number_s,
     std::optional<double> quantum_number_j);
-extern template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get_kets<float>(
+extern template Database::KetsResult<float> Database::get_kets<float>(
     std::string species, std::optional<float> min_energy, std::optional<float> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
     std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
@@ -108,7 +114,7 @@ extern template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get
     std::optional<float> max_quantum_number_l, std::optional<float> min_quantum_number_s,
     std::optional<float> max_quantum_number_s, std::optional<float> min_quantum_number_j,
     std::optional<float> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
-extern template std::vector<std::shared_ptr<const KetAtom<double>>> Database::get_kets<double>(
+extern template Database::KetsResult<double> Database::get_kets<double>(
     std::string species, std::optional<double> min_energy, std::optional<double> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
     std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,

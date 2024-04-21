@@ -5,6 +5,8 @@
 #include "utils/traits.hpp"
 
 #include <complex>
+#include <string>
+#include <vector>
 
 class Database;
 
@@ -38,7 +40,8 @@ public:
 
 private:
     friend class BasisAtomCreator<Scalar>;
-    BasisAtom(ketvec_t &&kets, Database &database);
+    BasisAtom(ketvec_t &&kets, std::string table, Database &database);
+    std::string table;
     Database &database;
 };
 

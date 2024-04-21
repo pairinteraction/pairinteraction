@@ -103,14 +103,14 @@ BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    auto kets = database.get_kets<real_t>(
+    auto result = database.get_kets<real_t>(
         extracted_species, min_energy, max_energy, min_quantum_number_f, max_quantum_number_f,
         min_quantum_number_m, max_quantum_number_m, parity, min_quantum_number_n,
         max_quantum_number_n, min_quantum_number_nu, max_quantum_number_nu, min_quantum_number_l,
         max_quantum_number_l, min_quantum_number_s, max_quantum_number_s, min_quantum_number_j,
         max_quantum_number_j, additional_ket_ids);
 
-    return BasisAtom<Scalar>(std::move(kets), database);
+    return BasisAtom<Scalar>(std::move(result.kets), result.table, database);
 }
 
 // Explicit instantiations

@@ -325,7 +325,7 @@ Database::get_ket(std::string species, std::optional<Real> energy,
 }
 
 template <typename Real>
-std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
+Database::KetsResult<Real> Database::get_kets(
     std::string species, std::optional<Real> min_energy, std::optional<Real> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
     std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
@@ -423,19 +423,34 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
                              fmt::join(additional_ket_ids, ","));
     }
 
-    // Ask the database for the described states
+    // Create a table containing the described states
+    std::string uuid;
+    {
+        auto result = con->Query(R"(SELECT UUID())");
+        if (result->HasError()) {
+            throw std::runtime_error("Error selecting uuid: " + result->GetError());
+        }
+        uuid = result->GetValue(0, 0).GetValue<std::string>();
+    }
+    {
+        auto result = con->Query(fmt::format(
+            R"(CREATE TABLE "{}" AS SELECT * FROM (
+                SELECT *,
+                UNNEST(list_transform(generate_series(0,(2*f)::bigint),
+                x -> x::double-f)) AS m FROM {}
+            ) WHERE {})",
+            uuid, tables[species + "_states"].local_path, where));
+
+        if (result->HasError()) {
+            throw std::runtime_error("Error creating table: " + result->GetError());
+        }
+    }
+
+    // Ask the table for the described states
     auto result = con->Query(fmt::format(
-        R"(WITH s AS (
-          SELECT * FROM (
-              SELECT *,
-              UNNEST(list_transform(generate_series(0,(2*f)::bigint),
-              x -> x::double-f)) AS m FROM {}
-          ) AS states_with_m WHERE {}
-        )
-        SELECT energy, f, m, parity, {} AS row, n,
-        exp_nu, std_nu, exp_l, std_l, exp_s, std_s, exp_j, std_j
-        FROM s ORDER BY row ASC)",
-        tables[species + "_states"].local_path, where, ketid::atom::SQL_TERM));
+        R"(SELECT energy, f, m, parity, {} AS ketid, n, exp_nu, std_nu, exp_l, std_l,
+        exp_s, std_s, exp_j, std_j FROM "{}" ORDER BY ketid ASC)",
+        ketid::atom::SQL_TERM, uuid));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -444,9 +459,6 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
     if (result->Collection().Count() == 0) {
         throw std::runtime_error("No states found.");
     }
-
-    // TODO store the resulting table of states in memory and return an identifier together
-    // with the kets to store it in the basis
 
     // Construct the states
     auto &collection = result->Collection();
@@ -489,7 +501,7 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
         }
     }
 
-    return kets;
+    return {kets, uuid};
 }
 
 void Database::ensure_presence_of_table(std::string name) {
@@ -553,7 +565,7 @@ template KetAtom<double> Database::get_ket<double>(
     std::optional<int> quantum_number_n, std::optional<double> quantum_number_nu,
     std::optional<double> quantum_number_l, std::optional<double> quantum_number_s,
     std::optional<double> quantum_number_j);
-template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get_kets<float>(
+template Database::KetsResult<float> Database::get_kets<float>(
     std::string species, std::optional<float> min_energy, std::optional<float> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
     std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
@@ -563,7 +575,7 @@ template std::vector<std::shared_ptr<const KetAtom<float>>> Database::get_kets<f
     std::optional<float> max_quantum_number_l, std::optional<float> min_quantum_number_s,
     std::optional<float> max_quantum_number_s, std::optional<float> min_quantum_number_j,
     std::optional<float> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
-template std::vector<std::shared_ptr<const KetAtom<double>>> Database::get_kets<double>(
+template Database::KetsResult<double> Database::get_kets<double>(
     std::string species, std::optional<double> min_energy, std::optional<double> max_energy,
     std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
     std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
