@@ -26,20 +26,19 @@ public:
     float get_quantum_number_m() const;
     int get_parity() const;
     virtual std::string get_label() const = 0;
-    size_t get_id() const;
-    size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const;
+    virtual size_t get_id() const = 0;
+    virtual size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const = 0;
 
     friend std::ostream &operator<<(std::ostream &os, const Ket<Real> &ket) {
         return os << ket.get_label();
     }
 
 protected:
-    Ket(Real energy, float f, float m, int p, size_t id);
+    Ket(Real energy, float f, float m, int p);
     Real energy;
     float quantum_number_f;
     float quantum_number_m;
     int parity;
-    size_t id;
 };
 
 extern template class Ket<float>;

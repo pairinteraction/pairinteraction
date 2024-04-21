@@ -371,27 +371,42 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 class KetDerived : public Ket<float> {
 public:
     std::string get_label() const override { return "my_label"; }
+    size_t get_id() const override {
+        size_t seed = 0;
+        seed ^= std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>{}(this->quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<int>{}(new_property) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
+    size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const override {
+        size_t seed = 0;
+        seed ^= std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<float>{}(new_quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        seed ^= std::hash<int>{}(new_property) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        return seed;
+    }
     int get_new_property() const { return new_property; }
 
 private:
     friend class KetDerivedCreator;
-    KetDerived(float f, float m, int p, size_t id, int new_property)
-        : Ket<float>(0, f, m, p, id), new_property(new_property) {}
+    KetDerived(float f, float m, int p, int new_property)
+        : Ket<float>(0, f, m, p), new_property(new_property) {}
     int new_property;
 };
 
 // Classes for creating an instance of the derived ket class
 class KetDerivedCreator {
 public:
-    KetDerivedCreator(float f, float m, int p, size_t id, int new_property)
-        : f(f), m(m), p(p), id(id), new_property(new_property) {}
-    KetDerived create() const { return KetDerived(f, m, p, new_property, id); }
+    KetDerivedCreator(float f, float m, int p, int new_property)
+        : f(f), m(m), p(p), new_property(new_property) {}
+    KetDerived create() const { return KetDerived(f, m, p, new_property); }
 
 private:
     float f;
     float m;
     int p;
-    size_t id;
     int new_property;
 };
 
@@ -424,11 +439,11 @@ public:
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
         kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, 42, 1000).create()));
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, 42).create()));
         kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, 42, 2000).create()));
-        kets.push_back(std::make_shared<const KetDerived>(
-            KetDerivedCreator(0.5, -0.5, -1, 42, 3000).create()));
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, 42).create()));
+        kets.push_back(
+            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, -0.5, -1, 42).create()));
         return BasisDerived(std::move(kets));
     }
 };
