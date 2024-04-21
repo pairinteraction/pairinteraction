@@ -1,6 +1,7 @@
 #include "database/Database.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
+#include "utils/ketid.hpp"
 #include "utils/paths.hpp"
 
 #include <duckdb.hpp>
@@ -303,8 +304,8 @@ Database::get_ket(std::string species, std::optional<Real> energy,
     auto result_energy = result->GetValue(0, 0).GetValue<double>();
     auto result_quantum_number_f = result->GetValue(1, 0).GetValue<double>();
     auto result_parity = result->GetValue(2, 0).GetValue<long>();
-    auto result_id = result->GetValue(3, 0).GetValue<long>() * 1000 + 500 +
-        static_cast<long>(2 * result_quantum_number_m);
+    auto result_id =
+        ketid::atom::get(result->GetValue(3, 0).GetValue<long>(), result_quantum_number_m);
     auto result_quantum_number_n = result->GetValue(4, 0).GetValue<long>();
     auto result_quantum_number_nu_exp = result->GetValue(5, 0).GetValue<double>();
     auto result_quantum_number_nu_std = result->GetValue(6, 0).GetValue<double>();
@@ -418,7 +419,7 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
     }
     where += ")";
     if (!additional_ket_ids.empty()) {
-        where += fmt::format(" OR id*1000+(2*m)::bigint+500 IN ({})",
+        where += fmt::format(" OR {} IN ({})", ketid::atom::SQL_TERM,
                              fmt::join(additional_ket_ids, ","));
     }
 
@@ -431,10 +432,10 @@ std::vector<std::shared_ptr<const KetAtom<Real>>> Database::get_kets(
               x -> x::double-f)) AS m FROM {}
           ) AS states_with_m WHERE {}
         )
-        SELECT energy, f, m, parity, id*1000+(2*m)::bigint+500 AS row, n,
+        SELECT energy, f, m, parity, {} AS row, n,
         exp_nu, std_nu, exp_l, std_l, exp_s, std_s, exp_j, std_j
         FROM s ORDER BY row ASC)",
-        tables[species + "_states"].local_path, where));
+        tables[species + "_states"].local_path, where, ketid::atom::SQL_TERM));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());

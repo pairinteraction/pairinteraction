@@ -1,4 +1,6 @@
 #include "ket/KetAtom.hpp"
+#include "utils/ketid.hpp"
+
 #include <cmath>
 #include <fmt/format.h>
 #include <string>
@@ -8,7 +10,7 @@ template <typename Real>
 KetAtom<Real>::KetAtom(Real energy, float f, float m, int p, size_t id, std::string species, int n,
                        Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
                        Real j_exp, Real j_std)
-    : Ket<Real>(energy, f, m, p, id), species(species), quantum_number_n(n),
+    : Ket<Real>(energy, f, m, p), id(id), species(species), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
       quantum_number_j_exp(j_exp), quantum_number_j_std(j_std) {}
@@ -44,6 +46,16 @@ std::string KetAtom<Real>::get_label() const {
     }
 
     return label;
+}
+
+template <typename Real>
+size_t KetAtom<Real>::get_id() const {
+    return id;
+}
+
+template <typename Real>
+size_t KetAtom<Real>::get_id_for_different_quantum_number_m(float new_quantum_number_m) const {
+    return ketid::atom::transform(id, this->quantum_number_m, new_quantum_number_m);
 }
 
 template <typename Real>

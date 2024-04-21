@@ -3,8 +3,8 @@
 #include <limits>
 
 template <typename Real>
-Ket<Real>::Ket(Real energy, float f, float m, int p, size_t id)
-    : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p), id(id) {}
+Ket<Real>::Ket(Real energy, float f, float m, int p)
+    : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p) {}
 
 template <typename Real>
 Real Ket<Real>::get_energy() const {
@@ -24,16 +24,6 @@ float Ket<Real>::get_quantum_number_m() const {
 template <typename Real>
 int Ket<Real>::get_parity() const {
     return parity;
-}
-
-template <typename Real>
-size_t Ket<Real>::get_id() const {
-    return id;
-}
-
-template <typename Real>
-size_t Ket<Real>::get_id_for_different_quantum_number_m(float new_quantum_number_m) const {
-    return id + 2 * (new_quantum_number_m - quantum_number_m);
 }
 
 // Explicit instantiations
@@ -62,28 +52,42 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerived : public Ket<float> {
     public:
         std::string get_label() const override { return "my_label"; }
+        size_t get_id() const override {
+            size_t seed = 0;
+            seed ^=
+                std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^=
+                std::hash<float>{}(this->quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            return seed;
+        }
+        size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const override {
+            size_t seed = 0;
+            seed ^=
+                std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^=
+                std::hash<float>{}(new_quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            return seed;
+        }
 
     private:
         friend class KetDerivedCreator;
-        KetDerived(float energy, float f, float m, int p, size_t id)
-            : Ket<float>(energy, f, m, p, id) {}
+        KetDerived(float f, float m, int p) : Ket<float>(0, f, m, p) {}
     };
 
     class KetDerivedCreator {
     public:
-        KetDerivedCreator(float energy, float f, float m, int p, size_t id)
-            : energy(energy), f(f), m(m), p(p), id(id) {}
-        KetDerived create() const { return KetDerived(energy, f, m, p, id); }
+        KetDerivedCreator(float f, float m, int p) : f(f), m(m), p(p) {}
+        KetDerived create() const { return KetDerived(f, m, p); }
 
     private:
-        float energy;
         float f;
         float m;
         int p;
-        size_t id;
     };
 
-    auto ket = KetDerivedCreator(1.0f, 2.0f, 3.0f, 4, 1000).create();
+    auto ket = KetDerivedCreator(2.0f, 3.0f, 4).create();
 
     // Check that the label can be printed
     std::stringstream ss;
