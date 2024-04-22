@@ -249,7 +249,17 @@ Then, you can tell CMake to build the software with these tools by running the f
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
     cmake --build . --config Release
 
-**2. Building and Testing Only Parts of the Software**
+**2. Using Compiler Caching**
+
+If you delete the build directory because you want to compile a different branch of pairinteraction or use different build options, the compilation has to start from scratch - as long as you do not use a compiler cache like `ccache`. Using this tool has the additional advantage that adding comments to the source code does not trigger a recompilation. It can be installed on many operating systems, e.g., on Ubuntu by running:
+
+.. code-block:: bash
+
+    sudo apt install ccache
+
+To use the tool with CMake, pass ``-DCMAKE_CXX_COMPILER_LAUNCHER=ccache`` to the ``cmake`` command.
+
+**3. Building and Testing Only Parts of the Software**
 
 If you're developing and making changes to specific parts of the software, you can save time by using specific targets to build and test only those parts. You can read off the names of relevant targets from the ``CMakeLists.txt`` files located in the directories where you perform the changes. For example, you can build and test only the C++ backend by running the following commands within the build directory:
 
@@ -260,7 +270,7 @@ If you're developing and making changes to specific parts of the software, you c
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software.
 
-**3. Debugging with GDB**
+**4. Debugging with GDB**
 
 For tracking down errors like segmentation faults, running a debug build with the GNU Debugger `GDB` can be very helpful.
 
