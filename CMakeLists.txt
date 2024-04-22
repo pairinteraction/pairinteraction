@@ -23,6 +23,13 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
 
+# Add default compiler options
+if(MSVC)
+    add_compile_options("/W4" "$<$<CONFIG:Release>:/Ox /arch:AVX2>")
+else()
+    add_compile_options("-Wall" "-Wextra" "-Wpedantic" "$<$<CONFIG:Release>:-O3 -march=broadwell>")
+endif()
+
 # Work around buggy CMake ignoring CXX_EXTENSIONS OFF
 # https://gitlab.kitware.com/cmake/cmake/-/issues/22224
 if(POLICY CMP0128)
@@ -169,7 +176,7 @@ add_library(duckdb::duckdb ALIAS duckdb)
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-    GIT_TAG v0.15.3
+    GIT_TAG v0.14.3
     GIT_SHALLOW TRUE
 )
 set(HTTPLIB_REQUIRE_OPENSSL TRUE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
