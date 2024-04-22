@@ -23,13 +23,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
 
-# Add default compiler options
-if(MSVC)
-    add_compile_options("/W4")
-else()
-    add_compile_options("-Wall" "-Wextra" "-Wpedantic")
-endif()
-
 # Work around buggy CMake ignoring CXX_EXTENSIONS OFF
 # https://gitlab.kitware.com/cmake/cmake/-/issues/22224
 if(POLICY CMP0128)

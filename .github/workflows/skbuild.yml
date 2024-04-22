@@ -38,10 +38,10 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest # runs in container anyway
-          CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
+          CXXFLAGS: "-march=broadwell"
           CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: macos-12
-          CXXFLAGS: "-Wall -Wextra -Wpedantic"
+          CXXFLAGS: ""
           CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: windows-2019
           CXXFLAGS: "/Ox /arch:AVX2"
