@@ -18,7 +18,7 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   VERBOSE: 1
   CMAKE_BUILD_TYPE: Release
-  CXXFLAGS: "/W1 /Ox /arch:AVX2"
+  CXXFLAGS: "/Ox /arch:AVX2"
 
 jobs:
   build:

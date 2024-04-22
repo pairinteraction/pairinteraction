@@ -50,6 +50,11 @@ target_compile_definitions(backend PUBLIC
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
+target_compile_options(backend PRIVATE
+  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX /W4>
+)
+
 target_compile_features(backend PUBLIC cxx_std_17)
 
 set_target_properties(backend PROPERTIES
@@ -124,15 +129,16 @@ target_link_libraries(bindings
   PRIVATE nanobind-static
 )
 
+target_compile_options(bindings PRIVATE
+  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
+  $<$<CXX_COMPILER_ID:MSVC>:/WX /W4 /bigobj /MP>
+)
+
 target_compile_features(bindings PUBLIC cxx_std_17)
 
 set_target_properties(bindings PROPERTIES
   CXX_EXTENSIONS OFF
   POSITION_INDEPENDENT_CODE ON
-)
-
-target_compile_options(bindings PRIVATE
-  $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>
 )
 
 # Assemble objects into libraries
@@ -166,6 +172,11 @@ if (BUILD_TESTING)
 
   target_link_libraries(pairinteraction_backend_test
     PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
+  )
+
+  target_compile_options(pairinteraction_backend_test PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
+    $<$<CXX_COMPILER_ID:MSVC>:/WX /W4>
   )
 
   # Add tests

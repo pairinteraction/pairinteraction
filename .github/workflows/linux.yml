@@ -12,7 +12,7 @@ env:
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
   VERBOSE: 1
-  CXXFLAGS: "-Wall -Wextra -Wpedantic -march=broadwell"
+  CXXFLAGS: "-march=broadwell"
 
 jobs:
   debian:
