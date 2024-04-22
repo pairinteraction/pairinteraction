@@ -142,7 +142,7 @@ std::vector<Database::AvailabilitySpecies> Database::get_availability_of_species
                                                      "matrix_elements_o",
                                                      "matrix_elements_mu",
                                                      "matrix_elements_dia"};
-    for (int i = 0; i < availability.size(); i++) {
+    for (size_t i = 0; i < availability.size(); i++) {
         for (const auto &identifier : identifier_of_tables) {
             std::string name = availability[i].name + "_" + identifier;
             if (tables.count(name) > 0) {
