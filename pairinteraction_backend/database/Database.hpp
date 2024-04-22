@@ -73,13 +73,8 @@ private:
     };
 
     const std::vector<std::string> database_repo_endpoints{
-        {"/repos/MultiQuantum/extending-pairinteraction-proposal/releases/latest",
-         "/repos/MultiQuantum/rubidium-pairinteraction-database/releases/latest",
-         "/repos/MultiQuantum/strontium-pairinteraction-database/releases/latest"}};
-
-    const std::string github_access_token{
-        "github_pat_11ACL5QGA0vJHuTHWEnkex_"
-        "hTQiAbwt2R8gLX92pUwR9GofZXq5ee4a1qfhX6SWSEpQQAL2CD3NRQRpm3H"};
+        "/repos/pairinteraction/database-mqdt/releases/latest",
+        "/repos/pairinteraction/database-sqdt/releases/latest"};
 
     std::filesystem::path databasedir;
     bool auto_update;

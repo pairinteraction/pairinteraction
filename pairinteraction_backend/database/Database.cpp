@@ -31,7 +31,6 @@ Database::Database(bool auto_update)
     if (auto_update) {
         for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
             pool.emplace_back(httplib::Client("https://api.github.com"));
-            pool.back().set_bearer_token_auth(github_access_token);
             pool.back().set_follow_location(true);
             pool.front().set_keep_alive(true);
         }
