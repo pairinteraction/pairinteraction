@@ -124,18 +124,9 @@ template class BasisAtomCreator<std::complex<double>>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "ket/KetAtomCreator.hpp"
+#include "utils/streamed.hpp"
 #include <doctest/doctest.h>
-#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
-
-#if FMT_VERSION < 90000
-namespace fmt {
-template <typename T>
-inline auto streamed(T &&v) {
-    return std::forward<T>(v);
-}
-} // namespace fmt
-#endif
 
 DOCTEST_TEST_CASE("create a basis for strontium") {
     auto database = Database();

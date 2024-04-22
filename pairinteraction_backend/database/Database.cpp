@@ -3,24 +3,15 @@
 #include "ket/KetAtomCreator.hpp"
 #include "utils/ketid.hpp"
 #include "utils/paths.hpp"
+#include "utils/streamed.hpp"
 
 #include <duckdb.hpp>
 #include <fmt/format.h>
-#include <fmt/ostream.h>
 #include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
 #include <regex>
 #include <spdlog/spdlog.h>
-
-#if FMT_VERSION < 90000
-namespace fmt {
-template <typename T>
-inline auto streamed(T &&v) {
-    return std::forward<T>(v);
-}
-} // namespace fmt
-#endif
 
 Database::Database(bool auto_update)
     : databasedir(paths::get_pairinteraction_cache_directory() / "database"),

@@ -93,18 +93,9 @@ template class KetAtomCreator<double>;
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include "utils/streamed.hpp"
 #include <doctest/doctest.h>
-#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
-
-#if FMT_VERSION < 90000
-namespace fmt {
-template <typename T>
-inline auto streamed(T &&v) {
-    return std::forward<T>(v);
-}
-} // namespace fmt
-#endif
 
 // DOCTEST_TEST_CASE("create a ket for rubidium") {
 //     auto database = Database();
