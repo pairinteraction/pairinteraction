@@ -23,16 +23,6 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
 endif()
 
-# Enable LTO for all targets if supported
-include(CheckIPOSupported)
-check_ipo_supported(RESULT supported OUTPUT error)
-if(supported)
-  message(STATUS "IPO / LTO enabled")
-  set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
-else()
-  message(STATUS "IPO / LTO not supported: <${error}>")
-endif()
-
 # Work around buggy CMake ignoring CXX_EXTENSIONS OFF
 # https://gitlab.kitware.com/cmake/cmake/-/issues/22224
 if(POLICY CMP0128)
