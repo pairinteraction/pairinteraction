@@ -182,7 +182,7 @@ std::vector<int> Basis<Derived>::get_blocks(Label label) const {
     int last_ket = ket_of_states[0];
     blocks.push_back(0);
 
-    for (size_t i = 0; i < coefficients.cols(); ++i) {
+    for (int i = 0; i < coefficients.cols(); ++i) {
         if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F &&
             quantum_number_f_of_states[i] != last_quantum_number_f) {
             blocks.push_back(i);
@@ -310,25 +310,25 @@ template <typename Derived>
 void Basis<Derived>::sort(const std::vector<int> &sorter) {
     {
         auto tmp(quantum_number_f_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
+        for (size_t i = 0; i < sorter.size(); ++i) {
             quantum_number_f_of_states[i] = tmp[sorter[i]];
         }
     }
     {
         auto tmp(quantum_number_m_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
+        for (size_t i = 0; i < sorter.size(); ++i) {
             quantum_number_m_of_states[i] = tmp[sorter[i]];
         }
     }
     {
         auto tmp(parity_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
+        for (size_t i = 0; i < sorter.size(); ++i) {
             parity_of_states[i] = tmp[sorter[i]];
         }
     }
     {
         auto tmp(ket_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
+        for (size_t i = 0; i < sorter.size(); ++i) {
             ket_of_states[i] = tmp[sorter[i]];
         }
     }
