@@ -169,7 +169,7 @@ add_library(duckdb::duckdb ALIAS duckdb)
 FetchContent_Declare(
     httplib
     GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-    GIT_TAG v0.14.3
+    GIT_TAG v0.15.3
     GIT_SHALLOW TRUE
 )
 set(HTTPLIB_REQUIRE_OPENSSL TRUE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
