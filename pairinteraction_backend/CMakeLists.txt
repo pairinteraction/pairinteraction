@@ -33,6 +33,7 @@ target_sources(backend PUBLIC
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp
+  ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
 )
@@ -78,6 +79,7 @@ target_sources(bindings PUBLIC
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp
+  ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
   # Bindings

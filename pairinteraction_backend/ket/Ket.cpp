@@ -34,21 +34,14 @@ template class Ket<double>;
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include "utils/streamed.hpp"
 #include <doctest/doctest.h>
-#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 #include <sstream>
 
-#if FMT_VERSION < 90000
-namespace fmt {
-template <typename T>
-inline auto streamed(T &&v) {
-    return std::forward<T>(v);
-}
-} // namespace fmt
-#endif
-
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
+    class KetDerivedCreator;
+
     class KetDerived : public Ket<float> {
     public:
         std::string get_label() const override { return "my_label"; }

@@ -368,6 +368,8 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 #ifndef DOCTEST_CONFIG_DISABLE
 
 // A derived ket class
+class KetDerivedCreator;
+
 class KetDerived : public Ket<float> {
 public:
     std::string get_label() const override { return "my_label"; }
