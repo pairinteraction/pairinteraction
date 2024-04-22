@@ -228,7 +228,7 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
         Eigen::VectorXf sq = probs * map.cwiseAbs2();
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
-        for (int i = 0; i < quantum_number_f_of_states.size(); ++i) {
+        for (size_t i = 0; i < quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < tolerance) {
                 quantum_number_f_of_states[i] = val[i];
             } else {
@@ -244,7 +244,7 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
         Eigen::VectorXf sq = probs * map.cwiseAbs2();
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
-        for (int i = 0; i < quantum_number_m_of_states.size(); ++i) {
+        for (size_t i = 0; i < quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < tolerance) {
                 quantum_number_m_of_states[i] = val[i];
             } else {
@@ -261,7 +261,7 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
         Eigen::VectorXf sq = probs * map.cwiseAbs2();
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
-        for (int i = 0; i < parity_of_states.size(); ++i) {
+        for (size_t i = 0; i < parity_of_states.size(); ++i) {
             if (diff[i] < tolerance) {
                 parity_of_states[i] = static_cast<int>(val[i]);
             } else {

@@ -50,7 +50,7 @@ target_compile_definitions(backend PUBLIC
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
-target_compile_features(backend PUBLIC cxx_std_20)
+target_compile_features(backend PUBLIC cxx_std_17)
 
 set_target_properties(backend PROPERTIES
   CXX_EXTENSIONS OFF
@@ -124,7 +124,7 @@ target_link_libraries(bindings
   PRIVATE nanobind-static
 )
 
-target_compile_features(bindings PUBLIC cxx_std_20)
+target_compile_features(bindings PUBLIC cxx_std_17)
 
 set_target_properties(bindings PROPERTIES
   CXX_EXTENSIONS OFF
