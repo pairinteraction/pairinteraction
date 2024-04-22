@@ -3,7 +3,6 @@
 #include <cmath>
 #include <complex>
 #include <limits>
-#include <numbers>
 #include <stdexcept>
 
 #include "utils/maths.hpp"
