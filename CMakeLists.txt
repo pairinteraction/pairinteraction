@@ -25,9 +25,9 @@ endif()
 
 # Add default compiler options
 if(MSVC)
-    add_compile_options("/W4" "$<$<CONFIG:Release>:/Ox /arch:AVX2>")
+    add_compile_options("/W4")
 else()
-    add_compile_options("-Wall" "-Wextra" "-Wpedantic" "$<$<CONFIG:Release>:-O3 -march=broadwell>")
+    add_compile_options("-Wall" "-Wextra" "-Wpedantic")
 endif()
 
 # Work around buggy CMake ignoring CXX_EXTENSIONS OFF
