@@ -70,7 +70,7 @@ jobs:
       env:
         CMAKE_ARGS: ${{ matrix.CMAKE_ARGS }}
         CXXFLAGS: ${{ matrix.CXXFLAGS }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
+        CIBW_MANYLINUX_X86_64_IMAGE: ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker
         CIBW_ENVIRONMENT_LINUX: CMAKE_ARGS='${{ matrix.CMAKE_ARGS }}' CXXFLAGS='${{ matrix.CXXFLAGS }}'
         CIBW_ENVIRONMENT_PASS_LINUX: CMAKE_ARGS CXXFLAGS VERBOSE
         CIBW_TEST_COMMAND_WINDOWS: "" # wheels are still broken :(

@@ -40,7 +40,7 @@ jobs:
     #   Deadlocks or just takes really really long.
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
       with:
@@ -65,7 +65,7 @@ jobs:
     # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
       with:
@@ -102,7 +102,7 @@ jobs:
     #   Segfaults probably because of JlCxxWrap not having debug mode.
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
       with:
