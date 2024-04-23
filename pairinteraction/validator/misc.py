@@ -1,9 +1,8 @@
 """Some more types, fields and other various useful stuff for the pydantic models."""
 
-from typing import Union
+from typing import Literal, Union
 
 from pydantic import Field, confloat, conint, conlist, constr
-from typing_extensions import Literal
 
 # TODO new python: replace conint, confloat, constr, conlist by Annotated[type, Field(...)]
 

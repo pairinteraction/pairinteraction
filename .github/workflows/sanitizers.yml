@@ -8,6 +8,7 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
+  CLICOLOR_FORCE: 1
   VERBOSE: 1
   QT_QPA_PLATFORM: "offscreen"
   QT_DEBUG_PLUGINS: 1
@@ -113,7 +114,8 @@ jobs:
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOC=On
       env:
-        CXXFLAGS: "-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC"
+        # For now only lightweight assertions until DuckDB is also compiled with _GLIBCXX_DEBUG
+        CXXFLAGS: "-D_GLIBCXX_ASSERTIONS"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

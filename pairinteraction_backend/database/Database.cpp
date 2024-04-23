@@ -508,10 +508,10 @@ void Database::ensure_presence_of_table(std::string name) {
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
         auto res = pool.front().Get(
-            tables[name].remote_path,
+            tables[name].remote_path.string(),
             {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
         if (!res || res->status != 200) {
-            SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path,
+            SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path.string(),
                          fmt::streamed(res.error()));
         } else {
             if (tables[name].local_version != -1) {
