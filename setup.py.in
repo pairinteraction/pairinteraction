@@ -29,7 +29,7 @@ setup(
     ],
     packages=find_namespace_packages(include=["pairinteraction", "pairinteraction_backend_old", "pairinteraction_gui", "pairinteraction_gui.pipy"]),
     package_data={
-        "pairinteraction": ["binding.so", "pairinteraction-backend-deprecated", "databases/quantum_defects.db"],
+        "pairinteraction_backend_old": ["binding.so", "libpairinteraction.so", "pairinteraction-backend-deprecated", "databases/quantum_defects.db"],
         "pairinteraction_gui": ["conf/example.pconf", "conf/example.sconf", "icon.png"],
     },
     scripts=["start_pairinteraction_gui"],

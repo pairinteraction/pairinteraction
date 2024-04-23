@@ -11,6 +11,7 @@ env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
+  CLICOLOR_FORCE: 1
   VERBOSE: 1
 
 jobs:
@@ -53,6 +54,14 @@ jobs:
       with:
         fetch-depth: 0
         submodules: true
+
+    - name: Log in to the Container registry
+      if: runner.os == 'Linux'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Install Intel oneAPI Math Kernel Library (oneMKL)
       if: runner.os == 'Windows'

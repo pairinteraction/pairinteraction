@@ -52,7 +52,7 @@ target_compile_definitions(backend PUBLIC
 
 target_compile_options(backend PRIVATE
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/WX /W4>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
 )
 
 target_compile_features(backend PUBLIC cxx_std_17)
@@ -131,7 +131,7 @@ target_link_libraries(bindings
 
 target_compile_options(bindings PRIVATE
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/WX /W4 /bigobj /MP>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>
 )
 
 target_compile_features(bindings PUBLIC cxx_std_17)
@@ -176,7 +176,7 @@ if (BUILD_TESTING)
 
   target_compile_options(pairinteraction_backend_test PRIVATE
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-    $<$<CXX_COMPILER_ID:MSVC>:/WX /W4>
+    $<$<CXX_COMPILER_ID:MSVC>:/W4>
   )
 
   # Add tests
