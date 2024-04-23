@@ -21,7 +21,6 @@ jobs:
         - name: manylinux
         - name: opensuse
         - name: static-analysis
-        - name: static-analysis-new
         - name: ubuntu
 
     steps:

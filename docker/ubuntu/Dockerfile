@@ -6,41 +6,47 @@ RUN apt-get update -y \
     && cd cpp-httplib-0.10.3+ds/ \
     && sed -i'' -e 's/debhelper-compat (= 13)/debhelper-compat (= 12)/g' debian/control \
     && yes | mk-build-deps --install --remove \
-    && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --build=binary --unsigned-changes \
-    && cd - \
-    && dget -ux http://archive.ubuntu.com/ubuntu/pool/universe/s/sphinxcontrib-mermaid/sphinxcontrib-mermaid_0.7.1-3.dsc \
-    && cd sphinxcontrib-mermaid-0.7.1 \
-    && sed -i'' -e 's/debhelper-compat (= 13)/debhelper-compat (= 12)/g' debian/control \
-    && sed -i'' -e '/python3-myst-parser/d' debian/control \
-    && yes | mk-build-deps --install --remove \
     && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --build=binary --unsigned-changes
 
 FROM ubuntu:focal
 COPY --from=build /libcpp-httplib0_0.10.3+ds-1_amd64.deb ./libcpp-httplib.deb
 COPY --from=build /libcpp-httplib-dev_0.10.3+ds-1_amd64.deb ./libcpp-httplib-dev.deb
-COPY --from=build /python3-sphinxcontrib-mermaid_0.7.1-3_all.deb ./python3-sphinxcontrib-mermaid.deb
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
     cmake build-essential git file \
-    pyqt5-dev-tools \
     libboost-dev \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev liblapacke-dev libopenblas-dev uuid-dev \
     libcpp-httplib-dev nlohmann-json3-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev \
-    python3-numpy python3-scipy \
-    locales python3-pyqtgraph python3-pint \
+    locales \
     dpkg-dev rpm \
     curl ca-certificates \
-    doxygen graphviz \
-    python3-sphinx python3-numpydoc python3-sphinx-rtd-theme \
-    jupyter-nbconvert pandoc python3-ipykernel python3-nbsphinx \
-    python3-matplotlib \
-    ./libcpp-httplib.deb ./libcpp-httplib-dev.deb ./python3-sphinxcontrib-mermaid.deb \
+    doxygen graphviz libgraphviz-dev pandoc \
+    ./libcpp-httplib.deb ./libcpp-httplib-dev.deb \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
-  && rm -rf /var/lib/apt/lists/* ./libcpp-httplib.deb ./libcpp-httplib-dev.deb ./python3-sphinxcontrib-mermaid.deb
+  && rm -rf /var/lib/apt/lists/* ./libcpp-httplib.deb ./libcpp-httplib-dev.deb
+
+ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
+RUN python3 /pip.pyz --no-cache-dir install \
+    scikit-build-core \
+    numpy \
+    scipy \
+    matplotlib \
+    PyQt5 \
+    pyqtgraph \
+    Pint \
+    Sphinx \
+    numpydoc \
+    sphinx-rtd-theme \
+    sphinxcontrib-mermaid \
+    autodoc_pydantic[erdantic] \
+    nbsphinx \
+    jupyter \
+    nbconvert
+RUN rm -f /pip.pyz
 
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
