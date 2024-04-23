@@ -20,7 +20,7 @@ jobs:
   benchmarks:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v3
       with:

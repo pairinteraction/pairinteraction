@@ -18,7 +18,7 @@ jobs:
   debian:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-debian:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
       with:
@@ -72,7 +72,7 @@ jobs:
   manylinux:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-manylinux:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker
     steps:
     - uses: actions/checkout@v3
       with:
@@ -110,7 +110,7 @@ jobs:
     if: false # disabled until OpenSUSE upgrades Python
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-opensuse:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-opensuse:docker
     env:
       package: pairinteraction-install-opensuse.rpm
     steps:
@@ -141,7 +141,7 @@ jobs:
   static-analysis:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-static-analysis-new:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-static-analysis:docker
     steps:
     - uses: actions/checkout@v4
       with:
@@ -164,7 +164,7 @@ jobs:
   ubuntu:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/pairinteraction/pairinteraction-ubuntu:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-ubuntu:docker
     env:
       package: pairinteraction-install-ubuntu.deb
     steps:
