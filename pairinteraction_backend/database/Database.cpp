@@ -76,6 +76,21 @@ Database::Database(bool auto_update)
             if (!res) {
                 SPDLOG_ERROR("Error accessing database repositories, no response.");
                 continue;
+            } else if ((res->status == 403 || res->status == 429) &&
+                       res->has_header("x-ratelimit-remaining") &&
+                       res->get_header_value("x-ratelimit-remaining") == "0") {
+                int waittime = -1;
+                if (res->has_header("retry-after")) {
+                    waittime = std::stoi(res->get_header_value("retry-after"));
+                } else if (res->has_header("x-ratelimit-reset")) {
+                    waittime =
+                        std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
+                }
+                SPDLOG_ERROR(
+                    "Error accessing database repositories, rate limit exceeded. Auto update "
+                    "is disabled. You should not retry until after {} seconds.",
+                    waittime);
+                auto_update = false;
             } else if (res->status != 200) {
                 SPDLOG_ERROR("Error accessing database repositories, status {}.", res->status);
                 continue;
@@ -601,6 +616,19 @@ void Database::ensure_presence_of_table(std::string name) {
         if (!res || res->status != 200) {
             SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path.string(),
                          fmt::streamed(res.error()));
+        } else if ((res->status == 403 || res->status == 429) &&
+                   res->has_header("x-ratelimit-remaining") &&
+                   res->get_header_value("x-ratelimit-remaining") == "0") {
+            int waittime = -1;
+            if (res->has_header("retry-after")) {
+                waittime = std::stoi(res->get_header_value("retry-after"));
+            } else if (res->has_header("x-ratelimit-reset")) {
+                waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
+            }
+            SPDLOG_ERROR("Error accessing database repositories, rate limit exceeded. Auto update "
+                         "is disabled. You should not retry until after {} seconds.",
+                         waittime);
+            auto_update = false;
         } else {
             if (tables[name].local_version != -1) {
                 std::filesystem::remove(tables[name].local_path);
