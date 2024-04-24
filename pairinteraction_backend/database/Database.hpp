@@ -39,7 +39,7 @@ public:
         std::string table;
     };
 
-    Database(bool auto_update = true);
+    Database(bool auto_update = false);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
