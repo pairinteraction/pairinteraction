@@ -278,8 +278,8 @@ Database::get_ket(std::string species, std::optional<Real> energy,
     // Ask the database for the described state
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, exp_nu, std_nu, exp_l, std_l, exp_s, std_s,
-        exp_j, std_j FROM {} WHERE {} ORDER BY {} ASC LIMIT 1)",
-        tables[species + "_states"].local_path, where, orderby));
+        exp_j, std_j FROM '{}' WHERE {} ORDER BY {} ASC LIMIT 1)",
+        tables[species + "_states"].local_path.string(), where, orderby));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -427,9 +427,9 @@ Database::KetsResult<Real> Database::get_kets(
             R"(CREATE TABLE "{}" AS SELECT * FROM (
                 SELECT *,
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
-                x -> x::double-f)) AS m FROM {}
+                x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
-            uuid, tables[species + "_states"].local_path, where));
+            uuid, tables[species + "_states"].local_path.string(), where));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
@@ -528,7 +528,8 @@ void Database::ensure_presence_of_table(std::string name) {
 }
 
 void Database::ensure_quantum_number_n_is_allowed(std::string name) {
-    auto result = con->Query(fmt::format(R"(SELECT n FROM {} LIMIT 1)", tables[name].local_path));
+    auto result =
+        con->Query(fmt::format(R"(SELECT n FROM '{}' LIMIT 1)", tables[name].local_path.string()));
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
     }
