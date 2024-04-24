@@ -7,6 +7,7 @@
 
 #include <duckdb.hpp>
 #include <fmt/format.h>
+#include <fstream>
 #include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
@@ -32,7 +33,9 @@ Database::Database(bool auto_update)
         for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
             pool.emplace_back(httplib::Client("https://api.github.com"));
             pool.back().set_follow_location(true);
-            pool.front().set_keep_alive(true);
+            pool.back().set_connection_timeout(1, 0); // seconds
+            pool.back().set_read_timeout(60, 0);      // seconds
+            pool.back().set_write_timeout(1, 0);      // seconds
         }
     }
 
@@ -61,21 +64,51 @@ Database::Database(bool auto_update)
         httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
             &httplib::Client::Get;
         std::vector<std::future<httplib::Result>> futures;
-        httplib::Headers headers = {{"X-GitHub-Api-Version", "2022-11-28"},
-                                    {"Accept", "application/vnd.github+json"}};
+        std::vector<std::filesystem::path> filenames;
+
         for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
+            // Get the last modified date of the last JSON response
+            std::string lastmodified = "";
+            filenames.push_back(
+                databasedir /
+                ("latest_" + std::to_string(std::hash<std::string>{}(database_repo_endpoints[i])) +
+                 ".json"));
+            if (std::filesystem::exists(filenames.back())) {
+                std::ifstream file(filenames.back());
+                nlohmann::json doc;
+                file >> doc;
+                if (doc.contains("last-modified")) {
+                    lastmodified = doc["last-modified"].get<std::string>();
+                }
+            }
+
+            // Create a get request conditioned on the last-modified date
+            httplib::Headers headers;
+            if (lastmodified.empty()) {
+                headers = {{"X-GitHub-Api-Version", "2022-11-28"},
+                           {"Accept", "application/vnd.github+json"}};
+            } else {
+                headers = {{"X-GitHub-Api-Version", "2022-11-28"},
+                           {"Accept", "application/vnd.github+json"},
+                           {"if-modified-since", lastmodified}};
+            }
             futures.push_back(
                 std::async(std::launch::async, gf, &pool[i], database_repo_endpoints[i], headers));
         }
 
         // Process the results
-        for (auto &future : futures) {
-            auto res = future.get();
+        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
+            SPDLOG_INFO("Accessing database repository: {}", database_repo_endpoints[i]);
+            auto res = futures[i].get();
 
             // Check if the request was successful
             if (!res) {
-                SPDLOG_ERROR("Error accessing database repositories, no response.");
-                continue;
+                if (!std::filesystem::exists(filenames[i])) {
+                    SPDLOG_ERROR("Error accessing database repository: {}",
+                                 fmt::streamed(res.error()));
+                    continue;
+                }
+
             } else if ((res->status == 403 || res->status == 429) &&
                        res->has_header("x-ratelimit-remaining") &&
                        res->get_header_value("x-ratelimit-remaining") == "0") {
@@ -87,17 +120,34 @@ Database::Database(bool auto_update)
                         std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
                 }
                 SPDLOG_ERROR(
-                    "Error accessing database repositories, rate limit exceeded. Auto update "
+                    "Error accessing database repository, rate limit exceeded. Auto update "
                     "is disabled. You should not retry until after {} seconds.",
                     waittime);
                 auto_update = false;
+                continue;
+
             } else if (res->status != 200) {
-                SPDLOG_ERROR("Error accessing database repositories, status {}.", res->status);
+                SPDLOG_ERROR("Error accessing database repository, status {}.", res->status);
                 continue;
             }
 
-            // Parse the JSON response
-            auto doc = nlohmann::json::parse(res->body);
+            // Parse and store the JSON response together with the last-modified date
+            nlohmann::json doc;
+            if (!res || res->status == 304) {
+                SPDLOG_INFO("Using cached overview of available tables.");
+                std::ifstream file(filenames[i]);
+                file >> doc;
+            } else {
+                SPDLOG_INFO("Using downloaded overview of available tables.");
+                doc = nlohmann::json::parse(res->body);
+                if (res->has_header("last-modified")) {
+                    doc["last-modified"] = res->get_header_value("last-modified");
+                }
+                std::ofstream file(filenames[i]);
+                file << doc;
+            }
+
+            // Process the assets
             for (auto &asset : doc["assets"]) {
                 std::smatch parquet_match;
                 auto filename = asset["name"].get<std::string>();
@@ -480,7 +530,6 @@ Database::KetsResult<Real> Database::get_kets(
         }
         uuid =
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
-        SPDLOG_ERROR("uuid: {}", uuid);
     }
     {
         auto result = con->Query(fmt::format(
@@ -668,7 +717,7 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
     }
 }
 
-Database& Database::get_global_instance() {
+Database &Database::get_global_instance() {
     thread_local static Database database;
     return database;
 }
