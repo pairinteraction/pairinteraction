@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
@@ -141,9 +141,9 @@ find_package(nanobind CONFIG REQUIRED)
 nanobind_build_library(nanobind-static)
 set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
-if(MSVC)
+if(WIN32)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-windows-amd64.zip)
-  set(DUCKDB_LIBNAME duckdb.dll)
+  set(DUCKDB_LIBNAME duckdb.lib)
 elseif(APPLE)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-osx-universal.zip)
   set(DUCKDB_LIBNAME libduckdb.dylib)
@@ -160,10 +160,13 @@ FetchContent_GetProperties(duckdb)
 if(NOT duckdb_POPULATED)
   FetchContent_Populate(duckdb)
 endif()
-add_library(duckdb INTERFACE)
+add_library(duckdb INTERFACE IMPORTED)
 target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
 target_link_libraries(duckdb INTERFACE ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME})
 set_target_properties(duckdb PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
+if(WIN32)
+  set_target_properties(duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/duckdb.dll)
+endif()
 add_library(duckdb::duckdb ALIAS duckdb)
 
 FetchContent_Declare(

@@ -148,7 +148,7 @@ add_library(pairinteraction_backend SHARED
 )
 
 target_link_libraries(pairinteraction_backend
-  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
+  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}> doctest::doctest Eigen3::Eigen nlohmann_json::nlohmann_json spdlog::spdlog duckdb::duckdb httplib::httplib # TODO clean up
   PRIVATE nanobind-static
 )
 
@@ -162,6 +162,13 @@ target_link_options(pairinteraction_backend PRIVATE
   $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
   $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
 )
+
+if (WIN32)
+  add_custom_command(TARGET pairinteraction_backend POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction_backend_test> $<TARGET_RUNTIME_DLLS:pairinteraction_backend_test>
+    COMMAND_EXPAND_LISTS
+  )
+endif()
 
 # Build an executable for running the tests
 if (BUILD_TESTING)
@@ -178,6 +185,13 @@ if (BUILD_TESTING)
     $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
     $<$<CXX_COMPILER_ID:MSVC>:/W4>
   )
+
+  if (WIN32)
+    add_custom_command(TARGET pairinteraction_backend_test POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction_backend_test> $<TARGET_RUNTIME_DLLS:pairinteraction_backend_test>
+      COMMAND_EXPAND_LISTS
+    )
+  endif()
 
   # Add tests
   add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
