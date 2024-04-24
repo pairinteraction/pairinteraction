@@ -27,6 +27,12 @@ jobs:
         submodules: true
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pairinteraction/database/
+        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+        restore-keys:
+          pairinteraction-${{ github.job }}
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
@@ -82,6 +88,12 @@ jobs:
         submodules: true
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pairinteraction/database/
+        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+        restore-keys:
+          pairinteraction-${{ github.job }}
     - name: Setup Python
       run: |
         echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
@@ -122,6 +134,12 @@ jobs:
         submodules: true
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pairinteraction/database/
+        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+        restore-keys:
+          pairinteraction-${{ github.job }}
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
@@ -151,6 +169,12 @@ jobs:
         submodules: true
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pairinteraction/database/
+        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+        restore-keys:
+          pairinteraction-${{ github.job }}
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-config=" -DWITH_JULIA=On -DWITH_DOC=On -DWITH_GUI=Off
     - name: Build
@@ -176,6 +200,12 @@ jobs:
         submodules: true
     - name: Fixup Run actions/checkout
       run: git config --global --add safe.directory '*'
+    - uses: actions/cache@v4
+      with:
+        path: ~/.cache/pairinteraction/database/
+        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+        restore-keys:
+          pairinteraction-${{ github.job }}
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_JULIA=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build

@@ -30,6 +30,13 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\pairinteraction\database\
+          key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+          restore-keys:
+            pairinteraction-${{ github.job }}
+
       - name: Install Intel oneAPI Math Kernel Library (oneMKL)
         uses: ./.github/actions/install-intel-mkl
 

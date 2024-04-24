@@ -30,6 +30,12 @@ jobs:
           submodules: true
       - name: Fixup Run actions/checkout
         run: git config --global --add safe.directory '*'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pairinteraction/database/
+          key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+          restore-keys:
+            pairinteraction-${{ github.job }}
       - name: Install dependencies
         run: |
           apt-get update

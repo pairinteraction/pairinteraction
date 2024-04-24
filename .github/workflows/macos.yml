@@ -29,6 +29,13 @@ jobs:
           fetch-depth: 0
           submodules: true
 
+      - uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/pairinteraction/database/
+          key: pairinteraction-${{ github.job }}-${{ github.run_id }}
+          restore-keys:
+            pairinteraction-${{ github.job }}
+
       - uses: actions/setup-python@v5
         with:
           python-version: '3.9'
