@@ -43,6 +43,7 @@ public:
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
+    static Database& get_global_instance();
 
     template <typename Real>
     KetAtom<Real>
