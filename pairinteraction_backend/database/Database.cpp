@@ -668,6 +668,11 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
     }
 }
 
+Database& Database::get_global_instance() {
+    thread_local static Database database;
+    return database;
+}
+
 // Explicit instantiations
 template KetAtom<float> Database::get_ket<float>(
     std::string species, std::optional<float> energy, std::optional<float> quantum_number_f,
