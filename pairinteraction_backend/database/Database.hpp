@@ -39,11 +39,11 @@ public:
         std::string table;
     };
 
-    Database(bool auto_update = false);
+    Database(bool auto_update = true);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
-    static Database& get_global_instance();
+    static Database &get_global_instance();
 
     template <typename Real>
     KetAtom<Real>
@@ -74,7 +74,6 @@ private:
     };
 
     const std::vector<std::string> database_repo_endpoints{
-        "/repos/pairinteraction/database-mqdt/releases/latest",
         "/repos/pairinteraction/database-sqdt/releases/latest"};
 
     std::filesystem::path databasedir;
