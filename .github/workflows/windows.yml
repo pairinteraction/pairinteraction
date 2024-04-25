@@ -71,16 +71,16 @@ jobs:
           $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
           wheel unpack $env:PATH_WHEEL_UNMODIFIED -d wheelhouse\
           $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
-          Copy-Item pairinteraction\Release\* ${env:PATH_WHEEL_UNPACKED}\pairinteraction\ -Recurse -Force -Verbose
+          Copy-Item pairinteraction_backend_old\Release\* ${env:PATH_WHEEL_UNPACKED}\pairinteraction\ -Recurse -Force -Verbose
           Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
           wheel pack $env:PATH_WHEEL_UNPACKED -d wheelhouse\
         working-directory: build/
 
       - name: Tests
         run: |
-          Copy-Item pairinteraction\Release\* pairinteraction\ -Recurse -Force -Verbose
+          Copy-Item pairinteraction_backend_old\Release\* pairinteraction\ -Recurse -Force -Verbose
           New-Item -Path pairinteraction\test\pairinteraction_backend_old\cpp\Release\ -ItemType Directory -Force
-          Copy-Item pairinteraction\Release\* pairinteraction\test\pairinteraction_backend_old\cpp\Release -Recurse -Force -Verbose
+          Copy-Item pairinteraction_backend_old\Release\* pairinteraction\test\pairinteraction_backend_old\cpp\Release -Recurse -Force -Verbose
           cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
         env:
