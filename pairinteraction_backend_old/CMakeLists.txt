@@ -328,6 +328,7 @@ if(WITH_PYTHON)
     CXX_EXTENSIONS OFF
     CXX_CLANG_TIDY ""
     PREFIX ""
+    SUFFIX "${NB_SUFFIX_EXT}"
     INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
   target_include_directories(binding PUBLIC "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
   target_compile_options(binding PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
