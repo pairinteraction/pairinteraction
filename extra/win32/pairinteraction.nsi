@@ -21,7 +21,7 @@
 !define LIBNAME "pairinteraction"
 !define BACKNAME "pairinteraction_backend_old"
 !define GUINAME "pairinteraction_gui"
-!define BUILD_DIR "..\build"
+!define BUILD_DIR "..\..\build"
 !define PROGDIR $PROGRAMFILES64
 
 name ${APP_NAME}
