@@ -165,7 +165,7 @@ target_link_options(pairinteraction_backend PRIVATE
 
 if (WIN32)
   add_custom_command(TARGET pairinteraction_backend POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction_backend_test> $<TARGET_RUNTIME_DLLS:pairinteraction_backend_test>
+    COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction_backend> $<TARGET_RUNTIME_DLLS:pairinteraction_backend>
     COMMAND_EXPAND_LISTS
   )
 endif()
