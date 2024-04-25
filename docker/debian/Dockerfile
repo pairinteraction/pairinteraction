@@ -1,15 +1,4 @@
-FROM debian:bullseye as build
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update -y \
-    && apt-get install -y packaging-dev debian-keyring devscripts equivs \
-    && dget -ux http://deb.debian.org/debian/pool/main/c/cpp-httplib/cpp-httplib_0.11.4+ds-1+deb12u1.dsc \
-    && cd cpp-httplib-0.11.4+ds/ \
-    && yes | mk-build-deps --install --remove \
-    && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --build=binary --unsigned-changes
-
-FROM debian:bullseye
-COPY --from=build /libcpp-httplib0.11_0.11.4+ds-1+deb12u1_amd64.deb ./libcpp-httplib.deb
-COPY --from=build /libcpp-httplib-dev_0.11.4+ds-1+deb12u1_amd64.deb ./libcpp-httplib-dev.deb
+FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
@@ -29,13 +18,12 @@ RUN apt-get update \
     lcov \
     doxygen graphviz libgraphviz-dev ca-certificates rsync pandoc \
     intel-oneapi-mkl-devel \
-    ./libcpp-httplib.deb ./libcpp-httplib-dev.deb \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
-  && rm -rf /var/lib/apt/lists/* ./libcpp-httplib.deb ./libcpp-httplib-dev.deb
+  && rm -rf /var/lib/apt/lists/*
 
 ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
-RUN python3 /pip.pyz --no-cache-dir install \
+RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     scikit-build-core \
     numpy \
     scipy \

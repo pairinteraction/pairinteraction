@@ -1,16 +1,4 @@
-FROM ubuntu:focal as build
-ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update -y \
-    && apt-get install -y packaging-dev ubuntu-keyring devscripts equivs \
-    && dget -ux http://archive.ubuntu.com/ubuntu/pool/universe/c/cpp-httplib/cpp-httplib_0.10.3+ds-1.dsc \
-    && cd cpp-httplib-0.10.3+ds/ \
-    && sed -i'' -e 's/debhelper-compat (= 13)/debhelper-compat (= 12)/g' debian/control \
-    && yes | mk-build-deps --install --remove \
-    && DEB_BUILD_OPTIONS=nocheck dpkg-buildpackage --build=binary --unsigned-changes
-
-FROM ubuntu:focal
-COPY --from=build /libcpp-httplib0_0.10.3+ds-1_amd64.deb ./libcpp-httplib.deb
-COPY --from=build /libcpp-httplib-dev_0.10.3+ds-1_amd64.deb ./libcpp-httplib-dev.deb
+FROM ubuntu:jammy
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
@@ -24,12 +12,11 @@ RUN apt-get update -qq \
     clang clang-tidy clang-format \
     curl ca-certificates netcat \
     doxygen graphviz libgraphviz-dev pandoc \
-    ./libcpp-httplib.deb ./libcpp-httplib-dev.deb \
   && apt-get clean -qq \
-  && rm -rf /var/lib/apt/lists/* ./libcpp-httplib.deb ./libcpp-httplib-dev.deb
+  && rm -rf /var/lib/apt/lists/*
 
 ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
-RUN python3 /pip.pyz --no-cache-dir install \
+RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     scikit-build-core \
     numpy \
     scipy \
