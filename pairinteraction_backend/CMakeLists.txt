@@ -32,6 +32,7 @@ target_sources(backend PUBLIC
   ./system/SystemClassicalLight.cpp
   ./system/SystemClassicalLight.hpp
   ./utils/euler.hpp
+  ./utils/hash.hpp
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp
@@ -85,6 +86,7 @@ target_sources(bindings PUBLIC
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.hpp
   ./utils/euler.hpp
+  ./utils/hash.hpp
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp

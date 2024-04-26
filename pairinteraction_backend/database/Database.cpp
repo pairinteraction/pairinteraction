@@ -4,6 +4,7 @@
 #include "database/AtomDescriptionByRanges.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
+#include "utils/hash.hpp"
 #include "utils/ketid.hpp"
 #include "utils/paths.hpp"
 #include "utils/streamed.hpp"
@@ -31,10 +32,68 @@ Database::Database(bool auto_update)
         throw std::runtime_error("Database path is not a directory.");
     }
 
+    // Ensure that the config directory exists
+    std::filesystem::path configdir = paths::get_pairinteraction_config_directory();
+    if (!std::filesystem::exists(configdir)) {
+        std::filesystem::create_directories(configdir);
+    } else if (!std::filesystem::is_directory(configdir)) {
+        throw std::runtime_error("Config path is not a directory.");
+    }
+
+    // Read in the database_repo_paths if a config file exists, otherwise use the default and
+    // write it to the config file
+    std::filesystem::path configfile = configdir / "database.json";
+    std::string database_repo_host;
+    std::vector<std::string> database_repo_paths;
+    if (std::filesystem::exists(configfile)) {
+        std::ifstream file(configfile);
+        nlohmann::json doc;
+        file >> doc;
+
+        if (doc.contains("hash") && doc.contains("database_repo_host") &&
+            doc.contains("database_repo_paths")) {
+            database_repo_host = doc["database_repo_host"].get<std::string>();
+            database_repo_paths = doc["database_repo_paths"].get<std::vector<std::string>>();
+
+            // If the values are not equal to the default values but the hash is consistent (i.e.,
+            // the user has not changed anything manually), clear the values so that they can be
+            // updated
+            if (database_repo_host != default_database_repo_host ||
+                database_repo_paths != default_database_repo_paths) {
+                std::size_t seed = 0;
+                hash::hash_combine(seed, database_repo_paths);
+                hash::hash_combine(seed, database_repo_host);
+                if (seed == doc["hash"].get<std::size_t>()) {
+                    database_repo_host.clear();
+                    database_repo_paths.clear();
+                }
+            }
+        }
+    }
+
+    // Read in and store the default values if necessary
+    if (database_repo_host.empty() || database_repo_paths.empty()) {
+        SPDLOG_INFO("Updating the database repository host and paths.");
+
+        database_repo_host = default_database_repo_host;
+        database_repo_paths = default_database_repo_paths;
+        std::ofstream file(configfile);
+        nlohmann::json doc;
+        doc["database_repo_host"] = default_database_repo_host;
+        doc["database_repo_paths"] = database_repo_paths;
+
+        std::size_t seed = 0;
+        hash::hash_combine(seed, default_database_repo_paths);
+        hash::hash_combine(seed, default_database_repo_host);
+        doc["hash"] = seed;
+
+        file << doc.dump(4);
+    }
+
     // Create a pool of clients
     if (auto_update) {
-        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
-            pool.emplace_back(httplib::Client("https://api.github.com"));
+        for (size_t i = 0; i < database_repo_paths.size(); i++) {
+            pool.emplace_back(httplib::Client(database_repo_host));
             pool.back().set_follow_location(true);
             pool.back().set_connection_timeout(1, 0); // seconds
             pool.back().set_read_timeout(60, 0);      // seconds
@@ -69,13 +128,13 @@ Database::Database(bool auto_update)
         std::vector<std::future<httplib::Result>> futures;
         std::vector<std::filesystem::path> filenames;
 
-        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
+        for (size_t i = 0; i < database_repo_paths.size(); i++) {
             // Get the last modified date of the last JSON response
             std::string lastmodified = "";
-            filenames.push_back(
-                databasedir /
-                ("latest_" + std::to_string(std::hash<std::string>{}(database_repo_endpoints[i])) +
-                 ".json"));
+            filenames.push_back(databasedir /
+                                ("latest_" +
+                                 std::to_string(std::hash<std::string>{}(database_repo_paths[i])) +
+                                 ".json"));
             if (std::filesystem::exists(filenames.back())) {
                 std::ifstream file(filenames.back());
                 nlohmann::json doc;
@@ -96,17 +155,18 @@ Database::Database(bool auto_update)
                            {"if-modified-since", lastmodified}};
             }
             futures.push_back(
-                std::async(std::launch::async, gf, &pool[i], database_repo_endpoints[i], headers));
+                std::async(std::launch::async, gf, &pool[i], database_repo_paths[i], headers));
         }
 
         // Process the results
-        for (size_t i = 0; i < database_repo_endpoints.size(); i++) {
-            SPDLOG_INFO("Accessing database repository: {}", database_repo_endpoints[i]);
+        for (size_t i = 0; i < database_repo_paths.size(); i++) {
+            SPDLOG_INFO("Accessing database repository: {}", database_repo_paths[i]);
             auto res = futures[i].get();
 
             // Check if the request was successful
             if (!res) {
-                if (!std::filesystem::exists(filenames[i])) {
+                if (res.error() != httplib::Error::Unknown ||
+                    !std::filesystem::exists(filenames[i])) {
                     SPDLOG_ERROR("Error accessing database repository: {}",
                                  fmt::streamed(res.error()));
                     continue;
