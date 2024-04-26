@@ -1,14 +1,24 @@
 #pragma once
 
+#include <Eigen/SparseCore>
+#include <complex>
 #include <filesystem>
 #include <memory>
-#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+template <typename Scalar>
+struct AtomDescriptionByParameters;
+
+template <typename Scalar>
+struct AtomDescriptionByRanges;
+
 template <typename Real>
 class KetAtom;
+
+template <typename Real>
+class BasisAtom;
 
 namespace duckdb {
 class DuckDB;
@@ -33,10 +43,12 @@ public:
         bool up_to_date;
     };
 
-    template <typename Real>
-    struct KetsResult {
-        std::vector<std::shared_ptr<const KetAtom<Real>>> kets;
-        std::string table;
+    enum class Type {
+        DIPOLE,         // Dipole operator
+        QUADRUPOLE,     // Quadrupole operator
+        OCTUPOLE,       // Octupole operator
+        MAGNETICDIPOLE, // Magnetic dipole operator
+        DIAMAGNETIC     // Part of the diamagnetic operator
     };
 
     Database(bool auto_update = true);
@@ -46,24 +58,16 @@ public:
     static Database &get_global_instance();
 
     template <typename Real>
-    KetAtom<Real>
-    get_ket(std::string species, std::optional<Real> energy, std::optional<float> quantum_number_f,
-            std::optional<float> quantum_number_m, std::optional<int> parity,
-            std::optional<int> quantum_number_n, std::optional<Real> quantum_number_nu,
-            std::optional<Real> quantum_number_l, std::optional<Real> quantum_number_s,
-            std::optional<Real> quantum_number_j);
+    KetAtom<Real> get_ket(std::string species,
+                          const AtomDescriptionByParameters<Real> &description);
 
-    template <typename Real>
-    KetsResult<Real>
-    get_kets(std::string species, std::optional<Real> min_energy, std::optional<Real> max_energy,
-             std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
-             std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
-             std::optional<int> parity, std::optional<int> min_quantum_number_n,
-             std::optional<int> max_quantum_number_n, std::optional<Real> min_quantum_number_nu,
-             std::optional<Real> max_quantum_number_nu, std::optional<Real> min_quantum_number_l,
-             std::optional<Real> max_quantum_number_l, std::optional<Real> min_quantum_number_s,
-             std::optional<Real> max_quantum_number_s, std::optional<Real> min_quantum_number_j,
-             std::optional<Real> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
+    template <typename Scalar>
+    BasisAtom<Scalar> get_basis(std::string species,
+                                const AtomDescriptionByRanges<Scalar> &description,
+                                std::vector<size_t> additional_ket_ids);
+
+    template <typename Scalar>
+    Eigen::SparseMatrix<Scalar> get_operator(const BasisAtom<Scalar> &basis, Type type, int q);
 
 private:
     struct Table {
@@ -87,35 +91,31 @@ private:
     void ensure_quantum_number_n_is_allowed(std::string name);
 };
 
-extern template KetAtom<float> Database::get_ket<float>(
-    std::string species, std::optional<float> energy, std::optional<float> quantum_number_f,
-    std::optional<float> quantum_number_m, std::optional<int> parity,
-    std::optional<int> quantum_number_n, std::optional<float> quantum_number_nu,
-    std::optional<float> quantum_number_l, std::optional<float> quantum_number_s,
-    std::optional<float> quantum_number_j);
-extern template KetAtom<double> Database::get_ket<double>(
-    std::string species, std::optional<double> energy, std::optional<float> quantum_number_f,
-    std::optional<float> quantum_number_m, std::optional<int> parity,
-    std::optional<int> quantum_number_n, std::optional<double> quantum_number_nu,
-    std::optional<double> quantum_number_l, std::optional<double> quantum_number_s,
-    std::optional<double> quantum_number_j);
-extern template Database::KetsResult<float> Database::get_kets<float>(
-    std::string species, std::optional<float> min_energy, std::optional<float> max_energy,
-    std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
-    std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
-    std::optional<int> parity, std::optional<int> min_quantum_number_n,
-    std::optional<int> max_quantum_number_n, std::optional<float> min_quantum_number_nu,
-    std::optional<float> max_quantum_number_nu, std::optional<float> min_quantum_number_l,
-    std::optional<float> max_quantum_number_l, std::optional<float> min_quantum_number_s,
-    std::optional<float> max_quantum_number_s, std::optional<float> min_quantum_number_j,
-    std::optional<float> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
-extern template Database::KetsResult<double> Database::get_kets<double>(
-    std::string species, std::optional<double> min_energy, std::optional<double> max_energy,
-    std::optional<float> min_quantum_number_f, std::optional<float> max_quantum_number_f,
-    std::optional<float> min_quantum_number_m, std::optional<float> max_quantum_number_m,
-    std::optional<int> parity, std::optional<int> min_quantum_number_n,
-    std::optional<int> max_quantum_number_n, std::optional<double> min_quantum_number_nu,
-    std::optional<double> max_quantum_number_nu, std::optional<double> min_quantum_number_l,
-    std::optional<double> max_quantum_number_l, std::optional<double> min_quantum_number_s,
-    std::optional<double> max_quantum_number_s, std::optional<double> min_quantum_number_j,
-    std::optional<double> max_quantum_number_j, std::vector<size_t> additional_ket_ids);
+extern template KetAtom<float>
+Database::get_ket<float>(std::string species,
+                         const AtomDescriptionByParameters<float> &description);
+extern template KetAtom<double>
+Database::get_ket<double>(std::string species,
+                          const AtomDescriptionByParameters<double> &description);
+extern template BasisAtom<float>
+Database::get_basis<float>(std::string species, const AtomDescriptionByRanges<float> &description,
+                           std::vector<size_t> additional_ket_ids);
+extern template BasisAtom<double>
+Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
+                            std::vector<size_t> additional_ket_ids);
+extern template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>(
+    std::string species, const AtomDescriptionByRanges<std::complex<float>> &description,
+    std::vector<size_t> additional_ket_ids);
+extern template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
+    std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
+    std::vector<size_t> additional_ket_ids);
+extern template Eigen::SparseMatrix<float>
+Database::get_operator<float>(const BasisAtom<float> &basis, Type type, int q);
+extern template Eigen::SparseMatrix<double>
+Database::get_operator<double>(const BasisAtom<double> &basis, Type type, int q);
+extern template Eigen::SparseMatrix<std::complex<float>>
+Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis, Type type,
+                                            int q);
+extern template Eigen::SparseMatrix<std::complex<double>>
+Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
+                                             Type type, int q);

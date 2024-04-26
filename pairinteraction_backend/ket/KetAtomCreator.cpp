@@ -1,5 +1,6 @@
 #include "ket/KetAtomCreator.hpp"
 
+#include "database/AtomDescriptionByParameters.hpp"
 #include "database/Database.hpp"
 #include "ket/KetAtom.hpp"
 
@@ -78,9 +79,12 @@ KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    auto ket = database.get_ket<Real>(species.value(), energy, quantum_number_f, quantum_number_m,
-                                      parity, quantum_number_n, quantum_number_nu, quantum_number_l,
-                                      quantum_number_s, quantum_number_j);
+    AtomDescriptionByParameters<Real> description{
+        energy,           quantum_number_f, quantum_number_m,
+        parity,           quantum_number_n, quantum_number_nu,
+        quantum_number_l, quantum_number_s, quantum_number_j};
+
+    auto ket = database.get_ket<Real>(species.value(), description);
 
     return ket;
 }

@@ -39,10 +39,11 @@ public:
     using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
 private:
-    friend class BasisAtomCreator<Scalar>;
-    BasisAtom(ketvec_t &&kets, std::string table, Database &database);
+    friend class Database;
+    BasisAtom(ketvec_t &&kets, std::string table, Database &database, std::string species);
     std::string table;
     Database &database;
+    std::string species;
 };
 
 extern template class BasisAtom<float>;
