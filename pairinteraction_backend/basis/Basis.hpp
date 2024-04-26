@@ -91,16 +91,16 @@ public:
 
 protected:
     Basis(ketvec_t &&kets);
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
+    std::unordered_map<size_t, size_t> ket_id_to_index;
 
 private:
     const Derived &derived() const;
+    ketvec_t kets;
+    bool is_standard_basis;
+    Label sorting;
     std::vector<float> quantum_number_f_of_states;
     std::vector<float> quantum_number_m_of_states;
     std::vector<int> parity_of_states;
     std::vector<int> ket_of_states;
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
-    ketvec_t kets;
-    std::unordered_map<size_t, size_t> ket_id_to_index;
-    bool is_standard_basis;
-    Label sorting;
 };

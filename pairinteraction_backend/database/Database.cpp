@@ -600,12 +600,12 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
     }
     {
         auto result = con->Query(fmt::format(
-            R"(CREATE TABLE "{}" AS SELECT * FROM (
+            R"(CREATE TABLE '{}' AS SELECT *, {} AS ketid FROM (
                 SELECT *,
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
                 x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
-            uuid, tables[species + "_states"].local_path.string(), where));
+            uuid, ketid::atom::SQL_TERM, tables[species + "_states"].local_path.string(), where));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
@@ -614,9 +614,9 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
 
     // Ask the table for the described states
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, m, parity, {} AS ketid, n, exp_nu, std_nu, exp_l, std_l,
-        exp_s, std_s, exp_j, std_j FROM "{}" ORDER BY ketid ASC)",
-        ketid::atom::SQL_TERM, uuid));
+        R"(SELECT energy, f, m, parity, ketid, n, exp_nu, std_nu, exp_l, std_l,
+        exp_s, std_s, exp_j, std_j FROM '{}' ORDER BY ketid ASC)",
+        uuid));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -714,24 +714,30 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Type type,
-                                                   int q) {
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisAtom<Scalar> &basis,
+                                                                    Type type, int q) {
     std::string specifier;
+    int kappa;
     switch (type) {
     case Type::DIPOLE:
         specifier = "matrix_elements_d";
+        kappa = 1;
         break;
     case Type::QUADRUPOLE:
         specifier = "matrix_elements_q";
+        kappa = 2;
         break;
     case Type::OCTUPOLE:
         specifier = "matrix_elements_o";
+        kappa = 3;
         break;
     case Type::MAGNETICDIPOLE:
         specifier = "matrix_elements_mu";
+        kappa = 1;
         break;
     case Type::DIAMAGNETIC:
         specifier = "matrix_elements_dia";
+        kappa = 0;
         break;
     default:
         throw std::runtime_error("Unknown operator type.");
@@ -740,11 +746,108 @@ Eigen::SparseMatrix<Scalar> Database::get_operator(const BasisAtom<Scalar> &basi
     ensure_presence_of_table("wigner");
     ensure_presence_of_table(basis.species + "_" + specifier);
 
-    (void)q; // TODO
+    // Check that the specifications are valid
+    if (std::abs(q) > kappa) {
+        throw std::runtime_error("Invalid q.");
+    }
 
-    Eigen::SparseMatrix<Scalar> matrix(basis.get_number_of_states(), basis.get_number_of_states());
+    // Ask the database for the operator
+    auto result = con->Query(fmt::format(
+        R"(WITH s AS (
+            SELECT id, f, m, ketid FROM '{}'
+        ),
+        b AS (
+            SELECT MIN(f) AS min_f, MAX(f) AS max_f,
+            MIN(id) AS min_id, MAX(id) AS max_id
+            FROM s
+        ),
+        w_filtered AS (
+            SELECT *
+            FROM '{}'
+            WHERE kappa = {} AND q = {} AND
+            f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
+            f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
+        ),
+        e_filtered AS (
+            SELECT *
+            FROM '{}'
+            WHERE
+            id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
+            id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
+        )
+        SELECT
+        s2.ketid AS row,
+        s1.ketid AS col,
+        e.val*w.val AS val
+        FROM e_filtered AS e
+        JOIN s AS s1 ON e.id_initial = s1.id
+        JOIN s AS s2 ON e.id_final = s2.id
+        JOIN w_filtered AS w ON
+        w.f_initial = s1.f AND w.m_initial = s1.m AND
+        w.f_final = s2.f AND w.m_final = s2.m
+        ORDER BY row ASC, col ASC)",
+        basis.table, tables["wigner"].local_path.string(), kappa, q,
+        tables[basis.species + "_" + specifier].local_path.string()));
 
-    return matrix;
+    if (result->HasError()) {
+        throw std::runtime_error("Error querying the database: " + result->GetError());
+    }
+
+    auto chunk = result->Fetch();
+
+    if (chunk->size() == 0) {
+        throw std::runtime_error("No matrix elements found.");
+    }
+
+    // Check the types of the columns
+    if (chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
+        throw std::runtime_error("Wrong type for 'row'.");
+    }
+    if (chunk->data[1].GetType() != duckdb::LogicalType::BIGINT) {
+        throw std::runtime_error("Wrong type for 'col'.");
+    }
+    if (chunk->data[2].GetType() != duckdb::LogicalType::DOUBLE) {
+        throw std::runtime_error("Wrong type for 'val'.");
+    }
+
+    // Construct the matrix
+    int dim = basis.get_number_of_states();
+    int num_entries = chunk->size();
+
+    std::vector<int> outerIndexPtr;
+    std::vector<int> innerIndices;
+    std::vector<Scalar> values;
+    outerIndexPtr.reserve(dim + 1);
+    innerIndices.reserve(num_entries);
+    values.reserve(num_entries);
+
+    auto chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
+    auto chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
+    auto chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
+
+    int last_row = -1;
+    for (size_t i = 0; i < chunk->size(); i++) {
+        int row = basis.ket_id_to_index.at(chunk_row[i]);
+        if (row != last_row) {
+            if (row < last_row) {
+                throw std::runtime_error("The rows are not sorted.");
+            }
+            for (; last_row < row; last_row++) {
+                outerIndexPtr.push_back(innerIndices.size());
+            }
+        }
+        innerIndices.push_back(basis.ket_id_to_index.at(chunk_col[i]));
+        values.push_back(chunk_val[i]);
+    }
+    for (; last_row < dim + 1; last_row++) {
+        outerIndexPtr.push_back(innerIndices.size());
+    }
+
+    Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
+        dim, dim, num_entries, outerIndexPtr.data(), innerIndices.data(), values.data());
+
+    // Transform the matrix into the provided basis and return it
+    return basis.coefficients * matrix_map * basis.coefficients.adjoint();
 }
 
 void Database::ensure_presence_of_table(std::string name) {
@@ -842,14 +945,14 @@ template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>
 template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
-template Eigen::SparseMatrix<float> Database::get_operator<float>(const BasisAtom<float> &basis,
-                                                                  Type type, int q);
-template Eigen::SparseMatrix<double> Database::get_operator<double>(const BasisAtom<double> &basis,
-                                                                    Type type, int q);
-template Eigen::SparseMatrix<std::complex<float>>
+template Eigen::SparseMatrix<float, Eigen::RowMajor>
+Database::get_operator<float>(const BasisAtom<float> &basis, Type type, int q);
+template Eigen::SparseMatrix<double, Eigen::RowMajor>
+Database::get_operator<double>(const BasisAtom<double> &basis, Type type, int q);
+template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
 Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis, Type type,
                                             int q);
-template Eigen::SparseMatrix<std::complex<double>>
+template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
 Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
                                              Type type, int q);
 
@@ -902,4 +1005,8 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     auto basis = database.get_basis<float>("Rb", description, {});
 
     auto dipole = database.get_operator<float>(basis, Database::Type::DIPOLE, 0);
+
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
+                       basis.get_number_of_states());
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}", dipole.nonZeros());
 }
