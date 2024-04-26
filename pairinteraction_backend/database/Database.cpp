@@ -902,6 +902,4 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     auto basis = database.get_basis<float>("Rb", description, {});
 
     auto dipole = database.get_operator<float>(basis, Database::Type::DIPOLE, 0);
-
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "OperatorAtom: {}", fmt::streamed(dipole));
 }
