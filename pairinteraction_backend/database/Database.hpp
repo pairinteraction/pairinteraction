@@ -77,7 +77,8 @@ private:
         int remote_version{-1};
     };
 
-    const std::vector<std::string> database_repo_endpoints{
+    const std::string default_database_repo_host{"https://api.github.com"};
+    const std::vector<std::string> default_database_repo_paths{
         "/repos/pairinteraction/database-sqdt/releases/latest"};
 
     std::filesystem::path databasedir;
