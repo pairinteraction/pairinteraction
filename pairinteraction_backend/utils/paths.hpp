@@ -49,4 +49,30 @@ std::filesystem::path get_pairinteraction_cache_directory() {
     return path;
 }
 
+std::filesystem::path get_pairinteraction_config_directory() {
+    std::filesystem::path path;
+
+#ifdef _WIN32
+    char const *appdata = std::getenv("APPDATA");
+    if (appdata != nullptr) {
+        path = appdata;
+    } else {
+        path = get_home_directory() / "AppData" / "Roaming";
+    }
+    path /= "pairinteraction";
+#elif __APPLE__
+    path = get_home_directory() / "Library" / "Preferences" / "pairinteraction";
+#else
+    char const *xdg_config_home = std::getenv("XDG_CONFIG_HOME");
+    if (xdg_config_home != nullptr) {
+        path = xdg_config_home;
+    } else {
+        path = get_home_directory() / ".config";
+    }
+    path /= "pairinteraction";
+#endif
+
+    return path;
+}
+
 } // namespace paths
