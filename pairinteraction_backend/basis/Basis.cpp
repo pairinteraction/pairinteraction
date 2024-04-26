@@ -362,6 +362,7 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include "utils/hash.hpp"
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
@@ -375,18 +376,18 @@ public:
     std::string get_label() const override { return "my_label"; }
     size_t get_id() const override {
         size_t seed = 0;
-        seed ^= std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>{}(this->quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<int>{}(new_property) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        hash::hash_combine(seed, this->quantum_number_f);
+        hash::hash_combine(seed, this->quantum_number_m);
+        hash::hash_combine(seed, this->parity);
+        hash::hash_combine(seed, new_property);
         return seed;
     }
     size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const override {
         size_t seed = 0;
-        seed ^= std::hash<float>{}(this->quantum_number_f) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<float>{}(new_quantum_number_m) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<int>{}(this->parity) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-        seed ^= std::hash<int>{}(new_property) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+        hash::hash_combine(seed, this->quantum_number_f);
+        hash::hash_combine(seed, new_quantum_number_m);
+        hash::hash_combine(seed, this->parity);
+        hash::hash_combine(seed, new_property);
         return seed;
     }
     int get_new_property() const { return new_property; }
