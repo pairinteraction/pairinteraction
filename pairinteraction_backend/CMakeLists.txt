@@ -11,6 +11,8 @@ target_sources(backend PUBLIC
   ./basis/BasisClassicalLight.hpp
   ./basis/BasisClassicalLightCreator.cpp
   ./basis/BasisClassicalLightCreator.hpp
+  ./database/AtomDescriptionByParameters.hpp
+  ./database/AtomDescriptionByRanges.hpp
   ./database/Database.cpp
   ./database/Database.hpp
   ./ket/Ket.cpp
@@ -71,6 +73,8 @@ target_sources(bindings PUBLIC
   ./basis/BasisAtomCreator.hpp
   ./basis/BasisClassicalLight.hpp
   ./basis/BasisClassicalLightCreator.hpp
+  ./database/AtomDescriptionByParameters.hpp
+  ./database/AtomDescriptionByRanges.hpp
   ./database/Database.hpp
   ./ket/Ket.hpp
   ./ket/KetAtom.hpp

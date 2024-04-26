@@ -189,52 +189,19 @@ The databases store tables of states and matrix elements of a set of fundamental
         PRIMARY KEY (id_initial, id_final)
     );
 
+    -- Create a table of matrix elements of the reduced magnetic dipole operator
+    -- \mu = - \mu_B / \hbar * (g_L * L + g_S * S) + \mu_N / \hbar g_I I,
+    -- taking into account all spins: Rydberg electron, core electron, and nucleus
+    CREATE TABLE matrix_elements_mu (
+        id_initial INTEGER,
+        id_final INTEGER,
+        val REAL NOT NULL,
+        PRIMARY KEY (id_initial, id_final)
+    );
+
     -- Create a table of matrix elements of the reduced operator e*r^2*sqrt(4*pi)*Y_0, occurring in
     -- the operator of the diamagnetic interaction
     CREATE TABLE matrix_elements_dia (
-        id_initial INTEGER,
-        id_final INTEGER,
-        val REAL NOT NULL,
-        PRIMARY KEY (id_initial, id_final)
-    );
-
-    -- Create a table of matrix elements of the reduced magnetic dipole operator
-    -- \mu = - \mu_B / \hbar * (g_L * L + g_S * S) + \mu_N / \hbar g_I I,
-    -- taking into account all spins: Rydberg electron, core electron, and nucleus
-    CREATE TABLE matrix_elements_mu (
-        id_initial INTEGER,
-        id_final INTEGER,
-        val REAL NOT NULL,
-        PRIMARY KEY (id_initial, id_final)
-    );
-
-    -- Create indices to speed up queries
-    CREATE INDEX idx_states_energy ON states (energy);
-    CREATE INDEX idx_wigner_f_initial ON wigner (f_initial);
-    CREATE INDEX idx_wigner_f_final ON wigner (f_final);
-    CREATE INDEX idx_matrix_elements_d_id_initial ON matrix_elements_d (id_initial);
-    CREATE INDEX idx_matrix_elements_d_id_final ON matrix_elements_d (id_final);
-    CREATE INDEX idx_matrix_elements_q_id_initial ON matrix_elements_q (id_initial);
-    CREATE INDEX idx_matrix_elements_q_id_final ON matrix_elements_q (id_final);
-    CREATE INDEX idx_matrix_elements_o_id_initial ON matrix_elements_o (id_initial);
-    CREATE INDEX idx_matrix_elements_o_id_final ON matrix_elements_o (id_final);
-    CREATE INDEX idx_matrix_elements_dia_id_initial ON matrix_elements_dia (id_initial);
-    CREATE INDEX idx_matrix_elements_dia_id_final ON matrix_elements_dia (id_final);
-    CREATE INDEX idx_matrix_elements_mu_id_initial ON matrix_elements_mu (id_initial);
-    CREATE INDEX idx_matrix_elements_mu_id_final ON matrix_elements_mu (id_final);
-
-    COMMIT;on
-    CREATE TABLE matrix_elements_dia (
-        id_initial INTEGER,
-        id_final INTEGER,
-        val REAL NOT NULL,
-        PRIMARY KEY (id_initial, id_final)
-    );
-
-    -- Create a table of matrix elements of the reduced magnetic dipole operator
-    -- \mu = - \mu_B / \hbar * (g_L * L + g_S * S) + \mu_N / \hbar g_I I,
-    -- taking into account all spins: Rydberg electron, core electron, and nucleus
-    CREATE TABLE matrix_elements_mu (
         id_initial INTEGER,
         id_final INTEGER,
         val REAL NOT NULL,
