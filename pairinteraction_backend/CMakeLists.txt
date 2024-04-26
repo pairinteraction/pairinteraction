@@ -154,8 +154,8 @@ add_library(pairinteraction_backend SHARED
 )
 
 target_link_libraries(pairinteraction_backend
-  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}> doctest::doctest Eigen3::Eigen nlohmann_json::nlohmann_json spdlog::spdlog duckdb::duckdb httplib::httplib # TODO clean up
-  PRIVATE nanobind-static
+  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
+  PRIVATE nanobind-static spdlog::spdlog duckdb::duckdb httplib::httplib
 )
 
 set_target_properties(pairinteraction_backend PROPERTIES
