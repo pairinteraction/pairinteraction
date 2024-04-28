@@ -7,23 +7,25 @@
 template <typename Real>
 class KetClassicalLight;
 
+/**
+ * @class KetClassicalLight
+ *
+ * @brief Builder class for creating KetClassicalLight.
+ *
+ * @tparam Real Real number type.
+ */
 template <typename Real>
 class KetClassicalLightCreator {
 public:
-    KetClassicalLightCreator();
-    KetClassicalLightCreator(Real energy, int n_sigma_p, int n_pi, int n_sigma_m);
+    KetClassicalLightCreator() = default;
+    KetClassicalLightCreator(Real energy, int q);
     KetClassicalLightCreator<Real> &set_energy(Real value);
-    KetClassicalLightCreator<Real> &set_quantum_number_n_sigma_p(int value);
-    KetClassicalLightCreator<Real> &set_quantum_number_n_pi(int value);
-    KetClassicalLightCreator<Real> &set_quantum_number_n_sigma_m(int value);
+    KetClassicalLightCreator<Real> &set_quantum_number_q(int value);
     KetClassicalLight<Real> create() const;
 
 private:
     std::optional<Real> energy;
-    std::optional<int> quantum_number_n_sigma_p;
-    std::optional<int> quantum_number_n_pi;
-    std::optional<int> quantum_number_n_sigma_m;
-    std::optional<int> parity;
+    std::optional<int> quantum_number_q;
 };
 
 extern template class KetClassicalLightCreator<float>;

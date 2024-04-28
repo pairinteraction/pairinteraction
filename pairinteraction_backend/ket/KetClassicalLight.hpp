@@ -2,9 +2,7 @@
 
 #include <string>
 
-#include "KetClassicalLightCreator.hpp"
 #include "ket/Ket.hpp"
-#include "ket/KetClassicalLightCreator.hpp"
 
 template <typename Real>
 class KetClassicalLightCreator;
@@ -21,9 +19,7 @@ private:
     friend class KetClassicalLightCreator<Real>;
     KetClassicalLight(Real energy, int q, size_t id);
     size_t id;
-    int quantum_number_n_sigma_p;
-    int quantum_number_n_pi;
-    int quantum_number_n_sigma_m;
+    int quantum_number_q;
 };
 
 extern template class KetClassicalLight<float>;
