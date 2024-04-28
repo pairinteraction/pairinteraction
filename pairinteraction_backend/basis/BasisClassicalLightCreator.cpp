@@ -1,30 +1,10 @@
 #include "basis/BasisClassicalLightCreator.hpp"
 
 template <typename Scalar>
-BasisClassicalLightCreator<Scalar>::BasisClassicalLightCreator() {
-} // TODO: formal empty constructor
-
-template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
-BasisClassicalLightCreator<Scalar>::restrict_quantum_number_n_sigma_p(int min, int max) {
-    min_quantum_number_n_sigma_p.emplace(min);
-    max_quantum_number_n_sigma_p.emplace(max);
-    return *this;
-}
-
-template <typename Scalar>
-BasisClassicalLightCreator<Scalar> &
-BasisClassicalLightCreator<Scalar>::restrict_quantum_number_n_pi(int min, int max) {
-    min_quantum_number_n_pi.emplace(min);
-    max_quantum_number_n_pi.emplace(max);
-    return *this;
-}
-
-template <typename Scalar>
-BasisClassicalLightCreator<Scalar> &
-BasisClassicalLightCreator<Scalar>::restrict_quantum_number_n_sigma_m(int min, int max) {
-    min_quantum_number_n_sigma_m.emplace(min);
-    max_quantum_number_n_sigma_m.emplace(max);
+BasisClassicalLightCreator<Scalar>::restrict_quantum_number_q(int min, int max) {
+    min_quantum_number_q.emplace(min);
+    max_quantum_number_q.emplace(max);
     return *this;
 }
 
