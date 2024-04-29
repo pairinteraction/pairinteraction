@@ -2,8 +2,10 @@
 
 #include <complex>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
+#include <vector>
 
 #include "utils/traits.hpp"
 
@@ -25,6 +27,8 @@ public:
     BasisClassicalLight<Scalar> create() const;
 
 private:
+    friend class BasisClassicalLight<Scalar>;
+    // friend class KetClassicalLight<Scalar>;
     std::optional<Scalar> energy;
     std::optional<int> min_quantum_number_q;
     std::optional<int> max_quantum_number_q;

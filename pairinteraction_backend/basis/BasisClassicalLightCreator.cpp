@@ -1,5 +1,8 @@
 #include "basis/BasisClassicalLightCreator.hpp"
 
+#include "basis/BasisClassicalLight.hpp"
+#include "ket/KetClassicalLightCreator.hpp"
+
 template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
 BasisClassicalLightCreator<Scalar>::restrict_quantum_number_q(int min, int max) {
@@ -14,10 +17,8 @@ BasisClassicalLight<Scalar> BasisClassicalLightCreator<Scalar>::create() const {
 
     std::vector<std::shared_ptr<const ket_t>> kets;
     kets.reserve(2);
-    kets.push_back(
-        std::make_shared<const ket_t>(KetClassicalLightCreator<real_t>(20, 1, 0, 0).create()));
-    kets.push_back(
-        std::make_shared<const ket_t>(KetClassicalLightCreator<real_t>(20, 0, 0, 0).create()));
+    kets.push_back(std::make_shared<const ket_t>(KetClassicalLightCreator<real_t>(20, 1).create()));
+    kets.push_back(std::make_shared<const ket_t>(KetClassicalLightCreator<real_t>(20, 0).create()));
     return BasisClassicalLight<Scalar>(std::move(kets));
 }
 
