@@ -16,7 +16,8 @@ TransformableSortable<Scalar>::get_rotator(std::array<real_t, 3> to_z_axis,
 }
 
 template <typename Scalar>
-std::vector<int> TransformableSortable<Scalar>::get_sorter(SortBy label) const {
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+TransformableSortable<Scalar>::get_sorter(SortBy label) const {
     return this->impl_get_sorter(label);
 }
 
@@ -72,7 +73,8 @@ void TransformableSortable<Scalar>::rotate(std::array<real_t, 3> to_z_axis,
 }
 
 template <typename Scalar>
-void TransformableSortable<Scalar>::sort(const std::vector<int> &sorter) {
+void TransformableSortable<Scalar>::sort(
+    const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
     this->impl_sort(sorter);
 
     sorting = SortBy::NONE;

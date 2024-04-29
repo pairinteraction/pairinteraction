@@ -67,11 +67,12 @@ public:
 protected:
     Eigen::SparseMatrix<scalar_t> impl_get_rotator(real_t alpha, real_t beta,
                                                    real_t gamma) const override;
-    std::vector<int> impl_get_sorter(SortBy label) const override;
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+    impl_get_sorter(SortBy label) const override;
     std::vector<int> impl_get_blocks(SortBy label) const override;
 
     void impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) override;
-    void impl_sort(const std::vector<int> &sorter) override;
+    void impl_sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) override;
 
     Basis(ketvec_t &&kets);
     ketvec_t kets;
