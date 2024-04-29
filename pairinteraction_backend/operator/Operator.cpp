@@ -66,9 +66,9 @@ Operator<Derived>::impl_get_sorter(SortBy label) const {
     }
 
     if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
-        std::stable_sort(sorter.indices().begin(), sorter.indices().end(), [&](int i, int j) {
-            return energies_of_states[i] < energies_of_states[j];
-        });
+        std::stable_sort(
+            sorter.indices().data(), sorter.indices().data() + sorter.indices().size(),
+            [&](int i, int j) { return energies_of_states[i] < energies_of_states[j]; });
     }
 
     return sorter;
