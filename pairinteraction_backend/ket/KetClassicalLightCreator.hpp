@@ -20,12 +20,12 @@ class KetClassicalLightCreator {
 public:
     KetClassicalLightCreator() = default;
     KetClassicalLightCreator(Real energy, int q);
-    KetClassicalLightCreator<Real> &set_energy(Real value);
+    KetClassicalLightCreator<Real> &set_photon_energy(Real value);
     KetClassicalLightCreator<Real> &set_quantum_number_q(int value);
     KetClassicalLight<Real> create() const;
 
 private:
-    std::optional<Real> energy;
+    std::optional<Real> photon_energy;
     std::optional<int> quantum_number_q;
 };
 
