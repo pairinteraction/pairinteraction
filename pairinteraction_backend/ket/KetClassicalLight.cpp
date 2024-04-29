@@ -1,9 +1,16 @@
 #include "ket/KetClassicalLight.hpp"
+#include "KetClassicalLight.hpp"
 #include <limits>
 
 template <typename Real>
-KetClassicalLight<Real>::KetClassicalLight(Real energy, int q, size_t id)
-    : Ket<Real>(energy, 0, 0, -1), id(id), quantum_number_q(q) {}
+KetClassicalLight<Real>::KetClassicalLight(Real photon_energy, int q, size_t id)
+    : Ket<Real>(photon_energy * q, 0, 0, -1), id(id), photon_energy(photon_energy),
+      quantum_number_q(q) {}
+
+template <typename Real>
+Real KetClassicalLight<Real>::get_photon_energy() const {
+    return photon_energy;
+}
 
 template <typename Real>
 std::string KetClassicalLight<Real>::get_label() const {
