@@ -1,7 +1,6 @@
 #pragma once
 
 #include "basis/Basis.hpp"
-#include "ket/KetAtom.hpp"
 #include "utils/traits.hpp"
 
 #include <complex>
@@ -10,10 +9,13 @@
 
 class Database;
 
-// Specialize BasisTraits for BasisAtom
 template <typename T>
 class BasisAtomCreator;
 
+template <typename Real>
+class KetAtom;
+
+// Specialize BasisTraits for BasisAtom
 template <typename Scalar>
 class BasisAtom;
 

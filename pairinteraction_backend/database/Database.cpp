@@ -715,27 +715,27 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisAtom<Scalar> &basis,
-                                                                    Type type, int q) {
+                                                                    OperatorType type, int q) {
     std::string specifier;
     int kappa;
     switch (type) {
-    case Type::DIPOLE:
+    case OperatorType::DIPOLE:
         specifier = "matrix_elements_d";
         kappa = 1;
         break;
-    case Type::QUADRUPOLE:
+    case OperatorType::QUADRUPOLE:
         specifier = "matrix_elements_q";
         kappa = 2;
         break;
-    case Type::OCTUPOLE:
+    case OperatorType::OCTUPOLE:
         specifier = "matrix_elements_o";
         kappa = 3;
         break;
-    case Type::MAGNETICDIPOLE:
+    case OperatorType::MAGNETICDIPOLE:
         specifier = "matrix_elements_mu";
         kappa = 1;
         break;
-    case Type::DIAMAGNETIC:
+    case OperatorType::DIAMAGNETIC:
         specifier = "matrix_elements_dia";
         kappa = 0;
         break;
@@ -846,8 +846,12 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisA
     Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
         dim, dim, num_entries, outerIndexPtr.data(), innerIndices.data(), values.data());
 
+    // TODO return OperatorAtom
+    // TODO set SortBy sorting{SortBy::KET};
+    // TODO set TransformBy transform{TransformBy::IDENTITY};
+
     // Transform the matrix into the provided basis and return it
-    return basis.coefficients * matrix_map * basis.coefficients.adjoint();
+    return basis.coefficients.adjoint() * matrix_map * basis.coefficients;
 }
 
 void Database::ensure_presence_of_table(std::string name) {
@@ -946,15 +950,15 @@ template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
 template Eigen::SparseMatrix<float, Eigen::RowMajor>
-Database::get_operator<float>(const BasisAtom<float> &basis, Type type, int q);
+Database::get_operator<float>(const BasisAtom<float> &basis, OperatorType type, int q);
 template Eigen::SparseMatrix<double, Eigen::RowMajor>
-Database::get_operator<double>(const BasisAtom<double> &basis, Type type, int q);
+Database::get_operator<double>(const BasisAtom<double> &basis, OperatorType type, int q);
 template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
-Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis, Type type,
-                                            int q);
+Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis,
+                                            OperatorType type, int q);
 template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
 Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
-                                             Type type, int q);
+                                             OperatorType type, int q);
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Test cases
@@ -1004,7 +1008,7 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
 
     auto basis = database.get_basis<float>("Rb", description, {});
 
-    auto dipole = database.get_operator<float>(basis, Database::Type::DIPOLE, 0);
+    auto dipole = database.get_operator<float>(basis, OperatorType::DIPOLE, 0);
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
                        basis.get_number_of_states());

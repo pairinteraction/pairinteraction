@@ -1,5 +1,7 @@
 #include "basis/Basis.hpp"
 #include "ket/Ket.hpp"
+#include "ket/KetAtom.hpp"
+#include "ket/KetClassicalLight.hpp"
 #include "utils/euler.hpp"
 #include "utils/wigner.hpp"
 
@@ -7,8 +9,7 @@
 #include <set>
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets)
-    : kets(std::move(kets)), is_standard_basis(true), sorting(Label::KET) {
+Basis<Derived>::Basis(ketvec_t &&kets) : kets(std::move(kets)) {
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());
@@ -42,8 +43,14 @@ size_t Basis<Derived>::get_number_of_kets() const {
 }
 
 template <typename Derived>
-const typename Basis<Derived>::ket_t &Basis<Derived>::get_ket(size_t index_ket) const {
-    return *kets[index_ket];
+const typename Basis<Derived>::ketvec_t &Basis<Derived>::get_kets() const {
+    return kets;
+}
+
+template <typename Derived>
+const Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
+Basis<Derived>::get_coefficients() const {
+    return coefficients;
 }
 
 template <typename Derived>
@@ -82,7 +89,7 @@ bool Basis<Derived>::Iterator::operator!=(const Iterator &other) const {
 
 template <typename Derived>
 const typename Basis<Derived>::ket_t &Basis<Derived>::Iterator::operator*() const {
-    return basis.get_ket(index);
+    return *basis.kets[index];
 }
 
 template <typename Derived>
@@ -93,7 +100,7 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 
 template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
-Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
+Basis<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     Eigen::SparseMatrix<scalar_t> rotator(coefficients.rows(), coefficients.rows());
 
     std::vector<Eigen::Triplet<scalar_t>> entries;
@@ -117,19 +124,11 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
-Basis<Derived>::get_rotator(std::array<real_t, 3> to_z_axis,
-                            std::array<real_t, 3> to_y_axis) const {
-    auto euler_zyz_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
-    return this->get_rotator(euler_zyz_angles[0], euler_zyz_angles[1], euler_zyz_angles[2]);
-}
-
-template <typename Derived>
-std::vector<int> Basis<Derived>::get_sorter(Label label) const {
+std::vector<int> Basis<Derived>::impl_get_sorter(SortBy label) const {
     std::vector<int> sorter(coefficients.cols());
     std::iota(sorter.begin(), sorter.end(), 0);
 
-    if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F) {
+    if ((label & SortBy::QUANTUM_NUMBER_F) == SortBy::QUANTUM_NUMBER_F) {
         std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
@@ -140,7 +139,7 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
         }
     }
 
-    if ((label & Label::QUANTUM_NUMBER_M) == Label::QUANTUM_NUMBER_M) {
+    if ((label & SortBy::QUANTUM_NUMBER_M) == SortBy::QUANTUM_NUMBER_M) {
         std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
@@ -151,7 +150,7 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
         }
     }
 
-    if ((label & Label::PARITY) == Label::PARITY) {
+    if ((label & SortBy::PARITY) == SortBy::PARITY) {
         std::stable_sort(sorter.begin(), sorter.end(),
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
 
@@ -161,20 +160,21 @@ std::vector<int> Basis<Derived>::get_sorter(Label label) const {
         }
     }
 
-    if ((label & Label::KET) == Label::KET) {
+    if ((label & SortBy::KET) == SortBy::KET) {
         std::stable_sort(sorter.begin(), sorter.end(),
                          [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
+    }
+
+    if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
+        throw std::invalid_argument("States do not store the energy and thus can not be sorted by "
+                                    "the energy. Use an energy operator instead.");
     }
 
     return sorter;
 }
 
 template <typename Derived>
-std::vector<int> Basis<Derived>::get_blocks(Label label) const {
-    if (label != sorting) {
-        throw std::invalid_argument("The basis is not sorted by the requested label.");
-    }
-
+std::vector<int> Basis<Derived>::impl_get_blocks(SortBy label) const {
     std::vector<int> blocks;
     float last_quantum_number_f = quantum_number_f_of_states[0];
     float last_quantum_number_m = quantum_number_m_of_states[0];
@@ -183,15 +183,16 @@ std::vector<int> Basis<Derived>::get_blocks(Label label) const {
     blocks.push_back(0);
 
     for (int i = 0; i < coefficients.cols(); ++i) {
-        if ((label & Label::QUANTUM_NUMBER_F) == Label::QUANTUM_NUMBER_F &&
+        if ((label & SortBy::QUANTUM_NUMBER_F) == SortBy::QUANTUM_NUMBER_F &&
             quantum_number_f_of_states[i] != last_quantum_number_f) {
             blocks.push_back(i);
-        } else if ((label & Label::QUANTUM_NUMBER_M) == Label::QUANTUM_NUMBER_M &&
+        } else if ((label & SortBy::QUANTUM_NUMBER_M) == SortBy::QUANTUM_NUMBER_M &&
                    quantum_number_m_of_states[i] != last_quantum_number_m) {
             blocks.push_back(i);
-        } else if ((label & Label::PARITY) == Label::PARITY && parity_of_states[i] != last_parity) {
+        } else if ((label & SortBy::PARITY) == SortBy::PARITY &&
+                   parity_of_states[i] != last_parity) {
             blocks.push_back(i);
-        } else if ((label & Label::KET) == Label::KET && ket_of_states[i] != last_ket) {
+        } else if ((label & SortBy::KET) == SortBy::KET && ket_of_states[i] != last_ket) {
             blocks.push_back(i);
         }
 
@@ -205,21 +206,13 @@ std::vector<int> Basis<Derived>::get_blocks(Label label) const {
 }
 
 template <typename Derived>
-void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
-    is_standard_basis = false;
+void Basis<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
     coefficients = coefficients * transformator;
-    sorting = Label::NONE;
-
-    float tolerance = 1e-16;
-
-    Eigen::SparseMatrix<scalar_t> identity(transformator.cols(), transformator.cols());
-    identity.setIdentity();
-    if ((coefficients.adjoint() * coefficients - identity).norm() > tolerance) {
-        throw std::runtime_error("The transformation is not unitary.");
-    }
 
     Eigen::SparseMatrix<float> probs =
         (transformator.cwiseAbs2().transpose()).template cast<float>();
+
+    float tolerance = 1e-16;
 
     {
         auto map = Eigen::Map<const Eigen::VectorXf>(quantum_number_f_of_states.data(),
@@ -292,22 +285,7 @@ void Basis<Derived>::transform(const Eigen::SparseMatrix<scalar_t> &transformato
 }
 
 template <typename Derived>
-void Basis<Derived>::rotate(real_t alpha, real_t beta, real_t gamma) {
-    if (!is_standard_basis) {
-        throw std::runtime_error("Only standard bases can be rotated.");
-    }
-    auto rotator = this->get_rotator(alpha, beta, gamma);
-    this->transform(rotator);
-}
-
-template <typename Derived>
-void Basis<Derived>::rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis) {
-    auto euler_zyz_angles = euler::get_euler_angles(to_z_axis, to_y_axis);
-    this->rotate(euler_zyz_angles[0], euler_zyz_angles[1], euler_zyz_angles[2]);
-}
-
-template <typename Derived>
-void Basis<Derived>::sort(const std::vector<int> &sorter) {
+void Basis<Derived>::impl_sort(const std::vector<int> &sorter) {
     {
         auto tmp(quantum_number_f_of_states);
         for (size_t i = 0; i < sorter.size(); ++i) {
@@ -335,14 +313,6 @@ void Basis<Derived>::sort(const std::vector<int> &sorter) {
     Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
     perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
     coefficients = coefficients * perm;
-    sorting = Label::NONE;
-}
-
-template <typename Derived>
-void Basis<Derived>::sort(Label label) {
-    auto sorter = this->get_sorter(label);
-    this->sort(sorter);
-    sorting = label;
 }
 
 // Explicit instantiations
@@ -455,7 +425,7 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
     auto basis = BasisDerivedCreator().create();
 
     // Sort the basis by parity and the m quantum number
-    basis.sort(BasisDerived::Label::PARITY | BasisDerived::Label::QUANTUM_NUMBER_M);
+    basis.sort(SortBy::PARITY | SortBy::QUANTUM_NUMBER_M);
     int parity = std::numeric_limits<int>::lowest();
     float quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis.get_number_of_states(); ++i) {
@@ -466,8 +436,7 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
     }
 
     // Check that the blocks are correctly determined
-    auto blocks =
-        basis.get_blocks(BasisDerived::Label::PARITY | BasisDerived::Label::QUANTUM_NUMBER_M);
+    auto blocks = basis.get_blocks(SortBy::PARITY | SortBy::QUANTUM_NUMBER_M);
     DOCTEST_CHECK(blocks[0] == 0);
     DOCTEST_CHECK(blocks[1] == 1);
     DOCTEST_CHECK(blocks[2] == 2);
