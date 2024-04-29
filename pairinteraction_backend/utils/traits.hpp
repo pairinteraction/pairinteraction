@@ -17,6 +17,18 @@ template <typename Derived>
 struct BasisTraits;
 
 /**
+ * @struct OperatorTraits
+ *
+ * @brief Helper struct to extract types from a derived operator type. Must be specialized for each
+ * derived operator type.
+ *
+ * @tparam Derived The derived operator type from which to extract types.
+ */
+
+template <typename Derived>
+struct OperatorTraits;
+
+/**
  * @struct NumTraits
  *
  * @brief Helper struct to extract types from a numerical type.

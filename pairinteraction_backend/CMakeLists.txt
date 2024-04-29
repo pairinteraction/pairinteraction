@@ -15,6 +15,11 @@ target_sources(backend PUBLIC
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.cpp
   ./database/Database.hpp
+  ./enums/OperatorType.hpp
+  ./enums/SortBy.hpp
+  ./enums/TransformBy.hpp
+  ./interfaces/TransformableSortable.cpp
+  ./interfaces/TransformableSortable.hpp
   ./ket/Ket.cpp
   ./ket/Ket.hpp
   ./ket/KetAtom.cpp
@@ -25,6 +30,10 @@ target_sources(backend PUBLIC
   ./ket/KetClassicalLight.hpp
   ./ket/KetClassicalLightCreator.cpp
   ./ket/KetClassicalLightCreator.hpp
+  ./operator/Operator.cpp
+  ./operator/Operator.hpp
+  ./operator/OperatorAtom.cpp
+  ./operator/OperatorAtom.hpp
   ./system/System.cpp
   ./system/System.hpp
   ./system/SystemAtom.cpp
@@ -77,11 +86,17 @@ target_sources(bindings PUBLIC
   ./database/AtomDescriptionByParameters.hpp
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.hpp
+  ./enums/OperatorType.hpp
+  ./enums/SortBy.hpp
+  ./enums/TransformBy.hpp
+  ./interfaces/TransformableSortable.hpp
   ./ket/Ket.hpp
   ./ket/KetAtom.hpp
   ./ket/KetAtomCreator.hpp
   ./ket/KetClassicalLight.hpp
   ./ket/KetClassicalLightCreator.hpp
+  ./operator/Operator.hpp
+  ./operator/OperatorAtom.hpp
   ./system/System.hpp
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.hpp
@@ -106,6 +121,14 @@ target_sources(bindings PUBLIC
   ./basis/BasisClassicalLightCreator.py.hpp
   ./database/Database.py.cpp
   ./database/Database.py.hpp
+  ./enums/OperatorType.py.cpp
+  ./enums/OperatorType.py.hpp
+  ./enums/SortBy.py.cpp
+  ./enums/SortBy.py.hpp
+  ./enums/TransformBy.py.cpp
+  ./enums/TransformBy.py.hpp
+  ./interfaces/TransformableSortable.py.cpp
+  ./interfaces/TransformableSortable.py.hpp
   ./ket/Ket.py.cpp
   ./ket/Ket.py.hpp
   ./ket/KetAtom.py.cpp
@@ -116,6 +139,10 @@ target_sources(bindings PUBLIC
   ./ket/KetClassicalLight.py.hpp
   ./ket/KetClassicalLightCreator.py.cpp
   ./ket/KetClassicalLightCreator.py.hpp
+  ./operator/Operator.py.cpp
+  ./operator/Operator.py.hpp
+  ./operator/OperatorAtom.py.cpp
+  ./operator/OperatorAtom.py.hpp
   ./system/System.py.cpp
   ./system/System.py.hpp
   ./system/SystemAtom.py.cpp

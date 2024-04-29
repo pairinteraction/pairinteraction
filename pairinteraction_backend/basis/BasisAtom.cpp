@@ -1,4 +1,5 @@
 #include "basis/BasisAtom.hpp"
+#include "ket/KetAtom.hpp"
 
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(ketvec_t &&kets, std::string table, Database &database,

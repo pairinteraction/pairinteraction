@@ -8,6 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "enums/OperatorType.hpp"
+
 template <typename Scalar>
 struct AtomDescriptionByParameters;
 
@@ -43,14 +45,6 @@ public:
         bool up_to_date;
     };
 
-    enum class Type {
-        DIPOLE,         // Dipole operator
-        QUADRUPOLE,     // Quadrupole operator
-        OCTUPOLE,       // Octupole operator
-        MAGNETICDIPOLE, // Magnetic dipole operator
-        DIAMAGNETIC     // Part of the diamagnetic operator
-    };
-
     Database(bool auto_update = true);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
@@ -68,7 +62,7 @@ public:
 
     template <typename Scalar>
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> get_operator(const BasisAtom<Scalar> &basis,
-                                                              Type type, int q);
+                                                              OperatorType type, int q);
 
 private:
     struct Table {
@@ -112,12 +106,12 @@ extern template BasisAtom<std::complex<double>> Database::get_basis<std::complex
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
 extern template Eigen::SparseMatrix<float, Eigen::RowMajor>
-Database::get_operator<float>(const BasisAtom<float> &basis, Type type, int q);
+Database::get_operator<float>(const BasisAtom<float> &basis, OperatorType type, int q);
 extern template Eigen::SparseMatrix<double, Eigen::RowMajor>
-Database::get_operator<double>(const BasisAtom<double> &basis, Type type, int q);
+Database::get_operator<double>(const BasisAtom<double> &basis, OperatorType type, int q);
 extern template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
-Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis, Type type,
-                                            int q);
+Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis,
+                                            OperatorType type, int q);
 extern template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
 Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
-                                             Type type, int q);
+                                             OperatorType type, int q);

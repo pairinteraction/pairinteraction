@@ -9,10 +9,9 @@
 #include <unordered_map>
 #include <vector>
 
+#include "enums/SortBy.hpp"
+#include "interfaces/TransformableSortable.hpp"
 #include "utils/traits.hpp"
-
-template <typename Real>
-class Ket;
 
 /**
  * @class Basis
@@ -31,7 +30,7 @@ class Ket;
  */
 
 template <typename Derived>
-class Basis {
+class Basis : public TransformableSortable<typename traits::BasisTraits<Derived>::scalar_t> {
 public:
     using scalar_t = typename traits::BasisTraits<Derived>::scalar_t;
     using real_t = typename traits::BasisTraits<Derived>::real_t;
@@ -39,28 +38,13 @@ public:
     using ketvec_t = typename traits::BasisTraits<Derived>::ketvec_t;
 
     Basis() = delete;
-    size_t get_number_of_states() const;
-    size_t get_number_of_kets() const;
-    const ket_t &get_ket(size_t index_ket) const;
+
+    const ketvec_t &get_kets() const;
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
+
     float get_quantum_number_f(size_t index_state) const;
     float get_quantum_number_m(size_t index_state) const;
     int get_parity(size_t index_state) const;
-
-    enum class Label : unsigned char {
-        NONE = 1 << 0,
-        QUANTUM_NUMBER_F = 1 << 1,
-        QUANTUM_NUMBER_M = 1 << 2,
-        PARITY = 1 << 3,
-        KET = 1 << 4
-    };
-
-    friend inline constexpr Label operator&(Label x, Label y) {
-        return static_cast<Label>(static_cast<unsigned char>(x) & static_cast<unsigned char>(y));
-    }
-
-    friend inline constexpr Label operator|(Label x, Label y) {
-        return static_cast<Label>(static_cast<unsigned char>(x) | static_cast<unsigned char>(y));
-    }
 
     class Iterator {
     public:
@@ -77,28 +61,25 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
-    Eigen::SparseMatrix<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const;
-    Eigen::SparseMatrix<scalar_t> get_rotator(std::array<real_t, 3> to_z_axis,
-                                              std::array<real_t, 3> to_y_axis) const;
-    std::vector<int> get_sorter(Label label) const;
-    std::vector<int> get_blocks(Label label) const;
-
-    void transform(const Eigen::SparseMatrix<scalar_t> &transformator);
-    void rotate(real_t alpha, real_t beta, real_t gamma);
-    void rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis);
-    void sort(const std::vector<int> &sorter);
-    void sort(Label label);
+    size_t get_number_of_states() const;
+    size_t get_number_of_kets() const;
 
 protected:
+    Eigen::SparseMatrix<scalar_t> impl_get_rotator(real_t alpha, real_t beta,
+                                                   real_t gamma) const override;
+    std::vector<int> impl_get_sorter(SortBy label) const override;
+    std::vector<int> impl_get_blocks(SortBy label) const override;
+
+    void impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) override;
+    void impl_sort(const std::vector<int> &sorter) override;
+
     Basis(ketvec_t &&kets);
+    ketvec_t kets;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
     std::unordered_map<size_t, size_t> ket_id_to_index;
 
 private:
     const Derived &derived() const;
-    ketvec_t kets;
-    bool is_standard_basis;
-    Label sorting;
     std::vector<float> quantum_number_f_of_states;
     std::vector<float> quantum_number_m_of_states;
     std::vector<int> parity_of_states;
