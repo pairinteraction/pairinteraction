@@ -124,44 +124,45 @@ Basis<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const 
 }
 
 template <typename Derived>
-std::vector<int> Basis<Derived>::impl_get_sorter(SortBy label) const {
-    std::vector<int> sorter(coefficients.cols());
-    std::iota(sorter.begin(), sorter.end(), 0);
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+Basis<Derived>::impl_get_sorter(SortBy label) const {
+    std::vector<int> perm(coefficients.cols());
+    std::iota(perm.begin(), perm.end(), 0);
 
     if ((label & SortBy::QUANTUM_NUMBER_F) == SortBy::QUANTUM_NUMBER_F) {
-        std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+        std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
 
-        if (quantum_number_f_of_states[sorter.back()] == std::numeric_limits<float>::max()) {
+        if (quantum_number_f_of_states[perm.back()] == std::numeric_limits<float>::max()) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number f.");
         }
     }
 
     if ((label & SortBy::QUANTUM_NUMBER_M) == SortBy::QUANTUM_NUMBER_M) {
-        std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+        std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
 
-        if (quantum_number_m_of_states[sorter.back()] == std::numeric_limits<float>::max()) {
+        if (quantum_number_m_of_states[perm.back()] == std::numeric_limits<float>::max()) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number m.");
         }
     }
 
     if ((label & SortBy::PARITY) == SortBy::PARITY) {
-        std::stable_sort(sorter.begin(), sorter.end(),
+        std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
 
-        if (parity_of_states[sorter.back()] == std::numeric_limits<int>::max()) {
+        if (parity_of_states[perm.back()] == std::numeric_limits<int>::max()) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the parity.");
         }
     }
 
     if ((label & SortBy::KET) == SortBy::KET) {
-        std::stable_sort(sorter.begin(), sorter.end(),
+        std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
     }
 
@@ -169,6 +170,9 @@ std::vector<int> Basis<Derived>::impl_get_sorter(SortBy label) const {
         throw std::invalid_argument("States do not store the energy and thus can not be sorted by "
                                     "the energy. Use an energy operator instead.");
     }
+
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter;
+    sorter.indices() = Eigen::Map<const Eigen::VectorXi>(perm.data(), perm.size());
 
     return sorter;
 }
@@ -285,34 +289,33 @@ void Basis<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &transfo
 }
 
 template <typename Derived>
-void Basis<Derived>::impl_sort(const std::vector<int> &sorter) {
+void Basis<Derived>::impl_sort(
+    const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
     {
         auto tmp(quantum_number_f_of_states);
-        for (size_t i = 0; i < sorter.size(); ++i) {
-            quantum_number_f_of_states[i] = tmp[sorter[i]];
+        for (int i = 0; i < sorter.size(); ++i) {
+            quantum_number_f_of_states[i] = tmp[sorter.indices()[i]];
         }
     }
     {
         auto tmp(quantum_number_m_of_states);
-        for (size_t i = 0; i < sorter.size(); ++i) {
-            quantum_number_m_of_states[i] = tmp[sorter[i]];
+        for (int i = 0; i < sorter.size(); ++i) {
+            quantum_number_m_of_states[i] = tmp[sorter.indices()[i]];
         }
     }
     {
         auto tmp(parity_of_states);
-        for (size_t i = 0; i < sorter.size(); ++i) {
-            parity_of_states[i] = tmp[sorter[i]];
+        for (int i = 0; i < sorter.size(); ++i) {
+            parity_of_states[i] = tmp[sorter.indices()[i]];
         }
     }
     {
         auto tmp(ket_of_states);
-        for (size_t i = 0; i < sorter.size(); ++i) {
-            ket_of_states[i] = tmp[sorter[i]];
+        for (int i = 0; i < sorter.size(); ++i) {
+            ket_of_states[i] = tmp[sorter.indices()[i]];
         }
     }
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> perm;
-    perm.indices() = Eigen::Map<const Eigen::VectorXi>(sorter.data(), sorter.size());
-    coefficients = coefficients * perm;
+    coefficients = coefficients * sorter;
 }
 
 // Explicit instantiations

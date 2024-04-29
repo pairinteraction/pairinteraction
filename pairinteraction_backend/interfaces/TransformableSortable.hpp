@@ -20,23 +20,25 @@ public:
     Eigen::SparseMatrix<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const;
     Eigen::SparseMatrix<Scalar> get_rotator(std::array<real_t, 3> to_z_axis,
                                             std::array<real_t, 3> to_y_axis) const;
-    std::vector<int> get_sorter(SortBy label) const;
+    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> get_sorter(SortBy label) const;
     std::vector<int> get_blocks(SortBy label) const;
 
     void transform(const Eigen::SparseMatrix<Scalar> &transformator);
     void rotate(real_t alpha, real_t beta, real_t gamma);
     void rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis);
-    void sort(const std::vector<int> &sorter);
+    void sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);
     void sort(SortBy label);
 
 protected:
     virtual Eigen::SparseMatrix<Scalar> impl_get_rotator(real_t alpha, real_t beta,
                                                          real_t gamma) const = 0;
-    virtual std::vector<int> impl_get_sorter(SortBy label) const = 0;
+    virtual Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+    impl_get_sorter(SortBy label) const = 0;
     virtual std::vector<int> impl_get_blocks(SortBy label) const = 0;
 
     virtual void impl_transform(const Eigen::SparseMatrix<Scalar> &transformator) = 0;
-    virtual void impl_sort(const std::vector<int> &sorter) = 0;
+    virtual void
+    impl_sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) = 0;
 
     SortBy sorting{SortBy::KET};
     TransformBy transformation{TransformBy::IDENTITY};

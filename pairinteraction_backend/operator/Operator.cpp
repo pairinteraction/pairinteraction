@@ -51,7 +51,8 @@ Operator<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) con
 }
 
 template <typename Derived>
-std::vector<int> Operator<Derived>::impl_get_sorter(SortBy label) const {
+Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
+Operator<Derived>::impl_get_sorter(SortBy label) const {
     auto sorter = basis->get_sorter(label & ~SortBy::DIAGONAL);
 
     std::vector<real_t> energies_of_states;
@@ -65,7 +66,7 @@ std::vector<int> Operator<Derived>::impl_get_sorter(SortBy label) const {
     }
 
     if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
-        std::stable_sort(sorter.begin(), sorter.end(), [&](int i, int j) {
+        std::stable_sort(sorter.indices().begin(), sorter.indices().end(), [&](int i, int j) {
             return energies_of_states[i] < energies_of_states[j];
         });
     }
@@ -89,8 +90,9 @@ void Operator<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &tran
 }
 
 template <typename Derived>
-void Operator<Derived>::impl_sort(const std::vector<int> &sorter) {
-    // TODO sort the matrix
+void Operator<Derived>::impl_sort(
+    const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
+    matrix = matrix.twistedBy(sorter.inverse());
     basis->sort(sorter);
 }
 
