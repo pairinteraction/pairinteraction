@@ -35,6 +35,7 @@ public:
     using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
 private:
+    friend class BasisClassicalLightCreator<Scalar>;
     BasisClassicalLight(ketvec_t &&kets);
 };
 
