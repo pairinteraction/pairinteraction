@@ -5,7 +5,10 @@
 #include <set>
 
 template <typename Derived>
-Operator<Derived>::Operator(const basis_t &basis) : basis(std::make_shared<basis_t>(basis)) {}
+Operator<Derived>::Operator(const basis_t &basis)
+    : TransformableSortable<typename traits::OperatorTraits<Derived>::scalar_t>(
+          basis.get_transformation(), basis.get_sorting()),
+      basis(std::make_shared<basis_t>(basis)) {}
 
 template <typename Derived>
 const Derived &Operator<Derived>::derived() const {
@@ -76,11 +79,22 @@ Operator<Derived>::impl_get_sorter(SortBy label) const {
 
 template <typename Derived>
 std::vector<int> Operator<Derived>::impl_get_blocks(SortBy label) const {
-    // TODO implement block extraction
-    if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
-        throw std::runtime_error("Extracting blocks based on diagonal elements is not supported.");
+    auto blocks = basis->get_blocks(label & ~SortBy::DIAGONAL);
+
+    std::vector<int> completed_blocks;
+    size_t block_idx = 0;
+    scalar_t last_diagonal = matrix.coeff(0, 0);
+
+    for (int i = 0; i < matrix.rows(); ++i) {
+        if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL && matrix.coeff(i, i) != last_diagonal) {
+            completed_blocks.push_back(i);
+        } else if (block_idx < blocks.size() && i == blocks[block_idx]) {
+            completed_blocks.push_back(i);
+            ++block_idx;
+        }
     }
-    return basis->get_blocks(label);
+
+    return completed_blocks;
 }
 
 template <typename Derived>

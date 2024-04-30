@@ -9,7 +9,10 @@
 #include <set>
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets) : kets(std::move(kets)) {
+Basis<Derived>::Basis(ketvec_t &&kets)
+    : TransformableSortable<typename traits::BasisTraits<Derived>::scalar_t>(TransformBy::IDENTITY,
+                                                                             SortBy::KET),
+      kets(std::move(kets)) {
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());

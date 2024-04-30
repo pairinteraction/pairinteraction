@@ -14,8 +14,13 @@ class TransformableSortable {
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
+    TransformableSortable(TransformBy transformation, SortBy sorting);
+
     virtual size_t get_number_of_states() const = 0;
     virtual size_t get_number_of_kets() const = 0;
+
+    SortBy get_sorting() const;
+    TransformBy get_transformation() const;
 
     Eigen::SparseMatrix<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const;
     Eigen::SparseMatrix<Scalar> get_rotator(std::array<real_t, 3> to_z_axis,
@@ -40,8 +45,8 @@ protected:
     virtual void
     impl_sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) = 0;
 
-    SortBy sorting{SortBy::KET};
-    TransformBy transformation{TransformBy::IDENTITY};
+    TransformBy transformation;
+    SortBy sorting;
 };
 
 extern template class TransformableSortable<float>;
