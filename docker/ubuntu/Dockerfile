@@ -7,7 +7,7 @@ RUN apt-get update -qq \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev liblapacke-dev libopenblas-dev uuid-dev \
     libcpp-httplib-dev nlohmann-json3-dev \
     libsqlite3-dev sqlite3 \
-    swig python3 python3-dev \
+    swig python3 python3-dev libgl1 \
     locales \
     dpkg-dev rpm \
     curl ca-certificates \
