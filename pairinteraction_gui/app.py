@@ -909,7 +909,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 sys.exit()
 
-        if os.path.exists(self.path_cache) and version_cache_saved != version_cache:
+        if os.path.exists(self.path_cache) and version_cache_saved is not None and version_cache_saved != version_cache:
             msg = QtWidgets.QMessageBox()
             msg.setText(
                 "A new program version has been installed. Due to database changes, the "
