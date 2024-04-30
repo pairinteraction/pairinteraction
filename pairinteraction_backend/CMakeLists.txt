@@ -56,7 +56,7 @@ target_link_libraries(backend
   PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
 )
 
-target_compile_definitions(backend PUBLIC
+target_compile_definitions(backend PRIVATE
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
   JSON_USE_IMPLICIT_CONVERSIONS=0
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
@@ -162,6 +162,12 @@ target_link_libraries(bindings
   PRIVATE nanobind-static
 )
 
+target_compile_definitions(bindings PRIVATE
+  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  JSON_USE_IMPLICIT_CONVERSIONS=0
+  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
+)
+
 target_compile_options(bindings PRIVATE
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
   $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>
@@ -178,6 +184,13 @@ set_target_properties(bindings PROPERTIES
 add_library(pairinteraction_backend SHARED
   $<TARGET_OBJECTS:backend>
   $<TARGET_OBJECTS:bindings>
+  $<$<BOOL:${BUILD_TESTING}>:main.cpp>
+)
+
+target_compile_definitions(pairinteraction_backend PRIVATE
+  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  JSON_USE_IMPLICIT_CONVERSIONS=0
+  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
 target_link_libraries(pairinteraction_backend
@@ -187,6 +200,7 @@ target_link_libraries(pairinteraction_backend
 
 set_target_properties(pairinteraction_backend PROPERTIES
   PREFIX ""
+  SUFFIX "${NB_SUFFIX_EXT}"
   INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>
 )
 
@@ -208,6 +222,11 @@ if (BUILD_TESTING)
   add_executable(pairinteraction_backend_test
     $<TARGET_OBJECTS:backend>
     main.cpp
+  )
+
+  target_compile_definitions(pairinteraction_backend_test PRIVATE
+    DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+    JSON_USE_IMPLICIT_CONVERSIONS=0
   )
 
   target_link_libraries(pairinteraction_backend_test
