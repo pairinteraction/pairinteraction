@@ -38,6 +38,10 @@ public:
 
 private:
     friend class Database;
+
+    OperatorAtom(const basis_t &basis, OperatorType type, int q,
+                 Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix);
+
     OperatorType type;
     int q;
 };

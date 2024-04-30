@@ -4,6 +4,7 @@
 #include "database/AtomDescriptionByRanges.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
+#include "operator/OperatorAtom.hpp"
 #include "utils/hash.hpp"
 #include "utils/ketid.hpp"
 #include "utils/paths.hpp"
@@ -714,8 +715,8 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisAtom<Scalar> &basis,
-                                                                    OperatorType type, int q) {
+OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, OperatorType type,
+                                            int q) {
     std::string specifier;
     int kappa;
     switch (type) {
@@ -739,12 +740,18 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisA
         specifier = "matrix_elements_dia";
         kappa = 0;
         break;
+    case OperatorType::ENERGY:
+        specifier = "energy";
+        kappa = 0;
+        break;
     default:
         throw std::runtime_error("Unknown operator type.");
     }
 
     ensure_presence_of_table("wigner");
-    ensure_presence_of_table(basis.species + "_" + specifier);
+    if (specifier != "energy") {
+        ensure_presence_of_table(basis.species + "_" + specifier);
+    }
 
     // Check that the specifications are valid
     if (std::abs(q) > kappa) {
@@ -752,42 +759,49 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisA
     }
 
     // Ask the database for the operator
-    auto result = con->Query(fmt::format(
-        R"(WITH s AS (
-            SELECT id, f, m, ketid FROM '{}'
-        ),
-        b AS (
-            SELECT MIN(f) AS min_f, MAX(f) AS max_f,
-            MIN(id) AS min_id, MAX(id) AS max_id
-            FROM s
-        ),
-        w_filtered AS (
-            SELECT *
-            FROM '{}'
-            WHERE kappa = {} AND q = {} AND
-            f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
-            f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
-        ),
-        e_filtered AS (
-            SELECT *
-            FROM '{}'
-            WHERE
-            id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
-            id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
-        )
-        SELECT
-        s2.ketid AS row,
-        s1.ketid AS col,
-        e.val*w.val AS val
-        FROM e_filtered AS e
-        JOIN s AS s1 ON e.id_initial = s1.id
-        JOIN s AS s2 ON e.id_final = s2.id
-        JOIN w_filtered AS w ON
-        w.f_initial = s1.f AND w.m_initial = s1.m AND
-        w.f_final = s2.f AND w.m_final = s2.m
-        ORDER BY row ASC, col ASC)",
-        basis.table, tables["wigner"].local_path.string(), kappa, q,
-        tables[basis.species + "_" + specifier].local_path.string()));
+    duckdb::unique_ptr<duckdb::MaterializedQueryResult> result;
+    if (specifier != "energy") {
+        result = con->Query(fmt::format(
+            R"(WITH s AS (
+                SELECT id, f, m, ketid FROM '{}'
+            ),
+            b AS (
+                SELECT MIN(f) AS min_f, MAX(f) AS max_f,
+                MIN(id) AS min_id, MAX(id) AS max_id
+                FROM s
+            ),
+            w_filtered AS (
+                SELECT *
+                FROM '{}'
+                WHERE kappa = {} AND q = {} AND
+                f_initial BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b) AND
+                f_final BETWEEN (SELECT min_f FROM b) AND (SELECT max_f FROM b)
+            ),
+            e_filtered AS (
+                SELECT *
+                FROM '{}'
+                WHERE
+                id_initial BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b) AND
+                id_final BETWEEN (SELECT min_id FROM b) AND (SELECT max_id FROM b)
+            )
+            SELECT
+            s2.ketid AS row,
+            s1.ketid AS col,
+            e.val*w.val AS val
+            FROM e_filtered AS e
+            JOIN s AS s1 ON e.id_initial = s1.id
+            JOIN s AS s2 ON e.id_final = s2.id
+            JOIN w_filtered AS w ON
+            w.f_initial = s1.f AND w.m_initial = s1.m AND
+            w.f_final = s2.f AND w.m_final = s2.m
+            ORDER BY row ASC, col ASC)",
+            basis.table, tables["wigner"].local_path.string(), kappa, q,
+            tables[basis.species + "_" + specifier].local_path.string()));
+    } else {
+        result = con->Query(fmt::format(
+            R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
+            basis.table));
+    }
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -846,12 +860,12 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> Database::get_operator(const BasisA
     Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
         dim, dim, num_entries, outerIndexPtr.data(), innerIndices.data(), values.data());
 
-    // TODO return OperatorAtom
-    // TODO set SortBy sorting{SortBy::KET};
-    // TODO set TransformBy transform{TransformBy::IDENTITY};
-
     // Transform the matrix into the provided basis and return it
-    return basis.coefficients.adjoint() * matrix_map * basis.coefficients;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix =
+        basis.coefficients.adjoint() * matrix_map * basis.coefficients;
+
+    // Construct the operator and return it
+    return OperatorAtom(basis, type, q, std::move(matrix));
 }
 
 void Database::ensure_presence_of_table(std::string name) {
@@ -949,14 +963,14 @@ template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>
 template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
-template Eigen::SparseMatrix<float, Eigen::RowMajor>
-Database::get_operator<float>(const BasisAtom<float> &basis, OperatorType type, int q);
-template Eigen::SparseMatrix<double, Eigen::RowMajor>
-Database::get_operator<double>(const BasisAtom<double> &basis, OperatorType type, int q);
-template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
+template OperatorAtom<float> Database::get_operator<float>(const BasisAtom<float> &basis,
+                                                           OperatorType type, int q);
+template OperatorAtom<double> Database::get_operator<double>(const BasisAtom<double> &basis,
+                                                             OperatorType type, int q);
+template OperatorAtom<std::complex<float>>
 Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis,
                                             OperatorType type, int q);
-template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
+template OperatorAtom<std::complex<double>>
 Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
                                              OperatorType type, int q);
 
@@ -1012,5 +1026,6 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
                        basis.get_number_of_states());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}", dipole.nonZeros());
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}",
+                       dipole.get_matrix().nonZeros());
 }

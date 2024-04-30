@@ -7,6 +7,11 @@ BasisAtom<Scalar>::BasisAtom(ketvec_t &&kets, std::string table, Database &datab
     : Basis<BasisAtom<Scalar>>(std::move(kets)), table(table), database(database),
       species(species) {}
 
+template <typename Scalar>
+Database &BasisAtom<Scalar>::get_database() const {
+    return database;
+}
+
 // Explicit instantiations
 template class BasisAtom<float>;
 template class BasisAtom<double>;

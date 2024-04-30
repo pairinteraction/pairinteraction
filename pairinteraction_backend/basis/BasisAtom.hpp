@@ -40,6 +40,8 @@ public:
     using Type = BasisAtom<Scalar>;
     using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
+    Database &get_database() const;
+
 private:
     friend class Database;
     BasisAtom(ketvec_t &&kets, std::string table, Database &database, std::string species);

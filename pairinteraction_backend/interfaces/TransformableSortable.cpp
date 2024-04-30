@@ -2,6 +2,20 @@
 #include "utils/euler.hpp"
 
 template <typename Scalar>
+TransformableSortable<Scalar>::TransformableSortable(TransformBy transformation, SortBy sorting)
+    : transformation(transformation), sorting(sorting) {}
+
+template <typename Scalar>
+SortBy TransformableSortable<Scalar>::get_sorting() const {
+    return sorting;
+}
+
+template <typename Scalar>
+TransformBy TransformableSortable<Scalar>::get_transformation() const {
+    return transformation;
+}
+
+template <typename Scalar>
 Eigen::SparseMatrix<Scalar> TransformableSortable<Scalar>::get_rotator(real_t alpha, real_t beta,
                                                                        real_t gamma) const {
     return this->impl_get_rotator(alpha, beta, gamma);
