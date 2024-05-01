@@ -102,6 +102,12 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 }
 
 template <typename Derived>
+const Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
+Basis<Derived>::get_transformator() const {
+    return coefficients;
+}
+
+template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
 Basis<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     Eigen::SparseMatrix<scalar_t> rotator(coefficients.rows(), coefficients.rows());

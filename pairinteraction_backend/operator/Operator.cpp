@@ -78,6 +78,12 @@ Operator<Derived>::impl_get_sorter(SortBy label) const {
 }
 
 template <typename Derived>
+const Eigen::SparseMatrix<typename Operator<Derived>::scalar_t, Eigen::RowMajor> &
+Operator<Derived>::get_transformator() const {
+    return basis->get_transformator();
+}
+
+template <typename Derived>
 std::vector<int> Operator<Derived>::impl_get_blocks(SortBy label) const {
     auto blocks = basis->get_blocks(label & ~SortBy::DIAGONAL);
 

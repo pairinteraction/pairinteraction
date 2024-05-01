@@ -18,6 +18,7 @@ public:
 
     virtual size_t get_number_of_states() const = 0;
     virtual size_t get_number_of_kets() const = 0;
+    virtual const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &get_transformator() const = 0;
 
     SortBy get_sorting() const;
     TransformBy get_transformation() const;
@@ -29,6 +30,7 @@ public:
     std::vector<int> get_blocks(SortBy label) const;
 
     void transform(const Eigen::SparseMatrix<Scalar> &transformator);
+    void transform(const TransformableSortable<Scalar> &other);
     void rotate(real_t alpha, real_t beta, real_t gamma);
     void rotate(std::array<real_t, 3> to_z_axis, std::array<real_t, 3> to_y_axis);
     void sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter);

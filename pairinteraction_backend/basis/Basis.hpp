@@ -64,6 +64,8 @@ public:
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
 
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_transformator() const override;
+
 protected:
     Eigen::SparseMatrix<scalar_t> impl_get_rotator(real_t alpha, real_t beta,
                                                    real_t gamma) const override;
