@@ -60,6 +60,13 @@ void TransformableSortable<Scalar>::transform(const Eigen::SparseMatrix<Scalar> 
 }
 
 template <typename Scalar>
+void TransformableSortable<Scalar>::transform(const TransformableSortable<Scalar> &other) {
+    this->impl_transform(other.get_transformator());
+    sorting = other.get_sorting();
+    transformation = other.get_transformation();
+}
+
+template <typename Scalar>
 void TransformableSortable<Scalar>::rotate(real_t alpha, real_t beta, real_t gamma) {
     if (transformation != TransformBy::IDENTITY) {
         throw std::runtime_error("If the object was transformed, it can no longer be rotated.");
