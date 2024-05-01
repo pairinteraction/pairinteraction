@@ -18,7 +18,7 @@ public:
 
 private:
     friend class KetClassicalLightCreator<Real>;
-    KetClassicalLight(Real photon_energy, int q, size_t id);
+    KetClassicalLight(Real photon_energy, int q);
     size_t id;
     Real photon_energy;
     int quantum_number_q;
