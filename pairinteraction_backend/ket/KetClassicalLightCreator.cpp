@@ -21,8 +21,7 @@ KetClassicalLightCreator<Real> &KetClassicalLightCreator<Real>::set_quantum_numb
 template <typename Real>
 KetClassicalLight<Real> KetClassicalLightCreator<Real>::create() const {
     return KetClassicalLight<Real>(photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
-                                   quantum_number_q.value_or(std::numeric_limits<int>::max()),
-                                   1000); // TODO use a unique id instead 1000
+                                   quantum_number_q.value_or(std::numeric_limits<int>::max()));
 }
 
 template class KetClassicalLightCreator<float>;
