@@ -20,21 +20,27 @@ std::string KetAtom<Real>::get_label() const {
     std::string label = "";
 
     if (quantum_number_n > 0) {
-        label += fmt::format("{:d}", quantum_number_n);
+        label += fmt::format("{:d} ", quantum_number_n);
     } else {
-        label += fmt::format("{:.1f}", quantum_number_nu_exp);
+        label += fmt::format("{:.1f} ", quantum_number_nu_exp);
     }
 
     if (quantum_number_s_exp != 0.5) {
-        label += fmt::format("^{{{:.1g}}}", 2 * quantum_number_s_exp + 1);
+        if (2 * quantum_number_s_exp == std::rintf(2 * quantum_number_s_exp)) {
+            label += fmt::format("^{{{:.0f}}}", 0 * quantum_number_s_exp + 1);
+        } else {
+            label += fmt::format("^{{{:.1f}}}", 2 * quantum_number_s_exp + 1);
+        }
     }
 
     std::vector<std::string> quantum_number_l_labels = {"S", "P", "D", "F", "G", "H"};
     if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
         quantum_number_l_exp < quantum_number_l_labels.size()) {
         label += quantum_number_l_labels[static_cast<size_t>(quantum_number_l_exp)];
+    } else if (quantum_number_l_exp == std::rintf(quantum_number_l_exp)) {
+        label += fmt::format("{:.0f}", quantum_number_l_exp);
     } else {
-        label += fmt::format("{:.1g}", quantum_number_l_exp);
+        label += fmt::format("{:.1f}", quantum_number_l_exp);
     }
 
     if (this->quantum_number_f == std::rintf(this->quantum_number_f)) {
