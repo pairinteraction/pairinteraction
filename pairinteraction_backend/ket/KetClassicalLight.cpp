@@ -1,6 +1,8 @@
 #include "ket/KetClassicalLight.hpp"
 #include "KetClassicalLight.hpp"
+#include <fmt/format.h>
 #include <limits>
+#include <string>
 
 template <typename Real>
 KetClassicalLight<Real>::KetClassicalLight(Real photon_energy, int q, size_t id)
@@ -14,7 +16,10 @@ Real KetClassicalLight<Real>::get_photon_energy() const {
 
 template <typename Real>
 std::string KetClassicalLight<Real>::get_label() const {
-    return "TODO";
+    std::string label = "";
+    label += fmt::format("{:d}", quantum_number_q);
+    label += fmt::format("_{{{:g} GHz}}", photon_energy);
+    return label;
 }
 
 template <typename Real>
