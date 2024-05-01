@@ -1059,7 +1059,6 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
 
     int last_row = -1;
     for (size_t i = 0; i < chunk->size(); i++) {
-        SPDLOG_INFO("row: {}, col: {}, val: {}", chunk_row[i], chunk_col[i], chunk_val[i]);
         int row = basis.ket_id_to_index.at(chunk_row[i]);
         if (row != last_row) {
             if (row < last_row) {
