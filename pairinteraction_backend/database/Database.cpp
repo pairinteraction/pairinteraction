@@ -434,15 +434,17 @@ KetAtom<Real> Database::get_ket(std::string species,
     if (chunk->data[3].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'id'.");
     }
-    if (chunk->data[4].GetType() != duckdb::LogicalType::BIGINT) {
+    if (!duckdb::FlatVector::IsNull(chunk->data[4], 0) &&
+        chunk->data[4].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'n'.");
-    }
+    } // TODO remove IsNull(chunk-> ..., also at other places, if the n quantum number is not null
+      // in the mqdt database, too
     if (chunk->data[5].GetType() != duckdb::LogicalType::DOUBLE) {
         throw std::runtime_error("Wrong type for 'exp_nu'.");
     }
-    if (chunk->data[6].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_nu'.");
-    }
+    // if (chunk->data[6].GetType() != duckdb::LogicalType::DOUBLE) {
+    //     throw std::runtime_error("Wrong type for 'std_nu'.");
+    // } // TODO re-enable this check when the mqdt database is fixed
     if (chunk->data[7].GetType() != duckdb::LogicalType::DOUBLE) {
         throw std::runtime_error("Wrong type for 'exp_l'.");
     }
@@ -700,7 +702,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             size_t idx = 0;
             if (description.min_energy.has_value()) {
                 auto min_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (std::sqrt(-1 / (2 * min_energy)) - 0.5 >
+                if (std::sqrt(-1 / (2 * min_energy)) - 1 >
                     std::sqrt(-1 / (2 * description.min_energy.value()))) {
                     SPDLOG_WARN("No state found with the requested minimum energy. Requested: {}, "
                                 "found: {}.",
@@ -709,7 +711,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.max_energy.has_value()) {
                 auto max_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (std::sqrt(-1 / (2 * max_energy)) + 0.5 <
+                if (std::sqrt(-1 / (2 * max_energy)) + 1 <
                     std::sqrt(-1 / (2 * description.max_energy.value()))) {
                     SPDLOG_WARN("No state found with the requested maximum energy. Requested: {}, "
                                 "found: {}.",
@@ -766,7 +768,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.min_quantum_number_nu.has_value()) {
                 auto min_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_nu - 0.5 > description.min_quantum_number_nu.value()) {
+                if (min_nu - 1 > description.min_quantum_number_nu.value()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number nu. "
                                 "Requested: {}, found: {}.",
                                 description.min_quantum_number_nu.value(), min_nu);
@@ -774,7 +776,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.max_quantum_number_nu.has_value()) {
                 auto max_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_nu + 0.5 < description.max_quantum_number_nu.value()) {
+                if (max_nu + 1 < description.max_quantum_number_nu.value()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number nu. "
                                 "Requested: {}, found: {}.",
                                 description.max_quantum_number_nu.value(), max_nu);
@@ -782,7 +784,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.min_quantum_number_l.has_value()) {
                 auto min_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_l - 0.5 > description.min_quantum_number_l.value()) {
+                if (min_l - 1 > description.min_quantum_number_l.value()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number l. "
                                 "Requested: {}, found: {}.",
                                 description.min_quantum_number_l.value(), min_l);
@@ -790,7 +792,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.max_quantum_number_l.has_value()) {
                 auto max_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_l + 0.5 < description.max_quantum_number_l.value()) {
+                if (max_l + 1 < description.max_quantum_number_l.value()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number l. "
                                 "Requested: {}, found: {}.",
                                 description.max_quantum_number_l.value(), max_l);
@@ -798,7 +800,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.min_quantum_number_s.has_value()) {
                 auto min_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_s - 0.5 > description.min_quantum_number_s.value()) {
+                if (min_s - 1 > description.min_quantum_number_s.value()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number s. "
                                 "Requested: {}, found: {}.",
                                 description.min_quantum_number_s.value(), min_s);
@@ -806,7 +808,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.max_quantum_number_s.has_value()) {
                 auto max_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_s + 0.5 < description.max_quantum_number_s.value()) {
+                if (max_s + 1 < description.max_quantum_number_s.value()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number s. "
                                 "Requested: {}, found: {}.",
                                 description.max_quantum_number_s.value(), max_s);
@@ -814,7 +816,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.min_quantum_number_j.has_value()) {
                 auto min_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_j - 0.5 > description.min_quantum_number_j.value()) {
+                if (min_j - 1 > description.min_quantum_number_j.value()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number j. "
                                 "Requested: {}, found: {}.",
                                 description.min_quantum_number_j.value(), min_j);
@@ -822,7 +824,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             }
             if (description.max_quantum_number_j.has_value()) {
                 auto max_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_j + 0.5 < description.max_quantum_number_j.value()) {
+                if (max_j + 1 < description.max_quantum_number_j.value()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number j. "
                                 "Requested: {}, found: {}.",
                                 description.max_quantum_number_j.value(), max_j);
@@ -863,15 +865,16 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
     if (chunk->data[4].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'ketid'.");
     }
-    if (chunk->data[5].GetType() != duckdb::LogicalType::BIGINT) {
+    if (!duckdb::FlatVector::IsNull(chunk->data[5], 0) &&
+        chunk->data[5].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'n'.");
     }
     if (chunk->data[6].GetType() != duckdb::LogicalType::DOUBLE) {
         throw std::runtime_error("Wrong type for 'exp_nu'.");
     }
-    if (chunk->data[7].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_nu'.");
-    }
+    // if (chunk->data[7].GetType() != duckdb::LogicalType::DOUBLE) {
+    //     throw std::runtime_error("Wrong type for 'std_nu'.");
+    // } // TODO re-enable this check when the mqdt database is fixed
     if (chunk->data[8].GetType() != duckdb::LogicalType::DOUBLE) {
         throw std::runtime_error("Wrong type for 'exp_l'.");
     }
@@ -1146,11 +1149,13 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
         throw std::runtime_error("No state found.");
     }
 
-    if (chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
+    if (!duckdb::FlatVector::IsNull(chunk->data[0], 0) &&
+        chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'n'.");
     }
 
-    if (duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
+    if (duckdb::FlatVector::IsNull(chunk->data[0], 0) ||
+        duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
         throw std::runtime_error(
             "The specified species does not have a well-defined principal quantum number n. "
             "Use the effective principal quantum number nu instead.");
