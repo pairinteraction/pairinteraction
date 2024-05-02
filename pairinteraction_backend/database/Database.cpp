@@ -481,6 +481,10 @@ KetAtom<Real> Database::get_ket(std::string species,
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
 
+    if (duckdb::FlatVector::IsNull(chunk->data[4], 0)) {
+        result_quantum_number_n = 0;
+    } // TODO remove this work around once mqdt table is fixed
+
     return KetAtom<Real>(result_energy, result_quantum_number_f, result_quantum_number_m,
                          result_parity, result_id, species, result_quantum_number_n,
                          result_quantum_number_nu_exp, result_quantum_number_nu_std,
@@ -921,6 +925,10 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             throw std::runtime_error("The states are not sorted by energy.");
         }
         last_energy = chunk_energy[i];
+
+        if (duckdb::FlatVector::IsNull(chunk->data[5], i)) {
+            chunk_quantum_number_n[i] = 0;
+        } // TODO remove this work around once mqdt table is fixed
 
         // Append a new state
         kets.push_back(std::make_shared<const KetAtom<real_t>>(
