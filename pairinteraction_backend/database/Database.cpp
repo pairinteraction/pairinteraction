@@ -422,46 +422,24 @@ KetAtom<Real> Database::get_ket(std::string species,
     }
 
     // Check the types of the columns
-    if (chunk->data[0].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'energy'.");
-    }
-    if (chunk->data[1].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'f'.");
-    }
-    if (chunk->data[2].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'parity'.");
-    }
-    if (chunk->data[3].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'id'.");
-    }
-    if (!duckdb::FlatVector::IsNull(chunk->data[4], 0) &&
-        chunk->data[4].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'n'.");
-    } // TODO remove IsNull(chunk-> ..., also at other places, if the n quantum number is not null
-      // in the mqdt database, too
-    if (chunk->data[5].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_nu'.");
-    }
-    // if (chunk->data[6].GetType() != duckdb::LogicalType::DOUBLE) {
-    //     throw std::runtime_error("Wrong type for 'std_nu'.");
-    // } // TODO re-enable this check when the mqdt database is fixed
-    if (chunk->data[7].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_l'.");
-    }
-    if (chunk->data[8].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_l'.");
-    }
-    if (chunk->data[9].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_s'.");
-    }
-    if (chunk->data[10].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_s'.");
-    }
-    if (chunk->data[11].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_j'.");
-    }
-    if (chunk->data[12].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_j'.");
+    const auto &types = chunk->GetTypes();
+    const std::vector<duckdb::LogicalType> ref_types = {
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BIGINT,
+        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE};
+    const std::vector<std::string> ref_labels = {"energy", "f",      "parity", "ketid", "n",
+                                                 "exp_nu", "std_nu", "exp_l",  "std_l", "exp_s",
+                                                 "std_s",  "exp_j",  "std_j"};
+    for (size_t i = 0; i < types.size(); i++) {
+        if (ref_labels[i] == "n" || ref_labels[i] == "std_nu") {
+            continue;
+        } // TODO remove this workaround for the mqdt table
+
+        if (types[i] != ref_types[i]) {
+            throw std::runtime_error("Wrong type for '" + ref_labels[i] + "'.");
+        }
     }
 
     // Construct the state
@@ -480,10 +458,6 @@ KetAtom<Real> Database::get_ket(std::string species,
     auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
-
-    if (duckdb::FlatVector::IsNull(chunk->data[4], 0)) {
-        result_quantum_number_n = 0;
-    } // TODO remove this work around once mqdt table is fixed
 
     return KetAtom<Real>(result_energy, result_quantum_number_f, result_quantum_number_m,
                          result_parity, result_id, species, result_quantum_number_n,
@@ -847,97 +821,72 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
         throw std::runtime_error("Error querying the database: " + result->GetError());
     }
 
-    auto chunk = result->Fetch();
+    const auto &collection = result->Collection();
 
-    if (chunk == nullptr) {
+    if (collection.Count() == 0) {
         throw std::runtime_error("No state found.");
     }
 
     // Check the types of the columns
-    if (chunk->data[0].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'energy'.");
-    }
-    if (chunk->data[1].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'f'.");
-    }
-    if (chunk->data[2].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'm'.");
-    }
-    if (chunk->data[3].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'parity'.");
-    }
-    if (chunk->data[4].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'ketid'.");
-    }
-    if (!duckdb::FlatVector::IsNull(chunk->data[5], 0) &&
-        chunk->data[5].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'n'.");
-    }
-    if (chunk->data[6].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_nu'.");
-    }
-    // if (chunk->data[7].GetType() != duckdb::LogicalType::DOUBLE) {
-    //     throw std::runtime_error("Wrong type for 'std_nu'.");
-    // } // TODO re-enable this check when the mqdt database is fixed
-    if (chunk->data[8].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_l'.");
-    }
-    if (chunk->data[9].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_l'.");
-    }
-    if (chunk->data[10].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_s'.");
-    }
-    if (chunk->data[11].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_s'.");
-    }
-    if (chunk->data[12].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'exp_j'.");
-    }
-    if (chunk->data[13].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'std_j'.");
+    const auto &types = collection.Types();
+    const std::vector<duckdb::LogicalType> ref_types = {
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE};
+    const std::vector<std::string> ref_labels = {"energy", "f",      "m",      "parity", "ketid",
+                                                 "n",      "exp_nu", "std_nu", "exp_l",  "std_l",
+                                                 "exp_s",  "std_s",  "exp_j",  "std_j"};
+    for (size_t i = 0; i < types.size(); i++) {
+        if (ref_labels[i] == "n" || ref_labels[i] == "std_nu") {
+            continue;
+        } // TODO remove this workaround for the mqdt table
+
+        if (types[i] != ref_types[i]) {
+            throw std::runtime_error("Wrong type for '" + ref_labels[i] + "'.");
+        }
     }
 
     // Construct the states
     std::vector<std::shared_ptr<const KetAtom<real_t>>> kets;
-    kets.reserve(chunk->size());
-
-    auto chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
-    auto chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
-    auto chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk->data[2]);
-    auto chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[3]);
-    auto chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk->data[4]);
-    auto chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[5]);
-    auto chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[6]);
-    auto chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[7]);
-    auto chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8]);
-    auto chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9]);
-    auto chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10]);
-    auto chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11]);
-    auto chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12]);
-    auto chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13]);
-
+    kets.reserve(collection.Count());
     double last_energy = std::numeric_limits<double>::lowest();
-    for (size_t i = 0; i < chunk->size(); i++) {
 
-        // Check that the states are sorted by energy
-        if (chunk_energy[i] < last_energy) {
-            throw std::runtime_error("The states are not sorted by energy.");
+    for (const auto &chunk : collection.Chunks()) {
+
+        auto chunk_energy = duckdb::FlatVector::GetData<double>(chunk.data[0]);
+        auto chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk.data[1]);
+        auto chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk.data[2]);
+        auto chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk.data[3]);
+        auto chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk.data[4]);
+        auto chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk.data[5]);
+        auto chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk.data[6]);
+        auto chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk.data[7]);
+        auto chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk.data[8]);
+        auto chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk.data[9]);
+        auto chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk.data[10]);
+        auto chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk.data[11]);
+        auto chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk.data[12]);
+        auto chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk.data[13]);
+
+        for (size_t i = 0; i < chunk.size(); i++) {
+
+            // Check that the states are sorted by energy
+            if (chunk_energy[i] < last_energy) {
+                throw std::runtime_error("The states are not sorted by energy.");
+            }
+            last_energy = chunk_energy[i];
+
+            // Append a new state
+            kets.push_back(std::make_shared<const KetAtom<real_t>>(KetAtom<real_t>(
+                chunk_energy[i], chunk_quantum_number_f[i], chunk_quantum_number_m[i],
+                chunk_parity[i], chunk_id[i], species, chunk_quantum_number_n[i],
+                chunk_quantum_number_nu_exp[i], chunk_quantum_number_nu_std[i],
+                chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
+                chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
+                chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i])));
         }
-        last_energy = chunk_energy[i];
-
-        if (duckdb::FlatVector::IsNull(chunk->data[5], i)) {
-            chunk_quantum_number_n[i] = 0;
-        } // TODO remove this work around once mqdt table is fixed
-
-        // Append a new state
-        kets.push_back(std::make_shared<const KetAtom<real_t>>(
-            KetAtom<real_t>(chunk_energy[i], chunk_quantum_number_f[i], chunk_quantum_number_m[i],
-                            chunk_parity[i], chunk_id[i], species, chunk_quantum_number_n[i],
-                            chunk_quantum_number_nu_exp[i], chunk_quantum_number_nu_std[i],
-                            chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
-                            chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
-                            chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i])));
     }
 
     return BasisAtom<Scalar>(std::move(kets), uuid, *this, species);
@@ -1036,26 +985,26 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
         throw std::runtime_error("Error querying the database: " + result->GetError());
     }
 
-    auto chunk = result->Fetch();
+    const auto &collection = result->Collection();
 
-    if (chunk == nullptr) {
-        throw std::runtime_error("No matrix elements found.");
+    if (collection.Count() == 0) {
+        throw std::runtime_error("matrix elements.");
     }
 
     // Check the types of the columns
-    if (chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'row'.");
-    }
-    if (chunk->data[1].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'col'.");
-    }
-    if (chunk->data[2].GetType() != duckdb::LogicalType::DOUBLE) {
-        throw std::runtime_error("Wrong type for 'val'.");
+    const auto &types = collection.Types();
+    const std::vector<duckdb::LogicalType> ref_types = {
+        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::DOUBLE};
+    const std::vector<std::string> ref_labels = {"row", "col", "val"};
+    for (size_t i = 0; i < types.size(); i++) {
+        if (types[i] != ref_types[i]) {
+            throw std::runtime_error("Wrong type for '" + ref_labels[i] + "'.");
+        }
     }
 
     // Construct the matrix
     int dim = basis.get_number_of_states();
-    int num_entries = chunk->size();
+    int num_entries = collection.Count();
 
     std::vector<int> outerIndexPtr;
     std::vector<int> innerIndices;
@@ -1064,24 +1013,29 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
     innerIndices.reserve(num_entries);
     values.reserve(num_entries);
 
-    auto chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
-    auto chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
-    auto chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
-
     int last_row = -1;
-    for (size_t i = 0; i < chunk->size(); i++) {
-        int row = basis.ket_id_to_index.at(chunk_row[i]);
-        if (row != last_row) {
-            if (row < last_row) {
-                throw std::runtime_error("The rows are not sorted.");
+
+    for (const auto &chunk : collection.Chunks()) {
+
+        auto chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk.data[0]);
+        auto chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk.data[1]);
+        auto chunk_val = duckdb::FlatVector::GetData<double>(chunk.data[2]);
+
+        for (size_t i = 0; i < chunk.size(); i++) {
+            int row = basis.ket_id_to_index.at(chunk_row[i]);
+            if (row != last_row) {
+                if (row < last_row) {
+                    throw std::runtime_error("The rows are not sorted.");
+                }
+                for (; last_row < row; last_row++) {
+                    outerIndexPtr.push_back(innerIndices.size());
+                }
             }
-            for (; last_row < row; last_row++) {
-                outerIndexPtr.push_back(innerIndices.size());
-            }
+            innerIndices.push_back(basis.ket_id_to_index.at(chunk_col[i]));
+            values.push_back(chunk_val[i]);
         }
-        innerIndices.push_back(basis.ket_id_to_index.at(chunk_col[i]));
-        values.push_back(chunk_val[i]);
     }
+
     for (; last_row < dim + 1; last_row++) {
         outerIndexPtr.push_back(innerIndices.size());
     }
@@ -1160,14 +1114,14 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
     if (!duckdb::FlatVector::IsNull(chunk->data[0], 0) &&
         chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'n'.");
-    }
+    } // TODO remove IsNull once it is fixed in the mqdt table
 
     if (duckdb::FlatVector::IsNull(chunk->data[0], 0) ||
         duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
         throw std::runtime_error(
             "The specified species does not have a well-defined principal quantum number n. "
             "Use the effective principal quantum number nu instead.");
-    }
+    } // TODO remove IsNull once it is fixed in the mqdt table
 }
 
 Database &Database::get_global_instance() {
