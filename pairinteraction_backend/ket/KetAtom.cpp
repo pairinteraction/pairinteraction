@@ -27,7 +27,7 @@ std::string KetAtom<Real>::get_label() const {
 
     if (quantum_number_s_exp != 0.5) {
         if (2 * quantum_number_s_exp == std::rintf(2 * quantum_number_s_exp)) {
-            label += fmt::format("^{{{:.0f}}}", 0 * quantum_number_s_exp + 1);
+            label += fmt::format("^{{{:.0f}}}", 2 * quantum_number_s_exp + 1);
         } else {
             label += fmt::format("^{{{:.1f}}}", 2 * quantum_number_s_exp + 1);
         }
