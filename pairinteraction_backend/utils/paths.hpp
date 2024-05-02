@@ -26,6 +26,12 @@ std::filesystem::path get_home_directory() {
 std::filesystem::path get_pairinteraction_cache_directory() {
     std::filesystem::path path;
 
+    char const *pairinteraction_cache_dir = getenv("PAIRINTERACTION_CACHE_DIR");
+    if (pairinteraction_cache_dir != nullptr) {
+        path = pairinteraction_cache_dir;
+        return path;
+    }
+
 #ifdef _WIN32
     char const *localappdata = std::getenv("LOCALAPPDATA");
     if (localappdata != nullptr) {
@@ -51,6 +57,12 @@ std::filesystem::path get_pairinteraction_cache_directory() {
 
 std::filesystem::path get_pairinteraction_config_directory() {
     std::filesystem::path path;
+
+    char const *pairinteraction_config_dir = getenv("PAIRINTERACTION_CONFIG_DIR");
+    if (pairinteraction_config_dir != nullptr) {
+        path = pairinteraction_config_dir;
+        return path;
+    }
 
 #ifdef _WIN32
     char const *appdata = std::getenv("APPDATA");
