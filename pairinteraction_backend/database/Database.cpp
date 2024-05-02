@@ -430,9 +430,6 @@ KetAtom<Real> Database::get_ket(std::string species,
         duckdb::LogicalType::DOUBLE};
 
     for (size_t i = 0; i < types.size(); i++) {
-        if (labels[i] == "n" || labels[i] == "std_nu") {
-            continue;
-        } // TODO remove this workaround for the mqdt table
         if (types[i] != ref_types[i]) {
             throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
         }
@@ -833,9 +830,6 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
         duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE};
 
     for (size_t i = 0; i < types.size(); i++) {
-        if (labels[i] == "n" || labels[i] == "std_nu") {
-            continue;
-        } // TODO remove this workaround for the mqdt table
         if (types[i] != ref_types[i]) {
             throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
         }
@@ -1102,17 +1096,15 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
 
     auto chunk = result->Fetch();
 
-    if (!duckdb::FlatVector::IsNull(chunk->data[0], 0) &&
-        chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
+    if (chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
         throw std::runtime_error("Wrong type for 'n'.");
-    } // TODO remove IsNull once it is fixed in the mqdt table
+    }
 
-    if (duckdb::FlatVector::IsNull(chunk->data[0], 0) ||
-        duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
+    if (duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
         throw std::runtime_error(
             "The specified species does not have a well-defined principal quantum number n. "
             "Use the effective principal quantum number nu instead.");
-    } // TODO remove IsNull once it is fixed in the mqdt table
+    }
 }
 
 Database &Database::get_global_instance() {
