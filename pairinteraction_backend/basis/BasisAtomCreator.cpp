@@ -143,7 +143,7 @@ template class BasisAtomCreator<std::complex<double>>;
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-DOCTEST_TEST_CASE("create a basis for strontium") {
+DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<float>()
                      .set_species("Sr88_singlet")
@@ -152,6 +152,19 @@ DOCTEST_TEST_CASE("create a basis for strontium") {
                      .create(database);
     for (const auto &ket : basis) {
         DOCTEST_CHECK(ket.get_species() == "Sr88_singlet");
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+    }
+}
+
+DOCTEST_TEST_CASE("create a basis for strontium 87") {
+    Database &database = Database::get_global_instance();
+    auto basis = BasisAtomCreator<float>()
+                     .set_species("Sr87_mqdt")
+                     .restrict_quantum_number_nu(50, 51)
+                     .restrict_quantum_number_l(0, 0)
+                     .create(database);
+    for (const auto &ket : basis) {
+        DOCTEST_CHECK(ket.get_species() == "Sr87_mqdt");
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
     }
 }
