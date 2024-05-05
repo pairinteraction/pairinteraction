@@ -67,6 +67,11 @@ Database::Database(bool auto_update)
                 if (seed == doc["hash"].get<std::size_t>()) {
                     database_repo_host.clear();
                     database_repo_paths.clear();
+                } else {
+                    SPDLOG_INFO("The database repository host and paths have been changed "
+                                "manually. Thus, they will not be updated automatically. To reset "
+                                "them, delete the file '{}'.",
+                                configfile.string());
                 }
             }
         }
@@ -74,12 +79,16 @@ Database::Database(bool auto_update)
 
     // Read in and store the default values if necessary
     if (database_repo_host.empty() || database_repo_paths.empty()) {
-        SPDLOG_INFO("Updating the database repository host and paths.");
+        SPDLOG_INFO("Updating the database repository host and paths:");
 
         database_repo_host = default_database_repo_host;
         database_repo_paths = default_database_repo_paths;
         std::ofstream file(configfile);
         nlohmann::json doc;
+
+        SPDLOG_INFO("* New host: {}", default_database_repo_host);
+        SPDLOG_INFO("* New paths: {}", fmt::join(default_database_repo_paths, ", "));
+
         doc["database_repo_host"] = default_database_repo_host;
         doc["database_repo_paths"] = database_repo_paths;
 
@@ -161,15 +170,14 @@ Database::Database(bool auto_update)
 
         // Process the results
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
-            SPDLOG_INFO("Accessing database repository: {}", database_repo_paths[i]);
+            SPDLOG_INFO("Accessing database repository path: {}", database_repo_paths[i]);
             auto res = futures[i].get();
 
             // Check if the request was successful
             if (!res) {
                 if (res.error() != httplib::Error::Unknown ||
                     !std::filesystem::exists(filenames[i])) {
-                    SPDLOG_ERROR("Error accessing database repository: {}",
-                                 fmt::streamed(res.error()));
+                    SPDLOG_ERROR("Access error: {}", fmt::streamed(res.error()));
                     continue;
                 }
 
@@ -183,15 +191,14 @@ Database::Database(bool auto_update)
                     waittime =
                         std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
                 }
-                SPDLOG_ERROR(
-                    "Error accessing database repository, rate limit exceeded. Auto update "
-                    "is disabled. You should not retry until after {} seconds.",
-                    waittime);
+                SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
+                             "is disabled. You should not retry until after {} seconds.",
+                             waittime);
                 auto_update = false;
                 continue;
 
             } else if (res->status != 200) {
-                SPDLOG_ERROR("Error accessing database repository, status {}.", res->status);
+                SPDLOG_ERROR("Access error, status {}.", res->status);
                 continue;
             }
 
