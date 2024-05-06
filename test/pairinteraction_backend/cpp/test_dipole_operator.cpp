@@ -4,10 +4,15 @@
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
 #include "operator/OperatorAtom.hpp"
+#include "setup.hpp"
 
 #include <spdlog/spdlog.h>
 
 int main() {
+    // Call the setup function to configure logging
+    setup();
+
+    // Get a database instance
     Database &database = Database::get_global_instance();
 
     // Create a dipole operator coupling two specific states
