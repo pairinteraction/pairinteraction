@@ -5,7 +5,7 @@
 
 namespace paths {
 
-std::filesystem::path get_home_directory() {
+inline std::filesystem::path get_home_directory() {
 #ifdef _WIN32
     char const *hdrive = getenv("HOMEDRIVE");
     char const *hpath = getenv("HOMEPATH");
@@ -23,7 +23,7 @@ std::filesystem::path get_home_directory() {
     return std::filesystem::path("~");
 }
 
-std::filesystem::path get_pairinteraction_cache_directory() {
+inline std::filesystem::path get_pairinteraction_cache_directory() {
     std::filesystem::path path;
 
     char const *pairinteraction_cache_dir = getenv("PAIRINTERACTION_CACHE_DIR");
@@ -55,7 +55,7 @@ std::filesystem::path get_pairinteraction_cache_directory() {
     return path;
 }
 
-std::filesystem::path get_pairinteraction_config_directory() {
+inline std::filesystem::path get_pairinteraction_config_directory() {
     std::filesystem::path path;
 
     char const *pairinteraction_config_dir = getenv("PAIRINTERACTION_CONFIG_DIR");

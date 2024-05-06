@@ -1,20 +1,3 @@
-#define DOCTEST_CONFIG_IMPLEMENT
-#include <doctest/doctest.h>
+#include "test.hpp"
 
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-
-int main(int argc, char **argv) {
-
-    // Configure a logger for the tests
-    auto doctest_logger = spdlog::stdout_color_mt("doctest");
-    doctest_logger->set_pattern("[doctest] [%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
-
-    // Run the tests
-    doctest::Context ctx;
-    ctx.setOption("abort-after", 5);
-    ctx.setOption("no-run", 0);
-    ctx.applyCommandLine(argc, argv);
-    ctx.setOption("no-breaks", true);
-    return ctx.run();
-}
+int main(int argc, char **argv) { return test(argc, argv); }

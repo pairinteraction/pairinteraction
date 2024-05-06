@@ -1,0 +1,52 @@
+#include "basis/BasisAtom.hpp"
+#include "basis/BasisAtomCreator.hpp"
+#include "database/Database.hpp"
+#include "ket/KetAtom.hpp"
+#include "ket/KetAtomCreator.hpp"
+#include "operator/OperatorAtom.hpp"
+
+#include <spdlog/spdlog.h>
+
+int main() {
+    Database &database = Database::get_global_instance();
+
+    // Create a dipole operator coupling two specific states
+    auto ket1 = KetAtomCreator<float>()
+                    .set_species("Rb")
+                    .set_quantum_number_n(60)
+                    .set_quantum_number_l(0)
+                    .set_quantum_number_j(0.5)
+                    .set_quantum_number_m(0.5)
+                    .create(database);
+
+    auto ket2 = KetAtomCreator<float>()
+                    .set_species("Rb")
+                    .set_quantum_number_n(60)
+                    .set_quantum_number_l(1)
+                    .set_quantum_number_j(0.5)
+                    .set_quantum_number_m(0.5)
+                    .create(database);
+
+    auto basis_ket1_ket2 = BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).create(database);
+
+    OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2, OperatorType::DIPOLE, 0);
+    float dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+
+    if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) > 1e-6) {
+        SPDLOG_ERROR("The dipole operator value is not correct.");
+        return 1;
+    }
+
+    // Create a dipole operators in a typical basis
+    auto basis = BasisAtomCreator<float>()
+                     .set_species("Sr88_singlet")
+                     .restrict_quantum_number_n(60, 63)
+                     .restrict_quantum_number_l(0, 3)
+                     .create(database);
+
+    OperatorAtom<float> dipole_0(basis, OperatorType::DIPOLE, 0);
+    OperatorAtom<float> dipole_p(basis, OperatorType::DIPOLE, 1);
+    OperatorAtom<float> dipole_m(basis, OperatorType::DIPOLE, -1);
+
+    return 0;
+}
