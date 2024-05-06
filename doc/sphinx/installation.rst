@@ -129,7 +129,7 @@ Then you can build the software using CMake:
     mkdir build
     cd build
     cmake ..
-    cmake --build . --config Release
+    cmake --build .
 
 This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
 
@@ -229,7 +229,7 @@ processors can speed up the compilation process significantly.
 
 .. code-block:: bash
 
-    cmake --build . --config Release -- -j 8
+    cmake --build . -- -j 8
 
 Tips and Tricks
 ^^^^^^^^^^^^^^^
@@ -247,7 +247,7 @@ Then, you can tell CMake to build the software with these tools by running the f
 .. code-block:: bash
 
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
-    cmake --build . --config Release
+    cmake --build .
 
 **2. Using Compiler Caching**
 
@@ -268,7 +268,7 @@ If you're developing and making changes to specific parts of the software, you c
     cmake --build . --config Release --target pairinteraction_backend_test
     ctest -V -C Release -R pairinteraction_backend_test
 
-However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software.
+However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
 **4. Debugging with GDB**
 
