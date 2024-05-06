@@ -48,10 +48,9 @@ Database::Database(bool auto_update)
     std::vector<std::string> database_repo_paths;
     if (std::filesystem::exists(configfile)) {
         std::ifstream file(configfile);
-        nlohmann::json doc;
-        file >> doc;
+        nlohmann::json doc = nlohmann::json::parse(file, nullptr, false);
 
-        if (doc.contains("hash") && doc.contains("database_repo_host") &&
+        if (!doc.is_discarded() && doc.contains("hash") && doc.contains("database_repo_host") &&
             doc.contains("database_repo_paths")) {
             database_repo_host = doc["database_repo_host"].get<std::string>();
             database_repo_paths = doc["database_repo_paths"].get<std::vector<std::string>>();
@@ -147,9 +146,8 @@ Database::Database(bool auto_update)
                                  ".json"));
             if (std::filesystem::exists(filenames.back())) {
                 std::ifstream file(filenames.back());
-                nlohmann::json doc;
-                file >> doc;
-                if (doc.contains("last-modified")) {
+                nlohmann::json doc = nlohmann::json::parse(file, nullptr, false);
+                if (!doc.is_discarded() && doc.contains("last-modified")) {
                     lastmodified = doc["last-modified"].get<std::string>();
                 }
             }
@@ -207,7 +205,7 @@ Database::Database(bool auto_update)
             if (!res || res->status == 304) {
                 SPDLOG_INFO("Using cached overview of available tables.");
                 std::ifstream file(filenames[i]);
-                file >> doc;
+                doc = nlohmann::json::parse(file);
             } else {
                 SPDLOG_INFO("Using downloaded overview of available tables.");
                 doc = nlohmann::json::parse(res->body);
