@@ -26,7 +26,8 @@ int test(int argc, char **argv) {
 
     std::call_once(flag, [&logfile] {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-        auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile, true);
+        auto file_sink =
+            std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile.string(), true);
         auto doctest_logger =
             std::make_shared<spdlog::logger>(spdlog::logger("doctest", {console_sink, file_sink}));
         doctest_logger->set_pattern("[doctest] [%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
