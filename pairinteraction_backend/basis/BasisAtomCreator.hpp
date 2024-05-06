@@ -1,6 +1,7 @@
 #pragma once
 
 #include <complex>
+#include <memory>
 #include <optional>
 #include <string>
 #include <vector>
@@ -38,7 +39,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_s(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &add_ket(const ket_t &ket);
+    BasisAtomCreator<Scalar> &add_ket(std::shared_ptr<const ket_t> ket);
     BasisAtom<Scalar> create(Database &database) const;
 
 private:

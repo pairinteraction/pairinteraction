@@ -2,7 +2,6 @@
 
 #include <complex>
 #include <limits>
-#include <memory>
 #include <optional>
 #include <ranges>
 #include <string>

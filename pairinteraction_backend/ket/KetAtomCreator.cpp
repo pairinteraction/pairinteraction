@@ -73,7 +73,7 @@ KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_j(Real value) {
 }
 
 template <typename Real>
-KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
+std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &database) const {
 
     if (!species.has_value()) {
         throw std::runtime_error("Species not set.");
@@ -84,9 +84,8 @@ KetAtom<Real> KetAtomCreator<Real>::create(Database &database) const {
         parity,           quantum_number_n, quantum_number_nu,
         quantum_number_l, quantum_number_s, quantum_number_j};
 
-    auto ket = database.get_ket<Real>(species.value(), description);
-
-    return ket;
+    return std::make_shared<const KetAtom<Real>>(
+        database.get_ket<Real>(species.value(), description));
 }
 
 // Explicit instantiations
@@ -104,14 +103,14 @@ template class KetAtomCreator<double>;
 DOCTEST_TEST_CASE("create a ket for rubidium") {
     Database &database = Database::get_global_instance();
     auto ket = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
-    DOCTEST_CHECK(ket.get_species() == "Rb");
-    DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
-    DOCTEST_CHECK(ket.get_quantum_number_l() == 1);
-    DOCTEST_CHECK(ket.get_quantum_number_f() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_j() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_m() == 0.5);
-    DOCTEST_CHECK(ket.get_quantum_number_s() == 0.5);
-    DOCTEST_CHECK(ket.get_parity() == -1);
+    DOCTEST_CHECK(ket->get_species() == "Rb");
+    DOCTEST_CHECK(ket->get_quantum_number_n() == 60);
+    DOCTEST_CHECK(ket->get_quantum_number_l() == 1);
+    DOCTEST_CHECK(ket->get_quantum_number_f() == 0.5);
+    DOCTEST_CHECK(ket->get_quantum_number_j() == 0.5);
+    DOCTEST_CHECK(ket->get_quantum_number_m() == 0.5);
+    DOCTEST_CHECK(ket->get_quantum_number_s() == 0.5);
+    DOCTEST_CHECK(ket->get_parity() == -1);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
 }
 
@@ -125,10 +124,10 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
                    .set_quantum_number_m(0)
                    .set_quantum_number_s(0)
                    .create(database);
-    DOCTEST_CHECK(ket.get_species() == "Sr88_singlet");
-    DOCTEST_CHECK(ket.get_quantum_number_n() == 60);
-    DOCTEST_CHECK(ket.get_quantum_number_f() == 1);
-    DOCTEST_CHECK(ket.get_quantum_number_m() == 0);
-    DOCTEST_CHECK(ket.get_parity() == -1);
+    DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
+    DOCTEST_CHECK(ket->get_quantum_number_n() == 60);
+    DOCTEST_CHECK(ket->get_quantum_number_f() == 1);
+    DOCTEST_CHECK(ket->get_quantum_number_m() == 0);
+    DOCTEST_CHECK(ket->get_parity() == -1);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
 }
