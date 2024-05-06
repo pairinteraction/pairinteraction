@@ -32,4 +32,4 @@ endif()
 target_compile_features(test_dipole_operator PUBLIC cxx_std_17)
 
 # Add tests calling the executables
-add_test(NAME "pairinteraction_backend_test_dipole_operator"  COMMAND test_dipole_operator)
+add_test(NAME "test_dipole_operator"  COMMAND test_dipole_operator)
