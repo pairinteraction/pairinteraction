@@ -48,5 +48,35 @@ int main() {
     OperatorAtom<float> dipole_p(basis, OperatorType::DIPOLE, 1);
     OperatorAtom<float> dipole_m(basis, OperatorType::DIPOLE, -1);
 
+    if (dipole_0.get_matrix().rows() != 64) {
+        SPDLOG_ERROR("Wrong dimension.");
+        return 1;
+    }
+
+    if (dipole_p.get_matrix().rows() != 64) {
+        SPDLOG_ERROR("Wrong dimension.");
+        return 1;
+    }
+
+    if (dipole_m.get_matrix().rows() != 64) {
+        SPDLOG_ERROR("Wrong dimension.");
+        return 1;
+    }
+
+    if (dipole_0.get_matrix().nonZeros() != 288) {
+        SPDLOG_ERROR("Wrong number of non-zeros.");
+        return 1;
+    }
+
+    if (dipole_p.get_matrix().nonZeros() != 288) {
+        SPDLOG_ERROR("Wrong number of non-zeros.");
+        return 1;
+    }
+
+    if (dipole_m.get_matrix().nonZeros() != 288) {
+        SPDLOG_ERROR("Wrong number of non-zeros.");
+        return 1;
+    }
+
     return 0;
 }
