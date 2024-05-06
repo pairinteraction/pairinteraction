@@ -3,13 +3,15 @@
 #include "test.hpp"
 #include "utils/paths.hpp"
 
+#include <doctest/doctest.h>
 #include <filesystem>
 #include <httplib.h>
+#include <mutex>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-std::once_flag flag;
+std::once_flag flag_doctest_logger;
 
 int test(int argc, char **argv) {
 
@@ -24,7 +26,7 @@ int test(int argc, char **argv) {
 
     std::filesystem::path logfile = logdir / "test.log";
 
-    std::call_once(flag, [&logfile] {
+    std::call_once(flag_doctest_logger, [&logfile] {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink =
             std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile.string(), true);

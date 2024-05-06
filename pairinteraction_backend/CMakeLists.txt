@@ -48,6 +48,8 @@ target_sources(backend PUBLIC
   ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
+  ./setup.cpp
+  ./setup.hpp
   ./test.cpp
   ./test.hpp
 )
@@ -111,6 +113,7 @@ target_sources(bindings PUBLIC
   ./utils/traits.hpp
   ./utils/wigner.hpp
   ./test.hpp
+  ./setup.hpp
   # Bindings
   ./basis/Basis.py.cpp
   ./basis/Basis.py.hpp
