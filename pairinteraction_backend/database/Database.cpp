@@ -871,7 +871,7 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
             last_energy = chunk_energy[i];
 
             // Append a new state
-            kets.push_back(std::make_shared<const KetAtom<real_t>>(KetAtom<real_t>(
+            kets.push_back(std::shared_ptr<const KetAtom<real_t>>(new KetAtom<real_t>(
                 chunk_energy[i], chunk_quantum_number_f[i], chunk_quantum_number_m[i],
                 chunk_parity[i], chunk_id[i], species, chunk_quantum_number_n[i],
                 chunk_quantum_number_nu_exp[i], chunk_quantum_number_nu_std[i],

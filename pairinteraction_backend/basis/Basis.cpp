@@ -386,7 +386,9 @@ class KetDerivedCreator {
 public:
     KetDerivedCreator(float f, float m, int p, int new_property)
         : f(f), m(m), p(p), new_property(new_property) {}
-    KetDerived create() const { return KetDerived(f, m, p, new_property); }
+    std::shared_ptr<const KetDerived> create() const {
+        return std::shared_ptr<KetDerived>(new KetDerived(f, m, p, new_property));
+    }
 
 private:
     float f;
@@ -423,12 +425,9 @@ public:
     BasisDerived create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
-        kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, 1, 42).create()));
-        kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, 0.5, -1, 42).create()));
-        kets.push_back(
-            std::make_shared<const KetDerived>(KetDerivedCreator(0.5, -0.5, -1, 42).create()));
+        kets.push_back(KetDerivedCreator(0.5, 0.5, 1, 42).create());
+        kets.push_back(KetDerivedCreator(0.5, 0.5, -1, 42).create());
+        kets.push_back(KetDerivedCreator(0.5, -0.5, -1, 42).create());
         return BasisDerived(std::move(kets));
     }
 };

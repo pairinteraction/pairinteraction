@@ -1,6 +1,7 @@
 #pragma once
 
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -31,7 +32,7 @@ public:
     KetAtomCreator<Real> &set_quantum_number_l(Real value);
     KetAtomCreator<Real> &set_quantum_number_s(Real value);
     KetAtomCreator<Real> &set_quantum_number_j(Real value);
-    KetAtom<Real> create(Database &database) const;
+    std::shared_ptr<const KetAtom<Real>> create(Database &database) const;
 
 private:
     std::optional<std::string> species;

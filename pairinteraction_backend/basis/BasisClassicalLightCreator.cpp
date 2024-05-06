@@ -43,7 +43,7 @@ BasisClassicalLight<Scalar> BasisClassicalLightCreator<Scalar>::create() const {
     // for (const int q : std::views::iota(extracted_min_q, extracted_max_q + 1)) {
     //
     for (int q = extracted_min_q; q <= extracted_min_q; q++) {
-        kets.push_back(std::make_shared<const ket_t>(ket_creator.set_quantum_number_q(q).create()));
+        kets.push_back(ket_creator.set_quantum_number_q(q).create());
     }
     return BasisClassicalLight<Scalar>(std::move(kets));
 }

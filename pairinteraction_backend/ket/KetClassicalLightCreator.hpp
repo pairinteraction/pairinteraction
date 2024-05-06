@@ -2,6 +2,7 @@
 
 #include <exception>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <string>
 
@@ -22,7 +23,7 @@ public:
     KetClassicalLightCreator(Real energy, int q);
     KetClassicalLightCreator<Real> &set_photon_energy(Real value);
     KetClassicalLightCreator<Real> &set_quantum_number_q(int value);
-    KetClassicalLight<Real> create() const;
+    std::shared_ptr<const KetClassicalLight<Real>> create() const;
 
 private:
     std::optional<Real> photon_energy;

@@ -19,9 +19,10 @@ KetClassicalLightCreator<Real> &KetClassicalLightCreator<Real>::set_quantum_numb
 }
 
 template <typename Real>
-KetClassicalLight<Real> KetClassicalLightCreator<Real>::create() const {
-    return KetClassicalLight<Real>(photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
-                                   quantum_number_q.value_or(std::numeric_limits<int>::max()));
+std::shared_ptr<const KetClassicalLight<Real>> KetClassicalLightCreator<Real>::create() const {
+    return std::shared_ptr<KetClassicalLight<Real>>(
+        new KetClassicalLight(photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
+                              quantum_number_q.value_or(std::numeric_limits<int>::max())));
 }
 
 template class KetClassicalLightCreator<float>;
@@ -41,8 +42,8 @@ DOCTEST_TEST_CASE("create a classical light ket") {
     int q{1};
     auto lightket = KetClassicalLightCreator<float>(photon_energy, q).create();
 
-    DOCTEST_CHECK(lightket.get_quantum_number_q() == q);
-    DOCTEST_CHECK(lightket.get_photon_energy() == photon_energy);
-    DOCTEST_CHECK(lightket.get_energy() == q * photon_energy);
+    DOCTEST_CHECK(lightket->get_quantum_number_q() == q);
+    DOCTEST_CHECK(lightket->get_photon_energy() == photon_energy);
+    DOCTEST_CHECK(lightket->get_energy() == q * photon_energy);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(lightket));
 }
