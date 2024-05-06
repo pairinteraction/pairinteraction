@@ -14,7 +14,7 @@ namespace {
 
 inline constexpr double PI = 3.14159265358979323846;
 
-double wigner_uppercase_d_matrix_pi_half(float f, float m_initial, float m_final) {
+inline double wigner_uppercase_d_matrix_pi_half(float f, float m_initial, float m_final) {
     double result = 0;
     for (int k = std::max(0, static_cast<int>(m_final - m_initial));
          k <= f + std::min(m_final, -m_initial); ++k) {
@@ -30,8 +30,8 @@ double wigner_uppercase_d_matrix_pi_half(float f, float m_initial, float m_final
 } // namespace
 
 template <typename Scalar>
-Scalar wigner_uppercase_d_matrix(float f, float m_initial, float m_final, double alpha, double beta,
-                                 double gamma) {
+inline Scalar wigner_uppercase_d_matrix(float f, float m_initial, float m_final, double alpha,
+                                        double beta, double gamma) {
     if constexpr (traits::is_complex_v<Scalar>) {
         return Scalar(std::cos(-m_initial * alpha), std::sin(-m_initial * alpha)) *
             wigner_uppercase_d_matrix<typename traits::NumTraits<Scalar>::real_t>(

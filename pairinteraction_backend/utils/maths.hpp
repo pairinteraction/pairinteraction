@@ -4,7 +4,7 @@
 
 namespace maths {
 
-double binomial_coefficient(double n, double k) {
+inline double binomial_coefficient(double n, double k) {
     if (n < k || k < 0) {
         throw std::invalid_argument("It must be n >= k >= 0.");
     }
@@ -21,7 +21,7 @@ double binomial_coefficient(double n, double k) {
     return result;
 }
 
-double factorial(double n) {
+inline double factorial(double n) {
     if (n < 0) {
         throw std::invalid_argument("It must be n >= 0.");
     }

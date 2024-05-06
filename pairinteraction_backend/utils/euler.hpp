@@ -20,8 +20,8 @@ namespace euler {
  */
 
 template <typename Real>
-Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_axis,
-                                              std::array<Real, 3> to_y_axis) {
+inline Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_axis,
+                                                     std::array<Real, 3> to_y_axis) {
     auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_z_axis.data()).normalized();
     auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_y_axis.data()).normalized();
 
@@ -51,7 +51,8 @@ Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_axis,
  */
 
 template <typename Real>
-std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis, std::array<Real, 3> to_y_axis) {
+inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
+                                            std::array<Real, 3> to_y_axis) {
     auto rotator = get_rotation_matrix(to_z_axis, to_y_axis);
     std::array<Real, 3> euler_zyz;
     Eigen::Map<Eigen::Matrix<Real, 3, 1>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);

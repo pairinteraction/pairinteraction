@@ -1158,7 +1158,7 @@ Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double
 #include <spdlog/spdlog.h>
 
 DOCTEST_TEST_CASE("get a KetAtom") {
-    auto &database = Database::get_global_instance();
+    Database &database = Database::get_global_instance();
 
     AtomDescriptionByParameters<float> description;
     description.quantum_number_n = 60;
@@ -1171,7 +1171,7 @@ DOCTEST_TEST_CASE("get a KetAtom") {
 }
 
 DOCTEST_TEST_CASE("get a BasisAtom") {
-    auto &database = Database::get_global_instance();
+    Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges<float> description;
     description.min_quantum_number_n = 60;
@@ -1187,7 +1187,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
 }
 
 DOCTEST_TEST_CASE("get an OperatorAtom") {
-    auto &database = Database::get_global_instance();
+    Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges<float> description;
     description.min_quantum_number_n = 60;

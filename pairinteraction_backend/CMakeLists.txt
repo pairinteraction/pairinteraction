@@ -48,6 +48,8 @@ target_sources(backend PUBLIC
   ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
+  ./test.cpp
+  ./test.hpp
 )
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -108,6 +110,7 @@ target_sources(bindings PUBLIC
   ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
+  ./test.hpp
   # Bindings
   ./basis/Basis.py.cpp
   ./basis/Basis.py.hpp
@@ -150,6 +153,8 @@ target_sources(bindings PUBLIC
   ./system/SystemClassicalLight.py.cpp
   ./system/SystemClassicalLight.py.hpp
   ./binding.cpp
+  ./test.py.cpp
+  ./test.py.hpp
 )
 
 target_include_directories(bindings PRIVATE
