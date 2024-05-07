@@ -5,10 +5,10 @@
 #include <set>
 
 template <typename Derived>
-Operator<Derived>::Operator(const basis_t &basis)
+Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis)
     : TransformableSortable<typename traits::OperatorTraits<Derived>::scalar_t>(
-          basis.get_transformation(), basis.get_sorting()),
-      basis(std::make_shared<basis_t>(basis)) {}
+          basis->get_transformation(), basis->get_sorting()),
+      basis(basis) {}
 
 template <typename Derived>
 const Derived &Operator<Derived>::derived() const {
@@ -16,8 +16,8 @@ const Derived &Operator<Derived>::derived() const {
 }
 
 template <typename Derived>
-const typename Operator<Derived>::basis_t &Operator<Derived>::get_basis() const {
-    return *basis;
+std::shared_ptr<const typename Operator<Derived>::basis_t> Operator<Derived>::get_basis() const {
+    return basis;
 }
 
 template <typename Derived>
@@ -105,15 +105,15 @@ std::vector<int> Operator<Derived>::impl_get_blocks(SortBy label) const {
 
 template <typename Derived>
 void Operator<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
-    matrix = transformator.adjoint() * matrix * transformator;
-    basis->transform(transformator);
+    // matrix = transformator.adjoint() * matrix * transformator;
+    // basis->transform(transformator); // TODO
 }
 
 template <typename Derived>
 void Operator<Derived>::impl_sort(
     const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
-    matrix = matrix.twistedBy(sorter.inverse());
-    basis->sort(sorter);
+    // matrix = matrix.twistedBy(sorter.inverse());
+    // basis->sort(sorter); // TODO
 }
 
 // Overloaded operators

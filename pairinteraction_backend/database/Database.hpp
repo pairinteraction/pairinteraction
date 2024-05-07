@@ -63,7 +63,8 @@ public:
                                 std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
-    OperatorAtom<Scalar> get_operator(const BasisAtom<Scalar> &basis, OperatorType type, int q);
+    OperatorAtom<Scalar> get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
+                                      OperatorType type, int q);
 
 private:
     struct Table {
@@ -107,13 +108,13 @@ extern template BasisAtom<std::complex<float>> Database::get_basis<std::complex<
 extern template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
-extern template OperatorAtom<float> Database::get_operator<float>(const BasisAtom<float> &basis,
-                                                                  OperatorType type, int q);
-extern template OperatorAtom<double> Database::get_operator<double>(const BasisAtom<double> &basis,
-                                                                    OperatorType type, int q);
-extern template OperatorAtom<std::complex<float>>
-Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis,
-                                            OperatorType type, int q);
-extern template OperatorAtom<std::complex<double>>
-Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
-                                             OperatorType type, int q);
+extern template OperatorAtom<float>
+Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
+                              int q);
+extern template OperatorAtom<double>
+Database::get_operator<double>(std::shared_ptr<const BasisAtom<double>> basis, OperatorType type,
+                               int q);
+extern template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<float>>(
+    std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
+extern template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
+    std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);

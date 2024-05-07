@@ -34,12 +34,12 @@ public:
     using Type = OperatorAtom<Scalar>;
     using basis_t = typename traits::OperatorTraits<Type>::basis_t;
 
-    OperatorAtom(const basis_t &basis, OperatorType type, int q);
+    OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q);
 
 private:
     friend class Database;
 
-    OperatorAtom(const basis_t &basis, OperatorType type, int q,
+    OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q,
                  Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix);
 
     OperatorType type;

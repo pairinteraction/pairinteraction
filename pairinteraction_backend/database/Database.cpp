@@ -885,8 +885,8 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
 }
 
 template <typename Scalar>
-OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, OperatorType type,
-                                            int q) {
+OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
+                                            OperatorType type, int q) {
     std::string specifier;
     int kappa;
     switch (type) {
@@ -920,7 +920,7 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
 
     ensure_presence_of_table("wigner");
     if (specifier != "energy") {
-        ensure_presence_of_table(basis.species + "_" + specifier);
+        ensure_presence_of_table(basis->species + "_" + specifier);
     }
 
     // Check that the specifications are valid
@@ -965,12 +965,12 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
             w.f_initial = s1.f AND w.m_initial = s1.m AND
             w.f_final = s2.f AND w.m_final = s2.m
             ORDER BY row ASC, col ASC)",
-            basis.table, tables["wigner"].local_path.string(), kappa, q,
-            tables[basis.species + "_" + specifier].local_path.string()));
+            basis->table, tables["wigner"].local_path.string(), kappa, q,
+            tables[basis->species + "_" + specifier].local_path.string()));
     } else {
         result = con->Query(fmt::format(
             R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
-            basis.table));
+            basis->table));
     }
 
     if (result->HasError()) {
@@ -993,7 +993,7 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
     }
 
     // Construct the matrix
-    int dim = basis.get_number_of_states();
+    int dim = basis->get_number_of_states();
     int num_entries = result->RowCount();
 
     std::vector<int> outerIndexPtr;
@@ -1012,7 +1012,7 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
         auto chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            int row = basis.ket_id_to_index.at(chunk_row[i]);
+            int row = basis->ket_id_to_index.at(chunk_row[i]);
             if (row != last_row) {
                 if (row < last_row) {
                     throw std::runtime_error("The rows are not sorted.");
@@ -1021,7 +1021,7 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
                     outerIndexPtr.push_back(innerIndices.size());
                 }
             }
-            innerIndices.push_back(basis.ket_id_to_index.at(chunk_col[i]));
+            innerIndices.push_back(basis->ket_id_to_index.at(chunk_col[i]));
             values.push_back(chunk_val[i]);
         }
     }
@@ -1035,7 +1035,7 @@ OperatorAtom<Scalar> Database::get_operator(const BasisAtom<Scalar> &basis, Oper
 
     // Transform the matrix into the provided basis and return it
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix =
-        basis.coefficients.adjoint() * matrix_map * basis.coefficients;
+        basis->coefficients.adjoint() * matrix_map * basis->coefficients;
 
     // Construct the operator and return it
     return OperatorAtom(basis, type, q, std::move(matrix));
@@ -1136,16 +1136,16 @@ template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>
 template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
-template OperatorAtom<float> Database::get_operator<float>(const BasisAtom<float> &basis,
-                                                           OperatorType type, int q);
-template OperatorAtom<double> Database::get_operator<double>(const BasisAtom<double> &basis,
-                                                             OperatorType type, int q);
-template OperatorAtom<std::complex<float>>
-Database::get_operator<std::complex<float>>(const BasisAtom<std::complex<float>> &basis,
-                                            OperatorType type, int q);
-template OperatorAtom<std::complex<double>>
-Database::get_operator<std::complex<double>>(const BasisAtom<std::complex<double>> &basis,
-                                             OperatorType type, int q);
+template OperatorAtom<float>
+Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
+                              int q);
+template OperatorAtom<double>
+Database::get_operator<double>(std::shared_ptr<const BasisAtom<double>> basis, OperatorType type,
+                               int q);
+template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<float>>(
+    std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
+template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
+    std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
 
 ///////////////////////////////////////////////////////////////////////////////////////
 // Test cases
@@ -1177,9 +1177,10 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     description.min_quantum_number_l = 0;
     description.max_quantum_number_l = 1;
 
-    auto basis = database.get_basis<float>("Rb", description, {});
+    auto basis =
+        std::make_shared<BasisAtom<float>>(database.get_basis<float>("Rb", description, {}));
 
-    for (const auto &ket : basis) {
+    for (const auto &ket : *basis) {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(ket));
     }
 }
@@ -1193,12 +1194,13 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     description.min_quantum_number_l = 0;
     description.max_quantum_number_l = 1;
 
-    auto basis = database.get_basis<float>("Rb", description, {});
+    auto basis =
+        std::make_shared<BasisAtom<float>>(database.get_basis<float>("Rb", description, {}));
 
     auto dipole = database.get_operator<float>(basis, OperatorType::DIPOLE, 0);
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
-                       basis.get_number_of_states());
+                       basis->get_number_of_states());
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}",
                        dipole.get_matrix().nonZeros());
 }
