@@ -7,9 +7,9 @@
 #include <vector>
 
 template <typename Real>
-KetAtom<Real>::KetAtom(Real energy, float f, float m, int p, size_t id, std::string species, int n,
-                       Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
-                       Real j_exp, Real j_std)
+KetAtom<Real>::KetAtom(Private, Real energy, float f, float m, int p, size_t id,
+                       std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
+                       Real s_exp, Real s_std, Real j_exp, Real j_std)
     : Ket<Real>(energy, f, m, p), id(id), species(species), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),

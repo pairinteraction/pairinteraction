@@ -2,7 +2,7 @@
 #include "ket/KetAtom.hpp"
 
 template <typename Scalar>
-BasisAtom<Scalar>::BasisAtom(ketvec_t &&kets, std::string table, Database &database,
+BasisAtom<Scalar>::BasisAtom(Private, ketvec_t &&kets, std::string table, Database &database,
                              std::string species)
     : Basis<BasisAtom<Scalar>>(std::move(kets)), table(table), database(database),
       species(species) {}

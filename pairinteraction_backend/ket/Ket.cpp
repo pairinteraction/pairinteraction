@@ -44,7 +44,11 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator;
 
     class KetDerived : public Ket<float> {
+        friend class KetDerivedCreator;
+        struct Private {};
+
     public:
+        KetDerived(Private, float f, float m, int p) : Ket<float>(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
         size_t get_id() const override {
             size_t seed = 0;
@@ -60,17 +64,13 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
             hash::hash_combine(seed, this->parity);
             return seed;
         }
-
-    private:
-        friend class KetDerivedCreator;
-        KetDerived(float f, float m, int p) : Ket<float>(0, f, m, p) {}
     };
 
     class KetDerivedCreator {
     public:
         KetDerivedCreator(float f, float m, int p) : f(f), m(m), p(p) {}
         std::shared_ptr<const KetDerived> create() const {
-            return std::shared_ptr<const KetDerived>(new KetDerived(f, m, p));
+            return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p);
         }
 
     private:
