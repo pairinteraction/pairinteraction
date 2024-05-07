@@ -116,6 +116,48 @@ void Operator<Derived>::impl_sort(
     basis->sort(sorter);
 }
 
+// Overloaded operators
+template <typename Derived>
+Derived operator*(const typename Operator<Derived>::scalar_t &lhs, const Operator<Derived> &rhs) {
+    Derived result = rhs.derived();
+    result.matrix *= lhs;
+    return result;
+}
+
+template <typename Derived>
+Derived operator*(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs) {
+    Derived result = lhs.derived();
+    result.matrix *= rhs;
+    return result;
+}
+
+template <typename Derived>
+Derived operator/(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs) {
+    Derived result = lhs.derived();
+    result.matrix /= rhs;
+    return result;
+}
+
+template <typename Derived>
+Derived operator+(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
+    if (lhs.basis != rhs.basis) {
+        throw std::invalid_argument("The basis of the operators is not the same.");
+    }
+    Derived result = lhs.derived();
+    result.matrix += rhs.matrix;
+    return result;
+}
+
+template <typename Derived>
+Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
+    if (lhs.basis != rhs.basis) {
+        throw std::invalid_argument("The basis of the operators is not the same.");
+    }
+    Derived result = lhs.derived();
+    result.matrix -= rhs.matrix;
+    return result;
+}
+
 // Explicit instantiations
 #include "operator/OperatorAtom.hpp"
 
@@ -123,3 +165,49 @@ template class Operator<OperatorAtom<float>>;
 template class Operator<OperatorAtom<double>>;
 template class Operator<OperatorAtom<std::complex<float>>>;
 template class Operator<OperatorAtom<std::complex<double>>>;
+
+template OperatorAtom<float> operator*(const float &lhs, const Operator<OperatorAtom<float>> &rhs);
+template OperatorAtom<double> operator*(const double &lhs,
+                                        const Operator<OperatorAtom<double>> &rhs);
+template OperatorAtom<std::complex<float>>
+operator*(const std::complex<float> &lhs, const Operator<OperatorAtom<std::complex<float>>> &rhs);
+template OperatorAtom<std::complex<double>>
+operator*(const std::complex<double> &lhs, const Operator<OperatorAtom<std::complex<double>>> &rhs);
+
+template OperatorAtom<float> operator*(const Operator<OperatorAtom<float>> &lhs, const float &rhs);
+template OperatorAtom<double> operator*(const Operator<OperatorAtom<double>> &lhs,
+                                        const double &rhs);
+template OperatorAtom<std::complex<float>>
+operator*(const Operator<OperatorAtom<std::complex<float>>> &lhs, const std::complex<float> &rhs);
+template OperatorAtom<std::complex<double>>
+operator*(const Operator<OperatorAtom<std::complex<double>>> &lhs, const std::complex<double> &rhs);
+
+template OperatorAtom<float> operator/(const Operator<OperatorAtom<float>> &lhs, const float &rhs);
+template OperatorAtom<double> operator/(const Operator<OperatorAtom<double>> &lhs,
+                                        const double &rhs);
+template OperatorAtom<std::complex<float>>
+operator/(const Operator<OperatorAtom<std::complex<float>>> &lhs, const std::complex<float> &rhs);
+template OperatorAtom<std::complex<double>>
+operator/(const Operator<OperatorAtom<std::complex<double>>> &lhs, const std::complex<double> &rhs);
+
+template OperatorAtom<float> operator+(const Operator<OperatorAtom<float>> &lhs,
+                                       const Operator<OperatorAtom<float>> &rhs);
+template OperatorAtom<double> operator+(const Operator<OperatorAtom<double>> &lhs,
+                                        const Operator<OperatorAtom<double>> &rhs);
+template OperatorAtom<std::complex<float>>
+operator+(const Operator<OperatorAtom<std::complex<float>>> &lhs,
+          const Operator<OperatorAtom<std::complex<float>>> &rhs);
+template OperatorAtom<std::complex<double>>
+operator+(const Operator<OperatorAtom<std::complex<double>>> &lhs,
+          const Operator<OperatorAtom<std::complex<double>>> &rhs);
+
+template OperatorAtom<float> operator-(const Operator<OperatorAtom<float>> &lhs,
+                                       const Operator<OperatorAtom<float>> &rhs);
+template OperatorAtom<double> operator-(const Operator<OperatorAtom<double>> &lhs,
+                                        const Operator<OperatorAtom<double>> &rhs);
+template OperatorAtom<std::complex<float>>
+operator-(const Operator<OperatorAtom<std::complex<float>>> &lhs,
+          const Operator<OperatorAtom<std::complex<float>>> &rhs);
+template OperatorAtom<std::complex<double>>
+operator-(const Operator<OperatorAtom<std::complex<double>>> &lhs,
+          const Operator<OperatorAtom<std::complex<double>>> &rhs);
