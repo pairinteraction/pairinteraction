@@ -54,13 +54,13 @@ public:
     static Database &get_global_instance();
 
     template <typename Real>
-    KetAtom<Real> get_ket(std::string species,
-                          const AtomDescriptionByParameters<Real> &description);
+    std::shared_ptr<const KetAtom<Real>>
+    get_ket(std::string species, const AtomDescriptionByParameters<Real> &description);
 
     template <typename Scalar>
-    BasisAtom<Scalar> get_basis(std::string species,
-                                const AtomDescriptionByRanges<Scalar> &description,
-                                std::vector<size_t> additional_ket_ids);
+    std::shared_ptr<const BasisAtom<Scalar>>
+    get_basis(std::string species, const AtomDescriptionByRanges<Scalar> &description,
+              std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
     OperatorAtom<Scalar> get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
@@ -90,22 +90,24 @@ private:
     void ensure_quantum_number_n_is_allowed(std::string name);
 };
 
-extern template KetAtom<float>
+extern template std::shared_ptr<const KetAtom<float>>
 Database::get_ket<float>(std::string species,
                          const AtomDescriptionByParameters<float> &description);
-extern template KetAtom<double>
+extern template std::shared_ptr<const KetAtom<double>>
 Database::get_ket<double>(std::string species,
                           const AtomDescriptionByParameters<double> &description);
-extern template BasisAtom<float>
+extern template std::shared_ptr<const BasisAtom<float>>
 Database::get_basis<float>(std::string species, const AtomDescriptionByRanges<float> &description,
                            std::vector<size_t> additional_ket_ids);
-extern template BasisAtom<double>
+extern template std::shared_ptr<const BasisAtom<double>>
 Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
                             std::vector<size_t> additional_ket_ids);
-extern template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>(
+extern template std::shared_ptr<const BasisAtom<std::complex<float>>>
+Database::get_basis<std::complex<float>>(
     std::string species, const AtomDescriptionByRanges<std::complex<float>> &description,
     std::vector<size_t> additional_ket_ids);
-extern template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
+extern template std::shared_ptr<const BasisAtom<std::complex<double>>>
+Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
 extern template OperatorAtom<float>

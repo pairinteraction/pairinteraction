@@ -69,7 +69,9 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator {
     public:
         KetDerivedCreator(float f, float m, int p) : f(f), m(m), p(p) {}
-        KetDerived create() const { return KetDerived(f, m, p); }
+        std::shared_ptr<const KetDerived> create() const {
+            return std::shared_ptr<const KetDerived>(new KetDerived(f, m, p));
+        }
 
     private:
         float f;
@@ -81,9 +83,9 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
 
     // Check that the label can be printed
     std::stringstream ss;
-    ss << ket;
+    ss << *ket;
     DOCTEST_CHECK(ss.str() == "my_label");
 
     // Output the label to the doctest log
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }

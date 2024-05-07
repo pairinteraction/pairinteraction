@@ -2,6 +2,7 @@
 
 #include <complex>
 #include <limits>
+#include <memory>
 #include <optional>
 #include <ranges>
 #include <string>
@@ -24,7 +25,7 @@ public:
     BasisClassicalLightCreator<Scalar> &set_photon_energy(real_t photon_energy);
     BasisClassicalLightCreator<Scalar> &restrict_quantum_number_q(int min, int max);
     BasisClassicalLightCreator<Scalar> &add_ket(const ket_t &ket);
-    BasisClassicalLight<Scalar> create() const;
+    std::shared_ptr<const BasisClassicalLight<Scalar>> create() const;
 
 private:
     friend class BasisClassicalLight<Scalar>;
