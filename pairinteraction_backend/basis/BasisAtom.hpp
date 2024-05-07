@@ -36,15 +36,17 @@ struct traits::BasisTraits<BasisAtom<Scalar>> {
  */
 template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
+    friend class Database;
+    struct Private {};
+
 public:
     using Type = BasisAtom<Scalar>;
     using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
+    BasisAtom(Private, ketvec_t &&kets, std::string table, Database &database, std::string species);
     Database &get_database() const;
 
 private:
-    friend class Database;
-    BasisAtom(ketvec_t &&kets, std::string table, Database &database, std::string species);
     std::string table;
     Database &database;
     std::string species;

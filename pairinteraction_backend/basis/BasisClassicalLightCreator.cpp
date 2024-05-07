@@ -46,8 +46,8 @@ BasisClassicalLightCreator<Scalar>::create() const {
     for (int q = extracted_min_q; q <= extracted_min_q; q++) {
         kets.push_back(ket_creator.set_quantum_number_q(q).create());
     }
-    return std::shared_ptr<const BasisClassicalLight<Scalar>>(
-        new BasisClassicalLight<Scalar>(std::move(kets)));
+    return std::make_shared<const BasisClassicalLight<Scalar>>(
+        typename BasisClassicalLight<Scalar>::Private(), std::move(kets));
 }
 
 // Explicit instantiations

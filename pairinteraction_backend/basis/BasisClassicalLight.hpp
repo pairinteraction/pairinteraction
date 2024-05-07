@@ -30,13 +30,14 @@ struct traits::BasisTraits<BasisClassicalLight<Scalar>> {
  */
 template <typename Scalar>
 class BasisClassicalLight : public Basis<BasisClassicalLight<Scalar>> {
+    friend class BasisClassicalLightCreator<Scalar>;
+    struct Private {};
+
 public:
     using Type = BasisClassicalLight<Scalar>;
     using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
 
-private:
-    friend class BasisClassicalLightCreator<Scalar>;
-    BasisClassicalLight(ketvec_t &&kets);
+    BasisClassicalLight(Private, ketvec_t &&kets);
 };
 
 extern template class BasisClassicalLight<float>;

@@ -458,12 +458,12 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
 
-    return std::shared_ptr<const KetAtom<Real>>(new KetAtom<Real>(
-        result_energy, result_quantum_number_f, result_quantum_number_m, result_parity, result_id,
-        species, result_quantum_number_n, result_quantum_number_nu_exp,
-        result_quantum_number_nu_std, result_quantum_number_l_exp, result_quantum_number_l_std,
-        result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
-        result_quantum_number_j_std));
+    return std::make_shared<const KetAtom<Real>>(
+        typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
+        result_quantum_number_m, result_parity, result_id, species, result_quantum_number_n,
+        result_quantum_number_nu_exp, result_quantum_number_nu_std, result_quantum_number_l_exp,
+        result_quantum_number_l_std, result_quantum_number_s_exp, result_quantum_number_s_std,
+        result_quantum_number_j_exp, result_quantum_number_j_std);
 }
 
 template <typename Scalar>
@@ -871,18 +871,19 @@ Database::get_basis(std::string species, const AtomDescriptionByRanges<Scalar> &
             last_energy = chunk_energy[i];
 
             // Append a new state
-            kets.push_back(std::shared_ptr<const KetAtom<real_t>>(new KetAtom<real_t>(
-                chunk_energy[i], chunk_quantum_number_f[i], chunk_quantum_number_m[i],
-                chunk_parity[i], chunk_id[i], species, chunk_quantum_number_n[i],
-                chunk_quantum_number_nu_exp[i], chunk_quantum_number_nu_std[i],
-                chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
-                chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
-                chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i])));
+            kets.push_back(std::make_shared<const KetAtom<real_t>>(
+                typename KetAtom<real_t>::Private(), chunk_energy[i], chunk_quantum_number_f[i],
+                chunk_quantum_number_m[i], chunk_parity[i], chunk_id[i], species,
+                chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
+                chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
+                chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
+                chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
+                chunk_quantum_number_j_std[i]));
         }
     }
 
-    return std::shared_ptr<const BasisAtom<Scalar>>(
-        new BasisAtom<Scalar>(std::move(kets), uuid, *this, species));
+    return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private(),
+                                                     std::move(kets), uuid, *this, species);
 }
 
 template <typename Scalar>

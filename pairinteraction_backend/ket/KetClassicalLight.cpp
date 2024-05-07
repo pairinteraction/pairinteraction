@@ -8,7 +8,7 @@
 #include "utils/hash.hpp"
 
 template <typename Real>
-KetClassicalLight<Real>::KetClassicalLight(Real photon_energy, int q)
+KetClassicalLight<Real>::KetClassicalLight(Private, Real photon_energy, int q)
     : Ket<Real>(photon_energy * q, 0, 0, -1), photon_energy(photon_energy), quantum_number_q(q) {}
 
 template <typename Real>

@@ -354,7 +354,12 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 class KetDerivedCreator;
 
 class KetDerived : public Ket<float> {
+    friend class KetDerivedCreator;
+    struct Private {};
+
 public:
+    KetDerived(Private, float f, float m, int p, int new_property)
+        : Ket<float>(0, f, m, p), new_property(new_property) {}
     std::string get_label() const override { return "my_label"; }
     size_t get_id() const override {
         size_t seed = 0;
@@ -375,9 +380,6 @@ public:
     int get_new_property() const { return new_property; }
 
 private:
-    friend class KetDerivedCreator;
-    KetDerived(float f, float m, int p, int new_property)
-        : Ket<float>(0, f, m, p), new_property(new_property) {}
     int new_property;
 };
 
@@ -387,7 +389,7 @@ public:
     KetDerivedCreator(float f, float m, int p, int new_property)
         : f(f), m(m), p(p), new_property(new_property) {}
     std::shared_ptr<const KetDerived> create() const {
-        return std::shared_ptr<KetDerived>(new KetDerived(f, m, p, new_property));
+        return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p, new_property);
     }
 
 private:
@@ -409,13 +411,13 @@ struct traits::BasisTraits<BasisDerived> {
 };
 
 class BasisDerived : public Basis<BasisDerived> {
+    friend class BasisDerivedCreator;
+    struct Private {};
+
 public:
+    BasisDerived(Private, ketvec_t &&kets) : Basis<BasisDerived>(std::move(kets)) {}
     using Type = BasisDerived;
     using ketvec_t = typename traits::BasisTraits<BasisDerived>::ketvec_t;
-
-private:
-    friend class BasisDerivedCreator;
-    BasisDerived(ketvec_t &&kets) : Basis<BasisDerived>(std::move(kets)) {}
 };
 
 // Classes for creating an instance of the derived basis class
@@ -428,7 +430,7 @@ public:
         kets.push_back(KetDerivedCreator(0.5, 0.5, 1, 42).create());
         kets.push_back(KetDerivedCreator(0.5, 0.5, -1, 42).create());
         kets.push_back(KetDerivedCreator(0.5, -0.5, -1, 42).create());
-        return std::shared_ptr<const BasisDerived>(new BasisDerived(std::move(kets)));
+        return std::make_shared<const BasisDerived>(BasisDerived::Private(), std::move(kets));
     }
 };
 

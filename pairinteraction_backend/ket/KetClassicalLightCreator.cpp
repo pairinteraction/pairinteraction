@@ -20,9 +20,10 @@ KetClassicalLightCreator<Real> &KetClassicalLightCreator<Real>::set_quantum_numb
 
 template <typename Real>
 std::shared_ptr<const KetClassicalLight<Real>> KetClassicalLightCreator<Real>::create() const {
-    return std::shared_ptr<KetClassicalLight<Real>>(
-        new KetClassicalLight(photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
-                              quantum_number_q.value_or(std::numeric_limits<int>::max())));
+    return std::make_shared<KetClassicalLight<Real>>(
+        typename KetClassicalLight<Real>::Private(),
+        photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
+        quantum_number_q.value_or(std::numeric_limits<int>::max()));
 }
 
 template class KetClassicalLightCreator<float>;
