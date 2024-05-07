@@ -84,8 +84,7 @@ std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &data
         parity,           quantum_number_n, quantum_number_nu,
         quantum_number_l, quantum_number_s, quantum_number_j};
 
-    return std::make_shared<const KetAtom<Real>>(
-        database.get_ket<Real>(species.value(), description));
+    return database.get_ket<Real>(species.value(), description);
 }
 
 // Explicit instantiations
@@ -111,7 +110,7 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number_s() == 0.5);
     DOCTEST_CHECK(ket->get_parity() == -1);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
@@ -129,5 +128,5 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_quantum_number_f() == 1);
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0);
     DOCTEST_CHECK(ket->get_parity() == -1);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }

@@ -301,8 +301,8 @@ Database::AvailabilityWigner Database::get_availability_of_wigner_table() {
 }
 
 template <typename Real>
-KetAtom<Real> Database::get_ket(std::string species,
-                                const AtomDescriptionByParameters<Real> &description) {
+std::shared_ptr<const KetAtom<Real>>
+Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &description) {
 
     ensure_presence_of_table(species + "_states");
 
@@ -458,18 +458,18 @@ KetAtom<Real> Database::get_ket(std::string species,
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
 
-    return KetAtom<Real>(result_energy, result_quantum_number_f, result_quantum_number_m,
-                         result_parity, result_id, species, result_quantum_number_n,
-                         result_quantum_number_nu_exp, result_quantum_number_nu_std,
-                         result_quantum_number_l_exp, result_quantum_number_l_std,
-                         result_quantum_number_s_exp, result_quantum_number_s_std,
-                         result_quantum_number_j_exp, result_quantum_number_j_std);
+    return std::shared_ptr<const KetAtom<Real>>(new KetAtom<Real>(
+        result_energy, result_quantum_number_f, result_quantum_number_m, result_parity, result_id,
+        species, result_quantum_number_n, result_quantum_number_nu_exp,
+        result_quantum_number_nu_std, result_quantum_number_l_exp, result_quantum_number_l_std,
+        result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
+        result_quantum_number_j_std));
 }
 
 template <typename Scalar>
-BasisAtom<Scalar> Database::get_basis(std::string species,
-                                      const AtomDescriptionByRanges<Scalar> &description,
-                                      std::vector<size_t> additional_ket_ids) {
+std::shared_ptr<const BasisAtom<Scalar>>
+Database::get_basis(std::string species, const AtomDescriptionByRanges<Scalar> &description,
+                    std::vector<size_t> additional_ket_ids) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
     ensure_presence_of_table(species + "_states");
@@ -881,7 +881,8 @@ BasisAtom<Scalar> Database::get_basis(std::string species,
         }
     }
 
-    return BasisAtom<Scalar>(std::move(kets), uuid, *this, species);
+    return std::shared_ptr<const BasisAtom<Scalar>>(
+        new BasisAtom<Scalar>(std::move(kets), uuid, *this, species));
 }
 
 template <typename Scalar>
@@ -1118,22 +1119,25 @@ Database &Database::get_global_instance() {
 }
 
 // Explicit instantiations
-template KetAtom<float>
+template std::shared_ptr<const KetAtom<float>>
 Database::get_ket<float>(std::string species,
                          const AtomDescriptionByParameters<float> &description);
-template KetAtom<double>
+template std::shared_ptr<const KetAtom<double>>
 Database::get_ket<double>(std::string species,
                           const AtomDescriptionByParameters<double> &description);
-template BasisAtom<float>
+template std::shared_ptr<const BasisAtom<float>>
+
 Database::get_basis<float>(std::string species, const AtomDescriptionByRanges<float> &description,
                            std::vector<size_t> additional_ket_ids);
-template BasisAtom<double>
+template std::shared_ptr<const BasisAtom<double>>
 Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
                             std::vector<size_t> additional_ket_ids);
-template BasisAtom<std::complex<float>> Database::get_basis<std::complex<float>>(
+template std::shared_ptr<const BasisAtom<std::complex<float>>>
+Database::get_basis<std::complex<float>>(
     std::string species, const AtomDescriptionByRanges<std::complex<float>> &description,
     std::vector<size_t> additional_ket_ids);
-template BasisAtom<std::complex<double>> Database::get_basis<std::complex<double>>(
+template std::shared_ptr<const BasisAtom<std::complex<double>>>
+Database::get_basis<std::complex<double>>(
     std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
     std::vector<size_t> additional_ket_ids);
 template OperatorAtom<float>
@@ -1165,7 +1169,7 @@ DOCTEST_TEST_CASE("get a KetAtom") {
 
     auto ket = database.get_ket<float>("Rb", description);
 
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(ket));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(*ket));
 }
 
 DOCTEST_TEST_CASE("get a BasisAtom") {
@@ -1177,11 +1181,10 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     description.min_quantum_number_l = 0;
     description.max_quantum_number_l = 1;
 
-    auto basis =
-        std::make_shared<BasisAtom<float>>(database.get_basis<float>("Rb", description, {}));
+    auto basis = database.get_basis<float>("Rb", description, {});
 
-    for (const auto &ket : *basis) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(ket));
+    for (auto ket : *basis) {
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(*ket));
     }
 }
 
@@ -1194,8 +1197,7 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     description.min_quantum_number_l = 0;
     description.max_quantum_number_l = 1;
 
-    auto basis =
-        std::make_shared<BasisAtom<float>>(database.get_basis<float>("Rb", description, {}));
+    auto basis = database.get_basis<float>("Rb", description, {});
 
     auto dipole = database.get_operator<float>(basis, OperatorType::DIPOLE, 0);
 

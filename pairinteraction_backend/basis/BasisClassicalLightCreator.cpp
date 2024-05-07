@@ -19,7 +19,8 @@ BasisClassicalLightCreator<Scalar>::restrict_quantum_number_q(int min, int max) 
 }
 
 template <typename Scalar>
-BasisClassicalLight<Scalar> BasisClassicalLightCreator<Scalar>::create() const {
+std::shared_ptr<const BasisClassicalLight<Scalar>>
+BasisClassicalLightCreator<Scalar>::create() const {
 
     int extracted_min_q, extracted_max_q;
     real_t extracted_photon_energy;
@@ -45,7 +46,8 @@ BasisClassicalLight<Scalar> BasisClassicalLightCreator<Scalar>::create() const {
     for (int q = extracted_min_q; q <= extracted_min_q; q++) {
         kets.push_back(ket_creator.set_quantum_number_q(q).create());
     }
-    return BasisClassicalLight<Scalar>(std::move(kets));
+    return std::shared_ptr<const BasisClassicalLight<Scalar>>(
+        new BasisClassicalLight<Scalar>(std::move(kets)));
 }
 
 // Explicit instantiations
@@ -69,9 +71,9 @@ DOCTEST_TEST_CASE("create a classical light basis") {
                      .set_photon_energy(energy)
                      .restrict_quantum_number_q(-3, 3)
                      .create();
-    for (const auto &ket : basis) {
-        DOCTEST_CHECK(ket.get_photon_energy() == energy);
-        DOCTEST_CHECK(ket.get_energy() == ket.get_photon_energy() * ket.get_quantum_number_q());
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
+    for (auto ket : *basis) {
+        DOCTEST_CHECK(ket->get_photon_energy() == energy);
+        DOCTEST_CHECK(ket->get_energy() == ket->get_photon_energy() * ket->get_quantum_number_q());
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
     }
 }

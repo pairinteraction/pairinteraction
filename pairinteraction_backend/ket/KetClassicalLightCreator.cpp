@@ -45,5 +45,5 @@ DOCTEST_TEST_CASE("create a classical light ket") {
     DOCTEST_CHECK(lightket->get_quantum_number_q() == q);
     DOCTEST_CHECK(lightket->get_photon_energy() == photon_energy);
     DOCTEST_CHECK(lightket->get_energy() == q * photon_energy);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(lightket));
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*lightket));
 }

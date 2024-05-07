@@ -50,7 +50,7 @@ public:
     public:
         Iterator(const Basis<Derived> &basis, size_t index);
         bool operator!=(const Iterator &other) const;
-        const ket_t &operator*() const;
+        std::shared_ptr<const ket_t> operator*() const;
         Iterator &operator++();
 
     private:
