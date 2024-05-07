@@ -42,16 +42,32 @@ int main() {
         return 1;
     }
 
-    // Create a dipole operators in a typical basis
-    auto basis = BasisAtomCreator<float>()
+    dipole_ket1_ket2 = 2 * dipole_ket1_ket2;
+    dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+
+    if (std::abs(dipole_ket1_ket2_value - 2 * 1247.5955810546875) > 1e-6) {
+        SPDLOG_ERROR("The dipole operator value is not correct after multiplication by a scalar.");
+        return 1;
+    }
+
+    dipole_ket1_ket2 = dipole_ket1_ket2 + dipole_ket1_ket2;
+    dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+
+    if (std::abs(dipole_ket1_ket2_value - 4 * 1247.5955810546875) > 1e-6) {
+        SPDLOG_ERROR("The dipole operator value is not correct after summation.");
+        return 1;
+    }
+
+    // Create dipole operators in a typical basis
+    auto basis = BasisAtomCreator<std::complex<float>>()
                      .set_species("Sr88_singlet")
                      .restrict_quantum_number_n(60, 63)
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    OperatorAtom<float> dipole_0(basis, OperatorType::DIPOLE, 0);
-    OperatorAtom<float> dipole_p(basis, OperatorType::DIPOLE, 1);
-    OperatorAtom<float> dipole_m(basis, OperatorType::DIPOLE, -1);
+    OperatorAtom<std::complex<float>> dipole_0(basis, OperatorType::DIPOLE, 0);
+    OperatorAtom<std::complex<float>> dipole_p(basis, OperatorType::DIPOLE, 1);
+    OperatorAtom<std::complex<float>> dipole_m(basis, OperatorType::DIPOLE, -1);
 
     if (dipole_0.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");

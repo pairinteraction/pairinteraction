@@ -10,6 +10,24 @@
 #include "utils/traits.hpp"
 
 template <typename Derived>
+class Operator;
+
+template <typename Derived>
+Derived operator*(const typename Operator<Derived>::scalar_t &lhs, const Operator<Derived> &rhs);
+
+template <typename Derived>
+Derived operator*(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+
+template <typename Derived>
+Derived operator/(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+
+template <typename Derived>
+Derived operator+(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
+
+template <typename Derived>
+Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
+
+template <typename Derived>
 class Operator : public TransformableSortable<typename traits::OperatorTraits<Derived>::scalar_t> {
 public:
     using scalar_t = typename traits::OperatorTraits<Derived>::scalar_t;
@@ -28,6 +46,15 @@ public:
     size_t get_number_of_kets() const;
 
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_transformator() const override;
+
+    friend Derived operator*
+        <>(const typename Operator<Derived>::scalar_t &lhs, const Operator<Derived> &rhs);
+    friend Derived operator*
+        <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+    friend Derived operator/
+        <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+    friend Derived operator+<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
+    friend Derived operator-<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
 
 protected:
     Eigen::SparseMatrix<scalar_t> impl_get_rotator(real_t alpha, real_t beta,
