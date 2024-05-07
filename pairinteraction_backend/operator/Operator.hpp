@@ -35,9 +35,9 @@ public:
     using ketvec_t = typename traits::OperatorTraits<Derived>::ketvec_t;
     using basis_t = typename traits::OperatorTraits<Derived>::basis_t;
 
-    Operator(const basis_t &basis);
+    Operator(std::shared_ptr<const basis_t> basis);
 
-    const basis_t &get_basis() const;
+    std::shared_ptr<const basis_t> get_basis() const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
     const ketvec_t &get_kets() const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
@@ -66,7 +66,7 @@ protected:
     void impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) override;
     void impl_sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) override;
 
-    std::shared_ptr<basis_t> basis;
+    std::shared_ptr<const basis_t> basis;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
 
 private:

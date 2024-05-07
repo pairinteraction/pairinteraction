@@ -3,13 +3,13 @@
 #include "database/Database.hpp"
 
 template <typename Scalar>
-OperatorAtom<Scalar>::OperatorAtom(const basis_t &basis, OperatorType type, int q)
+OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q)
     : Operator<OperatorAtom<Scalar>>(basis), type(type), q(q) {
-    *this = basis.get_database().get_operator(basis, type, q);
+    *this = basis->get_database().get_operator(basis, type, q);
 }
 
 template <typename Scalar>
-OperatorAtom<Scalar>::OperatorAtom(const basis_t &basis, OperatorType type, int q,
+OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q,
                                    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix)
     : Operator<OperatorAtom<Scalar>>(basis), type(type), q(q) {
     this->matrix = std::move(matrix);

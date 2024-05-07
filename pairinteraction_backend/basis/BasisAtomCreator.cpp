@@ -90,7 +90,8 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::add_ket(std::shared_ptr<cons
 }
 
 template <typename Scalar>
-BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
+std::shared_ptr<const BasisAtom<Scalar>>
+BasisAtomCreator<Scalar>::create(Database &database) const {
 
     if (species.has_value() && additional_ket_species.has_value() &&
         species.value() != additional_ket_species.value()) {
@@ -124,9 +125,8 @@ BasisAtom<Scalar> BasisAtomCreator<Scalar>::create(Database &database) const {
                                                 min_quantum_number_j,
                                                 max_quantum_number_j};
 
-    auto basis = database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);
-
-    return basis;
+    return std::make_shared<const BasisAtom<Scalar>>(
+        database.get_basis<Scalar>(extracted_species, description, additional_ket_ids));
 }
 
 // Explicit instantiations
@@ -151,7 +151,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
                      .restrict_quantum_number_n(60, 60)
                      .restrict_quantum_number_l(0, 2)
                      .create(database);
-    for (const auto &ket : basis) {
+    for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket.get_species() == "Sr88_singlet");
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
     }
@@ -164,7 +164,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
                      .restrict_quantum_number_nu(50, 51)
                      .restrict_quantum_number_l(0, 0)
                      .create(database);
-    for (const auto &ket : basis) {
+    for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket.get_species() == "Sr87_mqdt");
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
     }
@@ -177,7 +177,7 @@ DOCTEST_TEST_CASE("create a basis from kets") {
     auto ket3 = KetAtomCreator<float>("Sr88_singlet", 82, 0, 0, 0).create(database);
     auto basis =
         BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
-    for (const auto &ket : basis) {
+    for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket.get_species() == "Sr88_singlet");
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(ket));
     }
