@@ -892,19 +892,19 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
     std::string specifier;
     int kappa;
     switch (type) {
-    case OperatorType::DIPOLE:
+    case OperatorType::ELECTRIC_DIPOLE:
         specifier = "matrix_elements_d";
         kappa = 1;
         break;
-    case OperatorType::QUADRUPOLE:
+    case OperatorType::ELECTRIC_QUADRUPOLE:
         specifier = "matrix_elements_q";
         kappa = 2;
         break;
-    case OperatorType::OCTUPOLE:
+    case OperatorType::ELECTRIC_OCTUPOLE:
         specifier = "matrix_elements_o";
         kappa = 3;
         break;
-    case OperatorType::MAGNETICDIPOLE:
+    case OperatorType::MAGNETIC_DIPOLE:
         specifier = "matrix_elements_mu";
         kappa = 1;
         break;
@@ -1037,7 +1037,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 
     // Transform the matrix into the provided basis and return it
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix =
-        basis->coefficients.adjoint() * matrix_map * basis->coefficients;
+        basis->coefficients.matrix.adjoint() * matrix_map * basis->coefficients.matrix;
 
     // Construct the operator and return it
     return OperatorAtom(basis, type, q, std::move(matrix));
@@ -1200,7 +1200,7 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
 
     auto basis = database.get_basis<float>("Rb", description, {});
 
-    auto dipole = database.get_operator<float>(basis, OperatorType::DIPOLE, 0);
+    auto dipole = database.get_operator<float>(basis, OperatorType::ELECTRIC_DIPOLE, 0);
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
                        basis->get_number_of_states());

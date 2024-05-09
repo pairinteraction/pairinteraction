@@ -5,10 +5,7 @@
 #include <set>
 
 template <typename Derived>
-Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis)
-    : TransformableSortable<typename traits::OperatorTraits<Derived>::scalar_t>(
-          basis->get_transformation(), basis->get_sorting()),
-      basis(basis) {}
+Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(basis) {}
 
 template <typename Derived>
 const Derived &Operator<Derived>::derived() const {
@@ -48,72 +45,129 @@ size_t Operator<Derived>::get_number_of_kets() const {
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Operator<Derived>::scalar_t>
-Operator<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const {
+const Transformation<typename Operator<Derived>::scalar_t> &
+Operator<Derived>::get_transformation() const {
+    return basis->get_transformation();
+}
+
+template <typename Derived>
+Transformation<typename Operator<Derived>::scalar_t>
+Operator<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     return basis->get_rotator(alpha, beta, gamma);
 }
 
-template <typename Derived>
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-Operator<Derived>::impl_get_sorter(SortBy label) const {
-    auto sorter = basis->get_sorter(label & ~SortBy::DIAGONAL);
+// TODO introduce helper functions for the checks
 
-    std::vector<real_t> energies_of_states;
-    energies_of_states.reserve(matrix.rows());
-    for (int i = 0; i < matrix.rows(); ++i) {
-        if constexpr (traits::is_complex_v<scalar_t>) {
-            energies_of_states.push_back(matrix.coeff(i, i).real());
-        } else {
-            energies_of_states.push_back(matrix.coeff(i, i));
-        }
+template <typename Derived>
+Sorting Operator<Derived>::get_sorter(TransformationType label) const {
+    // Check that the label is a valid sorting label
+    if (!utils::is_sorting(label)) {
+        throw std::invalid_argument("The label is not a valid sorting label.");
     }
 
-    if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
+    // Get the sorter
+    Sorting transformation =
+        basis->get_sorter_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
+
+    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+        std::vector<real_t> energies_of_states;
+        energies_of_states.reserve(matrix.rows());
+        for (int i = 0; i < matrix.rows(); ++i) {
+            if constexpr (traits::is_complex_v<scalar_t>) {
+                energies_of_states.push_back(matrix.coeff(i, i).real());
+            } else {
+                energies_of_states.push_back(matrix.coeff(i, i));
+            }
+        }
+
         std::stable_sort(
-            sorter.indices().data(), sorter.indices().data() + sorter.indices().size(),
+            transformation.matrix.indices().data(),
+            transformation.matrix.indices().data() + transformation.matrix.indices().size(),
             [&](int i, int j) { return energies_of_states[i] < energies_of_states[j]; });
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);
     }
 
-    return sorter;
+    // Check if the full label has been used for sorting
+    TransformationType label_used = TransformationType::NONE;
+    for (auto l : transformation.transformation_type) {
+        label_used |= l;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The states could not be sorted by the requested label.");
+    }
+
+    return transformation;
 }
 
 template <typename Derived>
-const Eigen::SparseMatrix<typename Operator<Derived>::scalar_t, Eigen::RowMajor> &
-Operator<Derived>::get_transformator() const {
-    return basis->get_transformator();
-}
+Blocks Operator<Derived>::get_blocks(TransformationType label) const {
+    // Check that the label is a valid sorting label
+    if (!utils::is_sorting(label)) {
+        throw std::invalid_argument("The label is not a valid sorting label.");
+    }
 
-template <typename Derived>
-std::vector<int> Operator<Derived>::impl_get_blocks(SortBy label) const {
-    auto blocks = basis->get_blocks(label & ~SortBy::DIAGONAL);
-
-    std::vector<int> completed_blocks;
-    size_t block_idx = 0;
-    scalar_t last_diagonal = matrix.coeff(0, 0);
-
-    for (int i = 0; i < matrix.rows(); ++i) {
-        if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL && matrix.coeff(i, i) != last_diagonal) {
-            completed_blocks.push_back(i);
-        } else if (block_idx < blocks.size() && i == blocks[block_idx]) {
-            completed_blocks.push_back(i);
-            ++block_idx;
+    // Check if the states are sorted by the requested label
+    TransformationType label_used = TransformationType::NONE;
+    for (auto it = get_transformation().transformation_type.rbegin();
+         it != get_transformation().transformation_type.rend(); ++it) {
+        if (!((label & *it) == *it)) {
+            break;
         }
+        label_used |= *it;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The states are not sorted by the requested label.");
     }
 
-    return completed_blocks;
+    // Get the blocks
+    Blocks blocks = basis->get_blocks_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
+
+    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+        std::vector<int> completed;
+        size_t block_idx = 0;
+        scalar_t last_diagonal = matrix.coeff(0, 0);
+
+        for (int i = 0; i < matrix.rows(); ++i) {
+            if (matrix.coeff(i, i) != last_diagonal) {
+                completed.push_back(i);
+            } else if (block_idx < blocks.start.size() && i == blocks.start[block_idx]) {
+                completed.push_back(i);
+                ++block_idx;
+            }
+        }
+
+        blocks.start = completed;
+        blocks.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);
+    }
+
+    // Check if the full label has been used for getting the blocks
+    label_used = TransformationType::NONE;
+    for (auto l : blocks.transformation_type) {
+        label_used |= l;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The blocks could not be obtained by the requested label.");
+    }
+
+    return blocks;
 }
 
 template <typename Derived>
-void Operator<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
-    // matrix = transformator.adjoint() * matrix * transformator;
-    // basis->transform(transformator); // TODO
+Derived Operator<Derived>::transform(
+    const Transformation<typename Operator<Derived>::scalar_t> &transformation) const {
+    auto transformed = derived();
+    transformed.matrix = transformation.matrix.adjoint() * matrix * transformation.matrix;
+    transformed.basis = basis->transform(transformation);
+    return transformed;
 }
 
 template <typename Derived>
-void Operator<Derived>::impl_sort(
-    const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
-    // matrix = matrix.twistedBy(sorter.inverse());
-    // basis->sort(sorter); // TODO
+Derived Operator<Derived>::transform(const Sorting &transformation) const {
+    auto transformed = derived();
+    transformed.matrix = matrix.twistedBy(transformation.matrix.inverse());
+    transformed.basis = basis->transform(transformation);
+    return transformed;
 }
 
 // Overloaded operators

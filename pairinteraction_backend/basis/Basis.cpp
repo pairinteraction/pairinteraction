@@ -10,9 +10,9 @@
 
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
-    : TransformableSortable<typename traits::BasisTraits<Derived>::scalar_t>(TransformBy::IDENTITY,
-                                                                             SortBy::KET),
-      kets(std::move(kets)) {
+    : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
+                                           static_cast<Eigen::Index>(this->kets.size())},
+                                          {TransformationType::SORT_BY_KET}} {
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());
@@ -26,23 +26,12 @@ Basis<Derived>::Basis(ketvec_t &&kets)
     }
     ket_of_states.resize(this->kets.size());
     std::iota(ket_of_states.begin(), ket_of_states.end(), 0);
-    coefficients = Eigen::SparseMatrix<scalar_t>(this->kets.size(), this->kets.size());
-    coefficients.setIdentity();
+    coefficients.matrix.setIdentity();
 }
 
 template <typename Derived>
 const Derived &Basis<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
-}
-
-template <typename Derived>
-size_t Basis<Derived>::get_number_of_states() const {
-    return coefficients.cols();
-}
-
-template <typename Derived>
-size_t Basis<Derived>::get_number_of_kets() const {
-    return coefficients.rows();
 }
 
 template <typename Derived>
@@ -53,7 +42,7 @@ const typename Basis<Derived>::ketvec_t &Basis<Derived>::get_kets() const {
 template <typename Derived>
 const Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
 Basis<Derived>::get_coefficients() const {
-    return coefficients;
+    return coefficients.matrix;
 }
 
 template <typename Derived>
@@ -102,15 +91,27 @@ typename Basis<Derived>::Iterator &Basis<Derived>::Iterator::operator++() {
 }
 
 template <typename Derived>
-const Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
-Basis<Derived>::get_transformator() const {
+size_t Basis<Derived>::get_number_of_states() const {
+    return coefficients.matrix.cols();
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_number_of_kets() const {
+    return coefficients.matrix.rows();
+}
+
+template <typename Derived>
+const Transformation<typename Basis<Derived>::scalar_t> &
+Basis<Derived>::get_transformation() const {
     return coefficients;
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::scalar_t>
-Basis<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const {
-    Eigen::SparseMatrix<scalar_t> rotator(coefficients.rows(), coefficients.rows());
+Transformation<typename Basis<Derived>::scalar_t>
+Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
+    Transformation<scalar_t> transformation{{static_cast<Eigen::Index>(coefficients.matrix.rows()),
+                                             static_cast<Eigen::Index>(coefficients.matrix.rows())},
+                                            {TransformationType::ROTATE}};
 
     std::vector<Eigen::Triplet<scalar_t>> entries;
 
@@ -126,19 +127,91 @@ Basis<Derived>::impl_get_rotator(real_t alpha, real_t beta, real_t gamma) const 
         }
     }
 
-    rotator.setFromTriplets(entries.begin(), entries.end());
-    rotator.makeCompressed();
+    transformation.matrix.setFromTriplets(entries.begin(), entries.end());
+    transformation.matrix.makeCompressed();
 
-    return rotator;
+    return transformation;
 }
 
 template <typename Derived>
-Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-Basis<Derived>::impl_get_sorter(SortBy label) const {
-    std::vector<int> perm(coefficients.cols());
+Sorting Basis<Derived>::get_sorter(TransformationType label) const {
+    // Check that the label is a valid sorting label
+    if (!utils::is_sorting(label)) {
+        throw std::invalid_argument("The label is not a valid sorting label.");
+    }
+
+    // Get the sorter
+    Sorting transformation = get_sorter_without_checks(label);
+
+    // Throw a meaningful error if sorting by energy is requested as this might be a common mistake
+    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+        throw std::invalid_argument("States do not store the energy and thus can not be sorted by "
+                                    "the energy. Use an energy operator instead.");
+    }
+
+    // Check if the full label has been used for sorting
+    TransformationType label_used = TransformationType::NONE;
+    for (auto l : transformation.transformation_type) {
+        label_used |= l;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The states could not be sorted by the requested label.");
+    }
+
+    return transformation;
+}
+
+template <typename Derived>
+Blocks Basis<Derived>::get_blocks(TransformationType label) const {
+    // Check that the label is a valid sorting label
+    if (!utils::is_sorting(label)) {
+        throw std::invalid_argument("The label is not a valid sorting label.");
+    }
+
+    // Check if the states are sorted by the requested label
+    TransformationType label_used = TransformationType::NONE;
+    for (auto it = get_transformation().transformation_type.rbegin();
+         it != get_transformation().transformation_type.rend(); ++it) {
+        if (!((label & *it) == *it)) {
+            break;
+        }
+        label_used |= *it;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The states are not sorted by the requested label.");
+    }
+
+    // Get the blocks
+    Blocks blocks = get_blocks_without_checks(label);
+
+    // Throw a meaningful error if getting the blocks by energy is requested as this might be a
+    // common mistake
+    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+        throw std::invalid_argument("States do not store the energy and thus no energy blocks can "
+                                    "be obtained. Use an energy operator instead.");
+    }
+
+    // Check if the full label has been used for getting the blocks
+    label_used = TransformationType::NONE;
+    for (auto l : blocks.transformation_type) {
+        label_used |= l;
+    }
+    if (label != label_used) {
+        throw std::invalid_argument("The blocks could not be obtained by the requested label.");
+    }
+
+    return blocks;
+}
+
+template <typename Derived>
+Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) const {
+    Sorting transformation;
+
+    std::vector<int> perm(coefficients.matrix.cols());
     std::iota(perm.begin(), perm.end(), 0);
 
-    if ((label & SortBy::QUANTUM_NUMBER_F) == SortBy::QUANTUM_NUMBER_F) {
+    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
+        TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
         std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
@@ -147,9 +220,12 @@ Basis<Derived>::impl_get_sorter(SortBy label) const {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number f.");
         }
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
     }
 
-    if ((label & SortBy::QUANTUM_NUMBER_M) == SortBy::QUANTUM_NUMBER_M) {
+    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
+        TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
         std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
@@ -158,9 +234,11 @@ Basis<Derived>::impl_get_sorter(SortBy label) const {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number m.");
         }
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
     }
 
-    if ((label & SortBy::PARITY) == SortBy::PARITY) {
+    if ((label & TransformationType::SORT_BY_PARITY) == TransformationType::SORT_BY_PARITY) {
         std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
 
@@ -168,45 +246,48 @@ Basis<Derived>::impl_get_sorter(SortBy label) const {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the parity.");
         }
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_PARITY);
     }
 
-    if ((label & SortBy::KET) == SortBy::KET) {
+    if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET) {
         std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
+
+        transformation.transformation_type.push_back(TransformationType::SORT_BY_KET);
     }
 
-    if ((label & SortBy::DIAGONAL) == SortBy::DIAGONAL) {
-        throw std::invalid_argument("States do not store the energy and thus can not be sorted by "
-                                    "the energy. Use an energy operator instead.");
-    }
+    transformation.matrix.indices() = Eigen::Map<const Eigen::VectorXi>(perm.data(), perm.size());
 
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> sorter;
-    sorter.indices() = Eigen::Map<const Eigen::VectorXi>(perm.data(), perm.size());
-
-    return sorter;
+    return transformation;
 }
 
 template <typename Derived>
-std::vector<int> Basis<Derived>::impl_get_blocks(SortBy label) const {
-    std::vector<int> blocks;
+Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const {
+    Blocks blocks;
+
     float last_quantum_number_f = quantum_number_f_of_states[0];
     float last_quantum_number_m = quantum_number_m_of_states[0];
     int last_parity = parity_of_states[0];
     int last_ket = ket_of_states[0];
-    blocks.push_back(0);
+    blocks.start.push_back(0);
 
-    for (int i = 0; i < coefficients.cols(); ++i) {
-        if ((label & SortBy::QUANTUM_NUMBER_F) == SortBy::QUANTUM_NUMBER_F &&
+    for (int i = 0; i < coefficients.matrix.cols(); ++i) {
+        if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
+                TransformationType::SORT_BY_QUANTUM_NUMBER_F &&
             quantum_number_f_of_states[i] != last_quantum_number_f) {
-            blocks.push_back(i);
-        } else if ((label & SortBy::QUANTUM_NUMBER_M) == SortBy::QUANTUM_NUMBER_M &&
+            blocks.start.push_back(i);
+        } else if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
+                       TransformationType::SORT_BY_QUANTUM_NUMBER_M &&
                    quantum_number_m_of_states[i] != last_quantum_number_m) {
-            blocks.push_back(i);
-        } else if ((label & SortBy::PARITY) == SortBy::PARITY &&
+            blocks.start.push_back(i);
+        } else if ((label & TransformationType::SORT_BY_PARITY) ==
+                       TransformationType::SORT_BY_PARITY &&
                    parity_of_states[i] != last_parity) {
-            blocks.push_back(i);
-        } else if ((label & SortBy::KET) == SortBy::KET && ket_of_states[i] != last_ket) {
-            blocks.push_back(i);
+            blocks.start.push_back(i);
+        } else if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET &&
+                   ket_of_states[i] != last_ket) {
+            blocks.start.push_back(i);
         }
 
         last_quantum_number_f = quantum_number_f_of_states[i];
@@ -215,116 +296,184 @@ std::vector<int> Basis<Derived>::impl_get_blocks(SortBy label) const {
         last_ket = ket_of_states[i];
     }
 
+    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
+        TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
+        blocks.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+    }
+    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
+        TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
+        blocks.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+    }
+    if ((label & TransformationType::SORT_BY_PARITY) == TransformationType::SORT_BY_PARITY) {
+        blocks.transformation_type.push_back(TransformationType::SORT_BY_PARITY);
+    }
+    if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET) {
+        blocks.transformation_type.push_back(TransformationType::SORT_BY_KET);
+    }
+
     return blocks;
 }
 
 template <typename Derived>
-void Basis<Derived>::impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) {
-    coefficients = coefficients * transformator;
+std::shared_ptr<Derived> Basis<Derived>::transform(const Sorting &transformation) const {
+    // Create a copy of the current object
+    auto transformed = std::make_shared<Derived>(derived());
+
+    // Apply the transformation
+    transformed->coefficients.matrix = transformed->coefficients.matrix * transformation.matrix;
+    for (auto t : transformation.transformation_type) {
+        transformed->coefficients.transformation_type.push_back(t);
+    }
+
+    {
+        auto tmp(transformed->quantum_number_f_of_states);
+        for (int i = 0; i < transformation.matrix.size(); ++i) {
+            transformed->quantum_number_f_of_states[i] = tmp[transformation.matrix.indices()[i]];
+        }
+    }
+    {
+        auto tmp(quantum_number_m_of_states);
+        for (int i = 0; i < transformation.matrix.size(); ++i) {
+            transformed->quantum_number_m_of_states[i] = tmp[transformation.matrix.indices()[i]];
+        }
+    }
+    {
+        auto tmp(parity_of_states);
+        for (int i = 0; i < transformation.matrix.size(); ++i) {
+            transformed->parity_of_states[i] = tmp[transformation.matrix.indices()[i]];
+        }
+    }
+    {
+        auto tmp(ket_of_states);
+        for (int i = 0; i < transformation.matrix.size(); ++i) {
+            transformed->ket_of_states[i] = tmp[transformation.matrix.indices()[i]];
+        }
+    }
+
+    return transformed;
+}
+
+template <typename Derived>
+std::shared_ptr<Derived>
+Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const {
+    // If the transformation is a rotation, it should be a rotation and nothing else
+    bool is_rotation = false;
+    for (auto t : transformation.transformation_type) {
+        if (t == TransformationType::ROTATE) {
+            is_rotation = true;
+            break;
+        }
+    }
+    if (is_rotation && transformation.transformation_type.size() != 1) {
+        throw std::invalid_argument("A rotation can not be combined with other transformations.");
+    }
+
+    // To apply a rotation, the object must only be sorted but other transformations are not allowed
+    if (is_rotation) {
+        bool object_transformation_is_sorting = true;
+        for (auto t : coefficients.transformation_type) {
+            if (t != TransformationType::SORT_BY_KET &&
+                t != TransformationType::SORT_BY_QUANTUM_NUMBER_F &&
+                t != TransformationType::SORT_BY_QUANTUM_NUMBER_M &&
+                t != TransformationType::SORT_BY_PARITY &&
+                t != TransformationType::SORT_BY_ENERGY) {
+                object_transformation_is_sorting = false;
+                break;
+            }
+        }
+        if (!object_transformation_is_sorting) {
+            throw std::runtime_error("If the object was transformed by a different transformation "
+                                     "than sorting, it can not be rotated.");
+        }
+    }
+
+    // Create a copy of the current object
+    auto transformed = std::make_shared<Derived>(derived());
+
+    // Apply the transformation
+    transformed->coefficients.matrix = coefficients.matrix * transformation.matrix;
+    for (auto t : transformation.transformation_type) {
+        transformed->coefficients.transformation_type.push_back(t);
+    }
 
     Eigen::SparseMatrix<float> probs =
-        (transformator.cwiseAbs2().transpose()).template cast<float>();
+        (transformation.matrix.cwiseAbs2().transpose()).template cast<float>();
 
     float tolerance = 1e-16;
 
     {
-        auto map = Eigen::Map<const Eigen::VectorXf>(quantum_number_f_of_states.data(),
-                                                     quantum_number_f_of_states.size());
+        auto map =
+            Eigen::Map<const Eigen::VectorXf>(transformed->quantum_number_f_of_states.data(),
+                                              transformed->quantum_number_f_of_states.size());
         Eigen::VectorXf val = probs * map;
         Eigen::VectorXf sq = probs * map.cwiseAbs2();
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
-        for (size_t i = 0; i < quantum_number_f_of_states.size(); ++i) {
+        for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < tolerance) {
-                quantum_number_f_of_states[i] = val[i];
+                transformed->quantum_number_f_of_states[i] = val[i];
             } else {
-                quantum_number_f_of_states[i] = std::numeric_limits<float>::max();
-            }
-        }
-    }
-
-    {
-        auto map = Eigen::Map<const Eigen::VectorXf>(quantum_number_m_of_states.data(),
-                                                     quantum_number_m_of_states.size());
-        Eigen::VectorXf val = probs * map;
-        Eigen::VectorXf sq = probs * map.cwiseAbs2();
-        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
-
-        for (size_t i = 0; i < quantum_number_m_of_states.size(); ++i) {
-            if (diff[i] < tolerance) {
-                quantum_number_m_of_states[i] = val[i];
-            } else {
-                quantum_number_m_of_states[i] = std::numeric_limits<float>::max();
+                transformed->quantum_number_f_of_states[i] = std::numeric_limits<float>::max();
             }
         }
     }
 
     {
         auto map =
-            Eigen::Map<const Eigen::VectorXi>(parity_of_states.data(), parity_of_states.size())
-                .template cast<float>();
+            Eigen::Map<const Eigen::VectorXf>(transformed->quantum_number_m_of_states.data(),
+                                              transformed->quantum_number_m_of_states.size());
         Eigen::VectorXf val = probs * map;
         Eigen::VectorXf sq = probs * map.cwiseAbs2();
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
-        for (size_t i = 0; i < parity_of_states.size(); ++i) {
+        for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < tolerance) {
-                parity_of_states[i] = static_cast<int>(val[i]);
+                transformed->quantum_number_m_of_states[i] = val[i];
             } else {
-                parity_of_states[i] = std::numeric_limits<int>::max();
+                transformed->quantum_number_m_of_states[i] = std::numeric_limits<float>::max();
             }
         }
     }
 
     {
-        std::vector<real_t> map_idx_to_max(coefficients.cols(), 0);
-        for (int row = 0; row < coefficients.outerSize(); ++row) {
+        auto map = Eigen::Map<const Eigen::VectorXi>(transformed->parity_of_states.data(),
+                                                     transformed->parity_of_states.size())
+                       .template cast<float>();
+        Eigen::VectorXf val = probs * map;
+        Eigen::VectorXf sq = probs * map.cwiseAbs2();
+        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+
+        for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
+            if (diff[i] < tolerance) {
+                transformed->parity_of_states[i] = static_cast<int>(val[i]);
+            } else {
+                transformed->parity_of_states[i] = std::numeric_limits<int>::max();
+            }
+        }
+    }
+
+    {
+        std::vector<real_t> map_idx_to_max(transformed->coefficients.matrix.cols(), 0);
+        for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
             for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
-                     coefficients, row);
+                     transformed->coefficients.matrix, row);
                  it; ++it) {
                 if (std::abs(it.value()) > map_idx_to_max[it.col()]) {
                     map_idx_to_max[it.col()] = std::abs(it.value());
-                    ket_of_states[it.col()] = row;
+                    transformed->ket_of_states[it.col()] = row;
                 }
             }
         }
 
-        std::set<int> ket_of_states_set(ket_of_states.begin(), ket_of_states.end());
-        if (ket_of_states_set.size() != ket_of_states.size()) {
+        std::set<int> ket_of_states_set(transformed->ket_of_states.begin(),
+                                        transformed->ket_of_states.end());
+        if (ket_of_states_set.size() != transformed->ket_of_states.size()) {
             throw std::runtime_error(
                 "Failed to establish a unique mapping between the states and the kets.");
         }
     }
-}
 
-template <typename Derived>
-void Basis<Derived>::impl_sort(
-    const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) {
-    {
-        auto tmp(quantum_number_f_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
-            quantum_number_f_of_states[i] = tmp[sorter.indices()[i]];
-        }
-    }
-    {
-        auto tmp(quantum_number_m_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
-            quantum_number_m_of_states[i] = tmp[sorter.indices()[i]];
-        }
-    }
-    {
-        auto tmp(parity_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
-            parity_of_states[i] = tmp[sorter.indices()[i]];
-        }
-    }
-    {
-        auto tmp(ket_of_states);
-        for (int i = 0; i < sorter.size(); ++i) {
-            ket_of_states[i] = tmp[sorter.indices()[i]];
-        }
-    }
-    coefficients = coefficients * sorter;
+    return transformed;
 }
 
 // Explicit instantiations
@@ -435,29 +584,31 @@ public:
 };
 
 DOCTEST_TEST_CASE("constructing a class derived from basis") {
-    auto basis = BasisDerivedCreator().create();
 
-    // // Sort the basis by parity and the m quantum number
-    // basis->sort(SortBy::PARITY | SortBy::QUANTUM_NUMBER_M);
-    // int parity = std::numeric_limits<int>::lowest();
-    // float quantum_number_m = std::numeric_limits<float>::lowest();
-    // for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-    //     DOCTEST_CHECK(basis->get_parity(i) >= parity);
-    //     DOCTEST_CHECK(basis->get_quantum_number_m(i) >= quantum_number_m);
-    //     parity = basis->get_parity(i);
-    //     quantum_number_m = basis->get_quantum_number_m(i);
-    // }
+    // Sort the basis by parity and the m quantum number
+    auto tmp = BasisDerivedCreator().create();
+    auto basis = tmp->transform(tmp->get_sorter(TransformationType::SORT_BY_PARITY |
+                                                TransformationType::SORT_BY_QUANTUM_NUMBER_M));
+    int parity = std::numeric_limits<int>::lowest();
+    float quantum_number_m = std::numeric_limits<float>::lowest();
+    for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
+        DOCTEST_CHECK(basis->get_parity(i) >= parity);
+        DOCTEST_CHECK(basis->get_quantum_number_m(i) >= quantum_number_m);
+        parity = basis->get_parity(i);
+        quantum_number_m = basis->get_quantum_number_m(i);
+    }
 
-    // // Check that the blocks are correctly determined
-    // auto blocks = basis->get_blocks(SortBy::PARITY | SortBy::QUANTUM_NUMBER_M);
-    // DOCTEST_CHECK(blocks[0] == 0);
-    // DOCTEST_CHECK(blocks[1] == 1);
-    // DOCTEST_CHECK(blocks[2] == 2);
+    // Check that the blocks are correctly determined
+    auto blocks = basis->get_blocks(TransformationType::SORT_BY_PARITY |
+                                    TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+    DOCTEST_CHECK(blocks.start[0] == 0);
+    DOCTEST_CHECK(blocks.start[1] == 1);
+    DOCTEST_CHECK(blocks.start[2] == 2);
 
-    // // Check that the kets can be iterated over and the new property can be obtained
-    // for (const auto &ket : *basis) {
-    //     DOCTEST_CHECK(ket->get_new_property() == 42);
-    // } // TODO
+    // Check that the kets can be iterated over and the new property can be obtained
+    for (const auto &ket : *basis) {
+        DOCTEST_CHECK(ket->get_new_property() == 42);
+    }
 }
 
 #endif // DOCTEST_CONFIG_DISABLE

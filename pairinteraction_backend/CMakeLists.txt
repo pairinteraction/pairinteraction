@@ -16,10 +16,9 @@ target_sources(backend PUBLIC
   ./database/Database.cpp
   ./database/Database.hpp
   ./enums/OperatorType.hpp
-  ./enums/SortBy.hpp
-  ./enums/TransformBy.hpp
-  ./interfaces/TransformableSortable.cpp
-  ./interfaces/TransformableSortable.hpp
+  ./enums/TransformationType.hpp
+  ./interfaces/TransformationBuilderInterface.cpp
+  ./interfaces/TransformationBuilderInterface.hpp
   ./ket/Ket.cpp
   ./ket/Ket.hpp
   ./ket/KetAtom.cpp
@@ -91,9 +90,8 @@ target_sources(bindings PUBLIC
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.hpp
   ./enums/OperatorType.hpp
-  ./enums/SortBy.hpp
-  ./enums/TransformBy.hpp
-  ./interfaces/TransformableSortable.hpp
+  ./enums/TransformationType.hpp
+  ./interfaces/TransformationBuilderInterface.hpp
   ./ket/Ket.hpp
   ./ket/KetAtom.hpp
   ./ket/KetAtomCreator.hpp
@@ -129,12 +127,10 @@ target_sources(bindings PUBLIC
   ./database/Database.py.hpp
   ./enums/OperatorType.py.cpp
   ./enums/OperatorType.py.hpp
-  ./enums/SortBy.py.cpp
-  ./enums/SortBy.py.hpp
-  ./enums/TransformBy.py.cpp
-  ./enums/TransformBy.py.hpp
-  ./interfaces/TransformableSortable.py.cpp
-  ./interfaces/TransformableSortable.py.hpp
+  ./enums/TransformationType.py.cpp
+  ./enums/TransformationType.py.hpp
+  ./interfaces/TransformationBuilderInterface.py.cpp
+  ./interfaces/TransformationBuilderInterface.py.hpp
   ./ket/Ket.py.cpp
   ./ket/Ket.py.hpp
   ./ket/KetAtom.py.cpp
