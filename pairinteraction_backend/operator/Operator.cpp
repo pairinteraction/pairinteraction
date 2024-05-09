@@ -56,8 +56,6 @@ Operator<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     return basis->get_rotator(alpha, beta, gamma);
 }
 
-// TODO introduce helper functions for the checks
-
 template <typename Derived>
 Sorting Operator<Derived>::get_sorter(TransformationType label) const {
     // Check that the label is a valid sorting label
@@ -89,11 +87,7 @@ Sorting Operator<Derived>::get_sorter(TransformationType label) const {
     }
 
     // Check if the full label has been used for sorting
-    TransformationType label_used = TransformationType::NONE;
-    for (auto l : transformation.transformation_type) {
-        label_used |= l;
-    }
-    if (label != label_used) {
+    if (!utils::is_comprised_by_label(label, transformation.transformation_type)) {
         throw std::invalid_argument("The states could not be sorted by the requested label.");
     }
 
@@ -108,15 +102,7 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
     }
 
     // Check if the states are sorted by the requested label
-    TransformationType label_used = TransformationType::NONE;
-    for (auto it = get_transformation().transformation_type.rbegin();
-         it != get_transformation().transformation_type.rend(); ++it) {
-        if (!((label & *it) == *it)) {
-            break;
-        }
-        label_used |= *it;
-    }
-    if (label != label_used) {
+    if (!utils::is_sorted_by_label(label, get_transformation().transformation_type)) {
         throw std::invalid_argument("The states are not sorted by the requested label.");
     }
 
@@ -142,11 +128,7 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
     }
 
     // Check if the full label has been used for getting the blocks
-    label_used = TransformationType::NONE;
-    for (auto l : blocks.transformation_type) {
-        label_used |= l;
-    }
-    if (label != label_used) {
+    if (!utils::is_comprised_by_label(label, blocks.transformation_type)) {
         throw std::invalid_argument("The blocks could not be obtained by the requested label.");
     }
 
