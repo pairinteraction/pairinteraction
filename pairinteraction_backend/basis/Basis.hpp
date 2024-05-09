@@ -9,8 +9,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "enums/SortBy.hpp"
-#include "interfaces/TransformableSortable.hpp"
+#include "enums/TransformationType.hpp"
+#include "interfaces/TransformationBuilderInterface.hpp"
 #include "utils/traits.hpp"
 
 /**
@@ -30,7 +30,8 @@
  */
 
 template <typename Derived>
-class Basis : public TransformableSortable<typename traits::BasisTraits<Derived>::scalar_t> {
+class Basis
+    : public TransformationBuilderInterface<typename traits::BasisTraits<Derived>::scalar_t> {
 public:
     using scalar_t = typename traits::BasisTraits<Derived>::scalar_t;
     using real_t = typename traits::BasisTraits<Derived>::real_t;
@@ -61,24 +62,23 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
-    size_t get_number_of_states() const;
-    size_t get_number_of_kets() const;
+    size_t get_number_of_states() const override;
+    size_t get_number_of_kets() const override;
+    const Transformation<scalar_t> &get_transformation() const override;
+    Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
+    Sorting get_sorter(TransformationType label) const override;
+    Blocks get_blocks(TransformationType label) const override;
 
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_transformator() const override;
+    Sorting get_sorter_without_checks(TransformationType label) const;
+    Blocks get_blocks_without_checks(TransformationType label) const;
+
+    std::shared_ptr<Derived> transform(const Transformation<scalar_t> &transformation) const;
+    std::shared_ptr<Derived> transform(const Sorting &transformation) const;
 
 protected:
-    Eigen::SparseMatrix<scalar_t> impl_get_rotator(real_t alpha, real_t beta,
-                                                   real_t gamma) const override;
-    Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic>
-    impl_get_sorter(SortBy label) const override;
-    std::vector<int> impl_get_blocks(SortBy label) const override;
-
-    void impl_transform(const Eigen::SparseMatrix<scalar_t> &transformator) override;
-    void impl_sort(const Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> &sorter) override;
-
     Basis(ketvec_t &&kets);
     ketvec_t kets;
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> coefficients;
+    Transformation<scalar_t> coefficients;
     std::unordered_map<size_t, size_t> ket_id_to_index;
 
 private:

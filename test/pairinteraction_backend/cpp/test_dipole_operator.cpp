@@ -34,7 +34,7 @@ int main() {
 
     auto basis_ket1_ket2 = BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).create(database);
 
-    OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2, OperatorType::DIPOLE, 0);
+    OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2, OperatorType::ELECTRIC_DIPOLE, 0);
     float dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
     if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) > 1e-6) {
@@ -65,9 +65,9 @@ int main() {
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    OperatorAtom<std::complex<float>> dipole_0(basis, OperatorType::DIPOLE, 0);
-    OperatorAtom<std::complex<float>> dipole_p(basis, OperatorType::DIPOLE, 1);
-    OperatorAtom<std::complex<float>> dipole_m(basis, OperatorType::DIPOLE, -1);
+    OperatorAtom<std::complex<float>> dipole_0(basis, OperatorType::ELECTRIC_DIPOLE, 0);
+    OperatorAtom<std::complex<float>> dipole_p(basis, OperatorType::ELECTRIC_DIPOLE, 1);
+    OperatorAtom<std::complex<float>> dipole_m(basis, OperatorType::ELECTRIC_DIPOLE, -1);
 
     if (dipole_0.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
