@@ -150,11 +150,7 @@ Sorting Basis<Derived>::get_sorter(TransformationType label) const {
     }
 
     // Check if the full label has been used for sorting
-    TransformationType label_used = TransformationType::NONE;
-    for (auto l : transformation.transformation_type) {
-        label_used |= l;
-    }
-    if (label != label_used) {
+    if (!utils::is_comprised_by_label(label, transformation.transformation_type)) {
         throw std::invalid_argument("The states could not be sorted by the requested label.");
     }
 
@@ -169,15 +165,7 @@ Blocks Basis<Derived>::get_blocks(TransformationType label) const {
     }
 
     // Check if the states are sorted by the requested label
-    TransformationType label_used = TransformationType::NONE;
-    for (auto it = get_transformation().transformation_type.rbegin();
-         it != get_transformation().transformation_type.rend(); ++it) {
-        if (!((label & *it) == *it)) {
-            break;
-        }
-        label_used |= *it;
-    }
-    if (label != label_used) {
+    if (!utils::is_sorted_by_label(label, get_transformation().transformation_type)) {
         throw std::invalid_argument("The states are not sorted by the requested label.");
     }
 
@@ -192,11 +180,7 @@ Blocks Basis<Derived>::get_blocks(TransformationType label) const {
     }
 
     // Check if the full label has been used for getting the blocks
-    label_used = TransformationType::NONE;
-    for (auto l : blocks.transformation_type) {
-        label_used |= l;
-    }
-    if (label != label_used) {
+    if (!utils::is_comprised_by_label(label, blocks.transformation_type)) {
         throw std::invalid_argument("The blocks could not be obtained by the requested label.");
     }
 

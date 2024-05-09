@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <vector>
 
 enum class TransformationType : unsigned char {
     NONE = 0,
@@ -43,4 +44,26 @@ inline bool is_sorting(TransformationType label) {
     }
     return sorting_label == label;
 }
+
+inline bool is_comprised_by_label(TransformationType label,
+                                  const std::vector<TransformationType> &list_used) {
+    TransformationType used = TransformationType::NONE;
+    for (auto l : list_used) {
+        used |= l;
+    }
+    return label == used;
+}
+
+inline bool is_sorted_by_label(TransformationType label,
+                               const std::vector<TransformationType> &list_used) {
+    TransformationType used = TransformationType::NONE;
+    for (auto it = list_used.rbegin(); it != list_used.rend(); ++it) {
+        if (!((label & *it) == *it)) {
+            break;
+        }
+        used |= *it;
+    }
+    return label == used;
+}
+
 } // namespace utils
