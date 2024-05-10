@@ -29,6 +29,18 @@ template <typename Derived>
 struct OperatorTraits;
 
 /**
+ * @struct SystemTraits
+ *
+ * @brief Helper struct to extract types from a derived system type. Must be specialized for each
+ * derived system type.
+ *
+ * @tparam Derived The derived system type from which to extract types.
+ */
+
+template <typename Derived>
+struct SystemTraits;
+
+/**
  * @struct NumTraits
  *
  * @brief Helper struct to extract types from a numerical type.

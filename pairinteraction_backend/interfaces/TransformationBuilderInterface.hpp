@@ -1,12 +1,13 @@
 #pragma once
 
-#include "enums/TransformationType.hpp"
 #include "utils/traits.hpp"
 
 #include <Eigen/SparseCore>
 #include <array>
 #include <complex>
 #include <vector>
+
+enum class TransformationType : unsigned char;
 
 template <typename Scalar>
 struct Transformation {
@@ -29,8 +30,6 @@ class TransformationBuilderInterface {
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
-    virtual size_t get_number_of_states() const = 0;
-    virtual size_t get_number_of_kets() const = 0;
     virtual const Transformation<Scalar> &get_transformation() const = 0;
     virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
     virtual Sorting get_sorter(TransformationType label) const = 0;

@@ -1,4 +1,5 @@
 #include "basis/Basis.hpp"
+#include "enums/TransformationType.hpp"
 #include "ket/Ket.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetClassicalLight.hpp"

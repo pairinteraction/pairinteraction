@@ -1,11 +1,12 @@
 #pragma once
 
-#include "enums/OperatorType.hpp"
 #include "operator/Operator.hpp"
 #include "utils/traits.hpp"
 
 #include <memory>
 #include <vector>
+
+enum class OperatorType;
 
 class Database;
 
@@ -34,6 +35,7 @@ public:
     using Type = OperatorAtom<Scalar>;
     using basis_t = typename traits::OperatorTraits<Type>::basis_t;
 
+    OperatorAtom(std::shared_ptr<const basis_t> basis);
     OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q);
 
 private:
