@@ -15,6 +15,8 @@ target_sources(backend PUBLIC
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.cpp
   ./database/Database.hpp
+  ./diagonalizer/Diagonalizer.cpp
+  ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.cpp
@@ -89,6 +91,7 @@ target_sources(bindings PUBLIC
   ./database/AtomDescriptionByParameters.hpp
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.hpp
+  ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.hpp
@@ -125,6 +128,8 @@ target_sources(bindings PUBLIC
   ./basis/BasisClassicalLightCreator.py.hpp
   ./database/Database.py.cpp
   ./database/Database.py.hpp
+  ./diagonalizer/Diagonalizer.py.cpp
+  ./diagonalizer/Diagonalizer.py.hpp
   ./enums/OperatorType.py.cpp
   ./enums/OperatorType.py.hpp
   ./enums/TransformationType.py.cpp

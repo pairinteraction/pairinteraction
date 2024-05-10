@@ -2,6 +2,7 @@
 #include "basis/BasisAtom.hpp"
 #include "database/AtomDescriptionByParameters.hpp"
 #include "database/AtomDescriptionByRanges.hpp"
+#include "enums/OperatorType.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
 #include "operator/OperatorAtom.hpp"

@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "enums/OperatorType.hpp"
+enum class OperatorType;
 
 template <typename Scalar>
 struct AtomDescriptionByParameters;

@@ -9,9 +9,10 @@
 #include <unordered_map>
 #include <vector>
 
-#include "enums/TransformationType.hpp"
 #include "interfaces/TransformationBuilderInterface.hpp"
 #include "utils/traits.hpp"
+
+enum class TransformationType : unsigned char;
 
 /**
  * @class Basis
@@ -41,11 +42,13 @@ public:
     Basis() = delete;
 
     const ketvec_t &get_kets() const;
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
+    size_t get_number_of_states() const;
+    size_t get_number_of_kets() const;
     real_t get_quantum_number_f(size_t index_state) const;
     real_t get_quantum_number_m(size_t index_state) const;
     int get_parity(size_t index_state) const;
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
     class Iterator {
     public:
@@ -62,8 +65,6 @@ public:
     Iterator begin() const;
     Iterator end() const;
 
-    size_t get_number_of_states() const override;
-    size_t get_number_of_kets() const override;
     const Transformation<scalar_t> &get_transformation() const override;
     Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
     Sorting get_sorter(TransformationType label) const override;

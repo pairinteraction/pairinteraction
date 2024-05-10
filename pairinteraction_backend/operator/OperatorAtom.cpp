@@ -1,6 +1,16 @@
 #include "operator/OperatorAtom.hpp"
 #include "basis/BasisAtom.hpp"
 #include "database/Database.hpp"
+#include "enums/OperatorType.hpp"
+#include <limits>
+
+template <typename Scalar>
+OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis)
+    : Operator<OperatorAtom<Scalar>>(basis), type(OperatorType::ARBITRARY),
+      q(std::numeric_limits<int>::max()) {
+    this->matrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>(basis->get_number_of_states(),
+                                                                basis->get_number_of_states());
+}
 
 template <typename Scalar>
 OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q)

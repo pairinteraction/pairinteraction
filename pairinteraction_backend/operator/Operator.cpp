@@ -1,8 +1,9 @@
 #include "operator/Operator.hpp"
 #include "basis/BasisAtom.hpp"
+#include "enums/TransformationType.hpp"
 
-#include <numeric>
-#include <set>
+#include <Eigen/SparseCore>
+#include <memory>
 
 template <typename Derived>
 Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(basis) {}
@@ -21,27 +22,6 @@ template <typename Derived>
 const Eigen::SparseMatrix<typename Operator<Derived>::scalar_t, Eigen::RowMajor> &
 Operator<Derived>::get_matrix() const {
     return matrix;
-}
-
-template <typename Derived>
-const typename Operator<Derived>::ketvec_t &Operator<Derived>::get_kets() const {
-    return basis->get_kets();
-}
-
-template <typename Derived>
-const Eigen::SparseMatrix<typename Operator<Derived>::scalar_t, Eigen::RowMajor> &
-Operator<Derived>::get_coefficients() const {
-    return basis->get_coefficients();
-}
-
-template <typename Derived>
-size_t Operator<Derived>::get_number_of_states() const {
-    return basis->get_number_of_states();
-}
-
-template <typename Derived>
-size_t Operator<Derived>::get_number_of_kets() const {
-    return basis->get_number_of_kets();
 }
 
 template <typename Derived>

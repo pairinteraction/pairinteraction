@@ -6,5 +6,6 @@ enum class OperatorType {
     ELECTRIC_QUADRUPOLE, // Quadrupole operator
     ELECTRIC_OCTUPOLE,   // Octupole operator
     MAGNETIC_DIPOLE,     // Magnetic dipole operator
-    DIAMAGNETIC          // Part of the diamagnetic operator
+    DIAMAGNETIC,         // Part of the diamagnetic operator
+    ARBITRARY            // Arbitrary operator
 };
