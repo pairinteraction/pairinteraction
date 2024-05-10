@@ -44,7 +44,7 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
     std::string pylass_name = "KetAtomCreator" + type_name;
     nb::class_<KetAtomCreator<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
-        .def(nb::init<std::string, int, T, float, float>())
+        .def(nb::init<std::string, int, T, T, T>())
         .def("set_species", &KetAtomCreator<T>::set_species)
         .def("set_energy", &KetAtomCreator<T>::set_energy)
         .def("set_quantum_number_f", &KetAtomCreator<T>::set_quantum_number_f)

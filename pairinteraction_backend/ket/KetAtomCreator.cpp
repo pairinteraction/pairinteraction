@@ -8,7 +8,7 @@
 #include <limits>
 
 template <typename Real>
-KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, float j, float m)
+KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, Real j, Real m)
     : species(species), quantum_number_f(j), quantum_number_m(m), quantum_number_n(n),
       quantum_number_l(l), quantum_number_s(0.5), quantum_number_j(j) {}
 
@@ -25,13 +25,13 @@ KetAtomCreator<Real> &KetAtomCreator<Real>::set_energy(Real value) {
 }
 
 template <typename Real>
-KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_f(float value) {
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_f(Real value) {
     quantum_number_f.emplace(value);
     return *this;
 }
 
 template <typename Real>
-KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_m(float value) {
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_m(Real value) {
     quantum_number_m.emplace(value);
     return *this;
 }

@@ -18,16 +18,16 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, 
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(float min,
-                                                                              float max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(real_t min,
+                                                                              real_t max) {
     min_quantum_number_f.emplace(min);
     max_quantum_number_f.emplace(max);
     return *this;
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(float min,
-                                                                              float max) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(real_t min,
+                                                                              real_t max) {
     min_quantum_number_m.emplace(min);
     max_quantum_number_m.emplace(max);
     return *this;

@@ -34,7 +34,7 @@ size_t KetClassicalLight<Real>::get_id() const {
 
 template <typename Real>
 size_t
-KetClassicalLight<Real>::get_id_for_different_quantum_number_m(float new_quantum_number_m) const {
+KetClassicalLight<Real>::get_id_for_different_quantum_number_m(Real new_quantum_number_m) const {
     if (new_quantum_number_m != 0) {
         throw std::invalid_argument(
             "Classical light cannot have a different quantum number m than zero.");

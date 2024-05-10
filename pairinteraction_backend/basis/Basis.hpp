@@ -43,8 +43,8 @@ public:
     const ketvec_t &get_kets() const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
-    float get_quantum_number_f(size_t index_state) const;
-    float get_quantum_number_m(size_t index_state) const;
+    real_t get_quantum_number_f(size_t index_state) const;
+    real_t get_quantum_number_m(size_t index_state) const;
     int get_parity(size_t index_state) const;
 
     class Iterator {
@@ -83,8 +83,8 @@ protected:
 
 private:
     const Derived &derived() const;
-    std::vector<float> quantum_number_f_of_states;
-    std::vector<float> quantum_number_m_of_states;
+    std::vector<real_t> quantum_number_f_of_states;
+    std::vector<real_t> quantum_number_m_of_states;
     std::vector<int> parity_of_states;
     std::vector<int> ket_of_states;
 };
