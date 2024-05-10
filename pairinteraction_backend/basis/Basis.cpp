@@ -383,12 +383,12 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     Eigen::SparseMatrix<real_t> probs = transformation.matrix.cwiseAbs2().transpose();
 
     {
-        auto map = Eigen::Map<const Eigen::Vector<real_t, Eigen::Dynamic>>(
+        auto map = Eigen::Map<const Eigen::Matrix<real_t, Eigen::Dynamic, 1>>(
             transformed->quantum_number_f_of_states.data(),
             transformed->quantum_number_f_of_states.size());
-        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
-        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
-        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -400,12 +400,12 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     }
 
     {
-        auto map = Eigen::Map<const Eigen::Vector<real_t, Eigen::Dynamic>>(
+        auto map = Eigen::Map<const Eigen::Matrix<real_t, Eigen::Dynamic, 1>>(
             transformed->quantum_number_m_of_states.data(),
             transformed->quantum_number_m_of_states.size());
-        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
-        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
-        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -420,9 +420,9 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         auto map = Eigen::Map<const Eigen::VectorXi>(transformed->parity_of_states.data(),
                                                      transformed->parity_of_states.size())
                        .template cast<real_t>();
-        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
-        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
-        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
+        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
