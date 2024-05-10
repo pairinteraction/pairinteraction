@@ -25,8 +25,7 @@ inline Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_ax
     auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_z_axis.data()).normalized();
     auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_y_axis.data()).normalized();
 
-    Real tolerance = 1e-16;
-    if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > tolerance) {
+    if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > std::numeric_limits<Real>::epsilon()) {
         throw std::runtime_error("The z-axis and the y-axis are not orhogonal.");
     }
 

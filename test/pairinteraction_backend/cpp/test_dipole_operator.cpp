@@ -37,7 +37,8 @@ int main() {
     OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2, OperatorType::ELECTRIC_DIPOLE, 0);
     float dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) > 1e-6) {
+    if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) >
+        10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct.");
         return 1;
     }
@@ -45,7 +46,8 @@ int main() {
     dipole_ket1_ket2 = 2 * dipole_ket1_ket2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 2 * 1247.5955810546875) > 1e-6) {
+    if (std::abs(dipole_ket1_ket2_value - 2 * 1247.5955810546875) >
+        10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after multiplication by a scalar.");
         return 1;
     }
@@ -53,7 +55,8 @@ int main() {
     dipole_ket1_ket2 = dipole_ket1_ket2 + dipole_ket1_ket2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 4 * 1247.5955810546875) > 1e-6) {
+    if (std::abs(dipole_ket1_ket2_value - 4 * 1247.5955810546875) >
+        10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after summation.");
         return 1;
     }
