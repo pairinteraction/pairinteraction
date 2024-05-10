@@ -1,6 +1,7 @@
 #include "basis/BasisAtom.hpp"
 #include "basis/BasisAtomCreator.hpp"
 #include "database/Database.hpp"
+#include "enums/OperatorType.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
 #include "operator/OperatorAtom.hpp"
