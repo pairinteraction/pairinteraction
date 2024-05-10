@@ -383,8 +383,6 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     Eigen::SparseMatrix<float> probs =
         (transformation.matrix.cwiseAbs2().transpose()).template cast<float>();
 
-    float tolerance = 1e-16;
-
     {
         auto map =
             Eigen::Map<const Eigen::VectorXf>(transformed->quantum_number_f_of_states.data(),
@@ -394,7 +392,7 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
-            if (diff[i] < tolerance) {
+            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
                 transformed->quantum_number_f_of_states[i] = val[i];
             } else {
                 transformed->quantum_number_f_of_states[i] = std::numeric_limits<float>::max();
@@ -411,7 +409,7 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
-            if (diff[i] < tolerance) {
+            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
                 transformed->quantum_number_m_of_states[i] = val[i];
             } else {
                 transformed->quantum_number_m_of_states[i] = std::numeric_limits<float>::max();
@@ -428,7 +426,7 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
-            if (diff[i] < tolerance) {
+            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
                 transformed->parity_of_states[i] = static_cast<int>(val[i]);
             } else {
                 transformed->parity_of_states[i] = std::numeric_limits<int>::max();
