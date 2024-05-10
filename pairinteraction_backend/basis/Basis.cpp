@@ -46,12 +46,12 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-float Basis<Derived>::get_quantum_number_f(size_t index_state) const {
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t index_state) const {
     return quantum_number_f_of_states[index_state];
 }
 
 template <typename Derived>
-float Basis<Derived>::get_quantum_number_m(size_t index_state) const {
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t index_state) const {
     return quantum_number_m_of_states[index_state];
 }
 
@@ -116,9 +116,9 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
     std::vector<Eigen::Triplet<scalar_t>> entries;
 
     for (size_t idx_initial = 0; idx_initial < kets.size(); ++idx_initial) {
-        float f = kets[idx_initial]->get_quantum_number_f();
-        float m_initial = kets[idx_initial]->get_quantum_number_m();
-        for (float m_final = -f; m_final <= f; ++m_final) {
+        real_t f = kets[idx_initial]->get_quantum_number_f();
+        real_t m_initial = kets[idx_initial]->get_quantum_number_m();
+        for (real_t m_final = -f; m_final <= f; ++m_final) {
             scalar_t val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
                                                                        beta, gamma);
             size_t idx_final = ket_id_to_index.at(
@@ -200,7 +200,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
 
-        if (quantum_number_f_of_states[perm.back()] == std::numeric_limits<float>::max()) {
+        if (quantum_number_f_of_states[perm.back()] == std::numeric_limits<real_t>::max()) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number f.");
         }
@@ -214,7 +214,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
 
-        if (quantum_number_m_of_states[perm.back()] == std::numeric_limits<float>::max()) {
+        if (quantum_number_m_of_states[perm.back()] == std::numeric_limits<real_t>::max()) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the quantum number m.");
         }
@@ -250,8 +250,8 @@ template <typename Derived>
 Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const {
     Blocks blocks;
 
-    float last_quantum_number_f = quantum_number_f_of_states[0];
-    float last_quantum_number_m = quantum_number_m_of_states[0];
+    real_t last_quantum_number_f = quantum_number_f_of_states[0];
+    real_t last_quantum_number_m = quantum_number_m_of_states[0];
     int last_parity = parity_of_states[0];
     int last_ket = ket_of_states[0];
     blocks.start.push_back(0);
@@ -380,39 +380,38 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         transformed->coefficients.transformation_type.push_back(t);
     }
 
-    Eigen::SparseMatrix<float> probs =
-        (transformation.matrix.cwiseAbs2().transpose()).template cast<float>();
+    Eigen::SparseMatrix<real_t> probs = transformation.matrix.cwiseAbs2().transpose();
 
     {
-        auto map =
-            Eigen::Map<const Eigen::VectorXf>(transformed->quantum_number_f_of_states.data(),
-                                              transformed->quantum_number_f_of_states.size());
-        Eigen::VectorXf val = probs * map;
-        Eigen::VectorXf sq = probs * map.cwiseAbs2();
-        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+        auto map = Eigen::Map<const Eigen::Vector<real_t, Eigen::Dynamic>>(
+            transformed->quantum_number_f_of_states.data(),
+            transformed->quantum_number_f_of_states.size());
+        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
+        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
+        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
+            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
                 transformed->quantum_number_f_of_states[i] = val[i];
             } else {
-                transformed->quantum_number_f_of_states[i] = std::numeric_limits<float>::max();
+                transformed->quantum_number_f_of_states[i] = std::numeric_limits<real_t>::max();
             }
         }
     }
 
     {
-        auto map =
-            Eigen::Map<const Eigen::VectorXf>(transformed->quantum_number_m_of_states.data(),
-                                              transformed->quantum_number_m_of_states.size());
-        Eigen::VectorXf val = probs * map;
-        Eigen::VectorXf sq = probs * map.cwiseAbs2();
-        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+        auto map = Eigen::Map<const Eigen::Vector<real_t, Eigen::Dynamic>>(
+            transformed->quantum_number_m_of_states.data(),
+            transformed->quantum_number_m_of_states.size());
+        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
+        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
+        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
+            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
                 transformed->quantum_number_m_of_states[i] = val[i];
             } else {
-                transformed->quantum_number_m_of_states[i] = std::numeric_limits<float>::max();
+                transformed->quantum_number_m_of_states[i] = std::numeric_limits<real_t>::max();
             }
         }
     }
@@ -420,13 +419,13 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     {
         auto map = Eigen::Map<const Eigen::VectorXi>(transformed->parity_of_states.data(),
                                                      transformed->parity_of_states.size())
-                       .template cast<float>();
-        Eigen::VectorXf val = probs * map;
-        Eigen::VectorXf sq = probs * map.cwiseAbs2();
-        Eigen::VectorXf diff = (val * val - sq).cwiseAbs();
+                       .template cast<real_t>();
+        Eigen::Vector<real_t, Eigen::Dynamic> val = probs * map;
+        Eigen::Vector<real_t, Eigen::Dynamic> sq = probs * map.cwiseAbs2();
+        Eigen::Vector<real_t, Eigen::Dynamic> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<float>::epsilon()) {
+            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
                 transformed->parity_of_states[i] = static_cast<int>(val[i]);
             } else {
                 transformed->parity_of_states[i] = std::numeric_limits<int>::max();

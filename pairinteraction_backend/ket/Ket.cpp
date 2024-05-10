@@ -3,7 +3,7 @@
 #include <limits>
 
 template <typename Real>
-Ket<Real>::Ket(Real energy, float f, float m, int p)
+Ket<Real>::Ket(Real energy, Real f, Real m, int p)
     : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p) {}
 
 template <typename Real>
@@ -12,12 +12,12 @@ Real Ket<Real>::get_energy() const {
 }
 
 template <typename Real>
-float Ket<Real>::get_quantum_number_f() const {
+Real Ket<Real>::get_quantum_number_f() const {
     return quantum_number_f;
 }
 
 template <typename Real>
-float Ket<Real>::get_quantum_number_m() const {
+Real Ket<Real>::get_quantum_number_m() const {
     return quantum_number_m;
 }
 

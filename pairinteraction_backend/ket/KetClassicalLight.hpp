@@ -16,7 +16,7 @@ public:
     KetClassicalLight(Private, Real photon_energy, int q);
     std::string get_label() const override;
     size_t get_id() const override;
-    size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const override;
+    size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;
     Real get_photon_energy() const;
     int get_quantum_number_q() const;
 
