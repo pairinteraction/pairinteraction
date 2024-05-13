@@ -153,12 +153,12 @@ class Model(BaseModel):
         return self
 
 
-def create_model(settings: Union[Dict, Model, str]) -> Model:
+def create_model(model: Union[Dict, Model, str]) -> Model:
     """Create a model from a dictionary, a json string or a model."""
-    if isinstance(settings, Model):
-        return settings
-    if isinstance(settings, dict):
-        return Model.model_validate(settings)
-    if isinstance(settings, str):
-        return Model.model_validate_json(settings)
-    raise ValueError(f"settings should be a dict, a json string or a Model, but got {type(settings)}")
+    if isinstance(model, Model):
+        return model
+    if isinstance(model, dict):
+        return Model.model_validate(model)
+    if isinstance(model, str):
+        return Model.model_validate_json(model)
+    raise ValueError(f"model should be a dict, a json string or a Model, but got {type(model)}")

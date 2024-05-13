@@ -39,13 +39,13 @@ class BaseSimulation:
     the results.
     """
 
-    def __init__(self, settings: Union[Model, Dict]):
+    def __init__(self, model: Union[Model, Dict]):
         """Initialize the simulation object
 
         Args:
-            settings (dict): Settings for the simulation
+            model (dict): Model for the simulation
         """
-        self.settings: Model = create_model(settings)
+        self.model: Model = create_model(model)
         self.bases = {}
         self.constituents = {}
 
@@ -59,12 +59,12 @@ class Simulation(BaseSimulation):
     """
 
     def run(self):
-        for key, model in self.settings.constituents.items():
+        for key, model in self.model.constituents.items():
             self.finish_model_constituent(model)
             system = self.create_constituent(key, model)
             self.diagonalize_system(system, model)
 
-        model = self.settings.interactions
+        model = self.model.interactions
         self.finish_model_interactions(model)
         system = self.create_system_interactions(model)
         self.diagonalize_system(system, model)
@@ -128,7 +128,7 @@ class Simulation(BaseSimulation):
         system = SystemAtom(basis)
         system.set_efield(model.efield)
         system.set_bfield(model.bfield)
-        self.set_system_numerics(system, self.settings.numerics)
+        self.set_system_numerics(system, self.model.numerics)
 
         # Option 2  # currently not supported, mybe later implemented in python
         # system_options = {...}
@@ -162,7 +162,7 @@ class Simulation(BaseSimulation):
         system.set_distance(model.distance)
         system.set_angle(model.angle)
 
-        self.set_system_numerics(system, self.settings.numerics)
+        self.set_system_numerics(system, self.model.numerics)
         return system
 
     def set_system_numerics(self, system: System, numerics: ModelNumerics):

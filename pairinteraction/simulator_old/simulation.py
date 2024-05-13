@@ -14,13 +14,13 @@ class BaseSimulation:
     the results.
     """
 
-    def __init__(self, settings: Union[Model, Dict]):
+    def __init__(self, model: Union[Model, Dict]):
         """Initialize the simulation object
 
         Args:
-            settings (dict): Settings for the simulation
+            model (dict): Model for the simulation
         """
-        self.settings: Model = create_model(settings)
+        self.model: Model = create_model(model)
 
     def create_atom_system(self) -> Atom:
         """Create the atom system
@@ -28,10 +28,10 @@ class BaseSimulation:
         Returns:
             atom_system: Atom system object
         """
-        if self.settings.atom2 is None:
-            atom_system = AtomOne(self.settings)
+        if self.model.atom2 is None:
+            atom_system = AtomOne(self.model)
         else:
-            atom_system = AtomTwo(self.settings)
+            atom_system = AtomTwo(self.model)
         return atom_system
 
     @staticmethod
@@ -48,7 +48,7 @@ class BaseSimulation:
         # TODO: possibility to save the atom_system in results?
         results = {
             "energies": atom_system.energies,
-            "settings": atom_system.settings.model_dump(),
+            "model": atom_system.model.model_dump(),
         }
         return results
 
@@ -64,19 +64,19 @@ class OneSimulation(BaseSimulation):
     the results.
     """
 
-    def __init__(self, settings: Union[Model, Dict]):
+    def __init__(self, model: Union[Model, Dict]):
         """Initialize the simulation object
 
         Args:
-            settings (dict): Settings for the simulation
+            model (dict): Model for the simulation
         """
-        super().__init__(settings)
+        super().__init__(model)
         assert (
-            self.settings.parameter_range_options.steps == 1
+            self.model.parameter_range_options.steps == 1
         ), "SimpleSimulation is only for doing one run. Use Simulation for multiple runs."
 
     def run(self) -> Dict:
-        """Run a simple simulation of the settings.
+        """Run a simple simulation of the model.
 
         Returns:
             results: Dictionary containing the results of the simulation
@@ -97,7 +97,7 @@ class Simulation(BaseSimulation):
     """
 
     def run(self) -> List[Dict]:
-        """Run a simple (not parallelized) simulations of the settings.
+        """Run a simple (not parallelized) simulations of the model.
 
         Returns:
             results_list: List of dictionaries containing the results of the simulations.
@@ -106,7 +106,7 @@ class Simulation(BaseSimulation):
         atom_system = self.create_atom_system()
         self.atom_system = atom_system
 
-        for i in range(self.settings.parameter_range_options.steps):
+        for i in range(self.model.parameter_range_options.steps):
             atom_system.updateParameterStep(i)
             results = self.results_from_atom_system(atom_system)
             results_list.append(results)

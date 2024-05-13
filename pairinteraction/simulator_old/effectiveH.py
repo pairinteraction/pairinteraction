@@ -12,15 +12,15 @@ from pairinteraction.validator.model import Model
 
 
 class EffectiveH:
-    def __init__(self, settings: Union[Model, dict], options: Optional[dict] = None):
-        if not isinstance(settings, Model):
-            settings = Model.model_validate(settings)
-        self.settings = settings
+    def __init__(self, model: Union[Model, dict], options: Optional[dict] = None):
+        if not isinstance(model, Model):
+            model = Model.model_validate(model)
+        self.model = model
         self.options = {} if options is None else options
 
         # this atomtwo is only used as shorthand access to it's atom1 and atom2,
         # since we did not choose any subspace yet, we never should build the atomtwo system!
-        self.atom = AtomTwo(self.settings)
+        self.atom = AtomTwo(self.model)
         self.atom._system = "Do not access this!"
 
         self.hamiltonians = {}
@@ -57,14 +57,14 @@ class EffectiveH:
 
         # else: init all possible subspaces from atom1 and atom2 qnumbers,
         # which twoatom states are in the twoatom dEnergy range
-        atom, settings = self.atom, self.settings
-        dEnergy = settings.interactions.delta_energy
+        atom, model = self.atom, self.model
+        dEnergy = model.interactions.delta_energy
         if dEnergy is None:
             raise ValueError("dEnergy not set, cannot calculate subspaces!")
 
         Es = {
-            1: [atom.atom1.getStateEnergy(s) for s in settings.atom1.states_of_interest],
-            2: [atom.atom2.getStateEnergy(s) for s in settings.atom2.states_of_interest],
+            1: [atom.atom1.getStateEnergy(s) for s in model.atom1.states_of_interest],
+            2: [atom.atom2.getStateEnergy(s) for s in model.atom2.states_of_interest],
         }
 
         EPair = [E1 + E2 for E1 in Es[1] for E2 in Es[2]]
@@ -85,9 +85,9 @@ class EffectiveH:
     def calcSubspaces(self):
         self.effectiveSubspaces = []
         for ids in self.subspacesIds:
-            settings = self.settings.model_dump()
-            settings["interactions"]["combined_states_of_interest"] = [{"atom1": i1, "atom2": i2} for (i1, i2) in ids]
-            effS = EffectiveSubspace(settings)
+            model = self.model.model_dump()
+            model["interactions"]["combined_states_of_interest"] = [{"atom1": i1, "atom2": i2} for (i1, i2) in ids]
+            effS = EffectiveSubspace(model)
             effS.run()
             self.effectiveSubspaces.append(effS)
 
@@ -106,21 +106,21 @@ class EffectiveH:
 
             # Reorder the basis of the total Hamiltonian
             oldBasis = [idSingle for ids in self.subspacesIds for idSingle in ids]
-            dim2 = len(self.settings.atom2.states_of_interest)
+            dim2 = len(self.model.atom2.states_of_interest)
             basisMapping = np.argsort([id1 * dim2 + id2 for (id1, id2) in oldBasis])
             self.hamiltonians[pert] = H[basisMapping[:, np.newaxis], basisMapping]
 
         self.hamiltonians["effective"] = self.hamiltonians["perturbed"] - self.hamiltonians["unperturbed"]
         self.basisIds = [oldBasis[i] for i in basisMapping]
         self.basis = [
-            (self.settings.atom1.states_of_interest[id1], self.settings.atom2.states_of_interest[id2])
+            (self.model.atom1.states_of_interest[id1], self.model.atom2.states_of_interest[id2])
             for (id1, id2) in self.basisIds
         ]
 
     def constructOnsite(self):
         """Construct onsite energies"""
-        assert self.settings.atom1 == self.settings.atom2
-        Es = [self.atom.atom1.getStateEnergy(s) for s in self.settings.atom1.states_of_interest]
+        assert self.model.atom1 == self.model.atom2
+        Es = [self.atom.atom1.getStateEnergy(s) for s in self.model.atom1.states_of_interest]
         self.hamiltonians["onsite"] = np.diag(Es)
 
     def deleteCppObjects(self):
@@ -137,18 +137,18 @@ class EffectiveH:
 class EffectiveSubspace:
     """Class describing one subspace of the EffectiveH class."""
 
-    def __init__(self, settings: Union[Model, dict]):
-        if not isinstance(settings, Model):
-            settings = Model.model_validate(settings)
-        self.settings = settings
+    def __init__(self, model: Union[Model, dict]):
+        if not isinstance(model, Model):
+            model = Model.model_validate(model)
+        self.model = model
         self.configInt = {
-            "distance": settings.interactions.distance.get_value(),
-            "angle": settings.interactions.angle.get_value(),
+            "distance": model.interactions.distance.get_value(),
+            "angle": model.interactions.angle.get_value(),
         }
-        settings.interactions.distance = None
-        settings.interactions.angle = None
+        model.interactions.distance = None
+        model.interactions.angle = None
 
-        self.atom = AtomTwo(settings)
+        self.atom = AtomTwo(model)
         self.hamiltonians = {}
 
     def run(self):
@@ -186,7 +186,7 @@ class EffectiveSubspace:
         # now we constrain the basis states to only consist of the wanted states
         subspace = [
             pireal.StateTwo(cs["atom1"].state, cs["atom2"].state)
-            for cs in self.settings.interactions.combined_states_of_interest
+            for cs in self.model.interactions.combined_states_of_interest
         ]
         system.constrainBasisvectors(
             system.getBasisvectorIndex(subspace)
