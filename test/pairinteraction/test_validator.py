@@ -19,7 +19,7 @@ class SimulationTests(unittest.TestCase):
             self._one_test_model(name)
 
     def _one_test_model(self, name):
-        self.load_model(name)
+        self.model = Model.model_validate_json_file(models_directory / f"{name}.json")
         output = self.model.model_dump(exclude_unset=True)
 
         reference_path = directory / "data" / f"{name}__model.json"
@@ -70,11 +70,6 @@ class SimulationTests(unittest.TestCase):
         model["atom1"]["bfield_y"] = 0
         model = Model.model_validate(model)
         assert model.atom1.is_real
-
-    def load_model(self, name):
-        with open(models_directory / f"{name}.json", encoding="utf-8") as f:
-            model = json.load(f)
-        self.model = Model.model_validate(model)
 
     def remove_cache(self):
         if self.model.numerics.path_cache is not None:

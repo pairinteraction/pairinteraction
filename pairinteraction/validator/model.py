@@ -152,13 +152,13 @@ class Model(BaseModel):
         self.parameter_range_options  # noqa: B018
         return self
 
+    @classmethod
+    def model_validate_json_file(cls, path: str, **kwargs) -> "Model":
+        """Validate the model from a json file."""
+        with open(path, encoding="utf-8") as f:
+            return cls.model_validate_json(f.read(), **kwargs)
 
-def create_model(model: Union[Dict, Model, str]) -> Model:
-    """Create a model from a dictionary, a json string or a model."""
-    if isinstance(model, Model):
-        return model
-    if isinstance(model, dict):
-        return Model.model_validate(model)
-    if isinstance(model, str):
-        return Model.model_validate_json(model)
-    raise ValueError(f"model should be a dict, a json string or a Model, but got {type(model)}")
+    def model_dump_json_file(self, path: str, **kwargs) -> None:
+        """Dump the model to a json file."""
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(**kwargs))

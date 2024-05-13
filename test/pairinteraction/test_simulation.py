@@ -1,4 +1,3 @@
-import json
 import shutil
 import unittest
 from pathlib import Path
@@ -17,18 +16,13 @@ class SimulationTests(unittest.TestCase):
         for name in names:
             self._one_test_simulation(name)
 
-    def load_model(self, name):
-        with open(f"{directory}/models/{name}.json", encoding="utf-8") as f:
-            model = json.load(f)
-        self.model = Model.model_validate(model)
-
     def _one_test_simulation(self, name):
-        self.load_model(name)
+        self.model = Model.model_validate_json_file(directory / "models" / f"{name}.json")
         simulation = Simulation(self.model)
         results_list = simulation.run()
         energies_list = [results["energies"] for results in results_list]
 
-        reference_path = f"{directory}/data/{name}__energies.txt"
+        reference_path = directory / "data" / f"{name}__energies.txt"
         # use this for updating the reference
         # self.save_energies_list(reference_path, energies_list)
 
