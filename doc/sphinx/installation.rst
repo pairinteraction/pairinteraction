@@ -146,7 +146,8 @@ This can be done e.g. by adding the following lines to the top of a Python scrip
     import sys
     sys.path.append("/your/path/to/pairinteraction/build")
 
-Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can disable the graphical user interface by running CMake with ``cmake -DWITH_GUI=OFF ..``. A full list of build options is provided in the following:
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can disable the graphical user interface by running CMake with ``cmake -DWITH_GUI=OFF ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+A full list of build options is provided in the following:
 
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
