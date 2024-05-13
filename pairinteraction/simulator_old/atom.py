@@ -10,9 +10,9 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from pairinteraction import picomplex, pireal
+from pairinteraction.model.model import Model
+from pairinteraction.model.states import BaseModelState
 from pairinteraction.simulator_old.exceptions import CppDeleted, CppObjectAlreadyDeleted, QnNotFoundError
-from pairinteraction.validator.model import Model
-from pairinteraction.validator.states import BaseModelState
 
 logger = logging.getLogger(__name__)
 

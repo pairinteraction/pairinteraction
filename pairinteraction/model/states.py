@@ -6,7 +6,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from pairinteraction import pireal
-from pairinteraction.validator.misc import (
+from pairinteraction.model.misc import (
     OLD_TO_NEW_SPECIES,
     HalfInt,
     PositiveFloat,

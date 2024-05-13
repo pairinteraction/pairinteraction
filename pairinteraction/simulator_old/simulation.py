@@ -2,8 +2,8 @@
 
 from typing import Dict, List, Union
 
+from pairinteraction.model.model import Model
 from pairinteraction.simulator_old.atom import Atom, AtomOne, AtomTwo
-from pairinteraction.validator.model import Model
 
 
 class BaseSimulation:
