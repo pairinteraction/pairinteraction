@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pairinteraction.validator.model import Model
+from pairinteraction.model.model import Model
 
 directory = Path(__file__).parent
 models_directory = directory / "models"

@@ -13,10 +13,10 @@ from typing import Dict, Union
 #     SystemCombined,
 #     SystemWithInteractions,
 # )
-from pairinteraction.validator.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
-from pairinteraction.validator.interactions import ModelInteractions
-from pairinteraction.validator.model import Model
-from pairinteraction.validator.numerics import ModelNumerics
+from pairinteraction.model.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
+from pairinteraction.model.interactions import ModelInteractions
+from pairinteraction.model.model import Model
+from pairinteraction.model.numerics import ModelNumerics
 
 BasisAtom = (
     BasisAtomCreator

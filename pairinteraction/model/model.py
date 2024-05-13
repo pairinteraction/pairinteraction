@@ -15,16 +15,16 @@ from pydantic import (
     model_validator,
 )
 
-from pairinteraction.validator.constituents import (
+from pairinteraction.model.constituents import (
     BaseModelConstituent,
     ModelAtom,
     ModelClassicalLight,
 )
-from pairinteraction.validator.interactions import ModelInteractions
-from pairinteraction.validator.misc import ConstituentString
-from pairinteraction.validator.numerics import ModelNumerics
-from pairinteraction.validator.overlaps import ModelOverlaps
-from pairinteraction.validator.parameter import ParameterRange, ParameterRangeOptions
+from pairinteraction.model.interactions import ModelInteractions
+from pairinteraction.model.misc import ConstituentString
+from pairinteraction.model.numerics import ModelNumerics
+from pairinteraction.model.overlaps import ModelOverlaps
+from pairinteraction.model.parameter import ParameterRange, ParameterRangeOptions
 
 
 class Model(BaseModel):

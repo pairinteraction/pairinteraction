@@ -12,14 +12,14 @@ from pydantic import (
     model_validator,
 )
 
-from pairinteraction.validator import misc
-from pairinteraction.validator.misc import ExtraField, HalfInt, LeftToRightField, SpeciesString
-from pairinteraction.validator.parameter import UnionParameter
-from pairinteraction.validator.reusing_validators import (
+from pairinteraction.model import misc
+from pairinteraction.model.misc import ExtraField, HalfInt, LeftToRightField, SpeciesString
+from pairinteraction.model.parameter import UnionParameter
+from pairinteraction.model.reusing_validators import (
     one_use_delta_and_soi,
     use_parameter_if_float,
 )
-from pairinteraction.validator.states import UnionModelStates
+from pairinteraction.model.states import UnionModelStates
 
 
 class BaseModelConstituent(BaseModel):

@@ -3,7 +3,7 @@
 
 from typing import Union
 
-from pairinteraction.validator.misc import PossibleParameterTypesAsTuple
+from pairinteraction.model.misc import PossibleParameterTypesAsTuple
 
 
 def one_use_delta_and_soi(self, attr: str, use_combined=False) -> None:

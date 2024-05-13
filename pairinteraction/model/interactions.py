@@ -4,13 +4,13 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from pairinteraction.validator.misc import ConstituentString
-from pairinteraction.validator.parameter import UnionParameter
-from pairinteraction.validator.reusing_validators import (
+from pairinteraction.model.misc import ConstituentString
+from pairinteraction.model.parameter import UnionParameter
+from pairinteraction.model.reusing_validators import (
     one_use_delta_and_soi,
     use_parameter_if_float,
 )
-from pairinteraction.validator.states import UnionModelStates
+from pairinteraction.model.states import UnionModelStates
 
 
 class ModelInteractions(BaseModel):
