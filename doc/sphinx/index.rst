@@ -83,8 +83,7 @@ User Guide
     these tutorials enable you to leverage pairinteraction for your projects.
 
 Contributer Guide
-    :doc:`ways` - Discover the many ways you can contribute to improving pairinteraction,
-    from contributions to the repository to providing quantum defects.
+    :doc:`ways` - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
 
     :doc:`repo` - Ready to dive into development? Here's how to set up your environment for pairinteraction development,
     ensuring you have all the tools you need.
