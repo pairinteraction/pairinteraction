@@ -15,7 +15,7 @@ from typing import Dict, Union
 # )
 from pairinteraction.validator.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
 from pairinteraction.validator.interactions import ModelInteractions
-from pairinteraction.validator.model import Model, create_model
+from pairinteraction.validator.model import Model
 from pairinteraction.validator.numerics import ModelNumerics
 
 BasisAtom = (
@@ -45,7 +45,7 @@ class BaseSimulation:
         Args:
             model (dict): Model for the simulation
         """
-        self.model: Model = create_model(model)
+        self.model: Model = Model.model_validate(model)
         self.bases = {}
         self.constituents = {}
 

@@ -3,7 +3,7 @@
 from typing import Dict, List, Union
 
 from pairinteraction.simulator_old.atom import Atom, AtomOne, AtomTwo
-from pairinteraction.validator.model import Model, create_model
+from pairinteraction.validator.model import Model
 
 
 class BaseSimulation:
@@ -20,7 +20,7 @@ class BaseSimulation:
         Args:
             model (dict): Model for the simulation
         """
-        self.model: Model = create_model(model)
+        self.model: Model = Model.model_validate(model)
 
     def create_atom_system(self) -> Atom:
         """Create the atom system
