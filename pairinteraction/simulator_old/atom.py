@@ -22,12 +22,12 @@ class Atom:
 
     Parameters
     ----------
-    settings : dict or Model
+    model : dict or Model
         Dictionary (or Model object) containing all relevant parameters for the calculation.
 
     Attributes
     ----------
-    settings : Model
+    model : Model
         Containing all relevant parameters for the calculation.
     system : pi.(SystemOneReal, SystemOneComplex, SystemTwoReal, SystemTwoComplex)
         This is the actual system.
@@ -59,15 +59,15 @@ class Atom:
     qnumber_basis = ["n", "l", "j", "m"]
     qnumber_types = {"n": int, "l": int, "j": float, "m": float}
 
-    def __init__(self, settings: Union[Model, dict]):
+    def __init__(self, model: Union[Model, dict]):
         logger.debug("Atom: Initializing Atom object %s.", self.__class__.__name__)
-        if not isinstance(settings, Model):
-            settings = Model.model_validate(settings)
-        self.settings = settings
-        self.s_atom1 = settings.atom1
-        self.s_atom2 = settings.atom2
-        self.s_interactions = settings.interactions
-        self.s_numerics = settings.numerics
+        if not isinstance(model, Model):
+            model = Model.model_validate(model)
+        self.model = model
+        self.s_atom1 = model.atom1
+        self.s_atom2 = model.atom2
+        self.s_interactions = model.interactions
+        self.s_numerics = model.numerics
 
         self._setdefaultProperties()
 
@@ -388,7 +388,7 @@ class Atom:
     def updateParameterStep(self, step: int) -> bool:
         if self._parameter_step == step:
             return False
-        parameter_range_options = self.settings.parameter_range_options
+        parameter_range_options = self.model.parameter_range_options
         if not 0 <= step < parameter_range_options.steps:
             raise ValueError(f"Invalid step {step} for AtomOne.updateParameterStep")
         self._parameter_step = step
@@ -422,11 +422,11 @@ class Atom:
 class AtomOne(Atom):
     nAtoms = 1
 
-    def __init__(self, settings: Union[Model, dict], iAtom: int = 1):
-        super().__init__(settings)
+    def __init__(self, model: Union[Model, dict], iAtom: int = 1):
+        super().__init__(model)
 
         self.iAtom = int(iAtom)
-        self.s_atom = getattr(self.settings, f"atom{self.iAtom}")
+        self.s_atom = getattr(self.model, f"atom{self.iAtom}")
 
     def _createSystem(self):
         """Creating the actual pi.SystemOne."""
@@ -500,7 +500,7 @@ class AtomOne(Atom):
         updated = super().updateParameterStep(step)
         if not updated:
             return False
-        parameters = self.settings.parameter_range_options.parameters
+        parameters = self.model.parameter_range_options.parameters
 
         if any(k in parameters for k in ["efield_x", "efield_y", "efield_z", "bfield_x", "bfield_y", "bfield_z"]):
             self._energies, self._vectors, self._overlaps = None, None, None
@@ -513,8 +513,8 @@ class AtomOne(Atom):
 class AtomTwo(Atom):
     nAtoms = 2
 
-    def __init__(self, settings: Union[Model, dict]):
-        super().__init__(settings)
+    def __init__(self, model: Union[Model, dict]):
+        super().__init__(model)
 
         # properties call by self.property without underscore to ensure, they are created first
         self._atom1 = None
@@ -544,7 +544,7 @@ class AtomTwo(Atom):
             return self.getAtom(1)
 
         if getattr(self, f"_atom{iAtom}") is None:
-            atom = AtomOne(self.settings, iAtom=iAtom)
+            atom = AtomOne(self.model, iAtom=iAtom)
             setattr(self, f"_atom{iAtom}", atom)
         return getattr(self, f"_atom{iAtom}")
 
@@ -671,7 +671,7 @@ class AtomTwo(Atom):
         for atom in self.atoms:
             atoms_updated = atom.updateParameterStep(step) or atoms_updated
 
-        parameters = self.settings.parameter_range_options.parameters
+        parameters = self.model.parameter_range_options.parameters
         if atoms_updated or any(
             k in parameters for k in [f"conserved_parity_under_{x}" for x in ["inversion", "permutation", "reflection"]]
         ):

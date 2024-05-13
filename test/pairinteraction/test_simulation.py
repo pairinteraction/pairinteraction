@@ -17,14 +17,14 @@ class SimulationTests(unittest.TestCase):
         for name in names:
             self._oneTestSimulation(name)
 
-    def loadSettings(self, name):
-        with open(f"{directory}/settings/{name}.json", encoding="utf-8") as f:
-            settings = json.load(f)
-        self.settings = Model.model_validate(settings)
+    def loadModel(self, name):
+        with open(f"{directory}/models/{name}.json", encoding="utf-8") as f:
+            model = json.load(f)
+        self.model = Model.model_validate(model)
 
     def _oneTestSimulation(self, name):
-        self.loadSettings(name)
-        simulation = Simulation(self.settings)
+        self.loadModel(name)
+        simulation = Simulation(self.model)
         results_list = simulation.run()
         energies_list = [results["energies"] for results in results_list]
 
@@ -51,9 +51,9 @@ class SimulationTests(unittest.TestCase):
             return [list(map(float, line.split())) for line in f]
 
     def removeCache(self):
-        if self.settings.numerics.path_cache is not None:
-            shutil.rmtree(self.settings.numerics.path_cache, ignore_errors=True)
-        self.settings = None
+        if self.model.numerics.path_cache is not None:
+            shutil.rmtree(self.model.numerics.path_cache, ignore_errors=True)
+        self.model = None
 
 
 if __name__ == "__main__":
