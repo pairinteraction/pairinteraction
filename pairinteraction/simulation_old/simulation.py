@@ -3,7 +3,7 @@
 from typing import Dict, List, Union
 
 from pairinteraction.model.model import ModelSimulation
-from pairinteraction.simulator_old.atom import Atom, AtomOne, AtomTwo
+from pairinteraction.simulation_old.atom import Atom, AtomOne, AtomTwo
 
 
 class BaseSimulation:
