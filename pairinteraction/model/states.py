@@ -6,8 +6,7 @@ from typing import List, Optional, Union
 from pydantic import BaseModel, ConfigDict, field_validator
 
 from pairinteraction import pireal
-from pairinteraction.model.misc import (
-    OLD_TO_NEW_SPECIES,
+from pairinteraction.model.types import (
     HalfInt,
     PositiveFloat,
     PositiveHalfInt,
@@ -56,7 +55,6 @@ class ModelStateAtomSimple(BaseModelStateAtom):
     def s(self) -> PositiveHalfInt:
         """Get the spin of the atom from the provided species."""
         species = self.species
-        species = OLD_TO_NEW_SPECIES.get(species, species)  # TODO NEW: remove this
         no_ending = not any(species.endswith(ending) for ending in ["singlet", "triplet", "mqdt"])
 
         if no_ending:

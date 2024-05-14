@@ -5,8 +5,8 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 
-from pairinteraction.model.misc import ConstituentString
 from pairinteraction.model.states import UnionModelStates
+from pairinteraction.model.types import ConstituentString
 
 
 class ModelOverlaps(BaseModel):

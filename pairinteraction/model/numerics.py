@@ -5,7 +5,7 @@ from typing import Literal, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_serializer, field_validator
 
-from pairinteraction.model.misc import Vector
+from pairinteraction.model.types import Vector
 
 QuantizationAxisString = Literal["x", "y", "z", "efield", "bfield", "distance"]
 

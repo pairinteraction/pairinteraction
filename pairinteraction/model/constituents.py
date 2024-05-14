@@ -12,14 +12,15 @@ from pydantic import (
     model_validator,
 )
 
-from pairinteraction.model import misc
-from pairinteraction.model.misc import ExtraField, HalfInt, LeftToRightField, SpeciesString
 from pairinteraction.model.parameter import UnionParameter
-from pairinteraction.model.reusing_validators import (
-    one_use_delta_and_soi,
-    use_parameter_if_float,
-)
 from pairinteraction.model.states import UnionModelStates
+from pairinteraction.model.types import HalfInt, SpeciesString
+from pairinteraction.model.utils import (
+    ExtraField,
+    LeftToRightField,
+    one_use_delta_and_soi,
+    validate_parameter,
+)
 
 
 class BaseModelConstituent(BaseModel):
@@ -77,9 +78,9 @@ class ModelAtom(BaseModelConstituent):
 
     additionally_included_states: List[UnionModelStates] = []
 
-    use_parameter_if_float = field_validator(
+    validate_parameter = field_validator(
         "efield_x", "efield_y", "efield_z", "bfield_x", "bfield_y", "bfield_z", mode="before"
-    )(use_parameter_if_float)
+    )(validate_parameter)
 
     @property
     def is_real(self) -> bool:
@@ -88,13 +89,6 @@ class ModelAtom(BaseModelConstituent):
         This defines wether to use pairinteraction.SystemOneReal or SystemOneComplex.
         """
         return not np.any(self.efield_y.list) and not np.any(self.bfield_y.list)
-
-    @field_validator("species", mode="before")
-    @classmethod
-    def old_species_names(cls, species: SpeciesString) -> SpeciesString:
-        """Translate the species to the old format."""
-        # TODO NEW: remove this whole field validator
-        return misc.NEW_TO_OLD_SPECIES.get(species, species)
 
     @field_validator("states_of_interest", "additionally_included_states", mode="before")
     @classmethod

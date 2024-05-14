@@ -4,13 +4,13 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from pairinteraction.model.misc import ConstituentString
 from pairinteraction.model.parameter import UnionParameter
-from pairinteraction.model.reusing_validators import (
-    one_use_delta_and_soi,
-    use_parameter_if_float,
-)
 from pairinteraction.model.states import UnionModelStates
+from pairinteraction.model.types import ConstituentString
+from pairinteraction.model.utils import (
+    one_use_delta_and_soi,
+    validate_parameter,
+)
 
 
 class ModelInteractions(BaseModel):
@@ -42,14 +42,14 @@ class ModelInteractions(BaseModel):
     # TODO: change name of use_delta_energy_after_fields?
     use_delta_energy_after_fields: Optional[bool] = None
 
-    use_parameter_if_float = field_validator(
+    validate_parameter = field_validator(
         "distance",
         "angle",
         "conserved_parity_under_inversion",
         "conserved_parity_under_reflection",
         "conserved_parity_under_permutation",
         mode="before",
-    )(use_parameter_if_float)
+    )(validate_parameter)
 
     @model_validator(mode="after")
     def use_delta_and_csoi(self) -> "ModelInteractions":
