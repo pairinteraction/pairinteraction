@@ -4,8 +4,6 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
-import pytest
-
 from pairinteraction.model.model import ModelSimulation
 
 directory = Path(__file__).parent
@@ -47,16 +45,16 @@ class SimulationTests(unittest.TestCase):
         # Lists must have same length/steps
         model = deepcopy(original_model_dict)
         model["atom1"]["bfield_y"] = [0, 0.1, 0.2, 0.4]
-        with pytest.raises(ValueError) as e_info:
+        with self.assertRaises(ValueError) as cm:
             model = ModelSimulation.model_validate(model)
-        assert "steps" in str(e_info.value)
+        assert "steps" in str(cm.exception)
 
         # States must have same species
         model = deepcopy(original_model_dict)
         model["atom1"]["states_of_interest"][0]["species"] = "Cs"
-        with pytest.raises(ValueError) as e_info:
+        with self.assertRaises(ValueError) as cm:
             model = ModelSimulation.model_validate(model)
-        assert "species" in str(e_info.value)
+        assert "species" in str(cm.exception)
 
         # Tests for is_real
         model = deepcopy(original_model_dict)
