@@ -66,8 +66,6 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
 
 #include <doctest/doctest.h>
 
-#define M_PI 3.14159265358979323846 // pi as defined in math.h
-
 DOCTEST_TEST_CASE("construction of rotation matrixes") {
     auto rotator = euler::get_rotation_matrix<double>({0, 0, 1}, {0, 1, 0});
     auto rotator_reference = Eigen::Matrix<double, 3, 3>::Identity();
@@ -91,11 +89,12 @@ DOCTEST_TEST_CASE("construction of rotation matrixes") {
 }
 
 DOCTEST_TEST_CASE("construction of zyz euler angles") {
+    constexpr double PI = 3.141592653589793238462643383279502884;
 
     auto euler_angles = euler::get_euler_angles<double>({1, 1, 0}, {0, 0, 1});
-    std::array<double, 3> euler_angles_reference{0.25 * M_PI, 0.5 * M_PI, 0.5 * M_PI};
+    std::array<double, 3> euler_angles_reference{0.25 * PI, 0.5 * PI, 0.5 * PI};
     DOCTEST_CHECK(std::abs(euler_angles[0] - euler_angles_reference[0]) +
                       std::abs(euler_angles[1] - euler_angles_reference[1]) +
-                      std::abs(euler_angles[2] - euler_angles_reference[2]) >=
+                      std::abs(euler_angles[2] - euler_angles_reference[2]) <=
                   1e-6);
 }
