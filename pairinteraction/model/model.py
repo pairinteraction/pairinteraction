@@ -27,13 +27,15 @@ from pairinteraction.model.overlaps import ModelOverlaps
 from pairinteraction.model.parameter import ParameterRange, ParameterRangeOptions
 
 
-class Model(BaseModel):
+class ModelSimulation(BaseModel):
     """Pydantic model for the input of a pairinteraction simulation."""
 
     # TODO: making this frozen does not freeze all the submodel!
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     _constituent_mapping: Dict[ConstituentString, ConstituentString] = {}
+
+    # The following fields correspond to the toplevel fields of the json file descirbing a simulation
     atom1: ModelAtom
     atom2: Optional[Union[ModelAtom, ConstituentString]] = None
     classical_light1: Optional[ModelClassicalLight] = None
@@ -130,7 +132,7 @@ class Model(BaseModel):
 
     # Sanity checks
     @model_validator(mode="after")
-    def sanity_check_fields(self) -> "Model":
+    def sanity_check_fields(self) -> "ModelSimulation":
         """Check wether all atoms have the same applied fields, if not raise a warning."""
         if self.atom2 is None:
             return self
@@ -143,7 +145,7 @@ class Model(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def compute_properties(self) -> "Model":
+    def compute_properties(self) -> "ModelSimulation":
         """Compute properties of the model, so also there it is checked if everything works without errors.
 
         This is especially important for parameter_range_options.
@@ -153,7 +155,7 @@ class Model(BaseModel):
         return self
 
     @classmethod
-    def model_validate_json_file(cls, path: str, **kwargs) -> "Model":
+    def model_validate_json_file(cls, path: str, **kwargs) -> "ModelSimulation":
         """Validate the model from a json file."""
         with open(path, encoding="utf-8") as f:
             return cls.model_validate_json(f.read(), **kwargs)

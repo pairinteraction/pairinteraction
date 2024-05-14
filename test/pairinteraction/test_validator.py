@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from pairinteraction.model.model import Model
+from pairinteraction.model.model import ModelSimulation
 
 directory = Path(__file__).parent
 models_directory = directory / "models"
@@ -19,7 +19,7 @@ class SimulationTests(unittest.TestCase):
             self._one_test_model(name)
 
     def _one_test_model(self, name):
-        self.model = Model.model_validate_json_file(models_directory / f"{name}.json")
+        self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         output = self.model.model_dump(exclude_unset=True)
 
         reference_path = directory / "data" / f"{name}__model.json"
@@ -48,27 +48,27 @@ class SimulationTests(unittest.TestCase):
         model = deepcopy(original_model_dict)
         model["atom1"]["bfield_y"] = [0, 0.1, 0.2, 0.4]
         with pytest.raises(ValueError) as e_info:
-            model = Model.model_validate(model)
+            model = ModelSimulation.model_validate(model)
         assert "steps" in str(e_info.value)
 
         # States must have same species
         model = deepcopy(original_model_dict)
         model["atom1"]["states_of_interest"][0]["species"] = "Cs"
         with pytest.raises(ValueError) as e_info:
-            model = Model.model_validate(model)
+            model = ModelSimulation.model_validate(model)
         assert "species" in str(e_info.value)
 
         # Tests for is_real
         model = deepcopy(original_model_dict)
         model["atom1"]["efield_y"] = 0
         model["atom1"]["bfield_y"] = [0, 0.1, 0.2]
-        model = Model.model_validate(model)
+        model = ModelSimulation.model_validate(model)
         assert not model.atom1.is_real
 
         model = deepcopy(original_model_dict)
         model["atom1"]["efield_y"] = 0
         model["atom1"]["bfield_y"] = 0
-        model = Model.model_validate(model)
+        model = ModelSimulation.model_validate(model)
         assert model.atom1.is_real
 
     def remove_cache(self):
