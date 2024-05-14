@@ -61,8 +61,7 @@
                 }
             }
         ],
-        "delta_energy": 3.0,
-        "use_delta_energy_after_fields": true
+        "delta_energy": 3.0
     },
     "numerics": {
         "quantization_axis": [

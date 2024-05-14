@@ -2,13 +2,12 @@
 
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from pairinteraction.model.parameter import UnionParameter
 from pairinteraction.model.states import UnionModelStates
 from pairinteraction.model.types import ConstituentString
 from pairinteraction.model.utils import (
-    one_use_delta_and_soi,
     validate_parameter,
 )
 
@@ -34,13 +33,12 @@ class ModelInteractions(BaseModel):
 
     # Optional use delta_attr and combined_states_of_interest to define min_/max_attr
     # dont use BaseModelState, but UnionModelStates to enable automatic parsing (same for UnionModelConstituent)
-    _used_delta: bool = False
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
     # TODO both delta_energy(...) should be ExtraField(), but how to handle use_delta_energy_after_fields?
     delta_energy: Optional[float] = None
     delta_energy_after_diagonalization: Optional[float] = None
     # TODO: change name of use_delta_energy_after_fields?
-    use_delta_energy_after_fields: Optional[bool] = None
+    use_delta_energy_after_fields: bool = Field(True)
 
     validate_parameter = field_validator(
         "distance",
@@ -50,20 +48,6 @@ class ModelInteractions(BaseModel):
         "conserved_parity_under_permutation",
         mode="before",
     )(validate_parameter)
-
-    @model_validator(mode="after")
-    def use_delta_and_csoi(self) -> "ModelInteractions":
-        """If combined_states_of_interest is provided together with delta_attr instead of min/max_attr
-        convert delta_attr it to min/max_attr .
-        """
-        # FIXME: this is a ugly hack to avoid running use_delta again when setting
-        # and thus revalidating the min/max values
-        if self._used_delta:
-            return self
-        self._used_delta = True
-        for attr in ["energy", "energy_after_diagonalization"]:
-            one_use_delta_and_soi(self, attr, use_combined=True)
-        return self
 
     # def validate_conserved_total_m(cls, v: float) -> float:
     #     # TODO allow for list of pair momenta?

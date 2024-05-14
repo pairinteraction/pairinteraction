@@ -9,9 +9,7 @@ from pydantic import (
     Field,
     FieldSerializationInfo,
     SerializerFunctionWrapHandler,
-    ValidationInfo,
     field_serializer,
-    field_validator,
     model_validator,
 )
 
@@ -24,6 +22,7 @@ from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
 from pairinteraction.model.parameter import ParameterRange, ParameterRangeOptions
+from pairinteraction.model.states import BaseModelState
 from pairinteraction.model.types import ConstituentString
 
 
@@ -31,9 +30,7 @@ class ModelSimulation(BaseModel):
     """Pydantic model for the input of a pairinteraction simulation."""
 
     # TODO: making this frozen does not freeze all the submodel!
-    model_config = ConfigDict(extra="forbid", frozen=True)
-
-    _constituent_mapping: Dict[ConstituentString, ConstituentString] = {}
+    model_config = ConfigDict(extra="forbid", frozen=False)
 
     # The following fields correspond to the toplevel fields of the json file descirbing a simulation
     atom1: ModelAtom
@@ -68,69 +65,107 @@ class ModelSimulation(BaseModel):
                     parameters[k] = v
         return ParameterRangeOptions(parameters=parameters)
 
-    @field_validator("atom2", "classical_light2", mode="after")
-    @classmethod
-    def validate_constituents(
-        cls, const: Union[BaseModelConstituent, ConstituentString], info: ValidationInfo
-    ) -> BaseModelConstituent:
+    @model_validator(mode="after")
+    def validate_constituents_references(self) -> "ModelSimulation":
         """Validate the constituents, i.e. replace constituents given as reference
         to another constituent via a string as reference to the same object.
 
         To keep track of which constituents are pointing to the same object
         we store the mappings in the dictionary _constituent_mapping.
         This can then be used to check, wether we use the same atoms/basis,
-        as well as to also dump the model again as reference via a string (see self.).
+        as well as to also dump the model again as reference via a string (see self.serialize_constituents).
         """
-        if const is None or isinstance(const, BaseModelConstituent):
-            return const
+        self._constituent_mapping = {}
+        for const_name in ["atom", "classical_light"]:
+            if isinstance(getattr(self, const_name + "2"), str):
+                self._constituent_mapping[const_name + "2"] = const_name + "1"
+                setattr(self, const_name + "2", getattr(self, const_name + "1"))
+        return self
 
-        # else const is a string/reference to another constituent
-        const_name = info.field_name
-        new_const = info.data.get(const, None)
-        if new_const is None:
-            raise ValueError(f"{const_name} given as reference to {const}, but {const} is not defined.")
-        info.data.setdefault("_constituent_mapping", {})[const_name] = const
-        return new_const
-
-    @field_validator("interactions", "overlaps", mode="before")
-    @classmethod
-    def validate_combined_states(cls, submodel: Optional[dict], info: ValidationInfo) -> dict:
-        """Validate combined_states, i.e. replace states, that are given as reference
+    @model_validator(mode="after")
+    def validate_submodel_combined_states(self) -> "ModelSimulation":
+        """Validate combined_states of the submodel 'interactions' and 'overlaps',
+        i.e. replace states, that are given as reference
         to a state of a constituent.state_of_interest (via an index) with the actual state.
         """
-        if submodel is None:
-            return None
+        for submodel_name in ["interactions", "overlaps"]:
+            submodel = getattr(self, submodel_name)
+            if submodel is None:
+                continue
+            for csoi in submodel.combined_states_of_interest:
+                for constit, state in csoi.items():
+                    constituent = getattr(self, constit)
+                    if constituent is None:
+                        raise ValueError(
+                            f"{submodel_name}: Key {constit} in combined_states_of_interest is not a valid constituent."
+                        )
+                    if isinstance(state, BaseModelState):
+                        continue
+                    # else: state is an index
+                    if state > len(constituent.states_of_interest) or state < 0:
+                        raise ValueError(
+                            f"Index {state} in {submodel_name}.combined_states_of_interest "
+                            f"is out of range of {constit}.states_of_interest."
+                        )
+                    csoi[constit] = constituent.states_of_interest[state]
 
-        combined_states = submodel.get("combined_states_of_interest", [])
-        for csoi in combined_states:
-            for constit, state in csoi.items():
-                constituent = info.data.get(constit, None)
-                if constituent is None:
-                    raise ValueError(f"Key {constit} in combined_states_of_interest is not a valid constituent.")
-                if not isinstance(state, int):  # state is already a BaseModelState
-                    continue
-                # else: state is an index
-                states_of_interest = constituent.states_of_interest
-                if state > len(states_of_interest) or state < 0:
-                    raise ValueError(
-                        f"Index {state} in combined for {constit} is out of range of {constit}.states_of_interest."
-                    )
-                csoi[constit] = states_of_interest[state]
-        return submodel
+        return self
 
-    @field_serializer("atom2", "classical_light2", mode="wrap")
-    def serialize_constituents(
-        self, constituent: BaseModelConstituent, nxt: SerializerFunctionWrapHandler, info: FieldSerializationInfo
-    ) -> Union[BaseModelConstituent, ConstituentString]:
-        """Serialize the constituents, i.e. if the constituent is a reference to another constituent,
-        return the name of the other constituent (this is done using self._constituent_mapping).
+    @model_validator(mode="after")
+    def evaluate_delta_restrictions(self) -> "ModelSimulation":
+        """If states_of_interest is provided together with delta_attr instead of min/max_attr
+        convert the delta_attr to min/max_attr .
         """
-        name = info.field_name
-        if name in self._constituent_mapping:
-            return self._constituent_mapping[name]
-        return nxt(constituent, info)
+        for submodel_name in ["atom1", "atom2"]:
+            submodel = getattr(self, submodel_name)
+            if submodel is None or submodel_name in self._constituent_mapping:
+                continue
+            for attr in ["n", "nu", "l", "s", "j", "f", "m", "energy"]:
+                self.evaluate_one_delta_restriction(submodel, attr)
 
-    # Sanity checks
+        if self.interactions is not None:
+            self.evaluate_delta_restriction_interactions()
+
+        return self
+
+    def evaluate_one_delta_restriction(self, submodel: ModelAtom, attr: str) -> None:
+        """Convert delta_attr to min/max_attr for a single submodel and one attribute."""
+        delta = getattr(submodel, f"delta_{attr}")
+        if delta is None:
+            return
+
+        min_, max_ = getattr(submodel, f"min_{attr}"), getattr(submodel, f"max_{attr}")
+        if (min_ is None or max_ is None) and min_ != max_:
+            raise ValueError(
+                f"For ModelAtom delta_{attr} given and (min_{attr} xor max_{attr}) is given. "
+                "This behaviour is not defined."
+            )
+
+        states_of_interest = submodel.states_of_interest
+        if len(states_of_interest) == 0:
+            raise ValueError(
+                f"delta_{attr} given, but no states of interest are given. "
+                f"Also provide (combined_)states_of_interest or use min_{attr} and max_{attr} instead."
+            )
+
+        values = [getattr(state, attr) for state in states_of_interest]
+        min_attr, max_attr = min(values) - delta, max(values) + delta
+
+        MIN_VALUES = {"n": 1, "l": 0, "j": min(state.s for state in states_of_interest)}
+        if attr in MIN_VALUES:
+            min_attr = max(min_attr, MIN_VALUES[attr])
+
+        for minmax, new in zip(["min", "max"], [min_attr, max_attr]):
+            old = getattr(submodel, f"{minmax}_{attr}")
+            if old is None:
+                setattr(submodel, f"{minmax}_{attr}", new)
+            elif old != new:
+                raise ValueError(f"delta_{attr} given and {minmax}_{attr} is already set but they are not compatible.")
+
+    def evaluate_delta_restriction_interactions(self) -> None:
+        # TODO how to handle this (also in the context of applying delta after diagonalizing single atoms)
+        pass
+
     @model_validator(mode="after")
     def sanity_check_fields(self) -> "ModelSimulation":
         """Check wether all atoms have the same applied fields, if not raise a warning."""
@@ -153,6 +188,21 @@ class ModelSimulation(BaseModel):
         self.constituents  # noqa: B018
         self.parameter_range_options  # noqa: B018
         return self
+
+    @field_serializer("atom2", "classical_light2", mode="wrap")
+    def serialize_constituents(
+        self,
+        constituent: Optional[BaseModelConstituent],
+        nxt: SerializerFunctionWrapHandler,
+        info: FieldSerializationInfo,
+    ) -> Optional[Union[dict, ConstituentString]]:
+        """Serialize the constituents, i.e. if the constituent is a reference to another constituent,
+        return the name of the other constituent (this is done using self._constituent_mapping).
+        """
+        name = info.field_name
+        if name in self._constituent_mapping:
+            return self._constituent_mapping[name]
+        return nxt(constituent, info)
 
     @classmethod
     def model_validate_json_file(cls, path: str, **kwargs) -> "ModelSimulation":

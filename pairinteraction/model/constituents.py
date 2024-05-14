@@ -9,7 +9,6 @@ from pydantic import (
     Field,
     ValidationInfo,
     field_validator,
-    model_validator,
 )
 
 from pairinteraction.model.parameter import UnionParameter
@@ -18,7 +17,6 @@ from pairinteraction.model.types import HalfInt, SpeciesString
 from pairinteraction.model.utils import (
     ExtraField,
     LeftToRightField,
-    one_use_delta_and_soi,
     validate_parameter,
 )
 
@@ -64,7 +62,6 @@ class ModelAtom(BaseModelConstituent):
 
     # Optional use delta_attr and states_of_interest to define min_/max_attr
     # dont use BaseModelState here, but specific UnionModelStates to enable automatic parsing
-    _used_delta: bool = False
     states_of_interest: List[UnionModelStates] = []
     delta_n: Optional[int] = ExtraField()
     delta_nu: Optional[float] = ExtraField()
@@ -103,20 +100,6 @@ class ModelAtom(BaseModelConstituent):
             if not soi.setdefault("species", species) == species:
                 raise ValueError("species of states must be the same as for the constituent")
         return states
-
-    @model_validator(mode="after")
-    def use_delta_and_soi(self) -> "ModelAtom":
-        """If states_of_interest is provided together with delta_attr instead of min/max_attr
-        convert the delta_attr to min/max_attr .
-        """
-        # FIXME: this is a ugly hack to avoid running use_delta again when setting
-        # and thus revalidating the min/max values
-        if self._used_delta:
-            return self
-        self._used_delta = True
-        for attr in ["n", "nu", "l", "s", "j", "f", "m", "energy", "energy_after_diagonalization"]:
-            one_use_delta_and_soi(self, attr)
-        return self
 
 
 class ModelClassicalLight(BaseModelConstituent):
