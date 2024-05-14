@@ -7,8 +7,8 @@ import numpy as np
 
 from pairinteraction import pireal
 from pairinteraction.model.model import ModelSimulation
-from pairinteraction.simulator_old.atom import AtomTwo
-from pairinteraction.simulator_old.exceptions import CppDeleted, CppObjectAlreadyDeleted
+from pairinteraction.simulation_old.atom import AtomTwo
+from pairinteraction.simulation_old.exceptions import CppDeleted, CppObjectAlreadyDeleted
 
 
 class EffectiveH:
