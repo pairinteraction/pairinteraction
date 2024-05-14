@@ -6,7 +6,8 @@ from typing import Dict, List, Optional, Union
 import numpy as np
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
-from pairinteraction.model.misc import ExtraField, PossibleParameterTypes
+from pairinteraction.model.types import PossibleParameterTypes
+from pairinteraction.model.utils import ExtraField
 
 
 class BaseParameter(BaseModel):

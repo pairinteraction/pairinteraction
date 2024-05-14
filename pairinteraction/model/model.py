@@ -21,10 +21,10 @@ from pairinteraction.model.constituents import (
     ModelClassicalLight,
 )
 from pairinteraction.model.interactions import ModelInteractions
-from pairinteraction.model.misc import ConstituentString
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
 from pairinteraction.model.parameter import ParameterRange, ParameterRangeOptions
+from pairinteraction.model.types import ConstituentString
 
 
 class ModelSimulation(BaseModel):
