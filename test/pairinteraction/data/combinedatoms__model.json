@@ -104,8 +104,7 @@
             }
         ],
         "delta_energy": 3.0,
-        "delta_energy_after_diagonalization": 3.0,
-        "use_delta_energy_after_fields": true
+        "delta_energy_after_diagonalization": 3.0
     },
     "numerics": {
         "rydberg_rydberg_multipole_order": 3,

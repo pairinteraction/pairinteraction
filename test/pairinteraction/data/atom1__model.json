@@ -9,8 +9,6 @@
         "max_m": 10.5,
         "min_energy": -604.2349676362819,
         "max_energy": -516.7653702909081,
-        "min_energy_after_diagonalization": -584.2349676362819,
-        "max_energy_after_diagonalization": -536.7653702909081,
         "efield_x": 0.1,
         "efield_y": {
             "list": [
