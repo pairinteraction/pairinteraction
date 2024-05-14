@@ -48,7 +48,7 @@ class ModelNumerics(BaseModel):
 
         if axis in ["efield", "bfield"]:
             raise NotImplementedError(f"Quantization axis '{axis}' not yet implemented.")
-            # TODO how to get the efield and bfield in numerics, or put this as model_validator for Model?
+            # TODO how to get the efield and bfield in numerics, or put this as model_validator for ModelSimulation?
 
         raise ValueError(f"Quantization axis '{axis}' not understood.")
 

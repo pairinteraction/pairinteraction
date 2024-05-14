@@ -4,7 +4,7 @@ from pathlib import Path
 
 import numpy as np
 
-from pairinteraction.model.model import Model
+from pairinteraction.model.model import ModelSimulation
 from pairinteraction.simulator_old.simulation import Simulation
 
 directory = Path(__file__).parent
@@ -17,7 +17,7 @@ class SimulationTests(unittest.TestCase):
             self._one_test_simulation(name)
 
     def _one_test_simulation(self, name):
-        self.model = Model.model_validate_json_file(directory / "models" / f"{name}.json")
+        self.model = ModelSimulation.model_validate_json_file(directory / "models" / f"{name}.json")
         simulation = Simulation(self.model)
         results_list = simulation.run()
         energies_list = [results["energies"] for results in results_list]

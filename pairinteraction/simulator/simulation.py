@@ -15,7 +15,7 @@ from typing import Dict, Union
 # )
 from pairinteraction.model.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
-from pairinteraction.model.model import Model
+from pairinteraction.model.model import ModelSimulation
 from pairinteraction.model.numerics import ModelNumerics
 
 BasisAtom = (
@@ -39,13 +39,13 @@ class BaseSimulation:
     the results.
     """
 
-    def __init__(self, model: Union[Model, Dict]):
+    def __init__(self, model: Union[ModelSimulation, Dict]):
         """Initialize the simulation object
 
         Args:
-            model (dict): Model for the simulation
+            model: ModelSimulation or dict: Model describing the simulation
         """
-        self.model: Model = Model.model_validate(model)
+        self.model: ModelSimulation = ModelSimulation.model_validate(model)
         self.bases = {}
         self.constituents = {}
 

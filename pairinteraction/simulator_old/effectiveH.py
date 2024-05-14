@@ -6,15 +6,15 @@ from typing import Optional, Union
 import numpy as np
 
 from pairinteraction import pireal
-from pairinteraction.model.model import Model
+from pairinteraction.model.model import ModelSimulation
 from pairinteraction.simulator_old.atom import AtomTwo
 from pairinteraction.simulator_old.exceptions import CppDeleted, CppObjectAlreadyDeleted
 
 
 class EffectiveH:
-    def __init__(self, model: Union[Model, dict], options: Optional[dict] = None):
-        if not isinstance(model, Model):
-            model = Model.model_validate(model)
+    def __init__(self, model: Union[ModelSimulation, dict], options: Optional[dict] = None):
+        if not isinstance(model, ModelSimulation):
+            model = ModelSimulation.model_validate(model)
         self.model = model
         self.options = {} if options is None else options
 
@@ -137,9 +137,9 @@ class EffectiveH:
 class EffectiveSubspace:
     """Class describing one subspace of the EffectiveH class."""
 
-    def __init__(self, model: Union[Model, dict]):
-        if not isinstance(model, Model):
-            model = Model.model_validate(model)
+    def __init__(self, model: Union[ModelSimulation, dict]):
+        if not isinstance(model, ModelSimulation):
+            model = ModelSimulation.model_validate(model)
         self.model = model
         self.configInt = {
             "distance": model.interactions.distance.get_value(),

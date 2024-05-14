@@ -1,7 +1,7 @@
 """Defining class Atom, AtomOne and AtomTwo.
 This classes provide some overhead functionality for calculations with one/two rydberg atoms
 and are basically just a wrapper for the pairinteraction.SystemOne and pairinteraction.SystemTwo classes
-using the Model class to define the system.
+using the ModelSimulation class to define the system.
 """
 import logging
 from pathlib import Path
@@ -10,7 +10,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from pairinteraction import picomplex, pireal
-from pairinteraction.model.model import Model
+from pairinteraction.model.model import ModelSimulation
 from pairinteraction.model.states import BaseModelState
 from pairinteraction.simulator_old.exceptions import CppDeleted, CppObjectAlreadyDeleted, QnNotFoundError
 
@@ -22,12 +22,12 @@ class Atom:
 
     Parameters
     ----------
-    model : dict or Model
-        Dictionary (or Model object) containing all relevant parameters for the calculation.
+    model : dict or ModelSimulation
+        Dictionary (or ModelSimulation object) containing all relevant parameters for the calculation.
 
     Attributes
     ----------
-    model : Model
+    model : ModelSimulation
         Containing all relevant parameters for the calculation.
     system : pi.(SystemOneReal, SystemOneComplex, SystemTwoReal, SystemTwoComplex)
         This is the actual system.
@@ -59,10 +59,10 @@ class Atom:
     qnumber_basis = ["n", "l", "j", "m"]
     qnumber_types = {"n": int, "l": int, "j": float, "m": float}
 
-    def __init__(self, model: Union[Model, dict]):
+    def __init__(self, model: Union[ModelSimulation, dict]):
         logger.debug("Atom: Initializing Atom object %s.", self.__class__.__name__)
-        if not isinstance(model, Model):
-            model = Model.model_validate(model)
+        if not isinstance(model, ModelSimulation):
+            model = ModelSimulation.model_validate(model)
         self.model = model
         self.s_atom1 = model.atom1
         self.s_atom2 = model.atom2
@@ -422,7 +422,7 @@ class Atom:
 class AtomOne(Atom):
     nAtoms = 1
 
-    def __init__(self, model: Union[Model, dict], iAtom: int = 1):
+    def __init__(self, model: Union[ModelSimulation, dict], iAtom: int = 1):
         super().__init__(model)
 
         self.iAtom = int(iAtom)
@@ -513,7 +513,7 @@ class AtomOne(Atom):
 class AtomTwo(Atom):
     nAtoms = 2
 
-    def __init__(self, model: Union[Model, dict]):
+    def __init__(self, model: Union[ModelSimulation, dict]):
         super().__init__(model)
 
         # properties call by self.property without underscore to ensure, they are created first
