@@ -79,11 +79,12 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
 
 DOCTEST_TEST_CASE("construction of wigner D matrix") {
     constexpr double PI = 3.141592653589793238462643383279502884;
+    constexpr double EPSILON = 100 * std::numeric_limits<double>::epsilon();
 
     auto wigner_real_entry =
         wigner::wigner_uppercase_d_matrix<double>(0.5, 0.5, -0.5, 4 * PI, PI / 3, 2 * PI);
     auto wigner_real_entry_reference = -0.5;
-    DOCTEST_CHECK((wigner_real_entry - wigner_real_entry_reference) <= 1e-6);
+    DOCTEST_CHECK((wigner_real_entry - wigner_real_entry_reference) <= EPSILON);
 
     std::string error_msg =
         "The scalar type must be complex if m_initial*alpha is not a multiple of pi";
@@ -100,5 +101,5 @@ DOCTEST_TEST_CASE("construction of wigner D matrix") {
     auto wigner_complex_entry = wigner::wigner_uppercase_d_matrix<std::complex<double>>(
         0.5, 0.5, -0.5, 0.5 * PI, PI, -0.5 * PI);
     auto wigner_complex_entry_reference = std::complex<double>(0, 1);
-    DOCTEST_CHECK(std::abs(wigner_complex_entry - wigner_complex_entry_reference) <= 1e-6);
+    DOCTEST_CHECK(std::abs(wigner_complex_entry - wigner_complex_entry_reference) <= EPSILON);
 }
