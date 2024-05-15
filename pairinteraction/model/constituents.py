@@ -17,7 +17,6 @@ from pairinteraction.model.types import HalfInt, SpeciesString
 from pairinteraction.model.utils import (
     ExtraField,
     LeftToRightField,
-    validate_parameter,
 )
 
 
@@ -74,10 +73,6 @@ class ModelAtom(BaseModelConstituent):
     delta_energy_after_diagonalization: Optional[float] = ExtraField()
 
     additionally_included_states: List[UnionModelStates] = []
-
-    validate_parameter = field_validator(
-        "efield_x", "efield_y", "efield_z", "bfield_x", "bfield_y", "bfield_z", mode="before"
-    )(validate_parameter)
 
     @property
     def is_real(self) -> bool:

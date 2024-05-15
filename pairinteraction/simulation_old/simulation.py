@@ -72,7 +72,7 @@ class OneSimulation(BaseSimulation):
         """
         super().__init__(model)
         assert (
-            self.model.parameter_range_options.steps == 1
+            self.model.parameter_size == 1
         ), "SimpleSimulation is only for doing one run. Use Simulation for multiple runs."
 
     def run(self) -> Dict:
@@ -106,7 +106,7 @@ class Simulation(BaseSimulation):
         atom_system = self.create_atom_system()
         self.atom_system = atom_system
 
-        for i in range(self.model.parameter_range_options.steps):
+        for i in range(self.model.parameter_size):
             atom_system.updateParameterStep(i)
             results = self.results_from_atom_system(atom_system)
             results_list.append(results)

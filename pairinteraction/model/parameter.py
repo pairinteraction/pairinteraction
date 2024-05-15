@@ -1,111 +1,135 @@
-"""Pydantic models for parameters."""
+"""Class for handling parameters."""
 
-
-from typing import Dict, List, Optional, Union
+from abc import ABC, abstractmethod
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
-from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
-
-from pairinteraction.model.types import PossibleParameterTypes
-from pairinteraction.model.utils import ExtraField
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
 
 
-class BaseParameter(BaseModel):
-    """Pydantic base model for a parameter.
+class BaseParameter(ABC):
+    """BaseParameter class."""
 
-    All fields, that should be able to be looped over should be of this type.
-    """
+    _pydantic_schema = core_schema.any_schema()
 
-    # TODO: is there a option to set frozen to True after all model_validators have been run?
-    model_config = ConfigDict(extra="forbid", frozen=False)
+    def __init__(self, raw: Any):
+        self.raw = raw
 
-    def get_value(self, step: Optional[int] = None) -> PossibleParameterTypes:
-        raise NotImplementedError("This method should be implemented in the subclasses!")
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self.raw})"
+
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
+        return core_schema.no_info_after_validator_function(
+            cls._validate_raw,
+            cls._pydantic_schema,
+            serialization=core_schema.plain_serializer_function_ser_schema(
+                cls._serialize,
+                info_arg=False,
+                return_schema=cls._pydantic_schema,
+            ),
+        )
+
+    @classmethod
+    def _validate_raw(cls, raw: Any) -> Union["ParameterConstant", "ParameterList", "ParameterRange"]:
+        """Validate the raw input."""
+        return cls(raw)
+
+    @staticmethod
+    def _serialize(parameter: "BaseParameter") -> Any:
+        return parameter.dump()
+
+    def dump(self):
+        """Dump the raw parameter."""
+        return self.raw
+
+    @abstractmethod
+    def get_value(self, step: int) -> float:
+        """Get the value at a specific step."""
+
+    @abstractmethod
+    def get_size(self) -> Optional[int]:
+        """Get the size of the parameter (None for a constant parameter)."""
+
+    @abstractmethod
+    def get_list(self) -> Optional[List[float]]:
+        """Get the list of values (None for a constant parameter)."""
+
+    @abstractmethod
+    def get_min(self) -> float:
+        """Get the minimum value."""
+
+    @abstractmethod
+    def get_max(self) -> float:
+        """Get the maximum value."""
 
 
-class ParameterSimple(BaseParameter):
-    """Pydantic model for a simple value as parameter."""
+class ParameterConstant(BaseParameter):
+    """Class for a constant parameter."""
 
-    value: PossibleParameterTypes = None
+    _pydantic_schema = core_schema.float_schema()
 
-    @property
-    def list(self) -> List[PossibleParameterTypes]:
-        """Return the value as a list."""
-        return [self.value]
+    def __init__(self, value: float):
+        self.value = value
+        super().__init__(value)
 
-    def get_value(self, step: Optional[int] = None) -> PossibleParameterTypes:
-        """If the parameter is a ParameterSimple simply return the value, no matter the step."""
+    def get_value(self, step: Optional[int] = None) -> float:
         return self.value
 
-    @model_serializer(mode="wrap")
-    def serialize_as_value(self, handler) -> PossibleParameterTypes:
-        """Serialize the parameter as a simple value."""
-        # TODO not sure why this is needed, see https://github.com/pydantic/pydantic/discussions/8541
-        if isinstance(self, ParameterSimple):
-            return self.value
-        return handler(self)
+    def get_size(self) -> None:
+        return None
+
+    def get_list(self) -> None:
+        return None
+
+    def get_min(self) -> float:
+        return self.value
+
+    def get_max(self) -> float:
+        return self.value
 
 
-class ParameterRange(BaseParameter):
-    """Pydantic model for a parameter range."""
+class ParameterList(BaseParameter):
+    """Class for a list of parameters."""
 
-    start: Optional[float] = ExtraField()
-    stop: Optional[float] = ExtraField()
-    steps: Optional[int] = ExtraField()
+    _pydantic_schema = core_schema.list_schema(core_schema.float_schema(), min_length=1)
 
-    list: Optional[List[PossibleParameterTypes]] = None
+    def __init__(self, values: Union[List[float], Tuple[float]]):
+        self.list = values
+        super().__init__(values)
 
-    @model_validator(mode="after")
-    def use_start_stop_steps(self) -> "ParameterRange":
-        """If start, stop and steps is given, create the corresponding list using numpy.linspace."""
-        start_stop_steps = [self.start, self.stop, self.steps]
-
-        if self.list is not None:
-            if self.start is not None or self.stop is not None:
-                raise ValueError("If list is provided, start, stop and steps cannot be provided!")
-            if self.steps is not None and self.steps != len(self.list):
-                raise ValueError("If list is provided, steps cannot be provided (or must be exactle len(list)!")
-            self.steps = len(self.list)
-            return self
-
-        if any(x is None for x in start_stop_steps):
-            raise ValueError("Either list or (start, stop and steps) must be provided!")
-
-        self.list = list(np.linspace(*start_stop_steps))
-        self.start, self.stop = None, None  # TODO do i want to store those for nicer serialization?
-        return self
-
-    def get_value(self, step: Optional[int] = None) -> PossibleParameterTypes:
-        """Get the value at a specific step."""
-        if step is None:
-            raise ValueError("ParameterRange: to get a step value a step must be provided!")
+    def get_value(self, step: int) -> float:
         return self.list[step]
 
+    def get_size(self) -> int:
+        return len(self.list)
 
-UnionParameter = Union[ParameterSimple, ParameterRange]
+    def get_list(self) -> List[float]:
+        return self.list
+
+    def get_min(self) -> float:
+        return min(self.list)
+
+    def get_max(self) -> float:
+        return max(self.list)
 
 
-class ParameterRangeOptions(BaseModel):
-    """Pydantic model for collecting all parameter ranges."""
+class ParameterRange(ParameterList):
+    """Class for a parameter range."""
 
-    model_config = ConfigDict(extra="forbid", frozen=False)
+    _pydantic_schema = core_schema.dict_schema(keys_schema=core_schema.str_schema())
 
-    steps: int = Field(default=None, ge=1)
-    parameters: Dict[str, ParameterRange] = {}
+    def __init__(self, start: float, stop: float, steps: int):
+        self.list = list(np.linspace(start, stop, steps))
+        self.raw = {"start": start, "stop": stop, "steps": steps}
 
-    @model_validator(mode="after")
-    def check_steps(self) -> "ParameterRangeOptions":
-        """Check if steps for all parameters are the same and set self.steps if not provided."""
-        if len(self.parameters) == 0:
-            if not (self.steps is None or self.steps == 1):
-                raise ValueError("If no parameters are given, steps must be None or 1!")
-            self.steps = 1
-            return self
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}(" + ", ".join([f"{k}={v!r}" for k, v in self.raw.items()]) + ")"
 
-        if self.steps is None:
-            self.steps = next(iter(self.parameters.values())).steps
+    @classmethod
+    def _validate_raw(cls, raw: Dict[str, Union[float, int]]) -> "ParameterRange":
+        return cls(raw["start"], raw["stop"], raw["steps"])
 
-        for k, v in self.parameters.items():
-            if self.steps != v.steps:
-                raise ValueError(f"steps for parameter {k} is {v.steps}, but should be {self.steps}!")
-        return self
+
+UnionParameter = Union[ParameterConstant, ParameterList, ParameterRange]

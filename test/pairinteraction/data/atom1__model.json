@@ -10,29 +10,23 @@
         "min_energy": -604.2349676362819,
         "max_energy": -516.7653702909081,
         "efield_x": 0.1,
-        "efield_y": {
-            "list": [
-                0,
-                0.1,
-                0.2
-            ]
-        },
+        "efield_y": [
+            0.0,
+            0.1,
+            0.2
+        ],
         "efield_z": {
-            "list": [
-                0.0,
-                0.5,
-                1.0
-            ]
+            "start": 0,
+            "stop": 1,
+            "steps": 3
         },
         "bfield_x": 0.1,
         "bfield_y": 0.2,
-        "bfield_z": {
-            "list": [
-                1,
-                2,
-                3
-            ]
-        },
+        "bfield_z": [
+            1.0,
+            2.0,
+            3.0
+        ],
         "states_of_interest": [
             {
                 "species": "Rb",

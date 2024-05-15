@@ -388,8 +388,7 @@ class Atom:
     def updateParameterStep(self, step: int) -> bool:
         if self._parameter_step == step:
             return False
-        parameter_range_options = self.model.parameter_range_options
-        if not 0 <= step < parameter_range_options.steps:
+        if not 0 <= step < self.model.parameter_size:
             raise ValueError(f"Invalid step {step} for AtomOne.updateParameterStep")
         self._parameter_step = step
         return True
@@ -500,7 +499,7 @@ class AtomOne(Atom):
         updated = super().updateParameterStep(step)
         if not updated:
             return False
-        parameters = self.model.parameter_range_options.parameters
+        parameters = self.model.dict_of_parameter_lists
 
         if any(k in parameters for k in ["efield_x", "efield_y", "efield_z", "bfield_x", "bfield_y", "bfield_z"]):
             self._energies, self._vectors, self._overlaps = None, None, None
@@ -671,7 +670,7 @@ class AtomTwo(Atom):
         for atom in self.atoms:
             atoms_updated = atom.updateParameterStep(step) or atoms_updated
 
-        parameters = self.model.parameter_range_options.parameters
+        parameters = self.model.dict_of_parameter_lists
         if atoms_updated or any(
             k in parameters for k in [f"conserved_parity_under_{x}" for x in ["inversion", "permutation", "reflection"]]
         ):

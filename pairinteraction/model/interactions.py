@@ -2,14 +2,11 @@
 
 from typing import Dict, List, Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 from pairinteraction.model.parameter import UnionParameter
 from pairinteraction.model.states import UnionModelStates
-from pairinteraction.model.types import ConstituentString
-from pairinteraction.model.utils import (
-    validate_parameter,
-)
+from pairinteraction.model.types import ConstituentString, Symmetry
 
 
 class ModelInteractions(BaseModel):
@@ -23,10 +20,11 @@ class ModelInteractions(BaseModel):
     min_energy_after_diagonalization: Optional[float] = None
     max_energy_after_diagonalization: Optional[float] = None
 
+    # TODO should the symmetries also be parameters, use generic type in parameter?
     conserved_total_m: Optional[int] = None
-    conserved_parity_under_inversion: UnionParameter = Field(None, validate_default=True)
-    conserved_parity_under_reflection: UnionParameter = Field(None, validate_default=True)
-    conserved_parity_under_permutation: UnionParameter = Field(None, validate_default=True)
+    conserved_parity_under_inversion: Symmetry = Field(None, validate_default=True)
+    conserved_parity_under_reflection: Symmetry = Field(None, validate_default=True)
+    conserved_parity_under_permutation: Symmetry = Field(None, validate_default=True)
 
     distance: UnionParameter = Field(None, validate_default=True)
     angle: UnionParameter = Field(0, validate_default=True, description="Angle between the two states in degrees.")
@@ -39,15 +37,6 @@ class ModelInteractions(BaseModel):
     delta_energy_after_diagonalization: Optional[float] = None
     # TODO: change name of use_delta_energy_after_fields?
     use_delta_energy_after_fields: bool = Field(True)
-
-    validate_parameter = field_validator(
-        "distance",
-        "angle",
-        "conserved_parity_under_inversion",
-        "conserved_parity_under_reflection",
-        "conserved_parity_under_permutation",
-        mode="before",
-    )(validate_parameter)
 
     # def validate_conserved_total_m(cls, v: float) -> float:
     #     # TODO allow for list of pair momenta?
