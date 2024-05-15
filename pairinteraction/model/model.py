@@ -21,7 +21,7 @@ from pairinteraction.model.constituents import (
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
-from pairinteraction.model.parameter import ParameterRange, ParameterRangeOptions
+from pairinteraction.model.parameter import ParameterList
 from pairinteraction.model.states import BaseModelState
 from pairinteraction.model.types import ConstituentString
 
@@ -54,16 +54,24 @@ class ModelSimulation(BaseModel):
         return {k: v for k, v in constituents.items() if v is not None}
 
     @cached_property
-    def parameter_range_options(self) -> ParameterRangeOptions:
+    def dict_of_parameter_lists(self) -> Dict[str, ParameterList]:
         """Return a collection of all parameter ranges."""
         parameters = {}
         for submodel in [self.interactions, self.atom1, self.atom2, self.classical_light1, self.classical_light2]:
             if submodel is None:
                 continue
             for k, v in iter(submodel):
-                if isinstance(v, ParameterRange):
+                if isinstance(v, ParameterList):
                     parameters[k] = v
-        return ParameterRangeOptions(parameters=parameters)
+        return parameters
+
+    @cached_property
+    def parameter_size(self) -> int:
+        """Return the number of steps of the parameter lists, and make sure they are all the same size."""
+        all_sizes = [p.get_size() for p in self.dict_of_parameter_lists.values()]
+        if not all(s == all_sizes[0] for s in all_sizes):
+            raise ValueError("All parameter lists must have the same size.")
+        return all_sizes[0]
 
     @model_validator(mode="after")
     def validate_constituents_references(self) -> "ModelSimulation":
@@ -183,10 +191,10 @@ class ModelSimulation(BaseModel):
     def compute_properties(self) -> "ModelSimulation":
         """Compute properties of the model, so also there it is checked if everything works without errors.
 
-        This is especially important for parameter_range_options.
+        This is especially important for dict_of_parameter_lists.
         """
         self.constituents  # noqa: B018
-        self.parameter_range_options  # noqa: B018
+        self.dict_of_parameter_lists  # noqa: B018
         return self
 
     @field_serializer("atom2", "classical_light2", mode="wrap")

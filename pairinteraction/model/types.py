@@ -1,6 +1,6 @@
 """Define some useful types and unions."""
 
-from typing import Literal, Union
+from typing import Literal
 
 from pydantic import confloat, conint, conlist, constr
 
@@ -15,5 +15,3 @@ SpeciesString = constr(pattern=r"^[A-Z][a-z]?[0-9]{0,3}(_singlet|_triplet|_mqdt)
 Vector = conlist(float, min_length=3, max_length=3)
 
 Symmetry = Literal[None, 1, -1]
-
-PossibleParameterTypes = Union[None, int, float]
