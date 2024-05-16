@@ -14,9 +14,9 @@ all_json_files = [f.stem for f in models_directory.glob("*.json")]
 class SimulationTests(unittest.TestCase):
     def test_all_models(self):
         for name in all_json_files:
-            self._one_test_model(name)
+            self.one_test_model(name)
 
-    def _one_test_model(self, name):
+    def one_test_model(self, name):
         self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         output = self.model.model_dump(exclude_unset=True)
 

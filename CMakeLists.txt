@@ -201,6 +201,7 @@ if( WITH_BACKEND )
     add_subdirectory(test/pairinteraction_backend_old/cpp)
     add_subdirectory(test/pairinteraction_backend_old/python) # TODO use pytest
     add_subdirectory(test/pairinteraction_gui) # TODO use pytest
+    add_subdirectory(test/pairinteraction) # TODO use pytest
   endif()
   if (WITH_JULIA)
     add_subdirectory(julia/src)

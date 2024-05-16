@@ -14,9 +14,9 @@ names = ["simulation_1", "simulation_2", "simulation_3"]
 class SimulationTests(unittest.TestCase):
     def test_simulations(self):
         for name in names:
-            self._one_test_simulation(name)
+            self.one_test_simulation(name)
 
-    def _one_test_simulation(self, name):
+    def one_test_simulation(self, name):
         self.model = ModelSimulation.model_validate_json_file(directory / "models" / f"{name}.json")
         simulation = Simulation(self.model)
         results_list = simulation.run()
