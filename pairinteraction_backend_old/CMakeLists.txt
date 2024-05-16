@@ -292,16 +292,9 @@ if(WITH_PYTHON)
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "from .binding import *" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/pireal.py "from .binding import *\nSystemOne,SystemTwo=SystemOneReal,SystemTwoReal" )
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py "from .binding import *\nSystemOne,SystemTwo=SystemOneComplex,SystemTwoComplex" )
-
-  if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
-    find_package(Python REQUIRED
-      COMPONENTS Interpreter Development NumPy
-      OPTIONAL_COMPONENTS Development.SABIModule)
-  else()
-    find_package(Python REQUIRED
-      COMPONENTS Interpreter Development.Module NumPy
-      OPTIONAL_COMPONENTS Development.SABIModule)
-  endif()
+  find_package(Python REQUIRED
+    COMPONENTS Interpreter Development.Module NumPy
+    OPTIONAL_COMPONENTS Development.SABIModule)
 
   if(MSVC)
     string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
