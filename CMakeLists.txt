@@ -15,11 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-if (WIN32)
-  cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
-else()
-  cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
-endif()
+cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
@@ -115,16 +111,9 @@ endif()
 find_package(doctest  REQUIRED)
 find_package(spdlog  REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
-
-if(${CMAKE_VERSION} VERSION_LESS "3.18.0")
-  find_package(Python REQUIRED
-    COMPONENTS Interpreter Development NumPy
-    OPTIONAL_COMPONENTS Development.SABIModule)
-else()
-  find_package(Python REQUIRED
-    COMPONENTS Interpreter Development.Module NumPy
-    OPTIONAL_COMPONENTS Development.SABIModule)
-endif()
+find_package(Python REQUIRED
+  COMPONENTS Interpreter Development.Module NumPy
+  OPTIONAL_COMPONENTS Development.SABIModule)
 
 if(MSVC)
   string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
