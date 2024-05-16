@@ -33,7 +33,7 @@ Step-by-Step Instructions
          mkdir build
          cd build
          cmake ..
-         cmake --build . --config Release
+         cmake --build .
 
    * The graphical user interface can be started by executing:
 
