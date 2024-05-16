@@ -145,7 +145,7 @@ Sorting Basis<Derived>::get_sorter(TransformationType label) const {
     Sorting transformation = get_sorter_without_checks(label);
 
     // Throw a meaningful error if sorting by energy is requested as this might be a common mistake
-    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
         throw std::invalid_argument("States do not store the energy and thus can not be sorted by "
                                     "the energy. Use an energy operator instead.");
     }
@@ -175,7 +175,7 @@ Blocks Basis<Derived>::get_blocks(TransformationType label) const {
 
     // Throw a meaningful error if getting the blocks by energy is requested as this might be a
     // common mistake
-    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
         throw std::invalid_argument("States do not store the energy and thus no energy blocks can "
                                     "be obtained. Use an energy operator instead.");
     }
@@ -195,8 +195,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
     std::vector<int> perm(coefficients.matrix.cols());
     std::iota(perm.begin(), perm.end(), 0);
 
-    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
-        TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_F)) {
         std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_f_of_states[i] < quantum_number_f_of_states[j];
         });
@@ -209,8 +208,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
         transformation.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
     }
 
-    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
-        TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_M)) {
         std::stable_sort(perm.begin(), perm.end(), [&](int i, int j) {
             return quantum_number_m_of_states[i] < quantum_number_m_of_states[j];
         });
@@ -223,7 +221,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
         transformation.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
     }
 
-    if ((label & TransformationType::SORT_BY_PARITY) == TransformationType::SORT_BY_PARITY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_PARITY)) {
         std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
 
@@ -235,7 +233,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
         transformation.transformation_type.push_back(TransformationType::SORT_BY_PARITY);
     }
 
-    if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_KET)) {
         std::stable_sort(perm.begin(), perm.end(),
                          [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
 
@@ -258,19 +256,16 @@ Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const
     blocks.start.push_back(0);
 
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
-        if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
-                TransformationType::SORT_BY_QUANTUM_NUMBER_F &&
+        if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_F) &&
             quantum_number_f_of_states[i] != last_quantum_number_f) {
             blocks.start.push_back(i);
-        } else if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
-                       TransformationType::SORT_BY_QUANTUM_NUMBER_M &&
+        } else if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_M) &&
                    quantum_number_m_of_states[i] != last_quantum_number_m) {
             blocks.start.push_back(i);
-        } else if ((label & TransformationType::SORT_BY_PARITY) ==
-                       TransformationType::SORT_BY_PARITY &&
+        } else if (utils::has_bit(label, TransformationType::SORT_BY_PARITY) &&
                    parity_of_states[i] != last_parity) {
             blocks.start.push_back(i);
-        } else if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET &&
+        } else if (utils::has_bit(label, TransformationType::SORT_BY_KET) &&
                    ket_of_states[i] != last_ket) {
             blocks.start.push_back(i);
         }
@@ -281,18 +276,16 @@ Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const
         last_ket = ket_of_states[i];
     }
 
-    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_F) ==
-        TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_F)) {
         blocks.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
     }
-    if ((label & TransformationType::SORT_BY_QUANTUM_NUMBER_M) ==
-        TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_M)) {
         blocks.transformation_type.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
     }
-    if ((label & TransformationType::SORT_BY_PARITY) == TransformationType::SORT_BY_PARITY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_PARITY)) {
         blocks.transformation_type.push_back(TransformationType::SORT_BY_PARITY);
     }
-    if ((label & TransformationType::SORT_BY_KET) == TransformationType::SORT_BY_KET) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_KET)) {
         blocks.transformation_type.push_back(TransformationType::SORT_BY_KET);
     }
 

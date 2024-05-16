@@ -11,7 +11,9 @@ enum class TransformationType : unsigned char {
     SORT_BY_PARITY = 1 << 3,
     SORT_BY_ENERGY = 1 << 4,
     ROTATE = 1 << 5,
-    ARBITRARY = 1 << 6
+    ARBITRARY = 1 << 6,
+    MASK_SORTING = SORT_BY_KET | SORT_BY_QUANTUM_NUMBER_F | SORT_BY_QUANTUM_NUMBER_M |
+        SORT_BY_PARITY | SORT_BY_ENERGY
 };
 
 inline constexpr TransformationType operator&(TransformationType x, TransformationType y) {
@@ -34,15 +36,11 @@ inline TransformationType &operator&=(TransformationType &x, TransformationType 
 
 namespace utils {
 inline bool is_sorting(TransformationType label) {
-    TransformationType sorting_label = TransformationType::NONE;
-    for (auto l : {TransformationType::SORT_BY_QUANTUM_NUMBER_F,
-                   TransformationType::SORT_BY_QUANTUM_NUMBER_M, TransformationType::SORT_BY_PARITY,
-                   TransformationType::SORT_BY_KET, TransformationType::SORT_BY_ENERGY}) {
-        if ((label & l) == l) {
-            sorting_label |= l;
-        }
-    }
-    return sorting_label == label;
+    return (label & ~TransformationType::MASK_SORTING) == TransformationType::NONE;
+}
+
+inline bool has_bit(TransformationType value, TransformationType bit) {
+    return (value & bit) == bit;
 }
 
 inline bool is_comprised_by_label(TransformationType label,
