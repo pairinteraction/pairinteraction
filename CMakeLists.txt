@@ -110,6 +110,7 @@ endif()
 # Find dependencies # TODO add all dependencies
 find_package(doctest  REQUIRED)
 find_package(spdlog  REQUIRED)
+find_package(nlohmann_json REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
@@ -173,12 +174,6 @@ set(HTTPLIB_REQUIRE_OPENSSL TRUE CACHE BOOL "Requires OpenSSL to be found & link
 set(HTTPLIB_USE_ZLIB_IF_AVAILABLE FALSE CACHE BOOL "Uses ZLIB (if available) to enable Zlib compression support." FORCE)
 set(HTTPLIB_USE_BROTLI_IF_AVAILABLE FALSE CACHE BOOL "Uses Brotli (if available) to enable Brotli decompression support." FORCE)
 FetchContent_MakeAvailable(httplib)
-
-FetchContent_Declare(
-  nlohmann_json
-  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
-)
-FetchContent_MakeAvailable(nlohmann_json)
 
 # Build instructions
 if( WITH_BACKEND )
