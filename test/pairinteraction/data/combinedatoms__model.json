@@ -36,21 +36,17 @@
     "atom2": "atom1",
     "interactions": {
         "conserved_total_m": null,
-        "conserved_parity_under_inversion": {
-            "list": [
-                1,
-                1,
-                1
-            ]
-        },
+        "conserved_parity_under_inversion": [
+            1,
+            1,
+            1
+        ],
         "conserved_parity_under_reflection": -1,
         "conserved_parity_under_permutation": null,
         "distance": {
-            "list": [
-                3.0,
-                6.5,
-                10.0
-            ]
+            "start": 3,
+            "stop": 10,
+            "steps": 3
         },
         "angle": 0.615,
         "combined_states_of_interest": [

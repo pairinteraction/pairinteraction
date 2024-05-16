@@ -2,7 +2,6 @@
 
 from typing import List, Optional, Union
 
-import numpy as np
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -11,7 +10,7 @@ from pydantic import (
     field_validator,
 )
 
-from pairinteraction.model.parameter import UnionParameter
+from pairinteraction.model.parameter import UnionParameterFloat
 from pairinteraction.model.states import UnionModelStates
 from pairinteraction.model.types import HalfInt, SpeciesString
 from pairinteraction.model.utils import (
@@ -52,12 +51,12 @@ class ModelAtom(BaseModelConstituent):
     min_energy_after_diagonalization: Optional[float] = None
     max_energy_after_diagonalization: Optional[float] = None
 
-    efield_x: UnionParameter = Field(0, validate_default=True)
-    efield_y: UnionParameter = Field(0, validate_default=True)
-    efield_z: UnionParameter = Field(0, validate_default=True)
-    bfield_x: UnionParameter = Field(0, validate_default=True)
-    bfield_y: UnionParameter = Field(0, validate_default=True)
-    bfield_z: UnionParameter = Field(0, validate_default=True)
+    efield_x: UnionParameterFloat = Field(0, validate_default=True)
+    efield_y: UnionParameterFloat = Field(0, validate_default=True)
+    efield_z: UnionParameterFloat = Field(0, validate_default=True)
+    bfield_x: UnionParameterFloat = Field(0, validate_default=True)
+    bfield_y: UnionParameterFloat = Field(0, validate_default=True)
+    bfield_z: UnionParameterFloat = Field(0, validate_default=True)
 
     # Optional use delta_attr and states_of_interest to define min_/max_attr
     # dont use BaseModelState here, but specific UnionModelStates to enable automatic parsing
@@ -80,7 +79,9 @@ class ModelAtom(BaseModelConstituent):
 
         This defines wether to use pairinteraction.SystemOneReal or SystemOneComplex.
         """
-        return not np.any(self.efield_y.list) and not np.any(self.bfield_y.list)
+        return (self.efield_y.get_min() == self.efield_y.get_max() == 0) and (
+            self.bfield_y.get_min() == self.bfield_y.get_max() == 0
+        )
 
     @field_validator("states_of_interest", "additionally_included_states", mode="before")
     @classmethod

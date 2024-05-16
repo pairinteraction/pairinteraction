@@ -4,9 +4,9 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pairinteraction.model.parameter import UnionParameter
+from pairinteraction.model.parameter import UnionParameterFloat, UnionParameterInt, UnionParameterSymmetry
 from pairinteraction.model.states import UnionModelStates
-from pairinteraction.model.types import ConstituentString, Symmetry
+from pairinteraction.model.types import ConstituentString
 
 
 class ModelInteractions(BaseModel):
@@ -20,14 +20,13 @@ class ModelInteractions(BaseModel):
     min_energy_after_diagonalization: Optional[float] = None
     max_energy_after_diagonalization: Optional[float] = None
 
-    # TODO should the symmetries also be parameters, use generic type in parameter?
-    conserved_total_m: Optional[int] = None
-    conserved_parity_under_inversion: Symmetry = Field(None, validate_default=True)
-    conserved_parity_under_reflection: Symmetry = Field(None, validate_default=True)
-    conserved_parity_under_permutation: Symmetry = Field(None, validate_default=True)
+    conserved_total_m: Optional[UnionParameterInt] = None
+    conserved_parity_under_inversion: UnionParameterSymmetry = Field(None, validate_default=True)
+    conserved_parity_under_reflection: UnionParameterSymmetry = Field(None, validate_default=True)
+    conserved_parity_under_permutation: UnionParameterSymmetry = Field(None, validate_default=True)
 
-    distance: UnionParameter = Field(None, validate_default=True)
-    angle: UnionParameter = Field(0, validate_default=True, description="Angle between the two states in degrees.")
+    distance: UnionParameterFloat = Field(None, validate_default=True)
+    angle: UnionParameterFloat = Field(0, validate_default=True, description="Angle between the two states in degrees.")
 
     # Optional use delta_attr and combined_states_of_interest to define min_/max_attr
     # dont use BaseModelState, but UnionModelStates to enable automatic parsing (same for UnionModelConstituent)
