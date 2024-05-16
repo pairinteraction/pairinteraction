@@ -18,7 +18,7 @@ pip install pairinteraction
 
 If pairinteraction was installed via pip, the graphical user interface can be started by executing `start_pairinteraction_gui` from the command line.
 
-## Please cite as
+## Please cite
 
 > Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth, *Tutorial: Calculation of Rydberg interaction potentials*, [J. Phys. B: At. Mol. Opt. Phys. 50, 133001 (2017)][journal-link], [arXiv:1612.08053][arXiv-link]
 

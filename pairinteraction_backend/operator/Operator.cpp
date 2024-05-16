@@ -47,7 +47,7 @@ Sorting Operator<Derived>::get_sorter(TransformationType label) const {
     Sorting transformation =
         basis->get_sorter_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
 
-    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
         std::vector<real_t> energies_of_states;
         energies_of_states.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
@@ -89,7 +89,7 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
     // Get the blocks
     Blocks blocks = basis->get_blocks_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
 
-    if ((label & TransformationType::SORT_BY_ENERGY) == TransformationType::SORT_BY_ENERGY) {
+    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
         std::vector<int> completed;
         size_t block_idx = 0;
         scalar_t last_diagonal = matrix.coeff(0, 0);
