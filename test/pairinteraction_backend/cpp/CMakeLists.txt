@@ -6,7 +6,6 @@ add_executable(test_dipole_operator
 
 target_compile_definitions(test_dipole_operator PRIVATE
     DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-    JSON_USE_IMPLICIT_CONVERSIONS=0
 )
 
 target_link_libraries(test_dipole_operator

@@ -63,7 +63,6 @@ target_link_libraries(backend
 
 target_compile_definitions(backend PRIVATE
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  JSON_USE_IMPLICIT_CONVERSIONS=0
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -173,7 +172,6 @@ target_link_libraries(bindings
 
 target_compile_definitions(bindings PRIVATE
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  JSON_USE_IMPLICIT_CONVERSIONS=0
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -198,7 +196,6 @@ add_library(pairinteraction_backend SHARED
 
 target_compile_definitions(pairinteraction_backend PRIVATE
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  JSON_USE_IMPLICIT_CONVERSIONS=0
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -235,7 +232,6 @@ if (BUILD_TESTING)
 
   target_compile_definitions(pairinteraction_backend_test PRIVATE
     DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-    JSON_USE_IMPLICIT_CONVERSIONS=0
   )
 
   target_link_libraries(pairinteraction_backend_test
