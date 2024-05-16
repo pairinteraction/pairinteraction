@@ -8,12 +8,10 @@
         "min_energy": -2967.980376658483,
         "max_energy": -2605.836006757706,
         "efield_z": 3.19,
-        "bfield_z": {
-            "list": [
-                63.7,
-                100
-            ]
-        },
+        "bfield_z": [
+            63.7,
+            100
+        ],
         "states_of_interest": [
             {
                 "species": "Rb",

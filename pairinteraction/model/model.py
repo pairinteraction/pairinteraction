@@ -195,6 +195,7 @@ class ModelSimulation(BaseModel):
         """
         self.constituents  # noqa: B018
         self.dict_of_parameter_lists  # noqa: B018
+        self.parameter_size  # noqa: B018
         return self
 
     @field_serializer("atom2", "classical_light2", mode="wrap")

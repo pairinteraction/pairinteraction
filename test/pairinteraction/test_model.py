@@ -47,7 +47,7 @@ class SimulationTests(unittest.TestCase):
         model["atom1"]["bfield_y"] = [0, 0.1, 0.2, 0.4]
         with self.assertRaises(ValueError) as cm:
             model = ModelSimulation.model_validate(model)
-        assert "steps" in str(cm.exception)
+        assert "All parameter lists must have the same size." in str(cm.exception)
 
         # States must have same species
         model = deepcopy(original_model_dict)
