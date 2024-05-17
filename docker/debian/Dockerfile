@@ -31,6 +31,7 @@ RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     PyQt5 \
     pyqtgraph \
     Pint \
+    pydantic \
     Sphinx \
     numpydoc \
     sphinx-rtd-theme \
