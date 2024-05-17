@@ -4,6 +4,7 @@ requires = [
     "nanobind",
     "numpy",
     "pyqt5",
+    "pydantic",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -26,6 +27,7 @@ dependencies = [
     "pyqt5",
     "pyqtgraph",
     "scipy",
+    "pydantic",
 ]
 
 [tool.scikit-build]
