@@ -44,7 +44,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json
+          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib
           npm install -g fileicon
 
       - name: Configure

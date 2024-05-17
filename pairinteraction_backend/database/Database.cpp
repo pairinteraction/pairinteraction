@@ -133,7 +133,7 @@ Database::Database(bool auto_update)
     // Get a dictionary of remotely available tables
     if (auto_update) {
         // Call the different endpoints asynchronously
-        httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
+        httplib::Result (httplib::Client::*gf)(const char *, const httplib::Headers &) =
             &httplib::Client::Get;
         std::vector<std::future<httplib::Result>> futures;
         std::vector<std::filesystem::path> filenames;
@@ -163,8 +163,8 @@ Database::Database(bool auto_update)
                            {"Accept", "application/vnd.github+json"},
                            {"if-modified-since", lastmodified}};
             }
-            futures.push_back(
-                std::async(std::launch::async, gf, &pool[i], database_repo_paths[i], headers));
+            futures.push_back(std::async(std::launch::async, gf, &pool[i],
+                                         database_repo_paths[i].c_str(), headers));
         }
 
         // Process the results
@@ -1058,7 +1058,7 @@ void Database::ensure_presence_of_table(std::string name) {
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
         auto res = pool.front().Get(
-            tables[name].remote_path.string(),
+            tables[name].remote_path.string().c_str(),
             {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
         if (!res || res->status != 200) {
             SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path.string(),
