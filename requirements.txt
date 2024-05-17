@@ -5,4 +5,4 @@ pyqtgraph
 scipy
 pyinstaller~=5.13.1
 wheel~=0.37.1
-swig~=4.3.0; sys_platform != 'win32'
+pydantic ~= 2.6.1
