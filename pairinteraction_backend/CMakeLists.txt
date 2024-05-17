@@ -1,3 +1,27 @@
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
+add_library(dependencies INTERFACE IMPORTED)
+target_include_directories(dependencies INTERFACE
+  "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(dependencies INTERFACE
+  doctest::doctest
+  duckdb::duckdb
+  Eigen3::Eigen
+  httplib::httplib
+  nlohmann_json::nlohmann_json
+  spdlog::spdlog
+)
+target_compile_definitions(dependencies INTERFACE
+  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
+)
+target_compile_options(dependencies INTERFACE
+  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+target_compile_features(dependencies INTERFACE cxx_std_17)
+
 # Create backend object
 add_library(backend OBJECT)
 target_sources(backend PUBLIC
@@ -55,28 +79,7 @@ target_sources(backend PUBLIC
   ./test.hpp
 )
 
-target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(backend
-  PUBLIC doctest::doctest Eigen3::Eigen nlohmann_json::nlohmann_json
-  PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
-)
-
-target_compile_definitions(backend PRIVATE
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
-)
-
-target_compile_options(backend PRIVATE
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>
-)
-
-target_compile_features(backend PUBLIC cxx_std_17)
-
-set_target_properties(backend PROPERTIES
-  CXX_EXTENSIONS OFF
-  POSITION_INDEPENDENT_CODE ON
-)
+target_link_libraries(backend PRIVATE dependencies)
 
 # Create bindings object
 add_library(bindings OBJECT)
@@ -160,32 +163,9 @@ target_sources(bindings PUBLIC
   ./test.py.hpp
 )
 
-target_include_directories(bindings PRIVATE
-  "${CMAKE_CURRENT_SOURCE_DIR}"
-  "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}"
-)
-
-target_link_libraries(bindings
-  PUBLIC Eigen3::Eigen
-  PRIVATE nanobind-static
-)
-
-target_compile_definitions(bindings PRIVATE
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
-)
-
-target_compile_options(bindings PRIVATE
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>
-)
-
-target_compile_features(bindings PUBLIC cxx_std_17)
-
-set_target_properties(bindings PROPERTIES
-  CXX_EXTENSIONS OFF
-  POSITION_INDEPENDENT_CODE ON
-)
+target_include_directories(bindings PRIVATE "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
+target_link_libraries(bindings PRIVATE dependencies nanobind-static)
+target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into libraries
 add_library(pairinteraction_backend SHARED
@@ -194,14 +174,9 @@ add_library(pairinteraction_backend SHARED
   $<$<BOOL:${BUILD_TESTING}>:main.cpp>
 )
 
-target_compile_definitions(pairinteraction_backend PRIVATE
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
-)
-
 target_link_libraries(pairinteraction_backend
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-  PRIVATE nanobind-static spdlog::spdlog duckdb::duckdb httplib::httplib
+  PRIVATE dependencies nanobind-static
 )
 
 set_target_properties(pairinteraction_backend PROPERTIES
@@ -229,19 +204,7 @@ if (BUILD_TESTING)
     $<TARGET_OBJECTS:backend>
     main.cpp
   )
-
-  target_compile_definitions(pairinteraction_backend_test PRIVATE
-    DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  )
-
-  target_link_libraries(pairinteraction_backend_test
-    PRIVATE spdlog::spdlog duckdb::duckdb httplib::httplib
-  )
-
-  target_compile_options(pairinteraction_backend_test PRIVATE
-    $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-    $<$<CXX_COMPILER_ID:MSVC>:/W4>
-  )
+  target_link_libraries(pairinteraction_backend_test PRIVATE dependencies)
 
   if (WIN32)
     add_custom_command(TARGET pairinteraction_backend_test POST_BUILD

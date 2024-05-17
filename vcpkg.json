@@ -9,15 +9,19 @@
         "boost-tokenizer",
         "boost-uuid",
         "cereal",
+        {
+            "name": "cpp-httplib",
+            "features": [ "openssl" ]
+        },
         "doctest",
-        "spdlog",
         "eigen3",
         "fmt",
         "gsl",
+        "nlohmann-json",
+        "spdlog",
         {
             "name": "sqlite3",
             "features": [ "tool" ]
-        },
-        "zeromq"
+        }
     ]
 }
