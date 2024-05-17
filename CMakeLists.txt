@@ -64,7 +64,7 @@ IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/extra/cmake")
 
 # Build options
 option(WITH_BACKEND  "Build with C++ backend"               ON)
@@ -109,12 +109,16 @@ endif()
 
 # Find dependencies # TODO add all dependencies
 find_package(doctest  REQUIRED)
-find_package(spdlog  REQUIRED)
+find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(httplib REQUIRED
+  COMPONENTS OpenSSL
+)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
-  OPTIONAL_COMPONENTS Development.SABIModule)
+  OPTIONAL_COMPONENTS Development.SABIModule
+)
 
 if(MSVC)
   string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
@@ -163,17 +167,6 @@ if(WIN32)
   set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
 endif()
 add_library(duckdb::duckdb ALIAS duckdb)
-
-FetchContent_Declare(
-    httplib
-    GIT_REPOSITORY https://github.com/yhirose/cpp-httplib.git
-    GIT_TAG v0.14.3
-    GIT_SHALLOW TRUE
-)
-set(HTTPLIB_REQUIRE_OPENSSL TRUE CACHE BOOL "Requires OpenSSL to be found & linked, or fails build." FORCE)
-set(HTTPLIB_USE_ZLIB_IF_AVAILABLE FALSE CACHE BOOL "Uses ZLIB (if available) to enable Zlib compression support." FORCE)
-set(HTTPLIB_USE_BROTLI_IF_AVAILABLE FALSE CACHE BOOL "Uses Brotli (if available) to enable Brotli decompression support." FORCE)
-FetchContent_MakeAvailable(httplib)
 
 # Build instructions
 if( WITH_BACKEND )

@@ -34,10 +34,6 @@ if (OpenMP_CXX_FOUND})
     target_link_libraries(basics PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-# Set search path for CMake modules
-
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
-
 # Link the pairinteraction library and its dependencies # TODO create a FindPairinteraction.cmake file
 
 include_directories(SYSTEM TODO/pairinteraction/eigen)
