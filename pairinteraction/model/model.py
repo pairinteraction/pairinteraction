@@ -15,27 +15,30 @@ from pydantic import (
 from typing_extensions import Self
 
 from pairinteraction.model.constituents import (
+    BaseModelAtom,
     BaseModelConstituent,
-    ModelAtom,
+    ModelAtomMQDT,
+    ModelAtomSQDT,
     ModelClassicalLight,
 )
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
 from pairinteraction.model.parameter import BaseParameterIterable
-from pairinteraction.model.states import BaseModelState
-from pairinteraction.model.types import ConstituentString
+from pairinteraction.model.states import BaseModelState, ModelStateAtomSQDT
+from pairinteraction.model.types import ConstituentString, HalfInt
+
+UnionModelAtom = Union[ModelAtomSQDT[int], ModelAtomSQDT[HalfInt], ModelAtomMQDT[int], ModelAtomMQDT[HalfInt]]
 
 
 class ModelSimulation(BaseModel):
-    """Pydantic model for the input of a pairinteraction simulation."""
+    """Model for the input of a pairinteraction simulation."""
 
-    # TODO: making this frozen does not freeze all the submodel!
-    model_config = ConfigDict(extra="forbid", frozen=False)
+    model_config = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
     # The following fields correspond to the toplevel fields of the json file descirbing a simulation
-    atom1: ModelAtom
-    atom2: Optional[Union[ModelAtom, ConstituentString]] = None
+    atom1: UnionModelAtom
+    atom2: Optional[Union[UnionModelAtom, ConstituentString]] = None
     classical_light1: Optional[ModelClassicalLight] = None
     classical_light2: Optional[Union[ModelClassicalLight, ConstituentString]] = None
 
@@ -43,7 +46,7 @@ class ModelSimulation(BaseModel):
     numerics: ModelNumerics = Field(default_factory=ModelNumerics)
     overlaps: Optional[ModelOverlaps] = None
 
-    @cached_property
+    @property
     def constituents(self) -> Dict[ConstituentString, BaseModelConstituent]:
         """Return a dictionary of all not None constituents."""
         constituents = {
@@ -53,6 +56,17 @@ class ModelSimulation(BaseModel):
             "classical_light2": self.classical_light2,
         }
         return {k: v for k, v in constituents.items() if v is not None}
+
+    @property
+    def unique_constituents(self) -> Dict[ConstituentString, BaseModelConstituent]:
+        """Return a dictionary of all unique constituents."""
+        constituents = {
+            "atom1": self.atom1,
+            "atom2": self.atom2,
+            "classical_light1": self.classical_light1,
+            "classical_light2": self.classical_light2,
+        }
+        return {k: v for k, v in constituents.items() if v is not None and k not in self._constituent_mapping}
 
     @cached_property
     def dict_of_parameter_lists(self) -> Dict[str, BaseParameterIterable]:
@@ -86,7 +100,8 @@ class ModelSimulation(BaseModel):
         This can then be used to check, wether we use the same atoms/basis,
         as well as to also dump the model again as reference via a string (see self.serialize_constituents).
         """
-        self._constituent_mapping = {}
+        if not hasattr(self, "_constituent_mapping"):
+            self._constituent_mapping = {}
         for const_name in ["atom", "classical_light"]:
             if isinstance(getattr(self, const_name + "2"), str):
                 self._constituent_mapping[const_name + "2"] = const_name + "1"
@@ -122,24 +137,26 @@ class ModelSimulation(BaseModel):
 
         return self
 
-    @model_validator(mode="after")
     def evaluate_delta_restrictions(self) -> Self:
         """If states_of_interest is provided together with delta_attr instead of min/max_attr
         convert the delta_attr to min/max_attr .
         """
+        # TODO assert all states (in states_of_intereset,...) are already evaluated via the database
+        # OR should we move this completely to database or simulation?
         for submodel_name in ["atom1", "atom2"]:
             submodel = getattr(self, submodel_name)
             if submodel is None or submodel_name in self._constituent_mapping:
                 continue
             for attr in ["n", "nu", "l", "s", "j", "f", "m", "energy"]:
-                self.evaluate_one_delta_restriction(submodel, attr)
+                if hasattr(submodel, f"delta_{attr}"):
+                    self.evaluate_one_delta_restriction(submodel, attr)
 
         if self.interactions is not None:
             self.evaluate_delta_restriction_interactions()
 
         return self
 
-    def evaluate_one_delta_restriction(self, submodel: ModelAtom, attr: str) -> None:
+    def evaluate_one_delta_restriction(self, submodel: BaseModelAtom, attr: str) -> None:
         """Convert delta_attr to min/max_attr for a single submodel and one attribute."""
         delta = getattr(submodel, f"delta_{attr}")
         if delta is None:
@@ -148,7 +165,7 @@ class ModelSimulation(BaseModel):
         min_, max_ = getattr(submodel, f"min_{attr}"), getattr(submodel, f"max_{attr}")
         if (min_ is None or max_ is None) and min_ != max_:
             raise ValueError(
-                f"For ModelAtom delta_{attr} given and (min_{attr} xor max_{attr}) is given. "
+                f"For atom delta_{attr} given and (min_{attr} xor max_{attr}) is given. "
                 "This behaviour is not defined."
             )
 
@@ -162,9 +179,16 @@ class ModelSimulation(BaseModel):
         values = [getattr(state, attr) for state in states_of_interest]
         min_attr, max_attr = min(values) - delta, max(values) + delta
 
-        MIN_VALUES = {"n": 1, "l": 0, "j": min(state.s for state in states_of_interest)}
-        if attr in MIN_VALUES:
-            min_attr = max(min_attr, MIN_VALUES[attr])
+        if attr == "n":
+            min_attr = max(min_attr, 1)
+        elif attr == "l":
+            min_attr = max(min_attr, 0)
+        elif attr == "j":
+            state0 = states_of_interest[0]
+            if isinstance(state0, ModelStateAtomSQDT):
+                min_attr = max(min_attr, state0.s % 1)
+            else:
+                min_attr = max(min_attr, 0)
 
         for minmax, new in zip(["min", "max"], [min_attr, max_attr]):
             old = getattr(submodel, f"{minmax}_{attr}")

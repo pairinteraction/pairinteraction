@@ -1,17 +1,11 @@
 {
     "atom1": {
         "species": "Rb",
-        "min_n": 76,
-        "max_n": 83,
-        "min_l": 0,
-        "max_l": 4,
-        "min_m": -9.5,
-        "max_m": 10.5,
-        "min_energy": -604.2349676362819,
-        "max_energy": -516.7653702909081,
+        "delta_energy": 40.0,
+        "delta_energy_after_diagonalization": 20.0,
         "efield_x": 0.1,
         "efield_y": [
-            0,
+            0.0,
             0.1,
             0.2
         ],
@@ -23,9 +17,9 @@
         "bfield_x": 0.1,
         "bfield_y": 0.2,
         "bfield_z": [
-            1,
-            2,
-            3
+            1.0,
+            2.0,
+            3.0
         ],
         "states_of_interest": [
             {
@@ -51,7 +45,12 @@
                 "j": 0.5,
                 "m": 0.5
             }
-        ]
+        ],
+        "delta_n": 3,
+        "delta_l": 3,
+        "delta_j": null,
+        "min_m": -9.5,
+        "max_m": 10.5
     },
     "numerics": {
         "quantization_axis": [

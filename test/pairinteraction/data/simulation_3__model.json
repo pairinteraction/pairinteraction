@@ -1,12 +1,7 @@
 {
     "atom1": {
         "species": "Rb",
-        "min_n": 34,
-        "max_n": 41,
-        "min_l": 0,
-        "max_l": 4,
-        "min_energy": -2967.980376658483,
-        "max_energy": -2605.836006757706,
+        "delta_energy": 100.0,
         "efield_z": 3.19,
         "bfield_z": 63.7,
         "states_of_interest": [
@@ -31,7 +26,9 @@
                 "j": 0.5,
                 "m": 0.5
             }
-        ]
+        ],
+        "delta_n": 3,
+        "delta_l": 3
     },
     "atom2": "atom1",
     "interactions": {
@@ -40,7 +37,7 @@
             -1,
             1
         ],
-        "distance": 3,
+        "distance": 3.0,
         "angle": 0.615,
         "combined_states_of_interest": [
             {

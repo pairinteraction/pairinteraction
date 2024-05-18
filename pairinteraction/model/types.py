@@ -52,6 +52,6 @@ def ExcludedField(*args, **kwargs):
     return Field(*args, exclude=True, **kwargs)
 
 
-def ValidatedField(*args, **kwargs):
+def ValidateDefault(*args, **kwargs):
     """Field with validate_default=True."""
     return Field(*args, validate_default=True, **kwargs)
