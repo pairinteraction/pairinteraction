@@ -1,4 +1,4 @@
-"""Pydantic models for numerics and calculating overlaps."""
+"""Pydantic models for numerical settings."""
 
 from pathlib import Path
 from typing import Literal, Optional, Union
@@ -11,7 +11,7 @@ QuantizationAxisString = Literal["x", "y", "z", "efield", "bfield", "distance"]
 
 
 class ModelNumerics(BaseModel):
-    """Pydantic model for various numerical setings."""
+    """Model for various numerical parameters."""
 
     model_config = ConfigDict(extra="forbid", frozen=True)
 

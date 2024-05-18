@@ -196,8 +196,3 @@ ParameterConstantSymmetry = types.new_class(
     "ParameterConstantSymmetry", (ParameterConstant[Symmetry], ParameterSymmetry), {}
 )
 ParameterListSymmetry = types.new_class("ParameterListSymmetry", (ParameterList[Symmetry], ParameterSymmetry), {})
-
-
-UnionParameterInt = Union[ParameterConstantInt, ParameterListInt, ParameterRangeInt]
-UnionParameterFloat = Union[ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat]
-UnionParameterSymmetry = Union[ParameterConstantSymmetry, ParameterListSymmetry]

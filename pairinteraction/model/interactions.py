@@ -4,15 +4,34 @@ from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pairinteraction.model.parameter import UnionParameterFloat, UnionParameterInt, UnionParameterSymmetry
-from pairinteraction.model.states import UnionModelStates
-from pairinteraction.model.types import ConstituentString
+from pairinteraction.model.parameter import (
+    ParameterConstantFloat,
+    ParameterConstantInt,
+    ParameterConstantSymmetry,
+    ParameterListFloat,
+    ParameterListInt,
+    ParameterListSymmetry,
+    ParameterRangeFloat,
+    ParameterRangeInt,
+)
+from pairinteraction.model.states import ModelStateAtomMQDT, ModelStateAtomSQDT, ModelStateClassicalLight
+from pairinteraction.model.types import ConstituentString, HalfInt
+
+UnionModelStates = Union[
+    ModelStateAtomSQDT[int],
+    ModelStateAtomSQDT[HalfInt],
+    ModelStateAtomMQDT[int],
+    ModelStateAtomMQDT[HalfInt],
+    ModelStateClassicalLight,
+]
+UnionParameterInt = Union[ParameterConstantInt, ParameterListInt, ParameterRangeInt]
+UnionParameterFloat = Union[ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat]
+UnionParameterSymmetry = Union[ParameterConstantSymmetry, ParameterListSymmetry]
 
 
 class ModelInteractions(BaseModel):
-    """Pydantic model corresponding to SystemWithInteractions."""
+    """Model corresponding to SystemWithInteractions."""
 
-    # TODO: is there a option to set frozen to True after all model_validators have been run?
     model_config = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
     min_energy: Optional[float] = None
@@ -28,8 +47,6 @@ class ModelInteractions(BaseModel):
     distance: UnionParameterFloat = Field(None, validate_default=True)
     angle: UnionParameterFloat = Field(0, validate_default=True, description="Angle between the two states in degrees.")
 
-    # Optional use delta_attr and combined_states_of_interest to define min_/max_attr
-    # dont use BaseModelState, but UnionModelStates to enable automatic parsing
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
     # TODO both delta_energy(...) should be ExtraField(), but how to handle use_delta_energy_after_fields?
     delta_energy: Optional[float] = None
