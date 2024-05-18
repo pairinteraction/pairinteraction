@@ -21,7 +21,7 @@ from pairinteraction.model.constituents import (
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
-from pairinteraction.model.parameter import ParameterList
+from pairinteraction.model.parameter import BaseParameterIterable
 from pairinteraction.model.states import BaseModelState
 from pairinteraction.model.types import ConstituentString
 
@@ -54,14 +54,14 @@ class ModelSimulation(BaseModel):
         return {k: v for k, v in constituents.items() if v is not None}
 
     @cached_property
-    def dict_of_parameter_lists(self) -> Dict[str, ParameterList]:
+    def dict_of_parameter_lists(self) -> Dict[str, BaseParameterIterable]:
         """Return a collection of all parameter ranges."""
         parameters = {}
         for submodel in [self.interactions, self.atom1, self.atom2, self.classical_light1, self.classical_light2]:
             if submodel is None:
                 continue
             for k, v in iter(submodel):
-                if isinstance(v, ParameterList):
+                if isinstance(v, BaseParameterIterable):
                     parameters[k] = v
         return parameters
 
@@ -69,6 +69,8 @@ class ModelSimulation(BaseModel):
     def parameter_size(self) -> int:
         """Return the number of steps of the parameter lists, and make sure they are all the same size."""
         all_sizes = [p.get_size() for p in self.dict_of_parameter_lists.values()]
+        if len(all_sizes) == 0:
+            return 0
         if not all(s == all_sizes[0] for s in all_sizes):
             raise ValueError("All parameter lists must have the same size.")
         return all_sizes[0]
