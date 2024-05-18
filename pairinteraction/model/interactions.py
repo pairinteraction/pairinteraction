@@ -15,7 +15,7 @@ from pairinteraction.model.parameter import (
     ParameterRangeInt,
 )
 from pairinteraction.model.states import ModelStateAtomMQDT, ModelStateAtomSQDT, ModelStateClassicalLight
-from pairinteraction.model.types import ConstituentString, HalfInt
+from pairinteraction.model.types import ConstituentString, HalfInt, PositiveZero
 
 UnionModelStates = Union[
     ModelStateAtomSQDT[int],
@@ -34,44 +34,22 @@ class ModelInteractions(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
+    use_delta_energy_after_fields: bool = True
+
     min_energy: Optional[float] = None
     max_energy: Optional[float] = None
+    delta_energy: Optional[PositiveZero[float]] = None
+
     min_energy_after_diagonalization: Optional[float] = None
     max_energy_after_diagonalization: Optional[float] = None
+    delta_energy_after_diagonalization: Optional[PositiveZero[float]] = None
 
     conserved_total_m: Optional[UnionParameterInt] = None
     conserved_parity_under_inversion: UnionParameterSymmetry = Field(None, validate_default=True)
     conserved_parity_under_reflection: UnionParameterSymmetry = Field(None, validate_default=True)
     conserved_parity_under_permutation: UnionParameterSymmetry = Field(None, validate_default=True)
 
-    distance: UnionParameterFloat = Field(None, validate_default=True)
-    angle: UnionParameterFloat = Field(0, validate_default=True, description="Angle between the two states in degrees.")
+    distance: Optional[UnionParameterFloat] = None
+    angle: UnionParameterFloat = ParameterConstantFloat(0)
 
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
-    # TODO both delta_energy(...) should be ExtraField(), but how to handle use_delta_energy_after_fields?
-    delta_energy: Optional[float] = None
-    delta_energy_after_diagonalization: Optional[float] = None
-    # TODO: change name of use_delta_energy_after_fields?
-    use_delta_energy_after_fields: bool = Field(True)
-
-    # def validate_conserved_total_m(cls, v: float) -> float:
-    #     # TODO allow for list of pair momenta?
-    #     # check if all combined_states_of_interest have the same m
-    #     # check angle/quantization_axis/fields if momentum can or cannot be conserved?
-    #     raise NotImplementedError
-
-    # @model_validator(mode="after")
-    # def apply_angle(self) -> Self:
-    #     if self.angle is None or self.angle == 0:
-    #         self.angle = None
-    #         return self
-
-    #     if isinstance(self.angle, float):
-    #         raise NotImplementedError
-    #         # TODO once this is implemented, maybe use ExtraField() for angle?
-    #         # (not sure because still the question how to handle range of angle?)
-
-    #         self.angle = None
-    #         return self
-
-    #     raise NotImplementedError("How to handle list of angle?")
