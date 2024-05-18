@@ -29,7 +29,7 @@ class ModelInteractions(BaseModel):
     angle: UnionParameterFloat = Field(0, validate_default=True, description="Angle between the two states in degrees.")
 
     # Optional use delta_attr and combined_states_of_interest to define min_/max_attr
-    # dont use BaseModelState, but UnionModelStates to enable automatic parsing (same for UnionModelConstituent)
+    # dont use BaseModelState, but UnionModelStates to enable automatic parsing
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
     # TODO both delta_energy(...) should be ExtraField(), but how to handle use_delta_energy_after_fields?
     delta_energy: Optional[float] = None
@@ -44,7 +44,7 @@ class ModelInteractions(BaseModel):
     #     raise NotImplementedError
 
     # @model_validator(mode="after")
-    # def apply_angle(self) -> "ModelInteractions":
+    # def apply_angle(self) -> Self:
     #     if self.angle is None or self.angle == 0:
     #         self.angle = None
     #         return self

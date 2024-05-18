@@ -8,9 +8,7 @@ from pydantic import BaseModel, ConfigDict, field_validator
 from pairinteraction import pireal
 from pairinteraction.model.types import (
     HalfInt,
-    PositiveFloat,
-    PositiveHalfInt,
-    PositiveInt,
+    PositiveZero,
     SpeciesString,
 )
 
@@ -46,13 +44,13 @@ class BaseModelStateAtom(BaseModelState):
 class ModelStateAtomSimple(BaseModelStateAtom):
     """Pydantic model representing a state of a simple (=no mqdt) atom."""
 
-    n: AllowedQn(PositiveInt) = None
-    l: AllowedQn(PositiveInt) = None
-    j: AllowedQn(Union[PositiveInt, PositiveHalfInt]) = None
+    n: AllowedQn(PositiveZero[int]) = None
+    l: AllowedQn(PositiveZero[int]) = None
+    j: AllowedQn(Union[PositiveZero[int], PositiveZero[HalfInt]]) = None
     m: AllowedQn(Union[int, HalfInt]) = None
 
     @cached_property
-    def s(self) -> PositiveHalfInt:
+    def s(self) -> PositiveZero[HalfInt]:
         """Get the spin of the atom from the provided species."""
         species = self.species
         no_ending = not any(species.endswith(ending) for ending in ["singlet", "triplet", "mqdt"])
@@ -104,12 +102,12 @@ class ModelStateAtomSimple(BaseModelStateAtom):
 class ModelStateAtomMQDT(BaseModelStateAtom):
     """Pydantic model representing a state of a atom using MQDT."""
 
-    n: AllowedQn(PositiveFloat) = None
-    nu: AllowedQn(PositiveFloat) = None
-    l: AllowedQn(PositiveFloat) = None
-    s: AllowedQn(PositiveFloat) = None
-    j: AllowedQn(PositiveFloat) = None
-    f: AllowedQn(PositiveHalfInt) = None
+    n: AllowedQn(PositiveZero[float]) = None
+    nu: AllowedQn(PositiveZero[float]) = None
+    l: AllowedQn(PositiveZero[float]) = None
+    s: AllowedQn(PositiveZero[float]) = None
+    j: AllowedQn(PositiveZero[float]) = None
+    f: AllowedQn(PositiveZero[HalfInt]) = None
     m: AllowedQn(HalfInt) = None
 
 
