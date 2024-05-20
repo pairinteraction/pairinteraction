@@ -73,7 +73,8 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib
+      run: |
+        brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib
 
     - uses: pypa/cibuildwheel@v2.23
       env:
