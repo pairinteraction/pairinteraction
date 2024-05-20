@@ -132,9 +132,15 @@ Database::Database(bool auto_update)
 
     // Get a dictionary of remotely available tables
     if (auto_update) {
-        // Call the different endpoints asynchronously
+// Call the different endpoints asynchronously
+#if HTTPLIB_USES_STD_STRING
+        httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
+            &httplib::Client::Get;
+#else
         httplib::Result (httplib::Client::*gf)(const char *, const httplib::Headers &) =
             &httplib::Client::Get;
+#endif
+
         std::vector<std::future<httplib::Result>> futures;
         std::vector<std::filesystem::path> filenames;
 
