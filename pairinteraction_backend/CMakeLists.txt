@@ -1,30 +1,8 @@
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-add_library(dependencies INTERFACE IMPORTED)
-target_include_directories(dependencies INTERFACE
-  "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(dependencies INTERFACE
-  doctest::doctest
-  duckdb::duckdb
-  Eigen3::Eigen
-  httplib::httplib
-  nlohmann_json::nlohmann_json
-  spdlog::spdlog
-)
-target_compile_definitions(dependencies INTERFACE
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
-)
-target_compile_options(dependencies INTERFACE
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>
-)
-target_compile_features(dependencies INTERFACE cxx_std_17)
-
 # Create backend object
-add_library(backend OBJECT)
-target_sources(backend PUBLIC
+add_library(backend OBJECT
   ./basis/Basis.cpp
   ./basis/Basis.hpp
   ./basis/BasisAtom.cpp
@@ -79,11 +57,33 @@ target_sources(backend PUBLIC
   ./test.hpp
 )
 
-target_link_libraries(backend PRIVATE dependencies)
+target_link_libraries(backend PUBLIC
+  doctest::doctest
+  duckdb::duckdb
+  Eigen3::Eigen
+  httplib::httplib
+  nlohmann_json::nlohmann_json
+  spdlog::spdlog
+)
+
+target_include_directories(backend PUBLIC
+  "${CMAKE_CURRENT_SOURCE_DIR}"
+)
+
+target_compile_definitions(backend PUBLIC
+  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
+)
+
+target_compile_options(backend PUBLIC
+  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
+  $<$<CXX_COMPILER_ID:MSVC>:/W4>
+)
+
+target_compile_features(backend PUBLIC cxx_std_17)
 
 # Create bindings object
-add_library(bindings OBJECT)
-target_sources(bindings PUBLIC
+add_library(bindings OBJECT
   # Headers
   ./basis/Basis.hpp
   ./basis/BasisAtom.hpp
@@ -163,20 +163,19 @@ target_sources(bindings PUBLIC
   ./test.py.hpp
 )
 
-target_include_directories(bindings PRIVATE "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
-target_link_libraries(bindings PRIVATE dependencies nanobind-static)
+target_include_directories(bindings PRIVATE "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS};${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(bindings PRIVATE nanobind-static)
 target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into libraries
 add_library(pairinteraction_backend SHARED
-  $<TARGET_OBJECTS:backend>
   $<TARGET_OBJECTS:bindings>
   $<$<BOOL:${BUILD_TESTING}>:main.cpp>
 )
 
 target_link_libraries(pairinteraction_backend
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-  PRIVATE dependencies nanobind-static
+  PRIVATE backend nanobind-static
 )
 
 set_target_properties(pairinteraction_backend PROPERTIES
@@ -201,10 +200,10 @@ endif()
 # Build an executable for running the tests
 if (BUILD_TESTING)
   add_executable(pairinteraction_backend_test
-    $<TARGET_OBJECTS:backend>
     main.cpp
   )
-  target_link_libraries(pairinteraction_backend_test PRIVATE dependencies)
+
+  target_link_libraries(pairinteraction_backend_test PRIVATE backend)
 
   if (WIN32)
     add_custom_command(TARGET pairinteraction_backend_test POST_BUILD
