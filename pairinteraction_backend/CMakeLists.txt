@@ -64,6 +64,7 @@ target_link_libraries(backend PUBLIC
   httplib::httplib
   $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
   $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
+  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
   nlohmann_json::nlohmann_json
   spdlog::spdlog
 )
@@ -74,6 +75,7 @@ target_include_directories(backend PUBLIC
 
 target_compile_definitions(backend PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  $<$<TARGET_EXISTS:MKL::MKL>:EIGEN_USE_MKL_ALL>
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -170,14 +172,11 @@ target_link_libraries(bindings PRIVATE nanobind-static)
 target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into libraries
-add_library(pairinteraction_backend SHARED
-  $<TARGET_OBJECTS:bindings>
-  $<$<BOOL:${BUILD_TESTING}>:main.cpp>
-)
+add_library(pairinteraction_backend SHARED)
 
 target_link_libraries(pairinteraction_backend
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-  PRIVATE backend nanobind-static
+  PRIVATE backend bindings
 )
 
 set_target_properties(pairinteraction_backend PROPERTIES

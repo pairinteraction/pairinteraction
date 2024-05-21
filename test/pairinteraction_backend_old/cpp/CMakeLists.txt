@@ -27,7 +27,12 @@ function(UNIT_TEST)
   target_compile_features(${UT_TARGET} PRIVATE cxx_std_17)
   set_target_properties(${UT_TARGET} PROPERTIES CXX_EXTENSIONS OFF)
   target_link_libraries(${UT_TARGET} PRIVATE pairinteraction doctest::doctest)
-  target_copy_mkl_dlls(${UT_TARGET})
+  if (WIN32)
+    add_custom_command(TARGET ${UT_TARGET} POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:${UT_TARGET}> $<TARGET_RUNTIME_DLLS:${UT_TARGET}>
+      COMMAND_EXPAND_LISTS
+    )
+  endif()
   # Tests are executed in the root directory
   add_test(NAME "cpp.${UT_TARGET}" COMMAND ${UT_TARGET}
     WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
