@@ -98,84 +98,12 @@ target_link_libraries(pairinteraction PRIVATE wignerSymbols)
 find_package(Eigen3 REQUIRED NO_MODULE)
 target_link_libraries(pairinteraction PUBLIC Eigen3::Eigen)
 
-# Find MKL
-set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
-set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
-set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
-set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
-set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
-find_package(MKL CONFIG)
-find_package(PkgConfig)
-if (NOT MKL_FOUND AND PKG_CONFIG_FOUND)
-  if(MKL_LINK STREQUAL "sdl")
-    pkg_check_modules(MKL mkl-sdl IMPORTED_TARGET)
-  elseif(MKL_THREADING STREQUAL "sequential")
-    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-seq IMPORTED_TARGET)
-  elseif(MKL_THREADING STREQUAL "intel_thread")
-    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-iomp IMPORTED_TARGET)
-  elseif(MKL_THREADING STREQUAL "gnu_thread")
-    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-gomp IMPORTED_TARGET)
-  elseif(MKL_THREADING STREQUAL "tbb_thread")
-    pkg_check_modules(MKL mkl-${MKL_LINK}-${MKL_INTERFACE}-tbb IMPORTED_TARGET)
-  endif()
-endif()
-
-if(MSVC)
-  # https://www.intel.com/content/www/us/en/docs/onemkl/developer-guide-windows/2023-1/contents-of-the-redist-intel64-directory.html
-  file(GLOB MKL_DLLS
-    # Threading layer
-    "${MKL_ROOT}/redist/intel64/mkl_${MKL_THREADING}*.dll"
-    # Computational layer
-    "${MKL_ROOT}/redist/intel64/mkl_core*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_def*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_mc*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_avx*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_vml_def*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_vml_mc*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_vml_avx*.dll"
-    "${MKL_ROOT}/redist/intel64/mkl_vml_cmpt*.dll"
-    "${MKL_ROOT}/redist/intel64/libimalloc.dll")
-  if(NOT MKL_DLLS)
-    message(WARNING "MKL DLLs could not be located! Dynamic lookup will probably fail.")
-  endif()
-  if(MKL_THREADING STREQUAL "intel_thread")
-    # Implementation detail of MKLConfig.cmake, the pkg-config files do not expose these variables
-    if(EXISTS "${OMP_DLL_DIR}/${OMP_DLLNAME}")
-      list(APPEND MKL_DLLS ${OMP_DLL_DIR}/${OMP_DLLNAME})
-    else()
-      message(WARNING "Intel OpenMP DLL cloud not be located! Dynamic lookup will probably fail.")
-    endif()
-  elseif(MKL_THREADING STREQUAL "tbb_thread")
-    # FIXME: Do we have to add any additional DLLs?
-  endif()
-  set(MKL_DLLS_TO_COPY "${MKL_DLLS}" CACHE STRING "Intel MKL DLLs to copy into the target dir (;-list, ignored if not on Windows)")
-  unset(MKL_DLLS)
-endif()
-
-function(target_copy_mkl_dlls TARGET)
-  foreach(FILE ${MKL_DLLS_TO_COPY})
-    add_custom_command(TARGET ${TARGET} POST_BUILD
-      COMMAND ${CMAKE_COMMAND} -E copy_if_different ${FILE} $<TARGET_FILE_DIR:${TARGET}>)
-  endforeach()
-endfunction()
-
-target_copy_mkl_dlls(pairinteraction)
-
 # Find a different lapack vendor
 find_package(LAPACK)
 
 # Determine which lapack vendor to use
 if(WITH_LAPACK AND MKL_FOUND AND (NOT BLA_VENDOR OR BLA_VENDOR MATCHES "All" OR BLA_VENDOR MATCHES "^Intel"))
   # Use MKL
-  if (TARGET MKL::MKL)
-    if(OMP_LIBRARY)
-      get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY}" DIRECTORY)
-      get_filename_component(OMP_LIBRARY_PATH "${OMP_LIBRARY_PATH}" REALPATH)
-      target_link_options(pairinteraction PUBLIC "$<$<CXX_COMPILER_ID:Clang,GNU>:LINKER:-rpath=${OMP_LIBRARY_PATH}>")
-    endif()
-  else()
-    add_library(MKL::MKL ALIAS PkgConfig::MKL)
-  endif()
   target_link_libraries(pairinteraction PUBLIC MKL::MKL)
   target_compile_definitions(pairinteraction PUBLIC WITH_INTEL_MKL)
 
@@ -287,6 +215,13 @@ if(WITH_GSL)
   target_compile_definitions(pairinteraction PUBLIC WITH_GSL)
 endif()
 
+if (WIN32)
+  add_custom_command(TARGET pairinteraction POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction> $<TARGET_RUNTIME_DLLS:pairinteraction>
+    COMMAND_EXPAND_LISTS
+  )
+endif()
+
 # Python interface
 if(WITH_PYTHON)
   file( WRITE ${CMAKE_CURRENT_BINARY_DIR}/__init__.py "from .binding import *" )
@@ -330,12 +265,17 @@ if(WITH_PYTHON)
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
     $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>)
   target_link_libraries(binding PUBLIC pairinteraction nanobind-static $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>)
-  target_copy_mkl_dlls(binding)
+
+  if (WIN32)
+    add_custom_command(TARGET binding POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:binding> $<TARGET_RUNTIME_DLLS:binding>
+      COMMAND_EXPAND_LISTS
+    )
+  endif()
 
 endif()
 
 # CPack
-
 if( WITH_DMG )
   find_package(Python COMPONENTS Interpreter REQUIRED)
 
@@ -361,7 +301,7 @@ elseif(SKBUILD)
   install(TARGETS pairinteraction-backend-deprecated RUNTIME DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/pireal.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/picomplex.py DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
-  install(FILES ${MKL_DLLS_TO_COPY} DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
+  install(FILES $<TARGET_RUNTIME_DLLS:pairinteraction> DESTINATION ${SKBUILD_PLATLIB_DIR}/pairinteraction)
 elseif(WITH_PYTHON)
   # Hopefully better in the future... https://gitlab.kitware.com/cmake/cmake/-/issues/24213
   set(PY_MOD_DIR "lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages/pairinteraction")

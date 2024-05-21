@@ -108,7 +108,7 @@ if(WITH_CLANG_TIDY)
 endif()
 
 # Find dependencies # TODO add all dependencies
-find_package(doctest  REQUIRED)
+find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
@@ -124,12 +124,20 @@ if (NOT httplib_FOUND)
   add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
 endif()
 
+# Find MKL
+set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
+set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
+set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
+set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
+set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
+find_package(MKL)
+
+# Find nanobind
 if(MSVC)
   string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
   message(STATUS "Unpatched Python libraries: ${Python_LIBRARIES}")
   message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
 endif()
-
 include(FetchContent)
 FetchContent_Declare(nanobind
   GIT_REPOSITORY https://github.com/wjakob/nanobind.git
@@ -143,6 +151,7 @@ find_package(nanobind CONFIG REQUIRED)
 nanobind_build_library(nanobind-static)
 set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
+# Find duckdb
 if(WIN32)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-windows-amd64.zip)
   set(DUCKDB_LIBNAME duckdb.dll)
