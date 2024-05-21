@@ -2,8 +2,8 @@
 
 from typing import Dict, List, Union
 
-from pairinteraction.database.validate_states import validate_states_of_interest
-from pairinteraction.model.model import ModelSimulation
+from pairinteraction.model.simulation import ModelSimulation
+from pairinteraction.preprocessing.validate_states import validate_states_of_interest
 from pairinteraction.simulation_old.atom import Atom, AtomOne, AtomTwo
 
 

@@ -15,8 +15,8 @@ from typing import Dict, Union
 # )
 from pairinteraction.model.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
-from pairinteraction.model.model import ModelSimulation
 from pairinteraction.model.numerics import ModelNumerics
+from pairinteraction.model.simulation import ModelSimulation
 
 BasisAtom = (
     BasisAtomCreator

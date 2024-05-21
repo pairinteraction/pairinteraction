@@ -9,9 +9,9 @@ from pydantic import (
 )
 
 from pairinteraction.model.constituents.base import BaseModelConstituent
-from pairinteraction.model.parameter import ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat
 from pairinteraction.model.states import BaseModelStateAtom, ModelStateAtomMQDT, ModelStateAtomSQDT
-from pairinteraction.model.types import HalfInt, Positive, PositiveZero, SpeciesString
+from pairinteraction.model.types.parameter import ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat
+from pairinteraction.model.types.simple_types import HalfInt, Positive, PositiveZero, SpeciesString
 
 SpinType = TypeVar("SpinType", int, HalfInt)
 FType = TypeVar("FType", int, HalfInt)
