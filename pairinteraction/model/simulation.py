@@ -24,9 +24,9 @@ from pairinteraction.model.constituents import (
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
-from pairinteraction.model.parameter import BaseParameterIterable
 from pairinteraction.model.states import BaseModelState, ModelStateAtomSQDT
-from pairinteraction.model.types import ConstituentString, HalfInt
+from pairinteraction.model.types.parameter import BaseParameterIterable
+from pairinteraction.model.types.simple_types import ConstituentString, HalfInt
 
 UnionModelAtom = Union[ModelAtomSQDT[int], ModelAtomSQDT[HalfInt], ModelAtomMQDT[int], ModelAtomMQDT[HalfInt]]
 

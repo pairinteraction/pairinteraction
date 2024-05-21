@@ -10,7 +10,7 @@ from typing import List, Tuple, Union
 import numpy as np
 
 from pairinteraction import picomplex, pireal
-from pairinteraction.model.model import ModelSimulation
+from pairinteraction.model.simulation import ModelSimulation
 from pairinteraction.model.states import BaseModelState
 from pairinteraction.simulation_old.exceptions import CppDeleted, CppObjectAlreadyDeleted, QnNotFoundError
 

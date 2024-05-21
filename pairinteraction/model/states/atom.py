@@ -7,7 +7,7 @@ from typing import Generic, Optional, TypeVar
 from pydantic import ValidationInfo, field_validator
 
 from pairinteraction.model.states.base import BaseModelState
-from pairinteraction.model.types import (
+from pairinteraction.model.types.simple_types import (
     HalfInt,
     Positive,
     PositiveZero,

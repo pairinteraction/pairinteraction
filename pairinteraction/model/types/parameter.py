@@ -9,7 +9,7 @@ from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 from typing_extensions import Self
 
-from pairinteraction.model.types import Symmetry
+from pairinteraction.model.types.simple_types import Symmetry
 
 ParamType = TypeVar("ParamType")
 RawType = TypeVar("RawType")

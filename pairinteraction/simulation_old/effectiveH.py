@@ -6,7 +6,7 @@ from typing import Optional, Union
 import numpy as np
 
 from pairinteraction import pireal
-from pairinteraction.model.model import ModelSimulation
+from pairinteraction.model.simulation import ModelSimulation
 from pairinteraction.simulation_old.atom import AtomTwo
 from pairinteraction.simulation_old.exceptions import CppDeleted, CppObjectAlreadyDeleted
 
