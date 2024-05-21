@@ -3,7 +3,7 @@
 from typing import Dict, List, Union
 
 from pairinteraction.model.simulation import ModelSimulation
-from pairinteraction.preprocessing.validate_states import validate_states_of_interest
+from pairinteraction.preprocessing.preprocess_model import preprocess_model_simulation
 from pairinteraction.simulation_old.atom import Atom, AtomOne, AtomTwo
 
 
@@ -22,9 +22,7 @@ class BaseSimulation:
             model (dict): ModelSimulation for the simulation
         """
         self.model: ModelSimulation = ModelSimulation.model_validate(model)
-        for const in self.model.unique_constituents.values():
-            const.states_of_interest = validate_states_of_interest(const.states_of_interest)
-        self.model.evaluate_delta_restrictions()
+        preprocess_model_simulation(self.model)
 
     def create_atom_system(self) -> Atom:
         """Create the atom system

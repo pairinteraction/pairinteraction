@@ -1,6 +1,5 @@
 """Class for handling parameters."""
 
-import types
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, get_args
 
@@ -166,6 +165,8 @@ class ParameterRange(BaseParameterIterable[ParamType, Dict[str, Union[ParamType,
         return cls(raw["start"], raw["stop"], raw["steps"])
 
 
+# Unfortunately, currently there is no nice way of using the Generic TypeVar ParamType for the pydantic core schemas,
+# thus we have to define the following classes
 class ParameterInt(BaseParameter):
     @classmethod
     def _get_pydantic_parameter_schema(cls) -> core_schema.CoreSchema:
@@ -184,15 +185,34 @@ class ParameterSymmetry(BaseParameter):
         return core_schema.literal_schema(get_args(Symmetry))
 
 
-ParameterConstantInt = types.new_class("ParameterConstantInt", (ParameterConstant[int], ParameterInt), {})
-ParameterListInt = types.new_class("ParameterListInt", (ParameterList[int], ParameterInt), {})
-ParameterRangeInt = types.new_class("ParameterRangeInt", (ParameterRange[int], ParameterInt), {})
+# And create the actual classes (combining the generic param classes with the correct pydantic schema)
+class ParameterConstantInt(ParameterConstant[int], ParameterInt):
+    pass
 
-ParameterConstantFloat = types.new_class("ParameterConstantFloat", (ParameterConstant[float], ParameterFloat), {})
-ParameterListFloat = types.new_class("ParameterListFloat", (ParameterList[float], ParameterFloat), {})
-ParameterRangeFloat = types.new_class("ParameterRangeFloat", (ParameterRange[float], ParameterFloat), {})
 
-ParameterConstantSymmetry = types.new_class(
-    "ParameterConstantSymmetry", (ParameterConstant[Symmetry], ParameterSymmetry), {}
-)
-ParameterListSymmetry = types.new_class("ParameterListSymmetry", (ParameterList[Symmetry], ParameterSymmetry), {})
+class ParameterListInt(ParameterList[int], ParameterInt):
+    pass
+
+
+class ParameterRangeInt(ParameterRange[int], ParameterInt):
+    pass
+
+
+class ParameterConstantFloat(ParameterConstant[float], ParameterFloat):
+    pass
+
+
+class ParameterListFloat(ParameterList[float], ParameterFloat):
+    pass
+
+
+class ParameterRangeFloat(ParameterRange[float], ParameterFloat):
+    pass
+
+
+class ParameterConstantSymmetry(ParameterConstant[Symmetry], ParameterSymmetry):
+    pass
+
+
+class ParameterListSymmetry(ParameterList[Symmetry], ParameterSymmetry):
+    pass

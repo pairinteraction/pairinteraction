@@ -15,7 +15,6 @@ from pydantic import (
 from typing_extensions import Self
 
 from pairinteraction.model.constituents import (
-    BaseModelAtom,
     BaseModelConstituent,
     ModelAtomMQDT,
     ModelAtomSQDT,
@@ -24,9 +23,8 @@ from pairinteraction.model.constituents import (
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
-from pairinteraction.model.states import BaseModelState, ModelStateAtomSQDT
-from pairinteraction.model.types.parameter import BaseParameterIterable
-from pairinteraction.model.types.simple_types import ConstituentString, HalfInt
+from pairinteraction.model.states import BaseModelState
+from pairinteraction.model.types import BaseParameterIterable, ConstituentString, HalfInt
 
 UnionModelAtom = Union[ModelAtomSQDT[int], ModelAtomSQDT[HalfInt], ModelAtomMQDT[int], ModelAtomMQDT[HalfInt]]
 
@@ -136,70 +134,6 @@ class ModelSimulation(BaseModel):
                     csoi[constit] = constituent.states_of_interest[state]
 
         return self
-
-    def evaluate_delta_restrictions(self) -> Self:
-        """If states_of_interest is provided together with delta_attr instead of min/max_attr
-        convert the delta_attr to min/max_attr .
-        """
-        # TODO assert all states (in states_of_intereset,...) are already evaluated via the database
-        # OR should we move this completely to database or simulation?
-        for submodel_name in ["atom1", "atom2"]:
-            submodel = getattr(self, submodel_name)
-            if submodel is None or submodel_name in self._constituent_mapping:
-                continue
-            for attr in ["n", "nu", "l", "s", "j", "f", "m", "energy"]:
-                if hasattr(submodel, f"delta_{attr}"):
-                    self.evaluate_one_delta_restriction(submodel, attr)
-
-        if self.interactions is not None:
-            self.evaluate_delta_restriction_interactions()
-
-        return self
-
-    def evaluate_one_delta_restriction(self, submodel: BaseModelAtom, attr: str) -> None:
-        """Convert delta_attr to min/max_attr for a single submodel and one attribute."""
-        delta = getattr(submodel, f"delta_{attr}")
-        if delta is None:
-            return
-
-        min_, max_ = getattr(submodel, f"min_{attr}"), getattr(submodel, f"max_{attr}")
-        if (min_ is None or max_ is None) and min_ != max_:
-            raise ValueError(
-                f"For atom delta_{attr} given and (min_{attr} xor max_{attr}) is given. "
-                "This behaviour is not defined."
-            )
-
-        states_of_interest = submodel.states_of_interest
-        if len(states_of_interest) == 0:
-            raise ValueError(
-                f"delta_{attr} given, but no states of interest are given. "
-                f"Also provide (combined_)states_of_interest or use min_{attr} and max_{attr} instead."
-            )
-
-        values = [getattr(state, attr) for state in states_of_interest]
-        min_attr, max_attr = min(values) - delta, max(values) + delta
-
-        if attr == "n":
-            min_attr = max(min_attr, 1)
-        elif attr == "l":
-            min_attr = max(min_attr, 0)
-        elif attr == "j":
-            state0 = states_of_interest[0]
-            if isinstance(state0, ModelStateAtomSQDT):
-                min_attr = max(min_attr, state0.s % 1)
-            else:
-                min_attr = max(min_attr, 0)
-
-        for minmax, new in zip(["min", "max"], [min_attr, max_attr]):
-            old = getattr(submodel, f"{minmax}_{attr}")
-            if old is None:
-                setattr(submodel, f"{minmax}_{attr}", new)
-            elif old != new:
-                raise ValueError(f"delta_{attr} given and {minmax}_{attr} is already set but they are not compatible.")
-
-    def evaluate_delta_restriction_interactions(self) -> None:
-        # TODO how to handle this (also in the context of applying delta after diagonalizing single atoms)
-        pass
 
     @model_validator(mode="after")
     def sanity_check_fields(self) -> Self:
