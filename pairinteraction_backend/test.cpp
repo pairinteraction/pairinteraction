@@ -1,9 +1,5 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
-#ifndef CPPHTTPLIB_OPENSSL_SUPPORT
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#endif
-
 #include "test.hpp"
 #include "utils/paths.hpp"
 

@@ -62,6 +62,8 @@ target_link_libraries(backend PUBLIC
   duckdb::duckdb
   Eigen3::Eigen
   httplib::httplib
+  $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
+  $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
   nlohmann_json::nlohmann_json
   spdlog::spdlog
 )

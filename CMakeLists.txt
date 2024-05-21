@@ -111,12 +111,18 @@ endif()
 find_package(doctest  REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
-find_package(httplib REQUIRED) # TODO make "COMPONENTS OpenSSL" work also with macos, remove "#define CPPHTTPLIB_OPENSSL_SUPPORT" from src files
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
   OPTIONAL_COMPONENTS Development.SABIModule
 )
+
+find_package(httplib COMPONENTS OpenSSL)
+if (NOT httplib_FOUND)
+  find_package(httplib REQUIRED)
+  find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
+  add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
+endif()
 
 if(MSVC)
   string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})

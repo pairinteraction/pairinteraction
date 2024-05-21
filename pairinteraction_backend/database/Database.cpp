@@ -1,7 +1,3 @@
-#ifndef CPPHTTPLIB_OPENSSL_SUPPORT
-#define CPPHTTPLIB_OPENSSL_SUPPORT
-#endif
-
 #include "database/Database.hpp"
 #include "basis/BasisAtom.hpp"
 #include "database/AtomDescriptionByParameters.hpp"
