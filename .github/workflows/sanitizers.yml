@@ -89,7 +89,7 @@ jobs:
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOC=On
       env:
-        CXXFLAGS: "-fsanitize=undefined"
+        CXXFLAGS: "-fsanitize=undefined -DEIGEN_DONT_VECTORIZE" # https://gitlab.com/libeigen/eigen/-/commit/3c724c44cff3f9e2e9e35351abff0b5c022b320d
         LDFLAGS: "-fsanitize=undefined"
     - name: Build
       run: cmake --build build/ -- --keep-going
