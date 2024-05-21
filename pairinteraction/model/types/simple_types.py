@@ -45,13 +45,3 @@ Positive = Annotated[T, Field(gt=0)]
 PositiveZero = Annotated[T, Field(ge=0)]
 
 QnTypes = Union[T, List[T], Literal["any"], None]  # TODO allow range from dict
-
-
-def ExcludedField(*args, **kwargs):
-    """Field with exclude=True."""
-    return Field(*args, exclude=True, **kwargs)
-
-
-def ValidateDefault(*args, **kwargs):
-    """Field with validate_default=True."""
-    return Field(*args, validate_default=True, **kwargs)

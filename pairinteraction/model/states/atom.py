@@ -4,7 +4,7 @@
 from abc import ABC
 from typing import Generic, Optional, TypeVar
 
-from pydantic import ValidationInfo, field_validator
+from pydantic import Field, ValidationInfo, field_validator
 
 from pairinteraction.model.states.base import BaseModelState
 from pairinteraction.model.types.simple_types import (
@@ -15,7 +15,6 @@ from pairinteraction.model.types.simple_types import (
     SpeciesString,
     SpeciesStringMQDT,
     SpeciesStringSQDT,
-    ValidateDefault,
 )
 
 SpinType = TypeVar("SpinType", int, HalfInt)
@@ -39,7 +38,7 @@ class ModelStateAtomSQDT(BaseModelStateAtom, Generic[SpinType]):
     n: QnTypes[Positive[int]] = None
     nu: QnTypes[Positive[float]] = None
     l: QnTypes[PositiveZero[int]] = None
-    s: QnTypes[PositiveZero[SpinType]] = ValidateDefault(None)
+    s: QnTypes[PositiveZero[SpinType]] = Field(None, validate_default=True)
     j: QnTypes[PositiveZero[SpinType]] = None
     m: QnTypes[SpinType] = None
 

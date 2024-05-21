@@ -5,7 +5,9 @@ from typing import Dict, List, Optional, Union
 from pydantic import BaseModel, ConfigDict, Field
 
 from pairinteraction.model.states import ModelStateAtomMQDT, ModelStateAtomSQDT, ModelStateClassicalLight
-from pairinteraction.model.types.parameter import (
+from pairinteraction.model.types import (
+    ConstituentString,
+    HalfInt,
     ParameterConstantFloat,
     ParameterConstantInt,
     ParameterConstantSymmetry,
@@ -14,8 +16,8 @@ from pairinteraction.model.types.parameter import (
     ParameterListSymmetry,
     ParameterRangeFloat,
     ParameterRangeInt,
+    PositiveZero,
 )
-from pairinteraction.model.types.simple_types import ConstituentString, HalfInt, PositiveZero
 
 UnionModelStates = Union[
     ModelStateAtomSQDT[int],
