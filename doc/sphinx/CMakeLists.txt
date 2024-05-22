@@ -32,7 +32,7 @@ endif()
 
 set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 set(BINARY_BUILD_DIR "${SPHINX_BASE}/_build")
-set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction_backend_old")
+set(SPHINX_PYTHON_DIR "${CMAKE_BINARY_DIR}/pairinteraction_backend")
 
 # Sphinx cache with pickled ReST documents
 set(SPHINX_CACHE_DIR "${SPHINX_BASE}/_doctrees")
@@ -78,7 +78,7 @@ add_custom_target(livehtml
   COMMAND
     # sphinx-autobuild
     "${SPHINX_AUTOBUILD_EXECUTABLE}"
-    --ignore "_autosummary"
+    --ignore "*/_autosummary/*"
     -b html
     -c "${SPHINX_BASE}"
     -d "${SPHINX_CACHE_DIR}"

@@ -50,7 +50,7 @@ Please consider citing relevant publications for your atomic species alongside p
 ``Sr87_mqdt`` |references/Sr87_mqdt|_.
 
 .. |references/pairinteraction| replace:: :sup:`🙷Cite`
-.. _references/pairinteraction: references/pairinteraction.html
+.. _references/pairinteraction: references.html
 .. |references/Li| replace:: :sup:`🙷Cite`
 .. _references/Li: references/Li.html
 .. |references/Na| replace:: :sup:`🙷Cite`
@@ -106,7 +106,7 @@ Utility Tools
     overview.rst
     installation.rst
     tutorials.rst
-    development.rst
+    references.rst
 
 .. toctree::
     :maxdepth: 2

@@ -1,24 +1,23 @@
 API Reference
 =============
 
-The module ``pireal`` can be used if matrix elements are purely real-valued. If one considers electric or magnetic fields with a non-zero :math:`y`-value, the module ``picomplex`` must be used.
-TODO dont use pireal and picomplex anymore?
-
-Note that this part of the documentation is under construction, the `tutorials`_ might be more useful.
-
-.. _tutorials: https://pairinteraction.github.io/pairinteraction/sphinx/html/tutorials.html
-
 .. currentmodule:: pairinteraction
 
-.. rubric:: Module description
-.. automodule:: pairinteraction
-    :show-inheritance:
+The heart of the pairinteraction package is a high-performance library for constructing and diagonalizing Hamiltonians of systems of Rybderg atoms. The library is implemented in C++ and can be accessed via the following Python modules:
 
 .. autosummary::
     :toctree: _autosummary/modules
     :recursive:
 
-    validator
-    simulator
-    simulator_old
-    pairinteraction_backend_old
+    pireal
+    picomplex
+
+Building on top of pairinteraction's high-performance library, the package provides a number of tools for making it easier to work with the library. These tools are implemented in Python and can be accessed via the following modules:
+
+.. autosummary::
+    :toctree: _autosummary/modules
+    :recursive:
+
+    model
+    preprocessing
+    simulation

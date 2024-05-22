@@ -13,7 +13,7 @@ from typing import Dict, Union
 #     SystemCombined,
 #     SystemWithInteractions,
 # )
-from pairinteraction.model.constituents import BaseModelConstituent, ModelAtom, ModelClassicalLight
+from pairinteraction.model.constituents import BaseModelAtom, BaseModelConstituent, ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.simulation import ModelSimulation
@@ -99,7 +99,7 @@ class Simulation(BaseSimulation):
         self.constituents[key] = system
         return system
 
-    def create_atom_basis(self, model: ModelAtom) -> BasisAtom:
+    def create_atom_basis(self, model: BaseModelAtom) -> BasisAtom:
         """Create the basis for an atom.
 
         This is a simple wrapper around the BasisAtomCreator.
@@ -122,7 +122,7 @@ class Simulation(BaseSimulation):
         # basis = StandardBasisAtom.from_model(basis_options)  # or **basis_options # .from_options
         return basis
 
-    def create_atom(self, basis: BasisAtom, model: ModelAtom) -> SystemAtom:
+    def create_atom(self, basis: BasisAtom, model: BaseModelAtom) -> SystemAtom:
         """Create the atom system."""
         # Construct the system
         system = SystemAtom(basis)

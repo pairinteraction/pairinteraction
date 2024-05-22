@@ -41,7 +41,6 @@ the basic concepts and topics such as the calculation of C3/C6 coefficients, non
    examples_python/quick_start
    examples_python/introduction
 
-
 .. rubric:: Applications
 
 The following jupyter notebooks show how the pairinteraction Python API can be applied to solve complex problems and reproduce results from literature.
