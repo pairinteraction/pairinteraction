@@ -10,6 +10,7 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/eigen/sparse.h>
+#include <nanobind/stl/complex.h>
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
@@ -61,7 +62,10 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string type_name) {
         .def("restrict_quantum_number_s", &BasisAtomCreator<T>::restrict_quantum_number_s)
         .def("restrict_quantum_number_j", &BasisAtomCreator<T>::restrict_quantum_number_j)
         .def("add_ket", &BasisAtomCreator<T>::add_ket)
-        .def("create", &BasisAtomCreator<T>::create, nb::arg("database") = Database::get_global_instance());
+        .def("create", [](BasisAtomCreator<T> const &basis_atom_creator) {
+            Database &database = Database::get_global_instance();
+            basis_atom_creator.create(database);
+        });
 }
 
 template <typename T>
@@ -77,21 +81,32 @@ static void declare_basis_classical_light_creator(nb::module_ &m, std::string ty
     pyclass.def(nb::init<>())
         .def("set_photon_energy", &BasisClassicalLightCreator<T>::set_photon_energy)
         .def("restrict_quantum_number_q", &BasisClassicalLightCreator<T>::restrict_quantum_number_q)
-        .def("add_ket", &BasisClassicalLightCreator<T>::add_ket)
         .def("create", &BasisClassicalLightCreator<T>::create);
 }
 
 void bind_basis(nb::module_ &m) {
     declare_basis<BasisAtom<float>>(m, "BasisAtomFloat");
     declare_basis<BasisAtom<double>>(m, "BasisAtomDouble");
+    //declare_basis<BasisAtom<std::complex<float>>>(m, "BasisAtomComplexFloat");
+    //declare_basis<BasisAtom<std::complex<double>>>(m, "BasisAtomComplexDouble");
     declare_basis<BasisClassicalLight<float>>(m, "BasisClassicalLightFloat");
     declare_basis<BasisClassicalLight<double>>(m, "BasisClassicalLightDouble");
+    //declare_basis<BasisClassicalLight<std::complex<float>>>(m, "BasisClassicalLightComplexFloat");
+    //declare_basis<BasisClassicalLight<std::complex<double>>>(m, "BasisClassicalLightComplexDouble");
     declare_basis_atom<float>(m, "Float");
     declare_basis_atom<double>(m, "Double");
+    //declare_basis_atom<std::complex<float>>(m, "ComplexFloat");
+    //declare_basis_atom<std::complex<double>>(m, "ComplexDouble");
     declare_basis_atom_creator<float>(m, "Float");
     declare_basis_atom_creator<double>(m, "Double");
+    //declare_basis_atom_creator<std::complex<float>>(m, "ComplexFloat");
+    //declare_basis_atom_creator<std::complex<double>>(m, "ComplexDouble");
     declare_basis_classical_light<float>(m, "Float");
     declare_basis_classical_light<double>(m, "Double");
+    //declare_basis_classical_light<std::complex<float>>(m, "ComplexFloat");
+    //declare_basis_classical_light<std::complex<double>>(m, "ComplexDouble");
     declare_basis_classical_light_creator<float>(m, "Float");
     declare_basis_classical_light_creator<double>(m, "Double");
+    //declare_basis_classical_light_creator<std::complex<float>>(m, "ComplexFloat");
+    //declare_basis_classical_light_creator<std::complex<double>>(m, "ComplexDouble");
 }
