@@ -71,8 +71,10 @@ Build tools
     `CMake`_ for running the build system (at least CMake 3.16 is required), `poetry`_ for managing the Python dependencies
 
 Dependencies for the C++ backend
-    If you are using GNU/Linux or OS X, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration.
-    The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>` of the pairinteraction repository. If you are using Windows, you can use `VCPKG`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install the dependencies.
+    If you are using GNU/Linux, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration.
+    The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>` of the pairinteraction repository.
+    If you are using OS X, you can obtain the dependencies from the :github:`macos workflow <tree/master/.github/workflows/macos.yml>`.
+    If you are using Windows, you can use `VCPKG`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Installation instructions for further dependencies such as Intel MKL can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
 
 Dependencies for the Python library
     All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using poetry.
