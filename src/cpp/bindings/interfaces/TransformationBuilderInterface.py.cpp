@@ -6,6 +6,7 @@
 #include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/stl/array.h>
+#include <nanobind/stl/complex.h>
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;

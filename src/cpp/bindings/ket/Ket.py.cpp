@@ -57,7 +57,10 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
         .def("set_quantum_number_l", &KetAtomCreator<T>::set_quantum_number_l)
         .def("set_quantum_number_s", &KetAtomCreator<T>::set_quantum_number_s)
         .def("set_quantum_number_j", &KetAtomCreator<T>::set_quantum_number_j)
-        .def("create", &KetAtomCreator<T>::create, nb::arg("database") = Database::get_global_instance());
+        .def("create", [](KetAtomCreator<T> const &ket_atom_creator) {
+            Database &database = Database::get_global_instance();
+            ket_atom_creator.create(database);
+        });
 }
 
 template <typename T>

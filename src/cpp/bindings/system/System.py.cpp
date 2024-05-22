@@ -7,6 +7,7 @@
 
 #include <nanobind/nanobind.h>
 #include <nanobind/eigen/sparse.h>
+#include <nanobind/stl/complex.h>
 #include <nanobind/stl/shared_ptr.h>
 
 namespace nb = nanobind;
@@ -45,6 +46,6 @@ void bind_system(nb::module_ &m) {
     //declare_system<SystemAtom<std::complex<double>>>(m, "SystemAtomComplexDouble");
     declare_system_atom<float>(m, "Float");
     declare_system_atom<double>(m, "Double");
-    declare_system_atom<std::complex<float>>(m, "ComplexFloat");
-    declare_system_atom<std::complex<double>>(m, "ComplexDouble");
+    //declare_system_atom<std::complex<float>>(m, "ComplexFloat");
+    //declare_system_atom<std::complex<double>>(m, "ComplexDouble");
 }
