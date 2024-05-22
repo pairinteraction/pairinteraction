@@ -30,7 +30,7 @@ interface can be started by executing ``start_pairinteraction_gui`` from the com
 .. role::  raw-html(raw)
     :format: html
 
-**Please cite**
+**Please cite:**
 
     Sebastian Weber, Christoph Tresp, Henri Menke, Alban Urvoy, Ofer Firstenberg, Hans Peter Büchler, Sebastian Hofferberth,
     *Tutorial: Calculation of Rydberg interaction potentials*,

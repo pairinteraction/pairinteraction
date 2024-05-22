@@ -6,13 +6,13 @@ Installation
 This guide provides installation instructions for the `pairinteraction` software, catering to users of all levels.
 It offers three different installation methods:
 
-- **Using Pip:** Ideal for most users, this method employs `pip` for straightforward installation from the
+- `Using Pip`_: Ideal for most users, this method employs `pip` for straightforward installation from the
   Python Package Index, providing access to the software's Python library and graphical interface.
 
-- **Binary Installers:** If you are mainly interested in the graphical interface, you can download
+- `Binary Installers`_: If you are mainly interested in the graphical interface, you can download
   an installer for pairinteraction (Windows, OS X) or use the `Flatpak` package manager (GNU/Linux).
 
-- **Building from Source:** Aimed at developers and experienced users, this approach involves compiling the software from source,
+- `Building from Source`_: Aimed at developers and experienced users, this approach involves compiling the software from source,
   detailing necessary dependencies, and offering steps for either an automated build with `poetry` / `pip` or a manual build.
   The latter allows for additional customization and the execution of different targets, such as generating documentation.
 
