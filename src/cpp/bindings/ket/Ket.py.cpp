@@ -3,6 +3,8 @@
 #include "Ket.hpp"
 #include "KetAtom.hpp"
 #include "KetAtomCreator.hpp"
+#include "KetClassicalLight.hpp"
+#include "KetClassicalLightCreator.hpp"
 #include "database/Database.hpp"
 
 #include <sstream>
@@ -55,10 +57,29 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
         .def("set_quantum_number_l", &KetAtomCreator<T>::set_quantum_number_l)
         .def("set_quantum_number_s", &KetAtomCreator<T>::set_quantum_number_s)
         .def("set_quantum_number_j", &KetAtomCreator<T>::set_quantum_number_j)
-        .def("create", [](KetAtomCreator<T> const &self) {
-            thread_local static Database db;
-            return self.create(db);
-        });
+        .def("create", &KetAtomCreator<T>::create, nb::arg("database") = Database::get_global_instance());
+}
+
+template <typename T>
+static void declare_ket_classical_light(nb::module_ &m, std::string type_name) {
+    std::string pylass_name = "KetClassicalLight" + type_name;
+    nb::class_<KetClassicalLight<T>, Ket<T>> pyclass(m, pylass_name.c_str());
+    pyclass.def("get_label", &KetClassicalLight<T>::get_label)
+        .def("get_id", &KetClassicalLight<T>::get_id)
+        .def("get_id_for_different_quantum_number_m", &KetClassicalLight<T>::get_id_for_different_quantum_number_m)
+        .def("get_photon_energy", &KetClassicalLight<T>::get_photon_energy)
+        .def("get_quantum_number_q", &KetClassicalLight<T>::get_quantum_number_q);
+}
+
+template <typename T>
+static void declare_ket_classical_light_creator(nb::module_ &m, std::string type_name) {
+    std::string pylass_name = "KetClassicalLightCreator" + type_name;
+    nb::class_<KetClassicalLightCreator<T>> pyclass(m, pylass_name.c_str());
+    pyclass.def(nb::init<>())
+        .def(nb::init<T, int>())
+        .def("set_photon_energy", &KetClassicalLightCreator<T>::set_photon_energy)
+        .def("set_quantum_number_q", &KetClassicalLightCreator<T>::set_quantum_number_q)
+        .def("create", &KetClassicalLightCreator<T>::create);
 }
 
 void bind_ket(nb::module_ &m) {
@@ -68,4 +89,8 @@ void bind_ket(nb::module_ &m) {
     declare_ket_atom<double>(m, "Double");
     declare_ket_atom_creator<float>(m, "Float");
     declare_ket_atom_creator<double>(m, "Double");
+    declare_ket_classical_light<float>(m, "Float");
+    declare_ket_classical_light<double>(m, "Double");
+    declare_ket_classical_light_creator<float>(m, "Float");
+    declare_ket_classical_light_creator<double>(m, "Double");
 }
