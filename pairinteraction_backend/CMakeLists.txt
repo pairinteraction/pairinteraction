@@ -43,6 +43,7 @@ add_library(backend OBJECT
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.cpp
   ./system/SystemClassicalLight.hpp
+  ./utils/eigen_compat.hpp
   ./utils/euler.hpp
   ./utils/hash.hpp
   ./utils/ketid.hpp
@@ -111,6 +112,7 @@ add_library(bindings OBJECT
   ./system/System.hpp
   ./system/SystemAtom.hpp
   ./system/SystemClassicalLight.hpp
+  ./utils/eigen_compat.hpp
   ./utils/euler.hpp
   ./utils/hash.hpp
   ./utils/ketid.hpp

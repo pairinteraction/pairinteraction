@@ -3,6 +3,7 @@
 #include "ket/Ket.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetClassicalLight.hpp"
+#include "utils/eigen_compat.hpp"
 #include "utils/euler.hpp"
 #include "utils/wigner.hpp"
 
@@ -377,12 +378,12 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     Eigen::SparseMatrix<real_t> probs = transformation.matrix.cwiseAbs2().transpose();
 
     {
-        auto map = Eigen::Map<const Eigen::Matrix<real_t, Eigen::Dynamic, 1>>(
+        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(
             transformed->quantum_number_f_of_states.data(),
             transformed->quantum_number_f_of_states.size());
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> val = probs * map;
+        Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
+        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -394,12 +395,12 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
     }
 
     {
-        auto map = Eigen::Map<const Eigen::Matrix<real_t, Eigen::Dynamic, 1>>(
+        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(
             transformed->quantum_number_m_of_states.data(),
             transformed->quantum_number_m_of_states.size());
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> val = probs * map;
+        Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
+        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -414,9 +415,9 @@ Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const 
         auto map = Eigen::Map<const Eigen::VectorXi>(transformed->parity_of_states.data(),
                                                      transformed->parity_of_states.size())
                        .template cast<real_t>();
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> val = probs * map;
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> sq = probs * map.cwiseAbs2();
-        Eigen::Matrix<real_t, Eigen::Dynamic, 1> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> val = probs * map;
+        Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
+        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {

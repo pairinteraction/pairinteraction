@@ -3,6 +3,8 @@
 #include <Eigen/Dense>
 #include <array>
 
+#include "utils/eigen_compat.hpp"
+
 namespace euler {
 
 /**
@@ -20,16 +22,16 @@ namespace euler {
  */
 
 template <typename Real>
-inline Eigen::Matrix<Real, 3, 3> get_rotation_matrix(std::array<Real, 3> to_z_axis,
-                                                     std::array<Real, 3> to_y_axis) {
-    auto to_z_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_z_axis.data()).normalized();
-    auto to_y_axis_mapped = Eigen::Map<Eigen::Matrix<Real, 3, 1>>(to_y_axis.data()).normalized();
+inline Eigen::Matrix3<Real> get_rotation_matrix(std::array<Real, 3> to_z_axis,
+                                                std::array<Real, 3> to_y_axis) {
+    auto to_z_axis_mapped = Eigen::Map<Eigen::Vector3<Real>>(to_z_axis.data()).normalized();
+    auto to_y_axis_mapped = Eigen::Map<Eigen::Vector3<Real>>(to_y_axis.data()).normalized();
 
     if (std::abs(to_z_axis_mapped.dot(to_y_axis_mapped)) > std::numeric_limits<Real>::epsilon()) {
         throw std::runtime_error("The z-axis and the y-axis are not orhogonal.");
     }
 
-    Eigen::Matrix<Real, 3, 3> rotator;
+    Eigen::Matrix3<Real> rotator;
     rotator << to_y_axis_mapped.cross(to_z_axis_mapped), to_y_axis_mapped, to_z_axis_mapped;
 
     return rotator;
@@ -54,7 +56,7 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
                                             std::array<Real, 3> to_y_axis) {
     auto rotator = get_rotation_matrix(to_z_axis, to_y_axis);
     std::array<Real, 3> euler_zyz;
-    Eigen::Map<Eigen::Matrix<Real, 3, 1>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);
+    Eigen::Map<Eigen::Vector3<Real>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);
     return euler_zyz;
 }
 
@@ -68,19 +70,19 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
 
 DOCTEST_TEST_CASE("construction of rotation matrixes") {
     auto rotator = euler::get_rotation_matrix<double>({0, 0, 1}, {0, 1, 0});
-    auto rotator_reference = Eigen::Matrix<double, 3, 3>::Identity();
+    auto rotator_reference = Eigen::Matrix3<double>::Identity();
     DOCTEST_CHECK((rotator - rotator_reference).norm() == 0);
 
     rotator = euler::get_rotation_matrix<double>({0, 0, 1}, {1, 1, 0});
-    auto y_axis = Eigen::Matrix<double, 3, 1>{0, 1, 0};
+    auto y_axis = Eigen::Vector3<double>{0, 1, 0};
     auto rotated_y_axis = rotator * y_axis;
-    auto rotated_y_axis_reference = Eigen::Matrix<double, 3, 1>{1, 1, 0}.normalized();
+    auto rotated_y_axis_reference = Eigen::Vector3<double>{1, 1, 0}.normalized();
     DOCTEST_CHECK((rotated_y_axis - rotated_y_axis_reference).norm() == 0);
 
     rotator = euler::get_rotation_matrix<double>({1, 0, 0}, {0, 1, 0});
-    auto z_axis = Eigen::Matrix<double, 3, 1>{0, 0, 1};
+    auto z_axis = Eigen::Vector3<double>{0, 0, 1};
     auto rotated_z_axis = rotator * z_axis;
-    auto rotated_z_axis_reference = Eigen::Matrix<double, 3, 1>{1, 0, 0};
+    auto rotated_z_axis_reference = Eigen::Vector3<double>{1, 0, 0};
     DOCTEST_CHECK((rotated_z_axis - rotated_z_axis_reference).norm() == 0);
 
     std::string error_msg = "The z-axis and the y-axis are not orhogonal.";
