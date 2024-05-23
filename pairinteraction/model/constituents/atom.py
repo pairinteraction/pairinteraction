@@ -9,16 +9,13 @@ from pydantic import (
 )
 
 from pairinteraction.model.constituents.base import BaseModelConstituent
-from pairinteraction.model.states import BaseModelStateAtom, ModelStateAtomMQDT, ModelStateAtomSQDT
-from pairinteraction.model.types import (
-    HalfInt,
+from pairinteraction.model.states.atom import BaseModelStateAtom, ModelStateAtomMQDT, ModelStateAtomSQDT
+from pairinteraction.model.types.parameter import (
     ParameterConstantFloat,
     ParameterListFloat,
     ParameterRangeFloat,
-    Positive,
-    PositiveZero,
-    SpeciesString,
 )
+from pairinteraction.model.types.simple_types import HalfInt, Positive, PositiveZero, SpeciesString
 
 SpinType = TypeVar("SpinType", int, HalfInt)
 FType = TypeVar("FType", int, HalfInt)
