@@ -2,10 +2,19 @@
 
 {% set pydantic_models = [] %}
 {% for item in members %}
-   {% if item.startswith('BaseModel') or item.startswith('Model') or item.startswith('BaseParameter') or item.startswith('Parameter') %}
+   {% if item.startswith('BaseModel') or item.startswith('Model') and not item.endswith(']') %}
       {% set _ = pydantic_models.append(item) %}
    {% endif %}
 {%- endfor %}
+
+.. workaround to ignore generic classes like AtomSQDT[int]
+{% set filtered_classes = [] %}
+{% for item in classes %}
+   {% if not item.endswith(']') %}
+      {% set _ = filtered_classes.append(item) %}
+   {% endif %}
+{%- endfor %}
+{% set classes = filtered_classes %}
 
 - full name: {{ fullname | escape }}
 - type: {{ objtype }}
