@@ -26,6 +26,7 @@ RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     pyqtgraph \
     Pint \
     pydantic \
+    pytest \
     Sphinx \
     numpydoc \
     sphinx-rtd-theme \

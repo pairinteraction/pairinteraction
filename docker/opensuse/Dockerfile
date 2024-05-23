@@ -35,6 +35,7 @@ RUN python3.9 /pip.pyz --no-cache-dir install \
     pyqtgraph \
     Pint \
     pydantic \
+    pytest \
     Sphinx \
     numpydoc \
     sphinx-rtd-theme \
