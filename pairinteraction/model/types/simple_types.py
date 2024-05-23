@@ -20,26 +20,22 @@ Vector = Annotated[List[float], Field(min_length=3, max_length=3)]
 Symmetry = Literal[None, 1, -1]
 
 
-class HalfIntAnnotation:
-    """Class for defining pydantic schema for half integer."""
+class HalfInt(float):
+    """Class for defining half integer."""
 
-    def __get_pydantic_core_schema__(self, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
-        schema = handler(source)
-        if schema["type"] != "float":
-            raise TypeError("HalfIntAnnotation can only be applied to float")
-        return core_schema.no_info_after_validator_function(
-            self.validate,
-            schema,
-        )
-
-    def validate(self, value: float) -> float:
-        """Validate that value is a half integer (i.e. value % 1 == 0.5)."""
+    def __init__(self, value):
+        """Check that value is a half integer (i.e. value % 1 == 0.5)."""
         if value % 1 != 0.5:
             raise ValueError(f"{value} is not a half integer")
-        return value
 
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
+        assert source is HalfInt
+        return core_schema.no_info_after_validator_function(
+            cls,
+            core_schema.float_schema(),
+        )
 
-HalfInt = Annotated[float, HalfIntAnnotation()]
 
 Positive = Annotated[T, Field(gt=0)]
 PositiveZero = Annotated[T, Field(ge=0)]
