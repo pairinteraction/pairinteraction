@@ -1,14 +1,13 @@
 """Class for handling parameters."""
 
+import typing
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Optional, Tuple, Type, TypeVar, Union, get_args
+from typing import Any, Dict, Generic, List, Literal, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
 from typing_extensions import Self
-
-from pairinteraction.model.types.simple_types import Symmetry
 
 ParamType = TypeVar("ParamType")
 RawType = TypeVar("RawType")
@@ -27,23 +26,31 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
     def __get_pydantic_core_schema__(cls, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
         return core_schema.no_info_after_validator_function(
             cls._validate_raw,
-            cls._get_pydantic_raw_schema(),
+            cls._get_pydantic_raw_schema(source),
             serialization=core_schema.plain_serializer_function_ser_schema(
                 cls._serialize,
                 info_arg=False,
-                return_schema=cls._get_pydantic_raw_schema(),
+                return_schema=cls._get_pydantic_raw_schema(source),
             ),
         )
 
     @classmethod
     @abstractmethod
-    def _get_pydantic_raw_schema(cls) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
         """Get the pydantic schema for the raw data."""
 
     @classmethod
-    @abstractmethod
-    def _get_pydantic_parameter_schema(cls) -> core_schema.CoreSchema:
+    def _get_pydantic_parameter_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
         """Get the pydantic schema for the type of a single parameter value."""
+        generic_type = typing.get_args(source)[0]
+        if isinstance(generic_type, type):
+            if issubclass(generic_type, int):
+                return core_schema.int_schema()
+            if issubclass(generic_type, float):
+                return core_schema.float_schema()
+        if typing.get_origin(generic_type) == Literal:
+            return core_schema.literal_schema(typing.get_args(generic_type))
+        ValueError(f"Unsupported type {source}")
 
     @classmethod
     def _validate_raw(cls, raw: RawType) -> Self:
@@ -108,8 +115,8 @@ class ParameterConstant(BaseParameter[ParamType, ParamType]):
     """Class for a constant parameter."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls) -> core_schema.CoreSchema:
-        return cls._get_pydantic_parameter_schema()
+    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+        return cls._get_pydantic_parameter_schema(source)
 
     def __init__(self, value: ParamType):
         self.value = value
@@ -135,8 +142,8 @@ class ParameterList(BaseParameterIterable[ParamType, List[ParamType]]):
     """Class for a list of parameters."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls) -> core_schema.CoreSchema:
-        return core_schema.list_schema(cls._get_pydantic_parameter_schema(), min_length=1)
+    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+        return core_schema.list_schema(cls._get_pydantic_parameter_schema(source), min_length=1)
 
     def __init__(self, values: Union[List[ParamType], Tuple[ParamType]]):
         self.list = values
@@ -147,7 +154,7 @@ class ParameterRange(BaseParameterIterable[ParamType, Dict[str, Union[ParamType,
     """Class for a parameter range."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
         # TODO enforce check that start and stop are of type ParamType
         return core_schema.dict_schema(keys_schema=core_schema.str_schema(), min_length=3, max_length=3)
 
@@ -163,56 +170,3 @@ class ParameterRange(BaseParameterIterable[ParamType, Dict[str, Union[ParamType,
         if not all(key in raw for key in ["start", "stop", "steps"]):
             raise ValueError("ParameterRange needs to have keys 'start', 'stop', 'steps'")
         return cls(raw["start"], raw["stop"], raw["steps"])
-
-
-# Unfortunately, currently there is no nice way of using the Generic TypeVar ParamType for the pydantic core schemas,
-# thus we have to define the following classes
-class ParameterInt(BaseParameter):
-    @classmethod
-    def _get_pydantic_parameter_schema(cls) -> core_schema.CoreSchema:
-        return core_schema.int_schema()
-
-
-class ParameterFloat(BaseParameter):
-    @classmethod
-    def _get_pydantic_parameter_schema(cls) -> core_schema.CoreSchema:
-        return core_schema.float_schema()
-
-
-class ParameterSymmetry(BaseParameter):
-    @classmethod
-    def _get_pydantic_parameter_schema(cls) -> core_schema.CoreSchema:
-        return core_schema.literal_schema(get_args(Symmetry))
-
-
-# And create the actual classes (combining the generic param classes with the correct pydantic schema)
-class ParameterConstantInt(ParameterConstant[int], ParameterInt):
-    pass
-
-
-class ParameterListInt(ParameterList[int], ParameterInt):
-    pass
-
-
-class ParameterRangeInt(ParameterRange[int], ParameterInt):
-    pass
-
-
-class ParameterConstantFloat(ParameterConstant[float], ParameterFloat):
-    pass
-
-
-class ParameterListFloat(ParameterList[float], ParameterFloat):
-    pass
-
-
-class ParameterRangeFloat(ParameterRange[float], ParameterFloat):
-    pass
-
-
-class ParameterConstantSymmetry(ParameterConstant[Symmetry], ParameterSymmetry):
-    pass
-
-
-class ParameterListSymmetry(ParameterList[Symmetry], ParameterSymmetry):
-    pass
