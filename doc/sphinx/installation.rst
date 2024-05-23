@@ -18,8 +18,7 @@ It offers three different installation methods:
 
 All methods install the graphical user interface of pairinteraction. It allows for calculating pair potential, taking into
 account electric and magnetic fields. In addition, all methods except for the binary installers, provide a Python library which can be used to
-write your own code and have more fine-grained control over what pairinteraction does. Quantities as matrix elements,
-eigenenergies, or excitation dynamics can be calculated. For usage examples
+write your own code and have more fine-grained control over what pairinteraction does. For usage examples
 visit the :ref:`tutorials <Tutorials>` section of the documentation.
 
 Using Pip
@@ -54,7 +53,7 @@ Building from Source
 --------------------
 
 Advanced users, especially those who want to contribute to the development of pairinteraction, can build the software from source. The source code is available on
-:github:`GitHub <>` and can be cloned from the pairinteraction repository using the following command:
+:github:`GitHub <>` and can be cloned from the pairinteraction repository using the following `git`_ command:
 
 .. code-block:: bash
 
@@ -68,20 +67,31 @@ Requirements
 Before compiling the source code, you have to install the following tools and dependencies:
 
 Build tools
-    `CMake`_ for running the build system (at least CMake 3.16 is required), `poetry`_ for managing the Python dependencies
+    `CMake`_ for running the build system (at least CMake 3.21 is required), `poetry`_ for managing the Python dependencies. In addition, we require a package manager for the C++ dependencies and a compiler for building the C++ backend. In the following, we provide recommendations for different operating systems:
 
-Dependencies for the C++ backend
-    If you are using GNU/Linux, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration.
-    The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>` of the pairinteraction repository.
-    If you are using OS X, you can obtain the dependencies from the :github:`macos workflow <tree/master/.github/workflows/macos.yml>`.
-    If you are using Windows, you can use `VCPKG`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Installation instructions for further dependencies such as Intel MKL can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+    * For **GNU/Linux**, use the distribution's package manager and the gcc or clang compiler.
 
-Dependencies for the Python library
+    * For **OS X**, use `Homebrew`_ and the clang compiler.
+
+    * For **Windows**, use `VCPKG`_ and `Visual Studio`_.
+
+Dependencies of the C++ backend
+    * For **GNU/Linux**, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration. The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>`.
+
+    * For **OS X**, you can obtain the dependencies from the :github:`macos workflow <tree/master/.github/workflows/macos.yml>`.
+
+    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel MKL`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+
+Dependencies of the Python library
     All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using poetry.
 
-.. _cmake: https://cmake.org
+.. _git: https://git-scm.com/download/
+.. _CMake: https://cmake.org/download/
 .. _poetry: https://python-poetry.org/docs/#installing-with-the-official-installer
-.. _VCPKG: https://vcpkg.io
+.. _Homebrew: https://brew.sh/
+.. _VCPKG: https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows
+.. _Visual Studio: https://visualstudio.microsoft.com/downloads/
+.. _Intel MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
 
 Automatic Build
 ^^^^^^^^^^^^^^^
@@ -102,7 +112,7 @@ This will call CMake automatically to build the C++ backend, the Python library,
 
     poetry run start_pairinteraction_gui
 
-To use Python library, you have to run your python code in the virtual environment created by poetry. This can be done by running ``poetry run python your_script.py``.
+To use the Python library, you have to run your python code in the virtual environment created by poetry. This can be done by running ``poetry run python your_script.py``.
 Alternatively, you can build and install the software system-wide by running ``pip install -e .`` from the root directory of the pairinteraction repository.
 
 Tests of the Python library and graphical user interface can be run by executing
@@ -124,7 +134,7 @@ If you want to build, e.g., the documentation of pairinteraction or have more co
     poetry export -f requirements.txt > requirements.txt
     pip install -r requirements.txt
 
-Then you can build the software using CMake:
+For **GNU/Linux and OS X**, you can then build the software with standard CMake commands:
 
 .. code-block:: bash
 
@@ -132,6 +142,15 @@ Then you can build the software using CMake:
     cd build
     cmake ..
     cmake --build .
+
+For **Windows**, you must specify a visual studio generator, provide a path to the VCPKG toolchain file, and define the build type manually. For example, if you are using Visual Studio 2022, you can build the software with the following commands:
+
+.. code-block:: bash
+
+    mkdir build
+    cd build
+    cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+    cmmake --build . --config RelWithDebInfo
 
 This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
 
@@ -237,7 +256,21 @@ processors can speed up the compilation process significantly.
 Tips and Tricks
 ^^^^^^^^^^^^^^^
 
-**1. Using a Faster Build System**
+**1. Compiler Optimizations**
+
+To speed up the software, you can pass optimization flags to the compiler by setting the `CXXFLAGS` environment variable before running CMake. For example, the following bash command sets the environment variable under GNU/Linux, enabling several optimizations at once for the gcc compiler:
+
+.. code-block:: bash
+
+    export CXXFLAGS="-O3 -march=broadwell"
+
+If you are using Windows with Visual Studio, reasonable optimization flags can be set by running the following command in the PowerShell:
+
+.. code-block:: bash
+
+    $env:CXXFLAGS="/Ox /arch:AVX2"
+
+**2. Using a Faster Build System**
 
 Under GNU/Linux, you can use the `ninja` build system and the `mold` linker to reduce the build time by a factor of about 1.5. These tools are typically available in the package repositories of your distribution. For example, on Ubuntu, you can install them by running:
 
@@ -252,7 +285,7 @@ Then, you can tell CMake to build the software with these tools by running the f
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
     cmake --build .
 
-**2. Using Compiler Caching**
+**3. Using Compiler Caching**
 
 If you delete the build directory because you want to compile a different branch of pairinteraction or use different build options, the compilation has to start from scratch - as long as you do not use a compiler cache like `ccache`. Using this tool has the additional advantage that adding comments to the source code does not trigger a recompilation. It can be installed on many operating systems, e.g., on Ubuntu by running:
 
@@ -262,7 +295,7 @@ If you delete the build directory because you want to compile a different branch
 
 To use the tool with CMake, pass ``-DCMAKE_CXX_COMPILER_LAUNCHER=ccache`` to the ``cmake`` command.
 
-**3. Building and Testing Only Parts of the Software**
+**4. Building and Testing Only Parts of the Software**
 
 If you're developing and making changes to specific parts of the software, you can save time by using specific targets to build and test only those parts. You can read off the names of relevant targets from the ``CMakeLists.txt`` files located in the directories where you perform the changes. For example, you can build and test only the C++ backend by running the following commands within the build directory:
 
@@ -273,7 +306,7 @@ If you're developing and making changes to specific parts of the software, you c
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
-**4. Debugging with GDB**
+**5. Debugging with GDB**
 
 For tracking down errors like segmentation faults, running a debug build with the GNU Debugger `GDB` can be very helpful.
 

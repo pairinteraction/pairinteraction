@@ -21,6 +21,7 @@ find_program( MAKENSIS NAMES makensis
   ENV NSIS_ROOT
 )
 
+# TODO throw an error only if we actually build the binary package
 if( MAKENSIS )
   message( STATUS "Found makensis: ${MAKENSIS}" )
 else( )
