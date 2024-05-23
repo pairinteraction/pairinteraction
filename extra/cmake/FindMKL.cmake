@@ -72,16 +72,16 @@ if(MKL_FOUND AND WIN32)
         # FIXME: Do we have to add any additional DLLs?
     endif()
 
+    get_target_property(MKL_CORE_IMPORTED_IMPLIB MKL::mkl_core IMPORTED_IMPLIB)
+
     foreach(FILE ${MKL_DLLS})
         message(STATUS "Including MKL DLL: ${FILE}")
-
         string(MD5 FILE_HASH "${FILE}")
-        string(REGEX REPLACE "[.]dll$" ".lib" LIBRARY_FILE "${FILE}")
-
         add_library("mkl_${FILE_HASH}" SHARED IMPORTED)
-        set_property(TARGET "mkl_${FILE_HASH}" PROPERTY IMPORTED_LOCATION "${FILE}")
-        set_property(TARGET "mkl_${FILE_HASH}" PROPERTY IMPORTED_IMPLIB "${LIBRARY_FILE}")
-
+        set_target_properties("mkl_${FILE_HASH}" PROPERTIES
+            IMPORTED_LOCATION "${FILE}"
+            IMPORTED_IMPLIB "${MKL_CORE_IMPORTED_IMPLIB}"
+        )
         target_link_libraries(${target} INTERFACE "mkl_${FILE_HASH}")
     endforeach()
 endif()
