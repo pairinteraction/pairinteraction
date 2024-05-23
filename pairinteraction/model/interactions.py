@@ -7,16 +7,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from pairinteraction.model.states.atom import ModelStateAtomMQDT, ModelStateAtomSQDT
 from pairinteraction.model.states.classical_light import ModelStateClassicalLight
 from pairinteraction.model.types.parameter import (
-    ParameterConstantFloat,
-    ParameterConstantInt,
-    ParameterConstantSymmetry,
-    ParameterListFloat,
-    ParameterListInt,
-    ParameterListSymmetry,
-    ParameterRangeFloat,
-    ParameterRangeInt,
+    ParameterConstant,
+    ParameterList,
+    ParameterRange,
 )
-from pairinteraction.model.types.simple_types import ConstituentString, HalfInt, PositiveZero
+from pairinteraction.model.types.simple_types import ConstituentString, HalfInt, PositiveZero, Symmetry
 
 UnionModelStates = Union[
     ModelStateAtomSQDT[int],
@@ -25,9 +20,9 @@ UnionModelStates = Union[
     ModelStateAtomMQDT[HalfInt],
     ModelStateClassicalLight,
 ]
-UnionParameterInt = Union[ParameterConstantInt, ParameterListInt, ParameterRangeInt]
-UnionParameterFloat = Union[ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat]
-UnionParameterSymmetry = Union[ParameterConstantSymmetry, ParameterListSymmetry]
+UnionParameterInt = Union[ParameterConstant[int], ParameterList[int], ParameterRange[int]]
+UnionParameterFloat = Union[ParameterConstant[float], ParameterList[float], ParameterRange[float]]
+UnionParameterSymmetry = Union[ParameterConstant[Symmetry], ParameterList[Symmetry]]
 
 
 class ModelInteractions(BaseModel):
@@ -51,6 +46,6 @@ class ModelInteractions(BaseModel):
     conserved_parity_under_permutation: UnionParameterSymmetry = Field(None, validate_default=True)
 
     distance: Optional[UnionParameterFloat] = None
-    angle: UnionParameterFloat = ParameterConstantFloat(0)
+    angle: UnionParameterFloat = ParameterConstant[float](0)
 
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []

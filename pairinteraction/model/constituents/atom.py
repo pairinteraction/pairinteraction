@@ -11,16 +11,16 @@ from pydantic import (
 from pairinteraction.model.constituents.base import BaseModelConstituent
 from pairinteraction.model.states.atom import BaseModelStateAtom, ModelStateAtomMQDT, ModelStateAtomSQDT
 from pairinteraction.model.types.parameter import (
-    ParameterConstantFloat,
-    ParameterListFloat,
-    ParameterRangeFloat,
+    ParameterConstant,
+    ParameterList,
+    ParameterRange,
 )
 from pairinteraction.model.types.simple_types import HalfInt, Positive, PositiveZero, SpeciesString
 
 SpinType = TypeVar("SpinType", int, HalfInt)
 FType = TypeVar("FType", int, HalfInt)
 
-UnionParameterFloat = Union[ParameterConstantFloat, ParameterListFloat, ParameterRangeFloat]
+UnionParameterFloat = Union[ParameterConstant[float], ParameterList[float], ParameterRange[float]]
 
 
 class BaseModelAtom(BaseModelConstituent, ABC):
@@ -36,13 +36,13 @@ class BaseModelAtom(BaseModelConstituent, ABC):
     max_energy_after_diagonalization: Optional[float] = None
     delta_energy_after_diagonalization: Optional[float] = None
 
-    efield_x: UnionParameterFloat = ParameterConstantFloat(0)
-    efield_y: UnionParameterFloat = ParameterConstantFloat(0)
-    efield_z: UnionParameterFloat = ParameterConstantFloat(0)
+    efield_x: UnionParameterFloat = ParameterConstant[float](0)
+    efield_y: UnionParameterFloat = ParameterConstant[float](0)
+    efield_z: UnionParameterFloat = ParameterConstant[float](0)
 
-    bfield_x: UnionParameterFloat = ParameterConstantFloat(0)
-    bfield_y: UnionParameterFloat = ParameterConstantFloat(0)
-    bfield_z: UnionParameterFloat = ParameterConstantFloat(0)
+    bfield_x: UnionParameterFloat = ParameterConstant[float](0)
+    bfield_y: UnionParameterFloat = ParameterConstant[float](0)
+    bfield_z: UnionParameterFloat = ParameterConstant[float](0)
 
     # TODO abstract class verify that states_of_interest is implemented
     states_of_interest: List[BaseModelStateAtom] = []
