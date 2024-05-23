@@ -57,6 +57,7 @@ doc = [
 ]
 test = [
   "jupyter",
+  "pytest",
 ]
 build = [  # keep this in sync with build-system.requires
   "scikit-build-core >=0.9.0",
@@ -122,3 +123,8 @@ projectKey = "pairinteraction_pairinteraction"
 organization = "pairinteraction"
 python.version = 3
 sources = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = [
+  "test",
+]
