@@ -1,9 +1,10 @@
 from typing import List
 
 from pairinteraction import pireal
-from pairinteraction.model.constituents import BaseModelAtom, BaseModelConstituent
+from pairinteraction.model.constituents.atom import BaseModelAtom
+from pairinteraction.model.constituents.base import BaseModelConstituent
 from pairinteraction.model.simulation import ModelSimulation
-from pairinteraction.model.states import ModelStateAtomSQDT
+from pairinteraction.model.states.atom import ModelStateAtomSQDT
 
 
 def preprocess_model_simulation(model: ModelSimulation) -> None:

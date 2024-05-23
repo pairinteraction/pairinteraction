@@ -13,7 +13,9 @@ from typing import Dict, Union
 #     SystemCombined,
 #     SystemWithInteractions,
 # )
-from pairinteraction.model.constituents import BaseModelAtom, BaseModelConstituent, ModelClassicalLight
+from pairinteraction.model.constituents.atom import BaseModelAtom
+from pairinteraction.model.constituents.base import BaseModelConstituent
+from pairinteraction.model.constituents.classical_light import ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.simulation import ModelSimulation

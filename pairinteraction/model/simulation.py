@@ -14,17 +14,15 @@ from pydantic import (
 )
 from typing_extensions import Self
 
-from pairinteraction.model.constituents import (
-    BaseModelConstituent,
-    ModelAtomMQDT,
-    ModelAtomSQDT,
-    ModelClassicalLight,
-)
+from pairinteraction.model.constituents.atom import ModelAtomMQDT, ModelAtomSQDT
+from pairinteraction.model.constituents.base import BaseModelConstituent
+from pairinteraction.model.constituents.classical_light import ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
-from pairinteraction.model.states import BaseModelState
-from pairinteraction.model.types import BaseParameterIterable, ConstituentString, HalfInt
+from pairinteraction.model.states.base import BaseModelState
+from pairinteraction.model.types.parameter import BaseParameterIterable
+from pairinteraction.model.types.simple_types import ConstituentString, HalfInt
 
 UnionModelAtom = Union[ModelAtomSQDT[int], ModelAtomSQDT[HalfInt], ModelAtomMQDT[int], ModelAtomMQDT[HalfInt]]
 
