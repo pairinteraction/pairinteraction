@@ -22,13 +22,13 @@ function(PYTHON_TEST)
   # Copy test to binary directory
   configure_file(${UT_SOURCE} ${CMAKE_CURRENT_BINARY_DIR}/${UT_SOURCE})
   # Tests are executed in the root directory
-  add_test(NAME "python.${UT_TARGET}" COMMAND ${Python3_EXECUTABLE} ${UT_SOURCE})
+  add_test(NAME "python.${UT_TARGET}" COMMAND ${Python_EXECUTABLE} ${UT_SOURCE})
   set_tests_properties("python.${UT_TARGET}" PROPERTIES
     ENVIRONMENT "${UT_ENVIRONMENT};PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>")
 endfunction(PYTHON_TEST)
 
 # Add Python test cases
-find_package(Python3 COMPONENTS Interpreter REQUIRED)
+find_package(Python COMPONENTS Interpreter REQUIRED)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 python_test(TARGET model SOURCE test_model.py)
