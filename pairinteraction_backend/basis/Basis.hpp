@@ -73,8 +73,8 @@ public:
     Sorting get_sorter_without_checks(TransformationType label) const;
     Blocks get_blocks_without_checks(TransformationType label) const;
 
-    std::shared_ptr<Derived> transform(const Transformation<scalar_t> &transformation) const;
-    std::shared_ptr<Derived> transform(const Sorting &transformation) const;
+    std::shared_ptr<Derived> transformed(const Transformation<scalar_t> &transformation) const;
+    std::shared_ptr<Derived> transformed(const Sorting &transformation) const;
 
 protected:
     Basis(ketvec_t &&kets);

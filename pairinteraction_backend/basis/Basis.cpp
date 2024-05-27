@@ -294,7 +294,7 @@ Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const
 }
 
 template <typename Derived>
-std::shared_ptr<Derived> Basis<Derived>::transform(const Sorting &transformation) const {
+std::shared_ptr<Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
 
@@ -334,7 +334,7 @@ std::shared_ptr<Derived> Basis<Derived>::transform(const Sorting &transformation
 
 template <typename Derived>
 std::shared_ptr<Derived>
-Basis<Derived>::transform(const Transformation<scalar_t> &transformation) const {
+Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
     // If the transformation is a rotation, it should be a rotation and nothing else
     bool is_rotation = false;
     for (auto t : transformation.transformation_type) {
@@ -563,8 +563,8 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
 
     // Sort the basis by parity and the m quantum number
     auto tmp = BasisDerivedCreator().create();
-    auto basis = tmp->transform(tmp->get_sorter(TransformationType::SORT_BY_PARITY |
-                                                TransformationType::SORT_BY_QUANTUM_NUMBER_M));
+    auto basis = tmp->transformed(tmp->get_sorter(TransformationType::SORT_BY_PARITY |
+                                                  TransformationType::SORT_BY_QUANTUM_NUMBER_M));
     int parity = std::numeric_limits<int>::lowest();
     float quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
