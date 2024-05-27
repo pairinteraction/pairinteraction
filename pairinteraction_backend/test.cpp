@@ -46,7 +46,8 @@ int test(int argc, char **argv) {
     int exitcode = ctx.run();
 
     if (exitcode != 0) {
-        httplib::Client client("https://www.google.com");
+        // TODO contact github only if download_missing is set to true explicitly by the user
+        httplib::Client client("https://www.github.com");
         auto res = client.Head("/");
         if (!res) {
             SPDLOG_ERROR("Test failed. Please check your internet connection. An internet "
