@@ -20,9 +20,9 @@
 #include <regex>
 #include <spdlog/spdlog.h>
 
-Database::Database(bool auto_update)
+Database::Database(bool download_missing)
     : databasedir(paths::get_pairinteraction_cache_directory() / "database"),
-      auto_update(auto_update), db(std::make_unique<duckdb::DuckDB>(nullptr)),
+      download_missing(download_missing), db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
 
     const std::regex parquet_regex("^(\\w+)_v(\\d+)\\.parquet$");
@@ -101,7 +101,7 @@ Database::Database(bool auto_update)
     }
 
     // Create a pool of clients
-    if (auto_update) {
+    if (download_missing) {
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             pool.emplace_back(httplib::Client(database_repo_host));
             pool.back().set_follow_location(true);
@@ -131,7 +131,7 @@ Database::Database(bool auto_update)
     }
 
     // Get a dictionary of remotely available tables
-    if (auto_update) {
+    if (download_missing) {
 // Call the different endpoints asynchronously
 #if HTTPLIB_USES_STD_STRING
         httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
@@ -199,7 +199,7 @@ Database::Database(bool auto_update)
                 SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
                              "is disabled. You should not retry until after {} seconds.",
                              waittime);
-                auto_update = false;
+                download_missing = false;
                 continue;
 
             } else if (res->status != 200) {
@@ -1051,16 +1051,16 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 }
 
 void Database::ensure_presence_of_table(std::string name) {
-    if (tables.count(name) == 0 && auto_update) {
+    if (tables.count(name) == 0 && download_missing) {
         throw std::runtime_error("No database `" + name + "` found.");
     }
 
-    if (tables.count(name) == 0 && !auto_update) {
+    if (tables.count(name) == 0 && !download_missing) {
         throw std::runtime_error("No database `" + name +
-                                 "` found. Try setting auto_update to true.");
+                                 "` found. Try setting download_missing to true.");
     }
 
-    if (auto_update && tables[name].local_version < tables[name].remote_version) {
+    if (download_missing && tables[name].local_version < tables[name].remote_version) {
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
         auto res = pool.front().Get(
@@ -1081,7 +1081,7 @@ void Database::ensure_presence_of_table(std::string name) {
             SPDLOG_ERROR("Error accessing database repositories, rate limit exceeded. Auto update "
                          "is disabled. You should not retry until after {} seconds.",
                          waittime);
-            auto_update = false;
+            download_missing = false;
         } else {
             if (tables[name].local_version != -1) {
                 std::filesystem::remove(tables[name].local_path);

@@ -47,7 +47,7 @@ public:
         bool up_to_date;
     };
 
-    Database(bool auto_update = true);
+    Database(bool download_missing = true);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
@@ -80,7 +80,7 @@ private:
         "/repos/pairinteraction/database-mqdt/releases/latest"};
 
     std::filesystem::path databasedir;
-    bool auto_update;
+    bool download_missing;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
     std::vector<httplib::Client> pool;
