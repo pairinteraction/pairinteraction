@@ -28,8 +28,8 @@ public:
     Sorting get_sorter(TransformationType label) const override;
     Blocks get_blocks(TransformationType label) const override;
 
-    Derived transform(const Transformation<scalar_t> &transformation) const;
-    Derived transform(const Sorting &transformation) const;
+    Derived transformed(const Transformation<scalar_t> &transformation) const;
+    Derived transformed(const Sorting &transformation) const;
 
 private:
     std::shared_ptr<operator_t> hamiltonian; // TODO use a unique_ptr instead

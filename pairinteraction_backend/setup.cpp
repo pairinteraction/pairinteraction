@@ -8,8 +8,6 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-std::once_flag flag_default_logger;
-
 void setup() {
 
     // Configure a logger
@@ -23,6 +21,7 @@ void setup() {
 
     std::filesystem::path logfile = logdir / "backend.log";
 
+    static std::once_flag flag_default_logger;
     std::call_once(flag_default_logger, [&logfile] {
         spdlog::init_thread_pool(8192, 1);
         auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

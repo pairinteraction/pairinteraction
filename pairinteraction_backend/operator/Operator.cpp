@@ -51,11 +51,7 @@ Sorting Operator<Derived>::get_sorter(TransformationType label) const {
         std::vector<real_t> energies_of_states;
         energies_of_states.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
-            if constexpr (traits::is_complex_v<scalar_t>) {
-                energies_of_states.push_back(matrix.coeff(i, i).real());
-            } else {
-                energies_of_states.push_back(matrix.coeff(i, i));
-            }
+            energies_of_states.push_back(std::real(matrix.coeff(i, i)));
         }
 
         std::stable_sort(
@@ -116,19 +112,19 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
 }
 
 template <typename Derived>
-Derived Operator<Derived>::transform(
+Derived Operator<Derived>::transformed(
     const Transformation<typename Operator<Derived>::scalar_t> &transformation) const {
     auto transformed = derived();
     transformed.matrix = transformation.matrix.adjoint() * matrix * transformation.matrix;
-    transformed.basis = basis->transform(transformation);
+    transformed.basis = basis->transformed(transformation);
     return transformed;
 }
 
 template <typename Derived>
-Derived Operator<Derived>::transform(const Sorting &transformation) const {
+Derived Operator<Derived>::transformed(const Sorting &transformation) const {
     auto transformed = derived();
     transformed.matrix = matrix.twistedBy(transformation.matrix.inverse());
-    transformed.basis = basis->transform(transformation);
+    transformed.basis = basis->transformed(transformation);
     return transformed;
 }
 

@@ -11,8 +11,6 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-std::once_flag flag_doctest_logger;
-
 int test(int argc, char **argv) {
 
     // Configure a logger for the tests
@@ -26,6 +24,7 @@ int test(int argc, char **argv) {
 
     std::filesystem::path logfile = logdir / "test.log";
 
+    static std::once_flag flag_doctest_logger;
     std::call_once(flag_doctest_logger, [&logfile] {
         auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
         auto file_sink =

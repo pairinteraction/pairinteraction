@@ -49,16 +49,18 @@ Blocks System<Derived>::get_blocks(TransformationType label) const {
 }
 
 template <typename Derived>
-Derived System<Derived>::transform(const Transformation<scalar_t> &transformation) const {
+Derived System<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
     Derived transformed = derived();
-    transformed.hamiltonian = std::make_shared<operator_t>(hamiltonian->transform(transformation));
+    transformed.hamiltonian =
+        std::make_shared<operator_t>(hamiltonian->transformed(transformation));
     return transformed;
 }
 
 template <typename Derived>
-Derived System<Derived>::transform(const Sorting &transformation) const {
+Derived System<Derived>::transformed(const Sorting &transformation) const {
     Derived transformed = derived();
-    transformed.hamiltonian = std::make_shared<operator_t>(hamiltonian->transform(transformation));
+    transformed.hamiltonian =
+        std::make_shared<operator_t>(hamiltonian->transformed(transformation));
     return transformed;
 }
 
