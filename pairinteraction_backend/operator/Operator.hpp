@@ -30,12 +30,12 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
 
 template <typename Derived>
 class Operator
-    : public TransformationBuilderInterface<typename traits::OperatorTraits<Derived>::scalar_t> {
+    : public TransformationBuilderInterface<typename traits::CrtpTraits<Derived>::scalar_t> {
 public:
-    using scalar_t = typename traits::OperatorTraits<Derived>::scalar_t;
-    using real_t = typename traits::OperatorTraits<Derived>::real_t;
-    using ketvec_t = typename traits::OperatorTraits<Derived>::ketvec_t;
-    using basis_t = typename traits::OperatorTraits<Derived>::basis_t;
+    using scalar_t = typename traits::CrtpTraits<Derived>::scalar_t;
+    using real_t = typename traits::CrtpTraits<Derived>::real_t;
+    using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
+    using basis_t = typename traits::CrtpTraits<Derived>::basis_t;
 
     Operator(std::shared_ptr<const basis_t> basis);
 

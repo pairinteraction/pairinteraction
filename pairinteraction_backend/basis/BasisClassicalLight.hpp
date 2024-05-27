@@ -14,7 +14,7 @@ template <typename Scalar>
 class BasisClassicalLight;
 
 template <typename Scalar>
-struct traits::BasisTraits<BasisClassicalLight<Scalar>> {
+struct traits::CrtpTraits<BasisClassicalLight<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
@@ -35,7 +35,7 @@ class BasisClassicalLight : public Basis<BasisClassicalLight<Scalar>> {
 
 public:
     using Type = BasisClassicalLight<Scalar>;
-    using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
+    using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
     BasisClassicalLight(Private, ketvec_t &&kets);
 };

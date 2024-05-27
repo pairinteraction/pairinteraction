@@ -32,12 +32,12 @@ enum class TransformationType : unsigned char;
 
 template <typename Derived>
 class Basis
-    : public TransformationBuilderInterface<typename traits::BasisTraits<Derived>::scalar_t> {
+    : public TransformationBuilderInterface<typename traits::CrtpTraits<Derived>::scalar_t> {
 public:
-    using scalar_t = typename traits::BasisTraits<Derived>::scalar_t;
-    using real_t = typename traits::BasisTraits<Derived>::real_t;
-    using ket_t = typename traits::BasisTraits<Derived>::ket_t;
-    using ketvec_t = typename traits::BasisTraits<Derived>::ketvec_t;
+    using scalar_t = typename traits::CrtpTraits<Derived>::scalar_t;
+    using real_t = typename traits::CrtpTraits<Derived>::real_t;
+    using ket_t = typename traits::CrtpTraits<Derived>::ket_t;
+    using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
 
     Basis() = delete;
 
