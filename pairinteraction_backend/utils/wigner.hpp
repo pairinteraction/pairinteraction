@@ -38,7 +38,7 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
                                         typename traits::NumTraits<Scalar>::real_t alpha,
                                         typename traits::NumTraits<Scalar>::real_t beta,
                                         typename traits::NumTraits<Scalar>::real_t gamma) {
-    if constexpr (traits::is_complex_v<Scalar>) {
+    if constexpr (traits::NumTraits<Scalar>::is_complex) {
         return Scalar(std::cos(-m_initial * alpha), std::sin(-m_initial * alpha)) *
             wigner_uppercase_d_matrix<typename traits::NumTraits<Scalar>::real_t>(
                    f, m_initial, m_final, 0, beta, 0) *

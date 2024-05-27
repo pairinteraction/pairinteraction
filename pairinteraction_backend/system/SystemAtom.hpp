@@ -15,12 +15,12 @@ class BasisAtom;
 template <typename Real>
 class KetAtom;
 
-// Specialize SystemTraits for SystemAtom
+// Specialize CrtpTraits for SystemAtom
 template <typename T>
 class SystemAtom;
 
 template <typename Scalar>
-struct traits::SystemTraits<SystemAtom<Scalar>> {
+struct traits::CrtpTraits<SystemAtom<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
@@ -33,7 +33,7 @@ template <typename Scalar>
 class SystemAtom : public System<SystemAtom<Scalar>> {
 public:
     using Type = SystemAtom<Scalar>;
-    using basis_t = typename traits::SystemTraits<Type>::basis_t;
+    using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
     SystemAtom(std::shared_ptr<const basis_t> basis);
 };

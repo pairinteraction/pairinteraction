@@ -1,11 +1,12 @@
 #pragma once
 
 #include <complex>
+#include <type_traits>
 
 namespace traits {
 
 /**
- * @struct BasisTraits
+ * @struct CrtpTraits
  *
  * @brief Helper struct to extract types from a derived basis type. Must be specialized for each
  * derived basis type.
@@ -14,31 +15,7 @@ namespace traits {
  */
 
 template <typename Derived>
-struct BasisTraits;
-
-/**
- * @struct OperatorTraits
- *
- * @brief Helper struct to extract types from a derived operator type. Must be specialized for each
- * derived operator type.
- *
- * @tparam Derived The derived operator type from which to extract types.
- */
-
-template <typename Derived>
-struct OperatorTraits;
-
-/**
- * @struct SystemTraits
- *
- * @brief Helper struct to extract types from a derived system type. Must be specialized for each
- * derived system type.
- *
- * @tparam Derived The derived system type from which to extract types.
- */
-
-template <typename Derived>
-struct SystemTraits;
+struct CrtpTraits;
 
 /**
  * @struct NumTraits
@@ -50,29 +27,16 @@ struct SystemTraits;
 
 template <typename Numeric>
 struct NumTraits {
+    static_assert(std::is_floating_point_v<Numeric>);
     using real_t = Numeric;
+    static constexpr bool is_complex = false;
 };
 
 template <typename Numeric>
 struct NumTraits<std::complex<Numeric>> {
+    static_assert(std::is_floating_point_v<Numeric>);
     using real_t = Numeric;
+    static constexpr bool is_complex = true;
 };
-
-/**
- * @struct is_complex
- *
- * @brief Helper struct to check whether a scalar type is complex.
- *
- * @tparam Scalar The scalar type to check.
- */
-
-template <typename Scalar>
-struct is_complex : public std::false_type {};
-
-template <typename Scalar>
-struct is_complex<std::complex<Scalar>> : public std::true_type {};
-
-template <typename Scalar>
-inline constexpr bool is_complex_v = is_complex<Scalar>::value;
 
 } // namespace traits

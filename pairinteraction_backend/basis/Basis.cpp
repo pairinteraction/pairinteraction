@@ -528,7 +528,7 @@ private:
 class BasisDerived;
 
 template <>
-struct traits::BasisTraits<BasisDerived> {
+struct traits::CrtpTraits<BasisDerived> {
     using scalar_t = float;
     using real_t = float;
     using ket_t = KetDerived;
@@ -542,7 +542,7 @@ class BasisDerived : public Basis<BasisDerived> {
 public:
     BasisDerived(Private, ketvec_t &&kets) : Basis<BasisDerived>(std::move(kets)) {}
     using Type = BasisDerived;
-    using ketvec_t = typename traits::BasisTraits<BasisDerived>::ketvec_t;
+    using ketvec_t = typename traits::CrtpTraits<BasisDerived>::ketvec_t;
 };
 
 // Classes for creating an instance of the derived basis class

@@ -9,13 +9,13 @@ enum class TransformationType : unsigned char;
 
 template <typename Derived>
 class System
-    : public TransformationBuilderInterface<typename traits::SystemTraits<Derived>::scalar_t> {
+    : public TransformationBuilderInterface<typename traits::CrtpTraits<Derived>::scalar_t> {
 public:
-    using scalar_t = typename traits::SystemTraits<Derived>::scalar_t;
-    using real_t = typename traits::SystemTraits<Derived>::real_t;
-    using ketvec_t = typename traits::SystemTraits<Derived>::ketvec_t;
-    using basis_t = typename traits::SystemTraits<Derived>::basis_t;
-    using operator_t = typename traits::SystemTraits<Derived>::operator_t;
+    using scalar_t = typename traits::CrtpTraits<Derived>::scalar_t;
+    using real_t = typename traits::CrtpTraits<Derived>::real_t;
+    using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
+    using basis_t = typename traits::CrtpTraits<Derived>::basis_t;
+    using operator_t = typename traits::CrtpTraits<Derived>::operator_t;
 
     System(std::shared_ptr<const basis_t> basis);
 

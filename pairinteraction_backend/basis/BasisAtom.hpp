@@ -15,12 +15,12 @@ class BasisAtomCreator;
 template <typename Real>
 class KetAtom;
 
-// Specialize BasisTraits for BasisAtom
+// Specialize CrtpTraits for BasisAtom
 template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-struct traits::BasisTraits<BasisAtom<Scalar>> {
+struct traits::CrtpTraits<BasisAtom<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
@@ -41,7 +41,7 @@ class BasisAtom : public Basis<BasisAtom<Scalar>> {
 
 public:
     using Type = BasisAtom<Scalar>;
-    using ketvec_t = typename traits::BasisTraits<Type>::ketvec_t;
+    using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
     BasisAtom(Private, ketvec_t &&kets, std::string table, Database &database, std::string species);
     Database &get_database() const;
