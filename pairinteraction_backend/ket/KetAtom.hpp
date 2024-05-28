@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 #include "ket/Ket.hpp"
 
@@ -16,6 +17,8 @@ class KetAtomCreator;
  */
 template <typename Real>
 class KetAtom : public Ket<Real> {
+    static_assert(std::is_floating_point_v<Real>);
+
     friend class Database;
     struct Private {};
 

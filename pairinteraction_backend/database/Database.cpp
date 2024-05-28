@@ -474,9 +474,10 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 }
 
 template <typename Scalar>
-std::shared_ptr<const BasisAtom<Scalar>>
-Database::get_basis(std::string species, const AtomDescriptionByRanges<Scalar> &description,
-                    std::vector<size_t> additional_ket_ids) {
+std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
+    std::string species,
+    const AtomDescriptionByRanges<typename traits::NumTraits<Scalar>::real_t> &description,
+    std::vector<size_t> additional_ket_ids) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
     ensure_presence_of_table(species + "_states");
@@ -1141,13 +1142,13 @@ template std::shared_ptr<const BasisAtom<double>>
 Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
                             std::vector<size_t> additional_ket_ids);
 template std::shared_ptr<const BasisAtom<std::complex<float>>>
-Database::get_basis<std::complex<float>>(
-    std::string species, const AtomDescriptionByRanges<std::complex<float>> &description,
-    std::vector<size_t> additional_ket_ids);
+Database::get_basis<std::complex<float>>(std::string species,
+                                         const AtomDescriptionByRanges<float> &description,
+                                         std::vector<size_t> additional_ket_ids);
 template std::shared_ptr<const BasisAtom<std::complex<double>>>
-Database::get_basis<std::complex<double>>(
-    std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
-    std::vector<size_t> additional_ket_ids);
+Database::get_basis<std::complex<double>>(std::string species,
+                                          const AtomDescriptionByRanges<double> &description,
+                                          std::vector<size_t> additional_ket_ids);
 template OperatorAtom<float>
 Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
                               int q);

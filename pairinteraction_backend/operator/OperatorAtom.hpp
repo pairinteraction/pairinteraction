@@ -32,6 +32,8 @@ struct traits::CrtpTraits<OperatorAtom<Scalar>> {
 template <typename Scalar>
 class OperatorAtom : public Operator<OperatorAtom<Scalar>> {
 public:
+    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+
     using Type = OperatorAtom<Scalar>;
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 

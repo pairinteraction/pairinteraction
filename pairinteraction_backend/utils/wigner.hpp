@@ -4,6 +4,7 @@
 #include <complex>
 #include <limits>
 #include <stdexcept>
+#include <type_traits>
 
 #include "utils/maths.hpp"
 #include "utils/traits.hpp"
@@ -17,6 +18,8 @@ inline constexpr Real PI = 3.141592653589793238462643383279502884;
 
 template <typename Real>
 inline Real wigner_uppercase_d_matrix_pi_half(Real f, Real m_initial, Real m_final) {
+    static_assert(std::is_floating_point_v<Real>);
+
     Real result = 0;
     for (Real k = std::max(0, static_cast<int>(m_final - m_initial));
          k <= f + std::min(m_final, -m_initial); ++k) {
@@ -38,7 +41,9 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
                                         typename traits::NumTraits<Scalar>::real_t alpha,
                                         typename traits::NumTraits<Scalar>::real_t beta,
                                         typename traits::NumTraits<Scalar>::real_t gamma) {
-    if constexpr (traits::NumTraits<Scalar>::is_complex) {
+    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+
+    if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
         return Scalar(std::cos(-m_initial * alpha), std::sin(-m_initial * alpha)) *
             wigner_uppercase_d_matrix<typename traits::NumTraits<Scalar>::real_t>(
                    f, m_initial, m_final, 0, beta, 0) *
