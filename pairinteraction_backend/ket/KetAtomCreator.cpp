@@ -26,12 +26,18 @@ KetAtomCreator<Real> &KetAtomCreator<Real>::set_energy(Real value) {
 
 template <typename Real>
 KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_f(Real value) {
+    if (2 * value != std::rintf(2 * value)) {
+        throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
+    }
     quantum_number_f.emplace(value);
     return *this;
 }
 
 template <typename Real>
 KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_m(Real value) {
+    if (2 * value != std::rintf(2 * value)) {
+        throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
+    }
     quantum_number_m.emplace(value);
     return *this;
 }

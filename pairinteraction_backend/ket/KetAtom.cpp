@@ -48,7 +48,7 @@ std::string KetAtom<Real>::get_label() const {
     } else if (2 * this->quantum_number_f == std::rintf(2 * this->quantum_number_f)) {
         label += fmt::format("_{{{}/2}}", 2 * this->quantum_number_f);
     } else {
-        throw std::runtime_error("Invalid quantum number f.");
+        std::abort(); // can't happen
     }
 
     return label;
