@@ -30,9 +30,9 @@ public:
 private:
     friend class BasisClassicalLight<Scalar>;
     // friend class KetClassicalLight<Scalar>;
-    real_t photon_energy;
-    int min_quantum_number_q;
-    int max_quantum_number_q;
+    real_t photon_energy{0.0};
+    int min_quantum_number_q{0};
+    int max_quantum_number_q{0};
 };
 
 extern template class BasisClassicalLightCreator<float>;
