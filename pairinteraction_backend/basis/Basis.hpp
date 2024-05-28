@@ -48,6 +48,7 @@ public:
     real_t get_quantum_number_f(size_t index_state) const;
     real_t get_quantum_number_m(size_t index_state) const;
     int get_parity(size_t index_state) const;
+    std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t index_state) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
     class Iterator {

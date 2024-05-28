@@ -49,17 +49,47 @@ Basis<Derived>::get_coefficients() const {
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t index_state) const {
+    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
+        throw std::invalid_argument("The index is out of bounds.");
+    }
+    if (quantum_number_f_of_states[index_state] == std::numeric_limits<real_t>::max()) {
+        throw std::invalid_argument("The state does not have a well-defined quantum number f.");
+    }
     return quantum_number_f_of_states[index_state];
 }
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t index_state) const {
+    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
+        throw std::invalid_argument("The index is out of bounds.");
+    }
+    if (quantum_number_m_of_states[index_state] == std::numeric_limits<real_t>::max()) {
+        throw std::invalid_argument("The state does not have a well-defined quantum number m.");
+    }
     return quantum_number_m_of_states[index_state];
 }
 
 template <typename Derived>
 int Basis<Derived>::get_parity(size_t index_state) const {
+    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
+        throw std::invalid_argument("The index is out of bounds.");
+    }
+    if (parity_of_states[index_state] == std::numeric_limits<int>::max()) {
+        throw std::invalid_argument("The state does not have a well-defined parity.");
+    }
     return parity_of_states[index_state];
+}
+
+template <typename Derived>
+std::shared_ptr<const typename Basis<Derived>::ket_t>
+Basis<Derived>::get_ket_with_largest_overlap(size_t index_state) const {
+    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
+        throw std::invalid_argument("The index is out of bounds.");
+    }
+    if (ket_of_states[index_state] == std::numeric_limits<int>::max()) {
+        throw std::invalid_argument("The state does not belong to a ket in a well defined way.");
+    }
+    return kets[ket_of_states[index_state]];
 }
 
 template <typename Derived>
@@ -241,6 +271,10 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
     if (utils::has_bit(label, TransformationType::SORT_BY_KET)) {
         std::stable_sort(perm_begin, perm_end,
                          [&](int i, int j) { return ket_of_states[i] < ket_of_states[j]; });
+
+        if (ket_of_states[*perm_back] == std::numeric_limits<int>::max()) {
+            throw std::invalid_argument("States cannot be labeled and thus not sorted by kets.");
+        }
 
         transformation.transformation_type.push_back(TransformationType::SORT_BY_KET);
     }
@@ -435,6 +469,8 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     {
+        std::fill(transformed->ket_of_states.begin(), transformed->ket_of_states.end(),
+                  std::numeric_limits<int>::max());
         std::vector<real_t> map_idx_to_max(transformed->coefficients.matrix.cols(), 0);
         for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
             for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
@@ -445,13 +481,6 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                     transformed->ket_of_states[it.col()] = row;
                 }
             }
-        }
-
-        std::set<int> ket_of_states_set(transformed->ket_of_states.begin(),
-                                        transformed->ket_of_states.end());
-        if (ket_of_states_set.size() != transformed->ket_of_states.size()) {
-            throw std::runtime_error(
-                "Failed to establish a unique mapping between the states and the kets.");
         }
     }
 
