@@ -20,6 +20,9 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(real_t min,
                                                                               real_t max) {
+    if (2 * min != std::rintf(2 * min) || 2 * max != std::rintf(2 * max)) {
+        throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
+    }
     min_quantum_number_f.emplace(min);
     max_quantum_number_f.emplace(max);
     return *this;
@@ -28,6 +31,9 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(re
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(real_t min,
                                                                               real_t max) {
+    if (2 * min != std::rintf(2 * min) || 2 * max != std::rintf(2 * max)) {
+        throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
+    }
     min_quantum_number_m.emplace(min);
     max_quantum_number_m.emplace(max);
     return *this;
