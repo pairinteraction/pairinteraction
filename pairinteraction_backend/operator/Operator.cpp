@@ -90,6 +90,7 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
         size_t block_idx = 0;
         scalar_t last_diagonal = matrix.coeff(0, 0);
 
+        completed.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
             if (matrix.coeff(i, i) != last_diagonal) {
                 completed.push_back(i);
@@ -98,6 +99,7 @@ Blocks Operator<Derived>::get_blocks(TransformationType label) const {
                 ++block_idx;
             }
         }
+        completed.shrink_to_fit();
 
         blocks.start = completed;
         blocks.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);

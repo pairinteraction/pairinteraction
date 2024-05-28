@@ -52,14 +52,13 @@ public:
 
     class Iterator {
     public:
-        Iterator(const Basis<Derived> &basis, size_t index);
+        Iterator(typename ketvec_t::const_iterator it);
         bool operator!=(const Iterator &other) const;
         std::shared_ptr<const ket_t> operator*() const;
         Iterator &operator++();
 
     private:
-        const Basis<Derived> &basis;
-        size_t index;
+        typename ketvec_t::const_iterator it;
     };
 
     Iterator begin() const;
