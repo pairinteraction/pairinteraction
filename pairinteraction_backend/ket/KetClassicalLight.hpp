@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <type_traits>
 
 #include "ket/Ket.hpp"
 
@@ -9,6 +10,8 @@ class KetClassicalLightCreator;
 
 template <typename Real>
 class KetClassicalLight : public Ket<Real> {
+    static_assert(std::is_floating_point_v<Real>);
+
     friend class KetClassicalLightCreator<Real>;
     struct Private {};
 

@@ -5,6 +5,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 template <typename Real>
 class KetClassicalLight;
@@ -18,6 +19,8 @@ class KetClassicalLight;
  */
 template <typename Real>
 class KetClassicalLightCreator {
+    static_assert(std::is_floating_point_v<Real>);
+
 public:
     KetClassicalLightCreator() = default;
     KetClassicalLightCreator(Real energy, int q);

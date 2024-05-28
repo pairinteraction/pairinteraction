@@ -18,13 +18,14 @@ class KetClassicalLight;
 
 template <typename Scalar>
 class BasisClassicalLightCreator {
+    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
     BasisClassicalLightCreator() = default;
     BasisClassicalLightCreator<Scalar> &set_photon_energy(real_t photon_energy);
     BasisClassicalLightCreator<Scalar> &restrict_quantum_number_q(int min, int max);
-    BasisClassicalLightCreator<Scalar> &add_ket(const ket_t &ket);
     std::shared_ptr<const BasisClassicalLight<Scalar>> create() const;
 
 private:

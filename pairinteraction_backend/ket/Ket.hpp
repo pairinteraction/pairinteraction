@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <type_traits>
 
 /**
  * @class Ket
@@ -18,6 +19,8 @@
 
 template <typename Real>
 class Ket {
+    static_assert(std::is_floating_point_v<Real>);
+
 public:
     Ket() = delete;
     virtual ~Ket() = default;

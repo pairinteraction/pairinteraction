@@ -2,6 +2,7 @@
 
 #include <Eigen/Dense>
 #include <array>
+#include <type_traits>
 
 #include "utils/eigen_compat.hpp"
 
@@ -24,6 +25,8 @@ namespace euler {
 template <typename Real>
 inline Eigen::Matrix3<Real> get_rotation_matrix(std::array<Real, 3> to_z_axis,
                                                 std::array<Real, 3> to_y_axis) {
+    static_assert(std::is_floating_point_v<Real>);
+
     auto to_z_axis_mapped = Eigen::Map<Eigen::Vector3<Real>>(to_z_axis.data()).normalized();
     auto to_y_axis_mapped = Eigen::Map<Eigen::Vector3<Real>>(to_y_axis.data()).normalized();
 
@@ -54,6 +57,8 @@ inline Eigen::Matrix3<Real> get_rotation_matrix(std::array<Real, 3> to_z_axis,
 template <typename Real>
 inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
                                             std::array<Real, 3> to_y_axis) {
+    static_assert(std::is_floating_point_v<Real>);
+
     auto rotator = get_rotation_matrix(to_z_axis, to_y_axis);
     std::array<Real, 3> euler_zyz;
     Eigen::Map<Eigen::Vector3<Real>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);

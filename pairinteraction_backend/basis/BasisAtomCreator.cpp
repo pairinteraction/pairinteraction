@@ -107,7 +107,7 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    AtomDescriptionByRanges<Scalar> description{min_energy,
+    AtomDescriptionByRanges<real_t> description{min_energy,
                                                 max_energy,
                                                 min_quantum_number_f,
                                                 max_quantum_number_f,

@@ -25,6 +25,8 @@ class Database;
  */
 template <typename Scalar>
 class BasisAtomCreator {
+    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;

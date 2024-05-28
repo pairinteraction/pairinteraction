@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/traits.hpp"
 #include <complex>
 #include <filesystem>
 #include <memory>
@@ -58,9 +59,10 @@ public:
     get_ket(std::string species, const AtomDescriptionByParameters<Real> &description);
 
     template <typename Scalar>
-    std::shared_ptr<const BasisAtom<Scalar>>
-    get_basis(std::string species, const AtomDescriptionByRanges<Scalar> &description,
-              std::vector<size_t> additional_ket_ids);
+    std::shared_ptr<const BasisAtom<Scalar>> get_basis(
+        std::string species,
+        const AtomDescriptionByRanges<typename traits::NumTraits<Scalar>::real_t> &description,
+        std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
     OperatorAtom<Scalar> get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
@@ -103,13 +105,13 @@ extern template std::shared_ptr<const BasisAtom<double>>
 Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
                             std::vector<size_t> additional_ket_ids);
 extern template std::shared_ptr<const BasisAtom<std::complex<float>>>
-Database::get_basis<std::complex<float>>(
-    std::string species, const AtomDescriptionByRanges<std::complex<float>> &description,
-    std::vector<size_t> additional_ket_ids);
+Database::get_basis<std::complex<float>>(std::string species,
+                                         const AtomDescriptionByRanges<float> &description,
+                                         std::vector<size_t> additional_ket_ids);
 extern template std::shared_ptr<const BasisAtom<std::complex<double>>>
-Database::get_basis<std::complex<double>>(
-    std::string species, const AtomDescriptionByRanges<std::complex<double>> &description,
-    std::vector<size_t> additional_ket_ids);
+Database::get_basis<std::complex<double>>(std::string species,
+                                          const AtomDescriptionByRanges<double> &description,
+                                          std::vector<size_t> additional_ket_ids);
 extern template OperatorAtom<float>
 Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
                               int q);

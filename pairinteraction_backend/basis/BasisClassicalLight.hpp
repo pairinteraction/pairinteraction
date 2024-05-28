@@ -30,6 +30,8 @@ struct traits::CrtpTraits<BasisClassicalLight<Scalar>> {
  */
 template <typename Scalar>
 class BasisClassicalLight : public Basis<BasisClassicalLight<Scalar>> {
+    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+
     friend class BasisClassicalLightCreator<Scalar>;
     struct Private {};
 

@@ -1,11 +1,14 @@
 #pragma once
 
 #include <stdexcept>
+#include <type_traits>
 
 namespace maths {
 
 template <typename Real>
 inline Real binomial_coefficient(Real n, Real k) {
+    static_assert(std::is_arithmetic_v<Real>);
+
     if (n < k || k < 0) {
         throw std::invalid_argument("It must be n >= k >= 0.");
     }
@@ -24,6 +27,8 @@ inline Real binomial_coefficient(Real n, Real k) {
 
 template <typename Real>
 inline Real factorial(Real n) {
+    static_assert(std::is_arithmetic_v<Real>);
+
     if (n < 0) {
         throw std::invalid_argument("It must be n >= 0.");
     }

@@ -4,6 +4,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 
 class Database;
 
@@ -19,6 +20,8 @@ class KetAtom;
  */
 template <typename Real>
 class KetAtomCreator {
+    static_assert(std::is_floating_point_v<Real>);
+
 public:
     KetAtomCreator() = default;
     KetAtomCreator(std::string species, int n, Real l, Real j, Real m);
