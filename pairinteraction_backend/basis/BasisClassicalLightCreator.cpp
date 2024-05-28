@@ -2,19 +2,30 @@
 
 #include "basis/BasisClassicalLight.hpp"
 #include "ket/KetClassicalLightCreator.hpp"
+#include <stdexcept>
 
 template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
 BasisClassicalLightCreator<Scalar>::set_photon_energy(real_t value) {
-    photon_energy.emplace(value);
+
+    if (value < 0) {
+        throw std::invalid_argument("photon energy must be >= 0");
+    }
+
+    photon_energy = value;
     return *this;
 }
 
 template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
 BasisClassicalLightCreator<Scalar>::restrict_quantum_number_q(int min, int max) {
-    min_quantum_number_q.emplace(min);
-    max_quantum_number_q.emplace(max);
+
+    if (min > max) {
+        throw std::invalid_argument("min has to be smaller then max");
+    }
+
+    min_quantum_number_q = min;
+    max_quantum_number_q = max;
     return *this;
 }
 
@@ -22,28 +33,12 @@ template <typename Scalar>
 std::shared_ptr<const BasisClassicalLight<Scalar>>
 BasisClassicalLightCreator<Scalar>::create() const {
 
-    int extracted_min_q, extracted_max_q;
-    real_t extracted_photon_energy;
-    if (max_quantum_number_q.has_value() && min_quantum_number_q.has_value() &&
-        photon_energy.has_value()) {
-        extracted_min_q = min_quantum_number_q.value();
-        extracted_max_q = max_quantum_number_q.value();
-        extracted_photon_energy = photon_energy.value();
-    } else if (!photon_energy.has_value()) {
-        throw std::runtime_error("photon energy not specified!");
-    } else {
-        throw std::runtime_error("photon number not restricted!");
-    }
-
     std::vector<std::shared_ptr<const ket_t>> kets;
-    kets.reserve(extracted_max_q - extracted_min_q + 1);
+    kets.reserve(max_quantum_number_q - min_quantum_number_q + 1);
 
-    auto ket_creator =
-        KetClassicalLightCreator<real_t>().set_photon_energy(extracted_photon_energy);
+    auto ket_creator = KetClassicalLightCreator<real_t>().set_photon_energy(photon_energy);
 
-    // for (const int q : std::views::iota(extracted_min_q, extracted_max_q + 1)) {
-    //
-    for (int q = extracted_min_q; q <= extracted_min_q; q++) {
+    for (int q = min_quantum_number_q; q <= max_quantum_number_q; q++) {
         kets.push_back(ket_creator.set_quantum_number_q(q).create());
     }
     return std::make_shared<const BasisClassicalLight<Scalar>>(
