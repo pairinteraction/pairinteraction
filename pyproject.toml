@@ -71,6 +71,7 @@ doc = [
 cmake.verbose = true
 wheel.packages = ["pairinteraction", "pairinteraction_backend"]
 wheel.py-api = "py3"
+wheel.license-files = ["LICENSES/*.txt"]
 
 [tool.cibuildwheel]
 build = [
