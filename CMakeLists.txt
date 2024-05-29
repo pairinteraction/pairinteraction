@@ -195,10 +195,10 @@ if ( WITH_DOC )
 endif( )
 
 # Concatenate licenses
-set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES.txt")
+set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES/LICENSES.txt")
 
-file(READ "${CMAKE_SOURCE_DIR}/LICENSE.txt" LICENSESTXT)
-file(READ "${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt" 3RDPARTYTXT)
+file(READ "${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt" LICENSESTXT)
+file(READ "${CMAKE_SOURCE_DIR}/LICENSES/LICENSE-3RD-PARTY.txt" 3RDPARTYTXT)
 
 if("${3RDPARTYTXT}" MATCHES "(^.*)\n\n#*\nLICENSE TEXTS")
   string(CONCAT LICENSESTXT "${LICENSESTXT}" "-----------------------------------------------------------------------------\n\n" "${CMAKE_MATCH_1}")
@@ -207,14 +207,13 @@ endif()
 file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
-configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 
 if(APPLE AND WITH_DMG)
 
   find_package(Python COMPONENTS Interpreter REQUIRED)
 
   install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt ${CMAKE_SOURCE_DIR}/LICENSE-3RD-PARTY.txt
+    FILES ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE-3RD-PARTY.txt
     DESTINATION licenses
   )
 
@@ -238,7 +237,7 @@ elseif(UNIX AND NOT SKBUILD)
 
   install(FILES ${CMAKE_SOURCE_DIR}/README.md
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
-  install(FILES ${CMAKE_SOURCE_DIR}/LICENSE.txt
+  install(FILES ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
     RENAME copyright)
 
