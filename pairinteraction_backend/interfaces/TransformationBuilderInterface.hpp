@@ -28,7 +28,7 @@ struct Blocks {
 template <typename Scalar>
 class TransformationBuilderInterface {
 public:
-    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+    static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 

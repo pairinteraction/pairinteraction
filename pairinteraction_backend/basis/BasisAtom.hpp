@@ -36,7 +36,7 @@ struct traits::CrtpTraits<BasisAtom<Scalar>> {
  */
 template <typename Scalar>
 class BasisAtom : public Basis<BasisAtom<Scalar>> {
-    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+    static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     friend class Database;
     struct Private {};
