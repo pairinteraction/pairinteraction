@@ -21,6 +21,7 @@
 #include "Constants.hpp"
 #include "GreenTensor.hpp"
 #include "MatrixElementCache.hpp"
+#include "maths.hpp"
 
 #include <algorithm>
 #include <cmath>
@@ -1247,10 +1248,10 @@ void SystemTwo<Scalar>::initializeInteraction() {
                                 selectionRulesMultipoleNew(r.state.getSecondState(),
                                                            c.state.getSecondState(), kappa2)) {
 
-                                double binomials = boost::math::binomial_coefficient<double>(
+                                double binomials = maths::binomial_coefficient<double>(
                                                        kappa1 + kappa2, kappa1 + q1) *
-                                    boost::math::binomial_coefficient<double>(kappa1 + kappa2,
-                                                                              kappa2 - q2);
+                                    maths::binomial_coefficient<double>(kappa1 + kappa2,
+                                                                        kappa2 - q2);
 
                                 val += coulombs_constant * std::pow(-1, kappa2) *
                                     std::sqrt(binomials) *

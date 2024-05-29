@@ -22,8 +22,6 @@
 
 #define _USE_MATH_DEFINES
 
-#include <boost/math/special_functions/binomial.hpp>
-#include <boost/math/special_functions/factorials.hpp>
 #include <cmath>
 #include <complex>
 #include <numeric>
