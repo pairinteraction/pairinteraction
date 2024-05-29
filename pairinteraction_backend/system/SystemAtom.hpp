@@ -32,7 +32,7 @@ struct traits::CrtpTraits<SystemAtom<Scalar>> {
 template <typename Scalar>
 class SystemAtom : public System<SystemAtom<Scalar>> {
 public:
-    static_assert(traits::is_complex_or_floating_point_v<Scalar>);
+    static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using Type = SystemAtom<Scalar>;
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;

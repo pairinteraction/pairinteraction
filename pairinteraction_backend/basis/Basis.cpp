@@ -15,6 +15,9 @@ Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
                                            static_cast<Eigen::Index>(this->kets.size())},
                                           {TransformationType::SORT_BY_KET}} {
+    if (this->kets.empty()) {
+        throw std::invalid_argument("The basis must contain at least one element.");
+    }
     quantum_number_f_of_states.reserve(this->kets.size());
     quantum_number_m_of_states.reserve(this->kets.size());
     parity_of_states.reserve(this->kets.size());
@@ -50,7 +53,7 @@ Basis<Derived>::get_coefficients() const {
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t index_state) const {
     if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::invalid_argument("The index is out of bounds.");
+        throw std::out_of_range("The index is out of bounds.");
     }
     if (quantum_number_f_of_states[index_state] == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number f.");
@@ -61,7 +64,7 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t inde
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t index_state) const {
     if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::invalid_argument("The index is out of bounds.");
+        throw std::out_of_range("The index is out of bounds.");
     }
     if (quantum_number_m_of_states[index_state] == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number m.");
@@ -72,7 +75,7 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t inde
 template <typename Derived>
 int Basis<Derived>::get_parity(size_t index_state) const {
     if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::invalid_argument("The index is out of bounds.");
+        throw std::out_of_range("The index is out of bounds.");
     }
     if (parity_of_states[index_state] == std::numeric_limits<int>::max()) {
         throw std::invalid_argument("The state does not have a well-defined parity.");
@@ -84,7 +87,7 @@ template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
 Basis<Derived>::get_ket_with_largest_overlap(size_t index_state) const {
     if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::invalid_argument("The index is out of bounds.");
+        throw std::out_of_range("The index is out of bounds.");
     }
     if (ket_of_states[index_state] == std::numeric_limits<int>::max()) {
         throw std::invalid_argument("The state does not belong to a ket in a well defined way.");
@@ -223,6 +226,10 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
     Sorting transformation;
 
     Eigen::Index const size = coefficients.matrix.cols();
+    if (size < 1) {
+        std::abort(); // can't happen because the size of the basis is validated to contain at least
+                      // one element
+    }
     transformation.matrix.indices().resize(size);
     int *perm_begin = transformation.matrix.indices().data();
     int *perm_end = perm_begin + size;

@@ -27,35 +27,22 @@ struct CrtpTraits;
 
 template <typename Numeric>
 struct NumTraits {
-    static_assert(std::is_floating_point_v<Numeric>);
+    static_assert(std::is_arithmetic_v<Numeric>);
 
     using real_t = Numeric;
     static constexpr bool is_complex_v = false;
+    static constexpr bool from_floating_point_v = std::is_floating_point<Numeric>::value;
+    static constexpr bool from_integral_v = std::is_integral<Numeric>::value;
 };
 
 template <typename Numeric>
 struct NumTraits<std::complex<Numeric>> {
-    static_assert(std::is_floating_point_v<Numeric>);
+    static_assert(std::is_arithmetic_v<Numeric>);
 
     using real_t = Numeric;
     static constexpr bool is_complex_v = true;
+    static constexpr bool from_floating_point_v = std::is_floating_point<Numeric>::value;
+    static constexpr bool from_integral_v = std::is_integral<Numeric>::value;
 };
-
-/**
- * @struct is_complex_or_floating_point
- *
- * @brief Helper struct to check whether a type is a complex or floating point type.
- *
- * @tparam Scalar The scalar type to check.
- */
-
-template <class Scalar>
-struct is_complex_or_floating_point : std::is_floating_point<Scalar> {};
-
-template <class Scalar>
-struct is_complex_or_floating_point<std::complex<Scalar>> : std::is_floating_point<Scalar> {};
-
-template <typename Scalar>
-inline constexpr bool is_complex_or_floating_point_v = is_complex_or_floating_point<Scalar>::value;
 
 } // namespace traits
