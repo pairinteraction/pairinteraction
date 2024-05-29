@@ -54,3 +54,17 @@ repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel
 # MACOSX_DEPLOYMENT_TARGET=11.0 is broken: https://github.com/pypa/pip/issues/11789
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "10.15"
+
+# Ruff Formatting configurations
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
+extend-ignore = ["E741", "C901", "B905"]
+extend-include = ["*.ipynb"]
+
+[tool.ruff.per-file-ignores]
+"pairinteraction_gui/app.py" = ["E402"]
+
+[tool.ruff.flake8-tidy-imports]
+ban-relative-imports = "all"
