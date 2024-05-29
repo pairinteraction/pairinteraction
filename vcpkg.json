@@ -3,7 +3,6 @@
     "version-string": "1",
     "dependencies": [
         "boost-algorithm",
-        "boost-math",
         "boost-multi-index",
         "boost-property-tree",
         "boost-tokenizer",

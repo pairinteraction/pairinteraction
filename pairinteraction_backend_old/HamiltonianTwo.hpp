@@ -29,7 +29,6 @@
 #include "filesystem.hpp"
 
 #include <boost/algorithm/hex.hpp>
-#include <boost/math/special_functions/binomial.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 

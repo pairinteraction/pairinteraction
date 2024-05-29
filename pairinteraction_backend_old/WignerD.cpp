@@ -18,6 +18,7 @@
  */
 
 #include "WignerD.hpp"
+#include "maths.hpp"
 
 WignerD::WignerD() = default;
 
@@ -39,13 +40,12 @@ std::complex<double> WignerD::operator()(float j, float m, float mp, double alph
 double WignerD::evalWignerdPiHalf(float j, float m, float mp) {
     double r = 0;
     for (unsigned int k = std::max(0, static_cast<int>(mp - m)); k <= j + std::min(mp, -m); ++k) {
-        r += std::pow(-1, k) * boost::math::binomial_coefficient<double>(j + mp, k) *
-            boost::math::binomial_coefficient<double>(j - mp, k + m - mp);
+        r += std::pow(-1, k) * maths::binomial_coefficient<double>(j + mp, k) *
+            maths::binomial_coefficient<double>(j - mp, k + m - mp);
     }
     r *= std::pow(-1., m - mp) / std::pow(2., j) *
-        std::sqrt(
-             boost::math::factorial<double>(j + m) * boost::math::factorial<double>(j - m) /
-             (boost::math::factorial<double>(j + mp) * boost::math::factorial<double>(j - mp)));
+        std::sqrt(maths::factorial<double>(j + m) * maths::factorial<double>(j - m) /
+                  (maths::factorial<double>(j + mp) * maths::factorial<double>(j - mp)));
     return r;
 }
 

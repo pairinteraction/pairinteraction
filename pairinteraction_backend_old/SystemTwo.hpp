@@ -26,7 +26,6 @@
 
 #include "EigenCompat.hpp"
 #include <Eigen/SparseCore>
-#include <boost/math/special_functions/binomial.hpp>
 #include <cereal/types/array.hpp>
 #include <cereal/types/base_class.hpp>
 #include <cereal/types/polymorphic.hpp>
