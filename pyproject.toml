@@ -20,12 +20,14 @@ authors = [
     { name = "Henri Menke" },
 ]
 dependencies = [
-    "numpy",
-    "pint",
-    "pyqt5",
-    "pyqtgraph",
-    "scipy",
-    "pydantic",
+  "numpy ~= 1.22.3",
+  "pint ~= 0.19.2",
+  "pyinstaller ~= 5.13.1",
+  "pyqt5 ~= 5.15.6",
+  "pyqtgraph ~= 0.12.4",
+  "scipy ~= 1.8.0",
+  "wheel ~= 0.37.1",
+  "pydantic  ~=  2.6.1",
 ]
 
 [project.urls]

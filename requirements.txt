@@ -1,8 +1,0 @@
-numpy
-pint
-pyqt5
-pyqtgraph
-scipy
-pyinstaller~=5.13.1
-wheel~=0.37.1
-pydantic ~= 2.6.1
