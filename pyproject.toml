@@ -13,12 +13,12 @@ name = "pairinteraction"
 version = "0.9.10"
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
-requires-python = ">=3.9"
-license = { text = "GPL-3.0-or-later OR LGPL-3.0-or-later" }
 authors = [
     { name = "Sebastian Weber" },
     { name = "Henri Menke" },
 ]
+
+requires-python = ">=3.8"
 dependencies = [
   "numpy ~= 1.22.3",
   "pint ~= 0.19.2",
@@ -29,6 +29,18 @@ dependencies = [
   "wheel ~= 0.37.1",
   "pydantic  ~=  2.6.1",
 ]
+
+classifiers = [
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+]
+
+[project.urls]
+Homepage = "https://www.pairinteraction.org"
+Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
 start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
