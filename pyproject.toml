@@ -1,10 +1,9 @@
 [build-system]
 requires = [
-    "scikit-build-core",
-    "nanobind",
-    "numpy",
-    "pyqt5",
-    "pydantic",
+  "scikit-build-core >=0.9.0",
+  "nanobind >=1.9.0",
+  "numpy >= 1.24, < 2",
+  "pyqt5 >= 5.15.8",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -22,14 +21,11 @@ authors = [
 
 requires-python = ">=3.8"
 dependencies = [
-  "numpy ~= 1.22.3",
-  "pint ~= 0.19.2",
-  "pyinstaller ~= 5.13.1",
-  "pyqt5 ~= 5.15.6",
-  "pyqtgraph ~= 0.12.4",
-  "scipy ~= 1.8.0",
-  "wheel ~= 0.37.1",
-  "pydantic  ~=  2.6.1",
+  "numpy >= 1.24, < 2",
+  "scipy >= 1.10",
+  "pyinstaller >= 5.13",
+  "wheel >= 0.40",
+  "pydantic  >=  2.3",
 ]
 
 classifiers = [
@@ -53,6 +49,23 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 
 [project.scripts]
 start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
+
+[project.optional-dependencies]
+gui = [
+  "pyqt5 >= 5.15.8",
+  "pyqtgraph >= 0.13",
+  "pint >= 0.21",
+]
+doc = [
+  "matplotlib",
+  "numpydoc",
+  "sphinx",
+  "sphinx-rtd-theme",
+  "sphinxcontrib-mermaid",
+  "nbsphinx",
+  "autodoc_pydantic[erdantic]",
+  "nbconvert",
+]
 
 [tool.scikit-build]
 cmake.verbose = true
