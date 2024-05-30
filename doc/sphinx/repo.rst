@@ -39,7 +39,7 @@ Step-by-Step Instructions
 
      .. code-block:: bash
 
-         ./start_pairinteraction_gui
+         ./start_pairinteraction_gui.py
 
    Familiarize yourself with the repository's architecture. The software is divided into a :github:`C++ backend <tree/master/pairinteraction_backend>` with Python bindings, a :github:`Python library <tree/master/pairinteraction>` for added functionality, and a :github:`graphical user interface <tree/master/pairinteraction_gui>` leveraging the Python library.
 

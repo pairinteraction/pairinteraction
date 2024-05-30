@@ -110,7 +110,7 @@ This will call CMake automatically to build the C++ backend, the Python library,
 
 .. code-block:: bash
 
-    poetry run start_pairinteraction_gui
+    poetry run start_pairinteraction_gui.py
 
 To use the Python library, you have to run your python code in the virtual environment created by poetry. This can be done by running ``poetry run python your_script.py``.
 Alternatively, you can build and install the software system-wide by running ``pip install -e .`` from the root directory of the pairinteraction repository.
@@ -156,7 +156,7 @@ This creates the C++ backend, the Python library, and the graphical user interfa
 
 .. code-block:: bash
 
-    ./start_pairinteraction_gui
+    ./start_pairinteraction_gui.py
 
 in the build directory.
 To use the Python library, you have to extend the Python package search path to accommodate pairinteraction by adding your build directory to ``PYTHONPATH``.

@@ -23,7 +23,7 @@ endif()
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.py.cmakein ${CMAKE_CURRENT_BINARY_DIR}/version.py)
 add_custom_target(gui ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR}
-  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/start_pairinteraction_gui ${CMAKE_BINARY_DIR}/start_pairinteraction_gui
+  COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/start_pairinteraction_gui.py ${CMAKE_BINARY_DIR}/start_pairinteraction_gui.py
   COMMAND ${PYUIC_BINARY} --output ${CMAKE_CURRENT_BINARY_DIR}/plotter.py ${CMAKE_CURRENT_SOURCE_DIR}/plotter.ui
 )
 
@@ -37,7 +37,7 @@ if ( NOT SKBUILD AND (CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG)) )
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/pairinteraction.spec ${CMAKE_BINARY_DIR}/pairinteraction.spec
     COMMAND ${PYINSTALLER} -y ${CMAKE_BINARY_DIR}/pairinteraction.spec
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    DEPENDS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui.py ${CMAKE_CURRENT_BINARY_DIR}
   )
 
   add_custom_target(pyinstaller ALL
@@ -79,16 +79,15 @@ if( CMAKE_HOST_APPLE AND WITH_DMG )
 elseif( SKBUILD )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION ${SKBUILD_PLATLIB_DIR})
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui DESTINATION ${SKBUILD_SCRIPTS_DIR})
 
 elseif( CMAKE_HOST_UNIX )
 
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} DESTINATION share/pairinteraction/pairinteraction_gui)
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui DESTINATION share/pairinteraction)
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/start_pairinteraction_gui.py DESTINATION share/pairinteraction)
 
   install(CODE "file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/tmp)")
-  install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/start_pairinteraction_gui ${CMAKE_BINARY_DIR}/tmp/start_pairinteraction_gui)")
-  install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/start_pairinteraction_gui DESTINATION bin)
+  install(CODE "EXECUTE_PROCESS(COMMAND ln -sf ../share/pairinteraction/start_pairinteraction_gui.py ${CMAKE_BINARY_DIR}/tmp/start_pairinteraction_gui.py)")
+  install(PROGRAMS ${CMAKE_BINARY_DIR}/tmp/start_pairinteraction_gui.py DESTINATION bin)
   install(CODE "file(REMOVE_RECURSE ${CMAKE_BINARY_DIR}/tmp)")
 
 endif( )

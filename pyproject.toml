@@ -30,9 +30,8 @@ dependencies = [
   "pydantic  ~=  2.6.1",
 ]
 
-[project.urls]
-Homepage = "https://www.pairinteraction.org"
-Repository = "https://github.com/pairinteraction/pairinteraction"
+[project.scripts]
+start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
 
 [tool.scikit-build]
 cmake.verbose = true

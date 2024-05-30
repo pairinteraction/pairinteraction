@@ -17,5 +17,10 @@
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
 import runpy
 
-if __name__ == "__main__":
+
+def main():
     runpy.run_module("pairinteraction_gui.app", {}, "__main__")
+
+
+if __name__ == "__main__":
+    main()
