@@ -32,6 +32,9 @@ dependencies = [
   "pydantic  ~=  2.6.1",
 ]
 
+[project.scripts]
+start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
+
 [tool.scikit-build]
 cmake.verbose = true
 wheel.packages = ["pairinteraction", "pairinteraction_backend"]
