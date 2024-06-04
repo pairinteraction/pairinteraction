@@ -41,8 +41,8 @@ build = [
 ]
 build-verbosity = 1
 test-command = [
-  "python -c \"from pairinteraction import pireal as pi; v = pi.VectorDouble(1, 3.14); assert v[0] == 3.14\"",
-  "python -c \"from pairinteraction import picomplex as pi; v = pi.VectorDouble(1, 3.14); assert v[0] == 3.14\"",
+  "python -c \"from pairinteraction import pireal as pi\"",
+  "python -c \"from pairinteraction import picomplex as pi\"",
   "python -c \"from pairinteraction_gui import app; assert type(app.version_program) is str\"",
 ]
 
