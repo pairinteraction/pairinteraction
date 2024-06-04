@@ -1,66 +1,38 @@
-# Build object files for the backend
-set(SOURCES
-    "basis/Basis.cpp"
-    "basis/Basis.hpp"
-    "basis/Basis.py.cpp"
-    "basis/Basis.py.hpp"
-    "basis/BasisAtom.cpp"
-    "basis/BasisAtom.hpp"
-    "basis/BasisAtom.py.cpp"
-    "basis/BasisAtom.py.hpp"
-    "basis/BasisAtomCreator.cpp"
-    "basis/BasisAtomCreator.hpp"
-    "basis/BasisAtomCreator.py.cpp"
-    "basis/BasisAtomCreator.py.hpp"
-    "basis/BasisClassicalLight.cpp"
-    "basis/BasisClassicalLight.hpp"
-    "basis/BasisClassicalLight.py.cpp"
-    "basis/BasisClassicalLight.py.hpp"
-    "basis/BasisClassicalLightCreator.cpp"
-    "basis/BasisClassicalLightCreator.hpp"
-    "basis/BasisClassicalLightCreator.py.cpp"
-    "basis/BasisClassicalLightCreator.py.hpp"
-    "ket/Ket.cpp"
-    "ket/Ket.hpp"
-    "ket/Ket.py.cpp"
-    "ket/Ket.py.hpp"
-    "ket/KetAtom.cpp"
-    "ket/KetAtom.hpp"
-    "ket/KetAtom.py.cpp"
-    "ket/KetAtom.py.hpp"
-    "ket/KetAtomCreator.cpp"
-    "ket/KetAtomCreator.hpp"
-    "ket/KetAtomCreator.py.cpp"
-    "ket/KetAtomCreator.py.hpp"
-    "ket/KetClassicalLight.cpp"
-    "ket/KetClassicalLight.hpp"
-    "ket/KetClassicalLight.py.cpp"
-    "ket/KetClassicalLight.py.hpp"
-    "ket/KetClassicalLightCreator.cpp"
-    "ket/KetClassicalLightCreator.hpp"
-    "ket/KetClassicalLightCreator.py.cpp"
-    "ket/KetClassicalLightCreator.py.hpp"
-    "system/System.cpp"
-    "system/System.hpp"
-    "system/System.py.cpp"
-    "system/System.py.hpp"
-    "system/SystemAtom.cpp"
-    "system/SystemAtom.hpp"
-    "system/SystemAtom.py.cpp"
-    "system/SystemAtom.py.hpp"
-    "system/SystemClassicalLight.cpp"
-    "system/SystemClassicalLight.hpp"
-    "system/SystemClassicalLight.py.cpp"
-    "system/SystemClassicalLight.py.hpp"
-    "utils/Traits.hpp"
-    "binding.cpp"
-    "test_runner.cpp"
-)
+# Create backend object
+add_library(backend OBJECT)
+target_sources(backend PUBLIC
+  ./basis/Basis.cpp
+  ./basis/Basis.hpp
+  ./basis/BasisAtom.cpp
+  ./basis/BasisAtom.hpp
+  ./basis/BasisAtomCreator.cpp
+  ./basis/BasisAtomCreator.hpp
+  ./basis/BasisClassicalLight.cpp
+  ./basis/BasisClassicalLight.hpp
+  ./basis/BasisClassicalLightCreator.cpp
+  ./basis/BasisClassicalLightCreator.hpp
+  ./ket/Ket.cpp
+  ./ket/Ket.hpp
+  ./ket/KetAtom.cpp
+  ./ket/KetAtom.hpp
+  ./ket/KetAtomCreator.cpp
+  ./ket/KetAtomCreator.hpp
+  ./ket/KetClassicalLight.cpp
+  ./ket/KetClassicalLight.hpp
+  ./ket/KetClassicalLightCreator.cpp
+  ./ket/KetClassicalLightCreator.hpp
+  ./system/System.cpp
+  ./system/System.hpp
+  ./system/SystemAtom.cpp
+  ./system/SystemAtom.hpp
+  ./system/SystemClassicalLight.cpp
+  ./system/SystemClassicalLight.hpp
+  ./utils/Traits.hpp)
 
 target_include_directories(backend PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(backend PUBLIC
-  doctest::doctest
-  Eigen3::Eigen)
+target_link_libraries(backend
+  PUBLIC doctest::doctest Eigen3::Eigen
+  PRIVATE spdlog::spdlog)
 
 target_compile_definitions(backend PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
@@ -72,8 +44,9 @@ set_target_properties(backend PROPERTIES
   CXX_EXTENSIONS OFF
   POSITION_INDEPENDENT_CODE ON)
 
-add_library(binding_NEW_REMOVE_THIS_SUFFIX OBJECT)
-target_sources(binding_NEW_REMOVE_THIS_SUFFIX PUBLIC
+# Create bindings object
+add_library(bindings OBJECT)
+target_sources(bindings PUBLIC
   # Headers
   ./basis/Basis.hpp
   ./basis/BasisAtom.hpp
@@ -90,50 +63,59 @@ target_sources(binding_NEW_REMOVE_THIS_SUFFIX PUBLIC
   ./system/SystemClassicalLight.hpp
   ./utils/Traits.hpp
   # Bindings
+  ./basis/Basis.py.cpp
+  ./basis/Basis.py.hpp
   ./basis/BasisAtom.py.cpp
   ./basis/BasisAtom.py.hpp
+  ./basis/BasisAtomCreator.py.cpp
+  ./basis/BasisAtomCreator.py.hpp
   ./basis/BasisClassicalLight.py.cpp
   ./basis/BasisClassicalLight.py.hpp
+  ./basis/BasisClassicalLightCreator.py.cpp
+  ./basis/BasisClassicalLightCreator.py.hpp
   ./ket/Ket.py.cpp
   ./ket/Ket.py.hpp
+  ./ket/KetAtom.py.cpp
+  ./ket/KetAtom.py.hpp
+  ./ket/KetAtomCreator.py.cpp
+  ./ket/KetAtomCreator.py.hpp
+  ./ket/KetClassicalLight.py.cpp
+  ./ket/KetClassicalLight.py.hpp
+  ./ket/KetClassicalLightCreator.py.cpp
+  ./ket/KetClassicalLightCreator.py.hpp
+  ./system/System.py.cpp
+  ./system/System.py.hpp
   ./system/SystemAtom.py.cpp
   ./system/SystemAtom.py.hpp
   ./system/SystemClassicalLight.py.cpp
   ./system/SystemClassicalLight.py.hpp
   ./binding.cpp)
 
-target_include_directories(binding_NEW_REMOVE_THIS_SUFFIX PRIVATE
+target_include_directories(bindings PRIVATE
   "${CMAKE_CURRENT_SOURCE_DIR}"
   "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
 
-target_link_libraries(binding_NEW_REMOVE_THIS_SUFFIX PUBLIC
-  Eigen3::Eigen
-  nanobind-static)
+target_link_libraries(bindings
+  PUBLIC Eigen3::Eigen
+  PRIVATE nanobind-static)
 
-target_compile_features(binding_NEW_REMOVE_THIS_SUFFIX PUBLIC cxx_std_17)
+target_compile_features(bindings PUBLIC cxx_std_17)
 
-set_target_properties(binding_NEW_REMOVE_THIS_SUFFIX PROPERTIES
+set_target_properties(bindings PROPERTIES
   CXX_EXTENSIONS OFF
   POSITION_INDEPENDENT_CODE ON)
 
-target_compile_options(binding_NEW_REMOVE_THIS_SUFFIX PRIVATE
+target_compile_options(bindings PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into libraries
-
 add_library(pairinteraction_backend SHARED
   $<TARGET_OBJECTS:backend>
-  $<TARGET_OBJECTS:binding_NEW_REMOVE_THIS_SUFFIX>)
+  $<TARGET_OBJECTS:bindings>)
 
 target_link_libraries(pairinteraction_backend
-    PUBLIC
-        doctest::doctest
-        spdlog::spdlog
-        Eigen3::Eigen
-        $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-    PRIVATE
-        nanobind-static
-)
+  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
+  PRIVATE nanobind-static)
 
 set_target_properties(pairinteraction_backend PROPERTIES
   PREFIX ""
@@ -150,19 +132,11 @@ if (BUILD_TESTING)
     $<TARGET_OBJECTS:backend>
     main.cpp)
 
-    target_link_libraries(pairinteraction_backend_test
-        PRIVATE
-            pairinteraction_backend
-            Python::Python
-    )
-
-    # Add tests
-    # To only build and run these tests, use
-    # "cmake --build . --target pairinteraction_backend_test && ./pairinteraction_backend/pairinteraction_backend_test -d"
-    add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
+  target_link_libraries(pairinteraction_backend_test
+    PRIVATE spdlog::spdlog)
 
   # Add tests
   # To only build and run these tests, use
-  # "cmake --build . --target pairinteraction_backend_test && ctest --verbose -R pairinteraction_backend_test"
+  # "cmake --build . --target pairinteraction_backend_test && ./pairinteraction_backend/pairinteraction_backend_test -d"
   add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
 endif()

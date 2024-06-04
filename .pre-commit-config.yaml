@@ -8,6 +8,7 @@ repos:
       - id: check-yaml
       - id: check-added-large-files
       - id: check-merge-conflict
+        exclude: ^doc/sphinx/.*.rst$
   # Formatters (hooks that re-write files) and linters (hooks that check but don't alter files)
   - repo: https://github.com/pocc/pre-commit-hooks
     rev: v1.3.5
