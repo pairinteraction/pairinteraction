@@ -18,6 +18,8 @@ public:
     using operator_t = typename traits::CrtpTraits<Derived>::operator_t;
 
     System(std::shared_ptr<const basis_t> basis);
+    System(const System &other);
+    virtual ~System();
 
     std::shared_ptr<const basis_t> get_basis() const;
 
@@ -31,8 +33,11 @@ public:
     Derived transformed(const Transformation<scalar_t> &transformation) const;
     Derived transformed(const Sorting &transformation) const;
 
-private:
-    std::shared_ptr<operator_t> hamiltonian; // TODO use a unique_ptr instead
+protected:
+    mutable std::unique_ptr<operator_t> hamiltonian;
+    mutable bool hamiltonian_requires_construction{true};
+
+    virtual void construct_hamiltonian() const = 0;
 
 private:
     const Derived &derived() const;
