@@ -23,6 +23,12 @@ template <typename Derived>
 Derived operator/(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
 
 template <typename Derived>
+Derived &operator+=(Operator<Derived> &lhs, const Operator<Derived> &rhs);
+
+template <typename Derived>
+Derived &operator-=(Operator<Derived> &lhs, const Operator<Derived> &rhs);
+
+template <typename Derived>
 Derived operator+(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
 
 template <typename Derived>
@@ -57,6 +63,8 @@ public:
         <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
     friend Derived operator/
         <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+    friend Derived &operator+=<>(Operator<Derived> &lhs, const Operator<Derived> &rhs);
+    friend Derived &operator-=<>(Operator<Derived> &lhs, const Operator<Derived> &rhs);
     friend Derived operator+<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
     friend Derived operator-<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
 
@@ -66,4 +74,5 @@ protected:
 
 private:
     const Derived &derived() const;
+    Derived &derived_mutable();
 };

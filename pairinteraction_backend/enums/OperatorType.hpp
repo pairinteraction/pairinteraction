@@ -1,6 +1,7 @@
 #pragma once
 
 enum class OperatorType {
+    ZERO,                // Empty operator
     ENERGY,              // Unperturbed Hamiltonian
     ELECTRIC_DIPOLE,     // Dipole operator
     ELECTRIC_QUADRUPOLE, // Quadrupole operator

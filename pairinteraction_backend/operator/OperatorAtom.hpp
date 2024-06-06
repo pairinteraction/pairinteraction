@@ -38,7 +38,7 @@ public:
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
     OperatorAtom(std::shared_ptr<const basis_t> basis);
-    OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q);
+    OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q = 0);
 
 private:
     friend class Database;
