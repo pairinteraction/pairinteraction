@@ -38,6 +38,9 @@ public:
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
     SystemAtom(std::shared_ptr<const basis_t> basis);
+
+private:
+    void construct_hamiltonian() const override{};
 };
 
 extern template class SystemAtom<float>;
