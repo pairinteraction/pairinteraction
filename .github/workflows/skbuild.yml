@@ -3,6 +3,7 @@ name: skbuild
 on:
   push:
   pull_request:
+    types: [opened, reopened]
   workflow_call:
   workflow_dispatch:
 

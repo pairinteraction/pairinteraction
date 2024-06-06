@@ -3,6 +3,7 @@ name: Linux
 on:
   push:
   pull_request:
+    types: [opened, reopened]
   workflow_call:
   workflow_dispatch:
 
@@ -72,10 +73,10 @@ jobs:
         single-commit: true
         dry-run: ${{ !(github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')) }}
 
-  benchmarks:
-    if: false # Can't set permissions on private repo
-    needs: debian
-    uses: ./.github/workflows/benchmarks.yml
+  ## Can't set permissions on private repo
+  #benchmarks:
+  #  needs: debian
+  #  uses: ./.github/workflows/benchmarks.yml
 
   manylinux:
     runs-on: ubuntu-latest
