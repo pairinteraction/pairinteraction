@@ -35,6 +35,10 @@ public:
     Real get_quantum_number_l() const;
     Real get_quantum_number_s() const;
     Real get_quantum_number_j() const;
+    Real get_quantum_number_nu_std() const;
+    Real get_quantum_number_l_std() const;
+    Real get_quantum_number_s_std() const;
+    Real get_quantum_number_j_std() const;
 
 private:
     size_t id;
