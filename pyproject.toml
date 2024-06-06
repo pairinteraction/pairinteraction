@@ -68,3 +68,10 @@ extend-include = ["*.ipynb"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
+
+[tool.sonar]
+projectKey = "pairinteraction_pairinteraction"
+organization = "pairinteraction"
+python.version = 3
+sources = ["pairinteraction", "pairinteraction_gui", "pairinteraction_backend"]
+exclusions = "**/*.sql"
