@@ -34,8 +34,8 @@ static void declare_basis(nb::module_ &m, std::string type_name) {
         .def("get_blocks", &Basis<T>::get_blocks)
         .def("get_sorter_without_checks", &Basis<T>::get_sorter_without_checks)
         .def("get_blocks_without_checks", &Basis<T>::get_blocks_without_checks)
-        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transform, nb::const_))
-        .def("transform", nb::overload_cast<const Sorting &>(&Basis<T>::transform, nb::const_));
+        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
+        .def("transform", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_));
 }
 
 template <typename T>

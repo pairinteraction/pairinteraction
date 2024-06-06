@@ -18,16 +18,14 @@ static void declare_system(nb::module_ &m, std::string type_name) {
     using basis_t = typename System<T>::basis_t;
     using scalar_t = typename System<T>::scalar_t;
     nb::class_<System<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pylass_name.c_str());
-    pyclass
-        .def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("get_basis", &System<T>::get_basis)
+    pyclass.def("get_basis", &System<T>::get_basis)
         .def("get_matrix", &System<T>::get_matrix)
         .def("get_transformation", &System<T>::get_transformation)
         .def("get_rotator", &System<T>::get_rotator)
         .def("get_sorter", &System<T>::get_sorter)
         .def("get_blocks", &System<T>::get_blocks)
-        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transform, nb::const_))
-        .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transform, nb::const_));
+        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transformed, nb::const_))
+        .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transformed, nb::const_));
 }
 
 template <typename T>
