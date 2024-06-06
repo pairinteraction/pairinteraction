@@ -512,6 +512,7 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "utils/hash.hpp"
+#include <Eigen/SparseCore>
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
@@ -627,6 +628,13 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_new_property() == 42);
     }
+
+    // Test implicit conversion of an eigen matrix to a transformator
+    Eigen::SparseMatrix<float, Eigen::RowMajor> matrix(3, 3);
+    matrix.setIdentity();
+    auto transformed = basis->transformed(matrix);
+    auto transformation = transformed->get_transformation();
+    DOCTEST_CHECK(transformation.transformation_type.back() == TransformationType::ARBITRARY);
 }
 
 #endif // DOCTEST_CONFIG_DISABLE

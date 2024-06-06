@@ -95,6 +95,26 @@ Real KetAtom<Real>::get_quantum_number_j() const {
     return quantum_number_j_exp;
 }
 
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_nu_std() const {
+    return quantum_number_nu_std;
+}
+
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_l_std() const {
+    return quantum_number_l_std;
+}
+
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_s_std() const {
+    return quantum_number_s_std;
+}
+
+template <typename Real>
+Real KetAtom<Real>::get_quantum_number_j_std() const {
+    return quantum_number_j_std;
+}
+
 // Explicit instantiations
 template class KetAtom<float>;
 template class KetAtom<double>;
