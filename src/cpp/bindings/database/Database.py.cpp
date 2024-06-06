@@ -76,18 +76,46 @@ static void declare_database(nb::module_ &m) {
     nb::class_<Database>(m, "Database")
         .def(nb::init<>())
         .def(nb::init<bool>())
+        .def(nb::init<std::filesystem::path>())
+        .def(nb::init<bool, bool, std::filesystem::path>())
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
-        .def("get_ket", nb::overload_cast<std::string, const AtomDescriptionByParameters<float> &>(&Database::get_ket<float>))
-        .def("get_ket", nb::overload_cast<std::string, const AtomDescriptionByParameters<double> &>(&Database::get_ket<double>))
-        .def("get_basis", nb::overload_cast<std::string, const AtomDescriptionByRanges<float> &, std::vector<size_t>>(&Database::get_basis<float>))
-        .def("get_basis", nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &, std::vector<size_t>>(&Database::get_basis<double>))
-        .def("get_basis", nb::overload_cast<std::string, const AtomDescriptionByRanges<std::complex<float>> &, std::vector<size_t>>(&Database::get_basis<std::complex<float>>))
-        .def("get_basis", nb::overload_cast<std::string, const AtomDescriptionByRanges<std::complex<double>> &, std::vector<size_t>>(&Database::get_basis<std::complex<double>>))
-        .def("get_operator", nb::overload_cast<std::shared_ptr<const BasisAtom<float>>, OperatorType, int>(&Database::get_operator<float>))
-        .def("get_operator", nb::overload_cast<std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(&Database::get_operator<double>))
-        .def("get_operator", nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<float>>>, OperatorType, int>(&Database::get_operator<std::complex<float>>))
-        .def("get_operator", nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<double>>>, OperatorType, int>(&Database::get_operator<std::complex<double>>));
+        .def_static("get_global_instance", nb::overload_cast<>(&Database::get_global_instance))
+        .def_static("get_global_instance", nb::overload_cast<bool>(&Database::get_global_instance))
+        .def_static("get_global_instance",
+                    nb::overload_cast<std::filesystem::path>(&Database::get_global_instance))
+        .def_static("get_global_instance",
+                    nb::overload_cast<bool, bool, std::filesystem::path>(&Database::get_global_instance))
+        .def("get_ket",
+             nb::overload_cast<std::string, const AtomDescriptionByParameters<float> &>(
+                 &Database::get_ket<float>))
+        .def("get_ket",
+             nb::overload_cast<std::string, const AtomDescriptionByParameters<double> &>(
+                 &Database::get_ket<double>))
+        .def("get_basis",
+             nb::overload_cast<std::string, const AtomDescriptionByRanges<float> &,
+                               std::vector<size_t>>(&Database::get_basis<float>))
+        .def("get_basis",
+             nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &,
+                               std::vector<size_t>>(&Database::get_basis<double>))
+        .def("get_basis",
+             nb::overload_cast<std::string, const AtomDescriptionByRanges<float> &,
+                               std::vector<size_t>>(&Database::get_basis<std::complex<float>>))
+        .def("get_basis",
+             nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &,
+                               std::vector<size_t>>(&Database::get_basis<std::complex<double>>))
+        .def("get_operator",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<float>>, OperatorType, int>(
+                 &Database::get_operator<float>))
+        .def("get_operator",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(
+                 &Database::get_operator<double>))
+        .def("get_operator",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<float>>>, OperatorType,
+                               int>(&Database::get_operator<std::complex<float>>))
+        .def("get_operator",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<double>>>, OperatorType,
+                               int>(&Database::get_operator<std::complex<double>>));
 }
 
 void bind_database(nb::module_ &m) {
@@ -95,8 +123,6 @@ void bind_database(nb::module_ &m) {
     declare_atom_description_by_parameters<double>(m, "Double");
     declare_atom_description_by_ranges<float>(m, "Float");
     declare_atom_description_by_ranges<double>(m, "Double");
-    declare_atom_description_by_ranges<std::complex<float>>(m, "ComplexFloat");
-    declare_atom_description_by_ranges<std::complex<double>>(m, "ComplexDouble");
     declare_availability_species(m);
     declare_availability_wigner(m);
     declare_database(m);
