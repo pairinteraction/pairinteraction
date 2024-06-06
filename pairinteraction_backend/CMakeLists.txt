@@ -50,6 +50,7 @@ add_library(backend OBJECT
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp
+  ./utils/spherical.hpp
   ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
@@ -120,6 +121,7 @@ add_library(bindings OBJECT
   ./utils/ketid.hpp
   ./utils/maths.hpp
   ./utils/paths.hpp
+  ./utils/spherical.hpp
   ./utils/streamed.hpp
   ./utils/traits.hpp
   ./utils/wigner.hpp
