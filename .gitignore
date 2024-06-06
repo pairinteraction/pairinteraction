@@ -23,4 +23,5 @@ __pycache__/
 obj/
 build/
 .ruff_cache/
-vcpkg_installed
+vcpkg_installed/
+.venv/

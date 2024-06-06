@@ -2,8 +2,10 @@
 add_executable(test_dipole_operator
     test_dipole_operator.cpp
 )
-
 target_link_libraries(test_dipole_operator PRIVATE backend)
+target_compile_definitions(test_dipole_operator PRIVATE
+    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/database"
+)
 
 if (WIN32)
     add_custom_command(TARGET test_dipole_operator POST_BUILD

@@ -4,6 +4,7 @@
 #include <complex>
 #include <filesystem>
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -48,11 +49,14 @@ public:
         bool up_to_date;
     };
 
-    Database(bool download_missing = true);
+    Database(std::optional<bool> download_missing = std::optional<bool>(),
+             std::filesystem::path databasedir = "");
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
-    static Database &get_global_instance();
+    static Database &
+    get_global_instance(std::optional<bool> download_missing = std::optional<bool>(),
+                        std::filesystem::path databasedir = "");
 
     template <typename Real>
     std::shared_ptr<const KetAtom<Real>>
