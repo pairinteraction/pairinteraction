@@ -260,6 +260,19 @@ Database::Database(bool download_missing, std::filesystem::path databasedir)
         }
     }
 
+    // Load the Wigner 3j symbols table into memory
+    if (true) { // TODO wigner_in_memory
+        ensure_presence_of_table("wigner");
+        auto result = con->Query(fmt::format(R"(CREATE TEMP TABLE 'wigner' AS SELECT * FROM '{}')",
+                                             tables["wigner"].local_path.string()));
+
+        if (result->HasError()) {
+            throw std::runtime_error("Error creating table: " + result->GetError());
+        }
+
+        tables["wigner"].local_path = "wigner";
+    }
+
     // Print availability of tables
     auto species_availability = get_availability_of_species();
     auto wigner_availability = get_availability_of_wigner_table();
@@ -606,7 +619,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
     {
         auto result = con->Query(fmt::format(
-            R"(CREATE TABLE '{}' AS SELECT *, {} AS ketid FROM (
+            R"(CREATE TEMP TABLE '{}' AS SELECT *, {} AS ketid FROM (
                 SELECT *,
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
                 x -> x::double-f)) AS m FROM '{}'
