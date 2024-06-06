@@ -14,6 +14,11 @@ const Derived &Operator<Derived>::derived() const {
 }
 
 template <typename Derived>
+Derived &Operator<Derived>::derived_mutable() {
+    return static_cast<Derived &>(*this);
+}
+
+template <typename Derived>
 std::shared_ptr<const typename Operator<Derived>::basis_t> Operator<Derived>::get_basis() const {
     return basis;
 }
@@ -153,6 +158,24 @@ Derived operator/(const Operator<Derived> &lhs, const typename Operator<Derived>
 }
 
 template <typename Derived>
+Derived &operator+=(Operator<Derived> &lhs, const Operator<Derived> &rhs) {
+    if (lhs.basis != rhs.basis) {
+        throw std::invalid_argument("The basis of the operators is not the same.");
+    }
+    lhs.matrix += rhs.matrix;
+    return lhs.derived_mutable();
+}
+
+template <typename Derived>
+Derived &operator-=(Operator<Derived> &lhs, const Operator<Derived> &rhs) {
+    if (lhs.basis != rhs.basis) {
+        throw std::invalid_argument("The basis of the operators is not the same.");
+    }
+    lhs.matrix -= rhs.matrix;
+    return lhs.derived_mutable();
+}
+
+template <typename Derived>
 Derived operator+(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
     if (lhs.basis != rhs.basis) {
         throw std::invalid_argument("The basis of the operators is not the same.");
@@ -203,6 +226,28 @@ template OperatorAtom<std::complex<float>>
 operator/(const Operator<OperatorAtom<std::complex<float>>> &lhs, const std::complex<float> &rhs);
 template OperatorAtom<std::complex<double>>
 operator/(const Operator<OperatorAtom<std::complex<double>>> &lhs, const std::complex<double> &rhs);
+
+template OperatorAtom<float> &operator+=(Operator<OperatorAtom<float>> &lhs,
+                                         const Operator<OperatorAtom<float>> &rhs);
+template OperatorAtom<double> &operator+=(Operator<OperatorAtom<double>> &lhs,
+                                          const Operator<OperatorAtom<double>> &rhs);
+template OperatorAtom<std::complex<float>> &
+operator+=(Operator<OperatorAtom<std::complex<float>>> &lhs,
+           const Operator<OperatorAtom<std::complex<float>>> &rhs);
+template OperatorAtom<std::complex<double>> &
+operator+=(Operator<OperatorAtom<std::complex<double>>> &lhs,
+           const Operator<OperatorAtom<std::complex<double>>> &rhs);
+
+template OperatorAtom<float> &operator-=(Operator<OperatorAtom<float>> &lhs,
+                                         const Operator<OperatorAtom<float>> &rhs);
+template OperatorAtom<double> &operator-=(Operator<OperatorAtom<double>> &lhs,
+                                          const Operator<OperatorAtom<double>> &rhs);
+template OperatorAtom<std::complex<float>> &
+operator-=(Operator<OperatorAtom<std::complex<float>>> &lhs,
+           const Operator<OperatorAtom<std::complex<float>>> &rhs);
+template OperatorAtom<std::complex<double>> &
+operator-=(Operator<OperatorAtom<std::complex<double>>> &lhs,
+           const Operator<OperatorAtom<std::complex<double>>> &rhs);
 
 template OperatorAtom<float> operator+(const Operator<OperatorAtom<float>> &lhs,
                                        const Operator<OperatorAtom<float>> &rhs);
