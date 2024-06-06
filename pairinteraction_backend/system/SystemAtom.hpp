@@ -3,6 +3,7 @@
 #include "system/System.hpp"
 #include "utils/traits.hpp"
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -35,12 +36,21 @@ public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using Type = SystemAtom<Scalar>;
+    using real_t = typename traits::CrtpTraits<Type>::real_t;
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
     SystemAtom(std::shared_ptr<const basis_t> basis);
 
+    void set_electric_field(const std::array<real_t, 3> &field);
+    void set_magnetic_field(const std::array<real_t, 3> &field);
+    void enable_diamagnetism(bool enable);
+
 private:
-    void construct_hamiltonian() const override{};
+    std::array<Scalar, 3> electric_field_spherical{0, 0, 0};
+    std::array<Scalar, 3> magnetic_field_spherical{0, 0, 0};
+    bool diamagnetism_enabled{false};
+
+    void construct_hamiltonian() const override;
 };
 
 extern template class SystemAtom<float>;
