@@ -54,18 +54,24 @@ int test(int argc, char **argv, std::optional<bool> download_missing,
     int exitcode = ctx.run();
 
     if (exitcode != 0) {
-        // TODO contact github only if download_missing is set to true explicitly by the user
-        httplib::Client client("https://www.github.com");
-        auto res = client.Head("/");
-        if (!res) {
-            SPDLOG_ERROR("Test failed. Please check your internet connection. An internet "
-                         "connection is required to download databases of atomic states and matrix "
-                         "elements if they are not available locally.");
+        if (download_missing.value_or(false)) {
+            httplib::Client client("https://www.github.com");
+            auto res = client.Head("/");
+            if (!res) {
+                SPDLOG_ERROR(
+                    "Test failed. Please check your internet connection. An internet "
+                    "connection is required to download databases of atomic states and matrix "
+                    "elements if they are not available locally.");
+            } else {
+                SPDLOG_ERROR(
+                    "Tests failed. Consider creating an issue on "
+                    "https://github.com/pairinteraction/pairinteraction/issues, attaching the "
+                    "log file {}.",
+                    logfile.string());
+            }
         } else {
-            SPDLOG_ERROR("Tests failed. Consider creating an issue on "
-                         "https://github.com/pairinteraction/pairinteraction/issues, attaching the "
-                         "log file {}.",
-                         logfile.string());
+            SPDLOG_ERROR("Tests failed. Consider downloading missing databases by calling the test "
+                         "function with 'download_missing = true'.");
         }
     }
 
