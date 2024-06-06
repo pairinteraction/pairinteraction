@@ -205,8 +205,10 @@ if (BUILD_TESTING)
   add_executable(pairinteraction_backend_test
     main.cpp
   )
-
   target_link_libraries(pairinteraction_backend_test PRIVATE backend)
+  target_compile_definitions(pairinteraction_backend_test PRIVATE
+    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/database"
+  )
 
   if (WIN32)
     add_custom_command(TARGET pairinteraction_backend_test POST_BUILD

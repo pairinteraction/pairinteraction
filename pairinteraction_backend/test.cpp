@@ -1,17 +1,20 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
 #include "test.hpp"
+#include "database/Database.hpp"
 #include "utils/paths.hpp"
 
 #include <doctest/doctest.h>
 #include <filesystem>
 #include <httplib.h>
 #include <mutex>
+#include <optional>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-int test(int argc, char **argv) {
+int test(int argc, char **argv, std::optional<bool> download_missing,
+         std::filesystem::path databasedir) {
 
     // Configure a logger for the tests
     std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
@@ -43,6 +46,9 @@ int test(int argc, char **argv) {
     ctx.setOption("force-colors", true);
     ctx.applyCommandLine(argc, argv);
     ctx.setOption("no-breaks", true);
+
+    // Create a global database instance
+    Database::get_global_instance(download_missing, databasedir);
 
     // Run the tests
     int exitcode = ctx.run();

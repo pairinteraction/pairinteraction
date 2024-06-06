@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "shrink-database-tool"
+version = "0.1.0"
+description = ""
+authors = ["Sebastian Weber", "Henri Menke", "Johannes Mögerle"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.13"
+duckdb = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+shrink = "shrink_database_tool:main"

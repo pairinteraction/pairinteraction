@@ -9,12 +9,16 @@
 
 #include <spdlog/spdlog.h>
 
+#ifndef PAIRINTERACTION_LOCAL_DATABASE_DIR
+#error PAIRINTERACTION_LOCAL_DATABASE_DIR is not defined
+#endif
+
 int main() {
     // Call the setup function to configure logging
     setup();
 
-    // Get a database instance
-    Database &database = Database::get_global_instance();
+    // Create a database instance
+    Database database(false, PAIRINTERACTION_LOCAL_DATABASE_DIR);
 
     // Create a dipole operator coupling two specific states
     auto ket1 = KetAtomCreator<float>()

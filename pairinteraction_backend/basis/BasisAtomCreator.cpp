@@ -166,7 +166,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<float>()
                      .set_species("Sr87_mqdt")
-                     .restrict_quantum_number_nu(50, 51)
+                     .restrict_quantum_number_nu(59, 61)
                      .restrict_quantum_number_l(0, 0)
                      .create(database);
     for (auto ket : *basis) {
@@ -177,9 +177,9 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
 
 DOCTEST_TEST_CASE("create a basis from kets") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator<float>("Sr88_singlet", 80, 0, 0, 0).create(database);
-    auto ket2 = KetAtomCreator<float>("Sr88_singlet", 81, 0, 0, 0).create(database);
-    auto ket3 = KetAtomCreator<float>("Sr88_singlet", 82, 0, 0, 0).create(database);
+    auto ket1 = KetAtomCreator<float>("Sr88_singlet", 59, 0, 0, 0).create(database);
+    auto ket2 = KetAtomCreator<float>("Sr88_singlet", 60, 0, 0, 0).create(database);
+    auto ket3 = KetAtomCreator<float>("Sr88_singlet", 61, 0, 0, 0).create(database);
     auto basis =
         BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).add_ket(ket3).create(database);
     for (auto ket : *basis) {
