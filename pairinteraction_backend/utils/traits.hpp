@@ -1,6 +1,7 @@
 #pragma once
 
 #include <complex>
+#include <functional>
 #include <type_traits>
 
 namespace traits {
@@ -43,6 +44,20 @@ struct NumTraits<std::complex<Numeric>> {
     static constexpr bool is_complex_v = true;
     static constexpr bool from_floating_point_v = std::is_floating_point<Numeric>::value;
     static constexpr bool from_integral_v = std::is_integral<Numeric>::value;
+};
+
+/**
+ * @struct OpTraits
+ *
+ * @brief Helper struct to extract whether a type supports certain operations.
+ *
+ * @tparam T The type for which the existence of operations is to be checked.
+ */
+
+template <typename T>
+struct OpTraits {
+    static constexpr bool has_equal_v = std::is_invocable_r_v<bool, std::equal_to<>, T, T>;
+    static constexpr bool has_less_v = std::is_invocable_r_v<bool, std::less<>, T, T>;
 };
 
 } // namespace traits

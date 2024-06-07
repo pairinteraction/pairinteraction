@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "utils/Range.hpp"
 #include "utils/traits.hpp"
 
 template <typename Scalar>
@@ -46,23 +47,15 @@ public:
 
 private:
     std::optional<std::string> species;
-    std::optional<real_t> min_energy;
-    std::optional<real_t> max_energy;
-    std::optional<real_t> min_quantum_number_f;
-    std::optional<real_t> max_quantum_number_f;
-    std::optional<real_t> min_quantum_number_m;
-    std::optional<real_t> max_quantum_number_m;
     std::optional<int> parity;
-    std::optional<int> min_quantum_number_n;
-    std::optional<int> max_quantum_number_n;
-    std::optional<real_t> min_quantum_number_nu;
-    std::optional<real_t> max_quantum_number_nu;
-    std::optional<real_t> min_quantum_number_l;
-    std::optional<real_t> max_quantum_number_l;
-    std::optional<real_t> min_quantum_number_s;
-    std::optional<real_t> max_quantum_number_s;
-    std::optional<real_t> min_quantum_number_j;
-    std::optional<real_t> max_quantum_number_j;
+    Range<real_t> range_energy;
+    Range<real_t> range_quantum_number_f;
+    Range<real_t> range_quantum_number_m;
+    Range<int> range_quantum_number_n;
+    Range<real_t> range_quantum_number_nu;
+    Range<real_t> range_quantum_number_l;
+    Range<real_t> range_quantum_number_s;
+    Range<real_t> range_quantum_number_j;
     std::vector<size_t> additional_ket_ids;
     std::optional<std::string> additional_ket_species;
 };

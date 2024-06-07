@@ -515,88 +515,67 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     ensure_presence_of_table(species + "_states");
 
     // Check that the specifications are valid
-    if (description.min_quantum_number_n.has_value() ||
-        description.max_quantum_number_n.has_value()) {
+    if (description.range_quantum_number_n.is_finite()) {
         ensure_quantum_number_n_is_allowed(species + "_states");
     }
 
     // Describe the states
     std::string where = "(";
     std::string separator = "";
-    if (description.min_energy.has_value()) {
-        where += separator + fmt::format("energy >= {}", description.min_energy.value());
-        separator = " AND ";
-    }
-    if (description.max_energy.has_value()) {
-        where += separator + fmt::format("energy <= {}", description.max_energy.value());
-        separator = " AND ";
-    }
-    if (description.min_quantum_number_f.has_value()) {
-        where += separator + fmt::format("f >= {}", description.min_quantum_number_f.value());
-        separator = " AND ";
-    }
-    if (description.max_quantum_number_f.has_value()) {
-        where += separator + fmt::format("f <= {}", description.max_quantum_number_f.value());
-        separator = " AND ";
-    }
-    if (description.min_quantum_number_m.has_value()) {
-        where += separator + fmt::format("m >= {}", description.min_quantum_number_m.value());
-        separator = " AND ";
-    }
-    if (description.max_quantum_number_m.has_value()) {
-        where += separator + fmt::format("m <= {}", description.max_quantum_number_m.value());
-        separator = " AND ";
-    }
     if (description.parity.has_value()) {
         where += separator + fmt::format("parity = {}", description.parity.value());
         separator = " AND ";
     }
-    if (description.min_quantum_number_n.has_value()) {
-        where += separator + fmt::format("n >= {}", description.min_quantum_number_n.value());
-        separator = " AND ";
-    }
-    if (description.max_quantum_number_n.has_value()) {
-        where += separator + fmt::format("n <= {}", description.max_quantum_number_n.value());
-        separator = " AND ";
-    }
-    if (description.min_quantum_number_nu.has_value()) {
+    if (description.range_energy.is_finite()) {
         where += separator +
-            fmt::format("exp_nu >= {}-2*std_nu", description.min_quantum_number_nu.value());
+            fmt::format("energy BETWEEN {} AND {}", description.range_energy.min(),
+                        description.range_energy.max());
         separator = " AND ";
     }
-    if (description.max_quantum_number_nu.has_value()) {
+    if (description.range_quantum_number_f.is_finite()) {
         where += separator +
-            fmt::format("exp_nu <= {}+2*std_nu", description.max_quantum_number_nu.value());
+            fmt::format("f BETWEEN {} AND {}", description.range_quantum_number_f.min(),
+                        description.range_quantum_number_f.max());
         separator = " AND ";
     }
-    if (description.min_quantum_number_l.has_value()) {
+    if (description.range_quantum_number_m.is_finite()) {
         where += separator +
-            fmt::format("exp_l >= {}-2*std_l", description.min_quantum_number_l.value());
+            fmt::format("m BETWEEN {} AND {}", description.range_quantum_number_m.min(),
+                        description.range_quantum_number_m.max());
         separator = " AND ";
     }
-    if (description.max_quantum_number_l.has_value()) {
+    if (description.range_quantum_number_n.is_finite()) {
         where += separator +
-            fmt::format("exp_l <= {}+2*std_l", description.max_quantum_number_l.value());
+            fmt::format("n BETWEEN {} AND {}", description.range_quantum_number_n.min(),
+                        description.range_quantum_number_n.max());
         separator = " AND ";
     }
-    if (description.min_quantum_number_s.has_value()) {
+    if (description.range_quantum_number_nu.is_finite()) {
         where += separator +
-            fmt::format("exp_s >= {}-2*std_s", description.min_quantum_number_s.value());
+            fmt::format("exp_nu BETWEEN {}-2*std_nu AND {}+2*std_nu",
+                        description.range_quantum_number_nu.min(),
+                        description.range_quantum_number_nu.max());
         separator = " AND ";
     }
-    if (description.max_quantum_number_s.has_value()) {
+    if (description.range_quantum_number_l.is_finite()) {
         where += separator +
-            fmt::format("exp_s <= {}+2*std_s", description.max_quantum_number_s.value());
+            fmt::format("exp_l BETWEEN {}-2*std_l AND {}+2*std_l",
+                        description.range_quantum_number_l.min(),
+                        description.range_quantum_number_l.max());
         separator = " AND ";
     }
-    if (description.min_quantum_number_j.has_value()) {
+    if (description.range_quantum_number_s.is_finite()) {
         where += separator +
-            fmt::format("exp_j >= {}-2*std_j", description.min_quantum_number_j.value());
+            fmt::format("exp_s BETWEEN {}-2*std_s AND {}+2*std_s",
+                        description.range_quantum_number_s.min(),
+                        description.range_quantum_number_s.max());
         separator = " AND ";
     }
-    if (description.max_quantum_number_j.has_value()) {
+    if (description.range_quantum_number_j.is_finite()) {
         where += separator +
-            fmt::format("exp_j <= {}+2*std_j", description.max_quantum_number_j.value());
+            fmt::format("exp_j BETWEEN {}-2*std_j AND {}+2*std_j",
+                        description.range_quantum_number_j.min(),
+                        description.range_quantum_number_j.max());
         separator = " AND ";
     }
     if (separator.empty()) {
@@ -636,68 +615,36 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     {
         std::string select = "";
         std::string separator = "";
-        if (description.min_energy.has_value()) {
-            select += separator + fmt::format("MIN(energy) AS min_energy");
+        if (description.range_energy.is_finite()) {
+            select += separator + "MIN(energy) AS min_energy, MAX(energy) AS max_energy";
             separator = ", ";
         }
-        if (description.max_energy.has_value()) {
-            select += separator + fmt::format("MAX(energy) AS max_energy");
+        if (description.range_quantum_number_f.is_finite()) {
+            select += separator + "MIN(f) AS min_f, MAX(f) AS max_f";
             separator = ", ";
         }
-        if (description.min_quantum_number_f.has_value()) {
-            select += separator + fmt::format("MIN(f) AS min_f");
+        if (description.range_quantum_number_m.is_finite()) {
+            select += separator + "MIN(m) AS min_m, MAX(m) AS max_m";
             separator = ", ";
         }
-        if (description.max_quantum_number_f.has_value()) {
-            select += separator + fmt::format("MAX(f) AS max_f");
+        if (description.range_quantum_number_n.is_finite()) {
+            select += separator + "MIN(n) AS min_n, MAX(n) AS max_n";
             separator = ", ";
         }
-        if (description.min_quantum_number_m.has_value()) {
-            select += separator + fmt::format("MIN(m) AS min_m");
+        if (description.range_quantum_number_nu.is_finite()) {
+            select += separator + "MIN(exp_nu) AS min_nu, MAX(exp_nu) AS max_nu";
             separator = ", ";
         }
-        if (description.max_quantum_number_m.has_value()) {
-            select += separator + fmt::format("MAX(m) AS max_m");
+        if (description.range_quantum_number_l.is_finite()) {
+            select += separator + "MIN(exp_l) AS min_l, MAX(exp_l) AS max_l";
             separator = ", ";
         }
-        if (description.min_quantum_number_n.has_value()) {
-            select += separator + fmt::format("MIN(n) AS min_n");
+        if (description.range_quantum_number_s.is_finite()) {
+            select += separator + "MIN(exp_s) AS min_s, MAX(exp_s) AS max_s";
             separator = ", ";
         }
-        if (description.max_quantum_number_n.has_value()) {
-            select += separator + fmt::format("MAX(n) AS max_n");
-            separator = ", ";
-        }
-        if (description.min_quantum_number_nu.has_value()) {
-            select += separator + fmt::format("MIN(exp_nu) AS min_nu");
-            separator = ", ";
-        }
-        if (description.max_quantum_number_nu.has_value()) {
-            select += separator + fmt::format("MAX(exp_nu) AS max_nu");
-            separator = ", ";
-        }
-        if (description.min_quantum_number_l.has_value()) {
-            select += separator + fmt::format("MIN(exp_l) AS min_l");
-            separator = ", ";
-        }
-        if (description.max_quantum_number_l.has_value()) {
-            select += separator + fmt::format("MAX(exp_l) AS max_l");
-            separator = ", ";
-        }
-        if (description.min_quantum_number_s.has_value()) {
-            select += separator + fmt::format("MIN(exp_s) AS min_s");
-            separator = ", ";
-        }
-        if (description.max_quantum_number_s.has_value()) {
-            select += separator + fmt::format("MAX(exp_s) AS max_s");
-            separator = ", ";
-        }
-        if (description.min_quantum_number_j.has_value()) {
-            select += separator + fmt::format("MIN(exp_j) AS min_j");
-            separator = ", ";
-        }
-        if (description.max_quantum_number_j.has_value()) {
-            select += separator + fmt::format("MAX(exp_j) AS max_j");
+        if (description.range_quantum_number_j.is_finite()) {
+            select += separator + "MIN(exp_j) AS min_j, MAX(exp_j) AS max_j";
             separator = ", ";
         }
 
@@ -717,134 +664,118 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             }
 
             size_t idx = 0;
-            if (description.min_energy.has_value()) {
+            if (description.range_energy.is_finite()) {
                 auto min_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (std::sqrt(-1 / (2 * min_energy)) - 1 >
-                    std::sqrt(-1 / (2 * description.min_energy.value()))) {
+                    std::sqrt(-1 / (2 * description.range_energy.min()))) {
                     SPDLOG_WARN("No state found with the requested minimum energy. Requested: {}, "
                                 "found: {}.",
-                                description.min_energy.value(), min_energy);
+                                description.range_energy.min(), min_energy);
                 }
-            }
-            if (description.max_energy.has_value()) {
                 auto max_energy = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (std::sqrt(-1 / (2 * max_energy)) + 1 <
-                    std::sqrt(-1 / (2 * description.max_energy.value()))) {
+                    std::sqrt(-1 / (2 * description.range_energy.max()))) {
                     SPDLOG_WARN("No state found with the requested maximum energy. Requested: {}, "
                                 "found: {}.",
-                                description.max_energy.value(), max_energy);
+                                description.range_energy.max(), max_energy);
                 }
             }
-            if (description.min_quantum_number_f.has_value()) {
+            if (description.range_quantum_number_f.is_finite()) {
                 auto min_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_f > description.min_quantum_number_f.value()) {
+                if (min_f > description.range_quantum_number_f.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number f. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_f.value(), min_f);
+                                description.range_quantum_number_f.min(), min_f);
                 }
-            }
-            if (description.max_quantum_number_f.has_value()) {
                 auto max_f = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_f < description.max_quantum_number_f.value()) {
+                if (max_f < description.range_quantum_number_f.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number f. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_f.value(), max_f);
+                                description.range_quantum_number_f.max(), max_f);
                 }
             }
-            if (description.min_quantum_number_m.has_value()) {
+            if (description.range_quantum_number_m.is_finite()) {
                 auto min_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_m > description.min_quantum_number_m.value()) {
+                if (min_m > description.range_quantum_number_m.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number m. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_m.value(), min_m);
+                                description.range_quantum_number_m.min(), min_m);
                 }
-            }
-            if (description.max_quantum_number_m.has_value()) {
                 auto max_m = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_m < description.max_quantum_number_m.value()) {
+                if (max_m < description.range_quantum_number_m.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number m. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_m.value(), max_m);
+                                description.range_quantum_number_m.max(), max_m);
                 }
             }
-            if (description.min_quantum_number_n.has_value()) {
+            if (description.range_quantum_number_n.is_finite()) {
                 auto min_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
-                if (min_n > description.min_quantum_number_n.value()) {
+                if (min_n > description.range_quantum_number_n.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number n. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_n.value(), min_n);
+                                description.range_quantum_number_n.min(), min_n);
                 }
-            }
-            if (description.max_quantum_number_n.has_value()) {
                 auto max_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[idx++])[0];
-                if (max_n < description.max_quantum_number_n.value()) {
+                if (max_n < description.range_quantum_number_n.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number n. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_n.value(), max_n);
+                                description.range_quantum_number_n.max(), max_n);
                 }
             }
-            if (description.min_quantum_number_nu.has_value()) {
+            if (description.range_quantum_number_nu.is_finite()) {
                 auto min_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_nu - 1 > description.min_quantum_number_nu.value()) {
+                if (min_nu - 1 > description.range_quantum_number_nu.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number nu. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_nu.value(), min_nu);
+                                description.range_quantum_number_nu.min(), min_nu);
                 }
-            }
-            if (description.max_quantum_number_nu.has_value()) {
                 auto max_nu = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_nu + 1 < description.max_quantum_number_nu.value()) {
+                if (max_nu + 1 < description.range_quantum_number_nu.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number nu. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_nu.value(), max_nu);
+                                description.range_quantum_number_nu.max(), max_nu);
                 }
             }
-            if (description.min_quantum_number_l.has_value()) {
+            if (description.range_quantum_number_l.is_finite()) {
                 auto min_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_l - 1 > description.min_quantum_number_l.value()) {
+                if (min_l - 1 > description.range_quantum_number_l.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number l. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_l.value(), min_l);
+                                description.range_quantum_number_l.min(), min_l);
                 }
-            }
-            if (description.max_quantum_number_l.has_value()) {
                 auto max_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_l + 1 < description.max_quantum_number_l.value()) {
+                if (max_l + 1 < description.range_quantum_number_l.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number l. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_l.value(), max_l);
+                                description.range_quantum_number_l.max(), max_l);
                 }
             }
-            if (description.min_quantum_number_s.has_value()) {
+            if (description.range_quantum_number_s.is_finite()) {
                 auto min_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_s - 1 > description.min_quantum_number_s.value()) {
+                if (min_s - 1 > description.range_quantum_number_s.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number s. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_s.value(), min_s);
+                                description.range_quantum_number_s.min(), min_s);
                 }
-            }
-            if (description.max_quantum_number_s.has_value()) {
                 auto max_s = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_s + 1 < description.max_quantum_number_s.value()) {
+                if (max_s + 1 < description.range_quantum_number_s.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number s. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_s.value(), max_s);
+                                description.range_quantum_number_s.max(), max_s);
                 }
             }
-            if (description.min_quantum_number_j.has_value()) {
+            if (description.range_quantum_number_j.is_finite()) {
                 auto min_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (min_j - 1 > description.min_quantum_number_j.value()) {
+                if (min_j - 1 > description.range_quantum_number_j.min()) {
                     SPDLOG_WARN("No state found with the requested minimum quantum number j. "
                                 "Requested: {}, found: {}.",
-                                description.min_quantum_number_j.value(), min_j);
+                                description.range_quantum_number_j.min(), min_j);
                 }
-            }
-            if (description.max_quantum_number_j.has_value()) {
                 auto max_j = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
-                if (max_j + 1 < description.max_quantum_number_j.value()) {
+                if (max_j + 1 < description.range_quantum_number_j.max()) {
                     SPDLOG_WARN("No state found with the requested maximum quantum number j. "
                                 "Requested: {}, found: {}.",
-                                description.max_quantum_number_j.value(), max_j);
+                                description.range_quantum_number_j.max(), max_j);
                 }
             }
         }
@@ -1264,10 +1195,8 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges<float> description;
-    description.min_quantum_number_n = 60;
-    description.max_quantum_number_n = 60;
-    description.min_quantum_number_l = 0;
-    description.max_quantum_number_l = 1;
+    description.range_quantum_number_n = {60, 60};
+    description.range_quantum_number_l = {0, 1};
 
     auto basis = database.get_basis<float>("Rb", description, {});
 
@@ -1280,10 +1209,8 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     Database &database = Database::get_global_instance();
 
     AtomDescriptionByRanges<float> description;
-    description.min_quantum_number_n = 60;
-    description.max_quantum_number_n = 60;
-    description.min_quantum_number_l = 0;
-    description.max_quantum_number_l = 1;
+    description.range_quantum_number_n = {60, 60};
+    description.range_quantum_number_l = {0, 1};
 
     auto basis = database.get_basis<float>("Rb", description, {});
 

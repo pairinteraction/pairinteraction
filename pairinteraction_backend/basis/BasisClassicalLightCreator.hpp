@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "utils/Range.hpp"
 #include "utils/traits.hpp"
 
 template <typename Scalar>
@@ -32,8 +33,7 @@ private:
     friend class BasisClassicalLight<Scalar>;
     // friend class KetClassicalLight<Scalar>;
     real_t photon_energy{0.0};
-    int min_quantum_number_q{0};
-    int max_quantum_number_q{0};
+    Range<int> range_quantum_number_q{0, 0};
 };
 
 extern template class BasisClassicalLightCreator<float>;

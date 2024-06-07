@@ -12,8 +12,7 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string valu
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_energy(real_t min, real_t max) {
-    min_energy.emplace(min);
-    max_energy.emplace(max);
+    range_energy = {min, max};
     return *this;
 }
 
@@ -23,8 +22,7 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_f(re
     if (2 * min != std::rintf(2 * min) || 2 * max != std::rintf(2 * max)) {
         throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
     }
-    min_quantum_number_f.emplace(min);
-    max_quantum_number_f.emplace(max);
+    range_quantum_number_f = {min, max};
     return *this;
 }
 
@@ -34,8 +32,7 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(re
     if (2 * min != std::rintf(2 * min) || 2 * max != std::rintf(2 * max)) {
         throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
     }
-    min_quantum_number_m.emplace(min);
-    max_quantum_number_m.emplace(max);
+    range_quantum_number_m = {min, max};
     return *this;
 }
 
@@ -47,40 +44,35 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_parity(int parity) 
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_n(int min, int max) {
-    min_quantum_number_n.emplace(min);
-    max_quantum_number_n.emplace(max);
+    range_quantum_number_n = {min, max};
     return *this;
 }
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_nu(real_t min,
                                                                                real_t max) {
-    min_quantum_number_nu.emplace(min);
-    max_quantum_number_nu.emplace(max);
+    range_quantum_number_nu = {min, max};
     return *this;
 }
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_l(real_t min,
                                                                               real_t max) {
-    min_quantum_number_l.emplace(min);
-    max_quantum_number_l.emplace(max);
+    range_quantum_number_l = {min, max};
     return *this;
 }
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_s(real_t min,
                                                                               real_t max) {
-    min_quantum_number_s.emplace(min);
-    max_quantum_number_s.emplace(max);
+    range_quantum_number_s = {min, max};
     return *this;
 }
 
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(real_t min,
                                                                               real_t max) {
-    min_quantum_number_j.emplace(min);
-    max_quantum_number_j.emplace(max);
+    range_quantum_number_j = {min, max};
     return *this;
 }
 
@@ -113,23 +105,15 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    AtomDescriptionByRanges<real_t> description{min_energy,
-                                                max_energy,
-                                                min_quantum_number_f,
-                                                max_quantum_number_f,
-                                                min_quantum_number_m,
-                                                max_quantum_number_m,
-                                                parity,
-                                                min_quantum_number_n,
-                                                max_quantum_number_n,
-                                                min_quantum_number_nu,
-                                                max_quantum_number_nu,
-                                                min_quantum_number_l,
-                                                max_quantum_number_l,
-                                                min_quantum_number_s,
-                                                max_quantum_number_s,
-                                                min_quantum_number_j,
-                                                max_quantum_number_j};
+    AtomDescriptionByRanges<real_t> description{parity,
+                                                range_energy,
+                                                range_quantum_number_f,
+                                                range_quantum_number_m,
+                                                range_quantum_number_n,
+                                                range_quantum_number_nu,
+                                                range_quantum_number_l,
+                                                range_quantum_number_s,
+                                                range_quantum_number_j};
 
     return database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);
 }
