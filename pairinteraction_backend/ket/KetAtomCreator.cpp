@@ -86,8 +86,8 @@ std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &data
     }
 
     AtomDescriptionByParameters<Real> description{
-        energy,           quantum_number_f, quantum_number_m,
-        parity,           quantum_number_n, quantum_number_nu,
+        parity,           energy,           quantum_number_f,
+        quantum_number_m, quantum_number_n, quantum_number_nu,
         quantum_number_l, quantum_number_s, quantum_number_j};
 
     return database.get_ket<Real>(species.value(), description);
