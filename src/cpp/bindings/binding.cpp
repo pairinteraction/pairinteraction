@@ -5,8 +5,8 @@
 #include "interfaces/TransformationBuilderInterface.py.hpp"
 #include "ket/Ket.py.hpp"
 #include "operator/Operator.py.hpp"
-#include "system/System.py.hpp"
 #include "setup.hpp"
+#include "system/System.py.hpp"
 
 #include <nanobind/nanobind.h>
 
@@ -20,7 +20,7 @@ NB_MODULE(pairinteraction_backend, m) {
     // interfaces
     bind_transformation_builder_interface(m);
 
-    //operator
+    // operator
     bind_operator(m);
 
     // database
