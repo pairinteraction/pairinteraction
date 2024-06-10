@@ -8,8 +8,8 @@
 #include "database/Database.hpp"
 #include "interfaces/TransformationBuilderInterface.hpp"
 
-#include <nanobind/nanobind.h>
 #include <nanobind/eigen/sparse.h>
+#include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
 #include <nanobind/stl/vector.h>
 
@@ -20,8 +20,7 @@ static void declare_basis(nb::module_ &m, std::string type_name) {
     std::string pylass_name = "Basis" + type_name;
     using scalar_t = typename Basis<T>::scalar_t;
     nb::class_<Basis<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pylass_name.c_str());
-    pyclass
-        .def("get_kets", &Basis<T>::get_kets)
+    pyclass.def("get_kets", &Basis<T>::get_kets)
         .def("get_number_of_states", &Basis<T>::get_number_of_states)
         .def("get_number_of_kets", &Basis<T>::get_number_of_kets)
         .def("get_quantum_number_f", &Basis<T>::get_quantum_number_f)
@@ -34,7 +33,9 @@ static void declare_basis(nb::module_ &m, std::string type_name) {
         .def("get_blocks", &Basis<T>::get_blocks)
         .def("get_sorter_without_checks", &Basis<T>::get_sorter_without_checks)
         .def("get_blocks_without_checks", &Basis<T>::get_blocks_without_checks)
-        .def("transform", nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
+        .def(
+            "transform",
+            nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
         .def("transform", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_));
 }
 
@@ -42,8 +43,7 @@ template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string type_name) {
     std::string pylass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pylass_name.c_str());
-    pyclass
-        .def("get_database", &BasisAtom<T>::get_database);
+    pyclass.def("get_database", &BasisAtom<T>::get_database);
 }
 
 template <typename T>
@@ -71,7 +71,8 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string type_name) {
 template <typename T>
 static void declare_basis_classical_light(nb::module_ &m, std::string type_name) {
     std::string pylass_name = "BasisClassicalLight" + type_name;
-    nb::class_<BasisClassicalLight<T>, Basis<BasisClassicalLight<T>>> pyclass(m, pylass_name.c_str());
+    nb::class_<BasisClassicalLight<T>, Basis<BasisClassicalLight<T>>> pyclass(m,
+                                                                              pylass_name.c_str());
 }
 
 template <typename T>

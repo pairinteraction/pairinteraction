@@ -71,7 +71,8 @@ static void declare_ket_classical_light(nb::module_ &m, std::string type_name) {
     nb::class_<KetClassicalLight<T>, Ket<T>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_label", &KetClassicalLight<T>::get_label)
         .def("get_id", &KetClassicalLight<T>::get_id)
-        .def("get_id_for_different_quantum_number_m", &KetClassicalLight<T>::get_id_for_different_quantum_number_m)
+        .def("get_id_for_different_quantum_number_m",
+             &KetClassicalLight<T>::get_id_for_different_quantum_number_m)
         .def("get_photon_energy", &KetClassicalLight<T>::get_photon_energy)
         .def("get_quantum_number_q", &KetClassicalLight<T>::get_quantum_number_q);
 }
