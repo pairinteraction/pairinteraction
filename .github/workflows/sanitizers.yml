@@ -1,6 +1,11 @@
 name: Sanitizers
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
+  workflow_call:
+  workflow_dispatch:
 
 
 # https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
