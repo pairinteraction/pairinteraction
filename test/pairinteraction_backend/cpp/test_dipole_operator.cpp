@@ -7,18 +7,43 @@
 #include "operator/OperatorAtom.hpp"
 #include "setup.hpp"
 
+#include <filesystem>
 #include <spdlog/spdlog.h>
+#include <string>
+#include <system_error>
 
-#ifndef PAIRINTERACTION_LOCAL_DATABASE_DIR
-#error PAIRINTERACTION_LOCAL_DATABASE_DIR is not defined
-#endif
-
-int main() {
+int main(int argc, char **argv) {
     // Call the setup function to configure logging
     setup();
 
     // Create a database instance
-    Database database(false, PAIRINTERACTION_LOCAL_DATABASE_DIR);
+    std::filesystem::path databasedir = "";
+    bool download_missing = false;
+    for (int i = 1; i < argc; ++i) {
+        std::string key = argv[i];
+        if (key == "--database") {
+            if (++i >= argc) {
+                throw std::runtime_error(
+                    "Option --database expects an arguments, but none is given.");
+            }
+            databasedir = argv[i];
+            if (!std::filesystem::exists(databasedir)) {
+                throw std::filesystem::filesystem_error(
+                    "Cannot access database", databasedir.string(),
+                    std::make_error_code(std::errc::no_such_file_or_directory));
+            }
+            databasedir = std::filesystem::canonical(databasedir);
+            if (!std::filesystem::is_directory(databasedir)) {
+                throw std::filesystem::filesystem_error(
+                    "Cannot access database", databasedir.string(),
+                    std::make_error_code(std::errc::not_a_directory));
+            }
+        } else if (key == "--download-missing") {
+            download_missing = true;
+        }
+    }
+
+    Database database(download_missing, databasedir);
 
     // Create a dipole operator coupling two specific states
     auto ket1 = KetAtomCreator<float>()

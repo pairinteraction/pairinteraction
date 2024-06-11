@@ -206,9 +206,6 @@ if (BUILD_TESTING)
     main.cpp
   )
   target_link_libraries(pairinteraction_backend_test PRIVATE backend)
-  target_compile_definitions(pairinteraction_backend_test PRIVATE
-    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/data/database"
-  )
 
   if (WIN32)
     add_custom_command(TARGET pairinteraction_backend_test POST_BUILD
@@ -218,5 +215,5 @@ if (BUILD_TESTING)
   endif()
 
   # Add tests
-  add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test)
+  add_test(NAME "pairinteraction_backend_test" COMMAND pairinteraction_backend_test --database "${CMAKE_SOURCE_DIR}/test/data/database")
 endif()

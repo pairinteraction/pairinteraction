@@ -1,8 +1,6 @@
 #pragma once
 
 #include <filesystem>
-#include <optional>
 
-int test(int argc = 0, char **argv = {},
-         std::optional<bool> download_missing = std::optional<bool>(),
+int test(int argc = 0, char **argv = {}, bool download_missing = false,
          std::filesystem::path databasedir = "");
