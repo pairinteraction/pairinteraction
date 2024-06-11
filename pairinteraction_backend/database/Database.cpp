@@ -17,24 +17,38 @@
 #include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
-#include <optional>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <system_error>
 
-Database::Database(std::optional<bool> download_missing, std::filesystem::path databasedir)
-    : databasedir(databasedir.empty() ? paths::get_pairinteraction_cache_directory() / "database"
-                                      : databasedir),
-      download_missing(download_missing.value_or(false)),
+Database::Database() : Database(default_download_missing) {}
+
+Database::Database(bool download_missing) : Database(download_missing, default_databasedir) {}
+
+Database::Database(std::filesystem::path databasedir)
+    : Database(default_download_missing, databasedir) {}
+
+Database::Database(bool download_missing, std::filesystem::path databasedir)
+    : download_missing(download_missing), databasedir(databasedir),
       db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
+
+    if (databasedir.empty()) {
+        databasedir = default_databasedir;
+    }
 
     const std::regex parquet_regex("^(\\w+)_v(\\d+)\\.parquet$");
 
     // Ensure the database directory exists
-    if (!std::filesystem::exists(this->databasedir)) {
-        std::filesystem::create_directories(this->databasedir);
-    } else if (!std::filesystem::is_directory(this->databasedir)) {
-        throw std::runtime_error("Database path is not a directory.");
+    if (!std::filesystem::exists(databasedir)) {
+        std::filesystem::create_directories(databasedir);
+    } else {
+        databasedir = std::filesystem::canonical(databasedir);
+        if (!std::filesystem::is_directory(databasedir)) {
+            throw std::filesystem::filesystem_error(
+                "Cannot access database", databasedir.string(),
+                std::make_error_code(std::errc::not_a_directory));
+        }
     }
 
     // Ensure that the config directory exists
@@ -42,7 +56,8 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
     if (!std::filesystem::exists(configdir)) {
         std::filesystem::create_directories(configdir);
     } else if (!std::filesystem::is_directory(configdir)) {
-        throw std::runtime_error("Config path is not a directory.");
+        throw std::filesystem::filesystem_error("Cannot access config", configdir.string(),
+                                                std::make_error_code(std::errc::not_a_directory));
     }
 
     // Read in the database_repo_paths if a config file exists, otherwise use the default and
@@ -104,7 +119,7 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
     }
 
     // Create a pool of clients
-    if (this->download_missing) {
+    if (download_missing) {
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             pool.emplace_back(httplib::Client(database_repo_host));
             pool.back().set_follow_location(true);
@@ -115,7 +130,7 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
     }
 
     // Get a dictionary of locally available tables
-    for (const auto &entry : std::filesystem::directory_iterator(this->databasedir)) {
+    for (const auto &entry : std::filesystem::directory_iterator(databasedir)) {
         if (entry.is_regular_file()) {
             std::smatch parquet_match;
             std::string filename = entry.path().filename().string();
@@ -134,7 +149,7 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
     }
 
     // Get a dictionary of remotely available tables
-    if (this->download_missing) {
+    if (download_missing) {
 // Call the different endpoints asynchronously
 #if HTTPLIB_USES_STD_STRING
         httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
@@ -150,7 +165,7 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             // Get the last modified date of the last JSON response
             std::string lastmodified = "";
-            filenames.push_back(this->databasedir /
+            filenames.push_back(databasedir /
                                 ("latest_" +
                                  std::to_string(std::hash<std::string>{}(database_repo_paths[i])) +
                                  ".json"));
@@ -202,7 +217,7 @@ Database::Database(std::optional<bool> download_missing, std::filesystem::path d
                 SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
                              "is disabled. You should not retry until after {} seconds.",
                              waittime);
-                this->download_missing = false;
+                download_missing = false;
                 continue;
 
             } else if (res->status != 200) {
@@ -1125,16 +1140,51 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
     }
 }
 
-Database &Database::get_global_instance(std::optional<bool> download_missing,
-                                        std::filesystem::path databasedir) {
-    thread_local static Database database(download_missing, databasedir);
-    if ((download_missing.has_value() && download_missing.value() != database.download_missing) ||
-        (!databasedir.empty() && databasedir != database.databasedir)) {
+Database &Database::get_global_instance() {
+    return get_global_instance_without_checks(default_download_missing, default_databasedir);
+}
+
+Database &Database::get_global_instance(bool download_missing) {
+    Database &database = get_global_instance_without_checks(download_missing, default_databasedir);
+    if (download_missing != database.download_missing) {
+        throw std::invalid_argument(
+            "The 'download_missing' argument must not change between calls to the method.");
+    }
+    return database;
+}
+
+Database &Database::get_global_instance(std::filesystem::path databasedir) {
+    if (databasedir.empty()) {
+        databasedir = default_databasedir;
+    }
+    Database &database = get_global_instance_without_checks(default_download_missing, databasedir);
+    if (databasedir != database.databasedir) {
+        throw std::invalid_argument(
+            "The 'databasedir' argument must not change between calls to the method.");
+    }
+    return database;
+}
+
+Database &Database::get_global_instance(bool download_missing, std::filesystem::path databasedir) {
+    if (databasedir.empty()) {
+        databasedir = default_databasedir;
+    }
+    Database &database = get_global_instance_without_checks(download_missing, databasedir);
+    if (download_missing != database.download_missing || databasedir != database.databasedir) {
         throw std::invalid_argument("The 'download_missing' and 'databasedir' arguments must not "
                                     "change between calls to the method.");
     }
     return database;
 }
+
+Database &Database::get_global_instance_without_checks(bool download_missing,
+                                                       std::filesystem::path databasedir) {
+    thread_local static Database database(download_missing, databasedir);
+    return database;
+}
+
+std::filesystem::path Database::default_databasedir =
+    paths::get_pairinteraction_cache_directory() / "database";
 
 // Explicit instantiations
 template std::shared_ptr<const KetAtom<float>>

@@ -8,13 +8,11 @@
 #include <filesystem>
 #include <httplib.h>
 #include <mutex>
-#include <optional>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-int test(int argc, char **argv, std::optional<bool> download_missing,
-         std::filesystem::path databasedir) {
+int test(int argc, char **argv, bool download_missing, std::filesystem::path databasedir) {
 
     // Configure a logger for the tests
     std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
@@ -54,7 +52,7 @@ int test(int argc, char **argv, std::optional<bool> download_missing,
     int exitcode = ctx.run();
 
     if (exitcode != 0) {
-        if (download_missing.value_or(false)) {
+        if (download_missing) {
             httplib::Client client("https://www.github.com");
             auto res = client.Head("/");
             if (!res) {
