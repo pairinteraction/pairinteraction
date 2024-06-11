@@ -15,7 +15,7 @@ class ParquetFile:
 
 
 def main() -> None:
-    """Copy and shrink the database files.
+    """Copy and shrink the parquet database files.
 
     Copy the parquet files from 'PAIRINTERACTION_CACHE_DIR/database' to
     'test/database' and restrict them to basis states around |60S> so that
@@ -26,16 +26,17 @@ def main() -> None:
         path_source = Path(os.environ["PAIRINTERACTION_CACHE_DIR"]) / "database"
     elif sys.platform == "win32":
         path_cache = Path(os.path.expandvars(r"%LOCALAPPDATA%"))
-        if not path_cache.is_absolute:
-            path_cache = Path.expanduser(r"~\AppData\Local")
+        if not path_cache.is_absolute or "%LOCALAPPDATA%" in path_cache.parts:
+            path_cache = Path(r"~\AppData\Local").expanduser()
         path_source = path_cache / "pairinteraction" / "database"
     elif sys.platform == "darwin":
-        path_source = Path.expanduser(r"~/Library/Caches") / "pairinteraction" / "database"
+        path_source = Path(r"~/Library/Caches").expanduser() / "pairinteraction" / "database"
     else:
         path_cache = Path(os.path.expandvars(r"$XDG_CACHE_HOME"))
-        if path_cache.is_absolute:
-            path_cache = Path.expanduser(r"~/.cache")
+        if not path_cache.is_absolute or "$XDG_CACHE_HOME" in path_cache.parts:
+            path_cache = Path(r"~/.cache").expanduser()
         path_source = path_cache / "pairinteraction" / "database"
+    print(path_source)
 
     # Get the database target directory
     path_target = Path(__file__).parent.parent.parent
@@ -79,19 +80,35 @@ def main() -> None:
                 f"JOIN {state_db_name} AS s2 ON s.id_final = s2.id"
             )
 
-    # Print the number of rows of the parquet files
-    for parquet_file in parquet_files.values():
-        num_rows = connection.execute(f"SELECT COUNT(*) FROM {parquet_file.name}").fetchone()[0]
-        print(f"{parquet_file.name}: {num_rows} rows")
+    # Delete old parquet files from the target directory
+    for path in path_target.glob("*.parquet"):
+        name, version = path.stem.rsplit("_v", 1)
+        if name in parquet_files:
+            if int(version) < parquet_files[name].version:
+                path.unlink()
+            elif int(version) > parquet_files[name].version:
+                raise ValueError(
+                    f"Version of the table '{name}' in target directory is higher than in source directory"
+                )
 
     # Write the parquet files to the target directory
     for parquet_file in parquet_files.values():
         connection.execute(
             f"COPY {parquet_file.name} TO "
-            f"'{path_target/parquet_file.name}_v0.parquet' "
+            f"'{path_target/parquet_file.name}_v{parquet_file.version}.parquet' "
             "(FORMAT PARQUET, COMPRESSION ZSTD)"
         )
 
-    # Print the total size of the parquet files
+    # Print the number of rows and size of the parquet files
+    print("\nNumber of rows in parquet files")
+    print("--------------------------------------------------")
+    for parquet_file in parquet_files.values():
+        num_rows = connection.execute(f"SELECT COUNT(*) FROM {parquet_file.name}").fetchone()[0]
+        print(f"{parquet_file.name}: {num_rows} rows")
+
     size = sum(path.stat().st_size for path in path_target.glob("*.parquet"))
-    print(f"Size of parquet files: {size * 1e-6:.6f} megabytes")
+    print(f"\nSize of parquet files (total: {size * 1e-3:.1f} kilobytes)")
+    print("--------------------------------------------------")
+    for path in path_target.glob("*.parquet"):
+        name = path.stem.rsplit("_v", 1)[0]
+        print(f"{name}: {path.stat().st_size* 1e-3:.1f} kilobytes")

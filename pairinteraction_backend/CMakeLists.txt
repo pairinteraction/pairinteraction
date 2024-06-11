@@ -207,7 +207,7 @@ if (BUILD_TESTING)
   )
   target_link_libraries(pairinteraction_backend_test PRIVATE backend)
   target_compile_definitions(pairinteraction_backend_test PRIVATE
-    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/database"
+    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/data/database"
   )
 
   if (WIN32)

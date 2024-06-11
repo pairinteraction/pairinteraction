@@ -7,7 +7,8 @@ from pathlib import Path
 from pairinteraction.model.simulation import ModelSimulation
 
 directory = Path(__file__).parent
-models_directory = directory / "models"
+models_directory = directory / "data" / "models"
+reference_directory = directory / "data" / "reference"
 all_json_files = [f.stem for f in models_directory.glob("*.json")]
 
 
@@ -20,7 +21,7 @@ class SimulationTests(unittest.TestCase):
         self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         output = self.model.model_dump(exclude_unset=True)
 
-        reference_path = directory / "data" / f"{name}__model.json"
+        reference_path = reference_directory / f"{name}__model.json"
         # use this for updating the reference
         # with open(reference_path, "w", encoding="utf-8") as f:
         #     json.dump(output, f, indent=4)

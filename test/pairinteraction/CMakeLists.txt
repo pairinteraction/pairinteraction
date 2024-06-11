@@ -29,7 +29,6 @@ endfunction(PYTHON_TEST)
 
 # Add Python test cases
 find_package(Python COMPONENTS Interpreter REQUIRED)
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/models DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 python_test(TARGET model SOURCE test_model.py)
 python_test(TARGET simulation SOURCE test_simulation.py)

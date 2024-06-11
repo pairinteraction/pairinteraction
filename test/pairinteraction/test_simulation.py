@@ -8,6 +8,8 @@ from pairinteraction.model.simulation import ModelSimulation
 from pairinteraction.simulation_old.simulation import Simulation
 
 directory = Path(__file__).parent
+models_directory = directory / "data" / "models"
+reference_directory = directory / "data" / "reference"
 names = ["simulation_1", "simulation_2", "simulation_3"]
 
 
@@ -17,12 +19,12 @@ class SimulationTests(unittest.TestCase):
             self.one_test_simulation(name)
 
     def one_test_simulation(self, name):
-        self.model = ModelSimulation.model_validate_json_file(directory / "models" / f"{name}.json")
+        self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         simulation = Simulation(self.model)
         results_list = simulation.run()
         energies_list = [results["energies"] for results in results_list]
 
-        reference_path = directory / "data" / f"{name}__energies.txt"
+        reference_path = reference_directory / f"{name}__energies.txt"
         # use this for updating the reference
         # self.save_energies_list(reference_path, energies_list)
 
