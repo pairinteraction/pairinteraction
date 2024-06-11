@@ -1,0 +1,15 @@
+[project]
+name = "shrink-database-tool"
+version = "0.1.0"
+description = "Tool for copying and shrinking the parquet database files."
+requires-python = ">=3.8"
+dependencies = [
+    "duckdb >= 1.0.0"
+]
+
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.scripts]
+shrink = "shrink_database_tool:main"

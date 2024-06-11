@@ -4,7 +4,7 @@ add_executable(test_dipole_operator
 )
 target_link_libraries(test_dipole_operator PRIVATE backend)
 target_compile_definitions(test_dipole_operator PRIVATE
-    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/database"
+    PAIRINTERACTION_LOCAL_DATABASE_DIR="${CMAKE_SOURCE_DIR}/test/data/database"
 )
 
 if (WIN32)
