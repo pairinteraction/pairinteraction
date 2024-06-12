@@ -26,7 +26,8 @@ int test(int argc, char **argv) {
 
     static std::once_flag flag_doctest_logger;
     std::call_once(flag_doctest_logger, [&logfile] {
-        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        auto console_sink =
+            std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
         auto file_sink =
             std::make_shared<spdlog::sinks::basic_file_sink_mt>(logfile.string(), true);
         auto doctest_logger =
@@ -39,6 +40,7 @@ int test(int argc, char **argv) {
     doctest::Context ctx;
     ctx.setOption("abort-after", 5);
     ctx.setOption("no-run", 0);
+    ctx.setOption("force-colors", true);
     ctx.applyCommandLine(argc, argv);
     ctx.setOption("no-breaks", true);
 

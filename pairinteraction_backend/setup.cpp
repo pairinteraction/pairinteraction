@@ -24,7 +24,8 @@ void setup() {
     static std::once_flag flag_default_logger;
     std::call_once(flag_default_logger, [&logfile] {
         spdlog::init_thread_pool(8192, 1);
-        auto stdout_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+        auto stdout_sink =
+            std::make_shared<spdlog::sinks::stdout_color_sink_mt>(spdlog::color_mode::always);
         auto file_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(logfile.string(),
                                                                                 1048576 * 5, 10);
         std::vector<spdlog::sink_ptr> sinks{stdout_sink, file_sink};
