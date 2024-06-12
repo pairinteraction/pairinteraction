@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 
 from pairinteraction.model.simulation import ModelSimulation
-from pairinteraction.simulation_old.simulation import Simulation
+from pairinteraction.simulation.simulation import Simulation
 
 directory = Path(__file__).parent
 models_directory = directory / "data" / "models"
