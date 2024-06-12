@@ -584,10 +584,17 @@ class MainWindow(QtWidgets.QMainWindow):
         ):
             self.path_workingdir = os.path.join(self.path_base, "../pairinteraction_backend_old")
         else:
-            raise Exception("Directory containing executables not found.")
+            self.path_workingdir = None
+            # raise Exception("Directory containing executables not found.")
 
-        self.path_cpp = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-backend-deprecated")
-        self.path_quantumdefects = os.path.join(self.path_base, self.path_workingdir, "databases/quantum_defects.db")
+        if self.path_workingdir:
+            self.path_cpp = os.path.join(self.path_base, self.path_workingdir, "pairinteraction-backend-deprecated")
+            self.path_quantumdefects = os.path.join(
+                self.path_base, self.path_workingdir, "databases/quantum_defects.db"
+            )
+        else:
+            self.path_cpp = None
+            self.path_quantumdefects = None
 
         if sys.platform == "win32":
             self.path_config = os.path.expandvars(r"%APPDATA%\pairinteraction")
@@ -656,12 +663,16 @@ class MainWindow(QtWidgets.QMainWindow):
         # fill comboboxes with elements from the quantum defects database
         import sqlite3
 
-        conn = sqlite3.connect(self.path_quantumdefects)
-        c = conn.cursor()
-        c.execute("SELECT DISTINCT element FROM rydberg_ritz")
-        self.all_elements = [e[0] for e in c.fetchall()]
-        self.cpp_elements = [e for e in self.all_elements if e not in ["Sr1", "Sr3"]]
-        conn.close()
+        if self.path_quantumdefects:
+            conn = sqlite3.connect(self.path_quantumdefects)
+            c = conn.cursor()
+            c.execute("SELECT DISTINCT element FROM rydberg_ritz")
+            self.all_elements = [e[0] for e in c.fetchall()]
+            self.cpp_elements = [e for e in self.all_elements if e not in ["Sr1", "Sr3"]]
+            conn.close()
+        else:
+            self.all_elements = []
+            self.cpp_elements = []
 
         # dicts with one entry per symmetry block (bn)
         self.labelprob = {}
@@ -3092,7 +3103,7 @@ class MainWindow(QtWidgets.QMainWindow):
             else:
                 arg_type = "real"
 
-            if os.name == "nt":
+            if os.name == "nt" and self.path_cpp:
                 self.path_cpp += ".exe"
 
             self.createThread()
