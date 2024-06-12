@@ -10,6 +10,7 @@ from pairinteraction.model import (
     ModelStateAtomSQDT,
     ModelStateClassicalLight,
 )
+from pairinteraction.simulation import Simulation
 
 __all__ = [
     "ModelAtomMQDT",
@@ -22,4 +23,5 @@ __all__ = [
     "ModelStateAtomMQDT",
     "ModelStateAtomSQDT",
     "ModelStateClassicalLight",
+    "Simulation",
 ]
