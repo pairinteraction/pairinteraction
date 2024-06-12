@@ -4,14 +4,10 @@ import itertools
 import json
 import multiprocessing
 import os
-import pickle
-import tempfile
 import time
 
 import numpy as np
 from PyQt5.QtCore import QThread
-
-from pairinteraction_gui import pipy
 
 SPIN_DICT = {"Li": 0.5, "Na": 0.5, "K": 0.5, "Rb": 0.5, "Cs": 0.5, "Sr1": 0, "Sr3": 1}
 
@@ -77,7 +73,7 @@ class PipyThread(QThread):
         return self._kwargs
 
     def run(self):
-        self.start_pipy(self.kwargs)
+        self.start_simulation(self.kwargs)
 
     def terminate(self):
         # FIXME this is not the cleanest way, maybe using multiprocessing.manager/event/value would be better
@@ -107,7 +103,7 @@ class PipyThread(QThread):
         if atom is not None:
             atom.delete()
 
-    def start_pipy(self, kwargs):
+    def start_simulation(self, kwargs):
         # convert params to settings and save as settings.json
         params = kwargs["params"]
         settings = params_to_settings(params)
@@ -132,143 +128,8 @@ class PipyThread(QThread):
         output(f"{'>>END':5}", kwargs)
 
     def run_simulations(self, settings, kwargs):
-        kwargs["atom"] = atom = pipy.atom_from_config(settings["config"])
-        info(f"construct {atom}", kwargs)
-
-        # create and save atom basis
-        if atom.noStates:
-            info("No states found to diagonalize", kwargs)
-            return
-        if atom.nAtoms == 2:
-            allQunumbers = [[*qns[:, 0], *qns[:, 1]] for qns in np.array(atom.allQunumbers)]
-        else:
-            allQunumbers = atom.allQunumbers
-        info(f"basis size with restrictions: {len(allQunumbers)}", kwargs)
-        _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{atom.config.toHash()}"
-        path_tmp = tempfile.gettempdir()
-        path_basis = os.path.join(path_tmp, f"basis_{_name}_blocknumber_{settings['blocknumber']}.csv")
-        basis = np.insert(allQunumbers, 0, np.arange(len(allQunumbers)), axis=1)
-        np.savetxt(path_basis, basis, delimiter="\t", fmt=["%d"] + ["%d", "%d", "%.1f", "%.1f"] * atom.nAtoms)
-        info(f"save {type(atom).__name__} basis", kwargs)
-        output(f"{'>>BAS':5}{len(basis):7}", kwargs)
-        output(f"{'>>STA':5} {path_basis} ", kwargs)
-
-        # precalculate matrix elements
-        param_list = self.get_param_list(settings)
-        info("precalculate matrix elements", kwargs)
-        # make sure also interactions are precalculated (distance must be not None) and all fields, that might occur
-        atom.updateFromParams(param_list[0])
-        atom.system.buildInteraction()
-        atom.updateFromParams(param_list[-1])
-        atom.system.buildInteraction()
-
-        # Decide how to pass the atom to the subprocesses
-        if "delete" in self.pass_atom:
-            atom.delete()
-            # delete the cpp object, so it is not pickled and let the subprocess recreate them
-            # Ideally, each subprocess recreates it just once. This seems to work for forked processes,
-            # however for spawned processes, you should check it again! # FIXME
-        if "direct" in self.pass_atom:
-            config = {"atom": atom}
-        elif "path" in self.pass_atom:
-            atom_path = path_basis.replace("basis_", "atom_").replace(".csv", ".pkl")
-            with open(atom_path, "wb") as file:
-                pickle.dump(atom, file)
-            config = {"atom_path": atom_path}
-        elif self.pass_atom == "config":
-            config = atom.config.toOutDict()
-
-        # Some definitions for the multiprocessing
-        ip_list = list(range(len(param_list)))
-        starmap_list = [(ip, config, param_list) for ip in ip_list]
-
-        global P_ONE_RUN
-
-        def P_ONE_RUN(ip):
-            return self.one_run(ip, config, param_list)
-
-        # The actual calculation
-        pool = kwargs.get("pool", None)
-        if pool == self.SEQUENTIAL:
-            for i in ip_list:
-                if self.terminating:
-                    return
-                result = P_ONE_RUN(i)
-                self.print_completed(settings, result, kwargs)
-        elif isinstance(pool, multiprocessing.pool.Pool):
-            if (
-                pool._ctx.get_start_method() != "fork"
-            ):  # this is slower on linux and sometimes had weird bugs when aborting calculation
-                results = pool.starmap_async(self.one_run, starmap_list).get()
-            else:  # fork
-                # restart pool, because the pool must be created after defining the function
-                # this somehow is still faster than using starmap_async
-                self.killPool()
-                pool = self.pool
-                results = pool.imap_unordered(P_ONE_RUN, ip_list)
-                # this is slower, but equivalent to spawn
-                # results = pool.starmap_async(self.one_run, starmap_list).get()
-            for result in results:
-                if self.terminating:
-                    return
-                self.print_completed(settings, result, kwargs)
-            # don't terminate pool / use with pool, such that we can reuse it
-
-        # Clean up
-        atom.delete()
-        del kwargs["atom"]
-        if "atom_path" in config:
-            os.remove(config["atom_path"])
-
-    @staticmethod
-    def one_run(ip, config, param_list):
-        # get default Atom from config (either given, load it or newly construct it)
-        if "atom" in config:
-            atom = config["atom"]
-        elif "atom_path" in config:
-            with open(config["atom_path"], "rb") as f:
-                atom = pickle.load(f)
-        else:
-            atom = pipy.atom_from_config(config)
-        config = atom.config
-
-        atom.updateFromParams(param_list[ip])
-        dimension = len(atom.basisQunumbers)
-
-        real_complex = "real" if config.isReal() else "complex"
-        pathCacheMatrix = os.path.join(config.pathCache(), f"cache_matrix_{real_complex}_new")
-        os.makedirs(pathCacheMatrix, exist_ok=True)
-        _name = f"{'one' if atom.nAtoms == 1 else 'two'}_{config.toHash()}"
-        filename = os.path.join(pathCacheMatrix, _name + ".pkl")
-        filename_json = os.path.join(pathCacheMatrix, _name + ".json")
-
-        pirealcomplex = "pireal" if config.isReal() else "picomplex"
-        if not os.path.exists(filename) or not os.path.exists(filename_json):
-            atom.calcEnergies()
-            energies0 = config.getEnergiesPair() if atom.nAtoms == 2 else config.getEnergiesSingle()
-            data = {
-                "energies": atom.energies - np.mean(energies0),
-                "basis": atom.vectors,
-                "params": config.toOutDict(),
-            }
-
-            print(
-                f"{pirealcomplex}: {ip+1}. Hamiltonian diagonalized ({dimension}x{dimension})"
-                f"({multiprocessing.current_process().name})"
-            )
-            with open(filename, "wb") as f:
-                pickle.dump(data, f)
-            with open(filename_json, "w") as f:
-                json.dump(data["params"], f, indent=4)
-        else:
-            print(f"{pirealcomplex}: {ip+1}. Hamiltonian loaded")
-
-        result = {
-            "ip": ip,
-            "dimension": dimension,
-            "filename": filename,
-        }
-        return result
+        raise NotImplementedError("TODO implement new simulation call")
+        # Probably also rename from pipy to simulation and get rid of old very old pairinteraction cpp calls in app.py
 
     @staticmethod
     def get_param_list(settings):
