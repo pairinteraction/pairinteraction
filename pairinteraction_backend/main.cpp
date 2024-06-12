@@ -1,3 +1,7 @@
+#include "setup.hpp"
 #include "test.hpp"
 
-int main(int argc, char **argv) { return test(argc, argv); }
+int main(int argc, char **argv) {
+    setup();
+    return test(argc, argv);
+}
