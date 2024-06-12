@@ -10,7 +10,6 @@ from pairinteraction.model import (
     ModelStateAtomSQDT,
     ModelStateClassicalLight,
 )
-from pairinteraction_backend_old import picomplex, pireal
 
 __all__ = [
     "ModelAtomMQDT",
@@ -23,6 +22,4 @@ __all__ = [
     "ModelStateAtomMQDT",
     "ModelStateAtomSQDT",
     "ModelStateClassicalLight",
-    "pireal",
-    "picomplex",
 ]
