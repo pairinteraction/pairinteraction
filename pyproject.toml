@@ -45,8 +45,7 @@ build = [
 ]
 build-verbosity = 1
 test-command = [
-  "python -c \"from pairinteraction import pireal as pi\"",
-  "python -c \"from pairinteraction import picomplex as pi\"",
+  "python -c \"import pairinteraction\"",
   "python -c \"from pairinteraction_gui import app; assert type(app.version_program) is str\"",
 ]
 

@@ -184,12 +184,8 @@ add_library(duckdb::duckdb ALIAS duckdb)
 # Build instructions
 if( WITH_BACKEND )
   add_subdirectory(pairinteraction_backend)
-  add_subdirectory(pairinteraction_backend_old)
-  add_subdirectory(pairinteraction_backend_old/databases)
   if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
     add_subdirectory(test/pairinteraction_backend/cpp)
-    add_subdirectory(test/pairinteraction_backend_old/cpp)
-    add_subdirectory(test/pairinteraction_backend_old/python) # TODO use pytest
     add_subdirectory(test/pairinteraction_gui) # TODO use pytest
     add_subdirectory(test/pairinteraction) # TODO use pytest
   endif()
@@ -200,7 +196,6 @@ if( WITH_BACKEND )
 endif( )
 
 if(WITH_BENCH)
-  add_subdirectory(bench/pairinteraction_backend_old/cpp)
 endif()
 
 if( WITH_GUI )
@@ -310,9 +305,5 @@ endif()
 
 # HACK: Copy the "pairinteraction" directory to the build directory # TODO re
 if(NOT SKBUILD)
-  add_custom_target(
-    copy_pairinteraction
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/pairinteraction ${CMAKE_BINARY_DIR}/pairinteraction
-  )
-  add_dependencies(pairinteraction copy_pairinteraction)
+  file(COPY ${CMAKE_SOURCE_DIR}/pairinteraction DESTINATION ${CMAKE_BINARY_DIR})
 endif()
