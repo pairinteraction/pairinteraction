@@ -1183,7 +1183,7 @@ Database &Database::get_global_instance_without_checks(bool download_missing,
     return database;
 }
 
-std::filesystem::path Database::default_databasedir =
+const std::filesystem::path Database::default_databasedir =
     paths::get_pairinteraction_cache_directory() / "database";
 
 // Explicit instantiations
