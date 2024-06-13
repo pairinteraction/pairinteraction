@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    Database database(download_missing, databasedir);
+    Database database(download_missing, false, databasedir);
 
     // Create a dipole operator coupling two specific states
     auto ket1 = KetAtomCreator<float>()

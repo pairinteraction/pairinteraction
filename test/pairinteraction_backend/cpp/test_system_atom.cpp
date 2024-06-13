@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    Database database(download_missing, databasedir);
+    Database database(download_missing, false, databasedir);
 
     // Create a basis
     auto basis = BasisAtomCreator<double>()
