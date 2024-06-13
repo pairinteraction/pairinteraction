@@ -23,14 +23,15 @@
 
 Database::Database() : Database(default_download_missing) {}
 
-Database::Database(bool download_missing) : Database(download_missing, default_databasedir) {}
+Database::Database(bool download_missing)
+    : Database(download_missing, default_wigner_in_memory, default_databasedir) {}
 
 Database::Database(std::filesystem::path databasedir)
-    : Database(default_download_missing, databasedir) {}
+    : Database(default_download_missing, default_wigner_in_memory, databasedir) {}
 
-Database::Database(bool download_missing, std::filesystem::path databasedir)
-    : download_missing(download_missing), databasedir(databasedir),
-      db(std::make_unique<duckdb::DuckDB>(nullptr)),
+Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem::path databasedir)
+    : download_missing(download_missing), wigner_in_memory(wigner_in_memory),
+      databasedir(databasedir), db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
 
     if (databasedir.empty()) {
@@ -261,7 +262,7 @@ Database::Database(bool download_missing, std::filesystem::path databasedir)
     }
 
     // Load the Wigner 3j symbols table into memory
-    if (true) { // TODO wigner_in_memory
+    if (wigner_in_memory) {
         ensure_presence_of_table("wigner");
         auto result = con->Query(fmt::format(R"(CREATE TEMP TABLE 'wigner' AS SELECT * FROM '{}')",
                                              tables["wigner"].local_path.string()));
@@ -1154,11 +1155,13 @@ void Database::ensure_quantum_number_n_is_allowed(std::string name) {
 }
 
 Database &Database::get_global_instance() {
-    return get_global_instance_without_checks(default_download_missing, default_databasedir);
+    return get_global_instance_without_checks(default_download_missing, default_wigner_in_memory,
+                                              default_databasedir);
 }
 
 Database &Database::get_global_instance(bool download_missing) {
-    Database &database = get_global_instance_without_checks(download_missing, default_databasedir);
+    Database &database = get_global_instance_without_checks(
+        download_missing, default_wigner_in_memory, default_databasedir);
     if (download_missing != database.download_missing) {
         throw std::invalid_argument(
             "The 'download_missing' argument must not change between calls to the method.");
@@ -1170,7 +1173,8 @@ Database &Database::get_global_instance(std::filesystem::path databasedir) {
     if (databasedir.empty()) {
         databasedir = default_databasedir;
     }
-    Database &database = get_global_instance_without_checks(default_download_missing, databasedir);
+    Database &database = get_global_instance_without_checks(default_download_missing,
+                                                            default_wigner_in_memory, databasedir);
     if (databasedir != database.databasedir) {
         throw std::invalid_argument(
             "The 'databasedir' argument must not change between calls to the method.");
@@ -1178,21 +1182,24 @@ Database &Database::get_global_instance(std::filesystem::path databasedir) {
     return database;
 }
 
-Database &Database::get_global_instance(bool download_missing, std::filesystem::path databasedir) {
+Database &Database::get_global_instance(bool download_missing, bool wigner_in_memory,
+                                        std::filesystem::path databasedir) {
     if (databasedir.empty()) {
         databasedir = default_databasedir;
     }
-    Database &database = get_global_instance_without_checks(download_missing, databasedir);
-    if (download_missing != database.download_missing || databasedir != database.databasedir) {
+    Database &database =
+        get_global_instance_without_checks(download_missing, wigner_in_memory, databasedir);
+    if (download_missing != database.download_missing ||
+        wigner_in_memory != database.wigner_in_memory || databasedir != database.databasedir) {
         throw std::invalid_argument("The 'download_missing' and 'databasedir' arguments must not "
                                     "change between calls to the method.");
     }
     return database;
 }
 
-Database &Database::get_global_instance_without_checks(bool download_missing,
+Database &Database::get_global_instance_without_checks(bool download_missing, bool wigner_in_memory,
                                                        std::filesystem::path databasedir) {
-    thread_local static Database database(download_missing, databasedir);
+    thread_local static Database database(download_missing, wigner_in_memory, databasedir);
     return database;
 }
 

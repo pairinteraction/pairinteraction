@@ -51,14 +51,15 @@ public:
     Database();
     Database(bool download_missing);
     Database(std::filesystem::path databasedir);
-    Database(bool download_missing, std::filesystem::path databasedir);
+    Database(bool download_missing, bool wigner_in_memory, std::filesystem::path databasedir);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
     static Database &get_global_instance();
     static Database &get_global_instance(bool download_missing);
     static Database &get_global_instance(std::filesystem::path databasedir);
-    static Database &get_global_instance(bool download_missing, std::filesystem::path databasedir);
+    static Database &get_global_instance(bool download_missing, bool wigner_in_memory,
+                                         std::filesystem::path databasedir);
 
     template <typename Real>
     std::shared_ptr<const KetAtom<Real>>
@@ -88,6 +89,7 @@ private:
         "/repos/pairinteraction/database-mqdt/releases/latest"};
 
     bool download_missing;
+    bool wigner_in_memory;
     std::filesystem::path databasedir;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
@@ -95,9 +97,11 @@ private:
     std::unordered_map<std::string, Table> tables;
 
     static constexpr bool default_download_missing{false};
+    static constexpr bool default_wigner_in_memory{true};
     static const std::filesystem::path default_databasedir;
 
     static Database &get_global_instance_without_checks(bool download_missing,
+                                                        bool wigner_in_memory,
                                                         std::filesystem::path databasedir);
 
     void ensure_presence_of_table(std::string name);
