@@ -95,7 +95,7 @@ private:
     std::unordered_map<std::string, Table> tables;
 
     static constexpr bool default_download_missing{false};
-    static std::filesystem::path default_databasedir;
+    static const std::filesystem::path default_databasedir;
 
     static Database &get_global_instance_without_checks(bool download_missing,
                                                         std::filesystem::path databasedir);
