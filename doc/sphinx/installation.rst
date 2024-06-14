@@ -199,8 +199,6 @@ A full list of build options is provided in the following:
 | ``WITH_CLANG_TIDY`` | Run the C++ linter tool Clang-Tidy   | OFF     |
 |                     | during compilation                   |         |
 +---------------------+--------------------------------------+---------+
-| ``WITH_JULIA``      | Build a Julia compatible .so         | OFF     |
-+---------------------+--------------------------------------+---------+
 
 .. [#] This mode activates the extension for calculating radial wave
        functions using Whittaker functions. If pairinteraction

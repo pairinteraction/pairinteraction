@@ -1,5 +1,0 @@
-[deps]
-CxxWrap = "1f15a43c-97ca-5a2a-ae31-89f07a497df4"
-SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
-SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

@@ -27,16 +27,6 @@ jobs:
     # in turn might miss some actual positives.
     # https://clang.llvm.org/docs/AddressSanitizer.html
     #
-    # Julia tests do not run with address sanitizer due to the following errors:
-    # - When using LD_PRELOAD:
-    #     You are trying to dlopen a libpcre2-8 shared library with RTLD_DEEPBIND
-    #     flag which is incompatibe with sanitizer runtime (see
-    #     https://github.com/google/sanitizers/issues/611 for details). If you want
-    #     to run libpcre2-8 library under sanitizers please remove RTLD_DEEPBIND
-    #     from dlopen flags.
-    # - When using verify_asan_link_order=0:
-    #     free(): invalid size
-    #
     # The following Python tests are also disabled:
     # - python.feast
     #   "attempting free on address which was not malloc()-ed" inside of
@@ -61,14 +51,14 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         CXXFLAGS: "-fno-omit-frame-pointer -fsanitize=address"
         LDFLAGS: "-fsanitize=address"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
-      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(julia|python.feast|python.parallelization)'"
+      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(python.feast|python.parallelization)'"
       env:
         ASAN_OPTIONS: "symbolize=1:detect_leaks=0:alloc_dealloc_mismatch=0:verify_asan_link_order=0"
 
@@ -92,7 +82,7 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         CXXFLAGS: "-fsanitize=undefined -DEIGEN_DONT_VECTORIZE" # https://gitlab.com/libeigen/eigen/-/commit/3c724c44cff3f9e2e9e35351abff0b5c022b320d
         LDFLAGS: "-fsanitize=undefined"
@@ -116,8 +106,6 @@ jobs:
     #   Segfaults probably because of Boost.Serialization not having debug mode.
     # - python.parallelization
     #   Deadlocks or just takes really really long.
-    # - julia.*
-    #   Segfaults probably because of JlCxxWrap not having debug mode.
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
@@ -135,11 +123,11 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_JULIA=On -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         # For now only lightweight assertions until DuckDB is also compiled with _GLIBCXX_DEBUG
         CXXFLAGS: "-D_GLIBCXX_ASSERTIONS"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
-      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(julia|cpp.integration|python.parallelization)'"
+      run: cmake --build build/ --target test -- --keep-going ARGS="-E '^(cpp.integration|python.parallelization)'"

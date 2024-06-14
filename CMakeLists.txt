@@ -69,7 +69,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 # Build options
 option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
-option(WITH_JULIA    "Build a Julia compatible .so"         OFF)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
@@ -188,10 +187,6 @@ if( WITH_BACKEND )
     add_subdirectory(test/pairinteraction_backend/cpp)
     add_subdirectory(test/pairinteraction_gui) # TODO use pytest
     add_subdirectory(test/pairinteraction) # TODO use pytest
-  endif()
-  if (WITH_JULIA)
-    add_subdirectory(julia/src)
-    add_subdirectory(test/julia)
   endif()
 endif( )
 
