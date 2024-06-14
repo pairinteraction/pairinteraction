@@ -45,8 +45,7 @@ if ( NOT SKBUILD AND (CMAKE_HOST_WIN32 OR (CMAKE_HOST_APPLE AND WITH_DMG)) )
   )
   add_dependencies(pyinstaller gui)
 
-  add_dependencies(pyinstaller binding)
-  add_dependencies(pyinstaller database)
+  add_dependencies(pyinstaller bindings)
 
 else( )
 
