@@ -1,5 +1,6 @@
 #pragma once
 
+#include "utils/eigen_assertion.hpp"
 #include "utils/traits.hpp"
 
 #include <Eigen/SparseCore>

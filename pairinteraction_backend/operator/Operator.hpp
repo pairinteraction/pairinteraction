@@ -1,12 +1,13 @@
 #pragma once
 
+#include "interfaces/TransformationBuilderInterface.hpp"
+#include "utils/eigen_assertion.hpp"
+#include "utils/traits.hpp"
+
 #include <Eigen/SparseCore>
 #include <array>
 #include <memory>
 #include <vector>
-
-#include "interfaces/TransformationBuilderInterface.hpp"
-#include "utils/traits.hpp"
 
 enum class TransformationType : unsigned char;
 

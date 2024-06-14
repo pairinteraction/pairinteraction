@@ -1,6 +1,7 @@
 #include "system/System.hpp"
 #include "operator/Operator.hpp"
 #include "operator/OperatorAtom.hpp"
+#include "utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>

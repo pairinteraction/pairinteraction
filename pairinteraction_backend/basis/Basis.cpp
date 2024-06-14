@@ -430,7 +430,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
             transformed->quantum_number_f_of_states.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -447,7 +447,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
             transformed->quantum_number_m_of_states.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -464,7 +464,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                        .template cast<real_t>();
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
-        Eigen::VectorX<real_t> diff = (val * val - sq).cwiseAbs();
+        Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -511,7 +511,9 @@ template class Basis<BasisClassicalLight<std::complex<double>>>;
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
+#include "utils/eigen_assertion.hpp"
 #include "utils/hash.hpp"
+
 #include <Eigen/SparseCore>
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>

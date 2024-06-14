@@ -19,6 +19,8 @@
 
 #pragma once
 
+#include "utils/eigen_assertion.hpp"
+
 #include <Eigen/Core>
 
 // Backport template aliases to older Eigen versions
