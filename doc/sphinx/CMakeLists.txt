@@ -66,8 +66,6 @@ add_custom_target(sphinx
   DEPENDS bindings
   COMMENT "Building HTML documentation with Sphinx")
 
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_cpp/
-  DESTINATION share/doc/pairinteraction/examples_cpp)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/examples_python/
   DESTINATION share/doc/pairinteraction/examples_python)
 install(DIRECTORY ${SPHINX_HTML_DIR}
@@ -92,21 +90,7 @@ set_target_properties(livehtml PROPERTIES EXCLUDE_FROM_ALL ON)
 
 # IPython notebooks to be tested
 set(NOTEBOOKS
-  "introduction.ipynb"
-  "matrix_elements.ipynb"
-  "vdw_near_surface.ipynb")
-
-if(WITH_GSL)
-  list(APPEND NOTEBOOKS "wavefunctions.ipynb")
-endif()
-
-if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
-  list(APPEND NOTEBOOKS
-    "comparison_to_saffman_fig13.ipynb"
-    "pair_potential_efield_sensitivity.ipynb"
-    "pair_potential_near_surface.ipynb"
-    "atom_ion_interaction.ipynb")
-endif()
+  "quick_start.ipynb")
 
 foreach(file ${NOTEBOOKS})
   string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
