@@ -1,10 +1,11 @@
 #pragma once
 
+#include "utils/eigen_assertion.hpp"
+#include "utils/eigen_compat.hpp"
+
 #include <Eigen/Dense>
 #include <array>
 #include <type_traits>
-
-#include "utils/eigen_compat.hpp"
 
 namespace euler {
 
