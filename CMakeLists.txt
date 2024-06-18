@@ -214,15 +214,9 @@ endif()
 file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
-configure_file(setup.py.in ${CMAKE_BINARY_DIR}/setup.py @ONLY)
 configure_file(setup.cfg.in ${CMAKE_BINARY_DIR}/setup.cfg @ONLY)
 
-if(WIN32)
-
-  # NSIS installer is built externally
-  add_subdirectory(extra/win32)
-
-elseif(APPLE AND WITH_DMG)
+if(APPLE AND WITH_DMG)
 
   find_package(Python COMPONENTS Interpreter REQUIRED)
 

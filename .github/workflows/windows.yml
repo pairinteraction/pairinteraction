@@ -63,25 +63,8 @@ jobs:
       - name: Build
         run: cmake --build build/ --config ${{ env.CMAKE_BUILD_TYPE }}
 
-      - name: After build
-        run: |
-          $RedistVersion = Get-Content "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\Microsoft.VCRedistVersion.default.txt" -TotalCount 1
-          Copy-Item -Path "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Redist\MSVC\$($RedistVersion.Trim())\vcredist_x64.exe" -Destination vcredist_x64.exe -Verbose
-          cmake --build . --target win32 --config ${{ env.CMAKE_BUILD_TYPE }}
-          python setup.py bdist_wheel --python-tag py3 --plat-name win_amd64
-          $env:PATH_WHEEL_UNMODIFIED=$(ls dist\*.whl | foreach { $_.FullName })
-          wheel unpack $env:PATH_WHEEL_UNMODIFIED -d wheelhouse\
-          $env:PATH_WHEEL_UNPACKED=$(ls wheelhouse\* | foreach { $_.FullName })
-          Copy-Item pairinteraction_backend_old\Release\* ${env:PATH_WHEEL_UNPACKED}\pairinteraction_backend_old\ -Recurse -Force -Verbose
-          Remove-Item –path $env:PATH_WHEEL_UNPACKED\*.dist-info\RECORD
-          wheel pack $env:PATH_WHEEL_UNPACKED -d wheelhouse\
-        working-directory: build/
-
       - name: Tests
         run: |
-          Copy-Item pairinteraction_backend_old\Release\* pairinteraction_backend_old\ -Recurse -Force -Verbose
-          New-Item -Path test\pairinteraction_backend_old\cpp\Release\ -ItemType Directory -Force
-          Copy-Item pairinteraction_backend_old\Release\* test\pairinteraction_backend_old\cpp\Release\ -Recurse -Force -Verbose
           cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
         env:

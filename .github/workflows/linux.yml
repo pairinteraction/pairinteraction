@@ -109,14 +109,7 @@ jobs:
       env:
         QT_QPA_PLATFORM: "offscreen"
         QT_DEBUG_PLUGINS: 1
-    - name: Wheel
-      run: |
-        python setup.py bdist_wheel --python-tag py3 --plat-name "$AUDITWHEEL_PLAT"
-        auditwheel repair dist/*.whl --plat "$AUDITWHEEL_PLAT"
-        mkdir -p artifact/
-        cp wheelhouse/*.whl artifact/
-      working-directory: build/
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@v3
       with:
         name: pairinteraction-manylinux-wheel
         path: build/artifact/
