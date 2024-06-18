@@ -233,8 +233,6 @@ Note that some targets require specific build options to be enabled in addition 
 | ``livehtml`` | Build the Sphinx documentation and        | ``WITH_DOC=ON``      |
 |              | show it in a web browser                  |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``win32``    | Create a package for Windows              |                      |
-+--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for GNU/Linux           |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for OS X                | ``WITH_DMG=ON``      |
