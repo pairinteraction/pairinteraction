@@ -199,6 +199,12 @@ target_link_options(pairinteraction_backend PRIVATE
   $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
 )
 
+if( WITH_COVERAGE )
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
+  target_compile_options(pairinteraction_backend PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
+  target_link_libraries(pairinteraction_backend PUBLIC gcov)
+endif( )
+
 if (WIN32)
   add_custom_command(TARGET pairinteraction_backend POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy -t $<TARGET_FILE_DIR:pairinteraction_backend> $<TARGET_RUNTIME_DLLS:pairinteraction_backend>
