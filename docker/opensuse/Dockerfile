@@ -33,6 +33,7 @@ RUN python3.9 /pip.pyz --no-cache-dir install \
     matplotlib \
     mkl \
     mkl-devel \
+    nanobind \
     PyQt5 \
     pyqtgraph \
     Pint \
