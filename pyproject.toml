@@ -32,7 +32,7 @@ dependencies = [
 
 [tool.scikit-build]
 cmake.verbose = true
-wheel.packages = []
+wheel.packages = ["pairinteraction", "pairinteraction_backend"]
 wheel.py-api = "py3"
 
 [tool.cibuildwheel]

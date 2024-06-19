@@ -212,6 +212,9 @@ if (WIN32)
   )
 endif()
 
+install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction_backend)
+install(TARGETS pairinteraction_backend LIBRARY DESTINATION pairinteraction_backend)
+
 # Build an executable for running the tests
 if (BUILD_TESTING)
   add_executable(pairinteraction_backend_test
