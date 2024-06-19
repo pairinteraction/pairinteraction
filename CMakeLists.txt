@@ -91,6 +91,17 @@ endif( )
 # Target for the unit tests
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C ${CMAKE_BUILD_TYPE})
 
+# Target for code coverage
+if(WITH_COVERAGE)
+  if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    message(WARNING "-DWITH_COVERAGE=ON implies -DCMAKE_BUILD_TYPE=Debug")
+  endif()
+  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
+  add_library(coverage::gcov INTERFACE IMPORTED)
+  target_compile_options(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
+  target_link_libraries(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:gcov>)
+endif()
+
 # Perform static analysis using clang-tidy
 if(WITH_CLANG_TIDY)
   string(REGEX REPLACE "^([1-9]+\\.[0-9]+).*$" "\\1" CLANG_MINOR_VERSION "${CMAKE_CXX_COMPILER_VERSION}")

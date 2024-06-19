@@ -62,6 +62,7 @@ add_library(backend OBJECT
 )
 
 target_link_libraries(backend PUBLIC
+  $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>
   doctest::doctest
   duckdb::duckdb
   Eigen3::Eigen
@@ -176,7 +177,7 @@ add_library(bindings OBJECT
 )
 
 target_include_directories(bindings PRIVATE "${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS};${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(bindings PRIVATE nanobind-static)
+target_link_libraries(bindings PRIVATE $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov> nanobind-static)
 target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into libraries
@@ -198,12 +199,6 @@ target_link_options(pairinteraction_backend PRIVATE
   $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
   $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib /DEFAULTLIB:python3.lib /FORCE:UNRESOLVED>
 )
-
-if( WITH_COVERAGE )
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
-  target_compile_options(pairinteraction_backend PUBLIC $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
-  target_link_libraries(pairinteraction_backend PUBLIC gcov)
-endif( )
 
 if (WIN32)
   add_custom_command(TARGET pairinteraction_backend POST_BUILD
