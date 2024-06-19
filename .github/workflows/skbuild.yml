@@ -64,10 +64,6 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Install Intel oneAPI Math Kernel Library (oneMKL)
-      if: runner.os == 'Windows'
-      uses: ./.github/actions/install-intel-mkl
-
     - name: Install Windows dependencies
       if: runner.os == 'Windows'
       uses: ./.github/actions/setup-vcpkg

@@ -127,22 +127,16 @@ if(MSVC)
   message(STATUS "Unpatched Python libraries: ${Python_LIBRARIES}")
   message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
 endif()
-include(FetchContent)
-FetchContent_Declare(
-  nanobind
-  GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-  GIT_TAG 8d7f1ee0621c17fa370b704b2100ffa0243d5bfb # v2.0.0
-)
-FetchContent_GetProperties(nanobind)
-if(NOT nanobind_POPULATED)
-  FetchContent_Populate(nanobind)
-endif()
-list(APPEND CMAKE_PREFIX_PATH ${nanobind_SOURCE_DIR})
+execute_process(
+  COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
+  OUTPUT_STRIP_TRAILING_WHITESPACE OUTPUT_VARIABLE NB_DIR)
+list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
 nanobind_build_library(nanobind-static)
 set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
 # Find duckdb
+include(FetchContent)
 if(WIN32)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.0.0/libduckdb-windows-amd64.zip)
   set(DUCKDB_LIBNAME duckdb.dll)
