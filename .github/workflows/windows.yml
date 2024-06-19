@@ -38,9 +38,6 @@ jobs:
           restore-keys:
             pairinteraction-${{ github.job }}
 
-      - name: Install Intel oneAPI Math Kernel Library (oneMKL)
-        uses: ./.github/actions/install-intel-mkl
-
       - name: Install Windows dependencies
         uses: ./.github/actions/setup-vcpkg
 
