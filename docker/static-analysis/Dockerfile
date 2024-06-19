@@ -21,6 +21,8 @@ RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     numpy \
     scipy \
     matplotlib \
+    mkl \
+    mkl-devel \
     PyQt5 \
     pyqtgraph \
     Pint \

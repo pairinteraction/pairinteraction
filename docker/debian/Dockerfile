@@ -2,11 +2,6 @@ FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    apt-transport-https ca-certificates curl \
-  && curl -sSfLo /etc/apt/trusted.gpg.d/oneapi-archive-keyring.asc https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
-  && echo "deb https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list \
-  && apt-get update \
-  && apt-get install --no-install-recommends -y \
     cmake build-essential git \
     libboost-dev \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
@@ -16,8 +11,8 @@ RUN apt-get update \
     locales \
     dpkg rpm \
     lcov \
+    curl ca-certificates \
     doxygen graphviz libgraphviz-dev ca-certificates rsync pandoc \
-    intel-oneapi-mkl-devel \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
@@ -28,6 +23,8 @@ RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     numpy \
     scipy \
     matplotlib \
+    mkl \
+    mkl-devel \
     PyQt5 \
     pyqtgraph \
     Pint \
@@ -51,3 +48,6 @@ RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-li
 
 # https://github.com/JuliaLang/julia/issues/34276
 RUN ln -sf /usr/lib/x86_64-linux-gnu/libstdc++.so.6 /usr/lib/julia/libstdc++.so.6
+
+# For compatiblity (to be removed)
+RUN mkdir -p /opt/intel/oneapi/ && touch /opt/intel/oneapi/setvars.sh
