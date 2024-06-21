@@ -96,14 +96,20 @@ jobs:
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
-        CXXFLAGS: "-fsanitize=undefined -DEIGEN_DONT_VECTORIZE" # https://gitlab.com/libeigen/eigen/-/commit/3c724c44cff3f9e2e9e35351abff0b5c022b320d
+        CXXFLAGS: "-fsanitize=undefined"
         LDFLAGS: "-fsanitize=undefined"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
-      run: cmake --build build/ --target test -- --keep-going
-      env:
-        UBSAN_OPTIONS: "symbolize=1:print_stacktrace=1:halt_on_error=1"
+      run: |
+        cat <<'EOF' > known_issues.supp
+        # https://gitlab.com/libeigen/eigen/-/commit/3c724c44cff3f9e2e9e35351abff0b5c022b320d
+        alignment:_mm_load_sd
+        # https://github.com/wjakob/nanobind/commit/c70a8d438e9285d946a1167e8e09f39cb1c4aab2
+        null:nb_func_vectorcall_complex
+        EOF
+        export UBSAN_OPTIONS="symbolize=1:print_stacktrace=1:halt_on_error=1:suppressions=$PWD/known_issues.supp"
+        cmake --build build/ --target test -- --keep-going
 
   glibcxx-debug:
     # The libstdc++ debug mode replaces all iterators by safe iterators and adds
