@@ -8,6 +8,7 @@ namespace nb = nanobind;
 
 void bind_operator_type(nb::module_ &m) {
     nb::enum_<OperatorType>(m, "OperatorType")
+        .value("ZERO", OperatorType::ZERO)
         .value("ENERGY", OperatorType::ENERGY)
         .value("ELECTRIC_DIPOLE", OperatorType::ELECTRIC_DIPOLE)
         .value("ELECTRIC_QUADRUPOLE", OperatorType::ELECTRIC_QUADRUPOLE)
