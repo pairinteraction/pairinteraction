@@ -62,10 +62,7 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string type_name) {
         .def("restrict_quantum_number_s", &BasisAtomCreator<T>::restrict_quantum_number_s)
         .def("restrict_quantum_number_j", &BasisAtomCreator<T>::restrict_quantum_number_j)
         .def("add_ket", &BasisAtomCreator<T>::add_ket)
-        .def("create", [](BasisAtomCreator<T> const &basis_atom_creator) {
-            Database &database = Database::get_global_instance();
-            basis_atom_creator.create(database);
-        });
+        .def("create", &BasisAtomCreator<T>::create);
 }
 
 template <typename T>
