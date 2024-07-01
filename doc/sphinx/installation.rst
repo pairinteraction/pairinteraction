@@ -175,8 +175,6 @@ A full list of build options is provided in the following:
 +=====================+======================================+=========+
 | ``WITH_BACKEND``    | Build with C++ backend               | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_PYTHON``     | Build with SWIG Python interface     | ON      |
-+---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
 | ``WITH_GSL``        | Use the GNU scientific library for   | ON      |

@@ -68,7 +68,6 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Build options
 option(WITH_BACKEND  "Build with C++ backend"               ON)
-option(WITH_PYTHON   "Build with SWIG Python interface"     ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
