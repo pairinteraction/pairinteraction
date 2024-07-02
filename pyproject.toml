@@ -81,7 +81,8 @@ build = [
 build-verbosity = 1
 test-command = [
   "python -c \"import pairinteraction\"",
-  "python -c \"from pairinteraction_gui import app; assert type(app.version_program) is str\"",
+  "python -c \"import pairinteraction_backend\"",
+  "python -c \"import pairinteraction_gui\"",
 ]
 
 [tool.cibuildwheel.windows]
