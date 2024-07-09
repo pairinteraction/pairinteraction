@@ -44,11 +44,20 @@ jobs:
       - name: Install Windows dependencies
         uses: ./.github/actions/setup-vcpkg
 
+      - name: Install uv
+        run: |
+          powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.9'
-          cache: 'pip'
-      - run: pip install -r requirements.txt
+          python-version: '3.8'
+
+      - name: Install Python dependencies
+        env:
+          NO_COLOR: 1
+        run: |
+          uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+          uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
 
       - name: Configure
         shell: cmd

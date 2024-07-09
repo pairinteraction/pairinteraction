@@ -37,16 +37,21 @@ jobs:
           restore-keys:
             pairinteraction-${{ github.job }}
 
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.9'
-          cache: 'pip'
-      - run: pip install -r requirements.txt
-
       - name: Install dependencies
         run: |
-          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib
+          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib uv graphviz
           npm install -g fileicon
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.8'
+
+      - name: Install Python dependencies
+        env:
+          NO_COLOR: 1
+        run: |
+          uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+          uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
 
       - name: Configure
         run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython_FIND_FRAMEWORK=LAST
