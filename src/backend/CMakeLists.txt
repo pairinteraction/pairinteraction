@@ -20,8 +20,10 @@ add_library(pintr OBJECT
   ./pintr/database/Database.cpp
   ./pintr/database/Database.hpp
   ./pintr/database/Database.test.cpp
-  ./pintr/diagonalizer/Diagonalizer.cpp
-  ./pintr/diagonalizer/Diagonalizer.hpp
+  ./pintr/diagonalizer/DiagonalizerFeast.cpp
+  ./pintr/diagonalizer/DiagonalizerFeast.hpp
+  ./pintr/diagonalizer/DiagonalizerLapacke.cpp
+  ./pintr/diagonalizer/DiagonalizerLapacke.hpp
   ./pintr/enums/OperatorType.hpp
   ./pintr/enums/Parity.test.cpp
   ./pintr/enums/Parity.hpp
@@ -90,9 +92,11 @@ target_include_directories(pintr PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_compile_definitions(pintr PUBLIC
+target_compile_definitions(backend PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<TARGET_EXISTS:MKL::MKL>:EIGEN_USE_MKL_ALL>
+  EIGEN_USE_BLAS
+  -DMKL_Complex8=std::complex<float>
+  -DMKL_Complex16=std::complex<double>
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -114,7 +118,8 @@ add_library(bindings OBJECT
   ./pintr/database/AtomDescriptionByParameters.hpp
   ./pintr/database/AtomDescriptionByRanges.hpp
   ./pintr/database/Database.hpp
-  ./pintr/diagonalizer/Diagonalizer.hpp
+  ./pintr/diagonalizer/DiagonalizerFeast.hpp
+  ./pintr/diagonalizer/DiagonalizerLapacke.hpp
   ./pintr/enums/OperatorType.hpp
   ./pintr/enums/Parity.hpp
   ./pintr/enums/TransformationType.hpp
@@ -157,8 +162,6 @@ add_library(bindings OBJECT
   ./pintr/basis/BasisClassicalLightCreator.py.hpp
   ./pintr/database/Database.py.cpp
   ./pintr/database/Database.py.hpp
-  ./pintr/diagonalizer/Diagonalizer.py.cpp
-  ./pintr/diagonalizer/Diagonalizer.py.hpp
   ./pintr/enums/OperatorType.py.cpp
   ./pintr/enums/OperatorType.py.hpp
   ./pintr/enums/TransformationType.py.cpp

@@ -111,7 +111,7 @@ set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
 set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
-find_package(MKL)
+find_package(MKL REQUIRED)
 
 # Find nanobind
 if(MSVC)
