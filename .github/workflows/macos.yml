@@ -39,7 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib uv graphviz
+          brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib uv graphviz tbb
           npm install -g fileicon
 
       - uses: actions/setup-python@v5

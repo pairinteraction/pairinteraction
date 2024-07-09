@@ -6,7 +6,9 @@
 
 #include <Eigen/SparseCore>
 #include <complex>
+#include <limits>
 #include <memory>
+#include <oneapi/tbb.h>
 
 namespace pintr {
 template <typename Derived>
@@ -104,6 +106,35 @@ Derived System<Derived>::transformed(const Sorting &transformation) const {
     transformed.hamiltonian =
         std::make_unique<operator_t>(hamiltonian->transformed(transformation));
     return transformed;
+}
+
+template <typename Derived>
+void System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
+                                  int precision) const {
+    real_t min_eigenvalue = std::numeric_limits<real_t>::min();
+    real_t max_eigenvalue = std::numeric_limits<real_t>::max();
+    diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+}
+
+template <typename Derived>
+void System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
+                                  real_t min_eigenvalue, real_t max_eigenvalue,
+                                  int precision) const {
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+        hamiltonian_requires_construction = false;
+    }
+
+    // TODO get TransformationType from derived class and diagonalize blocks in parallel
+    bool Data[1000];
+    oneapi::tbb::parallel_for(0, 1000, 1, [&Data](int i) { Data[i] = true; });
+
+    auto eigensys =
+        diagonalizer.eigh(hamiltonian->get_matrix(), min_eigenvalue, max_eigenvalue, precision);
+
+    // Store the diagonalized hamiltonian (possible future optimization: use
+    // eigensys.eigenvalues directly instead of transforming the hamiltonian with the eigenvectors)
+    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigensys.eigenvectors));
 }
 
 // Explicit instantiation

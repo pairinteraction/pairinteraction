@@ -28,6 +28,7 @@ add_library(pintr OBJECT
   ./pintr/enums/Parity.test.cpp
   ./pintr/enums/Parity.hpp
   ./pintr/enums/TransformationType.hpp
+  ./interfaces/DiagonalizerInterface.hpp
   ./pintr/interfaces/TransformationBuilderInterface.cpp
   ./pintr/interfaces/TransformationBuilderInterface.hpp
   ./pintr/ket/Ket.cpp
@@ -81,11 +82,12 @@ target_link_libraries(pintr PUBLIC
   duckdb::duckdb
   Eigen3::Eigen
   httplib::httplib
-  $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
-  $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
-  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
   nlohmann_json::nlohmann_json
   spdlog::spdlog
+  TBB::tbb
+  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
+  $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
+  $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
 )
 
 target_include_directories(pintr PUBLIC
@@ -93,10 +95,9 @@ target_include_directories(pintr PUBLIC
 )
 
 target_compile_definitions(backend PUBLIC
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  EIGEN_USE_BLAS
-  -DMKL_Complex8=std::complex<float>
-  -DMKL_Complex16=std::complex<double>
+  $<$<TARGET_EXISTS:MKL::MKL>:EIGEN_USE_BLAS> # TODO EIGEN_USE_MKL_ALL
+  $<$<TARGET_EXISTS:MKL::MKL>:MKL_Complex8=std::complex<float>>
+  $<$<TARGET_EXISTS:MKL::MKL>:MKL_Complex16=std::complex<double>>
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -123,6 +124,7 @@ add_library(bindings OBJECT
   ./pintr/enums/OperatorType.hpp
   ./pintr/enums/Parity.hpp
   ./pintr/enums/TransformationType.hpp
+  ./pintr/interfaces/DiagonalizerInterface.hpp
   ./pintr/interfaces/TransformationBuilderInterface.hpp
   ./pintr/ket/Ket.hpp
   ./pintr/ket/KetAtom.hpp

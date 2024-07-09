@@ -92,6 +92,7 @@ endif()
 find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
+find_package(TBB REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
@@ -111,7 +112,7 @@ set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
 set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
-find_package(MKL REQUIRED)
+find_package(MKL)
 
 # Find nanobind
 if(MSVC)
