@@ -47,6 +47,7 @@ public:
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
+    virtual ~TransformationBuilderInterface() = default;
     virtual const Transformation<Scalar> &get_transformation() const = 0;
     virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
     virtual Sorting get_sorter(TransformationType label) const = 0;
