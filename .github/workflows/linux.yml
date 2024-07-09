@@ -34,6 +34,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
@@ -98,8 +104,12 @@ jobs:
     - name: Setup Python
       run: |
         echo "/opt/python/cp38-cp38/bin" >> $GITHUB_PATH
-    - name: Install dependencies
-      run: pip3 install -r requirements.txt
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
@@ -134,6 +144,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
@@ -169,6 +185,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOC=On -DWITH_GUI=Off
     - name: Build
@@ -200,6 +222,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
