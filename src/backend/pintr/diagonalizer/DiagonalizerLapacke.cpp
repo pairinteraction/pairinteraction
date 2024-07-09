@@ -31,7 +31,8 @@ lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, lapack_com
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                  Range<real_t> allowed_range_of_evals, int precision) const {
+                                  real_t min_eigenvalue, real_t max_eigenvalue,
+                                  int precision) const {
     int dim = matrix.rows();
 
     MKL_INT info;    // will contain return codes
@@ -41,9 +42,7 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
     Eigen::VectorX<real_t> evals(dim);
     Eigen::MatrixX<Scalar> evecs = matrix;
 
-    this->smph_cpu_cores.acquire();
     info = evd(LAPACK_COL_MAJOR, jobz, uplo, dim, evecs.data(), dim, evals.data());
-    this->smph_cpu_cores.release();
 
     if (info != 0) {
         if (info < 0) {
@@ -56,11 +55,10 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
         }
     }
 
-    if (allowed_range_of_evals.is_finite()) {
-        auto evals_min = allowed_range_of_evals.min;
-        auto evals_max = allowed_range_of_evals.max;
-        auto it_begin = std::lower_bound(evals.data(), evals.data() + dim, evals_min);
-        auto it_end = std::upper_bound(evals.data(), evals.data() + dim, evals_max);
+    if (min_eigenvalue > std::numeric_limits<real_t>::min() ||
+        max_eigenvalue < std::numeric_limits<real_t>::max()) {
+        auto it_begin = std::lower_bound(evals.data(), evals.data() + dim, min_eigenvalue);
+        auto it_end = std::upper_bound(evals.data(), evals.data() + dim, max_eigenvalue);
         evecs = evecs.block(0, std::distance(evals.data(), it_begin), dim,
                             std::distance(it_begin, it_end));
         evals =

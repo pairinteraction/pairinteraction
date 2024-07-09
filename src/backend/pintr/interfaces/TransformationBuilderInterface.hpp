@@ -41,8 +41,6 @@ struct Blocks {
 template <typename Scalar>
 class TransformationBuilderInterface {
 public:
-    virtual ~TransformationBuilderInterface() = default;
-
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;

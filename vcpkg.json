@@ -21,6 +21,7 @@
         {
             "name": "sqlite3",
             "features": [ "tool" ]
-        }
+        },
+        "tbb"
     ]
 }

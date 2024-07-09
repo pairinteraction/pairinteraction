@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pintr/interfaces/DiagonalizerInterface.hpp"
 #include "pintr/interfaces/TransformationBuilderInterface.hpp"
 #include "pintr/utils/traits.hpp"
 
@@ -33,6 +34,10 @@ public:
 
     Derived transformed(const Transformation<scalar_t> &transformation) const;
     Derived transformed(const Sorting &transformation) const;
+
+    void diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer, int precision = 4) const;
+    void diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer, real_t min_eigenvalue,
+                     real_t max_eigenvalue, int precision = 4) const;
 
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;
