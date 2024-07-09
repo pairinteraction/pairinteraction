@@ -40,6 +40,8 @@ RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
     nbconvert
 RUN rm -f /pip.pyz
 
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 RUN curl -LO https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.5-linux-x86_64.tar.gz \
   && tar xvf julia-1.0.5-linux-x86_64.tar.gz -C /usr --strip-components=1 \
   && rm julia-1.0.5-linux-x86_64.tar.gz \

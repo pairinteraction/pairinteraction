@@ -16,5 +16,7 @@ RUN yum install -y epel-release \
     spdlog-devel \
     cpp-httplib-devel
 
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+
 ENV BOOST_INCLUDEDIR=/usr/include/boost169
 ENV BOOST_LIBRARYDIR=/usr/lib64/boost169
