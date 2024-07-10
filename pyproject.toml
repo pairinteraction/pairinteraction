@@ -41,6 +41,7 @@ classifiers = [
   "Operating System :: Microsoft :: Windows",
   "Operating System :: POSIX :: Linux",
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
 ]
 
 [project.urls]

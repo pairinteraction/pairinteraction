@@ -32,9 +32,10 @@ TODO: Update credits. Maintainers, list of contributors.
 
 ## License
 
-The pairinteraction library is licensed under the [LGPL v3][lgpl-link]. The extension for calculating
-radial wave functions using Whittaker functions and the graphical user interface are licensed under the [GPL v3][gpl-link].
+The pairinteraction library is licensed under the [LGPL v3][lgpl-link].
+The extension for the graphical user interface is licensed under the [GPL v3][gpl-link].
 The GPL v3 also applies to the combined work and all provided binary builds.
+
 
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?color=orange
 [pypi-link]: https://pypi.org/project/pairinteraction/
