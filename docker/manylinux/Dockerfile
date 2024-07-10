@@ -14,7 +14,10 @@ RUN yum install -y epel-release \
     openblas-devel \
     swig \
     spdlog-devel \
-    cpp-httplib-devel
+    cpp-httplib-devel \
+    python3 \
+    python3-devel \
+    graphviz-devel
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
