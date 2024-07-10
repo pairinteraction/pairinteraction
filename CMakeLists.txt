@@ -67,7 +67,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Build options
-option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
@@ -174,16 +173,14 @@ endif()
 add_library(duckdb::duckdb ALIAS duckdb)
 
 # Build instructions
-if( WITH_BACKEND )
-  add_subdirectory(pairinteraction_backend)
-  if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-    add_subdirectory(test/pairinteraction_backend/cpp)
-    add_subdirectory(test/pairinteraction_gui) # TODO use pytest
-    add_subdirectory(test/pairinteraction) # TODO use pytest
-  endif()
-endif( )
+add_subdirectory(pairinteraction_backend)
+if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
+  add_subdirectory(test/pairinteraction_backend/cpp)
+  add_subdirectory(test/pairinteraction_gui) # TODO use pytest
+  add_subdirectory(test/pairinteraction) # TODO use pytest
+endif()
 
-if(WITH_BENCH)
+if( WITH_BENCH )
 endif()
 
 if( WITH_GUI )

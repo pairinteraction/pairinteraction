@@ -148,6 +148,6 @@ the `Institute of Physics`_ of the University of Rostock in Germany, and the `De
 License
 =======
 
-The pairinteraction library is licensed under the `LGPL v3`_. The extension for calculating
-radial wave functions using Whittaker functions and the graphical user interface are licensed under the `GPL v3`_.
+The pairinteraction library is licensed under the `LGPL v3`_.
+The extension for the graphical user interface is licensed under the `GPL v3`_.
 The GPL v3 also applies to the combined work and all provided binary builds.

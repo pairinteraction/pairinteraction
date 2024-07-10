@@ -173,9 +173,7 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_BACKEND``    | Build with C++ backend               | ON      |
-+---------------------+--------------------------------------+---------+
-| ``WITH_GUI``        | Build with Python GUI                | ON      |
+| ``WITH_GUI``        | Build with Python GUI [#]_           | ON      |
 +---------------------+--------------------------------------+---------+
 | ``WITH_DOC``        | Generate documentation               | OFF     |
 +---------------------+--------------------------------------+---------+
@@ -187,10 +185,9 @@ A full list of build options is provided in the following:
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
 +---------------------+--------------------------------------+---------+
 
-.. [#] This mode activates the extension for calculating radial wave
-       functions using Whittaker functions. If pairinteraction
-       is built in this mode, any derived work has to be licensed under
-       GPL v3, because of the GSL being distributed under GPL.
+.. [#] This mode builds the graphical user interface extension.
+       If pairinteraction is built in this mode, any derived work has to be licensed under
+       GPL v3, because of the PyQT5 being distributed under GPL.
 
 Moreover, executing the commands manually allows for running additional targets.
 For example, you can use the ``doc`` target to build a documentation by executing ``cmake --build . --target doc``.
