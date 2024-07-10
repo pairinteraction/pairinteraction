@@ -8,7 +8,7 @@
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
 [![License][license-svg]][gpl-link]
 
-The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://pairinteraction.github.io/ for documentation and tutorials.
+The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://www.pairinteraction.org/ for documentation and tutorials.
 
 Binary builds are available through [GitHub Releases](https://github.com/pairinteraction/pairinteraction/releases). For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling
 
@@ -39,7 +39,7 @@ The GPL v3 also applies to the combined work and all provided binary builds.
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?color=orange
 [pypi-link]: https://pypi.org/project/pairinteraction/
 [codecov-svg]: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
-[codecov-link]: https://pairinteraction.github.io/pairinteraction/coverage/html/index.html
+[codecov-link]: https://www.pairinteraction.org/pairinteraction/coverage/html/index.html
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
 [license-svg]: https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat
