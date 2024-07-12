@@ -20,6 +20,8 @@ RUN yum install -y epel-release \
     python3-devel \
     graphviz-devel
 
+RUN cmake -DTBB_ROOT=/usr -DTBB_OS=Linux -DSAVE_TO=/usr/lib64/cmake/tbb -P /usr/lib64/cmake/tbb/tbb_config_generator.cmake
+
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 
 ENV BOOST_INCLUDEDIR=/usr/include/boost169
