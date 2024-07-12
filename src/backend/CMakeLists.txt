@@ -85,7 +85,7 @@ target_link_libraries(pintr PUBLIC
   nlohmann_json::nlohmann_json
   spdlog::spdlog
   TBB::tbb
-  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
+  $<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,LAPACK::LAPACK>
   $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
   $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
 )
@@ -95,11 +95,23 @@ target_include_directories(pintr PUBLIC
 )
 
 target_compile_definitions(backend PUBLIC
-  $<$<TARGET_EXISTS:MKL::MKL>:EIGEN_USE_BLAS> # TODO EIGEN_USE_MKL_ALL
-  $<$<TARGET_EXISTS:MKL::MKL>:MKL_Complex8=std::complex<float>>
-  $<$<TARGET_EXISTS:MKL::MKL>:MKL_Complex16=std::complex<double>>
+  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+  $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL>
+  $<IF:$<TARGET_EXISTS:MKL::MKL>,EIGEN_USE_BLAS,EIGEN_USE_BLAS EIGEN_USE_LAPACKE> # TODO EIGEN_USE_MKL_ALL
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
+
+if (TARGET MKL::MKL)
+  target_compile_definitions(backend PUBLIC
+    MKL_Complex8=std::complex<float>
+    MKL_Complex16=std::complex<double>
+  )
+else()
+  target_compile_definitions(backend PUBLIC
+    lapack_complex_float=std::complex<float>
+    lapack_complex_double=std::complex<double>
+  )
+endif()
 
 target_compile_options(pintr PUBLIC
   $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>

@@ -89,6 +89,8 @@ if(WITH_COVERAGE)
 endif()
 
 # Find dependencies # TODO add all dependencies
+list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/tbb/2021.13") # TODO
+
 find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
@@ -113,6 +115,11 @@ set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
 set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
 find_package(MKL)
+
+# Find lapacke if MKL is not available
+if(NOT MKL_FOUND)
+  find_package(LAPACK REQUIRED)
+endif()
 
 # Find nanobind
 if(MSVC)

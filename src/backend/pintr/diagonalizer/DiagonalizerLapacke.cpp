@@ -5,7 +5,12 @@
 
 #include <Eigen/Dense>
 #include <fmt/core.h>
+
+#ifdef WITH_MKL
 #include <mkl_lapacke.h>
+#else
+#include <lapacke.h>
+#endif
 
 namespace pintr {
 lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, float *a, lapack_int lda,
@@ -35,9 +40,9 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
                                   int precision) const {
     int dim = matrix.rows();
 
-    MKL_INT info;    // will contain return codes
-    char jobz = 'V'; // eigenvalues and eigenvectors are computed
-    char uplo = 'U'; // full matrix is stored, upper is used
+    lapack_int info{}; // will contain return codes
+    char jobz = 'V';   // eigenvalues and eigenvectors are computed
+    char uplo = 'U';   // full matrix is stored, upper is used
 
     Eigen::VectorX<real_t> evals(dim);
     Eigen::MatrixX<Scalar> evecs = matrix;
@@ -46,21 +51,23 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
 
     if (info != 0) {
         if (info < 0) {
-            throw std::runtime_error(fmt::format("Diagonalization error: The {}-th argument to the "
-                                                 "LAPACKE routine had an illegal value.",
-                                                 -info));
-        } else {
-            throw std::runtime_error(
-                "Diagonalization error: The LAPACK routine failed to compute an eigenvalue.");
+            throw std::invalid_argument(
+                fmt::format("Diagonalization error: The {}-th argument to the "
+                            "LAPACKE routine had an illegal value.",
+                            -info));
         }
+        throw std::runtime_error(
+            "Diagonalization error: The LAPACK routine failed to compute an eigenvalue.");
     }
 
-    if (min_eigenvalue > std::numeric_limits<real_t>::min() ||
-        max_eigenvalue < std::numeric_limits<real_t>::max()) {
-        auto it_begin = std::lower_bound(evals.data(), evals.data() + dim, min_eigenvalue);
-        auto it_end = std::upper_bound(evals.data(), evals.data() + dim, max_eigenvalue);
-        evecs = evecs.block(0, std::distance(evals.data(), it_begin), dim,
-                            std::distance(it_begin, it_end));
+    if (min_eigenvalue > std::numeric_limits<real_t>::lowest() / 2 ||
+        max_eigenvalue < std::numeric_limits<real_t>::max() / 2) {
+        auto *it_begin = std::lower_bound(evals.data(), evals.data() + dim, min_eigenvalue);
+        auto *it_end = std::upper_bound(evals.data(), evals.data() + dim, max_eigenvalue);
+        evecs = evecs
+                    .block(0, std::distance(evals.data(), it_begin), dim,
+                           std::distance(it_begin, it_end))
+                    .eval();
         evals =
             evals.segment(std::distance(evals.data(), it_begin), std::distance(it_begin, it_end));
     }
