@@ -8,6 +8,7 @@ RUN yum install -y epel-release \
     eigen3-devel \
     fmt-devel \
     json-devel \
+    tbb-devel \
     fontconfig \
     gsl-devel \
     libuuid-devel \

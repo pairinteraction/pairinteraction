@@ -5,7 +5,7 @@ RUN apt-get update \
     cmake build-essential git \
     libboost-dev \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
-    libcpp-httplib-dev nlohmann-json3-dev \
+    libcpp-httplib-dev nlohmann-json3-dev libtbb-dev \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev libgl1 \
     locales \
