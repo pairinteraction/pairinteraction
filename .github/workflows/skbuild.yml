@@ -47,7 +47,7 @@ jobs:
           CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: windows-2019
           CXXFLAGS: "/Ox /arch:AVX2"
-          CMAKE_ARGS: "-DBUILD_TESTING=Off -DMKL_THREADING=intel_thread"
+          CMAKE_ARGS: "-DBUILD_TESTING=Off"
     name: Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:

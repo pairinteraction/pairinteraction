@@ -65,7 +65,6 @@ jobs:
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
           cmake -S . -B build/ -G "Visual Studio 16 2019" -DBUILD_TESTING=On ^
-              -DMKL_THREADING=intel_thread ^
               -DPython_FIND_REGISTRY=LAST ^
               -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
 

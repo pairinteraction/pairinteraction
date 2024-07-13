@@ -132,7 +132,9 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
             "Diagonalization error: The FEAST routine failed for an unknown reason.");
     }
 
-    // TODO restrict to the first m eigenvectors and eigenvalues
+    // Restrict to the first m eigenvectors and eigenvalues because the rest is not calculated
+    evecs.conservativeResize(dim, m);
+    evals.conservativeResize(m);
 
     return {evecs.sparseView(std::pow(10, -precision), 1), evals};
 }

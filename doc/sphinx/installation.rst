@@ -80,7 +80,10 @@ Dependencies of the C++ backend
 
     * For **OS X**, you can obtain the dependencies from the :github:`macos workflow <tree/master/.github/workflows/macos.yml>`.
 
-    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel MKL`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+
+    .. note::
+        To allow the build system to find `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the oneAPI libraries provide scripts that can be sourced before running CMake. For example, on Ubuntu, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
 
 Dependencies of the Python library
     All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_ / `uv`_.
@@ -93,6 +96,7 @@ Dependencies of the Python library
 .. _VCPKG: https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows
 .. _Visual Studio: https://visualstudio.microsoft.com/downloads/
 .. _Intel MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
+.. _Intel TBB: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb-download.html
 
 Automatic Build
 ^^^^^^^^^^^^^^^
@@ -202,8 +206,10 @@ A full list of build options is provided in the following:
 | ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
 |                     | only)                                |         |
 +---------------------+--------------------------------------+---------+
-| ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
+| ``WITH_COVERAGE``   | Generate code coverage report [#]_   | OFF     |
 +---------------------+--------------------------------------+---------+
+
+.. [#] This mode implies building the debug version of the software.
 
 Moreover, executing the commands manually allows for running additional targets.
 For example, you can use the ``doc`` target to build a documentation by executing ``cmake --build . --target doc``.

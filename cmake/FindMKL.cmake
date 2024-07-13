@@ -68,11 +68,9 @@ if(MKL_FOUND AND WIN32)
         else()
             message(WARNING "Intel OpenMP DLL cloud not be located! Dynamic lookup will probably fail.")
         endif()
-    elseif(MKL_THREADING STREQUAL "tbb_thread")
-        # FIXME: Do we have to add any additional DLLs?
     endif()
 
-    # TODO are there really no suitable implibs for the MKL DLLs?
+    # FIXME: are there really no suitable implibs for the MKL DLLs?
     get_target_property(MKL_CORE_IMPORTED_IMPLIB MKL::mkl_core IMPORTED_IMPLIB)
 
     foreach(FILE ${MKL_DLLS})
