@@ -43,7 +43,7 @@ jobs:
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build/ -DMKL_THREADING=gnu_thread -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_DOC=On
+        cmake -S . -B build/ -DBUILD_TESTING=On -DMKL_THREADING=sequential -DWITH_COVERAGE=On -DWITH_DOC=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

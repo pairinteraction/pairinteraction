@@ -85,7 +85,7 @@ target_link_libraries(pintr PUBLIC
   nlohmann_json::nlohmann_json
   spdlog::spdlog
   TBB::tbb
-  $<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,LAPACK::LAPACK>
+  $<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,LAPACKE::LAPACKE>
   $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
   $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
 )
@@ -94,7 +94,7 @@ target_include_directories(pintr PUBLIC
   "${CMAKE_CURRENT_SOURCE_DIR}"
 )
 
-target_compile_definitions(backend PUBLIC
+target_compile_definitions(pintr PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
   $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL>
   $<IF:$<TARGET_EXISTS:MKL::MKL>,EIGEN_USE_BLAS,EIGEN_USE_BLAS EIGEN_USE_LAPACKE> # TODO EIGEN_USE_MKL_ALL
@@ -102,12 +102,12 @@ target_compile_definitions(backend PUBLIC
 )
 
 if (TARGET MKL::MKL)
-  target_compile_definitions(backend PUBLIC
+  target_compile_definitions(pintr PUBLIC
     MKL_Complex8=std::complex<float>
     MKL_Complex16=std::complex<double>
   )
 else()
-  target_compile_definitions(backend PUBLIC
+  target_compile_definitions(pintr PUBLIC
     lapack_complex_float=std::complex<float>
     lapack_complex_double=std::complex<double>
   )

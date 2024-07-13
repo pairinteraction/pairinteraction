@@ -89,8 +89,6 @@ if(WITH_COVERAGE)
 endif()
 
 # Find dependencies # TODO add all dependencies
-list(APPEND CMAKE_PREFIX_PATH "/opt/intel/oneapi/tbb/2021.13") # TODO
-
 find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
@@ -101,9 +99,8 @@ find_package(Python REQUIRED
   OPTIONAL_COMPONENTS Development.SABIModule
 )
 
-find_package(httplib COMPONENTS OpenSSL)
-if (NOT httplib_FOUND)
-  find_package(httplib REQUIRED)
+find_package(httplib REQUIRED)
+if (NOT httplib_OpenSSL_FOUND)
   find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
   add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
 endif()
@@ -112,13 +109,13 @@ endif()
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
 set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
-set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
+set(MKL_THREADING "tbb_thread" CACHE STRING "MKL threading backend")
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
 find_package(MKL)
 
 # Find lapacke if MKL is not available
 if(NOT MKL_FOUND)
-  find_package(LAPACK REQUIRED)
+  find_package(LAPACKE REQUIRED)
 endif()
 
 # Find nanobind
