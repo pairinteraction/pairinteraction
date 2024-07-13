@@ -15,7 +15,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     sqlite3 sqlite3-devel \
     libboost_headers1_66_0-devel \
     doctest-devel spdlog-devel cereal-devel eigen3-devel fmt-devel gsl-devel libuuid-devel openblas-devel \
-    nlohmann_json-devel tbb-devel \
+    nlohmann_json-devel \
     swig python39 python39-devel libglvnd \
     dpkg rpm-build \
     curl \

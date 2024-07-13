@@ -1,11 +1,16 @@
 FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg ca-certificates
+RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
+
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
     cmake build-essential git \
     libboost-dev \
     doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
-    libcpp-httplib-dev nlohmann-json3-dev libtbb-dev \
+    libcpp-httplib-dev nlohmann-json3-dev intel-oneapi-tbb-devel-2021.13 \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev libgl1 \
     locales \
@@ -16,6 +21,9 @@ RUN apt-get update \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
+
+ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
+ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
 
 ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
 RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
