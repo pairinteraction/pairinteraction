@@ -1,6 +1,5 @@
 #pragma once
 
-#include "pintr/interfaces/DiagonalizerInterface.hpp"
 #include "pintr/interfaces/TransformationBuilderInterface.hpp"
 #include "pintr/utils/traits.hpp"
 
@@ -8,6 +7,9 @@
 
 namespace pintr {
 enum class TransformationType : unsigned char;
+
+template <typename Scalar>
+class DiagonalizerInterface;
 
 template <typename Derived>
 class System

@@ -20,6 +20,8 @@ add_library(pintr OBJECT
   ./pintr/database/Database.cpp
   ./pintr/database/Database.hpp
   ./pintr/database/Database.test.cpp
+  ./pintr/diagonalizer/diagonalize.cpp
+  ./pintr/diagonalizer/diagonalize.hpp
   ./pintr/diagonalizer/DiagonalizerFeast.cpp
   ./pintr/diagonalizer/DiagonalizerFeast.hpp
   ./pintr/diagonalizer/DiagonalizerLapacke.cpp
@@ -28,7 +30,7 @@ add_library(pintr OBJECT
   ./pintr/enums/Parity.test.cpp
   ./pintr/enums/Parity.hpp
   ./pintr/enums/TransformationType.hpp
-  ./interfaces/DiagonalizerInterface.hpp
+  ./pintr/interfaces/DiagonalizerInterface.hpp
   ./pintr/interfaces/TransformationBuilderInterface.cpp
   ./pintr/interfaces/TransformationBuilderInterface.hpp
   ./pintr/ket/Ket.cpp
@@ -131,6 +133,7 @@ add_library(bindings OBJECT
   ./pintr/database/AtomDescriptionByParameters.hpp
   ./pintr/database/AtomDescriptionByRanges.hpp
   ./pintr/database/Database.hpp
+  ./pintr/diagonalizer/diagonalize.hpp
   ./pintr/diagonalizer/DiagonalizerFeast.hpp
   ./pintr/diagonalizer/DiagonalizerLapacke.hpp
   ./pintr/enums/OperatorType.hpp

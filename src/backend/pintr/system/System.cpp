@@ -1,5 +1,6 @@
 #include "pintr/system/System.hpp"
 
+#include "pintr/interfaces/DiagonalizerInterface.hpp"
 #include "pintr/operator/OperatorAtom.hpp"
 #include "pintr/system/SystemAtom.hpp"
 #include "pintr/utils/eigen_assertion.hpp"
