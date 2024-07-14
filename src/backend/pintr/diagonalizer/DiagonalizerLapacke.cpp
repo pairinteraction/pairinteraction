@@ -7,7 +7,7 @@
 #include <fmt/core.h>
 
 #ifdef WITH_MKL
-#include <mkl_lapacke.h>
+#include <mkl.h>
 #else
 #include <lapacke.h>
 #endif
