@@ -70,8 +70,9 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
                     logfile.string());
             }
         } else {
-            SPDLOG_ERROR("Tests failed. Consider downloading missing databases by calling the test "
-                         "function with 'download_missing = true'.");
+            SPDLOG_ERROR("Tests failed. If the tests failed because of unavailable states or "
+                         "matrix elements, consider downloading missing databases by calling "
+                         "the test function with 'download_missing = true'.");
         }
     }
 

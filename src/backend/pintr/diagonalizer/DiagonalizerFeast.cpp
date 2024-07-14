@@ -49,11 +49,11 @@ EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                 real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
     int dim = matrix.rows();
-    int m0 = this->m0;
+    int m0 = std::min(dim, this->m0);
 
     Eigen::MatrixX<Scalar> hamiltonian = matrix;
     Eigen::VectorX<real_t> evals(dim);
-    Eigen::VectorX<Scalar> evecs(m0 * dim); // the first m columns will contain the eigenvectors
+    Eigen::MatrixX<Scalar> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
     std::vector<MKL_INT> fpm(128);
     feastinit(fpm.data());
