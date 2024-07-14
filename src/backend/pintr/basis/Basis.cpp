@@ -430,6 +430,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
+        transformed->quantum_number_f_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -447,6 +448,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
+        transformed->quantum_number_m_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
@@ -466,6 +468,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
+        transformed->parity_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
