@@ -126,9 +126,8 @@ void System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagona
         hamiltonian_requires_construction = false;
     }
 
+    // Diagonalize the Hamiltonian
     // TODO get TransformationType from derived class and diagonalize blocks in parallel
-    // bool Data[1000];
-    // oneapi::tbb::parallel_for(0, 1000, 1, [&Data](int i) { Data[i] = true; });
     auto eigensys =
         diagonalizer.eigh(hamiltonian->get_matrix(), min_eigenvalue, max_eigenvalue, precision);
 

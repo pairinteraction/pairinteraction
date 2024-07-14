@@ -69,7 +69,8 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
                            std::distance(it_begin, it_end))
                     .eval();
         evals =
-            evals.segment(std::distance(evals.data(), it_begin), std::distance(it_begin, it_end));
+            evals.segment(std::distance(evals.data(), it_begin), std::distance(it_begin, it_end))
+                .eval();
     }
 
     return {evecs.sparseView(std::pow(10, -precision), 1), evals};

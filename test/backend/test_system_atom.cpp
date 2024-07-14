@@ -24,8 +24,8 @@ int main(int argc, char **argv) {
     // Create a basis
     auto basis = pintr::BasisAtomCreator<double>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(60, 80)
-                     .restrict_quantum_number_l(0, 10)
+                     .restrict_quantum_number_n(58, 62)
+                     .restrict_quantum_number_l(0, 3)
                      .create(database);
 
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
