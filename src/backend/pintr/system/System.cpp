@@ -112,8 +112,8 @@ Derived System<Derived>::transformed(const Sorting &transformation) const {
 template <typename Derived>
 void System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                   int precision) const {
-    real_t min_eigenvalue = std::numeric_limits<real_t>::min();
-    real_t max_eigenvalue = std::numeric_limits<real_t>::max();
+    real_t min_eigenvalue = std::numeric_limits<real_t>::lowest() / 2;
+    real_t max_eigenvalue = std::numeric_limits<real_t>::max() / 2;
     diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, precision);
 }
 
@@ -127,14 +127,14 @@ void System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagona
     }
 
     // TODO get TransformationType from derived class and diagonalize blocks in parallel
-    bool Data[1000];
-    oneapi::tbb::parallel_for(0, 1000, 1, [&Data](int i) { Data[i] = true; });
-
+    // bool Data[1000];
+    // oneapi::tbb::parallel_for(0, 1000, 1, [&Data](int i) { Data[i] = true; });
     auto eigensys =
         diagonalizer.eigh(hamiltonian->get_matrix(), min_eigenvalue, max_eigenvalue, precision);
 
     // Store the diagonalized hamiltonian (possible future optimization: use
-    // eigensys.eigenvalues directly instead of transforming the hamiltonian with the eigenvectors)
+    // eigensys.eigenvalues directly instead of transforming the hamiltonian with the eigenvectors,
+    // get rid of values smaller than the precision)
     hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigensys.eigenvectors));
 }
 

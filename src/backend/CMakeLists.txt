@@ -27,8 +27,8 @@ add_library(pintr OBJECT
   ./pintr/diagonalizer/DiagonalizerLapacke.cpp
   ./pintr/diagonalizer/DiagonalizerLapacke.hpp
   ./pintr/enums/OperatorType.hpp
-  ./pintr/enums/Parity.test.cpp
   ./pintr/enums/Parity.hpp
+  ./pintr/enums/Parity.test.cpp
   ./pintr/enums/TransformationType.hpp
   ./pintr/interfaces/DiagonalizerInterface.hpp
   ./pintr/interfaces/TransformationBuilderInterface.cpp
@@ -54,6 +54,7 @@ add_library(pintr OBJECT
   ./pintr/system/System.hpp
   ./pintr/system/SystemAtom.cpp
   ./pintr/system/SystemAtom.hpp
+  ./pintr/system/SystemAtom.test.cpp
   ./pintr/system/SystemClassicalLight.cpp
   ./pintr/system/SystemClassicalLight.hpp
   ./pintr/tools/setup.cpp
@@ -63,8 +64,8 @@ add_library(pintr OBJECT
   ./pintr/utils/args.hpp
   ./pintr/utils/eigen_assertion.hpp
   ./pintr/utils/eigen_compat.hpp
-  ./pintr/utils/euler.test.cpp
   ./pintr/utils/euler.hpp
+  ./pintr/utils/euler.test.cpp
   ./pintr/utils/hash.hpp
   ./pintr/utils/ketid.hpp
   ./pintr/utils/maths.hpp
@@ -73,8 +74,8 @@ add_library(pintr OBJECT
   ./pintr/utils/spherical.hpp
   ./pintr/utils/streamed.hpp
   ./pintr/utils/traits.hpp
-  ./pintr/utils/wigner.test.cpp
   ./pintr/utils/wigner.hpp
+  ./pintr/utils/wigner.test.cpp
   ./pintr/pintr.hpp
 )
 
