@@ -127,7 +127,8 @@ endif()
 include(FetchContent)
 FetchContent_Declare(nanobind
   GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-  GIT_TAG        72831bb)
+  GIT_TAG        8d7f1ee0621c17fa370b704b2100ffa0243d5bfb # v2.0.0
+)
 FetchContent_GetProperties(nanobind)
 if(NOT nanobind_POPULATED)
   FetchContent_Populate(nanobind)
@@ -139,19 +140,23 @@ set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
 
 # Find duckdb
 if(WIN32)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-windows-amd64.zip)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.0.0/libduckdb-windows-amd64.zip)
   set(DUCKDB_LIBNAME duckdb.dll)
+  set(DUCKDB_MD5 86585ecd2429a9c47cb7fcb9d4b3a168)
 elseif(APPLE)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.10.2/libduckdb-osx-universal.zip)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.0.0/libduckdb-osx-universal.zip)
   set(DUCKDB_LIBNAME libduckdb.dylib)
+  set(DUCKDB_MD5 70cd2d330ef721c5854cdad51fceb8bc)
 elseif(UNIX)
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-linux-amd64.zip)
   set(DUCKDB_LIBNAME libduckdb.so)
+  set(DUCKDB_MD5 249fad0221153fb99af58d4a150d5fb0)
 endif()
 FetchContent_Declare(duckdb
     URL ${DUCKDB_URL}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
+    URL_HASH MD5=${DUCKDB_MD5}
 )
 FetchContent_GetProperties(duckdb)
 if(NOT duckdb_POPULATED)
