@@ -29,36 +29,6 @@ if(POLICY CMP0128)
   cmake_policy(SET CMP0128 NEW)
 endif()
 
-# Set version of settings and cache
-set(VERSION_SETTINGS "v18")
-set(VERSION_CACHE "v18")
-set(VERSION_SOFTWARE_DEFAULT "v0.0.0")
-
-# Get software version info from git
-if(NOT VERSION_SOFTWARE)
-  find_package(Git)
-  if(GIT_FOUND)
-    execute_process(
-      COMMAND "${GIT_EXECUTABLE}" describe --abbrev=0 --tags
-      WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
-      RESULT_VARIABLE GIT_DESCRIBE_RESULT
-      OUTPUT_VARIABLE GIT_DESCRIBE_OUTPUT
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if(GIT_DESCRIBE_RESULT EQUAL 0)
-      set(VERSION_SOFTWARE "${GIT_DESCRIBE_OUTPUT}" CACHE STRING "Set software version" FORCE)
-    else()
-      message(WARNING "Git failed to determine the version of the pairinteraction software.")
-      set(VERSION_SOFTWARE "${VERSION_SOFTWARE_DEFAULT}" CACHE STRING "Set software version" FORCE)
-    endif()
-  else()
-    message(WARNING "Because Git was not found, the version of the pairinteraction software cannot be determined.")
-    set(VERSION_SOFTWARE "${VERSION_SOFTWARE_DEFAULT}" CACHE STRING "Set software version" FORCE)
-  endif()
-endif()
-
-string(REGEX REPLACE "v(.+)" "\\1" VERSION_WITHOUT_LEADING_V ${VERSION_SOFTWARE})
-string(REGEX REPLACE "-(pre)?alpha" "a" VERSION_WITHOUT_LEADING_V_COMPACT_ALPHA ${VERSION_WITHOUT_LEADING_V})
-
 # Default build type is "Release with debug info"
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
@@ -67,7 +37,6 @@ ENDIF(NOT CMAKE_BUILD_TYPE)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Build options
-option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF) # TODO treat building a windows installer and dmg the same
@@ -176,16 +145,12 @@ add_library(duckdb::duckdb ALIAS duckdb)
 add_subdirectory(pairinteraction_backend)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(test/pairinteraction_backend/cpp)
-  add_subdirectory(test/pairinteraction_gui) # TODO use pytest
   add_subdirectory(test/pairinteraction) # TODO use pytest
+  add_subdirectory(test/pairinteraction_gui) # TODO use pytest
 endif()
 
 if( WITH_BENCH )
 endif()
-
-if( WITH_GUI )
-  add_subdirectory(pairinteraction_gui)
-endif( )
 
 if ( WITH_DOC )
   add_subdirectory(doc)
@@ -245,7 +210,6 @@ elseif(UNIX AND NOT SKBUILD)
     set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
   endif()
   string(REGEX REPLACE "\\.(deb|rpm|tar\\.gz)$" "" CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-  set(CPACK_PACKAGE_VERSION "${VERSION_WITHOUT_LEADING_V}")
   set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
 
   # DEB
@@ -274,9 +238,9 @@ include(CPack)
 include(FeatureSummary)
 feature_summary(WHAT ALL)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
-message(STATUS "Software version: ${VERSION_SOFTWARE}")
 
-# HACK: Copy the "pairinteraction" directory to the build directory # TODO re
+# HACK: Copy the python directories to the build directory # TODO re
 if(NOT SKBUILD)
   file(COPY ${CMAKE_SOURCE_DIR}/pairinteraction DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/pairinteraction_gui DESTINATION ${CMAKE_BINARY_DIR})
 endif()

@@ -29,7 +29,7 @@ endfunction(PYTHON_TEST)
 
 # Add Python test cases
 find_package(Python COMPONENTS Interpreter REQUIRED)
-if(WITH_GUI AND NOT (APPLE AND DEFINED ENV{CI}))
+if(NOT (APPLE AND DEFINED ENV{CI}))
   python_test(TARGET gui SOURCE gui.py)
   file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/reference_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif()

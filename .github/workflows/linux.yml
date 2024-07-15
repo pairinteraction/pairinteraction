@@ -192,7 +192,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements-dev.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOC=On -DWITH_GUI=Off
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOC=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

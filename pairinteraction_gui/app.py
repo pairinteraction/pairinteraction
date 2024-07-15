@@ -20,9 +20,10 @@
 import multiprocessing
 import os
 import sys
+from pathlib import Path
 
 try:
-    from PyQt5 import QtCore, QtGui, QtWidgets
+    from PyQt5 import QtCore, QtGui, QtWidgets, uic
 except ImportError as err:
     raise ImportError(
         "Loading PyQt5 has failed. Is the library installed? If you are using the Anaconda or Miniconda "
@@ -119,8 +120,6 @@ import pyqtgraph as pg
 # GUI
 from PyQt5.QtPrintSupport import QPrintDialog, QPrinter
 from pyqtgraph import exporters
-
-from pairinteraction_gui.plotter import Ui_plotwindow
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 20)
@@ -536,6 +535,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # mapticks[np.argmin(mappos)] = (mapticks[np.argmin(mappos)][0],(245,245,245,255))
             pg.graphicsItems.GradientEditorItem.Gradients[k]["ticks"] = mapticks
 
+        ui_filepath = Path(__file__).parent / "plotter.ui"
+        Ui_plotwindow, _ = uic.loadUiType(ui_filepath)
         self.ui = Ui_plotwindow()
 
         self.splash.progress("Setup UI ...", 80)
