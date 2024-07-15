@@ -26,6 +26,7 @@ ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
 ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin/:$PATH"
 
 ENV BOOST_INCLUDEDIR=/usr/include/boost169
 ENV BOOST_LIBRARYDIR=/usr/lib64/boost169
