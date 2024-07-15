@@ -187,14 +187,12 @@ This can be done e.g. by adding the following lines to the top of a Python scrip
     import sys
     sys.path.append("/your/path/to/pairinteraction/build")
 
-Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can disable the graphical user interface by running CMake with ``cmake -DWITH_GUI=OFF ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the docuemtation by running CMake with ``cmake -DWITH_DOC=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
 A full list of build options is provided in the following:
 
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_GUI``        | Build with Python GUI [#]_           | ON      |
-+---------------------+--------------------------------------+---------+
 | ``WITH_DOC``        | Generate documentation               | OFF     |
 +---------------------+--------------------------------------+---------+
 | ``WITH_BENCH``      | Compile the benchmarks               | OFF     |
@@ -204,10 +202,6 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
 +---------------------+--------------------------------------+---------+
-
-.. [#] This mode builds the graphical user interface extension.
-       If pairinteraction is built in this mode, any derived work has to be licensed under
-       GPL v3, because of the PyQT5 being distributed under GPL.
 
 Moreover, executing the commands manually allows for running additional targets.
 For example, you can use the ``doc`` target to build a documentation by executing ``cmake --build . --target doc``.
@@ -252,6 +246,19 @@ processors can speed up the compilation process significantly.
 .. code-block:: bash
 
     cmake --build . -- -j 8
+
+Compiling the UI
+^^^^^^^^^^^^^^^^
+Inside the pairinteraction_gui directory, there is also the file defining the UI (``plotter.ui``).
+If you want to make changes to the UI you just have to update the ``plotter.ui`` file to your needs (e.g. by using the software Qt Designer).
+
+The ui file is then dynamically loaded by ``app.py``.
+In case you want to inspect the compiled version of ``plotter.ui`` you can compile the ui file locally to a python file by running the following command:
+
+.. code-block:: bash
+
+    pyuic5 plotter.ui --output plotter.py
+
 
 Tips and Tricks
 ^^^^^^^^^^^^^^^
