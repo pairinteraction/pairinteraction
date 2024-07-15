@@ -83,7 +83,7 @@ Dependencies of the C++ backend
     * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
 
     .. note::
-        To allow the build system to find `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the oneAPI libraries provide scripts that can be sourced before running CMake. For example, on Ubuntu, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
+        `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
 
 Dependencies of the Python library
     All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_ / `uv`_.
@@ -97,6 +97,7 @@ Dependencies of the Python library
 .. _Visual Studio: https://visualstudio.microsoft.com/downloads/
 .. _Intel MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
 .. _Intel TBB: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb-download.html
+.. _Intel repository: https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html
 
 Automatic Build
 ^^^^^^^^^^^^^^^
