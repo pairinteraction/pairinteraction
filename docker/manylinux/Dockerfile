@@ -18,8 +18,8 @@ RUN yum install -y epel-release \
     swig \
     spdlog-devel \
     cpp-httplib-devel \
-    python3 \
-    python3-devel \
+    python38 \
+    python38-devel \
     graphviz-devel
 
 ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
