@@ -20,44 +20,27 @@ message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
 if (NOT SKBUILD)
-  message(WARNING "\
-  This CMake file is meant to be executed using 'scikit-build'. Running
-  it directly will almost certainly not produce the desired result. If
-  you are a user trying to install this package, please use one of the
-  commands below.
+message(WARNING "\
+This CMake file is mainly meant to be executed using 'scikit-build' or by persons developing the C++ backend. \
+Running it directly might not produce the desired result. \
+If you are a user trying to install this package, please use one of the commands below inside the root directory of the repository. \
 
-  If you have already set up a virtual environment
-  (or want to install the package globally), use the following command:
-  =====================================================================
-   $ pip install .[gui,doc]
-  =====================================================================
-  Where the arguments 'gui' and 'doc' are optional and can be omitted.
+Consider using the following command to install the package instead:
+=====================================================================
+  $ pip install .[gui,doc]
+=====================================================================
+where the arguments 'gui' (installs the graphical user interface) and 'doc' (installs dependencies for building the documentation) are optional and can be omitted. \
 
-  Optionally: Set up a virtual environment and activate it,
-  e.g. with uv (https://pypi.org/project/uv/)
-  =====================================================================
-   $ uv venv .venv
-   $ . .venv/bin/activate
-  =====================================================================
-  Also consider `using uv pip install .` for a faster installation.
+Optionally: Set up a virtual environment and activate it to install the package in an isolated environment. \
+We recommend using 'uv' (https://pypi.org/project/uv) for this like so:
+=====================================================================
+  $ uv venv .venv
+  $ . .venv/bin/activate
+=====================================================================
+now you can use `uv pip install .`. \
 
-  If you are a developer, consider setting up a virtual environment
-  as described above, then install all necessary build dependencies:
-  =====================================================================
-   $ uv pip compile pyproject.toml --extra build > requirements-build.txt
-   $ uv pip install -r requirements-build.txt
-  =====================================================================
-  Now you can compile the package via
-  =====================================================================
-   $ uv pip install --no-build-isolation -ve .
-  =====================================================================
-  --no-build-isolation: avoid costly re-creations of virtual environments.
-  -e: install the package in editable mode (i.e. changes to the python
-  files only! inside pairinteraction/ are immediately effective).
-  -v (--verbose): more verbose output
-  You may optionally add -Ceditable.rebuild=true to auto-rebuild when
-  the package is imported. Otherwise, you need to re-run the above
-  after editing C++ files.")
+For more details and advanced options, please refer to installation instructions in the documentation.
+")
 endif()
 
 

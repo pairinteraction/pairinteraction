@@ -6,14 +6,14 @@ Installation
 This guide provides installation instructions for the `pairinteraction` software, catering to users of all levels.
 It offers three different installation methods:
 
-- `Using Pip`_: Ideal for most users, this method employs `pip` for straightforward installation from the
+- `Using Pip`_: Ideal for most users, this method employs `pip`_ for straightforward installation from the
   Python Package Index, providing access to the software's Python library and graphical interface.
 
 - `Binary Installers`_: If you are mainly interested in the graphical interface, you can download
   an installer for pairinteraction (Windows, OS X) or use the `Flatpak` package manager (GNU/Linux).
 
 - `Building from Source`_: Aimed at developers and experienced users, this approach involves compiling the software from source,
-  detailing necessary dependencies, and offering steps for either an automated build with `pip` / `uv` or a manual build.
+  detailing necessary dependencies, and offering steps for either an automated build with `pip`_ / `uv`_ or a manual build.
   The latter allows for additional customization and the execution of different targets, such as generating documentation.
 
 All methods install the graphical user interface of pairinteraction. It allows for calculating pair potential, taking into
@@ -67,7 +67,7 @@ Requirements
 Before compiling the source code, you have to install the following tools and dependencies:
 
 Build tools
-    `CMake`_ for running the build system (at least CMake 3.21 is required), `uv`_ for managing the Python dependencies. In addition, we require a package manager for the C++ dependencies and a compiler for building the C++ backend. In the following, we provide recommendations for different operating systems:
+    `CMake`_ for running the build system (at least CMake 3.21 is required), `pip`_ / `uv`_ for managing the Python dependencies. In addition, we require a package manager for the C++ dependencies and a compiler for building the C++ backend. In the following, we provide recommendations for different operating systems:
 
     * For **GNU/Linux**, use the distribution's package manager and the gcc or clang compiler.
 
@@ -83,11 +83,12 @@ Dependencies of the C++ backend
     * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel MKL`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
 
 Dependencies of the Python library
-    All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using pip/uv.
+    All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_ / `uv`_.
 
 .. _git: https://git-scm.com/download/
 .. _CMake: https://cmake.org/download/
 .. _uv: https://pypi.org/project/uv/
+.. _pip: https://pypi.org/project/pip/
 .. _Homebrew: https://brew.sh/
 .. _VCPKG: https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows
 .. _Visual Studio: https://visualstudio.microsoft.com/downloads/
@@ -100,37 +101,54 @@ Automatic Build
     If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running
     ``pip install git+https://github.com/pairinteraction/pairinteraction``.
 
-After cloning the repository and installing the requirements, you can build and install the software into a local virtual Python environment by running the following command within the pairinteraction repository:
+We strongly recommend using the `uv`_ tool, to create a virtual environment and build the software inside this virtual environment.
+Creating and activating a virtual environment with `uv`_ can be done by running the following commands:
 
 .. code-block:: bash
 
     uv venv --python=3.8 .venv
     source .venv/bin/activate
-    uv pip install .
 
-This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface.
+In the following, we will describe how to build the software inside this environment using `uv`_.
+If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of the pairinteraction repository.
+However, you can also use a different virtual environment manager like `venv` or `conda`, or build the software into your system-wide Python environment by replacing in all following commands ``uv pip`` with ``pip``.
 
-The graphical user interface can be installed by running:
+After cloning the repository and creating the virtual environment, you can build and install the software by running:
 
 .. code-block:: bash
 
-    uv pip install .[gui]
+    uv pip install -e .[gui]
 
-and then can be started by executing
+This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface.
+By omitting the ``[gui]`` option, you can build the software without installing the additional dependencies needed for the graphical user interface.
+The option ``-e`` installs the software in editable mode, which means that changes to the python source code are directly reflected in the installed package.
+If you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual environment.
+
+The graphical user interface can now be started by executing:
 
 .. code-block:: bash
 
     start_pairinteraction_gui
 
-To use the Python library, you have to run your python code in the virtual environment created by uv. Activating the environment can be done by running ``source .venv/bin/activate``.
-After this you can simply run your python code as usual.
-Alternatively, you can build and install the software system-wide by running ``pip install -e .`` from the root directory of the pairinteraction repository.
+To use the Python library within your code, you can simply run your python code from inside the virtual environment.
 
-Tests of the Python library and graphical user interface can be run by executing
+Tests of the Python library and graphical user interface can be run by executing:
 
 .. code-block:: bash
 
     python3 -m unittest
+
+.. note::
+    Advanced options for developers when building the package:
+
+    .. code-block:: bash
+
+        uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+
+    | ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies like ``uv pip install scikit-build-core nanobind numpy``).
+    | ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
+    | ``-v``: Make the output more verbose.
+    | ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
 
 Manual Build
 ^^^^^^^^^^^^
@@ -138,21 +156,18 @@ Manual Build
 .. note::
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
 
-If you want to build, e.g., the documentation of pairinteraction or have more control over the build process, you can run the tasks that have been executed by pip/uv manually.
+If you want to build, e.g., the documentation of pairinteraction or have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
 For this, you have to first install the Python dependencies manually.
-We recommend again first creating a virtual environment using uv:
+
+Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
 
 .. code-block:: bash
 
     uv venv --python=3.8 .venv
     source .venv/bin/activate
 
-and then installing the dependencies in this environment:
-
-.. code-block:: bash
-
-    uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-    uv pip install -r requirements-dev.txt
+    uv pip compile pyproject.toml --all-extras > requirements.txt
+    uv pip install -r requirements.txt
 
 For **GNU/Linux and OS X**, you can then build the software with standard CMake commands:
 
@@ -172,22 +187,9 @@ For **Windows**, you must specify a visual studio generator, provide a path to t
     cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
     cmmake --build . --config RelWithDebInfo
 
-This creates the C++ backend, the Python library, and the graphical user interface. The graphical user interface can be started by executing
+This creates the C++ backend.
 
-.. code-block:: bash
-
-    ./start_pairinteraction_gui.py
-
-in the build directory.
-To use the Python library, you have to extend the Python package search path to accommodate pairinteraction by adding your build directory to ``PYTHONPATH``.
-This can be done e.g. by adding the following lines to the top of a Python script:
-
-.. code-block:: python
-
-    import sys
-    sys.path.append("/your/path/to/pairinteraction/build")
-
-Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the docuemtation by running CMake with ``cmake -DWITH_DOC=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the documentation by running CMake with ``cmake -DWITH_DOC=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
 A full list of build options is provided in the following:
 
 +---------------------+--------------------------------------+---------+
@@ -205,7 +207,7 @@ A full list of build options is provided in the following:
 
 Moreover, executing the commands manually allows for running additional targets.
 For example, you can use the ``doc`` target to build a documentation by executing ``cmake --build . --target doc``.
-In contrast, if you use pip/uv to build the software, only the default target for building the library is executed.
+In contrast, if you use `pip`_ / `uv`_ to build the software, only the default target for building the library is executed.
 In the following, a list of all available targets is provided.
 Note that some targets require specific build options to be enabled in addition to the default options.
 
@@ -246,19 +248,6 @@ processors can speed up the compilation process significantly.
 .. code-block:: bash
 
     cmake --build . -- -j 8
-
-Compiling the UI
-^^^^^^^^^^^^^^^^
-Inside the pairinteraction_gui directory, there is also the file defining the UI (``plotter.ui``).
-If you want to make changes to the UI you just have to update the ``plotter.ui`` file to your needs (e.g. by using the software Qt Designer).
-
-The ui file is then dynamically loaded by ``app.py``.
-In case you want to inspect the compiled version of ``plotter.ui`` you can compile the ui file locally to a python file by running the following command:
-
-.. code-block:: bash
-
-    pyuic5 plotter.ui --output plotter.py
-
 
 Tips and Tricks
 ^^^^^^^^^^^^^^^
