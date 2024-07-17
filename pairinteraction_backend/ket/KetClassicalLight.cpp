@@ -8,7 +8,7 @@
 #include "utils/hash.hpp"
 
 template <typename Real>
-KetClassicalLight<Real>::KetClassicalLight(Private, Real photon_energy, int q)
+KetClassicalLight<Real>::KetClassicalLight(Private /*unused*/, Real photon_energy, int q)
     : Ket<Real>(photon_energy * q, 0, 0, -1), photon_energy(photon_energy), quantum_number_q(q) {}
 
 template <typename Real>
@@ -18,7 +18,7 @@ Real KetClassicalLight<Real>::get_photon_energy() const {
 
 template <typename Real>
 std::string KetClassicalLight<Real>::get_label() const {
-    std::string label = "";
+    std::string label;
     label += fmt::format("{:d}", quantum_number_q);
     label += fmt::format("_{{{:g} GHz}}", photon_energy);
     return label;

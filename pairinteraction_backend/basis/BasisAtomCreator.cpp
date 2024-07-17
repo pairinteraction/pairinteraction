@@ -5,7 +5,7 @@
 #include "ket/KetAtom.hpp"
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(std::string value) {
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(const std::string &value) {
     species.emplace(value);
     return *this;
 }

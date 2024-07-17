@@ -300,7 +300,16 @@ If you're developing and making changes to specific parts of the software, you c
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
-**5. Debugging with GDB**
+**5. Finding Programming Errors with Clang-Tidy**
+
+It is a good practice to run the C++ linter tool `clang-tidy` during compilation to find programming errors. If you have the clang compiler installed, you can do so by building the software with the following commands:
+
+.. code-block:: bash
+
+    cmake -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" ..
+    cmake --build .
+
+**6. Debugging with GDB**
 
 For tracking down errors like segmentation faults, running a debug build with the GNU Debugger `GDB` can be very helpful.
 

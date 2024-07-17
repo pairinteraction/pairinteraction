@@ -5,7 +5,7 @@
 #include <system_error>
 
 namespace args {
-bool parse_download_missing(int &i, int argc, char **const argv, bool &download_missing) {
+inline bool parse_download_missing(int &i, int argc, char **const argv, bool &download_missing) {
     if (i < argc && std::string(argv[i]) == "--download-missing") {
         download_missing = true;
         return true;
@@ -13,7 +13,8 @@ bool parse_download_missing(int &i, int argc, char **const argv, bool &download_
     return false;
 }
 
-bool parse_database(int &i, int argc, char **const argv, std::filesystem::path &databasedir) {
+inline bool parse_database(int &i, int argc, char **const argv,
+                           std::filesystem::path &databasedir) {
     if (i < argc && std::string(argv[i]) == "--database") {
         if (++i >= argc) {
             throw std::runtime_error("Option --database expects an arguments, but none is given.");

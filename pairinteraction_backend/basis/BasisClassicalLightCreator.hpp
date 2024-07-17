@@ -25,7 +25,7 @@ public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetClassicalLight<real_t>;
     BasisClassicalLightCreator() = default;
-    BasisClassicalLightCreator<Scalar> &set_photon_energy(real_t photon_energy);
+    BasisClassicalLightCreator<Scalar> &set_photon_energy(real_t value);
     BasisClassicalLightCreator<Scalar> &restrict_quantum_number_q(int min, int max);
     std::shared_ptr<const BasisClassicalLight<Scalar>> create() const;
 

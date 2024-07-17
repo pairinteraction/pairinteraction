@@ -53,7 +53,6 @@ template class BasisClassicalLightCreator<std::complex<double>>;
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "ket/KetClassicalLightCreator.hpp"
 #include "utils/streamed.hpp"
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>

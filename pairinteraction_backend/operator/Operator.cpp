@@ -7,7 +7,7 @@
 #include <memory>
 
 template <typename Derived>
-Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(basis) {}
+Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(std::move(basis)) {}
 
 template <typename Derived>
 const Derived &Operator<Derived>::derived() const {

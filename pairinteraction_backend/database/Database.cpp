@@ -27,27 +27,27 @@ Database::Database(bool download_missing)
     : Database(download_missing, default_wigner_in_memory, default_databasedir) {}
 
 Database::Database(std::filesystem::path databasedir)
-    : Database(default_download_missing, default_wigner_in_memory, databasedir) {}
+    : Database(default_download_missing, default_wigner_in_memory, std::move(databasedir)) {}
 
 Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem::path databasedir)
-    : download_missing(download_missing), wigner_in_memory(wigner_in_memory),
-      databasedir(databasedir), db(std::make_unique<duckdb::DuckDB>(nullptr)),
+    : _download_missing(download_missing), _wigner_in_memory(wigner_in_memory),
+      _databasedir(std::move(databasedir)), db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
 
-    if (databasedir.empty()) {
-        databasedir = default_databasedir;
+    if (_databasedir.empty()) {
+        _databasedir = default_databasedir;
     }
 
-    const std::regex parquet_regex("^(\\w+)_v(\\d+)\\.parquet$");
+    const std::regex parquet_regex(R"(^(\w+)_v(\d+)\.parquet$)");
 
     // Ensure the database directory exists
-    if (!std::filesystem::exists(databasedir)) {
-        std::filesystem::create_directories(databasedir);
+    if (!std::filesystem::exists(_databasedir)) {
+        std::filesystem::create_directories(_databasedir);
     } else {
-        databasedir = std::filesystem::canonical(databasedir);
-        if (!std::filesystem::is_directory(databasedir)) {
+        _databasedir = std::filesystem::canonical(_databasedir);
+        if (!std::filesystem::is_directory(_databasedir)) {
             throw std::filesystem::filesystem_error(
-                "Cannot access database", databasedir.string(),
+                "Cannot access database", _databasedir.string(),
                 std::make_error_code(std::errc::not_a_directory));
         }
     }
@@ -120,7 +120,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     }
 
     // Create a pool of clients
-    if (download_missing) {
+    if (_download_missing) {
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             pool.emplace_back(httplib::Client(database_repo_host));
             pool.back().set_follow_location(true);
@@ -131,7 +131,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     }
 
     // Get a dictionary of locally available tables
-    for (const auto &entry : std::filesystem::directory_iterator(databasedir)) {
+    for (const auto &entry : std::filesystem::directory_iterator(_databasedir)) {
         if (entry.is_regular_file()) {
             std::smatch parquet_match;
             std::string filename = entry.path().filename().string();
@@ -150,7 +150,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     }
 
     // Get a dictionary of remotely available tables
-    if (download_missing) {
+    if (_download_missing) {
 // Call the different endpoints asynchronously
 #if HTTPLIB_USES_STD_STRING
         httplib::Result (httplib::Client::*gf)(const std::string &, const httplib::Headers &) =
@@ -165,8 +165,8 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
 
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             // Get the last modified date of the last JSON response
-            std::string lastmodified = "";
-            filenames.push_back(databasedir /
+            std::string lastmodified;
+            filenames.push_back(_databasedir /
                                 ("latest_" +
                                  std::to_string(std::hash<std::string>{}(database_repo_paths[i])) +
                                  ".json"));
@@ -212,13 +212,13 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 if (res->has_header("retry-after")) {
                     waittime = std::stoi(res->get_header_value("retry-after"));
                 } else if (res->has_header("x-ratelimit-reset")) {
-                    waittime =
-                        std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
+                    waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
+                        static_cast<int>(time(nullptr));
                 }
                 SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
                              "is disabled. You should not retry until after {} seconds.",
                              waittime);
-                download_missing = false;
+                _download_missing = false;
                 continue;
 
             } else if (res->status != 200) {
@@ -262,7 +262,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     }
 
     // Load the Wigner 3j symbols table into memory
-    if (wigner_in_memory) {
+    if (_wigner_in_memory) {
         ensure_presence_of_table("wigner");
         auto result = con->Query(fmt::format(R"(CREATE TEMP TABLE 'wigner' AS SELECT * FROM '{}')",
                                              tables["wigner"].local_path.string()));
@@ -314,14 +314,14 @@ std::vector<Database::AvailabilitySpecies> Database::get_availability_of_species
                                                      "matrix_elements_o",
                                                      "matrix_elements_mu",
                                                      "matrix_elements_dia"};
-    for (size_t i = 0; i < availability.size(); i++) {
+    for (auto &a : availability) {
         for (const auto &identifier : identifier_of_tables) {
-            std::string name = availability[i].name + "_" + identifier;
+            std::string name = a.name + "_" + identifier;
             if (tables.count(name) > 0) {
                 if (tables[name].local_version == -1) {
-                    availability[i].fully_downloaded = false;
+                    a.fully_downloaded = false;
                 } else if (tables[name].local_version < tables[name].remote_version) {
-                    availability[i].up_to_date = false;
+                    a.up_to_date = false;
                 }
             }
         }
@@ -368,8 +368,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     }
 
     // Describe the state
-    std::string where = "";
-    std::string separator = "";
+    std::string where;
+    std::string separator;
     if (description.energy.has_value()) {
         // The following condition derives from demanding that quantum number n that corresponds to
         // the energy "E_n = -1/(2*n^2)" is not off by more than 1 from the actual quantum number n,
@@ -420,7 +420,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         where += "FALSE";
     }
 
-    std::string orderby = "";
+    std::string orderby;
     separator = "";
     if (description.energy.has_value()) {
         orderby += separator +
@@ -521,7 +521,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 
     // Describe the states
     std::string where = "(";
-    std::string separator = "";
+    std::string separator;
     if (description.parity.has_value()) {
         where += separator + fmt::format("parity = {}", description.parity.value());
         separator = " AND ";
@@ -613,8 +613,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 
     // Ask the table for the extreme values of the quantum numbers
     {
-        std::string select = "";
-        std::string separator = "";
+        std::string select;
+        std::string separator;
         if (description.range_energy.is_finite()) {
             select += separator + "MIN(energy) AS min_energy, MAX(energy) AS max_energy";
             separator = ", ";
@@ -818,20 +818,20 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
 
-        auto chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
-        auto chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
-        auto chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk->data[2]);
-        auto chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[3]);
-        auto chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk->data[4]);
-        auto chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[5]);
-        auto chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[6]);
-        auto chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[7]);
-        auto chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8]);
-        auto chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9]);
-        auto chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10]);
-        auto chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11]);
-        auto chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12]);
-        auto chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13]);
+        auto *chunk_energy = duckdb::FlatVector::GetData<double>(chunk->data[0]);
+        auto *chunk_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1]);
+        auto *chunk_quantum_number_m = duckdb::FlatVector::GetData<double>(chunk->data[2]);
+        auto *chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[3]);
+        auto *chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk->data[4]);
+        auto *chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[5]);
+        auto *chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[6]);
+        auto *chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[7]);
+        auto *chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8]);
+        auto *chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9]);
+        auto *chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10]);
+        auto *chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11]);
+        auto *chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12]);
+        auto *chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
 
@@ -967,7 +967,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 
     // Construct the matrix
     int dim = basis->get_number_of_states();
-    int num_entries = result->RowCount();
+    int num_entries = static_cast<int>(result->RowCount());
 
     std::vector<int> outerIndexPtr;
     std::vector<int> innerIndices;
@@ -980,9 +980,9 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 
     for (auto chunk = result->Fetch(); chunk; chunk = result->Fetch()) {
 
-        auto chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
-        auto chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
-        auto chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
+        auto *chunk_row = duckdb::FlatVector::GetData<int64_t>(chunk->data[0]);
+        auto *chunk_col = duckdb::FlatVector::GetData<int64_t>(chunk->data[1]);
+        auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
             int row = basis->ket_id_to_index.at(chunk_row[i]);
@@ -991,7 +991,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
                     throw std::runtime_error("The rows are not sorted.");
                 }
                 for (; last_row < row; last_row++) {
-                    outerIndexPtr.push_back(innerIndices.size());
+                    outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
             innerIndices.push_back(basis->ket_id_to_index.at(chunk_col[i]));
@@ -1000,7 +1000,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
     }
 
     for (; last_row < dim + 1; last_row++) {
-        outerIndexPtr.push_back(innerIndices.size());
+        outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
     }
 
     Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
@@ -1014,17 +1014,17 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
     return OperatorAtom(basis, type, q, std::move(matrix));
 }
 
-void Database::ensure_presence_of_table(std::string name) {
-    if (tables.count(name) == 0 && download_missing) {
+void Database::ensure_presence_of_table(const std::string &name) {
+    if (tables.count(name) == 0 && _download_missing) {
         throw std::runtime_error("No database `" + name + "` found.");
     }
 
-    if (tables.count(name) == 0 && !download_missing) {
+    if (tables.count(name) == 0 && !_download_missing) {
         throw std::runtime_error("No database `" + name +
                                  "` found. Try setting download_missing to true.");
     }
 
-    if (download_missing && tables[name].local_version < tables[name].remote_version) {
+    if (_download_missing && tables[name].local_version < tables[name].remote_version) {
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
         auto res = pool.front().Get(
@@ -1040,18 +1040,19 @@ void Database::ensure_presence_of_table(std::string name) {
             if (res->has_header("retry-after")) {
                 waittime = std::stoi(res->get_header_value("retry-after"));
             } else if (res->has_header("x-ratelimit-reset")) {
-                waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) - time(nullptr);
+                waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
+                    static_cast<int>(time(nullptr));
             }
             SPDLOG_ERROR("Error accessing database repositories, rate limit exceeded. Auto update "
                          "is disabled. You should not retry until after {} seconds.",
                          waittime);
-            download_missing = false;
+            _download_missing = false;
         } else {
             if (tables[name].local_version != -1) {
                 std::filesystem::remove(tables[name].local_path);
             }
             tables[name].local_version = tables[name].remote_version;
-            tables[name].local_path = databasedir /
+            tables[name].local_path = _databasedir /
                 (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
             std::ofstream out(tables[name].local_path, std::ios::binary);
             out << res->body;
@@ -1060,7 +1061,7 @@ void Database::ensure_presence_of_table(std::string name) {
     }
 }
 
-void Database::ensure_quantum_number_n_is_allowed(std::string name) {
+void Database::ensure_quantum_number_n_is_allowed(const std::string &name) {
     auto result =
         con->Query(fmt::format(R"(SELECT n FROM '{}' LIMIT 1)", tables[name].local_path.string()));
 
@@ -1093,7 +1094,7 @@ Database &Database::get_global_instance() {
 Database &Database::get_global_instance(bool download_missing) {
     Database &database = get_global_instance_without_checks(
         download_missing, default_wigner_in_memory, default_databasedir);
-    if (download_missing != database.download_missing) {
+    if (download_missing != database._download_missing) {
         throw std::invalid_argument(
             "The 'download_missing' argument must not change between calls to the method.");
     }
@@ -1106,7 +1107,7 @@ Database &Database::get_global_instance(std::filesystem::path databasedir) {
     }
     Database &database = get_global_instance_without_checks(default_download_missing,
                                                             default_wigner_in_memory, databasedir);
-    if (databasedir != database.databasedir) {
+    if (databasedir != database._databasedir) {
         throw std::invalid_argument(
             "The 'databasedir' argument must not change between calls to the method.");
     }
@@ -1120,8 +1121,8 @@ Database &Database::get_global_instance(bool download_missing, bool wigner_in_me
     }
     Database &database =
         get_global_instance_without_checks(download_missing, wigner_in_memory, databasedir);
-    if (download_missing != database.download_missing ||
-        wigner_in_memory != database.wigner_in_memory || databasedir != database.databasedir) {
+    if (download_missing != database._download_missing ||
+        wigner_in_memory != database._wigner_in_memory || databasedir != database._databasedir) {
         throw std::invalid_argument("The 'download_missing' and 'databasedir' arguments must not "
                                     "change between calls to the method.");
     }
@@ -1130,12 +1131,21 @@ Database &Database::get_global_instance(bool download_missing, bool wigner_in_me
 
 Database &Database::get_global_instance_without_checks(bool download_missing, bool wigner_in_memory,
                                                        std::filesystem::path databasedir) {
-    thread_local static Database database(download_missing, wigner_in_memory, databasedir);
+    thread_local static Database database(download_missing, wigner_in_memory,
+                                          std::move(databasedir));
     return database;
 }
 
-const std::filesystem::path Database::default_databasedir =
-    paths::get_pairinteraction_cache_directory() / "database";
+struct databasedir_noexcept : std::filesystem::path {
+    explicit databasedir_noexcept() noexcept try : std
+        ::filesystem::path(paths::get_pairinteraction_cache_directory() / "database") {}
+    catch (...) {
+        SPDLOG_ERROR("Error getting the pairinteraction cache directory.");
+        std::terminate();
+    }
+};
+
+const std::filesystem::path Database::default_databasedir = databasedir_noexcept();
 
 // Explicit instantiations
 template std::shared_ptr<const KetAtom<float>>
@@ -1174,9 +1184,7 @@ template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<
 // Test cases
 ///////////////////////////////////////////////////////////////////////////////////////
 
-#include "utils/streamed.hpp"
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 DOCTEST_TEST_CASE("get a KetAtom") {
     Database &database = Database::get_global_instance();

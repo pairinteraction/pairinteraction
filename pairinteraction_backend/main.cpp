@@ -23,5 +23,5 @@ int main(int argc, char **argv) {
         }
     }
 
-    return test(args.size(), args.data(), download_missing, databasedir);
+    return test(static_cast<int>(args.size()), args.data(), download_missing, databasedir);
 }

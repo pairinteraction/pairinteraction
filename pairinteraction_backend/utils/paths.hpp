@@ -20,7 +20,7 @@ inline std::filesystem::path get_home_directory() {
         return path;
     }
 #endif
-    return std::filesystem::path("~");
+    return {"~"};
 }
 
 inline std::filesystem::path get_pairinteraction_cache_directory() {

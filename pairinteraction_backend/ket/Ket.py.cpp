@@ -12,7 +12,7 @@
 namespace nb = nanobind;
 
 template <typename T>
-static void declare_ket(nb::module_ &m, std::string type_name) {
+static void declare_ket(nb::module_ &m, const std::string &type_name) {
     std::string pylass_name = "Ket" + type_name;
     nb::class_<Ket<T>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_energy", &Ket<T>::get_energy)
@@ -28,7 +28,7 @@ static void declare_ket(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_ket_atom(nb::module_ &m, std::string type_name) {
+static void declare_ket_atom(nb::module_ &m, const std::string &type_name) {
     std::string pylass_name = "KetAtom" + type_name;
     nb::class_<KetAtom<T>, Ket<T>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_species", &KetAtom<T>::get_species)
@@ -40,7 +40,7 @@ static void declare_ket_atom(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_ket_atom_creator(nb::module_ &m, std::string type_name) {
+static void declare_ket_atom_creator(nb::module_ &m, const std::string &type_name) {
     std::string pylass_name = "KetAtomCreator" + type_name;
     nb::class_<KetAtomCreator<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())

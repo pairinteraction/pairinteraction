@@ -1,7 +1,7 @@
 #include "basis/BasisClassicalLight.hpp"
 
 template <typename Scalar>
-BasisClassicalLight<Scalar>::BasisClassicalLight(Private, ketvec_t &&kets)
+BasisClassicalLight<Scalar>::BasisClassicalLight(Private /*unused*/, ketvec_t &&kets)
     : Basis<BasisClassicalLight<Scalar>>(std::move(kets)) {}
 
 // Explicit instantiations

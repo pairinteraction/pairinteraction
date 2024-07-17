@@ -16,7 +16,7 @@ class KetClassicalLight : public Ket<Real> {
     struct Private {};
 
 public:
-    KetClassicalLight(Private, Real photon_energy, int q);
+    KetClassicalLight(Private /*unused*/, Real photon_energy, int q);
     std::string get_label() const override;
     size_t get_id() const override;
     size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;

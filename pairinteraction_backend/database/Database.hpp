@@ -88,9 +88,9 @@ private:
         "/repos/pairinteraction/database-sqdt/releases/latest",
         "/repos/pairinteraction/database-mqdt/releases/latest"};
 
-    bool download_missing;
-    bool wigner_in_memory;
-    std::filesystem::path databasedir;
+    bool _download_missing;
+    bool _wigner_in_memory;
+    std::filesystem::path _databasedir;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
     std::vector<httplib::Client> pool;
@@ -104,8 +104,8 @@ private:
                                                         bool wigner_in_memory,
                                                         std::filesystem::path databasedir);
 
-    void ensure_presence_of_table(std::string name);
-    void ensure_quantum_number_n_is_allowed(std::string name);
+    void ensure_presence_of_table(const std::string &name);
+    void ensure_quantum_number_n_is_allowed(const std::string &name);
 };
 
 extern template std::shared_ptr<const KetAtom<float>>

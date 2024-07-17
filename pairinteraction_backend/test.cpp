@@ -46,7 +46,7 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
     ctx.setOption("no-breaks", true);
 
     // Create a global database instance
-    Database::get_global_instance(download_missing, false, databasedir);
+    Database::get_global_instance(download_missing, false, std::move(databasedir));
 
     // Run the tests
     int exitcode = ctx.run();

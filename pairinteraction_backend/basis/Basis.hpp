@@ -41,6 +41,7 @@ public:
     using ketvec_t = typename traits::CrtpTraits<Derived>::ketvec_t;
 
     Basis() = delete;
+    virtual ~Basis() = default;
 
     const ketvec_t &get_kets() const;
 
