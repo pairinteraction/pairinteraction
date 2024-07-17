@@ -11,24 +11,16 @@ name = "pairinteraction"
 version = "0.9.9"
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
-keywords = ["Rydberg atoms", "interactions", "pair potentials"]
-
+keywords = ["rydberg", "atom interactions", "pair potentials", "mqdt", "quantum physics"]
 authors = [
-    { name = "Sebastian Weber" },
+    { name = "Pairinteraction Developers" },
+]
+maintainers = [
+    { name = "Sebastian Weber", email = "seweber@posteo.de" },
     { name = "Henri Menke" },
+    { name = "Johannes Mögerle", email = "johannes.moegerle@itp3.uni-stuttgart.de" },
 ]
-
-requires-python = ">=3.8"
-dependencies = [
-  "numpy >= 1.24, < 2",
-  "scipy >= 1.10",
-  "pyinstaller >= 5.13",
-  "wheel >= 0.40",
-  "pydantic  >=  2.3",
-]
-
 classifiers = [
-  "Development Status :: 2 - Pre-Alpha",
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Physics",
   "Programming Language :: Python :: 3.8",
@@ -42,13 +34,14 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
 ]
-
-[project.urls]
-Homepage = "https://www.pairinteraction.org"
-Repository = "https://github.com/pairinteraction/pairinteraction"
-
-[project.scripts]
-start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
+requires-python = ">=3.8"
+dependencies = [
+  "numpy >= 1.24, < 2",
+  "scipy >= 1.10",
+  "pyinstaller >= 5.13",
+  "wheel >= 0.40",
+  "pydantic  >=  2.3",
+]
 
 [project.optional-dependencies]
 gui = [
@@ -66,12 +59,13 @@ doc = [
   "autodoc_pydantic[erdantic]",
   "nbconvert",
 ]
-build = [
-  "scikit-build-core >=0.9.0",
-  "nanobind >=1.9.0",
-  "numpy >= 1.24, < 2",
-  "pyqt5 >= 5.15.8",
-]
+
+[project.urls]
+Homepage = "https://www.pairinteraction.org"
+Repository = "https://github.com/pairinteraction/pairinteraction"
+
+[project.scripts]
+start_pairinteraction_gui = "pairinteraction_gui.start_pairinteraction_gui:main"
 
 [tool.scikit-build]
 cmake.verbose = true
@@ -100,11 +94,9 @@ test-command = [
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 
-# MACOSX_DEPLOYMENT_TARGET=11.0 is broken: https://github.com/pypa/pip/issues/11789
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "10.15"
 
-# Ruff Formatting configurations
 [tool.ruff]
 line-length = 120
 target-version = "py38"
