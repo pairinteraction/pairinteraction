@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    pintr::Database database(download_missing, false, databasedir);
+    pintr::Database database(download_missing, true, databasedir);
 
     // Create a dipole operator coupling two specific states
     auto ket1 = pintr::KetAtomCreator<float>()

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    pintr::Database database(download_missing, false, databasedir);
+    thread_local pintr::Database database(download_missing, true, databasedir);
 
     // Create a basis
     auto basis = pintr::BasisAtomCreator<double>()

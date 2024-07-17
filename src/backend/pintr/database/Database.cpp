@@ -263,6 +263,14 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         }
     }
 
+    // Limit the memory usage of duckdb's buffer manager
+    {
+        auto result = con->Query("PRAGMA max_memory = '8GB';");
+        if (result->HasError()) {
+            throw std::runtime_error("Error setting the memory limit: " + result->GetError());
+        }
+    }
+
     // Load the Wigner 3j symbols table into memory
     if (_wigner_in_memory) {
         ensure_presence_of_table("wigner");
@@ -274,6 +282,16 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         }
 
         tables["wigner"].local_path = "wigner";
+    }
+
+    // Disable multithreading for duckdb as this can interfere with parallelized construction of the
+    // Hamiltonians (on the long run, if we cache operators in memory, we can think about enabling
+    // it again)
+    {
+        auto result = con->Query("PRAGMA threads=1");
+        if (result->HasError()) {
+            throw std::runtime_error("Error setting the number of threads: " + result->GetError());
+        }
     }
 
     // Print availability of tables
