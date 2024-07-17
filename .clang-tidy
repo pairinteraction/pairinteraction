@@ -1,9 +1,10 @@
 ---
-Checks:          'clang-diagnostic-*,clang-analyzer-*,-*,bugprone-*,misc-*,-misc-non-private-member-variables-in-classes,modernize-*,-modernize-use-trailing-return-type,-modernize-use-using,-modernize-use-nodiscard,modernize-use-default-member-init,performance-*,readability-*,-readability-magic-numbers,-readability-convert-member-functions-to-static,cert-*,-cert-flp30-c,-clang-analyzer-security.FloatLoopCounter,-clang-analyzer-optin.performance.Padding'
-WarningsAsErrors: ''
-HeaderFilterRegex: '.*'
+Checks:               'clang-diagnostic-*,clang-analyzer-*,bugprone-*,misc-*,modernize-*,performance-*,readability-*,cert-*,-bugprone-exception-escape,-bugprone-easily-swappable-parameters,-modernize-use-trailing-return-type,-modernize-use-nodiscard,-readability-magic-numbers,-misc-non-private-member-variables-in-classes,-cert-dcl59-cpp,-cert-flp30-c,-clang-analyzer-security.FloatLoopCounter,'
+WarningsAsErrors:     '*'
+HeaderFilterRegex:    'pairinteraction_backend/.*'
 AnalyzeTemporaryDtors: false
-FormatStyle:     none
+UseColor:            true
+FormatStyle:         none
 CheckOptions:
   - key:             bugprone-argument-comment.StrictMode
     value:           '0'
@@ -70,7 +71,7 @@ CheckOptions:
   - key:             modernize-make-shared.IgnoreMacros
     value:           '1'
   - key:             modernize-make-shared.IncludeStyle
-    value:           '0'
+    value:           llvm
   - key:             modernize-make-shared.MakeSmartPtrFunction
     value:           'std::make_shared'
   - key:             modernize-make-shared.MakeSmartPtrFunctionHeader
@@ -78,7 +79,7 @@ CheckOptions:
   - key:             modernize-make-unique.IgnoreMacros
     value:           '1'
   - key:             modernize-make-unique.IncludeStyle
-    value:           '0'
+    value:           llvm
   - key:             modernize-make-unique.MakeSmartPtrFunction
     value:           'std::make_unique'
   - key:             modernize-make-unique.MakeSmartPtrFunctionHeader
@@ -157,4 +158,14 @@ CheckOptions:
     value:           '0'
   - key:             readability-static-accessed-through-instance.NameSpecifierNestingThreshold
     value:           '3'
+  - key:             readability-identifier-length.MinimumVariableNameLength
+    value:           '0'
+  - key:             readability-identifier-length.MinimumParameterNameLength
+    value:           '0'
+  - key:             readability-identifier-length.MinimumLoopCounterNameLength
+    value:           '0'
+  - key:             readability-identifier-length.MinimumExceptionNameLength
+    value:           '0'
+  - key:             readability-function-cognitive-complexity.Threshold
+    value:           '150' # TODO decrease to 25 when the database class is refactored
 ...

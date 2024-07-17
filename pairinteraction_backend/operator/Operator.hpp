@@ -45,6 +45,7 @@ public:
     using basis_t = typename traits::CrtpTraits<Derived>::basis_t;
 
     Operator(std::shared_ptr<const basis_t> basis);
+    virtual ~Operator() = default;
 
     std::shared_ptr<const basis_t> get_basis() const;
 

@@ -48,7 +48,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         struct Private {};
 
     public:
-        KetDerived(Private, float f, float m, int p) : Ket<float>(0, f, m, p) {}
+        KetDerived(Private /*unused*/, float f, float m, int p) : Ket<float>(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
         size_t get_id() const override {
             size_t seed = 0;
@@ -79,7 +79,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         int p;
     };
 
-    auto ket = KetDerivedCreator(2.0f, 3.0f, 4).create();
+    auto ket = KetDerivedCreator(2.0F, 3.0F, 4).create();
 
     // Check that the label can be printed
     std::stringstream ss;

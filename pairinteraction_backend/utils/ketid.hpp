@@ -1,15 +1,15 @@
 #pragma once
 
-#include <fmt/format.h>
+#include <string>
 #include <type_traits>
 
-namespace ketid {
-namespace atom {
-const size_t OFFSET = 500;
+namespace ketid::atom {
+constexpr size_t OFFSET = 500;
 
 // String that can be used in an SQL query to calculate a linearized index ("ketid") from
-// the id of a state without quantum number m and the quantum number m
-const std::string SQL_TERM = fmt::format("id*{}+(2*m+{})::bigint", 2 * OFFSET, OFFSET);
+// the id of a state without quantum number m and the quantum number m. Note that the
+// string must be of the form "id*{2*OFFSET}+(2*m+{OFFSET})::bigint".
+constexpr std::string_view SQL_TERM = "id*1000+(2*m+500)::bigint";
 
 // Method for calculating the linearized index
 template <typename Real>
@@ -27,5 +27,4 @@ inline size_t transform(size_t ketid, Real old_quantum_number_m, Real new_quantu
     return ketid + static_cast<size_t>(2 * new_quantum_number_m + OFFSET) -
         static_cast<size_t>(2 * old_quantum_number_m + OFFSET);
 }
-} // namespace atom
-} // namespace ketid
+} // namespace ketid::atom

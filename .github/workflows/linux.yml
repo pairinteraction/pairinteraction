@@ -170,7 +170,7 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy;-config=" -DWITH_DOC=On -DWITH_GUI=Off
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOC=On -DWITH_GUI=Off
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test

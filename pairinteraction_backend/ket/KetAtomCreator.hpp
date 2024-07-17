@@ -25,7 +25,7 @@ class KetAtomCreator {
 public:
     KetAtomCreator() = default;
     KetAtomCreator(std::string species, int n, Real l, Real j, Real m);
-    KetAtomCreator<Real> &set_species(std::string value);
+    KetAtomCreator<Real> &set_species(const std::string &value);
     KetAtomCreator<Real> &set_energy(Real value);
     KetAtomCreator<Real> &set_quantum_number_f(Real value);
     KetAtomCreator<Real> &set_quantum_number_m(Real value);

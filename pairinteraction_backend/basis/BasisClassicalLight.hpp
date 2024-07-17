@@ -39,7 +39,7 @@ public:
     using Type = BasisClassicalLight<Scalar>;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
-    BasisClassicalLight(Private, ketvec_t &&kets);
+    BasisClassicalLight(Private /*unused*/, ketvec_t &&kets);
 };
 
 extern template class BasisClassicalLight<float>;

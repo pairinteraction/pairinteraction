@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         bool found = args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            found = args::parse_database(i, argc, argv, databasedir);
+            args::parse_database(i, argc, argv, databasedir);
         }
     }
 

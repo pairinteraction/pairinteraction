@@ -23,9 +23,9 @@ class KetAtom : public Ket<Real> {
     struct Private {};
 
 public:
-    KetAtom(Private, Real energy, Real f, Real m, int p, size_t id, std::string species, int n,
-            Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std, Real j_exp,
-            Real j_std);
+    KetAtom(Private /*unused*/, Real energy, Real f, Real m, int p, size_t id, std::string species,
+            int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std,
+            Real j_exp, Real j_std);
     std::string get_label() const override;
     size_t get_id() const override;
     size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;

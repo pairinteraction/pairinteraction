@@ -9,11 +9,11 @@
 
 template <typename Real>
 KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, Real j, Real m)
-    : species(species), quantum_number_f(j), quantum_number_m(m), quantum_number_n(n),
+    : species(std::move(species)), quantum_number_f(j), quantum_number_m(m), quantum_number_n(n),
       quantum_number_l(l), quantum_number_s(0.5), quantum_number_j(j) {}
 
 template <typename Real>
-KetAtomCreator<Real> &KetAtomCreator<Real>::set_species(std::string value) {
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_species(const std::string &value) {
     species.emplace(value);
     return *this;
 }

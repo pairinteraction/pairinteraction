@@ -32,7 +32,7 @@ public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using ket_t = KetAtom<real_t>;
     BasisAtomCreator() = default;
-    BasisAtomCreator<Scalar> &set_species(std::string value);
+    BasisAtomCreator<Scalar> &set_species(const std::string &value);
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_f(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);

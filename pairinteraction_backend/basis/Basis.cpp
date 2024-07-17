@@ -153,8 +153,8 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
         real_t f = kets[idx_initial]->get_quantum_number_f();
         real_t m_initial = kets[idx_initial]->get_quantum_number_m();
         for (real_t m_final = -f; m_final <= f; ++m_final) {
-            scalar_t val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
-                                                                       beta, gamma);
+            auto val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
+                                                                   beta, gamma);
             size_t idx_final = ket_id_to_index.at(
                 kets[idx_initial]->get_id_for_different_quantum_number_m(m_final));
             entries.emplace_back(idx_final, idx_initial, val);
@@ -301,17 +301,14 @@ Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const
     blocks.start.reserve(coefficients.matrix.cols());
     blocks.start.push_back(0);
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
-        if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_F) &&
-            quantum_number_f_of_states[i] != last_quantum_number_f) {
-            blocks.start.push_back(i);
-        } else if (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_M) &&
-                   quantum_number_m_of_states[i] != last_quantum_number_m) {
-            blocks.start.push_back(i);
-        } else if (utils::has_bit(label, TransformationType::SORT_BY_PARITY) &&
-                   parity_of_states[i] != last_parity) {
-            blocks.start.push_back(i);
-        } else if (utils::has_bit(label, TransformationType::SORT_BY_KET) &&
-                   ket_of_states[i] != last_ket) {
+        if ((utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_F) &&
+             quantum_number_f_of_states[i] != last_quantum_number_f) ||
+            (utils::has_bit(label, TransformationType::SORT_BY_QUANTUM_NUMBER_M) &&
+             quantum_number_m_of_states[i] != last_quantum_number_m) ||
+            (utils::has_bit(label, TransformationType::SORT_BY_PARITY) &&
+             parity_of_states[i] != last_parity) ||
+            (utils::has_bit(label, TransformationType::SORT_BY_KET) &&
+             ket_of_states[i] != last_ket)) {
             blocks.start.push_back(i);
         }
 
@@ -528,7 +525,7 @@ class KetDerived : public Ket<float> {
     struct Private {};
 
 public:
-    KetDerived(Private, float f, float m, int p, int new_property)
+    KetDerived(Private /*unused*/, float f, float m, int p, int new_property)
         : Ket<float>(0, f, m, p), new_property(new_property) {}
     std::string get_label() const override { return "my_label"; }
     size_t get_id() const override {
@@ -585,7 +582,7 @@ class BasisDerived : public Basis<BasisDerived> {
     struct Private {};
 
 public:
-    BasisDerived(Private, ketvec_t &&kets) : Basis<BasisDerived>(std::move(kets)) {}
+    BasisDerived(Private /*unused*/, ketvec_t &&kets) : Basis<BasisDerived>(std::move(kets)) {}
     using Type = BasisDerived;
     using ketvec_t = typename traits::CrtpTraits<BasisDerived>::ketvec_t;
 };
@@ -593,21 +590,24 @@ public:
 // Classes for creating an instance of the derived basis class
 class BasisDerivedCreator {
 public:
-    BasisDerivedCreator() = default;
+    BasisDerivedCreator(float f) : f(f) {}
     std::shared_ptr<const BasisDerived> create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
-        kets.push_back(KetDerivedCreator(0.5, 0.5, 1, 42).create());
-        kets.push_back(KetDerivedCreator(0.5, 0.5, -1, 42).create());
-        kets.push_back(KetDerivedCreator(0.5, -0.5, -1, 42).create());
+        kets.push_back(KetDerivedCreator(f, 0.5, 1, 42).create());
+        kets.push_back(KetDerivedCreator(f, 0.5, -1, 42).create());
+        kets.push_back(KetDerivedCreator(f, -0.5, -1, 42).create());
         return std::make_shared<const BasisDerived>(BasisDerived::Private(), std::move(kets));
     }
+
+private:
+    float f;
 };
 
 DOCTEST_TEST_CASE("constructing a class derived from basis") {
 
     // Sort the basis by parity and the m quantum number
-    auto tmp = BasisDerivedCreator().create();
+    auto tmp = BasisDerivedCreator(0.5).create();
     auto basis = tmp->transformed(tmp->get_sorter(TransformationType::SORT_BY_PARITY |
                                                   TransformationType::SORT_BY_QUANTUM_NUMBER_M));
     int parity = std::numeric_limits<int>::lowest();
