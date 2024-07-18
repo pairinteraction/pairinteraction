@@ -71,10 +71,8 @@ option(WITH_BACKEND  "Build with C++ backend"               ON)
 option(WITH_GUI      "Build with Python GUI"                ON)
 option(WITH_DOC      "Generate documentation"               OFF)
 option(WITH_BENCH    "Compile the benchmarks"               OFF)
-option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF)
+option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF) # TODO treat building a windows installer and dmg the same
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
-option(WITH_GSL      "Use the GNU scientific library for Whittaker functions" ON)
-option(WITH_LAPACK   "Use BLAS and LAPACK to speed up linear algebra" ON)
 
 # Windows specific build instructions
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
@@ -99,21 +97,6 @@ if(WITH_COVERAGE)
   add_library(coverage::gcov INTERFACE IMPORTED)
   target_compile_options(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
   target_link_libraries(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:gcov>)
-endif()
-
-# Perform static analysis using clang-tidy
-if(WITH_CLANG_TIDY)
-  string(REGEX REPLACE "^([1-9]+\\.[0-9]+).*$" "\\1" CLANG_MINOR_VERSION "${CMAKE_CXX_COMPILER_VERSION}")
-  find_program(
-    CLANG_TIDY_EXE
-    NAMES "clang-tidy-${CLANG_MINOR_VERSION}" "clang-tidy"
-    DOC "Path to clang-tidy executable"
-    )
-  if(NOT CLANG_TIDY_EXE)
-    message(STATUS "clang-tidy not found.")
-  else()
-    message(STATUS "clang-tidy found: ${CLANG_TIDY_EXE}")
-  endif()
 endif()
 
 # Find dependencies # TODO add all dependencies
@@ -296,11 +279,6 @@ include(FeatureSummary)
 feature_summary(WHAT ALL)
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "Software version: ${VERSION_SOFTWARE}")
-if(WITH_GSL)
-  message(STATUS "License compatibility: GPL v3")
-else()
-  message(STATUS "License compatibility: LGPL v3")
-endif()
 
 # HACK: Copy the "pairinteraction" directory to the build directory # TODO re
 if(NOT SKBUILD)
