@@ -8,27 +8,27 @@ class Range {
 
 public:
     Range() = default;
-    Range(Sortable min, Sortable max) : min_(min), max_(max), is_finite_(true) {
+    Range(Sortable min, Sortable max) : _min(min), _max(max), _is_finite(true) {
         if (max < min) {
             throw std::invalid_argument("It must be max >= min.");
         }
     }
     Sortable min() const {
-        if (!is_finite_) {
+        if (!_is_finite) {
             throw std::runtime_error("The range is infinite.");
         }
-        return min_;
+        return _min;
     }
     Sortable max() const {
-        if (!is_finite_) {
+        if (!_is_finite) {
             throw std::runtime_error("The range is infinite.");
         }
-        return max_;
+        return _max;
     }
-    bool is_finite() const { return is_finite_; }
+    bool is_finite() const { return _is_finite; }
 
 private:
-    Sortable min_{};
-    Sortable max_{};
-    bool is_finite_{false};
+    Sortable _min{};
+    Sortable _max{};
+    bool _is_finite{false};
 };
