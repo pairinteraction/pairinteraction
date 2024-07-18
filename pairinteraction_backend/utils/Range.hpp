@@ -28,7 +28,7 @@ public:
     bool is_finite() const { return is_finite_; }
 
 private:
-    Sortable min_;
-    Sortable max_;
+    Sortable min_{};
+    Sortable max_{};
     bool is_finite_{false};
 };

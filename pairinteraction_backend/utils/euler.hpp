@@ -61,7 +61,7 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
     static_assert(std::is_floating_point_v<Real>);
 
     auto rotator = get_rotation_matrix(to_z_axis, to_y_axis);
-    std::array<Real, 3> euler_zyz;
+    std::array<Real, 3> euler_zyz{};
     Eigen::Map<Eigen::Vector3<Real>>(euler_zyz.data()) = rotator.eulerAngles(2, 1, 2);
     return euler_zyz;
 }
