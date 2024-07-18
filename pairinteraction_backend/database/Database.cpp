@@ -861,7 +861,7 @@ template <typename Scalar>
 OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
                                             OperatorType type, int q) {
     std::string specifier;
-    int kappa;
+    int kappa{};
     switch (type) {
     case OperatorType::ELECTRIC_DIPOLE:
         specifier = "matrix_elements_d";
