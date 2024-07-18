@@ -177,12 +177,6 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | ``WITH_GUI``        | Build with Python GUI                | ON      |
 +---------------------+--------------------------------------+---------+
-| ``WITH_GSL``        | Use the GNU scientific library for   | ON      |
-|                     | Whittaker functions [#]_             |         |
-+---------------------+--------------------------------------+---------+
-| ``WITH_LAPACKE``    | Use BLAS and LAPACK to speed up      | ON      |
-|                     | linear algebra                       |         |
-+---------------------+--------------------------------------+---------+
 | ``WITH_DOC``        | Generate documentation               | OFF     |
 +---------------------+--------------------------------------+---------+
 | ``WITH_BENCH``      | Compile the benchmarks               | OFF     |
@@ -191,11 +185,6 @@ A full list of build options is provided in the following:
 |                     | only)                                |         |
 +---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report        | OFF     |
-+---------------------+--------------------------------------+---------+
-| ``WITH_LTO``        | Build with link-time optimization    | OFF     |
-+---------------------+--------------------------------------+---------+
-| ``WITH_CLANG_TIDY`` | Run the C++ linter tool Clang-Tidy   | OFF     |
-|                     | during compilation                   |         |
 +---------------------+--------------------------------------+---------+
 
 .. [#] This mode activates the extension for calculating radial wave
