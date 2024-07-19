@@ -8,7 +8,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "pairinteraction"
-version = "0.9.10"
+dynamic = ["version"]
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
 keywords = ["rydberg", "atom interactions", "pair potentials", "mqdt", "quantum physics"]
@@ -76,6 +76,10 @@ wheel.packages = [
 ]
 wheel.py-api = "py3"
 wheel.license-files = ["LICENSES/*.txt"]
+
+[tool.scikit-build.metadata.version]
+provider = "scikit_build_core.metadata.regex"
+input = "pairinteraction/__init__.py"
 
 [tool.cibuildwheel]
 build = [
