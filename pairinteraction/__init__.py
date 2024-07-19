@@ -25,3 +25,5 @@ __all__ = [
     "ModelStateClassicalLight",
     "Simulation",
 ]
+
+__version__ = "1.0.0"

@@ -14,14 +14,8 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with the pairinteraction GUI. If not, see <http://www.gnu.org/licenses/>.
-from importlib.metadata import PackageNotFoundError, version
-
 import pairinteraction
 
-# Versioning
-try:
-    version_program = version("pairinteraction")
-except PackageNotFoundError:
-    version_program = getattr(pairinteraction, "__version__", "unknown")
+version_program = pairinteraction.__version__
 version_settings = "v18"
 version_cache = "v18"
