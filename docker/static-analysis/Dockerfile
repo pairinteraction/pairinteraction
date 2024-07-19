@@ -13,10 +13,12 @@ RUN apt-get update -qq \
     libcpp-httplib-dev nlohmann-json3-dev intel-oneapi-tbb-devel-2021.13 \
     libsqlite3-dev sqlite3 \
     swig python3 python3-dev libgl1 \
+    locales \
     dpkg-dev rpm \
-    clang clang-tidy clang-format \
     curl ca-certificates netcat \
     doxygen graphviz libgraphviz-dev pandoc \
+    clang clang-tidy clang-format \
+  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq \
   && rm -rf /var/lib/apt/lists/*
 
