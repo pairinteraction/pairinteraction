@@ -20,6 +20,7 @@ Step-by-Step Instructions
         git clone https://github.com/YourGitHubUsername/pairinteraction.git
 
     * Install the build dependencies `CMake`_ for running the build system and `uv`_ for managing the Python dependencies. In addition, you need to install dependencies of the C++ backend. If you are using GNU/Linux or OS X, dependencies can be found in the Dockerfiles that are located in the :github:`docker branch <tree/docker/docker>`. If you are using Windows, you can use `VCPKG`_ with :github:`our configuration file <tree/master/vcpkg.json>` to install the dependencies. Afterwards, create and activate a python environment
+
     .. code-block:: bash
 
         uv venv --python=3.8 .venv
@@ -29,8 +30,8 @@ Step-by-Step Instructions
 
     .. code-block:: bash
 
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install -r requirements.txt
 
     * Build the software using CMake:
 

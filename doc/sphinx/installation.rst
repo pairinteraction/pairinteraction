@@ -185,7 +185,7 @@ For **Windows**, you must specify a visual studio generator, provide a path to t
     mkdir build
     cd build
     cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
-    cmmake --build . --config RelWithDebInfo
+    cmake --build . --config RelWithDebInfo
 
 This creates the C++ backend.
 

@@ -50,8 +50,8 @@ jobs:
         env:
           NO_COLOR: 1
         run: |
-          uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-          uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+          uv pip compile pyproject.toml --all-extras > requirements.txt
+          uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
 
       - name: Configure
         run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython_FIND_FRAMEWORK=LAST
