@@ -20,6 +20,7 @@ add_library(backend OBJECT
   ./diagonalizer/Diagonalizer.cpp
   ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
+  ./enums/Parity.cpp
   ./enums/Parity.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.cpp
@@ -47,6 +48,7 @@ add_library(backend OBJECT
   ./utils/args.hpp
   ./utils/eigen_assertion.hpp
   ./utils/eigen_compat.hpp
+  ./utils/euler.cpp
   ./utils/euler.hpp
   ./utils/hash.hpp
   ./utils/ketid.hpp
@@ -56,6 +58,7 @@ add_library(backend OBJECT
   ./utils/spherical.hpp
   ./utils/streamed.hpp
   ./utils/traits.hpp
+  ./utils/wigner.cpp
   ./utils/wigner.hpp
   ./setup.cpp
   ./setup.hpp
