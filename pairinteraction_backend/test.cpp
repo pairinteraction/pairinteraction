@@ -1,6 +1,7 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
 #include "test.hpp"
+
 #include "database/Database.hpp"
 #include "utils/paths.hpp"
 

@@ -1,4 +1,5 @@
 #include "setup.hpp"
+
 #include "utils/paths.hpp"
 
 #include <filesystem>

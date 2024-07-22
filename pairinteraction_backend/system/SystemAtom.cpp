@@ -1,4 +1,5 @@
 #include "system/SystemAtom.hpp"
+
 #include "enums/OperatorType.hpp"
 #include "operator/OperatorAtom.hpp"
 #include "utils/spherical.hpp"

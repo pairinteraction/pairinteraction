@@ -1,4 +1,5 @@
 #include "basis/BasisAtom.hpp"
+
 #include "ket/KetAtom.hpp"
 
 template <typename Scalar>

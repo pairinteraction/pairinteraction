@@ -1,9 +1,9 @@
 #pragma once
 
+#include "ket/Ket.hpp"
+
 #include <string>
 #include <type_traits>
-
-#include "ket/Ket.hpp"
 
 enum class Parity : int;
 
