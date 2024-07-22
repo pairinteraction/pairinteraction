@@ -38,8 +38,8 @@ jobs:
       env:
         NO_COLOR: 1
       run: |
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
@@ -108,8 +108,8 @@ jobs:
       env:
         NO_COLOR: 1
       run: |
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
@@ -148,8 +148,8 @@ jobs:
       env:
         NO_COLOR: 1
       run: |
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
@@ -189,8 +189,8 @@ jobs:
       env:
         NO_COLOR: 1
       run: |
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOC=On
     - name: Build
@@ -226,8 +226,8 @@ jobs:
       env:
         NO_COLOR: 1
       run: |
-        uv pip compile pyproject.toml --all-extras > requirements-dev.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOC=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build

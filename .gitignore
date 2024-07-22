@@ -26,4 +26,5 @@ build*/
 vcpkg_installed/
 .venv/
 *.egg-info/
-requirements*.txt
+requirements.txt
+wheelhouse/

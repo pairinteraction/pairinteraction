@@ -56,8 +56,8 @@ jobs:
         env:
           NO_COLOR: 1
         run: |
-          uv pip compile pyproject.toml --extra gui > requirements-dev.txt
-          uv pip install --system --break-system-packages --no-cache-dir -r requirements-dev.txt
+          uv pip compile pyproject.toml --extra gui > requirements.txt
+          uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
 
       - name: Configure
         shell: cmd

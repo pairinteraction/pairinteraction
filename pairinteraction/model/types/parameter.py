@@ -42,7 +42,10 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
     @classmethod
     def _get_pydantic_parameter_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
         """Get the pydantic schema for the type of a single parameter value."""
-        generic_type = typing.get_args(source)[0]
+        generic_type = typing.get_args(source)
+        if len(generic_type) == 0:
+            raise ValueError(f"Unsupported type {source}")
+        generic_type = generic_type[0]
         if isinstance(generic_type, type):
             if issubclass(generic_type, int):
                 return core_schema.int_schema()
@@ -50,7 +53,7 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
                 return core_schema.float_schema()
         if typing.get_origin(generic_type) == Literal:
             return core_schema.literal_schema(typing.get_args(generic_type))
-        ValueError(f"Unsupported type {source}")
+        raise ValueError(f"Unsupported type {source}")
 
     @classmethod
     def _validate_raw(cls, raw: RawType) -> Self:
