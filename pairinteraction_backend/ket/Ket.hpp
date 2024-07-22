@@ -4,6 +4,8 @@
 #include <string>
 #include <type_traits>
 
+enum class Parity : int;
+
 /**
  * @class Ket
  *
@@ -27,7 +29,7 @@ public:
     Real get_energy() const;
     Real get_quantum_number_f() const;
     Real get_quantum_number_m() const;
-    int get_parity() const;
+    Parity get_parity() const;
     virtual std::string get_label() const = 0;
     virtual size_t get_id() const = 0;
     virtual size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const = 0;
@@ -37,11 +39,11 @@ public:
     }
 
 protected:
-    Ket(Real energy, Real f, Real m, int p);
+    Ket(Real energy, Real f, Real m, Parity p);
     Real energy;
     Real quantum_number_f;
     Real quantum_number_m;
-    int parity;
+    Parity parity;
 };
 
 extern template class Ket<float>;

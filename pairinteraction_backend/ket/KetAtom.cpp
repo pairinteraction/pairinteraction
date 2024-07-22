@@ -1,4 +1,6 @@
 #include "ket/KetAtom.hpp"
+
+#include "enums/Parity.hpp"
 #include "utils/ketid.hpp"
 
 #include <cmath>
@@ -7,7 +9,7 @@
 #include <vector>
 
 template <typename Real>
-KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, int p, size_t id,
+KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p, size_t id,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
                        Real s_exp, Real s_std, Real j_exp, Real j_std)
     : Ket<Real>(energy, f, m, p), id(id), species(std::move(species)), quantum_number_n(n),

@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
+enum class Parity : int;
 enum class TransformationType : unsigned char;
 
 /**
@@ -49,7 +50,7 @@ public:
     size_t get_number_of_kets() const;
     real_t get_quantum_number_f(size_t index_state) const;
     real_t get_quantum_number_m(size_t index_state) const;
-    int get_parity(size_t index_state) const;
+    Parity get_parity(size_t index_state) const;
     std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t index_state) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
@@ -88,6 +89,6 @@ private:
     const Derived &derived() const;
     std::vector<real_t> quantum_number_f_of_states;
     std::vector<real_t> quantum_number_m_of_states;
-    std::vector<int> parity_of_states;
+    std::vector<Parity> parity_of_states;
     std::vector<int> ket_of_states;
 };

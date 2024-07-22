@@ -20,6 +20,7 @@ add_library(backend OBJECT
   ./diagonalizer/Diagonalizer.cpp
   ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
+  ./enums/Parity.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.cpp
   ./interfaces/TransformationBuilderInterface.hpp
@@ -105,6 +106,7 @@ add_library(bindings OBJECT
   ./database/Database.hpp
   ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
+  ./enums/Parity.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.hpp
   ./ket/Ket.hpp

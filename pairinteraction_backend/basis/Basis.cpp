@@ -1,4 +1,6 @@
 #include "basis/Basis.hpp"
+
+#include "enums/Parity.hpp"
 #include "enums/TransformationType.hpp"
 #include "ket/Ket.hpp"
 #include "ket/KetAtom.hpp"
@@ -73,11 +75,11 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t inde
 }
 
 template <typename Derived>
-int Basis<Derived>::get_parity(size_t index_state) const {
+Parity Basis<Derived>::get_parity(size_t index_state) const {
     if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
         throw std::out_of_range("The index is out of bounds.");
     }
-    if (parity_of_states[index_state] == std::numeric_limits<int>::max()) {
+    if (parity_of_states[index_state] == Parity::UNKNOWN) {
         throw std::invalid_argument("The state does not have a well-defined parity.");
     }
     return parity_of_states[index_state];
@@ -267,7 +269,7 @@ Sorting Basis<Derived>::get_sorter_without_checks(TransformationType label) cons
         std::stable_sort(perm_begin, perm_end,
                          [&](int i, int j) { return parity_of_states[i] < parity_of_states[j]; });
 
-        if (parity_of_states[*perm_back] == std::numeric_limits<int>::max()) {
+        if (parity_of_states[*perm_back] == Parity::UNKNOWN) {
             throw std::invalid_argument(
                 "States cannot be labeled and thus not sorted by the parity.");
         }
@@ -293,10 +295,10 @@ template <typename Derived>
 Blocks Basis<Derived>::get_blocks_without_checks(TransformationType label) const {
     Blocks blocks;
 
-    real_t last_quantum_number_f = quantum_number_f_of_states[0];
-    real_t last_quantum_number_m = quantum_number_m_of_states[0];
-    int last_parity = parity_of_states[0];
-    int last_ket = ket_of_states[0];
+    auto last_quantum_number_f = quantum_number_f_of_states[0];
+    auto last_quantum_number_m = quantum_number_m_of_states[0];
+    auto last_parity = parity_of_states[0];
+    auto last_ket = ket_of_states[0];
 
     blocks.start.reserve(coefficients.matrix.cols());
     blocks.start.push_back(0);
@@ -456,18 +458,20 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     {
-        auto map = Eigen::Map<const Eigen::VectorXi>(transformed->parity_of_states.data(),
-                                                     transformed->parity_of_states.size())
-                       .template cast<real_t>();
+        using utype = std::underlying_type<Parity>::type;
+        Eigen::VectorX<real_t> map(transformed->parity_of_states.size());
+        for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
+            map[i] = static_cast<utype>(transformed->parity_of_states[i]);
+        }
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
             if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
-                transformed->parity_of_states[i] = static_cast<int>(val[i]);
+                transformed->parity_of_states[i] = static_cast<Parity>(std::lround(val[i]));
             } else {
-                transformed->parity_of_states[i] = std::numeric_limits<int>::max();
+                transformed->parity_of_states[i] = Parity::UNKNOWN;
             }
         }
     }
@@ -525,7 +529,7 @@ class KetDerived : public Ket<float> {
     struct Private {};
 
 public:
-    KetDerived(Private /*unused*/, float f, float m, int p, int new_property)
+    KetDerived(Private /*unused*/, float f, float m, Parity p, int new_property)
         : Ket<float>(0, f, m, p), new_property(new_property) {}
     std::string get_label() const override { return "my_label"; }
     size_t get_id() const override {
@@ -553,7 +557,7 @@ private:
 // Classes for creating an instance of the derived ket class
 class KetDerivedCreator {
 public:
-    KetDerivedCreator(float f, float m, int p, int new_property)
+    KetDerivedCreator(float f, float m, Parity p, int new_property)
         : f(f), m(m), p(p), new_property(new_property) {}
     std::shared_ptr<const KetDerived> create() const {
         return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p, new_property);
@@ -562,7 +566,7 @@ public:
 private:
     float f;
     float m;
-    int p;
+    Parity p;
     int new_property;
 };
 
@@ -594,9 +598,9 @@ public:
     std::shared_ptr<const BasisDerived> create() const {
         std::vector<std::shared_ptr<const KetDerived>> kets;
         kets.reserve(3);
-        kets.push_back(KetDerivedCreator(f, 0.5, 1, 42).create());
-        kets.push_back(KetDerivedCreator(f, 0.5, -1, 42).create());
-        kets.push_back(KetDerivedCreator(f, -0.5, -1, 42).create());
+        kets.push_back(KetDerivedCreator(f, 0.5, Parity::EVEN, 42).create());
+        kets.push_back(KetDerivedCreator(f, 0.5, Parity::ODD, 42).create());
+        kets.push_back(KetDerivedCreator(f, -0.5, Parity::ODD, 42).create());
         return std::make_shared<const BasisDerived>(BasisDerived::Private(), std::move(kets));
     }
 
@@ -610,10 +614,10 @@ DOCTEST_TEST_CASE("constructing a class derived from basis") {
     auto tmp = BasisDerivedCreator(0.5).create();
     auto basis = tmp->transformed(tmp->get_sorter(TransformationType::SORT_BY_PARITY |
                                                   TransformationType::SORT_BY_QUANTUM_NUMBER_M));
-    int parity = std::numeric_limits<int>::lowest();
-    float quantum_number_m = std::numeric_limits<float>::lowest();
+    auto parity = Parity::ODD;
+    auto quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-        DOCTEST_CHECK(basis->get_parity(i) >= parity);
+        DOCTEST_CHECK(!(basis->get_parity(i) < parity));
         DOCTEST_CHECK(basis->get_quantum_number_m(i) >= quantum_number_m);
         parity = basis->get_parity(i);
         quantum_number_m = basis->get_quantum_number_m(i);

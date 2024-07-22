@@ -1,15 +1,17 @@
 #include "ket/KetClassicalLight.hpp"
 
+#include "KetClassicalLight.hpp"
+#include "enums/Parity.hpp"
+#include "utils/hash.hpp"
+
 #include <fmt/format.h>
 #include <limits>
 #include <string>
 
-#include "KetClassicalLight.hpp"
-#include "utils/hash.hpp"
-
 template <typename Real>
 KetClassicalLight<Real>::KetClassicalLight(Private /*unused*/, Real photon_energy, int q)
-    : Ket<Real>(photon_energy * q, 0, 0, -1), photon_energy(photon_energy), quantum_number_q(q) {}
+    : Ket<Real>(photon_energy * q, 0, 0, Parity::ODD), photon_energy(photon_energy),
+      quantum_number_q(q) {}
 
 template <typename Real>
 Real KetClassicalLight<Real>::get_photon_energy() const {

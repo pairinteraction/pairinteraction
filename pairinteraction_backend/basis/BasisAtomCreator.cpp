@@ -2,6 +2,7 @@
 #include "basis/BasisAtom.hpp"
 #include "database/AtomDescriptionByRanges.hpp"
 #include "database/Database.hpp"
+#include "enums/Parity.hpp"
 #include "ket/KetAtom.hpp"
 
 template <typename Scalar>
@@ -37,8 +38,8 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_m(re
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_parity(int parity) {
-    this->parity.emplace(parity);
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_parity(Parity value) {
+    parity = value;
     return *this;
 }
 

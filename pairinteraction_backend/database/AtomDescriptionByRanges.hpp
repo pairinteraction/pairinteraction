@@ -1,5 +1,6 @@
 #pragma once
 
+#include "enums/Parity.hpp"
 #include "utils/Range.hpp"
 #include "utils/traits.hpp"
 
@@ -10,7 +11,7 @@ template <typename Real>
 struct AtomDescriptionByRanges {
     static_assert(std::is_floating_point_v<Real>);
 
-    std::optional<int> parity;
+    Parity parity{Parity::UNKNOWN};
     Range<Real> range_energy;
     Range<Real> range_quantum_number_f;
     Range<Real> range_quantum_number_m;

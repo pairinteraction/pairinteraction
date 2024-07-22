@@ -1,5 +1,6 @@
 #pragma once
 
+#include "enums/Parity.hpp"
 #include "utils/traits.hpp"
 
 #include <optional>
@@ -9,7 +10,7 @@ template <typename Real>
 struct AtomDescriptionByParameters {
     static_assert(std::is_floating_point_v<Real>);
 
-    std::optional<int> parity;
+    Parity parity{Parity::UNKNOWN};
     std::optional<Real> energy;
     std::optional<Real> quantum_number_f;
     std::optional<Real> quantum_number_m;
