@@ -1,4 +1,5 @@
 #include "operator/Operator.hpp"
+
 #include "basis/BasisAtom.hpp"
 #include "enums/TransformationType.hpp"
 #include "utils/eigen_assertion.hpp"

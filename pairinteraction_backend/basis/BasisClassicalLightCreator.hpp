@@ -1,5 +1,8 @@
 #pragma once
 
+#include "utils/Range.hpp"
+#include "utils/traits.hpp"
+
 #include <complex>
 #include <limits>
 #include <memory>
@@ -7,9 +10,6 @@
 #include <ranges>
 #include <string>
 #include <vector>
-
-#include "utils/Range.hpp"
-#include "utils/traits.hpp"
 
 template <typename Scalar>
 class BasisClassicalLight;

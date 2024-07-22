@@ -2,6 +2,7 @@
 
 #include "basis/BasisClassicalLight.hpp"
 #include "ket/KetClassicalLightCreator.hpp"
+
 #include <stdexcept>
 
 template <typename Scalar>
@@ -54,6 +55,7 @@ template class BasisClassicalLightCreator<std::complex<double>>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "utils/streamed.hpp"
+
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 

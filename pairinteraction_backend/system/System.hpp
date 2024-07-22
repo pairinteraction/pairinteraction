@@ -1,9 +1,9 @@
 #pragma once
 
-#include <memory>
-
 #include "interfaces/TransformationBuilderInterface.hpp"
 #include "utils/traits.hpp"
+
+#include <memory>
 
 enum class TransformationType : unsigned char;
 

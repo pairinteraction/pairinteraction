@@ -1,13 +1,13 @@
 #pragma once
 
+#include "utils/maths.hpp"
+#include "utils/traits.hpp"
+
 #include <cmath>
 #include <complex>
 #include <limits>
 #include <stdexcept>
 #include <type_traits>
-
-#include "utils/maths.hpp"
-#include "utils/traits.hpp"
 
 namespace wigner {
 

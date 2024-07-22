@@ -1,7 +1,9 @@
 #include "operator/OperatorAtom.hpp"
+
 #include "basis/BasisAtom.hpp"
 #include "database/Database.hpp"
 #include "enums/OperatorType.hpp"
+
 #include <limits>
 
 template <typename Scalar>

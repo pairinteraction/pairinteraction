@@ -103,6 +103,7 @@ template class KetAtomCreator<double>;
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "utils/streamed.hpp"
+
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 

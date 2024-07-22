@@ -1,4 +1,5 @@
 #include "basis/BasisAtomCreator.hpp"
+
 #include "basis/BasisAtom.hpp"
 #include "database/AtomDescriptionByRanges.hpp"
 #include "database/Database.hpp"
@@ -131,6 +132,7 @@ template class BasisAtomCreator<std::complex<double>>;
 
 #include "ket/KetAtomCreator.hpp"
 #include "utils/streamed.hpp"
+
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 

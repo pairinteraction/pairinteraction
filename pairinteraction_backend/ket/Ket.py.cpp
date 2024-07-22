@@ -5,9 +5,8 @@
 #include "KetAtomCreator.hpp"
 #include "database/Database.hpp"
 
-#include <sstream>
-
 #include <nanobind/nanobind.h>
+#include <sstream>
 
 namespace nb = nanobind;
 
