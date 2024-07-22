@@ -1,5 +1,7 @@
 #pragma once
 
+#include "enums/Parity.hpp"
+
 #include <limits>
 #include <memory>
 #include <optional>
@@ -29,7 +31,7 @@ public:
     KetAtomCreator<Real> &set_energy(Real value);
     KetAtomCreator<Real> &set_quantum_number_f(Real value);
     KetAtomCreator<Real> &set_quantum_number_m(Real value);
-    KetAtomCreator<Real> &set_parity(int value);
+    KetAtomCreator<Real> &set_parity(Parity value);
     KetAtomCreator<Real> &set_quantum_number_n(int value);
     KetAtomCreator<Real> &set_quantum_number_nu(Real value);
     KetAtomCreator<Real> &set_quantum_number_l(Real value);
@@ -39,10 +41,10 @@ public:
 
 private:
     std::optional<std::string> species;
+    Parity parity{Parity::UNKNOWN};
     std::optional<Real> energy;
     std::optional<Real> quantum_number_f;
     std::optional<Real> quantum_number_m;
-    std::optional<int> parity;
     std::optional<int> quantum_number_n;
     std::optional<Real> quantum_number_nu;
     std::optional<Real> quantum_number_l;

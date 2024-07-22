@@ -2,6 +2,7 @@
 
 #include "database/AtomDescriptionByParameters.hpp"
 #include "database/Database.hpp"
+#include "enums/Parity.hpp"
 #include "ket/KetAtom.hpp"
 
 #include <cmath>
@@ -43,8 +44,8 @@ KetAtomCreator<Real> &KetAtomCreator<Real>::set_quantum_number_m(Real value) {
 }
 
 template <typename Real>
-KetAtomCreator<Real> &KetAtomCreator<Real>::set_parity(int value) {
-    parity.emplace(value);
+KetAtomCreator<Real> &KetAtomCreator<Real>::set_parity(Parity value) {
+    parity = value;
     return *this;
 }
 
@@ -115,7 +116,7 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
     DOCTEST_CHECK(ket->get_quantum_number_j() == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number_s() == 0.5);
-    DOCTEST_CHECK(ket->get_parity() == -1);
+    DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }
 
@@ -133,6 +134,6 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_quantum_number_n() == 60);
     DOCTEST_CHECK(ket->get_quantum_number_f() == 1);
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0);
-    DOCTEST_CHECK(ket->get_parity() == -1);
+    DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }

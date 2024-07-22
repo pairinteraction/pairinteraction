@@ -1,13 +1,14 @@
 #pragma once
 
+#include "enums/Parity.hpp"
+#include "utils/Range.hpp"
+#include "utils/traits.hpp"
+
 #include <complex>
 #include <memory>
 #include <optional>
 #include <string>
 #include <vector>
-
-#include "utils/Range.hpp"
-#include "utils/traits.hpp"
 
 template <typename Scalar>
 class BasisAtom;
@@ -36,7 +37,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_f(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &restrict_parity(int parity);
+    BasisAtomCreator<Scalar> &restrict_parity(Parity value);
     BasisAtomCreator<Scalar> &restrict_quantum_number_n(int min, int max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_nu(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
@@ -47,7 +48,7 @@ public:
 
 private:
     std::optional<std::string> species;
-    std::optional<int> parity;
+    Parity parity{Parity::UNKNOWN};
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_f;
     Range<real_t> range_quantum_number_m;

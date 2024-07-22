@@ -1,9 +1,11 @@
 #include "ket/Ket.hpp"
 
+#include "enums/Parity.hpp"
+
 #include <limits>
 
 template <typename Real>
-Ket<Real>::Ket(Real energy, Real f, Real m, int p)
+Ket<Real>::Ket(Real energy, Real f, Real m, Parity p)
     : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p) {}
 
 template <typename Real>
@@ -22,7 +24,7 @@ Real Ket<Real>::get_quantum_number_m() const {
 }
 
 template <typename Real>
-int Ket<Real>::get_parity() const {
+Parity Ket<Real>::get_parity() const {
     return parity;
 }
 
@@ -36,6 +38,7 @@ template class Ket<double>;
 
 #include "utils/hash.hpp"
 #include "utils/streamed.hpp"
+
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 #include <sstream>
@@ -48,7 +51,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
         struct Private {};
 
     public:
-        KetDerived(Private /*unused*/, float f, float m, int p) : Ket<float>(0, f, m, p) {}
+        KetDerived(Private /*unused*/, float f, float m, Parity p) : Ket<float>(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
         size_t get_id() const override {
             size_t seed = 0;
@@ -68,7 +71,7 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
 
     class KetDerivedCreator {
     public:
-        KetDerivedCreator(float f, float m, int p) : f(f), m(m), p(p) {}
+        KetDerivedCreator(float f, float m, Parity p) : f(f), m(m), p(p) {}
         std::shared_ptr<const KetDerived> create() const {
             return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p);
         }
@@ -76,10 +79,10 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     private:
         float f;
         float m;
-        int p;
+        Parity p;
     };
 
-    auto ket = KetDerivedCreator(2.0F, 3.0F, 4).create();
+    auto ket = KetDerivedCreator(2.0F, 3.0F, Parity::EVEN).create();
 
     // Check that the label can be printed
     std::stringstream ss;

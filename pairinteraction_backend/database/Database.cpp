@@ -1,8 +1,10 @@
 #include "database/Database.hpp"
+
 #include "basis/BasisAtom.hpp"
 #include "database/AtomDescriptionByParameters.hpp"
 #include "database/AtomDescriptionByRanges.hpp"
 #include "enums/OperatorType.hpp"
+#include "enums/Parity.hpp"
 #include "ket/KetAtom.hpp"
 #include "ket/KetAtomCreator.hpp"
 #include "operator/OperatorAtom.hpp"
@@ -384,8 +386,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         where += separator + fmt::format("f = {}", description.quantum_number_f.value());
         separator = " AND ";
     }
-    if (description.parity.has_value()) {
-        where += separator + fmt::format("parity = {}", description.parity.value());
+    if (description.parity != Parity::UNKNOWN) {
+        where += separator + fmt::format("parity = {}", fmt::streamed(description.parity));
         separator = " AND ";
     }
     if (description.quantum_number_n.has_value()) {
@@ -499,10 +501,10 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     return std::make_shared<const KetAtom<Real>>(
         typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
-        result_quantum_number_m, result_parity, result_id, species, result_quantum_number_n,
-        result_quantum_number_nu_exp, result_quantum_number_nu_std, result_quantum_number_l_exp,
-        result_quantum_number_l_std, result_quantum_number_s_exp, result_quantum_number_s_std,
-        result_quantum_number_j_exp, result_quantum_number_j_std);
+        result_quantum_number_m, static_cast<Parity>(result_parity), result_id, species,
+        result_quantum_number_n, result_quantum_number_nu_exp, result_quantum_number_nu_std,
+        result_quantum_number_l_exp, result_quantum_number_l_std, result_quantum_number_s_exp,
+        result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std);
 }
 
 template <typename Scalar>
@@ -522,8 +524,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     // Describe the states
     std::string where = "(";
     std::string separator;
-    if (description.parity.has_value()) {
-        where += separator + fmt::format("parity = {}", description.parity.value());
+    if (description.parity != Parity::UNKNOWN) {
+        where += separator + fmt::format("parity = {}", fmt::streamed(description.parity));
         separator = " AND ";
     }
     if (description.range_energy.is_finite()) {
@@ -844,8 +846,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom<real_t>>(
                 typename KetAtom<real_t>::Private(), chunk_energy[i], chunk_quantum_number_f[i],
-                chunk_quantum_number_m[i], chunk_parity[i], chunk_id[i], species,
-                chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
+                chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), chunk_id[i],
+                species, chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
                 chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
                 chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
                 chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
