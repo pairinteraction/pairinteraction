@@ -2,7 +2,7 @@
 requires = [
   "scikit-build-core >=0.9.0",
   "nanobind >=1.9.0",
-  "numpy >= 1.24, < 2",
+  "numpy >= 1.24",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -36,10 +36,8 @@ classifiers = [
 ]
 requires-python = ">=3.8"
 dependencies = [
-  "numpy >= 1.24, < 2",
+  "numpy >= 1.24",
   "scipy >= 1.10",
-  "pyinstaller >= 5.13",
-  "wheel >= 0.40",
   "pydantic  >=  2.3",
 ]
 
@@ -50,14 +48,12 @@ gui = [
   "pint >= 0.21",
 ]
 doc = [
-  "matplotlib",
-  "numpydoc",
   "sphinx",
   "sphinx-rtd-theme",
   "sphinxcontrib-mermaid",
   "nbsphinx",
-  "autodoc_pydantic[erdantic]",
   "nbconvert",
+  # "autodoc_pydantic[erdantic]",
 ]
 
 [project.urls]
@@ -76,6 +72,7 @@ wheel.packages = [
 ]
 wheel.py-api = "py3"
 wheel.license-files = ["LICENSES/*.txt"]
+sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
 
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
@@ -119,4 +116,3 @@ projectKey = "pairinteraction_pairinteraction"
 organization = "pairinteraction"
 python.version = 3
 sources = ["pairinteraction", "pairinteraction_gui", "pairinteraction_backend"]
-exclusions = "**/*.sql"
