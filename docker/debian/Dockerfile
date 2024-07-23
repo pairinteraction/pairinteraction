@@ -25,30 +25,6 @@ RUN apt-get update \
 ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
 ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
 
-ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
-RUN python3 /pip.pyz --no-cache-dir install --break-system-packages \
-    scikit-build-core \
-    numpy \
-    scipy \
-    matplotlib \
-    mkl \
-    mkl-devel \
-    nanobind \
-    PyQt5 \
-    pyqtgraph \
-    Pint \
-    pydantic \
-    pytest \
-    Sphinx \
-    numpydoc \
-    sphinx-rtd-theme \
-    sphinxcontrib-mermaid \
-    autodoc_pydantic[erdantic] \
-    nbsphinx \
-    jupyter \
-    nbconvert
-RUN rm -f /pip.pyz
-
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin/:$PATH"
 

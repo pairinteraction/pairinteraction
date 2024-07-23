@@ -25,29 +25,5 @@ RUN zypper -n --gpg-auto-import-keys refresh \
   && rm ./cpp-httlib.rpm ./cpp-httlib-devel.rpm \
   && zypper clean
 
-ADD https://bootstrap.pypa.io/pip/pip.pyz /pip.pyz
-RUN python3.9 /pip.pyz --no-cache-dir install \
-    scikit-build-core \
-    numpy \
-    scipy \
-    matplotlib \
-    mkl \
-    mkl-devel \
-    nanobind \
-    PyQt5 \
-    pyqtgraph \
-    Pint \
-    pydantic \
-    pytest \
-    Sphinx \
-    numpydoc \
-    sphinx-rtd-theme \
-    sphinxcontrib-mermaid \
-    autodoc_pydantic[erdantic] \
-    nbsphinx \
-    jupyter \
-    nbconvert
-RUN rm -f /pip.pyz
-
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin/:$PATH"
