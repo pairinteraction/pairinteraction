@@ -9,32 +9,38 @@ add_library(backend OBJECT
   ./basis/BasisAtom.hpp
   ./basis/BasisAtomCreator.cpp
   ./basis/BasisAtomCreator.hpp
+  ./basis/BasisAtomCreator.test.cpp
   ./basis/BasisClassicalLight.cpp
   ./basis/BasisClassicalLight.hpp
   ./basis/BasisClassicalLightCreator.cpp
   ./basis/BasisClassicalLightCreator.hpp
+  ./basis/BasisClassicalLightCreator.test.cpp
   ./database/AtomDescriptionByParameters.hpp
   ./database/AtomDescriptionByRanges.hpp
   ./database/Database.cpp
   ./database/Database.hpp
+  ./database/Database.test.cpp
   ./diagonalizer/Diagonalizer.cpp
   ./diagonalizer/Diagonalizer.hpp
   ./enums/OperatorType.hpp
-  ./enums/Parity.cpp
+  ./enums/Parity.test.cpp
   ./enums/Parity.hpp
   ./enums/TransformationType.hpp
   ./interfaces/TransformationBuilderInterface.cpp
   ./interfaces/TransformationBuilderInterface.hpp
   ./ket/Ket.cpp
   ./ket/Ket.hpp
+  ./ket/Ket.test.cpp
   ./ket/KetAtom.cpp
   ./ket/KetAtom.hpp
   ./ket/KetAtomCreator.cpp
   ./ket/KetAtomCreator.hpp
+  ./ket/KetAtomCreator.test.cpp
   ./ket/KetClassicalLight.cpp
   ./ket/KetClassicalLight.hpp
   ./ket/KetClassicalLightCreator.cpp
   ./ket/KetClassicalLightCreator.hpp
+  ./ket/KetClassicalLightCreator.test.cpp
   ./operator/Operator.cpp
   ./operator/Operator.hpp
   ./operator/OperatorAtom.cpp
@@ -48,7 +54,7 @@ add_library(backend OBJECT
   ./utils/args.hpp
   ./utils/eigen_assertion.hpp
   ./utils/eigen_compat.hpp
-  ./utils/euler.cpp
+  ./utils/euler.test.cpp
   ./utils/euler.hpp
   ./utils/hash.hpp
   ./utils/ketid.hpp
@@ -58,7 +64,7 @@ add_library(backend OBJECT
   ./utils/spherical.hpp
   ./utils/streamed.hpp
   ./utils/traits.hpp
-  ./utils/wigner.cpp
+  ./utils/wigner.test.cpp
   ./utils/wigner.hpp
   ./setup.cpp
   ./setup.hpp
