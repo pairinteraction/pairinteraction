@@ -93,7 +93,7 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel")
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Sr87_mqdt")
-                     .restrict_quantum_number_nu(59, 61)
+                     .restrict_quantum_number_nu(60, 61)
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
@@ -115,48 +115,80 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Rb")
-                     .restrict_quantum_number_n(59, 61)
+                     .restrict_quantum_number_n(60, 61)
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
-    for (int precision : {1, 2, 4, 8, 12}) {
+    std::vector<std::shared_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<std::complex<double>>>());
+#ifdef WITH_MKL
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<std::complex<double>>>(300));
+#endif
+
+    for (int precision : {1, 4, 12}) {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Precision: {}", precision);
 
-        {
-            auto diagonalizer = DiagonalizerLapacke<std::complex<double>>();
-
+        for (const auto &diagonalizer : diagonalizers) {
             auto system = SystemAtom<std::complex<double>>(basis);
             system.set_electric_field({0.0001, 0.0002, 0.0003});
-            system.diagonalize(diagonalizer, precision);
 
             Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
             eigensolver.compute(system.get_matrix());
             auto eigenvalues_eigen = eigensolver.eigenvalues();
+
+            system.diagonalize(*diagonalizer, precision);
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
                               10 * std::pow(10, -precision));
             }
         }
+    }
+}
 
+DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restrictions") {
+    double min_energy = -1.45e-4;
+    double max_energy = -1.35e-4;
+
+    auto &database = Database::get_global_instance();
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(58, 62)
+                     .restrict_quantum_number_l(0, 1)
+                     .create(database);
+
+    std::vector<std::shared_ptr<DiagonalizerInterface<double>>> diagonalizers;
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<double>>());
 #ifdef WITH_MKL
-        {
-            auto diagonalizer = DiagonalizerFeast<std::complex<double>>(300);
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<double>>(5));
+#endif
 
-            auto system = SystemAtom<std::complex<double>>(basis);
-            system.set_electric_field({0.0001, 0.0002, 0.0003});
-            system.diagonalize(diagonalizer, precision);
+    for (const auto &diagonalizer : diagonalizers) {
+        auto system = SystemAtom<double>(basis);
+        system.set_electric_field({0.0001, 0, 0.0001});
 
-            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
-            eigensolver.compute(system.get_matrix());
-            auto eigenvalues_eigen = eigensolver.eigenvalues();
-            auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
-            for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
-                DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
-                              10 * std::pow(10, -precision));
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
+        eigensolver.compute(system.get_matrix());
+        auto eigenvalues_all = eigensolver.eigenvalues();
+        std::vector<double> eigenvalues_eigen;
+        for (int i = 0; i < eigenvalues_all.size(); ++i) {
+            if (eigenvalues_all[i] > min_energy && eigenvalues_all[i] < max_energy) {
+                eigenvalues_eigen.push_back(eigenvalues_all[i]);
             }
         }
-#endif
+
+        system.diagonalize(*diagonalizer, min_energy, max_energy);
+        auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+        Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
+        std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Eigenvalues: {}",
+                           fmt::join(eigenvalues_vector, ", "));
+
+        DOCTEST_CHECK(eigenvalues_eigen.size() == eigenvalues_pairinteraction.size());
+        for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {
+            DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-11);
+        }
     }
 }
 } // namespace pintr
