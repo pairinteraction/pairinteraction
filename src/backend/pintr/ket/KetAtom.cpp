@@ -4,7 +4,7 @@
 #include "pintr/utils/ketid.hpp"
 
 #include <cmath>
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <string>
 #include <vector>
 

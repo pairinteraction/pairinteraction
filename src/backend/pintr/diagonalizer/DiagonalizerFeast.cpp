@@ -157,6 +157,7 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
 
 #endif // WITH_MKL
 
+// Explicit instantiations
 template class DiagonalizerFeast<float>;
 template class DiagonalizerFeast<double>;
 template class DiagonalizerFeast<std::complex<float>>;

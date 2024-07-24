@@ -76,6 +76,7 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
     return {evecs.sparseView(std::pow(10, -precision), 1), evals};
 }
 
+// Explicit instantiations
 template class DiagonalizerLapacke<float>;
 template class DiagonalizerLapacke<double>;
 template class DiagonalizerLapacke<std::complex<float>>;

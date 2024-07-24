@@ -3,7 +3,7 @@
 #include "pintr/enums/Parity.hpp"
 #include "pintr/utils/hash.hpp"
 
-#include <fmt/format.h>
+#include <fmt/core.h>
 #include <string>
 
 namespace pintr {
@@ -48,6 +48,7 @@ int KetClassicalLight<Real>::get_quantum_number_q() const {
     return quantum_number_q;
 }
 
+// Explicit instantiations
 template class KetClassicalLight<float>;
 template class KetClassicalLight<double>;
 } // namespace pintr
