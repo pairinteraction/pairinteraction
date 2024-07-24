@@ -5,9 +5,6 @@
 #include <vector>
 
 namespace pintr {
-template <typename Derived>
-class System;
-
 template <typename Scalar>
 class DiagonalizerInterface;
 
