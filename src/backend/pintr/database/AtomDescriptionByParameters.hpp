@@ -6,6 +6,7 @@
 #include <optional>
 #include <type_traits>
 
+namespace pintr {
 template <typename Real>
 struct AtomDescriptionByParameters {
     static_assert(std::is_floating_point_v<Real>);
@@ -20,3 +21,4 @@ struct AtomDescriptionByParameters {
     std::optional<Real> quantum_number_s;
     std::optional<Real> quantum_number_j;
 };
+} // namespace pintr

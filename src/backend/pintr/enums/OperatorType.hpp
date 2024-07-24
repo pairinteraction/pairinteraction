@@ -1,5 +1,6 @@
 #pragma once
 
+namespace pintr {
 enum class OperatorType {
     ZERO,                // Empty operator
     ENERGY,              // Unperturbed Hamiltonian
@@ -10,3 +11,4 @@ enum class OperatorType {
     DIAMAGNETIC,         // Part of the diamagnetic operator
     ARBITRARY            // Arbitrary operator
 };
+} // namespace pintr

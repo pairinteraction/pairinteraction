@@ -4,6 +4,7 @@
 #include <string>
 #include <type_traits>
 
+namespace pintr {
 enum class Parity : int;
 
 /**
@@ -48,3 +49,4 @@ protected:
 
 extern template class Ket<float>;
 extern template class Ket<double>;
+} // namespace pintr

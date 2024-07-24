@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+namespace pintr {
 template <typename Scalar>
 class BasisAtom;
 
@@ -65,3 +66,4 @@ extern template class BasisAtomCreator<float>;
 extern template class BasisAtomCreator<double>;
 extern template class BasisAtomCreator<std::complex<float>>;
 extern template class BasisAtomCreator<std::complex<double>>;
+} // namespace pintr

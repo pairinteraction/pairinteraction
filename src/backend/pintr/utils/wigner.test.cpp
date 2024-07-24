@@ -4,6 +4,7 @@
 #include <doctest/doctest.h>
 #include <limits>
 
+namespace pintr {
 DOCTEST_TEST_CASE("construction of wigner D matrix") {
     constexpr double PI = 3.141592653589793238462643383279502884;
     constexpr double EPSILON = 100 * std::numeric_limits<double>::epsilon();
@@ -30,3 +31,4 @@ DOCTEST_TEST_CASE("construction of wigner D matrix") {
     auto wigner_complex_entry_reference = std::complex<double>(0, 1);
     DOCTEST_CHECK(std::abs(wigner_complex_entry - wigner_complex_entry_reference) <= EPSILON);
 }
+} // namespace pintr

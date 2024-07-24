@@ -4,6 +4,7 @@
 #include <utility>
 
 #if FMT_VERSION < 90000
+
 namespace fmt {
 template <typename T>
 inline auto streamed(T &&v) {

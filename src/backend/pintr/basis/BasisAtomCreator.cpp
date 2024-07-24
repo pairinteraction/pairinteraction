@@ -6,6 +6,7 @@
 #include "pintr/enums/Parity.hpp"
 #include "pintr/ket/KetAtom.hpp"
 
+namespace pintr {
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(const std::string &value) {
     species.emplace(value);
@@ -125,3 +126,4 @@ template class BasisAtomCreator<float>;
 template class BasisAtomCreator<double>;
 template class BasisAtomCreator<std::complex<float>>;
 template class BasisAtomCreator<std::complex<double>>;
+} // namespace pintr

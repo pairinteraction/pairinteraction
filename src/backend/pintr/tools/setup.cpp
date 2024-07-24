@@ -9,6 +9,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 void setup() {
 
     // Configure a logger
@@ -38,3 +39,4 @@ void setup() {
         spdlog::set_default_logger(logger);
     });
 }
+} // namespace pintr

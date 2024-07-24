@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+namespace pintr {
 enum class TransformationType : unsigned char;
 
 template <typename Derived>
@@ -78,3 +79,4 @@ private:
     const Derived &derived() const;
     Derived &derived_mutable();
 };
+} // namespace pintr

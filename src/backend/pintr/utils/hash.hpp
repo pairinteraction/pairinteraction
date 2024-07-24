@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 
-namespace hash {
+namespace pintr::hash {
 
 /**
  * @struct hash
@@ -100,4 +100,4 @@ struct hash<Parity> {
     }
 };
 
-} // namespace hash
+} // namespace pintr::hash

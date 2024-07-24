@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include <vector>
 
+namespace pintr {
 enum class Parity : int;
 enum class TransformationType : unsigned char;
 
@@ -92,3 +93,4 @@ private:
     std::vector<Parity> parity_of_states;
     std::vector<int> ket_of_states;
 };
+} // namespace pintr

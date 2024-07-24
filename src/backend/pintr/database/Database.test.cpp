@@ -11,6 +11,7 @@
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 DOCTEST_TEST_CASE("get a KetAtom") {
     Database &database = Database::get_global_instance();
 
@@ -54,3 +55,4 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}",
                        dipole.get_matrix().nonZeros());
 }
+} // namespace pintr

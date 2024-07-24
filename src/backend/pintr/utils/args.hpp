@@ -4,7 +4,7 @@
 #include <string>
 #include <system_error>
 
-namespace args {
+namespace pintr::args {
 inline bool parse_download_missing(int &i, int argc, char **const argv, bool &download_missing) {
     if (i < argc && std::string(argv[i]) == "--download-missing") {
         download_missing = true;
@@ -36,4 +36,4 @@ inline bool parse_database(int &i, int argc, char **const argv,
     return false;
 }
 
-} // namespace args
+} // namespace pintr::args

@@ -6,6 +6,7 @@
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 DOCTEST_TEST_CASE("create a classical light basis") {
     float energy{0.03};
     auto basis = BasisClassicalLightCreator<float>()
@@ -18,3 +19,4 @@ DOCTEST_TEST_CASE("create a classical light basis") {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
     }
 }
+} // namespace pintr

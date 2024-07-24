@@ -9,6 +9,16 @@
 #include <unordered_map>
 #include <vector>
 
+namespace duckdb {
+class DuckDB;
+class Connection;
+} // namespace duckdb
+
+namespace httplib {
+class Client;
+} // namespace httplib
+
+namespace pintr {
 enum class OperatorType;
 
 template <typename Scalar>
@@ -25,15 +35,6 @@ class BasisAtom;
 
 template <typename Scalar>
 class OperatorAtom;
-
-namespace duckdb {
-class DuckDB;
-class Connection;
-} // namespace duckdb
-
-namespace httplib {
-class Client;
-} // namespace httplib
 
 class Database {
 public:
@@ -139,3 +140,4 @@ extern template OperatorAtom<std::complex<float>> Database::get_operator<std::co
     std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
 extern template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
     std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
+} // namespace pintr

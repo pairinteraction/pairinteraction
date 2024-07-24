@@ -5,6 +5,7 @@
 
 #include <memory>
 
+namespace pintr {
 enum class TransformationType : unsigned char;
 
 template <typename Derived>
@@ -42,3 +43,4 @@ protected:
 private:
     const Derived &derived() const;
 };
+} // namespace pintr

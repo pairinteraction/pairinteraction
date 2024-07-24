@@ -7,6 +7,7 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
+namespace pintr {
 DOCTEST_TEST_CASE("compare parities") {
     auto p1 = Parity::ODD;
     auto p2 = Parity::EVEN;
@@ -33,3 +34,4 @@ DOCTEST_TEST_CASE("sort parities") {
     DOCTEST_CHECK(parities[1] == Parity::EVEN);
     DOCTEST_CHECK(parities[2] == Parity::UNKNOWN);
 }
+} // namespace pintr

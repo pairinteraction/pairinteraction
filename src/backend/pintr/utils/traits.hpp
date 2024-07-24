@@ -4,7 +4,7 @@
 #include <functional>
 #include <type_traits>
 
-namespace traits {
+namespace pintr::traits {
 
 /**
  * @struct CrtpTraits
@@ -60,4 +60,4 @@ struct OpTraits {
     static constexpr bool has_less_v = std::is_invocable_r_v<bool, std::less<>, T, T>;
 };
 
-} // namespace traits
+} // namespace pintr::traits

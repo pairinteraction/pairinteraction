@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+namespace pintr {
 template <typename Real>
 KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p, size_t id,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
@@ -120,3 +121,4 @@ Real KetAtom<Real>::get_quantum_number_j_std() const {
 // Explicit instantiations
 template class KetAtom<float>;
 template class KetAtom<double>;
+} // namespace pintr

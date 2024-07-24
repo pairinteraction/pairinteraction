@@ -7,6 +7,7 @@
 #include <optional>
 #include <type_traits>
 
+namespace pintr {
 template <typename Real>
 struct AtomDescriptionByRanges {
     static_assert(std::is_floating_point_v<Real>);
@@ -21,3 +22,4 @@ struct AtomDescriptionByRanges {
     Range<Real> range_quantum_number_s;
     Range<Real> range_quantum_number_j;
 };
+} // namespace pintr

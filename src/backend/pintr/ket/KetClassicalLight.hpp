@@ -5,6 +5,7 @@
 #include <string>
 #include <type_traits>
 
+namespace pintr {
 template <typename Real>
 class KetClassicalLightCreator;
 
@@ -30,3 +31,4 @@ private:
 
 extern template class KetClassicalLight<float>;
 extern template class KetClassicalLight<double>;
+} // namespace pintr

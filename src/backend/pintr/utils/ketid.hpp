@@ -3,7 +3,7 @@
 #include <string>
 #include <type_traits>
 
-namespace ketid::atom {
+namespace pintr::ketid::atom {
 constexpr size_t OFFSET = 500;
 
 // String that can be used in an SQL query to calculate a linearized index ("ketid") from
@@ -27,4 +27,4 @@ inline size_t transform(size_t ketid, Real old_quantum_number_m, Real new_quantu
     return ketid + static_cast<size_t>(2 * new_quantum_number_m + OFFSET) -
         static_cast<size_t>(2 * old_quantum_number_m + OFFSET);
 }
-} // namespace ketid::atom
+} // namespace pintr::ketid::atom

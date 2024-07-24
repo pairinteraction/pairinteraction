@@ -7,8 +7,7 @@
 #include <array>
 #include <type_traits>
 
-namespace euler {
-
+namespace pintr::euler {
 /**
  * @function get_rotation_matrix
  *
@@ -66,4 +65,4 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
     return euler_zyz;
 }
 
-} // namespace euler
+} // namespace pintr::euler

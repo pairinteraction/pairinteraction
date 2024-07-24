@@ -8,6 +8,7 @@
 #include <complex>
 #include <vector>
 
+namespace pintr {
 enum class TransformationType : unsigned char;
 
 template <typename Scalar>
@@ -64,3 +65,4 @@ extern template class TransformationBuilderInterface<float>;
 extern template class TransformationBuilderInterface<double>;
 extern template class TransformationBuilderInterface<std::complex<float>>;
 extern template class TransformationBuilderInterface<std::complex<double>>;
+} // namespace pintr
