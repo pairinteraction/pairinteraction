@@ -5,9 +5,7 @@
 #include "pintr/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
-#include <array>
 #include <memory>
-#include <vector>
 
 namespace pintr {
 enum class TransformationType : unsigned char;

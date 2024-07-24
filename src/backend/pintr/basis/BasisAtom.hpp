@@ -10,13 +10,9 @@
 namespace pintr {
 class Database;
 
-template <typename T>
-class BasisAtomCreator;
-
 template <typename Real>
 class KetAtom;
 
-// Specialize CrtpTraits for BasisAtom
 template <typename Scalar>
 class BasisAtom;
 

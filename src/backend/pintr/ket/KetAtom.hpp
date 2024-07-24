@@ -6,10 +6,9 @@
 #include <type_traits>
 
 namespace pintr {
-enum class Parity : int;
+class Database;
 
-template <typename Real>
-class KetAtomCreator;
+enum class Parity : int;
 
 /**
  * @class KetAtom

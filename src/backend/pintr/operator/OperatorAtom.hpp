@@ -7,9 +7,9 @@
 #include <vector>
 
 namespace pintr {
-enum class OperatorType;
-
 class Database;
+
+enum class OperatorType;
 
 template <typename Scalar>
 class BasisAtom;
@@ -17,7 +17,6 @@ class BasisAtom;
 template <typename Real>
 class KetAtom;
 
-// Specialize CrtpTraits for OperatorAtom
 template <typename T>
 class OperatorAtom;
 

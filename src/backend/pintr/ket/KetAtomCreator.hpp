@@ -2,7 +2,6 @@
 
 #include "pintr/enums/Parity.hpp"
 
-#include <limits>
 #include <memory>
 #include <optional>
 #include <string>

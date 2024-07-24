@@ -1,6 +1,5 @@
 #include "pintr/basis/BasisAtomCreator.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
 #include "pintr/database/AtomDescriptionByRanges.hpp"
 #include "pintr/database/Database.hpp"
 #include "pintr/enums/Parity.hpp"

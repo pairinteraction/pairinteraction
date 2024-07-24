@@ -1,6 +1,5 @@
 #include "pintr/system/System.hpp"
 
-#include "pintr/operator/Operator.hpp"
 #include "pintr/operator/OperatorAtom.hpp"
 #include "pintr/system/SystemAtom.hpp"
 #include "pintr/utils/eigen_assertion.hpp"

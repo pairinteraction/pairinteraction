@@ -4,15 +4,12 @@
 #include "pintr/basis/BasisClassicalLight.hpp"
 #include "pintr/enums/Parity.hpp"
 #include "pintr/enums/TransformationType.hpp"
-#include "pintr/ket/Ket.hpp"
 #include "pintr/ket/KetAtom.hpp"
 #include "pintr/ket/KetClassicalLight.hpp"
 #include "pintr/utils/eigen_compat.hpp"
-#include "pintr/utils/euler.hpp"
 #include "pintr/utils/wigner.hpp"
 
 #include <numeric>
-#include <set>
 
 namespace pintr {
 template <typename Derived>

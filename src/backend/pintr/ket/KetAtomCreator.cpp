@@ -3,10 +3,8 @@
 #include "pintr/database/AtomDescriptionByParameters.hpp"
 #include "pintr/database/Database.hpp"
 #include "pintr/enums/Parity.hpp"
-#include "pintr/ket/KetAtom.hpp"
 
 #include <cmath>
-#include <limits>
 
 namespace pintr {
 template <typename Real>

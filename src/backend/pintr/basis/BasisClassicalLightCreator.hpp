@@ -4,12 +4,7 @@
 #include "pintr/utils/traits.hpp"
 
 #include <complex>
-#include <limits>
 #include <memory>
-#include <optional>
-#include <ranges>
-#include <string>
-#include <vector>
 
 namespace pintr {
 template <typename Scalar>
@@ -32,7 +27,6 @@ public:
 
 private:
     friend class BasisClassicalLight<Scalar>;
-    // friend class KetClassicalLight<Scalar>;
     real_t photon_energy{0.0};
     Range<int> range_quantum_number_q{0, 0};
 };
