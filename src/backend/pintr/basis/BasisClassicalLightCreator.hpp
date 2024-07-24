@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+namespace pintr {
 template <typename Scalar>
 class BasisClassicalLight;
 
@@ -40,3 +41,4 @@ extern template class BasisClassicalLightCreator<float>;
 extern template class BasisClassicalLightCreator<double>;
 extern template class BasisClassicalLightCreator<std::complex<float>>;
 extern template class BasisClassicalLightCreator<std::complex<double>>;
+} // namespace pintr

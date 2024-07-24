@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace maths {
+namespace pintr::maths {
 
 template <typename Real>
 inline Real binomial_coefficient(Real n, Real k) {
@@ -44,4 +44,4 @@ inline Real factorial(Real n) {
     return result;
 }
 
-} // namespace maths
+} // namespace pintr::maths

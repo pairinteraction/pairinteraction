@@ -5,6 +5,7 @@
 
 #include <stdexcept>
 
+namespace pintr {
 template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
 BasisClassicalLightCreator<Scalar>::set_photon_energy(real_t value) {
@@ -49,3 +50,4 @@ template class BasisClassicalLightCreator<float>;
 template class BasisClassicalLightCreator<double>;
 template class BasisClassicalLightCreator<std::complex<float>>;
 template class BasisClassicalLightCreator<std::complex<double>>;
+} // namespace pintr

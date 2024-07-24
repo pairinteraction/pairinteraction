@@ -3,6 +3,7 @@
 #include <array>
 #include <doctest/doctest.h>
 
+namespace pintr {
 DOCTEST_TEST_CASE("construction of rotation matrixes") {
     auto rotator = euler::get_rotation_matrix<double>({0, 0, 1}, {0, 1, 0});
     auto rotator_reference = Eigen::Matrix3<double>::Identity();
@@ -35,3 +36,4 @@ DOCTEST_TEST_CASE("construction of zyz euler angles") {
                       std::abs(euler_angles[2] - euler_angles_reference[2]) <=
                   1e-6);
 }
+} // namespace pintr

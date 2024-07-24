@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+namespace pintr {
 enum class OperatorType;
 
 class Database;
@@ -54,3 +55,4 @@ extern template class OperatorAtom<float>;
 extern template class OperatorAtom<double>;
 extern template class OperatorAtom<std::complex<float>>;
 extern template class OperatorAtom<std::complex<double>>;
+} // namespace pintr

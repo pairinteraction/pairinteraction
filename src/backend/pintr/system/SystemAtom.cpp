@@ -4,6 +4,7 @@
 #include "pintr/operator/OperatorAtom.hpp"
 #include "pintr/utils/spherical.hpp"
 
+namespace pintr {
 template <typename Scalar>
 SystemAtom<Scalar>::SystemAtom(std::shared_ptr<const basis_t> basis)
     : System<SystemAtom<Scalar>>(basis) {}
@@ -110,3 +111,4 @@ template class SystemAtom<float>;
 template class SystemAtom<double>;
 template class SystemAtom<std::complex<float>>;
 template class SystemAtom<std::complex<double>>;
+} // namespace pintr

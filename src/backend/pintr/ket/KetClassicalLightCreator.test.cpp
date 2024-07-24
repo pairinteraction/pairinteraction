@@ -6,6 +6,7 @@
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 DOCTEST_TEST_CASE("create a classical light ket") {
 
     float photon_energy{0.02};
@@ -17,3 +18,4 @@ DOCTEST_TEST_CASE("create a classical light ket") {
     DOCTEST_CHECK(lightket->get_energy() == q * photon_energy);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*lightket));
 }
+} // namespace pintr

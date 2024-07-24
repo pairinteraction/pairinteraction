@@ -8,6 +8,7 @@
 #include <cmath>
 #include <limits>
 
+namespace pintr {
 template <typename Real>
 KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, Real j, Real m)
     : species(std::move(species)), quantum_number_f(j), quantum_number_m(m), quantum_number_n(n),
@@ -97,3 +98,4 @@ std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &data
 // Explicit instantiations
 template class KetAtomCreator<float>;
 template class KetAtomCreator<double>;
+} // namespace pintr

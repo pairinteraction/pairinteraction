@@ -6,23 +6,23 @@
 
 int main(int argc, char **argv) {
     // Call the setup function to configure logging
-    setup();
+    pintr::setup();
 
     // Create a database instance
     std::filesystem::path databasedir;
     bool download_missing = false;
 
     for (int i = 1; i < argc; ++i) {
-        bool found = args::parse_download_missing(i, argc, argv, download_missing);
+        bool found = pintr::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            args::parse_database(i, argc, argv, databasedir);
+            pintr::args::parse_database(i, argc, argv, databasedir);
         }
     }
 
-    Database database(download_missing, false, databasedir);
+    pintr::Database database(download_missing, false, databasedir);
 
     // Create a dipole operator coupling two specific states
-    auto ket1 = KetAtomCreator<float>()
+    auto ket1 = pintr::KetAtomCreator<float>()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(0)
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
                     .set_quantum_number_m(0.5)
                     .create(database);
 
-    auto ket2 = KetAtomCreator<float>()
+    auto ket2 = pintr::KetAtomCreator<float>()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(1)
@@ -38,9 +38,11 @@ int main(int argc, char **argv) {
                     .set_quantum_number_m(0.5)
                     .create(database);
 
-    auto basis_ket1_ket2 = BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).create(database);
+    auto basis_ket1_ket2 =
+        pintr::BasisAtomCreator<float>().add_ket(ket1).add_ket(ket2).create(database);
 
-    OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2, OperatorType::ELECTRIC_DIPOLE, 0);
+    pintr::OperatorAtom<float> dipole_ket1_ket2(basis_ket1_ket2,
+                                                pintr::OperatorType::ELECTRIC_DIPOLE, 0);
     float dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
     if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) >
@@ -68,15 +70,18 @@ int main(int argc, char **argv) {
     }
 
     // Create dipole operators in a typical basis
-    auto basis = BasisAtomCreator<std::complex<float>>()
+    auto basis = pintr::BasisAtomCreator<std::complex<float>>()
                      .set_species("Sr88_singlet")
                      .restrict_quantum_number_n(60, 63)
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    OperatorAtom<std::complex<float>> dipole_0(basis, OperatorType::ELECTRIC_DIPOLE, 0);
-    OperatorAtom<std::complex<float>> dipole_p(basis, OperatorType::ELECTRIC_DIPOLE, 1);
-    OperatorAtom<std::complex<float>> dipole_m(basis, OperatorType::ELECTRIC_DIPOLE, -1);
+    pintr::OperatorAtom<std::complex<float>> dipole_0(basis, pintr::OperatorType::ELECTRIC_DIPOLE,
+                                                      0);
+    pintr::OperatorAtom<std::complex<float>> dipole_p(basis, pintr::OperatorType::ELECTRIC_DIPOLE,
+                                                      1);
+    pintr::OperatorAtom<std::complex<float>> dipole_m(basis, pintr::OperatorType::ELECTRIC_DIPOLE,
+                                                      -1);
 
     if (dipole_0.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");

@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace wigner {
+namespace pintr::wigner {
 
 namespace {
 
@@ -75,4 +75,4 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
     }
 }
 
-} // namespace wigner
+} // namespace pintr::wigner

@@ -8,6 +8,7 @@
 #include <string>
 #include <type_traits>
 
+namespace pintr {
 class Database;
 
 template <typename Real>
@@ -54,3 +55,4 @@ private:
 
 extern template class KetAtomCreator<float>;
 extern template class KetAtomCreator<double>;
+} // namespace pintr

@@ -1,5 +1,7 @@
 #include "pintr/basis/Basis.hpp"
 
+#include "pintr/basis/BasisAtom.hpp"
+#include "pintr/basis/BasisClassicalLight.hpp"
 #include "pintr/enums/Parity.hpp"
 #include "pintr/enums/TransformationType.hpp"
 #include "pintr/ket/Ket.hpp"
@@ -12,6 +14,7 @@
 #include <numeric>
 #include <set>
 
+namespace pintr {
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
@@ -496,9 +499,6 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
 }
 
 // Explicit instantiations
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/basis/BasisClassicalLight.hpp"
-
 template class Basis<BasisAtom<float>>;
 template class Basis<BasisAtom<double>>;
 template class Basis<BasisAtom<std::complex<float>>>;
@@ -507,3 +507,4 @@ template class Basis<BasisClassicalLight<float>>;
 template class Basis<BasisClassicalLight<double>>;
 template class Basis<BasisClassicalLight<std::complex<float>>>;
 template class Basis<BasisClassicalLight<std::complex<double>>>;
+} // namespace pintr

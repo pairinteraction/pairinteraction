@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+namespace pintr {
 class Database;
 
 template <typename T>
@@ -59,3 +60,4 @@ extern template class BasisAtom<float>;
 extern template class BasisAtom<double>;
 extern template class BasisAtom<std::complex<float>>;
 extern template class BasisAtom<std::complex<double>>;
+} // namespace pintr

@@ -2,11 +2,13 @@
 
 #include "pintr/basis/BasisAtom.hpp"
 #include "pintr/enums/TransformationType.hpp"
+#include "pintr/operator/OperatorAtom.hpp"
 #include "pintr/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
 #include <memory>
 
+namespace pintr {
 template <typename Derived>
 Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(std::move(basis)) {}
 
@@ -198,8 +200,6 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
 }
 
 // Explicit instantiations
-#include "pintr/operator/OperatorAtom.hpp"
-
 template class Operator<OperatorAtom<float>>;
 template class Operator<OperatorAtom<double>>;
 template class Operator<OperatorAtom<std::complex<float>>>;
@@ -272,3 +272,4 @@ operator-(const Operator<OperatorAtom<std::complex<float>>> &lhs,
 template OperatorAtom<std::complex<double>>
 operator-(const Operator<OperatorAtom<std::complex<double>>> &lhs,
           const Operator<OperatorAtom<std::complex<double>>> &rhs);
+} // namespace pintr

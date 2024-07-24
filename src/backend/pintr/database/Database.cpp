@@ -23,6 +23,7 @@
 #include <spdlog/spdlog.h>
 #include <system_error>
 
+namespace pintr {
 Database::Database() : Database(default_download_missing) {}
 
 Database::Database(bool download_missing)
@@ -1181,3 +1182,4 @@ template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<f
     std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
 template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
     std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
+} // namespace pintr

@@ -5,6 +5,7 @@
 #include <string>
 #include <type_traits>
 
+namespace pintr {
 enum class Parity : int;
 
 template <typename Real>
@@ -58,3 +59,4 @@ private:
 
 extern template class KetAtom<float>;
 extern template class KetAtom<double>;
+} // namespace pintr

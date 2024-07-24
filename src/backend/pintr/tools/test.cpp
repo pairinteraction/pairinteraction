@@ -13,6 +13,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 int test(int argc, char **argv, bool download_missing, std::filesystem::path databasedir) {
 
     // Configure a logger for the tests
@@ -76,3 +77,4 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
 
     return exitcode;
 };
+} // namespace pintr

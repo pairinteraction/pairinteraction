@@ -7,6 +7,7 @@
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
+namespace pintr {
 DOCTEST_TEST_CASE("create a ket for rubidium") {
     Database &database = Database::get_global_instance();
     auto ket = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
@@ -38,3 +39,4 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }
+} // namespace pintr

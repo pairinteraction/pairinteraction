@@ -7,6 +7,7 @@
 #include <limits>
 #include <string>
 
+namespace pintr {
 template <typename Real>
 KetClassicalLight<Real>::KetClassicalLight(Private /*unused*/, Real photon_energy, int q)
     : Ket<Real>(photon_energy * q, 0, 0, Parity::ODD), photon_energy(photon_energy),
@@ -50,3 +51,4 @@ int KetClassicalLight<Real>::get_quantum_number_q() const {
 
 template class KetClassicalLight<float>;
 template class KetClassicalLight<double>;
+} // namespace pintr

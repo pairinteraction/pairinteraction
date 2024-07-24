@@ -3,6 +3,7 @@
 #include "pintr/enums/TransformationType.hpp"
 #include "pintr/utils/euler.hpp"
 
+namespace pintr {
 template <typename Scalar>
 Transformation<Scalar>::Transformation(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix,
                                        std::vector<TransformationType> transformation_type)
@@ -43,3 +44,4 @@ template class TransformationBuilderInterface<float>;
 template class TransformationBuilderInterface<double>;
 template class TransformationBuilderInterface<std::complex<float>>;
 template class TransformationBuilderInterface<std::complex<double>>;
+} // namespace pintr

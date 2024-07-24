@@ -8,6 +8,7 @@
 #include <spdlog/spdlog.h>
 #include <sstream>
 
+namespace pintr {
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator;
 
@@ -57,3 +58,4 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     // Output the label to the doctest log
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }
+} // namespace pintr

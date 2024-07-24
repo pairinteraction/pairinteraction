@@ -2,6 +2,7 @@
 
 #include "pintr/utils/traits.hpp"
 
+namespace pintr {
 template <typename Sortable>
 class Range {
     static_assert(traits::OpTraits<Sortable>::has_less_v);
@@ -32,3 +33,4 @@ private:
     Sortable _max{};
     bool _is_finite{false};
 };
+} // namespace pintr

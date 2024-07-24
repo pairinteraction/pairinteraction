@@ -6,7 +6,7 @@
 #include <limits>
 #include <stdexcept>
 
-namespace spherical {
+namespace pintr::spherical {
 
 template <typename Scalar>
 inline std::array<Scalar, 3>
@@ -27,4 +27,4 @@ convert_to_spherical_basis(const std::array<typename traits::NumTraits<Scalar>::
     }
 }
 
-} // namespace spherical
+} // namespace pintr::spherical

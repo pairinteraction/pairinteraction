@@ -2,12 +2,14 @@
 
 #include "pintr/operator/Operator.hpp"
 #include "pintr/operator/OperatorAtom.hpp"
+#include "pintr/system/SystemAtom.hpp"
 #include "pintr/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>
 #include <memory>
 
+namespace pintr {
 template <typename Derived>
 System<Derived>::System(std::shared_ptr<const basis_t> basis)
     : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(basis)) {}
@@ -106,9 +108,8 @@ Derived System<Derived>::transformed(const Sorting &transformation) const {
 }
 
 // Explicit instantiation
-#include "pintr/system/SystemAtom.hpp"
-
 template class System<SystemAtom<float>>;
 template class System<SystemAtom<double>>;
 template class System<SystemAtom<std::complex<float>>>;
 template class System<SystemAtom<std::complex<double>>>;
+} // namespace pintr
