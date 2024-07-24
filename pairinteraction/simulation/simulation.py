@@ -2,7 +2,7 @@
 
 from typing import Dict, Union
 
-# from pairinteraction.pairinteraction_backend import (
+# from pairinteraction import (
 #     BasisAtom,
 #     BasisAtomCreator,
 #     BasisClassicalLight,

@@ -167,11 +167,10 @@ endif()
 add_library(duckdb::duckdb ALIAS duckdb)
 
 # Build instructions
-add_subdirectory(pairinteraction_backend)
+add_subdirectory(src/backend)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-  add_subdirectory(test/pairinteraction_backend/cpp)
+  add_subdirectory(test/backend)
   add_subdirectory(test/pairinteraction) # TODO use pytest
-  add_subdirectory(test/pairinteraction_gui) # TODO use pytest
 endif()
 
 if( WITH_BENCH )
