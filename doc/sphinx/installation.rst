@@ -297,18 +297,25 @@ If you're developing and making changes to specific parts of the software, you c
 
 .. code-block:: bash
 
-    cmake --build . --config Release --target backend_test
-    ctest -V -C Release -R backend_test
+    cmake --build . --config Release --target pintr_test
+    ctest -V -C Release -R pintr_test
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
-**5. Finding Programming Errors with Clang-Tidy**
+**5. Improve the Code Quality with Clang-Tidy and Include-What-You-Use**
 
-It is a good practice to run the C++ linter tool `clang-tidy` during compilation to find programming errors. If you have the clang compiler installed, you can do so by building the software with the following commands:
+Our continues integration system uses the C++ linter tool `clang-tidy` to check the code quality of pull requests and find programming errors. If you have the clang compiler installed, you can run it by yourself during compilation by building the software with the following commands:
 
 .. code-block:: bash
 
     cmake -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" ..
+    cmake --build .
+
+In addition, it is recommended to use the `include-what-you-use` tool to find unnecessary includes in your code. While the tool is not perfect, its suggestions can help to reduce the compilation time. If the tool is installed on your system, you can run it during compilation by executing the following commands:
+
+.. code-block:: bash
+
+    cmake -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu" ..
     cmake --build .
 
 **6. Debugging with GDB**
@@ -320,16 +327,16 @@ If CMake uses a multi-configuration generator (e.g., Ninja Multi-Config, Visual 
 .. code-block:: bash
 
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
-    cmake --build . --config Debug --target backend_test
-    gdb -ex r --args src/backend/Debug/backend_test
+    cmake --build . --config Debug --target pintr_test
+    gdb -ex r --args src/backend/Debug/pintr_test
 
 If you are using a single-configuration generator (e.g., Unix Makefiles), you must specify the build type directly:
 
 .. code-block:: bash
 
     cmake -DCMAKE_BUILD_TYPE=Debug ..
-    cmake --build . --target backend_test
-    gdb -ex r --args src/backend/backend_test
+    cmake --build . --target pintr_test
+    gdb -ex r --args src/backend/pintr_test
 
 If you have executed a build without GDB, a crash occurred, and a core dump was created, you can load the core dump into GDB:
 

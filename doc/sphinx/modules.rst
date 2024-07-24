@@ -2,13 +2,16 @@ API Reference
 =============
 
 
-The heart of the pairinteraction package is a high-performance library for constructing and diagonalizing Hamiltonians of systems of Rydberg atoms. The library is implemented in C++ and can be accessed via the following Python module:
+The heart of the pairinteraction package is a high-performance library for constructing and diagonalizing Hamiltonians of systems of Rydberg atoms. The library is implemented in C++ and can be accessed via the ``pairinteraction`` Python module. Depending on which data type should be used to store the matrix elements of the Hamiltonian, we can choose between four different versions of the library:
 
 .. autosummary::
     :toctree: _autosummary/modules
     :recursive:
 
-    pairinteraction
+    pairinteraction.float
+    pairinteraction.double
+    pairinteraction.complex_float
+    pairinteraction.complex_double
 
 .. currentmodule:: pairinteraction
 
