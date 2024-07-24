@@ -71,7 +71,7 @@ wheel.packages = [
   "pairinteraction_gui",
 ]
 wheel.py-api = "py3"
-wheel.license-files = ["LICENSES/*.txt"]
+wheel.license-files = ["LICENSE-*.txt"]
 sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
 
 [tool.scikit-build.metadata.version]

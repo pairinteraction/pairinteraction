@@ -237,9 +237,12 @@ rst_epilog = """
 .. |arxiv| image:: /images/arXiv-badge.svg
            :target: https://arxiv.org/abs/1612.08053
            :alt: arXiv:1612.08053
-.. |license| image:: /images/license-badge.svg
+.. |license-lgpl| image:: /images/license-lgpl.svg
+             :target: https://www.gnu.org/licenses/lgpl-3.0.html
+             :alt: License LGPL v3
+.. |license-gpl| image:: /images/license-gpl.svg
              :target: https://www.gnu.org/licenses/gpl-3.0.html
-             :alt: License
+             :alt: License GPL v3
 """.format(
     repo_slug=repo_slug, user=user, repo=repo, pypi_image=pypi_image, pypi_target=pypi_target
 )

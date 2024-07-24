@@ -182,16 +182,21 @@ if ( WITH_DOC )
 endif( )
 
 # Concatenate licenses
-set(LICENSES "${PROJECT_BINARY_DIR}/LICENSES/LICENSES.txt")
+file(READ ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt LICENSE_LGPL)
+file(READ ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt LICENSE_GPL)
+file(READ ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt LICENSE_MKL)
 
-file(READ "${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt" LICENSESTXT)
-file(READ "${CMAKE_SOURCE_DIR}/LICENSES/LICENSE-3RD-PARTY.txt" 3RDPARTYTXT)
+string(
+  CONCAT LICENSE_ALL
+  ${LICENSE_LGPL}
+  "\n\n\n=============================================================================\n\n\n"
+  ${LICENSE_GPL}
+  "\n\n\n=============================================================================\n\n\n"
+  ${LICENSE_MKL}
+)
 
-if("${3RDPARTYTXT}" MATCHES "(^.*)\n\n#*\nLICENSE TEXTS")
-  string(CONCAT LICENSESTXT "${LICENSESTXT}" "-----------------------------------------------------------------------------\n\n" "${CMAKE_MATCH_1}")
-endif()
+file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
 
-file(WRITE "${LICENSES}" "${LICENSESTXT}")
 
 # Make packages for different platforms
 
@@ -200,7 +205,8 @@ if(APPLE AND WITH_DMG)
   find_package(Python COMPONENTS Interpreter REQUIRED)
 
   install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE-3RD-PARTY.txt
+    FILES ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt
+      ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt
     DESTINATION licenses
   )
 
@@ -215,7 +221,7 @@ if(APPLE AND WITH_DMG)
 
   add_custom_target(
     license
-    COMMAND ${Python_EXECUTABLE} "${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py" "${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg" "${LICENSES}"
+    COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py ${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt
   )
 
 elseif(UNIX AND NOT SKBUILD)
@@ -224,7 +230,8 @@ elseif(UNIX AND NOT SKBUILD)
 
   install(FILES ${CMAKE_SOURCE_DIR}/README.md
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
-  install(FILES ${CMAKE_SOURCE_DIR}/LICENSES/LICENSE.txt
+  install(
+    FILES ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
     RENAME copyright)
 
