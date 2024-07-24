@@ -15,43 +15,39 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
 
-cmake_minimum_required(VERSION 3.21 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
 if (NOT SKBUILD)
 message(WARNING "\
-This CMake file is mainly meant to be executed using 'scikit-build' or by persons developing the C++ backend. \
-Running it directly might not produce the desired result. \
-If you are a user trying to install this package, please use one of the commands below inside the root directory of the repository. \
-
-Consider using the following command to install the package instead:
+This CMake file is mainly meant to be executed using 'scikit-build' \
+or by persons developing the C++ backend. Running it directly might \
+not produce the desired result. If you are a user trying to install \
+this package, consider using the following install command inside \
+the root directory of the repository:
 =====================================================================
   $ pip install .[gui,doc]
 =====================================================================
-where the arguments 'gui' (installs the graphical user interface) and 'doc' (installs dependencies for building the documentation) are optional and can be omitted. \
+Where the arguments 'gui' (installs the graphical user interface) \
+and 'doc' (installs dependencies for building the documentation) \
+are optional and can be omitted. \
 
-Optionally: Set up a virtual environment and activate it to install the package in an isolated environment. \
-We recommend using 'uv' (https://pypi.org/project/uv) for this like so:
+Optionally: Set up a virtual environment and activate it to install \
+the package in an isolated environment. We recommend using 'uv' \
+(https://pypi.org/project/uv) for this like so:
 =====================================================================
   $ uv venv .venv
   $ . .venv/bin/activate
 =====================================================================
-now you can use `uv pip install .`. \
+Now you can use `uv pip install .`. \
 
-For more details and advanced options, please refer to installation instructions in the documentation.
-")
+For more details and advanced options, please refer to installation \
+instructions in the documentation.")
 endif()
-
 
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
   include(CTest)
-endif()
-
-# Work around buggy CMake ignoring CXX_EXTENSIONS OFF
-# https://gitlab.kitware.com/cmake/cmake/-/issues/22224
-if(POLICY CMP0128)
-  cmake_policy(SET CMP0128 NEW)
 endif()
 
 # Default build type is "Release with debug info"
@@ -168,6 +164,7 @@ add_library(duckdb::duckdb ALIAS duckdb)
 
 # Build instructions
 add_subdirectory(src/backend)
+
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(test/backend)
   add_subdirectory(test/pairinteraction) # TODO use pytest
@@ -195,7 +192,6 @@ string(
 )
 
 file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
-
 
 # Make packages for different platforms
 
