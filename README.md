@@ -6,7 +6,8 @@
 [![Coverage Report][codecov-svg]][codecov-link]
 [![PyPI Package][pypi-svg]][pypi-link]
 [![arXiv:1612.08053][arXiv-svg]][arXiv-link]
-[![License][license-svg]][gpl-link]
+[![License: LGPL v3][license-lgpl-svg]][license-lgpl-link]
+[![License: GPL v3][license-gpl-svg]][license-gpl-link]
 
 The *pairinteraction* software calculates properties of Rydberg systems. Visit the official website at https://www.pairinteraction.org/ for documentation and tutorials.
 
@@ -32,9 +33,11 @@ TODO: Update credits. Maintainers, list of contributors.
 
 ## License
 
-The pairinteraction library is licensed under the [LGPL v3][lgpl-link].
-The extension for the graphical user interface is licensed under the [GPL v3][gpl-link].
-The GPL v3 also applies to the combined work and all provided binary builds.
+The pairinteraction library without the graphical user interface
+is licensed under [LGPL v3][license-lgpl-link].
+
+The graphical user interface as well as the combined work of the pairinteraction
+library and the graphical user interface is licensed under [GPL v3][license-gpl-link].
 
 
 [pypi-svg]: https://img.shields.io/pypi/v/pairinteraction.svg?color=orange
@@ -43,7 +46,8 @@ The GPL v3 also applies to the combined work and all provided binary builds.
 [codecov-link]: https://www.pairinteraction.org/pairinteraction/coverage/html/index.html
 [arXiv-svg]: https://img.shields.io/badge/arXiv-1612.08053-b31b1b.svg?style=flat
 [arXiv-link]: https://arxiv.org/abs/1612.08053
-[license-svg]: https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat
-[gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
-[lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
+[license-lgpl-svg]: https://img.shields.io/badge/License-LGPL_v3-blue.svg?style=flat
+[license-gpl-svg]: https://img.shields.io/badge/License-GPLv3-blue.svg?style=flat
+[license-lgpl-link]: https://www.gnu.org/licenses/lgpl-3.0.html
+[license-gpl-link]: https://www.gnu.org/licenses/gpl-3.0.html
 [journal-link]: https://doi.org/10.1088/1361-6455/aa743a
