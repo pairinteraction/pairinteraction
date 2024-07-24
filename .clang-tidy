@@ -25,7 +25,7 @@ Checks: "
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
 "
 WarningsAsErrors:       '*'
-HeaderFilterRegex:      'pairinteraction_backend/.*'
+HeaderFilterRegex:      'src/backend/.*'
 AnalyzeTemporaryDtors:  false
 UseColor:               true
 FormatStyle:            none

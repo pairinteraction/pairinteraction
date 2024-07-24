@@ -8,16 +8,16 @@ The heart of the pairinteraction package is a high-performance library for const
     :toctree: _autosummary/modules
     :recursive:
 
-    pairinteraction_backend
+    pairinteraction
 
 .. currentmodule:: pairinteraction
 
-Building on top of pairinteraction_backend high-performance library, the package provides a number of tools for making it easier to work with the library. These tools are implemented in Python and can be accessed via the following modules:
+Building on top of the high-performance library, the package provides a number of tools for making it easier to work with the library. These tools are implemented in Python and can be accessed via the following submodules:
 
 .. autosummary::
     :toctree: _autosummary/modules
     :recursive:
 
-    model
-    preprocessing
-    simulation
+    pairinteraction.model
+    pairinteraction.preprocessing
+    pairinteraction.simulation

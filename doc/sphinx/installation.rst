@@ -297,8 +297,8 @@ If you're developing and making changes to specific parts of the software, you c
 
 .. code-block:: bash
 
-    cmake --build . --config Release --target pairinteraction_backend_test
-    ctest -V -C Release -R pairinteraction_backend_test
+    cmake --build . --config Release --target backend_test
+    ctest -V -C Release -R backend_test
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
@@ -320,16 +320,16 @@ If CMake uses a multi-configuration generator (e.g., Ninja Multi-Config, Visual 
 .. code-block:: bash
 
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
-    cmake --build . --config Debug --target pairinteraction_backend_test
-    gdb -ex r --args pairinteraction_backend/Debug/pairinteraction_backend_test
+    cmake --build . --config Debug --target backend_test
+    gdb -ex r --args src/backend/Debug/backend_test
 
 If you are using a single-configuration generator (e.g., Unix Makefiles), you must specify the build type directly:
 
 .. code-block:: bash
 
     cmake -DCMAKE_BUILD_TYPE=Debug ..
-    cmake --build . --target pairinteraction_backend_test
-    gdb -ex r --args pairinteraction_backend/pairinteraction_backend_test
+    cmake --build . --target backend_test
+    gdb -ex r --args src/backend/backend_test
 
 If you have executed a build without GDB, a crash occurred, and a core dump was created, you can load the core dump into GDB:
 
