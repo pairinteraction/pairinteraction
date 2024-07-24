@@ -227,7 +227,7 @@ install(TARGETS backend LIBRARY DESTINATION backend)
 # Build an executable for running the tests
 if (BUILD_TESTING)
   add_executable(pintr_test
-    ./tests.cpp
+    ./pintr_test/main.cpp
   )
   target_link_libraries(pintr_test PRIVATE pintr)
 
