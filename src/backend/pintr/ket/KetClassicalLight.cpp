@@ -4,7 +4,6 @@
 #include "pintr/utils/hash.hpp"
 
 #include <fmt/format.h>
-#include <limits>
 #include <string>
 
 namespace pintr {

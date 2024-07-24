@@ -17,7 +17,6 @@ class BasisAtom;
 template <typename Real>
 class KetAtom;
 
-// Specialize CrtpTraits for SystemAtom
 template <typename T>
 class SystemAtom;
 

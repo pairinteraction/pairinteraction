@@ -2,8 +2,6 @@
 
 #include "pintr/enums/Parity.hpp"
 
-#include <limits>
-
 namespace pintr {
 template <typename Real>
 Ket<Real>::Ket(Real energy, Real f, Real m, Parity p)

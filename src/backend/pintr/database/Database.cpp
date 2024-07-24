@@ -6,7 +6,6 @@
 #include "pintr/enums/OperatorType.hpp"
 #include "pintr/enums/Parity.hpp"
 #include "pintr/ket/KetAtom.hpp"
-#include "pintr/ket/KetAtomCreator.hpp"
 #include "pintr/operator/OperatorAtom.hpp"
 #include "pintr/utils/hash.hpp"
 #include "pintr/utils/ketid.hpp"

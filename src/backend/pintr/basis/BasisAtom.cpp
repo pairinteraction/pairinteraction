@@ -1,7 +1,5 @@
 #include "pintr/basis/BasisAtom.hpp"
 
-#include "pintr/ket/KetAtom.hpp"
-
 namespace pintr {
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string table,

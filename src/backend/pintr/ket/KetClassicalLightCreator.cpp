@@ -2,6 +2,8 @@
 
 #include "pintr/ket/KetClassicalLight.hpp"
 
+#include <limits>
+
 namespace pintr {
 template <typename Real>
 KetClassicalLightCreator<Real>::KetClassicalLightCreator(Real photon_energy, int q)

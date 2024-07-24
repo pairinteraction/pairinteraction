@@ -5,10 +5,9 @@
 #include "pintr/utils/traits.hpp"
 
 #include <complex>
-#include <limits>
 
 namespace pintr {
-template <typename T>
+template <typename Scalar>
 class BasisClassicalLightCreator;
 
 template <typename Scalar>

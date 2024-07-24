@@ -1,10 +1,7 @@
 #pragma once
 
-#include <exception>
-#include <limits>
 #include <memory>
 #include <optional>
-#include <string>
 #include <type_traits>
 
 namespace pintr {
