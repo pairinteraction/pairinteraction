@@ -1,3 +1,4 @@
+from pairinteraction import gui
 from pairinteraction.model import (
     ModelAtomMQDT,
     ModelAtomSQDT,
@@ -13,6 +14,7 @@ from pairinteraction.model import (
 from pairinteraction.simulation import Simulation
 
 __all__ = [
+    "gui",
     "ModelAtomMQDT",
     "ModelAtomSQDT",
     "ModelClassicalLight",

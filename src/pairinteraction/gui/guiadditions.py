@@ -20,7 +20,7 @@ from abc import ABCMeta, abstractmethod
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from pairinteraction_gui.unitmanagement import Quantity
+from pairinteraction.gui.unitmanagement import Quantity
 
 # === Dictionary to manage the elements of the GUI ===
 
