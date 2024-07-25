@@ -8,10 +8,10 @@ The heart of the pairinteraction package is a high-performance library for const
     :toctree: _autosummary/modules
     :recursive:
 
-    pairinteraction.float
-    pairinteraction.double
-    pairinteraction.complex_float
-    pairinteraction.complex_double
+    pairinteraction.backend_float
+    pairinteraction.backend_double
+    pairinteraction.backend_complex_float
+    pairinteraction.backend_complex_double
 
 .. currentmodule:: pairinteraction
 

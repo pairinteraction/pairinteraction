@@ -133,20 +133,20 @@ if __name__ == "__main__":
     splash.progress("Import Modules ...", 40)
 
 # Own classes
-from pairinteraction_gui.guiadditions import (
+from pairinteraction.gui.guiadditions import (
     DoubledeltaValidator,
     DoublenoneValidator,
     DoublepositiveValidator,
     DoubleValidator,
     GuiDict,
 )
-from pairinteraction_gui.loader import Eigensystem
-from pairinteraction_gui.pipy_thread import PipyThread
-from pairinteraction_gui.pyqtgraphadditions import MultiLine, PointsItem
-from pairinteraction_gui.unitmanagement import Quantity, Units
-from pairinteraction_gui.utils import Wignerd, bytescale, csc_happend, csr_keepmax, csr_vappend
-from pairinteraction_gui.version import version_cache, version_program, version_settings
-from pairinteraction_gui.worker import AllQueues, Worker
+from pairinteraction.gui.loader import Eigensystem
+from pairinteraction.gui.pipy_thread import PipyThread
+from pairinteraction.gui.pyqtgraphadditions import MultiLine, PointsItem
+from pairinteraction.gui.unitmanagement import Quantity, Units
+from pairinteraction.gui.utils import Wignerd, bytescale, csc_happend, csr_keepmax, csr_vappend
+from pairinteraction.gui.version import version_cache, version_program, version_settings
+from pairinteraction.gui.worker import AllQueues, Worker
 
 if __name__ == "__main__":
     splash.progress("Import Modules ...", 80)

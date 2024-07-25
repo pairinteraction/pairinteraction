@@ -268,6 +268,5 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 # HACK: Copy the python directories to the build directory # TODO re
 if(NOT SKBUILD)
-  file(COPY ${CMAKE_SOURCE_DIR}/pairinteraction DESTINATION ${CMAKE_BINARY_DIR})
-  file(COPY ${CMAKE_SOURCE_DIR}/pairinteraction_gui DESTINATION ${CMAKE_BINARY_DIR})
+  file(COPY ${CMAKE_SOURCE_DIR}/src/pairinteraction DESTINATION ${CMAKE_BINARY_DIR})
 endif()

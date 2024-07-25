@@ -19,7 +19,7 @@ import runpy
 
 
 def main():
-    runpy.run_module("pairinteraction_gui.app", {}, "__main__")
+    runpy.run_module("pairinteraction.gui.app", {}, "__main__")
 
 
 if __name__ == "__main__":
