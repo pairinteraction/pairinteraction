@@ -8,6 +8,7 @@ import sys
 import tempfile
 import unittest
 import zipfile
+from pathlib import Path
 
 import numpy as np
 from PyQt5 import QtWidgets
@@ -17,7 +18,10 @@ from scipy.io import loadmat
 
 from pairinteraction.gui.app import MainWindow
 
-PATH = os.path.join("data")
+directory = Path(__file__).parent
+data_directory = directory / "data"
+field_directory = data_directory / "field"
+potential_directory = data_directory / "potential"
 
 app = QtWidgets.QApplication(sys.argv)
 
@@ -26,19 +30,20 @@ class PairinteractionGuiTest(unittest.TestCase):
     def setUp(self):
         self.form = MainWindow()
         self.form.path_cache = tempfile.mkdtemp()
+        self.tmp_directory = tempfile.mkdtemp()
         self.form.ui.action_sconf_reset.trigger()
         self.form.ui.action_pconf_reset.trigger()
 
     def testFieldCalcButton(self):
         # Testing simulation single atom with all E and B fields on
-        self.form.loadSettingsSystem(os.path.join(PATH, "field", "settings.sconf"))
-        self.form.loadSettingsPlotter(os.path.join(PATH, "field", "settings.pconf"))
+        self.form.loadSettingsSystem(field_directory / "settings.sconf")
+        self.form.loadSettingsPlotter(field_directory / "settings.pconf")
         self._testEnergies(0, "field", dE=3)
 
     def testPotentialCalcButton(self):
         # Testing simulation for pairpotential
-        self.form.loadSettingsSystem(os.path.join(PATH, "potential", "settings.sconf"))
-        self.form.loadSettingsPlotter(os.path.join(PATH, "potential", "settings.pconf"))
+        self.form.loadSettingsSystem(potential_directory / "settings.sconf")
+        self.form.loadSettingsPlotter(potential_directory / "settings.pconf")
         self._testEnergies(2, "potential", dE=0.3)
 
     @unittest.skip("TODO implement new simulation call")
@@ -64,7 +69,7 @@ class PairinteractionGuiTest(unittest.TestCase):
 
         # Save current data
         self.form.savePlot = False
-        forceFilename = os.path.join(PATH, "current")
+        forceFilename = self.tmp_directory / "current"
         self.form.forceFilename = forceFilename
         QTest.mouseClick(widget_save, Qt.LeftButton)
 
@@ -80,9 +85,9 @@ class PairinteractionGuiTest(unittest.TestCase):
         os.remove(forceFilename)
 
         # Load reference data
-        with open(os.path.join(PATH, ref_data, "data.mat"), "rb") as f:
+        with open(data_directory / ref_data / "data.mat", "rb") as f:
             data["ref"] = loadmat(f)
-        with open(os.path.join(PATH, ref_data, "settings.sconf")) as f:
+        with open(data_directory / ref_data / "settings.sconf") as f:
             sconfig["ref"] = json.load(f)
 
         # Check if configs match # unecessary since we load the same config
@@ -106,6 +111,7 @@ class PairinteractionGuiTest(unittest.TestCase):
 
         # Remove tmp cache
         shutil.rmtree(self.form.path_cache)
+        shutil.rmtree(self.tmp_directory)
 
 
 if __name__ == "__main__":
