@@ -243,7 +243,10 @@ if (WIN32)
 endif()
 
 install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction)
-install(TARGETS backend LIBRARY DESTINATION pairinteraction)
+install(TARGETS backend DESTINATION pairinteraction)
+if (WIN32)
+  install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction)
+endif()
 
 # Build an executable for running the tests
 if (BUILD_TESTING)
