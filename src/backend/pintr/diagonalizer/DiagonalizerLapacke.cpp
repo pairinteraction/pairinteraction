@@ -51,13 +51,12 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
 
     if (info != 0) {
         if (info < 0) {
-            throw std::invalid_argument(
-                fmt::format("Diagonalization error: The {}-th argument to the "
-                            "LAPACKE routine had an illegal value.",
-                            -info));
+            throw std::invalid_argument(fmt::format("Diagonalization error: Argument {} to the "
+                                                    "LAPACKE routine had an illegal value.",
+                                                    -info));
         }
-        throw std::runtime_error(
-            "Diagonalization error: The LAPACK routine failed to compute an eigenvalue.");
+        throw std::runtime_error(fmt::format(
+            "Diagonalization error: The LAPACK routine failed with error code {}.", info));
     }
 
     if (min_eigenvalue > std::numeric_limits<real_t>::lowest() / 2 ||

@@ -118,18 +118,18 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
         }
         if (info <= 100) {
             throw std::invalid_argument(
-                fmt::format("Diagonalization error: The {}-th argument to the FEAST *interface* "
+                fmt::format("Diagonalization error: Argument {} to the FEAST *interface* "
                             "had an illegal value (counting starts at one).",
                             -info - 100));
         }
         if (info >= 100) {
             throw std::invalid_argument(
-                fmt::format("Diagonalization error: The {}-th argument to the FEAST "
+                fmt::format("Diagonalization error: Argument {} to the FEAST "
                             "*initialization* had an illegal value (counting starts at one).",
                             info - 100));
         }
-        throw std::runtime_error(
-            "Diagonalization error: The FEAST routine failed for an unknown reason.");
+        throw std::runtime_error(fmt::format(
+            "Diagonalization error: The FEAST routine failed with error code {}.", info));
     }
 
     // Restrict to the first m eigenvectors and eigenvalues because the rest is not calculated
