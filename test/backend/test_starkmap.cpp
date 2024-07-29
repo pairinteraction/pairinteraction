@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     }
 
     // Diagonalize the systems in parallel
-    pintr::DiagonalizerLapacke<double> diagonalizer;
+    pintr::DiagonalizerEigen<double> diagonalizer;
     pintr::diagonalize(systems, diagonalizer);
 
     return 0;

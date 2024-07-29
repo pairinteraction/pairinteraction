@@ -3,6 +3,7 @@
 #include "pintr/basis/BasisAtom.hpp"
 #include "pintr/basis/BasisAtomCreator.hpp"
 #include "pintr/database/Database.hpp"
+#include "pintr/diagonalizer/DiagonalizerEigen.hpp"
 #include "pintr/diagonalizer/DiagonalizerFeast.hpp"
 #include "pintr/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pintr/diagonalizer/diagonalize.hpp"
