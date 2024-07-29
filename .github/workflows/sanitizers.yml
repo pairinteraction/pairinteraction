@@ -51,7 +51,7 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DMKL_THREADING=sequential -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         CXXFLAGS: "-fno-omit-frame-pointer -fsanitize=address"
         LDFLAGS: "-fsanitize=address"
@@ -82,7 +82,7 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DMKL_THREADING=sequential -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         CXXFLAGS: "-fsanitize=undefined -DEIGEN_DONT_VECTORIZE" # https://gitlab.com/libeigen/eigen/-/commit/3c724c44cff3f9e2e9e35351abff0b5c022b320d
         LDFLAGS: "-fsanitize=undefined"
@@ -123,7 +123,7 @@ jobs:
         restore-keys:
           pairinteraction-${{ github.job }}
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DMKL_THREADING=sequential -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
         # For now only lightweight assertions until DuckDB is also compiled with _GLIBCXX_DEBUG
         CXXFLAGS: "-D_GLIBCXX_ASSERTIONS"
