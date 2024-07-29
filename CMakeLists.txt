@@ -105,7 +105,7 @@ if (NOT httplib_OpenSSL_FOUND)
   add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
 endif()
 
-# Find MKL
+# Try to find MKL
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
 set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
@@ -117,9 +117,9 @@ endif()
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
 find_package(MKL)
 
-# Find lapacke if MKL is not available
+# Try to find lapacke if MKL is not available
 if(NOT MKL_FOUND)
-  find_package(LAPACKE REQUIRED)
+  find_package(LAPACKE)
 endif()
 
 # Find nanobind

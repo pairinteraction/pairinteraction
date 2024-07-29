@@ -3,6 +3,7 @@
 #include "pintr/basis/BasisAtom.hpp"
 #include "pintr/basis/BasisAtomCreator.hpp"
 #include "pintr/database/Database.hpp"
+#include "pintr/diagonalizer/DiagonalizerEigen.hpp"
 #include "pintr/diagonalizer/DiagonalizerFeast.hpp"
 #include "pintr/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pintr/diagonalizer/diagonalize.hpp"
@@ -16,7 +17,7 @@
 namespace pintr {
 DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
-    auto diagonalizer = DiagonalizerLapacke<double>();
+    auto diagonalizer = DiagonalizerEigen<double>();
 
     auto ket1 = KetAtomCreator<double>()
                     .set_species("Rb")
@@ -57,7 +58,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
 
 DOCTEST_TEST_CASE("construct and diagonalize two Hamiltonians in parallel") {
     auto &database = Database::get_global_instance();
-    auto diagonalizer = DiagonalizerLapacke<std::complex<double>>();
+    auto diagonalizer = DiagonalizerEigen<std::complex<double>>();
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Rb")
@@ -89,7 +90,7 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel")
     int n = 10;
 
     auto &database = Database::get_global_instance();
-    auto diagonalizer = DiagonalizerLapacke<std::complex<double>>();
+    auto diagonalizer = DiagonalizerEigen<std::complex<double>>();
 
     auto basis = BasisAtomCreator<std::complex<double>>()
                      .set_species("Sr87_mqdt")
@@ -120,7 +121,10 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
                      .create(database);
 
     std::vector<std::shared_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerEigen<std::complex<double>>>());
+#ifdef WITH_LAPACKE
     diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<std::complex<double>>>());
+#endif
 #ifdef WITH_MKL
     diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
@@ -159,7 +163,10 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
                      .create(database);
 
     std::vector<std::shared_ptr<DiagonalizerInterface<double>>> diagonalizers;
+    diagonalizers.emplace_back(std::make_shared<DiagonalizerEigen<double>>());
+#ifdef WITH_LAPACKE
     diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<double>>());
+#endif
 #ifdef WITH_MKL
     diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<double>>(5));
 #endif

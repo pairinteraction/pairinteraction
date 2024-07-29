@@ -22,6 +22,8 @@ add_library(pintr OBJECT
   ./pintr/database/Database.test.cpp
   ./pintr/diagonalizer/diagonalize.cpp
   ./pintr/diagonalizer/diagonalize.hpp
+  ./pintr/diagonalizer/DiagonalizerEigen.cpp
+  ./pintr/diagonalizer/DiagonalizerEigen.hpp
   ./pintr/diagonalizer/DiagonalizerFeast.cpp
   ./pintr/diagonalizer/DiagonalizerFeast.hpp
   ./pintr/diagonalizer/DiagonalizerLapacke.cpp
@@ -88,7 +90,8 @@ target_link_libraries(pintr PUBLIC
   nlohmann_json::nlohmann_json
   spdlog::spdlog
   TBB::tbb
-  $<IF:$<TARGET_EXISTS:MKL::MKL>,MKL::MKL,LAPACKE::LAPACKE>
+  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
+  $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
   $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
   $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
 )
@@ -99,8 +102,8 @@ target_include_directories(pintr PUBLIC
 
 target_compile_definitions(pintr PUBLIC
   DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL>
-  $<IF:$<TARGET_EXISTS:MKL::MKL>,EIGEN_USE_MKL_ALL EIGEN_MKL_NO_DIRECT_CALL,EIGEN_USE_BLAS EIGEN_USE_LAPACKE>
+  $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL WITH_LAPACKE EIGEN_USE_MKL_ALL EIGEN_MKL_NO_DIRECT_CALL>
+  $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:WITH_LAPACKE EIGEN_USE_BLAS EIGEN_USE_LAPACKE>
   $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
 )
 
@@ -109,7 +112,7 @@ if (TARGET MKL::MKL)
     MKL_Complex8=std::complex<float>
     MKL_Complex16=std::complex<double>
   )
-else()
+elseif (TARGET LAPACKE::LAPACKE)
   target_compile_definitions(pintr PUBLIC
     lapack_complex_float=std::complex<float>
     lapack_complex_double=std::complex<double>
@@ -135,6 +138,7 @@ add_library(bindings OBJECT
   ./pintr/database/AtomDescriptionByRanges.hpp
   ./pintr/database/Database.hpp
   ./pintr/diagonalizer/diagonalize.hpp
+  ./pintr/diagonalizer/DiagonalizerEigen.hpp
   ./pintr/diagonalizer/DiagonalizerFeast.hpp
   ./pintr/diagonalizer/DiagonalizerLapacke.hpp
   ./pintr/enums/OperatorType.hpp
