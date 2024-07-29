@@ -109,7 +109,11 @@ endif()
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
 set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
 set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
-set(MKL_THREADING "tbb_thread" CACHE STRING "MKL threading backend")
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
+else()
+  set(MKL_THREADING "tbb_thread" CACHE STRING "MKL threading backend")
+endif()
 set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
 find_package(MKL)
 
