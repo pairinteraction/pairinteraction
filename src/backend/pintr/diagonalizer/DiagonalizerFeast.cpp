@@ -48,6 +48,10 @@ template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                 real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
+    if (precision < 0) {
+        throw std::invalid_argument("The precision must be non-negative for the FEAST routine.");
+    }
+
     int dim = matrix.rows();
     int m0 = std::min(dim, this->m0);
 
@@ -59,9 +63,10 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
     feastinit(fpm.data());
     fpm[0] = 0;                  // disable terminal output
     fpm[1] = 5;                  // number of contour points
+    fpm[4] = 0;                  // do not use initial subspace
     fpm[26] = 0;                 // disables matrix checker
-    fpm[3] = precision;          // precision
-    fpm[5] = 0;                  // user initial subspace
+    fpm[2] = precision;          // single precision stopping criteria
+    fpm[6] = precision;          // double precision stopping criteria
     MKL_INT m{};                 // will contain the number of eigenvalues
     std::vector<real_t> e(m0);   // will contain the first m eigenvalues
     char uplo = 'F';             // full matrix is stored
