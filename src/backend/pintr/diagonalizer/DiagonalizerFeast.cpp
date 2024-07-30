@@ -46,6 +46,13 @@ DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0) : m0(m0) {
 
 template <typename Scalar>
 EigenSystemH<Scalar>
+DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
+                                int /*precision*/) const {
+    throw std::invalid_argument("The FEAST routine requires a search interval.");
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                 real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
     if (precision < 0) {
@@ -150,6 +157,13 @@ template <typename Scalar>
 DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0) : m0(m0) {
     throw std::runtime_error(
         "The FEAST routine is not available in this build. Please use a different diagonalizer.");
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
+                                int /*precision*/) const {
+    std::abort(); // can't happen because the constructor throws
 }
 
 template <typename Scalar>

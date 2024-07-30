@@ -40,7 +40,6 @@ DiagonalizerLapacke<Scalar>::DiagonalizerLapacke() = default;
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                  real_t min_eigenvalue, real_t max_eigenvalue,
                                   int precision) const {
     int dim = matrix.rows();
 
@@ -63,19 +62,6 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
             "Diagonalization error: The LAPACK routine failed with error code {}.", info));
     }
 
-    if (min_eigenvalue > std::numeric_limits<real_t>::lowest() / 2 ||
-        max_eigenvalue < std::numeric_limits<real_t>::max() / 2) {
-        auto *it_begin = std::lower_bound(evals.data(), evals.data() + dim, min_eigenvalue);
-        auto *it_end = std::upper_bound(evals.data(), evals.data() + dim, max_eigenvalue);
-        evecs = evecs
-                    .block(0, std::distance(evals.data(), it_begin), dim,
-                           std::distance(it_begin, it_end))
-                    .eval();
-        evals =
-            evals.segment(std::distance(evals.data(), it_begin), std::distance(it_begin, it_end))
-                .eval();
-    }
-
     return {evecs.sparseView(std::pow(10, -precision), 1), evals};
 }
 
@@ -90,7 +76,6 @@ DiagonalizerLapacke<Scalar>::DiagonalizerLapacke() {
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                  real_t /*min_eigenvalue*/, real_t /*max_eigenvalue*/,
                                   int /*precision*/) const {
     std::abort(); // can't happen because the constructor throws
 }

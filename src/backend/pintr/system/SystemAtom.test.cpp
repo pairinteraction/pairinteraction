@@ -140,7 +140,11 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             eigensolver.compute(system.get_matrix());
             auto eigenvalues_eigen = eigensolver.eigenvalues();
 
-            system.diagonalize(*diagonalizer, precision);
+            // We specify a search interval because this is required if the FEAST routine is used.
+            // To avoid overflows, the interval ranges from half the smallest possible value to half
+            // the largest possible value.
+            system.diagonalize(*diagonalizer, std::numeric_limits<double>::lowest() / 2,
+                               std::numeric_limits<double>::max() / 2, precision);
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <

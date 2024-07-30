@@ -32,6 +32,7 @@ add_library(pintr OBJECT
   ./pintr/enums/Parity.hpp
   ./pintr/enums/Parity.test.cpp
   ./pintr/enums/TransformationType.hpp
+  ./pintr/interfaces/DiagonalizerInterface.cpp
   ./pintr/interfaces/DiagonalizerInterface.hpp
   ./pintr/interfaces/TransformationBuilderInterface.cpp
   ./pintr/interfaces/TransformationBuilderInterface.hpp
