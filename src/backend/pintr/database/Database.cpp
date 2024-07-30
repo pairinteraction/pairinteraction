@@ -124,7 +124,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     // Create a pool of clients
     if (_download_missing) {
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
-            pool.emplace_back(httplib::Client(database_repo_host));
+            pool.emplace_back(database_repo_host);
             pool.back().set_follow_location(true);
             pool.back().set_connection_timeout(1, 0); // seconds
             pool.back().set_read_timeout(60, 0);      // seconds

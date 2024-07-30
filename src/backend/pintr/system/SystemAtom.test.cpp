@@ -103,7 +103,7 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel")
     for (int i = 0; i < n; ++i) {
         auto system = SystemAtom<std::complex<double>>(basis);
         system.set_electric_field({0, 0, 0.0001 * i});
-        systems.emplace_back(system);
+        systems.push_back(std::move(system));
     }
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Basis size: {}", basis->get_number_of_states());
@@ -120,13 +120,13 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
-    std::vector<std::shared_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerEigen<std::complex<double>>>());
+    std::vector<std::unique_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
+    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<std::complex<double>>>());
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<std::complex<double>>>());
 #endif
 #ifdef WITH_MKL
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<std::complex<double>>>(300));
+    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
 
     for (int precision : {1, 4, 12}) {
@@ -162,13 +162,13 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
-    std::vector<std::shared_ptr<DiagonalizerInterface<double>>> diagonalizers;
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerEigen<double>>());
+    std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
+    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>());
 #ifdef WITH_LAPACKE
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerLapacke<double>>());
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>());
 #endif
 #ifdef WITH_MKL
-    diagonalizers.emplace_back(std::make_shared<DiagonalizerFeast<double>>(5));
+    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(5));
 #endif
 
     for (const auto &diagonalizer : diagonalizers) {
