@@ -95,8 +95,8 @@ Dependencies of the Python library
 .. _Homebrew: https://brew.sh/
 .. _VCPKG: https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows
 .. _Visual Studio: https://visualstudio.microsoft.com/downloads/
-.. _Intel MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
-.. _Intel TBB: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb-download.html
+.. _Intel oneAPI MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
+.. _Intel oneAPI TBB: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb-download.html
 .. _Intel repository: https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html
 
 Automatic Build
