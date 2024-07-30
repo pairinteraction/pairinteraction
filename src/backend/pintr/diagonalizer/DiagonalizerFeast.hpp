@@ -14,6 +14,8 @@ public:
 
     DiagonalizerFeast(int m0);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                              int precision) const override;
+    EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               real_t min_eigenvalue, real_t max_eigenvalue,
                               int precision) const override;
 
