@@ -1,5 +1,5 @@
-#include "pintr/pintr.hpp"
-#include "pintr/utils/args.hpp"
+#include "pairinteraction/pairinteraction.hpp"
+#include "pairinteraction/utils/args.hpp"
 
 #include <filesystem>
 #include <spdlog/spdlog.h>
@@ -7,23 +7,23 @@
 
 int main(int argc, char **argv) {
     // Call the setup function to configure logging
-    pintr::setup();
+    pairinteraction::setup();
 
     // Create a database instance
     std::filesystem::path databasedir;
     bool download_missing = false;
 
     for (int i = 1; i < argc; ++i) {
-        bool found = pintr::args::parse_download_missing(i, argc, argv, download_missing);
+        bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            pintr::args::parse_database(i, argc, argv, databasedir);
+            pairinteraction::args::parse_database(i, argc, argv, databasedir);
         }
     }
 
-    thread_local pintr::Database database(download_missing, true, databasedir);
+    thread_local pairinteraction::Database database(download_missing, true, databasedir);
 
     // Create a basis
-    auto basis = pintr::BasisAtomCreator<double>()
+    auto basis = pairinteraction::BasisAtomCreator<double>()
                      .set_species("Rb")
                      .restrict_quantum_number_n(58, 62)
                      .restrict_quantum_number_l(0, 2)
@@ -33,17 +33,17 @@ int main(int argc, char **argv) {
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
 
     // Create systems for different values of the electric field
-    std::vector<pintr::SystemAtom<double>> systems;
+    std::vector<pairinteraction::SystemAtom<double>> systems;
     systems.reserve(10);
     for (int i = 0; i < 10; ++i) {
-        auto system = pintr::SystemAtom<double>(basis);
+        auto system = pairinteraction::SystemAtom<double>(basis);
         system.set_electric_field({0, 0, i * 1e-9});
         systems.push_back(std::move(system));
     }
 
     // Diagonalize the systems in parallel
-    pintr::DiagonalizerEigen<double> diagonalizer;
-    pintr::diagonalize(systems, diagonalizer);
+    pairinteraction::DiagonalizerEigen<double> diagonalizer;
+    pairinteraction::diagonalize(systems, diagonalizer);
 
     return 0;
 }
