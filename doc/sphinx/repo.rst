@@ -48,7 +48,7 @@ Step-by-Step Instructions
 
         ./start_pairinteraction_gui.py
 
-    Familiarize yourself with the repository's architecture. The software is divided into a :github:`C++ backend <tree/master/src/backend>` with Python bindings and a :github:`Python library <tree/master/src/pairinteraction>`. The Python library makes the Python bindings accessible and add additional functionality like a graphical user interface.
+    Familiarize yourself with the repository's architecture. The software is divided into a :github:`C++ backend <tree/master/src/cpp>` with Python bindings and a :github:`Python library <tree/master/src/pairinteraction>`. The Python library makes the Python bindings accessible and add additional functionality like a graphical user interface.
 
 4. **Implement Your Changes:** With your setup ready, proceed to make your contributions. This could involve coding new features, fixing bugs, or refining documentation. To ensure your code adheres to the project's coding standards, we highly recommend using the `pre-commit tool`_. Once you've installed this tool, integrate our pre-commit hook into your local repository with the following command:
 

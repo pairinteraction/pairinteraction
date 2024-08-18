@@ -202,8 +202,6 @@ A full list of build options is provided in the following:
 +=====================+======================================+=========+
 | ``WITH_DOC``        | Generate documentation               | OFF     |
 +---------------------+--------------------------------------+---------+
-| ``WITH_BENCH``      | Compile the benchmarks               | OFF     |
-+---------------------+--------------------------------------+---------+
 | ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
 |                     | only)                                |         |
 +---------------------+--------------------------------------+---------+
@@ -225,8 +223,6 @@ Note that some targets require specific build options to be enabled in addition 
 +--------------+-------------------------------------------+----------------------+
 | ``test``     | Run the test suite, including C++ tests   |                      |
 |              | that are not run by pytest                |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``bench``    | Run the benchmark suite                   | ``WITH_BENCH=ON``    |
 +--------------+-------------------------------------------+----------------------+
 | ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOC=ON``      |
 |              | in ``doc/doxygen``                        |                      |
@@ -304,8 +300,8 @@ If you're developing and making changes to specific parts of the software, you c
 
 .. code-block:: bash
 
-    cmake --build . --config Release --target pintr_test
-    ctest -V -C Release -R pintr_test
+    cmake --build . --config Release --target unit_tests
+    ctest -V -C Release -R unit_tests
 
 However, before pushing your changes, you should always run the full test suite to ensure that your changes do not break other parts of the software. The ``--config Release`` and ``-C Release`` options tell the tools to build and test the release version of the software if a multi-configuration generator is used. For further explanations on the build type, see the next section.
 
@@ -334,16 +330,16 @@ If CMake uses a multi-configuration generator (e.g., Ninja Multi-Config, Visual 
 .. code-block:: bash
 
     cmake -G"Ninja Multi-Config" -DCMAKE_CXX_FLAGS="-fuse-ld=mold" ..
-    cmake --build . --config Debug --target pintr_test
-    gdb -ex r --args src/backend/Debug/pintr_test
+    cmake --build . --config Debug --target unit_tests
+    gdb -ex r --args src/cpp/tests/Debug/unit_tests
 
 If you are using a single-configuration generator (e.g., Unix Makefiles), you must specify the build type directly:
 
 .. code-block:: bash
 
     cmake -DCMAKE_BUILD_TYPE=Debug ..
-    cmake --build . --target pintr_test
-    gdb -ex r --args src/backend/pintr_test
+    cmake --build . --target unit_tests
+    gdb -ex r --args src/cpp/tests/unit_tests
 
 If you have executed a build without GDB, a crash occurred, and a core dump was created, you can load the core dump into GDB:
 

@@ -23,9 +23,12 @@ Checks: "
   -cppcoreguidelines-special-member-functions,
   -cppcoreguidelines-non-private-member-variables-in-classes,
   -cppcoreguidelines-pro-bounds-pointer-arithmetic,
-"
+  -clang-diagnostic-unused-variable,
+  -clang-diagnostic-unused-but-set-variable,
+" # The unused variable check is not working with doctest
+
 WarningsAsErrors:       '*'
-HeaderFilterRegex:      'src/backend/.*'
+HeaderFilterRegex:      'src/cpp/.*'
 AnalyzeTemporaryDtors:  false
 UseColor:               true
 FormatStyle:            none
