@@ -1,8 +1,8 @@
-#include "pintr/ket/Ket.hpp"
+#include "pairinteraction/ket/Ket.hpp"
 
-#include "pintr/enums/Parity.hpp"
+#include "pairinteraction/enums/Parity.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 Ket<Real>::Ket(Real energy, Real f, Real m, Parity p)
     : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p) {}
@@ -30,4 +30,4 @@ Parity Ket<Real>::get_parity() const {
 // Explicit instantiations
 template class Ket<float>;
 template class Ket<double>;
-} // namespace pintr
+} // namespace pairinteraction

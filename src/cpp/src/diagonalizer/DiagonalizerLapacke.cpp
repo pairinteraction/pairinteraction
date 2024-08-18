@@ -1,7 +1,7 @@
-#include "pintr/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
 #include <fmt/core.h>
@@ -12,7 +12,7 @@
 #include <lapacke.h>
 #endif
 
-namespace pintr {
+namespace pairinteraction {
 #if defined WITH_MKL || defined WITH_LAPACKE
 lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, float *a, lapack_int lda,
                float *w) {
@@ -87,4 +87,4 @@ template class DiagonalizerLapacke<float>;
 template class DiagonalizerLapacke<double>;
 template class DiagonalizerLapacke<std::complex<float>>;
 template class DiagonalizerLapacke<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

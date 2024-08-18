@@ -1,6 +1,6 @@
-#include "pintr/tools/setup.hpp"
+#include "pairinteraction/tools/setup.hpp"
 
-#include "pintr/utils/paths.hpp"
+#include "pairinteraction/utils/paths.hpp"
 
 #include <filesystem>
 #include <mutex>
@@ -9,7 +9,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 void setup() {
 
     // Configure a logger
@@ -39,4 +39,4 @@ void setup() {
         spdlog::set_default_logger(logger);
     });
 }
-} // namespace pintr
+} // namespace pairinteraction

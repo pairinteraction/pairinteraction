@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
 #include <array>
 #include <type_traits>
 
-namespace pintr::euler {
+namespace pairinteraction::euler {
 /**
  * @function get_rotation_matrix
  *
@@ -65,4 +65,4 @@ inline std::array<Real, 3> get_euler_angles(std::array<Real, 3> to_z_axis,
     return euler_zyz;
 }
 
-} // namespace pintr::euler
+} // namespace pairinteraction::euler

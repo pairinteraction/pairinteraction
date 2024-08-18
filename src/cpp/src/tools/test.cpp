@@ -1,9 +1,9 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
-#include "pintr/tools/test.hpp"
+#include "pairinteraction/tools/test.hpp"
 
-#include "pintr/database/Database.hpp"
-#include "pintr/utils/paths.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/utils/paths.hpp"
 
 #include <doctest/doctest.h>
 #include <filesystem>
@@ -13,7 +13,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 int test(int argc, char **argv, bool download_missing, std::filesystem::path databasedir) {
 
     // Configure a logger for the tests
@@ -78,4 +78,4 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
 
     return exitcode;
 };
-} // namespace pintr
+} // namespace pairinteraction

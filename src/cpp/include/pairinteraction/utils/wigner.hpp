@@ -1,7 +1,7 @@
 #pragma once
 
-#include "pintr/utils/maths.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/maths.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <cmath>
 #include <complex>
@@ -9,7 +9,7 @@
 #include <stdexcept>
 #include <type_traits>
 
-namespace pintr::wigner {
+namespace pairinteraction::wigner {
 
 namespace {
 
@@ -75,4 +75,4 @@ inline Scalar wigner_uppercase_d_matrix(typename traits::NumTraits<Scalar>::real
     }
 }
 
-} // namespace pintr::wigner
+} // namespace pairinteraction::wigner

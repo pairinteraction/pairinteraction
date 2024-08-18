@@ -1,17 +1,17 @@
-#include "pintr/basis/Basis.hpp"
+#include "pairinteraction/basis/Basis.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/basis/BasisClassicalLight.hpp"
-#include "pintr/enums/Parity.hpp"
-#include "pintr/enums/TransformationType.hpp"
-#include "pintr/ket/KetAtom.hpp"
-#include "pintr/ket/KetClassicalLight.hpp"
-#include "pintr/utils/eigen_compat.hpp"
-#include "pintr/utils/wigner.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/enums/TransformationType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetClassicalLight.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/wigner.hpp"
 
 #include <numeric>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Derived>
 Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
@@ -507,4 +507,4 @@ template class Basis<BasisClassicalLight<float>>;
 template class Basis<BasisClassicalLight<double>>;
 template class Basis<BasisClassicalLight<std::complex<float>>>;
 template class Basis<BasisClassicalLight<std::complex<double>>>;
-} // namespace pintr
+} // namespace pairinteraction

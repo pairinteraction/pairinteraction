@@ -1,9 +1,9 @@
-#include "pintr/ket/Ket.py.hpp"
-#include "pintr/tools/setup.hpp"
+#include "pairinteraction/ket/Ket.py.hpp"
+#include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>
 
 NB_MODULE(backend, m) { // NOLINT
-    pintr::setup();
+    pairinteraction::setup();
     bind_ket(m);
 }

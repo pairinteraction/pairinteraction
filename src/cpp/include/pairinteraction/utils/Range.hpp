@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Sortable>
 class Range {
     static_assert(traits::OpTraits<Sortable>::has_less_v);
@@ -33,4 +33,4 @@ private:
     Sortable _max{};
     bool _is_finite{false};
 };
-} // namespace pintr
+} // namespace pairinteraction

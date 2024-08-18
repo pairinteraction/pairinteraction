@@ -3,7 +3,7 @@
 #include <initializer_list>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 enum class TransformationType : unsigned char {
     IDENTITY = 0,
     SORT_BY_KET = 1 << 0,
@@ -68,4 +68,4 @@ inline bool is_sorted_by_label(TransformationType label,
 }
 
 } // namespace utils
-} // namespace pintr
+} // namespace pairinteraction

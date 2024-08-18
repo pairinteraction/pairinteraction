@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pintr/interfaces/TransformationBuilderInterface.hpp"
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
@@ -10,7 +10,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 enum class Parity : int;
 enum class TransformationType : unsigned char;
 
@@ -90,4 +90,4 @@ private:
     std::vector<Parity> parity_of_states;
     std::vector<int> ket_of_states;
 };
-} // namespace pintr
+} // namespace pairinteraction

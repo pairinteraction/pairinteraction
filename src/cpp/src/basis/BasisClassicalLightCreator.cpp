@@ -1,11 +1,11 @@
-#include "pintr/basis/BasisClassicalLightCreator.hpp"
+#include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
 
-#include "pintr/basis/BasisClassicalLight.hpp"
-#include "pintr/ket/KetClassicalLightCreator.hpp"
+#include "pairinteraction/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/ket/KetClassicalLightCreator.hpp"
 
 #include <stdexcept>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 BasisClassicalLightCreator<Scalar> &
 BasisClassicalLightCreator<Scalar>::set_photon_energy(real_t value) {
@@ -50,4 +50,4 @@ template class BasisClassicalLightCreator<float>;
 template class BasisClassicalLightCreator<double>;
 template class BasisClassicalLightCreator<std::complex<float>>;
 template class BasisClassicalLightCreator<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

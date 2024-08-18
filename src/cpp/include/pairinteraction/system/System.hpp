@@ -1,11 +1,11 @@
 #pragma once
 
-#include "pintr/interfaces/TransformationBuilderInterface.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <memory>
 
-namespace pintr {
+namespace pairinteraction {
 enum class TransformationType : unsigned char;
 
 template <typename Scalar>
@@ -50,4 +50,4 @@ protected:
 private:
     const Derived &derived() const;
 };
-} // namespace pintr
+} // namespace pairinteraction

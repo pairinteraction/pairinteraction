@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
 #include <filesystem>
@@ -18,7 +18,7 @@ namespace httplib {
 class Client;
 } // namespace httplib
 
-namespace pintr {
+namespace pairinteraction {
 enum class OperatorType;
 
 template <typename Scalar>
@@ -140,4 +140,4 @@ extern template OperatorAtom<std::complex<float>> Database::get_operator<std::co
     std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
 extern template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
     std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
-} // namespace pintr
+} // namespace pairinteraction

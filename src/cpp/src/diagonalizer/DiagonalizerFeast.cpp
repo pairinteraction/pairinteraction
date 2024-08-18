@@ -1,7 +1,7 @@
-#include "pintr/diagonalizer/DiagonalizerFeast.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
 
@@ -10,7 +10,7 @@
 #include <mkl.h>
 #endif // WITH_MKL
 
-namespace pintr {
+namespace pairinteraction {
 #ifdef WITH_MKL
 void feast(const char *uplo, const MKL_INT *n, const float *a, const MKL_INT *lda, MKL_INT *fpm,
            float *epsout, MKL_INT *loop, const float *emin, const float *emax, MKL_INT *m0,
@@ -181,4 +181,4 @@ template class DiagonalizerFeast<float>;
 template class DiagonalizerFeast<double>;
 template class DiagonalizerFeast<std::complex<float>>;
 template class DiagonalizerFeast<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

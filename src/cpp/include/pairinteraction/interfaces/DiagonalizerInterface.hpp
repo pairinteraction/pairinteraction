@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/eigen_compat.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 struct EigenSystemH {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
@@ -35,4 +35,4 @@ extern template class DiagonalizerInterface<float>;
 extern template class DiagonalizerInterface<double>;
 extern template class DiagonalizerInterface<std::complex<float>>;
 extern template class DiagonalizerInterface<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

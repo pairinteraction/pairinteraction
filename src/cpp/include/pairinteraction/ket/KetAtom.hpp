@@ -1,11 +1,11 @@
 #pragma once
 
-#include "pintr/ket/Ket.hpp"
+#include "pairinteraction/ket/Ket.hpp"
 
 #include <string>
 #include <type_traits>
 
-namespace pintr {
+namespace pairinteraction {
 class Database;
 
 enum class Parity : int;
@@ -58,4 +58,4 @@ private:
 
 extern template class KetAtom<float>;
 extern template class KetAtom<double>;
-} // namespace pintr
+} // namespace pairinteraction

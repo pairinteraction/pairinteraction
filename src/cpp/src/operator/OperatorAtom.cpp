@@ -1,12 +1,12 @@
-#include "pintr/operator/OperatorAtom.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/database/Database.hpp"
-#include "pintr/enums/OperatorType.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
 
 #include <limits>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis)
     : Operator<OperatorAtom<Scalar>>(basis), type(OperatorType::ZERO),
@@ -33,4 +33,4 @@ template class OperatorAtom<float>;
 template class OperatorAtom<double>;
 template class OperatorAtom<std::complex<float>>;
 template class OperatorAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

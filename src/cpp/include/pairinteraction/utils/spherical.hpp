@@ -1,12 +1,12 @@
 #pragma once
 
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <array>
 #include <limits>
 #include <stdexcept>
 
-namespace pintr::spherical {
+namespace pairinteraction::spherical {
 
 template <typename Scalar>
 inline std::array<Scalar, 3>
@@ -27,4 +27,4 @@ convert_to_spherical_basis(const std::array<typename traits::NumTraits<Scalar>::
     }
 }
 
-} // namespace pintr::spherical
+} // namespace pairinteraction::spherical

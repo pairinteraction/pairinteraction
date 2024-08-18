@@ -1,14 +1,14 @@
-#include "pintr/ket/Ket.hpp"
+#include "pairinteraction/ket/Ket.hpp"
 
-#include "pintr/enums/Parity.hpp"
-#include "pintr/utils/hash.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/utils/hash.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 #include <sstream>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator;
 
@@ -58,4 +58,4 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     // Output the label to the doctest log
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
 }
-} // namespace pintr
+} // namespace pairinteraction

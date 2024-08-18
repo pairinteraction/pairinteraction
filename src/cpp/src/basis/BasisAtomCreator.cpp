@@ -1,11 +1,11 @@
-#include "pintr/basis/BasisAtomCreator.hpp"
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
 
-#include "pintr/database/AtomDescriptionByRanges.hpp"
-#include "pintr/database/Database.hpp"
-#include "pintr/enums/Parity.hpp"
-#include "pintr/ket/KetAtom.hpp"
+#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::set_species(const std::string &value) {
     species.emplace(value);
@@ -125,4 +125,4 @@ template class BasisAtomCreator<float>;
 template class BasisAtomCreator<double>;
 template class BasisAtomCreator<std::complex<float>>;
 template class BasisAtomCreator<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

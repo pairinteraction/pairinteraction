@@ -1,6 +1,6 @@
-#include "pintr/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string table,
                              Database &database, std::string species)
@@ -17,4 +17,4 @@ template class BasisAtom<float>;
 template class BasisAtom<double>;
 template class BasisAtom<std::complex<float>>;
 template class BasisAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

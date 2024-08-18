@@ -1,9 +1,9 @@
-#include "pintr/system/System.hpp"
+#include "pairinteraction/system/System.hpp"
 
-#include "pintr/interfaces/DiagonalizerInterface.hpp"
-#include "pintr/operator/OperatorAtom.hpp"
-#include "pintr/system/SystemAtom.hpp"
-#include "pintr/utils/eigen_assertion.hpp"
+#include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>
@@ -11,7 +11,7 @@
 #include <memory>
 #include <oneapi/tbb.h>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Derived>
 System<Derived>::System(std::shared_ptr<const basis_t> basis)
     : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(basis)) {}
@@ -152,4 +152,4 @@ template class System<SystemAtom<float>>;
 template class System<SystemAtom<double>>;
 template class System<SystemAtom<std::complex<float>>>;
 template class System<SystemAtom<std::complex<double>>>;
-} // namespace pintr
+} // namespace pairinteraction

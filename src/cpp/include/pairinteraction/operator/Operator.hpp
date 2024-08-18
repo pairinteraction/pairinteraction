@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/interfaces/TransformationBuilderInterface.hpp"
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
 #include <memory>
 
-namespace pintr {
+namespace pairinteraction {
 enum class TransformationType : unsigned char;
 
 template <typename Derived>
@@ -77,4 +77,4 @@ private:
     const Derived &derived() const;
     Derived &derived_mutable();
 };
-} // namespace pintr
+} // namespace pairinteraction

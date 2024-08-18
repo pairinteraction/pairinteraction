@@ -3,7 +3,7 @@
 #include <cstdlib>
 #include <filesystem>
 
-namespace pintr::paths {
+namespace pairinteraction::paths {
 
 inline std::filesystem::path get_home_directory() {
 #ifdef _WIN32
@@ -87,4 +87,4 @@ inline std::filesystem::path get_pairinteraction_config_directory() {
     return path;
 }
 
-} // namespace pintr::paths
+} // namespace pairinteraction::paths

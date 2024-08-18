@@ -1,16 +1,16 @@
-#include "pintr/database/Database.hpp"
+#include "pairinteraction/database/Database.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/database/AtomDescriptionByParameters.hpp"
-#include "pintr/database/AtomDescriptionByRanges.hpp"
-#include "pintr/enums/OperatorType.hpp"
-#include "pintr/enums/Parity.hpp"
-#include "pintr/ket/KetAtom.hpp"
-#include "pintr/operator/OperatorAtom.hpp"
-#include "pintr/utils/hash.hpp"
-#include "pintr/utils/ketid.hpp"
-#include "pintr/utils/paths.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/AtomDescriptionByParameters.hpp"
+#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/utils/hash.hpp"
+#include "pairinteraction/utils/ketid.hpp"
+#include "pairinteraction/utils/paths.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <duckdb.hpp>
 #include <fmt/format.h>
@@ -22,7 +22,7 @@
 #include <spdlog/spdlog.h>
 #include <system_error>
 
-namespace pintr {
+namespace pairinteraction {
 Database::Database() : Database(default_download_missing) {}
 
 Database::Database(bool download_missing)
@@ -1199,4 +1199,4 @@ template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<f
     std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
 template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
     std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
-} // namespace pintr
+} // namespace pairinteraction

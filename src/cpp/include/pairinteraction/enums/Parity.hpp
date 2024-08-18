@@ -4,7 +4,7 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace pintr {
+namespace pairinteraction {
 enum class Parity : int { ODD = -1, EVEN = 1, UNKNOWN = 2 };
 
 inline std::ostream &operator<<(std::ostream &os, const Parity &parity) {
@@ -16,4 +16,4 @@ inline std::ostream &operator<<(std::ostream &os, const Parity &parity) {
     }
     throw std::runtime_error("Cannot print unknown parity.");
 }
-} // namespace pintr
+} // namespace pairinteraction

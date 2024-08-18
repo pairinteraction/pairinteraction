@@ -1,5 +1,5 @@
 #pragma once
 
-namespace pintr {
+namespace pairinteraction {
 void setup();
-} // namespace pintr
+} // namespace pairinteraction

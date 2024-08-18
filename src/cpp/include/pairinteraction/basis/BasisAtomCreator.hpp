@@ -1,8 +1,8 @@
 #pragma once
 
-#include "pintr/enums/Parity.hpp"
-#include "pintr/utils/Range.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
 #include <memory>
@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 class BasisAtom;
 
@@ -66,4 +66,4 @@ extern template class BasisAtomCreator<float>;
 extern template class BasisAtomCreator<double>;
 extern template class BasisAtomCreator<std::complex<float>>;
 extern template class BasisAtomCreator<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

@@ -1,10 +1,10 @@
-#include "pintr/system/SystemAtom.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 
-#include "pintr/enums/OperatorType.hpp"
-#include "pintr/operator/OperatorAtom.hpp"
-#include "pintr/utils/spherical.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/utils/spherical.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 SystemAtom<Scalar>::SystemAtom(std::shared_ptr<const basis_t> basis)
     : System<SystemAtom<Scalar>>(basis) {}
@@ -111,4 +111,4 @@ template class SystemAtom<float>;
 template class SystemAtom<double>;
 template class SystemAtom<std::complex<float>>;
 template class SystemAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

@@ -1,17 +1,17 @@
-#include "pintr/database/Database.hpp"
+#include "pairinteraction/database/Database.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/database/AtomDescriptionByParameters.hpp"
-#include "pintr/database/AtomDescriptionByRanges.hpp"
-#include "pintr/enums/OperatorType.hpp"
-#include "pintr/ket/KetAtom.hpp"
-#include "pintr/operator/OperatorAtom.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/AtomDescriptionByParameters.hpp"
+#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("get a KetAtom") {
     Database &database = Database::get_global_instance();
 
@@ -55,4 +55,4 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}",
                        dipole.get_matrix().nonZeros());
 }
-} // namespace pintr
+} // namespace pairinteraction

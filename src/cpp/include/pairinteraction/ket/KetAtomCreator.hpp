@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/enums/Parity.hpp"
+#include "pairinteraction/enums/Parity.hpp"
 
 #include <memory>
 #include <optional>
 #include <string>
 #include <type_traits>
 
-namespace pintr {
+namespace pairinteraction {
 class Database;
 
 template <typename Real>
@@ -54,4 +54,4 @@ private:
 
 extern template class KetAtomCreator<float>;
 extern template class KetAtomCreator<double>;
-} // namespace pintr
+} // namespace pairinteraction
