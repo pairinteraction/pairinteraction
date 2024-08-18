@@ -1775,10 +1775,9 @@ class MainWindow(QtWidgets.QMainWindow):
                             text = pg.TextItem(
                                 html='<div style="text-align: center; font-size: '
                                 + size
-                                + 'pt;">'
-                                + '<span style="color: rgba(0,0,0,255);">{}{}<sub style="font-size: '.format(
-                                    int(sn), self.momentumstrings[idx][bn][int(sl)]
-                                )
+                                + 'pt;"><span style="color: rgba(0,0,0,255);">'
+                                + f"{int(sn)}{self.momentumstrings[idx][bn][int(sl)]}"
+                                + '<sub style="font-size: '
                                 + size
                                 + f'pt;">{int(2 * sj)}/2</sub></span></div>',
                                 anchor=(anchorX, 0.5),
@@ -3457,9 +3456,9 @@ class MainWindow(QtWidgets.QMainWindow):
                         data_stepwise["states_description"] = "state(idxState, {idxState, n, l, j, m})"
 
                     elif idx == 2:
-                        data_stepwise[
-                            "states_description"
-                        ] = "state(idxState, {idxState, n1, l1, j1, m1, n2, l2, j2, m2})"
+                        data_stepwise["states_description"] = (
+                            "state(idxState, {idxState, n1, l1, j1, m1, n2, l2, j2, m2})"
+                        )
                     data_stepwise["eigenvectors_description"] = "eigenvectorcoordinate(0, 0)(idxState, idxEigenvector)"
                     data_stepwise["eigenvalues_description"] = "eigenvalue(0, idxEigenvector)"
                     data_stepwise["overlapvectors_description"] = "overlapvectorcoordinate(idxOverlapvector, idxState)"

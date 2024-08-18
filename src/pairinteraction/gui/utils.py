@@ -104,7 +104,7 @@ class Wignerd:
     def _m_values(self, j):
         size = 2 * j + 1
         if not size.is_integer() or not size > 0:
-            raise ValueError("Only integer or half-integer values allowed for j, got: : %r" % j)
+            raise ValueError(f"Only integer or half-integer values allowed for j, got: {j}")
         return size, [j - i for i in range(int(2 * j + 1))]
 
     def _eval_wignerd(self, j, m, mp, beta):

@@ -1,6 +1,5 @@
 """Pydantic model for a state of classical light."""
 
-
 from pairinteraction.model.states.base import BaseModelState
 
 

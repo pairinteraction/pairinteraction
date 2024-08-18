@@ -1,6 +1,5 @@
 """Pydantic model for defining what kind of overlaps to calculate."""
 
-
 from typing import Dict, List, Optional, Union
 
 from pydantic import BaseModel, ConfigDict
