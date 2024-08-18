@@ -52,7 +52,8 @@ endif()
 
 # Add tests building and calling the executables
 include(ProcessorCount)
-ProcessorCount(NPROC)
+ProcessorCount(NPROC_DEFAULT)
+set(NPROC ${NPROC_DEFAULT} CACHE STRING "Number of processors to use for building the tests")
 
 add_test(NAME gen_unit_tests COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --config "$<CONFIG>" --target unit_tests -j${NPROC})
 add_test(NAME unit_tests  COMMAND unit_tests --database "${CMAKE_SOURCE_DIR}/data/database")
