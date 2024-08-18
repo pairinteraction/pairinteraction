@@ -1,4 +1,4 @@
-#include "pairinteraction/ket/Ket.py.hpp"
+#include "Ket.py.hpp"
 
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/Ket.hpp"

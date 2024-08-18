@@ -1,4 +1,4 @@
-#include "pairinteraction/ket/Ket.py.hpp"
+#include "Ket.py.hpp"
 #include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>

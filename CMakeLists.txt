@@ -46,20 +46,15 @@ For more details and advanced options, please refer to installation \
 instructions in the documentation.")
 endif()
 
-if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-  include(CTest)
-endif()
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Default build type is "Release with debug info"
 IF(NOT CMAKE_BUILD_TYPE)
    SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
 ENDIF(NOT CMAKE_BUILD_TYPE)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-
 # Build options
 option(WITH_DOC      "Generate documentation"               OFF)
-option(WITH_BENCH    "Compile the benchmarks"               OFF)
 option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF) # TODO treat building a windows installer and dmg the same
 option(WITH_COVERAGE "Generate code coverage report"        OFF)
 
@@ -69,13 +64,14 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/extra/apple")
-if( WITH_DMG )
+if(WITH_DMG)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
   set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
-endif( )
+endif()
 
-# Target for the unit tests
-add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -C ${CMAKE_BUILD_TYPE})
+# General build instructions
+set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Target for code coverage
 if(WITH_COVERAGE)
@@ -88,7 +84,7 @@ if(WITH_COVERAGE)
   target_link_libraries(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:gcov>)
 endif()
 
-# Find dependencies # TODO add all dependencies
+# Find dependencies
 find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
@@ -176,20 +172,19 @@ if(WIN32)
 endif()
 add_library(duckdb::duckdb ALIAS duckdb)
 
-# Build instructions
-add_subdirectory(src/backend)
+# Add subdirectories for building the project
+add_subdirectory(src/cpp)
 
+add_subdirectory(src/cpp/bindings)
+
+include(CTest)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
-  add_subdirectory(test/backend)
-  add_subdirectory(test/pairinteraction) # TODO use pytest
+  add_subdirectory(src/cpp/tests)
 endif()
 
-if( WITH_BENCH )
-endif()
-
-if ( WITH_DOC )
+if(WITH_DOC)
   add_subdirectory(doc)
-endif( )
+endif()
 
 # Concatenate licenses
 file(READ ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt LICENSE_LGPL)
