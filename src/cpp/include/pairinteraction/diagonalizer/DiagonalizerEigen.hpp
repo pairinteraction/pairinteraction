@@ -1,12 +1,12 @@
 #pragma once
 
-#include "pintr/interfaces/DiagonalizerInterface.hpp"
-#include "pintr/utils/eigen_assertion.hpp"
+#include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 class DiagonalizerEigen : public DiagonalizerInterface<Scalar> {
 public:
@@ -20,4 +20,4 @@ extern template class DiagonalizerEigen<float>;
 extern template class DiagonalizerEigen<double>;
 extern template class DiagonalizerEigen<std::complex<float>>;
 extern template class DiagonalizerEigen<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/system/System.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/system/System.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <array>
 #include <memory>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 class OperatorAtom;
 
@@ -57,4 +57,4 @@ extern template class SystemAtom<float>;
 extern template class SystemAtom<double>;
 extern template class SystemAtom<std::complex<float>>;
 extern template class SystemAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

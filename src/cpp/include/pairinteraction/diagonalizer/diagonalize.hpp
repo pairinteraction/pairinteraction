@@ -4,7 +4,7 @@
 #include <initializer_list>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 class DiagonalizerInterface;
 
@@ -33,4 +33,4 @@ void diagonalize(std::vector<Derived> &systems,
                  typename Derived::real_t min_eigenvalue, typename Derived::real_t max_eigenvalue,
                  int precision = 12);
 
-} // namespace pintr
+} // namespace pairinteraction

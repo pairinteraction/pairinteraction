@@ -1,13 +1,13 @@
 #pragma once
 
-#include "pintr/basis/Basis.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/basis/Basis.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
 #include <string>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 class Database;
 
 template <typename Real>
@@ -56,4 +56,4 @@ extern template class BasisAtom<float>;
 extern template class BasisAtom<double>;
 extern template class BasisAtom<std::complex<float>>;
 extern template class BasisAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

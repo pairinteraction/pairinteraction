@@ -1,17 +1,17 @@
-#include "pintr/basis/BasisAtomCreator.hpp"
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/database/Database.hpp"
-#include "pintr/enums/Parity.hpp"
-#include "pintr/enums/TransformationType.hpp"
-#include "pintr/ket/KetAtom.hpp"
-#include "pintr/ket/KetAtomCreator.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/enums/TransformationType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetAtomCreator.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<float>()
@@ -94,4 +94,4 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     auto transformation = transformed->get_transformation();
     DOCTEST_CHECK(transformation.transformation_type.back() == TransformationType::ARBITRARY);
 }
-} // namespace pintr
+} // namespace pairinteraction

@@ -1,11 +1,11 @@
-#include "pintr/diagonalizer/diagonalize.hpp"
+#include "pairinteraction/diagonalizer/diagonalize.hpp"
 
-#include "pintr/system/SystemAtom.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 
 #include <complex>
 #include <oneapi/tbb.h>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Derived>
 void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
@@ -124,4 +124,4 @@ diagonalize(std::vector<SystemAtom<std::complex<double>>> &systems,
             const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
             SystemAtom<std::complex<double>>::real_t min_eigenvalue,
             SystemAtom<std::complex<double>>::real_t max_eigenvalue, int precision);
-} // namespace pintr
+} // namespace pairinteraction

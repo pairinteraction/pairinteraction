@@ -1,12 +1,12 @@
 #pragma once
 
-#include "pintr/utils/Range.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
 #include <memory>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 class BasisClassicalLight;
 
@@ -35,4 +35,4 @@ extern template class BasisClassicalLightCreator<float>;
 extern template class BasisClassicalLightCreator<double>;
 extern template class BasisClassicalLightCreator<std::complex<float>>;
 extern template class BasisClassicalLightCreator<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

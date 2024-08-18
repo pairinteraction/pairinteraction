@@ -1,12 +1,12 @@
 #pragma once
 
-#include "pintr/operator/Operator.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/operator/Operator.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <memory>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 class Database;
 
 enum class OperatorType;
@@ -54,4 +54,4 @@ extern template class OperatorAtom<float>;
 extern template class OperatorAtom<double>;
 extern template class OperatorAtom<std::complex<float>>;
 extern template class OperatorAtom<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

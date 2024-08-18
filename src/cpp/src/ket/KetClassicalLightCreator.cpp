@@ -1,10 +1,10 @@
-#include "pintr/ket/KetClassicalLightCreator.hpp"
+#include "pairinteraction/ket/KetClassicalLightCreator.hpp"
 
-#include "pintr/ket/KetClassicalLight.hpp"
+#include "pairinteraction/ket/KetClassicalLight.hpp"
 
 #include <limits>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 KetClassicalLightCreator<Real>::KetClassicalLightCreator(Real photon_energy, int q)
     : photon_energy(photon_energy), quantum_number_q(q) {}
@@ -32,4 +32,4 @@ std::shared_ptr<const KetClassicalLight<Real>> KetClassicalLightCreator<Real>::c
 // Explicit instantiations
 template class KetClassicalLightCreator<float>;
 template class KetClassicalLightCreator<double>;
-} // namespace pintr
+} // namespace pairinteraction

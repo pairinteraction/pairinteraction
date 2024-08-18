@@ -1,6 +1,6 @@
-#include "pintr/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/basis/BasisClassicalLight.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 BasisClassicalLight<Scalar>::BasisClassicalLight(Private /*unused*/, ketvec_t &&kets)
     : Basis<BasisClassicalLight<Scalar>>(std::move(kets)) {}
@@ -10,4 +10,4 @@ template class BasisClassicalLight<float>;
 template class BasisClassicalLight<double>;
 template class BasisClassicalLight<std::complex<float>>;
 template class BasisClassicalLight<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

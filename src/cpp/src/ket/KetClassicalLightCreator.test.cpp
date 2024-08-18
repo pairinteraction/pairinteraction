@@ -1,12 +1,12 @@
-#include "pintr/ket/KetClassicalLightCreator.hpp"
+#include "pairinteraction/ket/KetClassicalLightCreator.hpp"
 
-#include "pintr/ket/KetClassicalLight.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/ket/KetClassicalLight.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("create a classical light ket") {
 
     float photon_energy{0.02};
@@ -18,4 +18,4 @@ DOCTEST_TEST_CASE("create a classical light ket") {
     DOCTEST_CHECK(lightket->get_energy() == q * photon_energy);
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*lightket));
 }
-} // namespace pintr
+} // namespace pairinteraction

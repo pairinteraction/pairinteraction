@@ -1,12 +1,12 @@
-#include "pintr/basis/BasisClassicalLightCreator.hpp"
+#include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
 
-#include "pintr/basis/BasisClassicalLight.hpp"
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("create a classical light basis") {
     float energy{0.03};
     auto basis = BasisClassicalLightCreator<float>()
@@ -19,4 +19,4 @@ DOCTEST_TEST_CASE("create a classical light basis") {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
     }
 }
-} // namespace pintr
+} // namespace pairinteraction

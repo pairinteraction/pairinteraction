@@ -1,11 +1,11 @@
-#include "pintr/interfaces/DiagonalizerInterface.hpp"
+#include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
@@ -36,4 +36,4 @@ template class DiagonalizerInterface<float>;
 template class DiagonalizerInterface<double>;
 template class DiagonalizerInterface<std::complex<float>>;
 template class DiagonalizerInterface<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

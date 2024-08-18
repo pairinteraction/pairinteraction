@@ -1,13 +1,13 @@
-#include "pintr/enums/Parity.hpp"
+#include "pairinteraction/enums/Parity.hpp"
 
-#include "pintr/utils/streamed.hpp"
+#include "pairinteraction/utils/streamed.hpp"
 
 #include <algorithm>
 #include <doctest/doctest.h>
 #include <spdlog/spdlog.h>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("compare parities") {
     auto p1 = Parity::ODD;
     auto p2 = Parity::EVEN;
@@ -34,4 +34,4 @@ DOCTEST_TEST_CASE("sort parities") {
     DOCTEST_CHECK(parities[1] == Parity::EVEN);
     DOCTEST_CHECK(parities[2] == Parity::UNKNOWN);
 }
-} // namespace pintr
+} // namespace pairinteraction

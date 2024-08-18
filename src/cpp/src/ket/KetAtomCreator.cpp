@@ -1,12 +1,12 @@
-#include "pintr/ket/KetAtomCreator.hpp"
+#include "pairinteraction/ket/KetAtomCreator.hpp"
 
-#include "pintr/database/AtomDescriptionByParameters.hpp"
-#include "pintr/database/Database.hpp"
-#include "pintr/enums/Parity.hpp"
+#include "pairinteraction/database/AtomDescriptionByParameters.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/enums/Parity.hpp"
 
 #include <cmath>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 KetAtomCreator<Real>::KetAtomCreator(std::string species, int n, Real l, Real j, Real m)
     : species(std::move(species)), quantum_number_f(j), quantum_number_m(m), quantum_number_n(n),
@@ -96,4 +96,4 @@ std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &data
 // Explicit instantiations
 template class KetAtomCreator<float>;
 template class KetAtomCreator<double>;
-} // namespace pintr
+} // namespace pairinteraction

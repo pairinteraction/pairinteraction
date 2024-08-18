@@ -1,12 +1,12 @@
-#include "pintr/ket/KetClassicalLight.hpp"
+#include "pairinteraction/ket/KetClassicalLight.hpp"
 
-#include "pintr/enums/Parity.hpp"
-#include "pintr/utils/hash.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/utils/hash.hpp"
 
 #include <fmt/core.h>
 #include <string>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 KetClassicalLight<Real>::KetClassicalLight(Private /*unused*/, Real photon_energy, int q)
     : Ket<Real>(photon_energy * q, 0, 0, Parity::ODD), photon_energy(photon_energy),
@@ -51,4 +51,4 @@ int KetClassicalLight<Real>::get_quantum_number_q() const {
 // Explicit instantiations
 template class KetClassicalLight<float>;
 template class KetClassicalLight<double>;
-} // namespace pintr
+} // namespace pairinteraction

@@ -1,20 +1,20 @@
-#include "pintr/system/SystemAtom.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 
-#include "pintr/basis/BasisAtom.hpp"
-#include "pintr/basis/BasisAtomCreator.hpp"
-#include "pintr/database/Database.hpp"
-#include "pintr/diagonalizer/DiagonalizerEigen.hpp"
-#include "pintr/diagonalizer/DiagonalizerFeast.hpp"
-#include "pintr/diagonalizer/DiagonalizerLapacke.hpp"
-#include "pintr/diagonalizer/diagonalize.hpp"
-#include "pintr/ket/KetAtomCreator.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
+#include "pairinteraction/diagonalizer/diagonalize.hpp"
+#include "pairinteraction/ket/KetAtomCreator.hpp"
 
 #include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
 #include <spdlog/spdlog.h>
 
-namespace pintr {
+namespace pairinteraction {
 DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
@@ -202,4 +202,4 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
         }
     }
 }
-} // namespace pintr
+} // namespace pairinteraction

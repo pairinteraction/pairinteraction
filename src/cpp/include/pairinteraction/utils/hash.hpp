@@ -5,7 +5,7 @@
 #include <functional>
 #include <vector>
 
-namespace pintr::hash {
+namespace pairinteraction::hash {
 
 /**
  * @struct hash
@@ -100,4 +100,4 @@ struct hash<Parity> {
     }
 };
 
-} // namespace pintr::hash
+} // namespace pairinteraction::hash

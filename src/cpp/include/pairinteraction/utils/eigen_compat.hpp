@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "pintr/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/Core>
 

@@ -4,7 +4,7 @@
 #include <optional>
 #include <type_traits>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 class KetClassicalLight;
 
@@ -33,4 +33,4 @@ private:
 
 extern template class KetClassicalLightCreator<float>;
 extern template class KetClassicalLightCreator<double>;
-} // namespace pintr
+} // namespace pairinteraction

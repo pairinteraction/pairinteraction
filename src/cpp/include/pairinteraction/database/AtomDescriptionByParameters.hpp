@@ -1,12 +1,12 @@
 #pragma once
 
-#include "pintr/enums/Parity.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <optional>
 #include <type_traits>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 struct AtomDescriptionByParameters {
     static_assert(std::is_floating_point_v<Real>);
@@ -21,4 +21,4 @@ struct AtomDescriptionByParameters {
     std::optional<Real> quantum_number_s;
     std::optional<Real> quantum_number_j;
 };
-} // namespace pintr
+} // namespace pairinteraction

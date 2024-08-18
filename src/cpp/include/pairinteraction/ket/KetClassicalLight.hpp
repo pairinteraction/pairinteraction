@@ -1,11 +1,11 @@
 #pragma once
 
-#include "pintr/ket/Ket.hpp"
+#include "pairinteraction/ket/Ket.hpp"
 
 #include <string>
 #include <type_traits>
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Real>
 class KetClassicalLightCreator;
 
@@ -31,4 +31,4 @@ private:
 
 extern template class KetClassicalLight<float>;
 extern template class KetClassicalLight<double>;
-} // namespace pintr
+} // namespace pairinteraction

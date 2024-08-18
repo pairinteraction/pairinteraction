@@ -1,9 +1,9 @@
-#include "pintr/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 
-#include "pintr/enums/TransformationType.hpp"
-#include "pintr/utils/euler.hpp"
+#include "pairinteraction/enums/TransformationType.hpp"
+#include "pairinteraction/utils/euler.hpp"
 
-namespace pintr {
+namespace pairinteraction {
 template <typename Scalar>
 Transformation<Scalar>::Transformation(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix,
                                        std::vector<TransformationType> transformation_type)
@@ -44,4 +44,4 @@ template class TransformationBuilderInterface<float>;
 template class TransformationBuilderInterface<double>;
 template class TransformationBuilderInterface<std::complex<float>>;
 template class TransformationBuilderInterface<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction

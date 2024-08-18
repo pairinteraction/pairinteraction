@@ -1,14 +1,14 @@
 #pragma once
 
-#include "pintr/utils/eigen_assertion.hpp"
-#include "pintr/utils/traits.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
 #include <array>
 #include <complex>
 #include <vector>
 
-namespace pintr {
+namespace pairinteraction {
 enum class TransformationType : unsigned char;
 
 template <typename Scalar>
@@ -64,4 +64,4 @@ extern template class TransformationBuilderInterface<float>;
 extern template class TransformationBuilderInterface<double>;
 extern template class TransformationBuilderInterface<std::complex<float>>;
 extern template class TransformationBuilderInterface<std::complex<double>>;
-} // namespace pintr
+} // namespace pairinteraction
