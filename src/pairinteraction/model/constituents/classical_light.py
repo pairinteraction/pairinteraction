@@ -1,6 +1,5 @@
 """Pydantic model for the classical light."""
 
-
 from pairinteraction.model.constituents.base import BaseModelConstituent
 
 

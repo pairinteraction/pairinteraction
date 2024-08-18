@@ -20,17 +20,9 @@ from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.simulation import ModelSimulation
 
-BasisAtom = (
-    BasisAtomCreator
-) = (
-    BasisClassicalLight
-) = (
-    ProductBasis
-) = (
-    System
-) = (
-    SystemAtom
-) = SystemClassicalLight = SystemCombined = SystemWithInteractions = object  # mock to create the documentation
+BasisAtom = BasisAtomCreator = BasisClassicalLight = ProductBasis = System = SystemAtom = SystemClassicalLight = (
+    SystemCombined
+) = SystemWithInteractions = object  # mock to create the documentation
 
 
 class BaseSimulation:

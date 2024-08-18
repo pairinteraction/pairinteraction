@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 """
+
 import optparse
 import os
 import sys
@@ -94,7 +95,7 @@ data 'STR#' (5002, "English") {
             )
             with open(license) as l:
                 kind = "RTF " if license.lower().endswith(".rtf") else "TEXT"
-                f.write("data '%s' (5000, \"English\") {\n" % kind)
+                f.write(f"data '{kind}' (5000, \"English\")" + "{\n")
 
                 def escape(s):
                     return s.strip().replace("\\", "\\\\").replace('"', '\\"')
@@ -114,23 +115,21 @@ data 'STR#' (5002, "English") {
         $"0009 0014 0000 0000 0000 0000 0000"
 };\n"""
             )
-        os.system('hdiutil unflatten -quiet "%s"' % dmgFile)
+        os.system(f'hdiutil unflatten -quiet "{dmgFile}"')
         ret = os.system(f'{options.rez} -a {tmpFile} -o "{dmgFile}"')
-        os.system('hdiutil flatten -quiet "%s"' % dmgFile)
+        os.system(f'hdiutil flatten -quiet "{dmgFile}"')
         if options.compression is not None:
             os.system(f"cp {dmgFile} {dmgFile}.temp.dmg")
             os.remove(dmgFile)
             if options.compression == "bz2":
                 os.system(f"hdiutil convert {dmgFile}.temp.dmg -format UDBZ -o {dmgFile}")
             elif options.compression == "gz":
-                os.system(
-                    "hdiutil convert %s.temp.dmg -format " % dmgFile + "UDZO -imagekey zlib-devel=9 -o %s" % dmgFile
-                )
-            os.remove("%s.temp.dmg" % dmgFile)
+                os.system(f"hdiutil convert {dmgFile}.temp.dmg -format UDZO -imagekey zlib-devel=9 -o {dmgFile}")
+            os.remove(f"{dmgFile}.temp.dmg")
     if ret == 0:
-        print("Successfully added license to '%s'" % dmgFile)
+        print(f"Successfully added license to '{dmgFile}'")
     else:
-        print("Failed to add license to '%s'" % dmgFile)
+        print(f"Failed to add license to '{dmgFile}'")
 
 
 if __name__ == "__main__":
@@ -161,7 +160,7 @@ if __name__ == "__main__":
     options, args = parser.parse_args()
     cond = len(args) != 2
     if not os.path.exists(options.rez):
-        print('Failed to find Rez at "%s"!\n' % options.rez)
+        print(f'Failed to find Rez at "{options.rez}"!\n')
         cond = True
     if cond:
         parser.print_usage()

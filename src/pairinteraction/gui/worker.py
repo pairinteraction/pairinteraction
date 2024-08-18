@@ -106,14 +106,14 @@ class AllQueues:
 
         elif line[:5] == ">>DIM":
             self.dim = int(line[5:12])
-            self.status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                self.dim, self.dim, self.current, self.total
+            self.status_progress = (
+                f"diagonalize {self.dim} x {self.dim} matrix, {self.current} of {self.total} matrices processed"
             )
 
         elif line[:5] == ">>OUT":
             self.current += 1
-            self.status_progress = "diagonalize {} x {} matrix, {} of {} matrices processed".format(
-                self.dim, self.dim, self.current, self.total
+            self.status_progress = (
+                f"diagonalize {self.dim} x {self.dim} matrix, {self.current} of {self.total} matrices processed"
             )
 
             filestep = int(line[12:19])

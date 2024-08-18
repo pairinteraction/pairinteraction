@@ -1,5 +1,5 @@
-"""The main function will be called by the pairinteraction GUI to start the calculation.
-"""
+"""The main function will be called by the pairinteraction GUI to start the calculation."""
+
 import itertools
 import json
 import multiprocessing

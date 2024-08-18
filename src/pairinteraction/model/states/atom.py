@@ -1,6 +1,5 @@
 """Pydantic models for states of atoms."""
 
-
 from abc import ABC
 from typing import Generic, Optional, TypeVar
 

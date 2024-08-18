@@ -72,9 +72,8 @@ def standalone(file):
                         break
                 if "@rpath" in libpath:
                     raise RuntimeError(
-                        "Error in making {} standalone. For the library {}, there is no suitable rpath in {}!".format(
-                            file, libpath_original, rpaths
-                        )
+                        f"Error in making {file} standalone. For the library {libpath_original}, "
+                        + f"there is no suitable rpath in {rpaths}!"
                     )
 
             libpath_abs = os.path.abspath(libpath)
