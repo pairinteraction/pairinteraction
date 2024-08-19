@@ -1,4 +1,5 @@
-add_library(pairinteraction OBJECT
+add_library(
+  pairinteraction OBJECT
   # Headers
   ./include/pairinteraction/basis/Basis.hpp
   ./include/pairinteraction/basis/BasisAtom.hpp
@@ -77,50 +78,46 @@ add_library(pairinteraction OBJECT
   ./src/tools/setup.cpp
   ./src/tools/test.cpp
   ./src/utils/euler.test.cpp
-  ./src/utils/wigner.test.cpp
-)
+  ./src/utils/wigner.test.cpp)
 
-target_link_libraries(pairinteraction PUBLIC
-  $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>
-  doctest::doctest
-  duckdb::duckdb
-  Eigen3::Eigen
-  httplib::httplib
-  nlohmann_json::nlohmann_json
-  spdlog::spdlog
-  TBB::tbb
-  $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
-  $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
-  $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
-  $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>
-)
+target_link_libraries(
+  pairinteraction
+  PUBLIC $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>
+         doctest::doctest
+         duckdb::duckdb
+         Eigen3::Eigen
+         httplib::httplib
+         nlohmann_json::nlohmann_json
+         spdlog::spdlog
+         TBB::tbb
+         $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
+         $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
+         $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
+         $<$<TARGET_EXISTS:OpenSSL::Crypto>:OpenSSL::Crypto>)
 
-target_include_directories(pairinteraction PUBLIC
-  "${CMAKE_CURRENT_SOURCE_DIR}/include"
-)
+target_include_directories(pairinteraction PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
-target_compile_definitions(pairinteraction PUBLIC
-  DOCTEST_CONFIG_SUPER_FAST_ASSERTS
-  $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL WITH_LAPACKE EIGEN_USE_MKL_ALL EIGEN_MKL_NO_DIRECT_CALL>
-  $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:WITH_LAPACKE EIGEN_USE_BLAS EIGEN_USE_LAPACKE>
-  $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>
-)
+target_compile_definitions(
+  pairinteraction
+  PUBLIC DOCTEST_CONFIG_SUPER_FAST_ASSERTS
+         $<$<TARGET_EXISTS:MKL::MKL>:WITH_MKL
+         WITH_LAPACKE
+         EIGEN_USE_MKL_ALL
+         EIGEN_MKL_NO_DIRECT_CALL>
+         $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:WITH_LAPACKE
+         EIGEN_USE_BLAS
+         EIGEN_USE_LAPACKE>
+         $<$<NOT:$<BOOL:${BUILD_TESTING}>>:DOCTEST_CONFIG_DISABLE>)
 
-if (TARGET MKL::MKL)
-  target_compile_definitions(pairinteraction PUBLIC
-    MKL_Complex8=std::complex<float>
-    MKL_Complex16=std::complex<double>
-  )
-elseif (TARGET LAPACKE::LAPACKE)
-  target_compile_definitions(pairinteraction PUBLIC
-    lapack_complex_float=std::complex<float>
-    lapack_complex_double=std::complex<double>
-  )
+if(TARGET MKL::MKL)
+  target_compile_definitions(pairinteraction PUBLIC MKL_Complex8=std::complex<float> MKL_Complex16=std::complex<double>)
+elseif(TARGET LAPACKE::LAPACKE)
+  target_compile_definitions(pairinteraction PUBLIC lapack_complex_float=std::complex<float>
+                                                    lapack_complex_double=std::complex<double>)
 endif()
 
-target_compile_options(pairinteraction PUBLIC
-  $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra -Wpedantic>
-  $<$<CXX_COMPILER_ID:MSVC>:/W4>
-)
+target_compile_options(
+  pairinteraction PUBLIC $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall
+                         -Wextra -Wpedantic> $<$<CXX_COMPILER_ID:MSVC>:/W4>)
 
 target_compile_features(pairinteraction PUBLIC cxx_std_17)
