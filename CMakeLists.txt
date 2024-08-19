@@ -2,25 +2,25 @@
 #
 # This file is part of the pairinteraction library.
 #
-# The pairinteraction library is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# The pairinteraction library is free software: you can redistribute it and/or modify it under the terms of the GNU
+# Lesser General Public License as published by the Free Software Foundation, either version 3 of the License, or (at
+# your option) any later version.
 #
-# The pairinteraction library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
+# The pairinteraction library is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even
+# the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public
+# License for more details.
 #
-# You should have received a copy of the GNU Lesser General Public License
-# along with the pairinteraction library. If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License along with the pairinteraction library. If
+# not, see <http://www.gnu.org/licenses/>.
 
 cmake_minimum_required(VERSION 3.22 FATAL_ERROR)
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
 project(pairinteraction CXX)
-if (NOT SKBUILD)
-message(WARNING "\
+if(NOT SKBUILD)
+  message(
+    WARNING
+      "\
 This CMake file is mainly meant to be executed using 'scikit-build' \
 or by persons developing the C++ backend. Running it directly might \
 not produce the desired result. If you are a user trying to install \
@@ -49,14 +49,16 @@ endif()
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 # Default build type is "Release with debug info"
-IF(NOT CMAKE_BUILD_TYPE)
-   SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the build type" FORCE)
-ENDIF(NOT CMAKE_BUILD_TYPE)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE
+      RelWithDebInfo
+      CACHE STRING "Choose the build type" FORCE)
+endif(NOT CMAKE_BUILD_TYPE)
 
 # Build options
-option(WITH_DOC      "Generate documentation"               OFF)
-option(WITH_DMG      "Generate a DMG file (Mac OS X only)"  OFF) # TODO treat building a windows installer and dmg the same
-option(WITH_COVERAGE "Generate code coverage report"        OFF)
+option(WITH_DOC "Generate documentation" OFF)
+option(WITH_DMG "Generate a DMG file (Mac OS X only)" OFF) # TODO treat building a windows installer and dmg the same
+option(WITH_COVERAGE "Generate code coverage report" OFF)
 
 # Windows specific build instructions
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
@@ -78,9 +80,12 @@ if(WITH_COVERAGE)
   if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     message(WARNING "-DWITH_COVERAGE=ON implies -DCMAKE_BUILD_TYPE=Debug")
   endif()
-  set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Choose the build type" FORCE)
+  set(CMAKE_BUILD_TYPE
+      "Debug"
+      CACHE STRING "Choose the build type" FORCE)
   add_library(coverage::gcov INTERFACE IMPORTED)
-  target_compile_options(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs -ftest-coverage>)
+  target_compile_options(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:--coverage -fprofile-arcs
+                                                  -ftest-coverage>)
   target_link_libraries(coverage::gcov INTERFACE $<$<CXX_COMPILER_ID:AppleClang,Clang,GNU>:gcov>)
 endif()
 
@@ -90,27 +95,37 @@ find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(TBB REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
-find_package(Python REQUIRED
+find_package(
+  Python REQUIRED
   COMPONENTS Interpreter Development.Module NumPy
-  OPTIONAL_COMPONENTS Development.SABIModule
-)
+  OPTIONAL_COMPONENTS Development.SABIModule)
 
 find_package(httplib REQUIRED)
-if (NOT httplib_OpenSSL_FOUND)
+if(NOT httplib_OpenSSL_FOUND)
   find_package(OpenSSL REQUIRED COMPONENTS SSL Crypto)
   add_compile_definitions(CPPHTTPLIB_OPENSSL_SUPPORT)
 endif()
 
 # Try to find MKL
 set(CMAKE_C_COMPILER_ID "${CMAKE_CXX_COMPILER_ID}") # Needed by MKLConfig to find gnu_thread
-set(MKL_ARCH "intel64" CACHE STRING "MKL architecture")
-set(MKL_LINK "dynamic" CACHE STRING "MKL linkage")
+set(MKL_ARCH
+    "intel64"
+    CACHE STRING "MKL architecture")
+set(MKL_LINK
+    "dynamic"
+    CACHE STRING "MKL linkage")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(MKL_THREADING "sequential" CACHE STRING "MKL threading backend")
+  set(MKL_THREADING
+      "sequential"
+      CACHE STRING "MKL threading backend")
 else()
-  set(MKL_THREADING "tbb_thread" CACHE STRING "MKL threading backend")
+  set(MKL_THREADING
+      "tbb_thread"
+      CACHE STRING "MKL threading backend")
 endif()
-set(MKL_INTERFACE "lp64" CACHE STRING "MKL interface")
+set(MKL_INTERFACE
+    "lp64"
+    CACHE STRING "MKL interface")
 find_package(MKL)
 
 # Try to find lapacke if MKL is not available
@@ -125,9 +140,10 @@ if(MSVC)
   message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
 endif()
 include(FetchContent)
-FetchContent_Declare(nanobind
+FetchContent_Declare(
+  nanobind
   GIT_REPOSITORY https://github.com/wjakob/nanobind.git
-  GIT_TAG        8d7f1ee0621c17fa370b704b2100ffa0243d5bfb # v2.0.0
+  GIT_TAG 8d7f1ee0621c17fa370b704b2100ffa0243d5bfb # v2.0.0
 )
 FetchContent_GetProperties(nanobind)
 if(NOT nanobind_POPULATED)
@@ -152,21 +168,19 @@ elseif(UNIX)
   set(DUCKDB_LIBNAME libduckdb.so)
   set(DUCKDB_MD5 249fad0221153fb99af58d4a150d5fb0)
 endif()
-FetchContent_Declare(duckdb
-    URL ${DUCKDB_URL}
-    CONFIGURE_COMMAND ""
-    BUILD_COMMAND ""
-    URL_HASH MD5=${DUCKDB_MD5}
-)
+FetchContent_Declare(
+  duckdb
+  URL ${DUCKDB_URL} CONFIGURE_COMMAND "" BUILD_COMMAND ""
+  URL_HASH MD5=${DUCKDB_MD5})
 FetchContent_GetProperties(duckdb)
 if(NOT duckdb_POPULATED)
   FetchContent_Populate(duckdb)
 endif()
 add_library(duckdb SHARED IMPORTED)
 target_include_directories(duckdb INTERFACE ${duckdb_SOURCE_DIR})
-set_target_properties(duckdb PROPERTIES
-  IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
-  INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
+set_target_properties(
+  duckdb PROPERTIES IMPORTED_LOCATION ${duckdb_SOURCE_DIR}/${DUCKDB_LIBNAME}
+                    INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:duckdb,INTERFACE_INCLUDE_DIRECTORIES>)
 if(WIN32)
   set_target_properties(duckdb PROPERTIES IMPORTED_IMPLIB ${duckdb_SOURCE_DIR}/duckdb.lib)
 endif()
@@ -192,13 +206,9 @@ file(READ ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt LICENSE_GPL)
 file(READ ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt LICENSE_MKL)
 
 string(
-  CONCAT LICENSE_ALL
-  ${LICENSE_LGPL}
-  "\n\n\n=============================================================================\n\n\n"
-  ${LICENSE_GPL}
-  "\n\n\n=============================================================================\n\n\n"
-  ${LICENSE_MKL}
-)
+  CONCAT LICENSE_ALL ${LICENSE_LGPL}
+         "\n\n\n=============================================================================\n\n\n" ${LICENSE_GPL}
+         "\n\n\n=============================================================================\n\n\n" ${LICENSE_MKL})
 
 file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
 
@@ -206,13 +216,13 @@ file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
 
 if(APPLE AND WITH_DMG)
 
-  find_package(Python COMPONENTS Interpreter REQUIRED)
+  find_package(
+    Python
+    COMPONENTS Interpreter
+    REQUIRED)
 
-  install(
-    FILES ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt
-      ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt
-    DESTINATION licenses
-  )
+  install(FILES ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt
+                ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt DESTINATION licenses)
 
   set(CPACK_GENERATOR "Bundle")
 
@@ -224,16 +234,14 @@ if(APPLE AND WITH_DMG)
   set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
 
   add_custom_target(
-    license
-    COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py ${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt
-  )
+    license COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py
+                    ${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt)
 
 elseif(UNIX AND NOT SKBUILD)
 
   add_subdirectory(extra/flatpak)
 
-  install(FILES ${CMAKE_SOURCE_DIR}/README.md
-    DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
+  install(FILES ${CMAKE_SOURCE_DIR}/README.md DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
   install(
     FILES ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt
     DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
@@ -252,7 +260,7 @@ elseif(UNIX AND NOT SKBUILD)
   set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
   set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
   set(CPACK_DEBIAN_PACKAGE_DEPENDS
-    "python3-pint, python3-pyqt5, python3-pyqt5.qtsvg, python3-scipy, python3-numpy, python3-pyqtgraph")
+      "python3-pint, python3-pyqt5, python3-pyqt5.qtsvg, python3-scipy, python3-numpy, python3-pyqtgraph")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
   set(CPACK_DEBIAN_PACKAGE_SECTION "science")
   set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
@@ -260,8 +268,7 @@ elseif(UNIX AND NOT SKBUILD)
   # RPM
   set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
   set(CPACK_RPM_PACKAGE_AUTOREQPROV ON)
-  set(CPACK_RPM_PACKAGE_REQUIRES
-    "python3-Pint, python3-qt5, python3-scipy, python3-numpy, python3-pyqtgraph")
+  set(CPACK_RPM_PACKAGE_REQUIRES "python3-Pint, python3-qt5, python3-scipy, python3-numpy, python3-pyqtgraph")
   set(CPACK_RPM_PACKAGE_VENDOR "PI5")
   set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
   set(CPACK_RPM_PACKAGE_PRIORITY "optional")
