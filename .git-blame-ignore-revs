@@ -24,3 +24,9 @@ c3464ca94f536d0a7c86b5dd8157801532cbd253
 
 # Apply formatting changes suggested by Ruff
 1019d080bf9fbde61f019815fee931053823d381
+
+# Use pairinteraction as namespace name
+0310bb2838fc0e059d78432dee2d23791cd5d373
+
+# Format CMakeLists files
+7ace7fb80dd355420e735b8bba63cc8246cea722
