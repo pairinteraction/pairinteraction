@@ -1,12 +1,12 @@
-#include "Basis.py.hpp"
+#include "./Basis.py.hpp"
 
-#include "Basis.hpp"
-#include "BasisAtom.hpp"
-#include "BasisAtomCreator.hpp"
-#include "BasisClassicalLight.hpp"
-#include "BasisClassicalLightCreator.hpp"
-#include "database/Database.hpp"
-#include "interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/basis/Basis.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisAtomCreator.hpp"
+#include "pairinteraction/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -14,6 +14,7 @@
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
 
 template <typename T>
 static void declare_basis(nb::module_ &m, std::string type_name) {

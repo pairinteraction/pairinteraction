@@ -1,11 +1,11 @@
-#include "Ket.py.hpp"
+#include "./Ket.py.hpp"
 
-#include "Ket.hpp"
-#include "KetAtom.hpp"
-#include "KetAtomCreator.hpp"
-#include "KetClassicalLight.hpp"
-#include "KetClassicalLightCreator.hpp"
-#include "database/Database.hpp"
+#include "pairinteraction/ket/Ket.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetAtomCreator.hpp"
+#include "pairinteraction/ket/KetClassicalLight.hpp"
+#include "pairinteraction/ket/KetClassicalLightCreator.hpp"
+#include "pairinteraction/database/Database.hpp"
 
 #include <sstream>
 
@@ -14,6 +14,7 @@
 #include <nanobind/stl/string.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
 
 template <typename T>
 static void declare_ket(nb::module_ &m, std::string type_name) {
