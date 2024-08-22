@@ -1,12 +1,13 @@
-#include "Database.py.hpp"
+#include "./Database.py.hpp"
 
-#include "AtomDescriptionByParameters.hpp"
-#include "AtomDescriptionByRanges.hpp"
-#include "Database.hpp"
-#include "basis/BasisAtom.hpp"
-#include "enums/OperatorType.hpp"
-#include "ket/KetAtom.hpp"
-#include "operator/OperatorAtom.hpp"
+#include "pairinteraction/database/AtomDescriptionByParameters.hpp"
+#include "pairinteraction/database/AtomDescriptionByRanges.hpp"
+#include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
@@ -16,6 +17,18 @@
 #include <nanobind/stl/string.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
+
+template <typename T>
+static void declare_range(nb::module_ &m, std::string type_name) {
+    std::string pylass_name = "Range" + type_name;
+    nb::class_<Range<T>> pyclass(m, pylass_name.c_str());
+    pyclass.def(nb::init<>())
+        .def(nb::init<T, T>())
+        .def("min", &Range<T>::min)
+        .def("max", &Range<T>::max)
+        .def("is_finite", &Range<T>::is_finite);
+}
 
 template <typename T>
 static void declare_atom_description_by_parameters(nb::module_ &m, std::string type_name) {
@@ -38,23 +51,15 @@ static void declare_atom_description_by_ranges(nb::module_ &m, std::string type_
     std::string pylass_name = "AtomDescriptionByRanges" + type_name;
     nb::class_<AtomDescriptionByRanges<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
-        .def_rw("min_energy", &AtomDescriptionByRanges<T>::min_energy)
-        .def_rw("max_energy", &AtomDescriptionByRanges<T>::max_energy)
-        .def_rw("min_quantum_number_f", &AtomDescriptionByRanges<T>::min_quantum_number_f)
-        .def_rw("max_quantum_number_f", &AtomDescriptionByRanges<T>::max_quantum_number_f)
-        .def_rw("min_quantum_number_m", &AtomDescriptionByRanges<T>::min_quantum_number_m)
-        .def_rw("max_quantum_number_m", &AtomDescriptionByRanges<T>::max_quantum_number_m)
         .def_rw("parity", &AtomDescriptionByRanges<T>::parity)
-        .def_rw("min_quantum_number_n", &AtomDescriptionByRanges<T>::min_quantum_number_n)
-        .def_rw("max_quantum_number_n", &AtomDescriptionByRanges<T>::max_quantum_number_n)
-        .def_rw("min_quantum_number_nu", &AtomDescriptionByRanges<T>::min_quantum_number_nu)
-        .def_rw("max_quantum_number_nu", &AtomDescriptionByRanges<T>::max_quantum_number_nu)
-        .def_rw("min_quantum_number_l", &AtomDescriptionByRanges<T>::min_quantum_number_l)
-        .def_rw("max_quantum_number_l", &AtomDescriptionByRanges<T>::max_quantum_number_l)
-        .def_rw("min_quantum_number_s", &AtomDescriptionByRanges<T>::min_quantum_number_s)
-        .def_rw("max_quantum_number_s", &AtomDescriptionByRanges<T>::max_quantum_number_s)
-        .def_rw("min_quantum_number_j", &AtomDescriptionByRanges<T>::min_quantum_number_j)
-        .def_rw("max_quantum_number_j", &AtomDescriptionByRanges<T>::max_quantum_number_j);
+        .def_rw("range_energy", &AtomDescriptionByRanges<T>::range_energy)
+        .def_rw("range_quantum_number_f", &AtomDescriptionByRanges<T>::range_quantum_number_f)
+        .def_rw("range_quantum_number_m", &AtomDescriptionByRanges<T>::range_quantum_number_m)
+        .def_rw("range_quantum_number_n", &AtomDescriptionByRanges<T>::range_quantum_number_n)
+        .def_rw("range_quantum_number_nu", &AtomDescriptionByRanges<T>::range_quantum_number_nu)
+        .def_rw("range_quantum_number_l", &AtomDescriptionByRanges<T>::range_quantum_number_l)
+        .def_rw("range_quantum_number_s", &AtomDescriptionByRanges<T>::range_quantum_number_s)
+        .def_rw("range_quantum_number_j", &AtomDescriptionByRanges<T>::range_quantum_number_j);
 }
 
 static void declare_availability_species(nb::module_ &m) {
@@ -120,6 +125,9 @@ static void declare_database(nb::module_ &m) {
 }
 
 void bind_database(nb::module_ &m) {
+    declare_range<int>(m, "Int");
+    declare_range<float>(m, "Float");
+    declare_range<double>(m, "Double");
     declare_atom_description_by_parameters<float>(m, "Float");
     declare_atom_description_by_parameters<double>(m, "Double");
     declare_atom_description_by_ranges<float>(m, "Float");

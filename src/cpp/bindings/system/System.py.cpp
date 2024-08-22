@@ -1,9 +1,9 @@
-#include "System.py.hpp"
+#include "./System.py.hpp"
 
-#include "System.hpp"
-#include "SystemAtom.hpp"
-#include "SystemClassicalLight.hpp"
-#include "basis/BasisAtom.hpp"
+#include "pairinteraction/system/System.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/system/SystemClassicalLight.hpp"
+#include "pairinteraction/basis/BasisAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -11,6 +11,7 @@
 #include <nanobind/stl/shared_ptr.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
 
 template <typename T>
 static void declare_system(nb::module_ &m, std::string type_name) {

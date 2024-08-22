@@ -2,7 +2,28 @@
 # SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
 
 # Add bindings object
-add_library(bindings OBJECT Ket.py.cpp Ket.py.hpp binding.cpp)
+add_library(bindings OBJECT
+  basis/Basis.py.hpp
+  basis/Basis.py.cpp
+  database/Database.py.hpp
+  database/Database.py.cpp
+  diagonalizer/Diagonalizer.py.cpp
+  diagonalizer/Diagonalizer.py.hpp
+  enums/OperatorType.py.hpp
+  enums/TransformationType.py.hpp
+  enums/TransformationType.py.cpp
+  enums/OperatorType.py.cpp
+  interfaces/TransformationBuilderInterface.py.hpp
+  interfaces/TransformationBuilderInterface.py.cpp
+  ket/Ket.py.hpp
+  ket/Ket.py.cpp
+  operator/Operator.py.hpp
+  operator/Operator.py.cpp
+  system/System.py.hpp
+  system/System.py.cpp
+  test.py.hpp
+  binding.cpp
+  test.py.cpp)
 
 target_include_directories(
   bindings

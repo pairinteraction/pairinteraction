@@ -1,12 +1,13 @@
-#include "Operator.py.hpp"
+#include "./Operator.py.hpp"
 
-#include "Operator.hpp"
-#include "OperatorAtom.hpp"
+#include "pairinteraction/operator/Operator.hpp"
+#include "pairinteraction/operator/OperatorAtom.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/operators.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
 
 template <typename T>
 static void declare_operator(nb::module_ &m, std::string type_name) {

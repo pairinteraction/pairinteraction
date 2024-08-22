@@ -1,6 +1,6 @@
-#include "TransformationBuilderInterface.py.hpp"
+#include "./TransformationBuilderInterface.py.hpp"
 
-#include "TransformationBuilderInterface.hpp"
+#include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 
 #include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
@@ -10,6 +10,7 @@
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
+using namespace pairinteraction;
 
 template <typename T>
 static void declare_transformation(nb::module_ &m, std::string type_name) {
@@ -40,7 +41,7 @@ static void declare_transformation_builder_interface(nb::module_ &m, std::string
     using real_t = typename TransformationBuilderInterface<T>::real_t;
     nb::class_<TransformationBuilderInterface<T>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_rotator",
-                nb::overload_cast<std::array<real_t, 3>, std::array<real_t, 3>>(
+                nb::overload_cast<const std::array<real_t, 3>&, const std::array<real_t, 3>&>(
                     &TransformationBuilderInterface<T>::get_rotator, nb::const_));
 }
 

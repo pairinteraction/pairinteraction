@@ -1,4 +1,4 @@
-from pairinteraction_backend import KetClassicalLightCreatorFloat
+from backend import KetClassicalLightCreatorFloat
 
 
 def test_ket_classical_light_creator():

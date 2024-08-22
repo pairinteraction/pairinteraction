@@ -1,17 +1,17 @@
-#include "basis/Basis.py.hpp"
-#include "database/Database.py.hpp"
-#include "enums/OperatorType.py.hpp"
-#include "enums/TransformationType.py.hpp"
-#include "interfaces/TransformationBuilderInterface.py.hpp"
-#include "ket/Ket.py.hpp"
-#include "operator/Operator.py.hpp"
-#include "setup.hpp"
-#include "system/System.py.hpp"
+#include "./basis/Basis.py.hpp"
+#include "./database/Database.py.hpp"
+#include "./enums/OperatorType.py.hpp"
+#include "./enums/TransformationType.py.hpp"
+#include "./interfaces/TransformationBuilderInterface.py.hpp"
+#include "./ket/Ket.py.hpp"
+#include "./operator/Operator.py.hpp"
+#include "./system/System.py.hpp"
+#include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>
 
-NB_MODULE(pairinteraction_backend, m) {
-    setup();
+NB_MODULE(backend, m) {
+    pairinteraction::setup();
 
     // enums
     bind_operator_type(m);
