@@ -35,7 +35,6 @@ TODO: Update credits. Maintainers, list of contributors.
 
 The pairinteraction library without the graphical user interface
 is licensed under [LGPL v3][license-lgpl-link].
-
 The graphical user interface as well as the combined work of the pairinteraction
 library and the graphical user interface is licensed under [GPL v3][license-gpl-link].
 
