@@ -151,6 +151,5 @@ License
 
 The pairinteraction library without the graphical user interface
 is licensed under `LGPL v3`_.
-
 The graphical user interface as well as the combined work of the pairinteraction
 library and the graphical user interface is licensed under `GPL v3`_.
