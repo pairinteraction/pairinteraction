@@ -50,6 +50,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
@@ -81,6 +87,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
@@ -122,6 +134,12 @@ jobs:
         key: pairinteraction-${{ github.job }}-${{ github.run_id }}
         restore-keys:
           pairinteraction-${{ github.job }}
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOC=On
       env:
