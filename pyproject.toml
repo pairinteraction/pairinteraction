@@ -55,6 +55,9 @@ doc = [
   "nbconvert",
   # "autodoc_pydantic[erdantic]",
 ]
+test = [
+  "jupyter",
+]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
