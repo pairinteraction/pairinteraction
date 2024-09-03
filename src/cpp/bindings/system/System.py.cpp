@@ -14,7 +14,7 @@ namespace nb = nanobind;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_system(nb::module_ &m, std::string type_name) {
+static void declare_system(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "System" + type_name;
     using basis_t = typename System<T>::basis_t;
     using scalar_t = typename System<T>::scalar_t;
@@ -32,7 +32,7 @@ static void declare_system(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_system_atom(nb::module_ &m, std::string type_name) {
+static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "SystemAtom" + type_name;
     using basis_t = typename SystemAtom<T>::basis_t;
     nb::class_<SystemAtom<T>, System<SystemAtom<T>>> pyclass(m, pylass_name.c_str());

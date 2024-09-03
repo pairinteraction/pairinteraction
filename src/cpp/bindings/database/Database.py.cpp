@@ -20,7 +20,7 @@ namespace nb = nanobind;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_range(nb::module_ &m, std::string type_name) {
+static void declare_range(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "Range" + type_name;
     nb::class_<Range<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
@@ -31,7 +31,7 @@ static void declare_range(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_atom_description_by_parameters(nb::module_ &m, std::string type_name) {
+static void declare_atom_description_by_parameters(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "AtomDescriptionByParameters" + type_name;
     nb::class_<AtomDescriptionByParameters<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
@@ -47,7 +47,7 @@ static void declare_atom_description_by_parameters(nb::module_ &m, std::string t
 }
 
 template <typename T>
-static void declare_atom_description_by_ranges(nb::module_ &m, std::string type_name) {
+static void declare_atom_description_by_ranges(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "AtomDescriptionByRanges" + type_name;
     nb::class_<AtomDescriptionByRanges<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())

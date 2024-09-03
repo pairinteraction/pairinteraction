@@ -17,7 +17,7 @@ namespace nb = nanobind;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_basis(nb::module_ &m, std::string type_name) {
+static void declare_basis(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "Basis" + type_name;
     using scalar_t = typename Basis<T>::scalar_t;
     nb::class_<Basis<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pylass_name.c_str());
@@ -41,14 +41,14 @@ static void declare_basis(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_basis_atom(nb::module_ &m, std::string type_name) {
+static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_database", &BasisAtom<T>::get_database);
 }
 
 template <typename T>
-static void declare_basis_atom_creator(nb::module_ &m, std::string type_name) {
+static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "BasisAtomCreator" + type_name;
     nb::class_<BasisAtomCreator<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
@@ -67,14 +67,14 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string type_name) {
 }
 
 template <typename T>
-static void declare_basis_classical_light(nb::module_ &m, std::string type_name) {
+static void declare_basis_classical_light(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "BasisClassicalLight" + type_name;
     nb::class_<BasisClassicalLight<T>, Basis<BasisClassicalLight<T>>> pyclass(m,
                                                                               pylass_name.c_str());
 }
 
 template <typename T>
-static void declare_basis_classical_light_creator(nb::module_ &m, std::string type_name) {
+static void declare_basis_classical_light_creator(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "BasisClassicalLightCreator" + type_name;
     nb::class_<BasisClassicalLightCreator<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
