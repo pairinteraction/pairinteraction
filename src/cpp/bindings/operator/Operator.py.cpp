@@ -10,7 +10,7 @@ namespace nb = nanobind;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_operator(nb::module_ &m, std::string type_name) {
+static void declare_operator(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "Operator" + type_name;
     using basis_t = typename Operator<T>::basis_t;
     using scalar_t = typename Operator<T>::scalar_t;
@@ -31,11 +31,11 @@ static void declare_operator(nb::module_ &m, std::string type_name) {
         .def(nb::self * scalar_t())
         .def(nb::self / scalar_t())
         .def(nb::self + nb::self)
-        .def(nb::self - nb::self);
+        .def(nb::self - nb::self); // NOLINT
 }
 
 template <typename T>
-static void declare_operator_atom(nb::module_ &m, std::string type_name) {
+static void declare_operator_atom(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "OperatorAtom" + type_name;
     using basis_t = typename OperatorAtom<T>::basis_t;
     nb::class_<OperatorAtom<T>, Operator<OperatorAtom<T>>> pyclass(m, pylass_name.c_str());

@@ -13,7 +13,7 @@ namespace nb = nanobind;
 using namespace pairinteraction;
 
 template <typename T>
-static void declare_transformation(nb::module_ &m, std::string type_name) {
+static void declare_transformation(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "Transformation" + type_name;
     nb::class_<Transformation<T>> pyclass(m, pylass_name.c_str());
     pyclass.def(nb::init<>())
@@ -36,7 +36,7 @@ static void declare_blocks(nb::module_ &m) {
 }
 
 template <typename T>
-static void declare_transformation_builder_interface(nb::module_ &m, std::string type_name) {
+static void declare_transformation_builder_interface(nb::module_ &m, std::string const &type_name) {
     std::string pylass_name = "TransformationBuilderInterface" + type_name;
     using real_t = typename TransformationBuilderInterface<T>::real_t;
     nb::class_<TransformationBuilderInterface<T>> pyclass(m, pylass_name.c_str());

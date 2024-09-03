@@ -10,7 +10,8 @@
 
 #include <nanobind/nanobind.h>
 
-NB_MODULE(backend, m) {
+NB_MODULE(backend, m) // NOLINT
+{
     pairinteraction::setup();
 
     // enums
