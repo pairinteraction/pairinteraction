@@ -1,9 +1,9 @@
 #include "./Database.py.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/AtomDescriptionByParameters.hpp"
 #include "pairinteraction/database/AtomDescriptionByRanges.hpp"
 #include "pairinteraction/database/Database.hpp"
-#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
@@ -90,8 +90,9 @@ static void declare_database(nb::module_ &m) {
         .def_static("get_global_instance", nb::overload_cast<bool>(&Database::get_global_instance))
         .def_static("get_global_instance",
                     nb::overload_cast<std::filesystem::path>(&Database::get_global_instance))
-        .def_static("get_global_instance",
-                    nb::overload_cast<bool, bool, std::filesystem::path>(&Database::get_global_instance))
+        .def_static(
+            "get_global_instance",
+            nb::overload_cast<bool, bool, std::filesystem::path>(&Database::get_global_instance))
         .def("get_ket",
              nb::overload_cast<std::string, const AtomDescriptionByParameters<float> &>(
                  &Database::get_ket<float>))

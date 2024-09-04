@@ -2,7 +2,8 @@
 # SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
 
 # Add bindings object
-add_library(bindings OBJECT
+add_library(
+  bindings OBJECT
   basis/Basis.py.hpp
   basis/Basis.py.cpp
   database/Database.py.hpp

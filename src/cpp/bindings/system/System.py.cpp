@@ -1,9 +1,9 @@
 #include "./System.py.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemClassicalLight.hpp"
-#include "pairinteraction/basis/BasisAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
