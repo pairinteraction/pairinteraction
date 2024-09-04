@@ -41,7 +41,7 @@ static void declare_transformation_builder_interface(nb::module_ &m, std::string
     using real_t = typename TransformationBuilderInterface<T>::real_t;
     nb::class_<TransformationBuilderInterface<T>> pyclass(m, pylass_name.c_str());
     pyclass.def("get_rotator",
-                nb::overload_cast<const std::array<real_t, 3>&, const std::array<real_t, 3>&>(
+                nb::overload_cast<const std::array<real_t, 3> &, const std::array<real_t, 3> &>(
                     &TransformationBuilderInterface<T>::get_rotator, nb::const_));
 }
 
