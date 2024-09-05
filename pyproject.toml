@@ -59,7 +59,7 @@ doc = [
 ]
 test = [
   "jupyter",
-  "pytest",
+  "pytest >= 8.0",
 ]
 build = [  # keep this in sync with build-system.requires
   "scikit-build-core >=0.9.0",
@@ -94,10 +94,12 @@ build = [
   "cp39-macosx_x86_64",
 ]
 build-verbosity = 1
+test-extras = ["test", "gui"]
 test-command = [
   "python -c \"import pairinteraction\"",
   "python -c \"from pairinteraction import backend\"",
   "python -c \"from pairinteraction import gui\"",
+  "pytest -v {project}/tests",
 ]
 
 [tool.cibuildwheel.windows]
@@ -106,6 +108,12 @@ repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel
 
 [tool.cibuildwheel.macos.environment]
 MACOSX_DEPLOYMENT_TARGET = "10.15"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = [
+    "--import-mode=importlib",
+]
 
 [tool.ruff]
 line-length = 120
@@ -125,8 +133,3 @@ projectKey = "pairinteraction_pairinteraction"
 organization = "pairinteraction"
 python.version = 3
 sources = ["src"]
-
-[tool.pytest.ini_options]
-testpaths = [
-  "test",
-]
