@@ -3,7 +3,7 @@
 from abc import ABC
 from typing import Generic, Optional, TypeVar
 
-from pydantic import Field, ValidationInfo, field_validator
+from pydantic import Field, SerializeAsAny, ValidationInfo, field_validator
 
 from pairinteraction.model.states.base import BaseModelState
 from pairinteraction.model.types.simple_types import (
@@ -37,9 +37,9 @@ class ModelStateAtomSQDT(BaseModelStateAtom, Generic[SpinType]):
     n: QnTypes[Positive[int]] = None
     nu: QnTypes[Positive[float]] = None
     l: QnTypes[PositiveZero[int]] = None
-    s: QnTypes[PositiveZero[SpinType]] = Field(None, validate_default=True)
-    j: QnTypes[PositiveZero[SpinType]] = None
-    m: QnTypes[SpinType] = None
+    s: SerializeAsAny[QnTypes[PositiveZero[SpinType]]] = Field(None, validate_default=True)
+    j: SerializeAsAny[QnTypes[PositiveZero[SpinType]]] = None
+    m: SerializeAsAny[QnTypes[SpinType]] = None
 
     @field_validator("s", mode="before")
     @classmethod
@@ -74,5 +74,5 @@ class ModelStateAtomMQDT(BaseModelStateAtom, Generic[FType]):
     l: QnTypes[PositiveZero[float]] = None
     s: QnTypes[PositiveZero[float]] = None
     j: QnTypes[PositiveZero[float]] = None
-    f: QnTypes[PositiveZero[FType]] = None
-    m: QnTypes[FType] = None
+    f: SerializeAsAny[QnTypes[PositiveZero[FType]]] = None
+    m: SerializeAsAny[QnTypes[FType]] = None
