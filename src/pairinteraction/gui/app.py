@@ -1011,6 +1011,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.graphicsview_potential_plot,
         ]  # [idx]
 
+        self.angle = 0
+
         for idx in range(3):
             self.graphicviews_plot[idx].setDownsampling(ds=True, auto=True, mode="peak")
             self.graphicviews_plot[idx].setClipToView(True)
@@ -1027,6 +1029,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.graphicviews_plot[idx].setLabel("bottom", "Electric field (" + str(Units.efield) + ")")
             elif idx == 2:
                 self.graphicviews_plot[idx].setLabel("bottom", "Interatomic distance (" + str(Units.length) + ")")
+
+            filelike = StringIO()
+            self.saveSettingsSystem(filelike)
+            self.storage_configuration[idx][0] = filelike.getvalue()
+
+            filelike = StringIO()
+            self.saveSettingsPlotter(filelike)
+            self.storage_configuration[idx][1] = filelike.getvalue()
 
     def loadSettingsSystem(self, path):
         with open(path) as f:
@@ -3589,17 +3599,6 @@ class MainWindow(QtWidgets.QMainWindow):
         idx = self.ui.tabwidget_plotter.currentIndex()
         if idx == 1 and self.ui.tabwidget_plotter.count() == 2:
             idx = 2
-
-        # TODO initialize these variables already in the constructor
-        if self.storage_configuration[idx][0] is None:
-            filelike = StringIO()
-            self.saveSettingsSystem(filelike)
-            self.storage_configuration[idx][0] = filelike.getvalue()
-
-        if self.storage_configuration[idx][1] is None:
-            filelike = StringIO()
-            self.saveSettingsPlotter(filelike)
-            self.storage_configuration[idx][1] = filelike.getvalue()
 
         if self.unperturbedstate[idx] is None:
             self.unperturbedstate[idx] = np.array(
