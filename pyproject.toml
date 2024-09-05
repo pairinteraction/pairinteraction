@@ -18,7 +18,7 @@ authors = [
 ]
 maintainers = [
     { name = "Sebastian Weber", email = "seweber@posteo.de" },
-    { name = "Henri Menke" },
+    { name = "Henri Menke", email = "henri@henrimenke.de" },
     { name = "Johannes Mögerle", email = "johannes.moegerle@itp3.uni-stuttgart.de" },
 ]
 classifiers = [

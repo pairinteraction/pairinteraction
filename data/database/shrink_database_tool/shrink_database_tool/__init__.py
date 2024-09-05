@@ -18,7 +18,7 @@ def main() -> None:
     """Copy and shrink the parquet database files.
 
     Copy the parquet files from 'PAIRINTERACTION_CACHE_DIR/database' to
-    'test/database' and restrict them to basis states around |60S> so that
+    'data/database' and restrict them to basis states around |60S> so that
     the database is small enough to be included in the repository."""
 
     # Get the database source directory
