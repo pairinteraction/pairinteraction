@@ -15,9 +15,8 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
-import sys
 
-sys.path.insert(0, "@CMAKE_BINARY_DIR@")
+import pairinteraction
 
 repo_slug = os.getenv("GITHUB_REPOSITORY", "pairinteraction/pairinteraction")
 user, repo = repo_slug.split("/")
@@ -29,7 +28,6 @@ else:
     pypi_image = "https://img.shields.io/badge/pypi-TestPyPI-orange.svg?style=flat"
     pypi_target = "https://test.pypi.org/project/pairinteraction/"
 
-import pairinteraction
 
 # -- General configuration ------------------------------------------------
 
@@ -49,21 +47,17 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "nbsphinx",
-    #"sphinxcontrib.autodoc_pydantic",
+    # "sphinxcontrib.autodoc_pydantic",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
 ]
 
-html_js_files = [
-    (
-        "https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js",
-        {
-            "integrity": "sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==",
-            "crossorigin": "anonymous",
-            "referrerpolicy": "no-referrer",
-        },
-    )
-]
+_html_js_attributes = {
+    "integrity": "sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==",
+    "crossorigin": "anonymous",
+    "referrerpolicy": "no-referrer",
+}
+html_js_files = [("https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js", _html_js_attributes)]
 html_css_files = ["gallery.css"]
 
 # Disable cell numbers in jupyter notebooks and show link to ipynb file
@@ -215,7 +209,7 @@ extlinks = {
     "github": (f"https://github.com/{repo_slug}/%s", None),
 }
 
-rst_epilog = """
+rst_epilog = f"""
 .. |linux| image:: https://github.com/{repo_slug}/actions/workflows/linux.yml/badge.svg
            :target: https://github.com/{repo_slug}/actions/workflows/linux.yml
            :alt: Linux
@@ -243,9 +237,7 @@ rst_epilog = """
 .. |license-gpl| image:: /images/license-gpl.svg
              :target: https://www.gnu.org/licenses/gpl-3.0.html
              :alt: License GPL v3
-""".format(
-    repo_slug=repo_slug, user=user, repo=repo, pypi_image=pypi_image, pypi_target=pypi_target
-)
+"""
 
 
 # -- Options for autosummary, autodoc and pautodoc_pydantic ----------------------------------------------
