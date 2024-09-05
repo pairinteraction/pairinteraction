@@ -40,14 +40,8 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest # runs in container anyway
-          CXXFLAGS: "-march=broadwell"
-          CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: macos-12
-          CXXFLAGS: ""
-          CMAKE_ARGS: "-DBUILD_TESTING=Off"
         - os: windows-2019
-          CXXFLAGS: "/Ox /arch:AVX2"
-          CMAKE_ARGS: "-DBUILD_TESTING=Off"
     name: Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
@@ -74,13 +68,6 @@ jobs:
         brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib tbb
 
     - uses: pypa/cibuildwheel@v2.16
-      env:
-        CMAKE_ARGS: ${{ matrix.CMAKE_ARGS }}
-        CXXFLAGS: ${{ matrix.CXXFLAGS }}
-        CIBW_MANYLINUX_X86_64_IMAGE: ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker
-        CIBW_ENVIRONMENT_LINUX: CMAKE_ARGS='${{ matrix.CMAKE_ARGS }}' CXXFLAGS='${{ matrix.CXXFLAGS }}'
-        CIBW_ENVIRONMENT_PASS_LINUX: CMAKE_ARGS CXXFLAGS VERBOSE
-        CIBW_TEST_COMMAND_WINDOWS: "" # wheels are still broken :(
 
     - name: Upload wheels
       if: runner.os != 'Windows'

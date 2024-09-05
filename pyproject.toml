@@ -6,6 +6,7 @@ requires = [  # keep this in sync with project.optional-dependencies.build
 ]
 build-backend = "scikit_build_core.build"
 
+
 [project]
 name = "pairinteraction"
 dynamic = ["version"]
@@ -75,6 +76,7 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 [project.scripts]
 start_pairinteraction_gui = "pairinteraction.gui.start_pairinteraction_gui:main"
 
+
 [tool.scikit-build]
 cmake.verbose = true
 wheel.packages = [
@@ -88,6 +90,7 @@ sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
 provider = "scikit_build_core.metadata.regex"
 input = "src/pairinteraction/__init__.py"
 
+
 [tool.cibuildwheel]
 build = [
   "cp38-manylinux_x86_64",
@@ -95,6 +98,7 @@ build = [
   "cp38-macosx_x86_64",
 ]
 build-verbosity = 1
+
 test-extras = ["test", "gui"]
 test-command = [
   "python -c \"import pairinteraction\"",
@@ -103,21 +107,31 @@ test-command = [
   "pytest -v {project}/tests",
 ]
 
-[tool.cibuildwheel.environment]
+manylinux-x86_64-image = "ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker"
+environment-pass = ["CXXFLAGS", "VERBOSE"]
+
+[tool.cibuildwheel.linux.environment]
 QT_QPA_PLATFORM = "offscreen"
+CXXFLAGS = "-march=broadwell"
+
+[tool.cibuildwheel.macos.environment]
+QT_QPA_PLATFORM = "offscreen"
+MACOSX_DEPLOYMENT_TARGET = "10.15"
+
+[tool.cibuildwheel.windows.environment]
+QT_QPA_PLATFORM = "offscreen"
+CXXFLAGS = "/Ox /arch:AVX2"
 
 [tool.cibuildwheel.windows]
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
-
-[tool.cibuildwheel.macos.environment]
-MACOSX_DEPLOYMENT_TARGET = "10.15"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = [
     "--import-mode=importlib",
 ]
+
 
 [tool.ruff]
 line-length = 120
@@ -131,6 +145,7 @@ extend-include = ["*.ipynb"]
 
 [tool.ruff.flake8-tidy-imports]
 ban-relative-imports = "all"
+
 
 [tool.sonar]
 projectKey = "pairinteraction_pairinteraction"
