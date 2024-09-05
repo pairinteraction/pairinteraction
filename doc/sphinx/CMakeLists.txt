@@ -20,10 +20,8 @@ set(SPHINX_CACHE_DIR "${SPHINX_BASE}/_doctrees")
 # HTML output directory
 set(SPHINX_HTML_DIR "${SPHINX_BASE}/_build/html")
 
-# Sphinx configuration file
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in" "${SPHINX_BASE}/conf.py" @ONLY)
-
-# Directories to be copied to the build directory
+# Directories and files to be copied to the build directory
+file(COPY "conf.py" DESTINATION "${SPHINX_BASE}")
 file(COPY "_static" DESTINATION "${SPHINX_BASE}")
 file(COPY "_templates" DESTINATION "${SPHINX_BASE}")
 
