@@ -60,6 +60,7 @@ doc = [
 test = [
   "jupyter",
   "pytest >= 8.0",
+  "pytest-qt",
 ]
 build = [  # keep this in sync with build-system.requires
   "scikit-build-core >=0.9.0",
@@ -101,6 +102,9 @@ test-command = [
   "python -c \"from pairinteraction import gui\"",
   "pytest -v {project}/tests",
 ]
+
+[tool.cibuildwheel.environment]
+QT_QPA_PLATFORM = "offscreen"
 
 [tool.cibuildwheel.windows]
 before-all = "pip install delvewheel" # build-system.requires is unavailable in the build venv
