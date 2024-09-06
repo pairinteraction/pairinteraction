@@ -95,7 +95,7 @@ input = "src/pairinteraction/__init__.py"
 build = [
   "cp38-manylinux_x86_64",
   "cp38-win_amd64",
-  "cp38-macosx_x86_64",
+  "cp39-macosx_x86_64",
 ]
 build-verbosity = 1
 
