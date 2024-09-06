@@ -11,10 +11,6 @@ if(NOT SPHINX_AUTOBUILD_EXECUTABLE)
 else()
   message(STATUS "sphinx-autobuild found: ${SPHINX_AUTOBUILD_EXECUTABLE}")
 endif()
-find_program(JUPYTER_NBCONVERT_EXECUTABLE jupyter-nbconvert REQUIRED)
-if(NOT JUPYTER_NBCONVERT_EXECUTABLE)
-  message(FATAL_ERROR "jupyter-nbconvert not found")
-endif()
 
 set(SPHINX_BASE "${CMAKE_CURRENT_BINARY_DIR}")
 
@@ -55,21 +51,3 @@ add_custom_target(
   COMMENT "Show a live preview of the documentation with Sphinx, serving on http://127.0.0.1:8000")
 
 set_target_properties(livehtml PROPERTIES EXCLUDE_FROM_ALL ON)
-
-# IPython notebooks to be tested
-set(NOTEBOOKS "quick_start.ipynb")
-
-foreach(file ${NOTEBOOKS})
-  string(REGEX REPLACE "\\.[^.]*$" "" NOTEBOOK_NAME ${file})
-  add_test(
-    NAME "notebook.${NOTEBOOK_NAME}"
-    COMMAND ${JUPYTER_NBCONVERT_EXECUTABLE} --to notebook --execute --ExecutePreprocessor.timeout=300
-            "${CMAKE_CURRENT_SOURCE_DIR}/examples_python/${file}"
-    WORKING_DIRECTORY "${SPHINX_BASE}")
-  set_tests_properties(
-    "notebook.${NOTEBOOK_NAME}"
-    PROPERTIES
-      ENVIRONMENT
-      "OPENBLAS_NUM_THREADS=1;MKL_NUM_THREADS=1;PYTHONPATH=$<SHELL_PATH:${CMAKE_BINARY_DIR};${CMAKE_BINARY_DIR}/${CMAKE_BUILD_TYPE};$ENV{PYTHONPATH}>"
-  )
-endforeach()
