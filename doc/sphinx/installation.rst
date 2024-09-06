@@ -102,6 +102,7 @@ Dependencies of the Python library
 Automatic Build
 ^^^^^^^^^^^^^^^
 
+**1. Setup**
 .. note::
     If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running
     ``pip install git+https://github.com/pairinteraction/pairinteraction``.
@@ -118,6 +119,7 @@ In the following, we will describe how to build the software inside this environ
 If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of the pairinteraction repository.
 However, you can also use a different virtual environment manager like `venv` or `conda`, or build the software into your system-wide Python environment by replacing in all following commands ``uv pip`` with ``pip``.
 
+**2. Basic installation**
 After cloning the repository and creating the virtual environment, you can build and install the software by running:
 
 .. code-block:: bash
@@ -137,23 +139,34 @@ The graphical user interface can now be started by executing:
 
 To use the Python library within your code, you can simply run your python code from inside the virtual environment.
 
+**3. Testing**
 Tests of the Python library and graphical user interface can be run by executing:
 
 .. code-block:: bash
 
-    python3 -m unittest
+    pytest
 
-.. note::
-    Advanced options for developers when building the package:
+**4. Build Documentation**
+todo
 
-    .. code-block:: bash
+**5. Advanced installation**
+Advanced options for developers when building the package:
 
-        uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+.. code-block:: bash
 
-    | ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies like ``uv pip install scikit-build-core nanobind numpy``).
-    | ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
-    | ``-v``: Make the output more verbose.
-    | ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
+    uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+
+| ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies like ``uv pip install scikit-build-core nanobind numpy``).
+| ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
+| ``-v``: Make the output more verbose.
+| ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
+
+To install all dependencies without building the package, you can run:
+.. code-block:: bash
+
+    uv pip compile pyproject.toml --all-extras > requirements.txt
+    uv pip install -r requirements.txt
+
 
 Manual Build
 ^^^^^^^^^^^^
