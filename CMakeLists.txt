@@ -44,7 +44,7 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Build options
-option(WITH_DOC "Generate documentation" OFF)
+option(WITH_DOXYGEN "Generate doxygen documentation" OFF)
 option(WITH_DMG "Generate a DMG file (Mac OS X only)" OFF) # TODO treat building a windows installer and dmg the same
 option(WITH_COVERAGE "Generate code coverage report" OFF)
 
@@ -179,8 +179,8 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(src/cpp/tests)
 endif()
 
-if(WITH_DOC)
-  add_subdirectory(doc)
+if(WITH_DOXYGEN)
+  add_subdirectory(doc/doxygen)
 endif()
 
 # Concatenate licenses

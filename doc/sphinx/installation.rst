@@ -174,7 +174,7 @@ Manual Build
 .. note::
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
 
-If you want to build, e.g., the documentation of pairinteraction or have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
+If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
 For this, you have to first install the Python dependencies manually.
 
 Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
@@ -207,13 +207,13 @@ For **Windows**, you must specify a visual studio generator, provide a path to t
 
 This creates the C++ backend.
 
-Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the documentation by running CMake with ``cmake -DWITH_DOC=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the code coverage by running CMake with ``cmake -DWITH_COVERAGE=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
 A full list of build options is provided in the following:
 
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_DOC``        | Generate documentation               | OFF     |
+| ``WITH_DOXYGEN``    | Generate C++ doxygen documentation   | OFF     |
 +---------------------+--------------------------------------+---------+
 | ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
 |                     | only)                                |         |
@@ -224,7 +224,7 @@ A full list of build options is provided in the following:
 .. [#] This mode implies building the debug version of the software.
 
 Moreover, executing the commands manually allows for running additional targets.
-For example, you can use the ``doc`` target to build a documentation by executing ``cmake --build . --target doc``.
+For example, you can use the ``doxygen`` target to build the C++ doxygen documentation by executing ``cmake --build . --target doxygen``.
 In contrast, if you use `pip`_ / `uv`_ to build the software, only the default target for building the library is executed.
 In the following, a list of all available targets is provided.
 Note that some targets require specific build options to be enabled in addition to the default options.
@@ -234,20 +234,12 @@ Note that some targets require specific build options to be enabled in addition 
 +==============+===========================================+======================+
 | ``all``      | Build the software (default target)       |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``test``     | Run the test suite, including C++ tests   |                      |
-|              | that are not run by pytest                |                      |
+| ``test``     | Run the C++ tests                         |                      |
+|              | (without any python tests,                |                      |
+|              | use the automatic build above for this)   |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOC=ON``      |
+| ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOXYGEN=ON``  |
 |              | in ``doc/doxygen``                        |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``sphinx``   | Build the Sphinx documentation            | ``WITH_DOC=ON``      |
-|              | in ``doc/sphinx``                         |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``doc``      | Synonym to make both, ``doxygen`` and     | ``WITH_DOC=ON``      |
-|              | ``sphinx`` documentation                  |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``livehtml`` | Build the Sphinx documentation and        | ``WITH_DOC=ON``      |
-|              | show it in a web browser                  |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for GNU/Linux           |                      |
 +--------------+-------------------------------------------+----------------------+
