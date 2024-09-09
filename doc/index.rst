@@ -2,7 +2,7 @@
 Pairinteraction — A Rydberg Interaction Calculator
 **************************************************
 
-|linux| |windows| |macos| |codecov| |benchs| |pypi| |arxiv| |license-lgpl| |license-gpl|
+|linux| |windows| |macos| |codecov| |pypi| |arxiv| |license-lgpl| |license-gpl|
 
 .. image:: banner.jpg
   :alt: The pairinteraction software
