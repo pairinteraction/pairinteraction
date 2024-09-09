@@ -7,10 +7,13 @@
 #include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/shared_ptr.h>
+#include <nanobind/stl/string.h>
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
@@ -18,9 +21,9 @@ using namespace pairinteraction;
 
 template <typename T>
 static void declare_basis(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "Basis" + type_name;
+    std::string pyclass_name = "Basis" + type_name;
     using scalar_t = typename Basis<T>::scalar_t;
-    nb::class_<Basis<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pylass_name.c_str());
+    nb::class_<Basis<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_kets", &Basis<T>::get_kets)
         .def("get_number_of_states", &Basis<T>::get_number_of_states)
         .def("get_number_of_kets", &Basis<T>::get_number_of_kets)
@@ -42,15 +45,15 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "BasisAtom" + type_name;
-    nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "BasisAtom" + type_name;
+    nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_database", &BasisAtom<T>::get_database);
 }
 
 template <typename T>
 static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "BasisAtomCreator" + type_name;
-    nb::class_<BasisAtomCreator<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "BasisAtomCreator" + type_name;
+    nb::class_<BasisAtomCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def("set_species", &BasisAtomCreator<T>::set_species)
         .def("restrict_energy", &BasisAtomCreator<T>::restrict_energy)
@@ -68,15 +71,15 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
 
 template <typename T>
 static void declare_basis_classical_light(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "BasisClassicalLight" + type_name;
+    std::string pyclass_name = "BasisClassicalLight" + type_name;
     nb::class_<BasisClassicalLight<T>, Basis<BasisClassicalLight<T>>> pyclass(m,
-                                                                              pylass_name.c_str());
+                                                                              pyclass_name.c_str());
 }
 
 template <typename T>
 static void declare_basis_classical_light_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "BasisClassicalLightCreator" + type_name;
-    nb::class_<BasisClassicalLightCreator<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "BasisClassicalLightCreator" + type_name;
+    nb::class_<BasisClassicalLightCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def("set_photon_energy", &BasisClassicalLightCreator<T>::set_photon_energy)
         .def("restrict_quantum_number_q", &BasisClassicalLightCreator<T>::restrict_quantum_number_q)

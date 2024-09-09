@@ -133,8 +133,8 @@ execute_process(
   OUTPUT_VARIABLE NB_DIR)
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
-nanobind_build_library(nanobind-static)
-set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
+nanobind_build_library(nanobind-static-pairinteraction)
+set_target_properties(nanobind-static-pairinteraction PROPERTIES CXX_CLANG_TIDY "")
 
 # Find duckdb
 include(FetchContent)

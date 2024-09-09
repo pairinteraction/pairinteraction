@@ -17,8 +17,8 @@ using namespace pairinteraction;
 
 template <typename T>
 static void declare_ket(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "Ket" + type_name;
-    nb::class_<Ket<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "Ket" + type_name;
+    nb::class_<Ket<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_energy", &Ket<T>::get_energy)
         .def("get_quantum_number_f", &Ket<T>::get_quantum_number_f)
         .def("get_quantum_number_m", &Ket<T>::get_quantum_number_m)
@@ -33,8 +33,8 @@ static void declare_ket(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_ket_atom(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "KetAtom" + type_name;
-    nb::class_<KetAtom<T>, Ket<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "KetAtom" + type_name;
+    nb::class_<KetAtom<T>, Ket<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_species", &KetAtom<T>::get_species)
         .def("get_quantum_number_n", &KetAtom<T>::get_quantum_number_n)
         .def("get_quantum_number_nu", &KetAtom<T>::get_quantum_number_nu)
@@ -45,8 +45,8 @@ static void declare_ket_atom(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_ket_atom_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "KetAtomCreator" + type_name;
-    nb::class_<KetAtomCreator<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "KetAtomCreator" + type_name;
+    nb::class_<KetAtomCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def(nb::init<std::string, int, T, T, T>())
         .def("set_species", &KetAtomCreator<T>::set_species)
@@ -64,8 +64,8 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string const &type_nam
 
 template <typename T>
 static void declare_ket_classical_light(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "KetClassicalLight" + type_name;
-    nb::class_<KetClassicalLight<T>, Ket<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "KetClassicalLight" + type_name;
+    nb::class_<KetClassicalLight<T>, Ket<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_label", &KetClassicalLight<T>::get_label)
         .def("get_id", &KetClassicalLight<T>::get_id)
         .def("get_id_for_different_quantum_number_m",
@@ -76,8 +76,8 @@ static void declare_ket_classical_light(nb::module_ &m, std::string const &type_
 
 template <typename T>
 static void declare_ket_classical_light_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "KetClassicalLightCreator" + type_name;
-    nb::class_<KetClassicalLightCreator<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "KetClassicalLightCreator" + type_name;
+    nb::class_<KetClassicalLightCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def(nb::init<T, int>())
         .def("set_photon_energy", &KetClassicalLightCreator<T>::set_photon_energy)
