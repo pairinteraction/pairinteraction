@@ -180,7 +180,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
 endif()
 
 if(WITH_DOXYGEN)
-  add_subdirectory(doc/doxygen)
+  add_subdirectory(src/cpp/doc)
 endif()
 
 # Concatenate licenses
