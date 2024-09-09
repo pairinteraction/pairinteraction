@@ -6,7 +6,6 @@ requires = [  # keep this in sync with project.optional-dependencies.build
 ]
 build-backend = "scikit_build_core.build"
 
-
 [project]
 name = "pairinteraction"
 dynamic = ["version"]
@@ -62,6 +61,7 @@ test = [
   "pytest >= 8.0",
   "pytest-qt >= 4.2",
   "nbmake >= 1.3",
+  "pairinteraction[gui]",
 ]
 build = [  # keep this in sync with build-system.requires
   "scikit-build-core >=0.9.0",
@@ -76,7 +76,6 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 [project.scripts]
 start_pairinteraction_gui = "pairinteraction.gui.start_pairinteraction_gui:main"
 
-
 [tool.scikit-build]
 cmake.verbose = true
 wheel.packages = [
@@ -89,7 +88,6 @@ sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
 input = "src/pairinteraction/__init__.py"
-
 
 [tool.cibuildwheel]
 build = [
@@ -136,23 +134,17 @@ addopts = [
     "--nbmake",
 ]
 
-
-[tool.ruff]
-line-length = 120
-target-version = "py38"
-select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
-extend-ignore = ["E741", "C901", "B905"]
-extend-include = ["*.ipynb"]
-
-[tool.ruff.per-file-ignores]
-"src/pairinteraction/gui/app.py" = ["E402"]
-
-[tool.ruff.flake8-tidy-imports]
-ban-relative-imports = "all"
-
-
 [tool.sonar]
 projectKey = "pairinteraction_pairinteraction"
 organization = "pairinteraction"
 python.version = 3
 sources = ["src"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py38"
+extend-include = ["*.ipynb"]
+lint.select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
+lint.extend-ignore = ["E741", "C901", "B905"]
+lint.per-file-ignores = {"src/pairinteraction/gui/app.py" = ["E402"]}
+lint.flake8-tidy-imports.ban-relative-imports = "all"
