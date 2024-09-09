@@ -17,12 +17,13 @@
 #include <nanobind/stl/string.h>
 
 namespace nb = nanobind;
+using namespace nb::literals;
 using namespace pairinteraction;
 
 template <typename T>
 static void declare_range(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "Range" + type_name;
-    nb::class_<Range<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "Range" + type_name;
+    nb::class_<Range<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def(nb::init<T, T>())
         .def("min", &Range<T>::min)
@@ -32,8 +33,8 @@ static void declare_range(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_atom_description_by_parameters(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "AtomDescriptionByParameters" + type_name;
-    nb::class_<AtomDescriptionByParameters<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "AtomDescriptionByParameters" + type_name;
+    nb::class_<AtomDescriptionByParameters<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def_rw("energy", &AtomDescriptionByParameters<T>::energy)
         .def_rw("quantum_number_f", &AtomDescriptionByParameters<T>::quantum_number_f)
@@ -48,8 +49,8 @@ static void declare_atom_description_by_parameters(nb::module_ &m, std::string c
 
 template <typename T>
 static void declare_atom_description_by_ranges(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "AtomDescriptionByRanges" + type_name;
-    nb::class_<AtomDescriptionByRanges<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "AtomDescriptionByRanges" + type_name;
+    nb::class_<AtomDescriptionByRanges<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def_rw("parity", &AtomDescriptionByRanges<T>::parity)
         .def_rw("range_energy", &AtomDescriptionByRanges<T>::range_energy)
@@ -81,9 +82,10 @@ static void declare_availability_wigner(nb::module_ &m) {
 static void declare_database(nb::module_ &m) {
     nb::class_<Database>(m, "Database")
         .def(nb::init<>())
-        .def(nb::init<bool>())
-        .def(nb::init<std::filesystem::path>())
-        .def(nb::init<bool, bool, std::filesystem::path>())
+        .def(nb::init<bool>(), "download_missing"_a)
+        .def(nb::init<std::filesystem::path>(), "databasedir"_a)
+        .def(nb::init<bool, bool, std::filesystem::path>(), "download_missing"_a,
+             "wigner_in_memory"_a, "databasedir"_a)
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
         .def_static("get_global_instance", nb::overload_cast<>(&Database::get_global_instance))

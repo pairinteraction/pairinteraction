@@ -14,6 +14,8 @@ add_library(
   enums/TransformationType.py.hpp
   enums/TransformationType.py.cpp
   enums/OperatorType.py.cpp
+  interfaces/DiagonalizerInterface.py.hpp
+  interfaces/DiagonalizerInterface.py.cpp
   interfaces/TransformationBuilderInterface.py.hpp
   interfaces/TransformationBuilderInterface.py.cpp
   ket/Ket.py.hpp
@@ -29,7 +31,8 @@ add_library(
 target_include_directories(
   bindings
   PRIVATE "$<TARGET_PROPERTY:pairinteraction,INCLUDE_DIRECTORIES>;${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
-target_link_libraries(bindings PRIVATE $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov> nanobind-static)
+target_link_libraries(bindings PRIVATE $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov> nanobind-static-pairinteraction)
+target_compile_definitions(bindings PRIVATE NB_DOMAIN=pairinteraction)
 target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 
 # Assemble objects into backend library

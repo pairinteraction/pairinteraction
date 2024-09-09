@@ -11,11 +11,11 @@ using namespace pairinteraction;
 
 template <typename T>
 static void declare_operator(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "Operator" + type_name;
+    std::string pyclass_name = "Operator" + type_name;
     using basis_t = typename Operator<T>::basis_t;
     using scalar_t = typename Operator<T>::scalar_t;
     nb::class_<Operator<T>, TransformationBuilderInterface<scalar_t>> pyclass(m,
-                                                                              pylass_name.c_str());
+                                                                              pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
         .def("get_basis", &Operator<T>::get_basis)
         .def("get_matrix", &Operator<T>::get_matrix)
@@ -36,9 +36,9 @@ static void declare_operator(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_operator_atom(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "OperatorAtom" + type_name;
+    std::string pyclass_name = "OperatorAtom" + type_name;
     using basis_t = typename OperatorAtom<T>::basis_t;
-    nb::class_<OperatorAtom<T>, Operator<OperatorAtom<T>>> pyclass(m, pylass_name.c_str());
+    nb::class_<OperatorAtom<T>, Operator<OperatorAtom<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
         .def(nb::init<std::shared_ptr<const basis_t>, OperatorType, int>());
 }
