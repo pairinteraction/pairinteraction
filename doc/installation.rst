@@ -103,9 +103,9 @@ Automatic Build
 ^^^^^^^^^^^^^^^
 
 **1. Setup**
+
 .. note::
-    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running
-    ``pip install git+https://github.com/pairinteraction/pairinteraction``.
+    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running ``pip install git+https://github.com/pairinteraction/pairinteraction``.
 
 We strongly recommend using the `uv`_ tool, to create a virtual environment and build the software inside this virtual environment.
 Creating and activating a virtual environment with `uv`_ can be done by running the following commands:
@@ -147,7 +147,13 @@ Tests of the Python library and graphical user interface can be run by executing
     pytest
 
 **4. Build Documentation**
-todo
+Go inside the ``doc`` directory and run the following command to build the documentation:
+
+.. code-block:: bash
+
+    make html
+
+You can then open the documentation by opening the file ``doc/_build/html/index.html`` with your browser.
 
 **5. Advanced installation**
 Advanced options for developers when building the package:
