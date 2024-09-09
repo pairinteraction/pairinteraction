@@ -17,7 +17,8 @@ repos:
     rev: v1.5.5
     hooks:
       - id: remove-tabs
-        exclude: ^extra/apple/Info.plist$
+        exclude: ^extra/apple/Info.plist$|Makefile
+
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:
