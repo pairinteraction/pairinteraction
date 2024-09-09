@@ -239,7 +239,7 @@ Note that some targets require specific build options to be enabled in addition 
 |              | use the automatic build above for this)   |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOXYGEN=ON``  |
-|              | in ``doc/doxygen``                        |                      |
+|              | in ``src/cpp/doc``                        |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for GNU/Linux           |                      |
 +--------------+-------------------------------------------+----------------------+
