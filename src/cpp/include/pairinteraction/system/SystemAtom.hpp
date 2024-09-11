@@ -41,9 +41,9 @@ public:
 
     SystemAtom(std::shared_ptr<const basis_t> basis);
 
-    void set_electric_field(const std::array<real_t, 3> &field);
-    void set_magnetic_field(const std::array<real_t, 3> &field);
-    void enable_diamagnetism(bool enable);
+    Type &set_electric_field(const std::array<real_t, 3> &field);
+    Type &set_magnetic_field(const std::array<real_t, 3> &field);
+    Type &enable_diamagnetism(bool enable);
 
 private:
     std::array<Scalar, 3> electric_field_spherical{0, 0, 0};

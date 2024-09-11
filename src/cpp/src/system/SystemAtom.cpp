@@ -10,21 +10,24 @@ SystemAtom<Scalar>::SystemAtom(std::shared_ptr<const basis_t> basis)
     : System<SystemAtom<Scalar>>(basis) {}
 
 template <typename Scalar>
-void SystemAtom<Scalar>::set_electric_field(const std::array<real_t, 3> &field) {
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_electric_field(const std::array<real_t, 3> &field) {
     this->hamiltonian_requires_construction = true;
     electric_field_spherical = spherical::convert_to_spherical_basis<Scalar>(field);
+    return *this;
 }
 
 template <typename Scalar>
-void SystemAtom<Scalar>::set_magnetic_field(const std::array<real_t, 3> &field) {
+SystemAtom<Scalar> &SystemAtom<Scalar>::set_magnetic_field(const std::array<real_t, 3> &field) {
     this->hamiltonian_requires_construction = true;
     magnetic_field_spherical = spherical::convert_to_spherical_basis<Scalar>(field);
+    return *this;
 }
 
 template <typename Scalar>
-void SystemAtom<Scalar>::enable_diamagnetism(bool enable) {
+SystemAtom<Scalar> &SystemAtom<Scalar>::enable_diamagnetism(bool enable) {
     this->hamiltonian_requires_construction = true;
     diamagnetism_enabled = enable;
+    return *this;
 }
 
 template <typename Scalar>
