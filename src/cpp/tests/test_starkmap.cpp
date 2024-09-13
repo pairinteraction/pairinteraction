@@ -37,13 +37,29 @@ int main(int argc, char **argv) {
     systems.reserve(10);
     for (int i = 0; i < 10; ++i) {
         auto system = pairinteraction::SystemAtom<double>(basis);
-        system.set_electric_field({0, 0, i * 1e-9});
+        system.set_electric_field({0, 0, i * 1e-4});
         systems.push_back(std::move(system));
+    }
+
+    // Ensure that off-diagonal elements are non-zero
+    auto hamiltonian = systems[1].get_matrix();
+    hamiltonian -= hamiltonian.diagonal().asDiagonal();
+    if (hamiltonian.norm() < 1e-10) {
+        SPDLOG_ERROR("Off-diagonal elements are zero: {}", hamiltonian.norm());
+        return 1;
     }
 
     // Diagonalize the systems in parallel
     pairinteraction::DiagonalizerEigen<double> diagonalizer;
     pairinteraction::diagonalize(systems, diagonalizer);
+
+    // Ensure that off-diagonal elements are zero
+    hamiltonian = systems[1].get_matrix();
+    hamiltonian -= hamiltonian.diagonal().asDiagonal();
+    if (hamiltonian.norm() > 1e-10) {
+        SPDLOG_ERROR("Off-diagonal elements are non-zero: {}", hamiltonian.norm());
+        return 1;
+    }
 
     return 0;
 }
