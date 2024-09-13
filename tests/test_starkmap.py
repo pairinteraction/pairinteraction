@@ -22,25 +22,14 @@ def test_starkmap():
     )
     print(f"Number of basis states: {basis.get_number_of_states()}")
 
-    # TODO use "pint" and its contexts to handle units
-
     # Create systems for different values of the electric field
-    systems = []
-    for i in range(10):
-        system = SystemAtomDouble(basis)
-        system.set_electric_field([0, 0, i * 1e-4])
-        systems.append(system)
+    systems = [SystemAtomDouble(basis).set_electric_field([0, 0, i * 1e-4]) for i in range(10)]
 
     assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) > 1e-10
 
-    # TODO make system.set_electric_field, system.diagonalize, etc. return *this so that we can use
-    # list comprehension to create the systems
-    # TODO implement system.copy(), basis.copy(), etc.
-
     # Diagonalize the systems in parallel
-    systems[1].diagonalize(diagonalizer, 12)
+    systems[1].diagonalize(diagonalizer)
+
+    # TODO diagonalize(systemms, diagonalizer)
 
     assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) < 1e-10
-
-    # TODO support precision = 12 and no precision argument at all
-    # TODO implement bindings to make diagonalize(systemms, diagonalizer) work
