@@ -147,13 +147,13 @@ Tests of the Python library and graphical user interface can be run by executing
     pytest
 
 **4. Build Documentation**
-Go inside the ``doc`` directory and run the following command to build the documentation:
+Go inside the ``docs`` directory and run the following command to build the documentation:
 
 .. code-block:: bash
 
     make html
 
-You can then open the documentation by opening the file ``doc/_build/html/index.html`` with your browser.
+You can then open the documentation by opening the file ``docs/_build/html/index.html`` with your browser.
 
 **5. Advanced installation**
 Advanced options for developers when building the package:
@@ -245,7 +245,7 @@ Note that some targets require specific build options to be enabled in addition 
 |              | use the automatic build above for this)   |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOXYGEN=ON``  |
-|              | in ``src/cpp/doc``                        |                      |
+|              | in ``src/cpp/docs``                       |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for GNU/Linux           |                      |
 +--------------+-------------------------------------------+----------------------+
