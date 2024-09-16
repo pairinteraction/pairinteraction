@@ -127,7 +127,7 @@ repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel
 [tool.pytest.ini_options]
 testpaths = [
   "tests",
-  "doc/examples_python",
+  "docs/examples_python",
 ]
 addopts = [
     "--import-mode=importlib",
