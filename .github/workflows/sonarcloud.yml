@@ -35,7 +35,7 @@ jobs:
           apt-get update
           apt-get install -y zip gcovr
       - name: Install sonar-scanner and build-wrapper
-        uses: SonarSource/sonarcloud-github-c-cpp@v2
+        uses: SonarSource/sonarcloud-github-c-cpp@v3
       - name: Configure
         run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_JULIA=On
       - name: Run build-wrapper
