@@ -4,14 +4,18 @@
 # Ignore python byte-compiled libraries
 *.pyc
 
-# Mac specific files
+# Ignore Mac specific files
 ._*
 .DS_Store
 .AppleDouble
 .LSOverride
 
-# VSCode specific files
+# Ignore VSCode specific files
 .vscode/
+
+# Ignore aider specific files
+.aider*
+CONVENTIONS.md
 
 # Ignore build and cache directories
 bin/
@@ -24,3 +28,4 @@ vcpkg_installed/
 *.egg-info/
 requirements.txt
 wheelhouse/
+.pytest_cache/

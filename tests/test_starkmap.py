@@ -1,13 +1,21 @@
 from pathlib import Path
 
-from pairinteraction.backend import BasisAtomCreatorDouble, Database, DiagonalizerEigenDouble, SystemAtomDouble
+import pytest
 
 # TODO from pairinteraction.backend_double import BasisAtomCreator, Database, DiagonalizerEigen, SystemAtom
 
 databasedir = Path(__file__).parent.parent / "data/database"
 
 
+@pytest.mark.skip(reason="Requires #34 to be merged")
 def test_starkmap():
+    from pairinteraction.backend import (  # TODO
+        BasisAtomCreatorDouble,
+        Database,
+        DiagonalizerEigenDouble,
+        SystemAtomDouble,
+    )
+
     database = Database(False, True, databasedir)
     diagonalizer = DiagonalizerEigenDouble()
 
