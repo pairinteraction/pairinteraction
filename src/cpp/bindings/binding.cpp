@@ -1,7 +1,9 @@
 #include "./basis/Basis.py.hpp"
 #include "./database/Database.py.hpp"
+#include "./diagonalizer/Diagonalizer.py.hpp"
 #include "./enums/OperatorType.py.hpp"
 #include "./enums/TransformationType.py.hpp"
+#include "./interfaces/DiagonalizerInterface.py.hpp"
 #include "./interfaces/TransformationBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
 #include "./operator/Operator.py.hpp"
@@ -12,6 +14,9 @@
 
 NB_MODULE(backend, m) // NOLINT
 {
+    // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types
+    nanobind::set_leak_warnings(false);
+
     pairinteraction::setup();
 
     // enums
@@ -19,6 +24,7 @@ NB_MODULE(backend, m) // NOLINT
     bind_transformation_type(m);
 
     // interfaces
+    bind_diagonalizer_interface(m);
     bind_transformation_builder_interface(m);
 
     // operator
@@ -26,6 +32,9 @@ NB_MODULE(backend, m) // NOLINT
 
     // database
     bind_database(m);
+
+    // diagonalizer
+    bind_diagonalizer(m);
 
     // ket
     bind_ket(m);

@@ -14,8 +14,8 @@ using namespace pairinteraction;
 
 template <typename T>
 static void declare_transformation(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "Transformation" + type_name;
-    nb::class_<Transformation<T>> pyclass(m, pylass_name.c_str());
+    std::string pyclass_name = "Transformation" + type_name;
+    nb::class_<Transformation<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def_rw("matrix", &Transformation<T>::matrix)
         .def_rw("transformation_type", &Transformation<T>::transformation_type);
@@ -37,9 +37,9 @@ static void declare_blocks(nb::module_ &m) {
 
 template <typename T>
 static void declare_transformation_builder_interface(nb::module_ &m, std::string const &type_name) {
-    std::string pylass_name = "TransformationBuilderInterface" + type_name;
+    std::string pyclass_name = "TransformationBuilderInterface" + type_name;
     using real_t = typename TransformationBuilderInterface<T>::real_t;
-    nb::class_<TransformationBuilderInterface<T>> pyclass(m, pylass_name.c_str());
+    nb::class_<TransformationBuilderInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_rotator",
                 nb::overload_cast<const std::array<real_t, 3> &, const std::array<real_t, 3> &>(
                     &TransformationBuilderInterface<T>::get_rotator, nb::const_));
