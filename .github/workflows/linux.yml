@@ -48,9 +48,6 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Doxygen Documentation
       run: cmake --build build/ --target doxygen -- --keep-going
 
@@ -86,9 +83,6 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - uses: actions/upload-artifact@v3
       with:
         name: pairinteraction-manylinux-wheel
@@ -126,9 +120,6 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Doxygen Documentation
       run: cmake --build build/ --target doxygen -- --keep-going
     - name: Package
@@ -167,9 +158,6 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Doxygen Documentation
       run: cmake --build build/ --target doxygen -- --keep-going
 
@@ -204,9 +192,6 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Doxygen Documentation
       run: cmake --build build/ --target doxygen -- --keep-going
     - name: Package

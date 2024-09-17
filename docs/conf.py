@@ -124,9 +124,12 @@ rst_epilog = f"""
 .. |macos| image:: https://github.com/{repo_slug}/actions/workflows/macos.yml/badge.svg
            :target: https://github.com/{repo_slug}/actions/workflows/macos.yml
            :alt: macOS
-.. |codecov| image:: https://img.shields.io/badge/code-coverage-blue.svg?style=flat
-             :target: https://{user}.github.io/{repo}/coverage/html/index.html
-             :alt: Code Coverage Report
+.. |codecov-ctest| image:: https://img.shields.io/badge/coverage-ctest-blue.svg?style=flat
+             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/ctest/html/index.html
+             :alt: Code Coverage Report ctest
+.. |codecov-pytest| image:: https://img.shields.io/badge/coverage-pytest-blue.svg?style=flat
+             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/pytest/html/index.html
+             :alt: Code Coverage Report pytest
 .. |pypi| image:: {pypi_image}
           :target: {pypi_target}
           :alt: PyPI Package
