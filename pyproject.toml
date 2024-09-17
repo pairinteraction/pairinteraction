@@ -56,7 +56,7 @@ doc = [
   "nbsphinx >= 0.9",
   "nbconvert >= 7.8",
   "jupyter >= 1.1",
-  # "autodoc_pydantic[erdantic]",
+  "autodoc_pydantic[erdantic] >= 2.0",
 ]
 test = [
   "pytest >= 8.0",

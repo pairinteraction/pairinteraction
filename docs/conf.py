@@ -27,7 +27,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "nbsphinx",
-    # "sphinxcontrib.autodoc_pydantic",
+    "sphinxcontrib.autodoc_pydantic",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
 ]
