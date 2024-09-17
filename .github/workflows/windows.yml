@@ -72,9 +72,6 @@ jobs:
         run: |
           cmake --build . --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
         working-directory: build/
-        env:
-          QT_QPA_PLATFORM: "offscreen"
-          QT_DEBUG_PLUGINS: 1
 
       - name: Run debugging session in tmate
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
