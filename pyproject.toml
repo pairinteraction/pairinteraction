@@ -50,13 +50,14 @@ gui = [
   "pint >= 0.21",
 ]
 doc = [
-  "sphinx < 7",
+  "sphinx >= 7",
   "sphinx-rtd-theme >= 2.0",
   "sphinxcontrib-mermaid >= 0.9",
   "nbsphinx >= 0.9",
   "nbconvert >= 7.8",
   "jupyter >= 1.1",
   "autodoc_pydantic[erdantic] >= 2.0",
+  "sphinx_autodoc_typehints >= 1.24",
   "sphinx-autobuild >= 2021.3",
 ]
 test = [
