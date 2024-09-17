@@ -52,8 +52,8 @@ public:
 
     const Transformation<scalar_t> &get_transformation() const override;
     Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
-    Sorting get_sorter(TransformationType label) const override;
-    Blocks get_blocks(TransformationType label) const override;
+    Sorting get_sorter(const std::vector<TransformationType> &labels) const override;
+    Blocks get_blocks(const std::vector<TransformationType> &labels) const override;
 
     Derived transformed(const Transformation<scalar_t> &transformation) const;
     Derived transformed(const Sorting &transformation) const;

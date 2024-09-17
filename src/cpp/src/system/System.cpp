@@ -68,21 +68,21 @@ System<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
 }
 
 template <typename Derived>
-Sorting System<Derived>::get_sorter(TransformationType label) const {
+Sorting System<Derived>::get_sorter(const std::vector<TransformationType> &labels) const {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_sorter(label);
+    return hamiltonian->get_sorter(labels);
 }
 
 template <typename Derived>
-Blocks System<Derived>::get_blocks(TransformationType label) const {
+Blocks System<Derived>::get_blocks(const std::vector<TransformationType> &labels) const {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    return hamiltonian->get_blocks(label);
+    return hamiltonian->get_blocks(labels);
 }
 
 template <typename Derived>

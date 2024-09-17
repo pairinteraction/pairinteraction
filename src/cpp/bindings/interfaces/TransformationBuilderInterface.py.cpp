@@ -30,9 +30,7 @@ static void declare_sorting(nb::module_ &m) {
 
 static void declare_blocks(nb::module_ &m) {
     nb::class_<Blocks> pyclass(m, "Blocks");
-    pyclass.def(nb::init<>())
-        .def_rw("start", &Blocks::start)
-        .def_rw("transformation_type", &Blocks::transformation_type);
+    pyclass.def(nb::init<>()).def_rw("start", &Blocks::start);
 }
 
 template <typename T>

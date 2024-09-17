@@ -46,21 +46,37 @@ Operator<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
 }
 
 template <typename Derived>
-Sorting Operator<Derived>::get_sorter(TransformationType label) const {
-    // Check that the label is a valid sorting label
-    if (!utils::is_sorting(label)) {
-        throw std::invalid_argument("The label is not a valid sorting label.");
+Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &labels) const {
+    basis->perform_sorter_checks(labels);
+
+    // Split labels into three parts (one before SORT_BY_ENERGY, one with SORT_BY_ENERGY, and one
+    // after)
+    auto it = std::find(labels.begin(), labels.end(), TransformationType::SORT_BY_ENERGY);
+    std::vector<TransformationType> before_energy(labels.begin(), it);
+    bool contains_energy = (it != labels.end());
+    std::vector<TransformationType> after_energy(contains_energy ? it + 1 : labels.end(),
+                                                 labels.end());
+
+    // Initialize transformation
+    Sorting transformation;
+
+    // Apply sorting for labels before SORT_BY_ENERGY
+    if (!before_energy.empty()) {
+        basis->get_sorter_without_checks(before_energy, transformation);
     }
 
-    // Get the sorter
-    Sorting transformation =
-        basis->get_sorter_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
-
-    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
+    // Apply SORT_BY_ENERGY if present
+    if (contains_energy) {
         std::vector<real_t> energies_of_states;
         energies_of_states.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
             energies_of_states.push_back(std::real(matrix.coeff(i, i)));
+        }
+
+        if (transformation.matrix.size() == 0) {
+            // If no previous sorting, create identity permutation
+            transformation.matrix.resize(matrix.rows());
+            transformation.matrix.setIdentity();
         }
 
         std::stable_sort(
@@ -71,52 +87,59 @@ Sorting Operator<Derived>::get_sorter(TransformationType label) const {
         transformation.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);
     }
 
-    // Check if the full label has been used for sorting
-    if (!utils::is_comprised_by_label(label, transformation.transformation_type)) {
-        throw std::invalid_argument("The states could not be sorted by the requested label.");
+    // Apply sorting for labels after SORT_BY_ENERGY
+    if (!after_energy.empty()) {
+        basis->get_sorter_without_checks(after_energy, transformation);
+    }
+
+    // Check if all labels have been used for sorting
+    if (!utils::are_same_labels(labels, transformation.transformation_type)) {
+        throw std::invalid_argument("The states could not be sorted by all the requested labels.");
     }
 
     return transformation;
 }
 
 template <typename Derived>
-Blocks Operator<Derived>::get_blocks(TransformationType label) const {
-    // Check that the label is a valid sorting label
-    if (!utils::is_sorting(label)) {
-        throw std::invalid_argument("The label is not a valid sorting label.");
+Blocks Operator<Derived>::get_blocks(const std::vector<TransformationType> &labels) const {
+    std::set<TransformationType> unique_labels(labels.begin(), labels.end());
+    basis->perform_blocks_checks(unique_labels);
+
+    // Split labels into two parts (one with SORT_BY_ENERGY and one without)
+    auto it = unique_labels.find(TransformationType::SORT_BY_ENERGY);
+    bool contains_energy = (it != unique_labels.end());
+    if (contains_energy) {
+        unique_labels.erase(it);
     }
 
-    // Check if the states are sorted by the requested label
-    if (!utils::is_sorted_by_label(label, get_transformation().transformation_type)) {
-        throw std::invalid_argument("The states are not sorted by the requested label.");
+    // Initialize blocks
+    Blocks blocks;
+
+    // Handle all labels except SORT_BY_ENERGY
+    if (!unique_labels.empty()) {
+        basis->get_blocks_without_checks(unique_labels, blocks);
     }
 
-    // Get the blocks
-    Blocks blocks = basis->get_blocks_without_checks(label & ~TransformationType::SORT_BY_ENERGY);
+    // Handle SORT_BY_ENERGY if present
+    if (contains_energy) {
+        scalar_t last_energy = std::real(matrix.coeff(0, 0));
 
-    if (utils::has_bit(label, TransformationType::SORT_BY_ENERGY)) {
-        std::vector<int> completed;
-        size_t block_idx = 0;
-        scalar_t last_diagonal = matrix.coeff(0, 0);
+        std::vector<int> blocks_start_original;
+        blocks_start_original.swap(blocks.start);
+        blocks.start.reserve(matrix.rows());
+        size_t idx = 0;
 
-        completed.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
-            if (matrix.coeff(i, i) != last_diagonal) {
-                completed.push_back(i);
-            } else if (block_idx < blocks.start.size() && i == blocks.start[block_idx]) {
-                completed.push_back(i);
-                ++block_idx;
+            if (idx < blocks_start_original.size() && i == blocks_start_original[idx]) {
+                blocks.start.push_back(i);
+                ++idx;
+            } else if (std::real(matrix.coeff(i, i)) != last_energy) {
+                blocks.start.push_back(i);
+                last_energy = std::real(matrix.coeff(i, i));
             }
         }
-        completed.shrink_to_fit();
 
-        blocks.start = completed;
-        blocks.transformation_type.push_back(TransformationType::SORT_BY_ENERGY);
-    }
-
-    // Check if the full label has been used for getting the blocks
-    if (!utils::is_comprised_by_label(label, blocks.transformation_type)) {
-        throw std::invalid_argument("The blocks could not be obtained by the requested label.");
+        blocks.start.shrink_to_fit();
     }
 
     return blocks;

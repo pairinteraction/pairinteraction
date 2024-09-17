@@ -32,10 +32,8 @@ struct Sorting {
 
 struct Blocks {
     Blocks() = default;
-    Blocks(std::vector<int> start, std::vector<TransformationType> transformation_type);
     Blocks(std::vector<int> start);
-    std::vector<int> start;
-    std::vector<TransformationType> transformation_type;
+    std::vector<int> start{0};
 };
 
 template <typename Scalar>
@@ -48,8 +46,8 @@ public:
     virtual ~TransformationBuilderInterface() = default;
     virtual const Transformation<Scalar> &get_transformation() const = 0;
     virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
-    virtual Sorting get_sorter(TransformationType label) const = 0;
-    virtual Blocks get_blocks(TransformationType label) const = 0;
+    virtual Sorting get_sorter(const std::vector<TransformationType> &labels) const = 0;
+    virtual Blocks get_blocks(const std::vector<TransformationType> &labels) const = 0;
 
     Transformation<Scalar> get_rotator(const std::array<real_t, 3> &to_z_axis,
                                        const std::array<real_t, 3> &to_y_axis) const;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <initializer_list>
+#include <set>
 #include <vector>
 
 namespace pairinteraction {
@@ -26,12 +27,6 @@ inline constexpr TransformationType operator|(TransformationType x, Transformati
 inline constexpr TransformationType operator~(TransformationType x) {
     return static_cast<TransformationType>(~static_cast<unsigned char>(x));
 }
-inline TransformationType &operator|=(TransformationType &x, TransformationType y) {
-    return x = x | y;
-}
-inline TransformationType &operator&=(TransformationType &x, TransformationType y) {
-    return x = x & y;
-}
 
 namespace utils {
 inline bool is_sorting(TransformationType label) {
@@ -42,29 +37,14 @@ inline bool is_sorting(TransformationType label) {
     return (label & ~MASK_SORTING) == TransformationType::IDENTITY;
 }
 
-inline bool has_bit(TransformationType value, TransformationType bit) {
-    return (value & bit) == bit;
+inline bool are_same_labels(const std::vector<TransformationType> &labels1,
+                            const std::vector<TransformationType> &labels2) {
+    return labels1 == labels2;
 }
 
-inline bool is_comprised_by_label(TransformationType label,
-                                  const std::vector<TransformationType> &list_used) {
-    TransformationType used = TransformationType::IDENTITY;
-    for (auto l : list_used) {
-        used |= l;
-    }
-    return label == used;
-}
-
-inline bool is_sorted_by_label(TransformationType label,
-                               const std::vector<TransformationType> &list_used) {
-    TransformationType used = TransformationType::IDENTITY;
-    for (auto it = list_used.rbegin(); it != list_used.rend(); ++it) {
-        if ((label & *it) != *it) {
-            break;
-        }
-        used |= *it;
-    }
-    return label == used;
+inline bool are_same_labels(const std::set<TransformationType> &labels1,
+                            const std::set<TransformationType> &labels2) {
+    return labels1 == labels2;
 }
 
 } // namespace utils

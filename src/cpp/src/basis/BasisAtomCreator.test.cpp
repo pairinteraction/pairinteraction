@@ -61,11 +61,16 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
                               .create(database);
 
     // Sort the basis by parity and the m quantum number
-    auto basis = basis_unsorted->transformed(basis_unsorted->get_sorter(
-        TransformationType::SORT_BY_PARITY | TransformationType::SORT_BY_QUANTUM_NUMBER_M));
+    auto sorter = basis_unsorted->get_sorter(
+        {TransformationType::SORT_BY_PARITY, TransformationType::SORT_BY_QUANTUM_NUMBER_M});
+    auto basis = basis_unsorted->transformed(sorter);
+
+    // Check if the basis is properly sorted
     auto parity = Parity::ODD;
     auto quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "State {}: Parity = {}, M = {}", i,
+                           static_cast<int>(basis->get_parity(i)), basis->get_quantum_number_m(i));
         DOCTEST_CHECK(basis->get_parity(i) >= parity);
         if (basis->get_parity(i) != parity) {
             parity = basis->get_parity(i);
@@ -76,8 +81,8 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     }
 
     // Check that the blocks are correctly determined
-    auto blocks = basis->get_blocks(TransformationType::SORT_BY_PARITY |
-                                    TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+    auto blocks = basis->get_blocks(
+        {TransformationType::SORT_BY_PARITY, TransformationType::SORT_BY_QUANTUM_NUMBER_M});
     std::vector<size_t> expected_start = {0, 4, 8, 11};
     DOCTEST_CHECK(blocks.start.size() == expected_start.size());
     for (size_t i = 0; i < blocks.start.size(); ++i) {

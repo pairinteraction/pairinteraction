@@ -20,11 +20,16 @@ Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix
 Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix)
     : matrix(std::move(matrix)), transformation_type({TransformationType::ARBITRARY}) {}
 
-Blocks::Blocks(std::vector<int> start, std::vector<TransformationType> transformation_type)
-    : start(std::move(start)), transformation_type(std::move(transformation_type)) {}
-
-Blocks::Blocks(std::vector<int> start)
-    : start(std::move(start)), transformation_type({TransformationType::ARBITRARY}) {}
+Blocks::Blocks(std::vector<int> start) : start(std::move(start)) {
+    if (this->start.empty() || this->start[0] != 0) {
+        throw std::invalid_argument("The first element of the start vector must be 0.");
+    }
+    for (size_t i = 1; i < this->start.size(); ++i) {
+        if (this->start[i] <= this->start[i - 1]) {
+            throw std::invalid_argument("The start vector must be sorted in ascending order.");
+        }
+    }
+}
 
 template <typename Scalar>
 Transformation<Scalar>
