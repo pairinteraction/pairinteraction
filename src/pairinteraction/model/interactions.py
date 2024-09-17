@@ -46,6 +46,6 @@ class ModelInteractions(BaseModel):
     conserved_parity_under_permutation: UnionParameterSymmetry = Field(None, validate_default=True)
 
     distance: Optional[UnionParameterFloat] = None
-    angle: UnionParameterFloat = ParameterConstant[float](0)
+    angle: UnionParameterFloat = Field(0, validate_default=True)
 
     combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []

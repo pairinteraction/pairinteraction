@@ -3,10 +3,7 @@
 from abc import ABC
 from typing import Generic, List, Optional, TypeVar, Union
 
-from pydantic import (
-    ValidationInfo,
-    field_validator,
-)
+from pydantic import Field, ValidationInfo, field_validator
 
 from pairinteraction.model.constituents.base import BaseModelConstituent
 from pairinteraction.model.states.atom import BaseModelStateAtom, ModelStateAtomMQDT, ModelStateAtomSQDT
@@ -36,13 +33,13 @@ class BaseModelAtom(BaseModelConstituent, ABC):
     max_energy_after_diagonalization: Optional[float] = None
     delta_energy_after_diagonalization: Optional[float] = None
 
-    efield_x: UnionParameterFloat = ParameterConstant[float](0)
-    efield_y: UnionParameterFloat = ParameterConstant[float](0)
-    efield_z: UnionParameterFloat = ParameterConstant[float](0)
+    efield_x: UnionParameterFloat = Field(0, validate_default=True)
+    efield_y: UnionParameterFloat = Field(0, validate_default=True)
+    efield_z: UnionParameterFloat = Field(0, validate_default=True)
 
-    bfield_x: UnionParameterFloat = ParameterConstant[float](0)
-    bfield_y: UnionParameterFloat = ParameterConstant[float](0)
-    bfield_z: UnionParameterFloat = ParameterConstant[float](0)
+    bfield_x: UnionParameterFloat = Field(0, validate_default=True)
+    bfield_y: UnionParameterFloat = Field(0, validate_default=True)
+    bfield_z: UnionParameterFloat = Field(0, validate_default=True)
 
     # TODO abstract class verify that states_of_interest is implemented
     states_of_interest: List[BaseModelStateAtom] = []
