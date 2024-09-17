@@ -1,3 +1,4 @@
+@REM Makefile for Windows
 @ECHO OFF
 
 pushd %~dp0
@@ -10,7 +11,6 @@ if "%SPHINXBUILD%" == "" (
 set SOURCEDIR=.
 set BUILDDIR=_build
 
-if "%1" == "" goto help
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -25,11 +25,26 @@ if errorlevel 9009 (
     exit /b 1
 )
 
+if "%1" == "" goto help
+if "%1" == "clean" goto clean
+if "%1" == "livehtml" goto livehtml
+goto default
+
+:default
 %SPHINXBUILD% -M %1 %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+goto end
+
+:clean
+rmdir /S /Q %SOURCEDIR%\_autosummary
+goto default
+
+:livehtml
+sphinx-autobuild -b html %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O% --watch ..\src\pairinteraction\
 goto end
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS% %O%
+goto end
 
 :end
 popd

@@ -155,6 +155,14 @@ Go inside the ``docs`` directory and run the following command to build the docu
 
 You can then open the documentation by opening the file ``docs/_build/html/index.html`` with your browser.
 
+Alternatively, you can let the documentation automatically rebuild by running:
+
+.. code-block:: bash
+
+    make livehtml
+
+This will start a local web server that serves the documentation at ``http://127.0.0.1:8000`` and automatically rebuilds the documentation whenever you change the source code or a documentation file.
+
 **5. Advanced installation**
 Advanced options for developers when building the package:
 
