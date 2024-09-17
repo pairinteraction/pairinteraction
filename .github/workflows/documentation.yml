@@ -17,7 +17,7 @@ env:
   CXXFLAGS: "-march=broadwell"
 
 jobs:
-  build_docs:
+  build_sphinx:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
@@ -42,6 +42,35 @@ jobs:
       with:
         name: pairinteraction-docs
         path: docs/_build/html
+
+  build_doxygen:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        submodules: true
+    - name: Install Python dependencies
+      env:
+        NO_COLOR: 1
+      run: |
+        uv pip compile pyproject.toml --all-extras > requirements.txt
+        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Configure
+      run: |
+        . /opt/intel/oneapi/setvars.sh
+        cmake -S . -B build/
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+    - name: Doxygen Documentation
+      run: cmake --build build/ --target doxygen -- --keep-going
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pairinteraction-doxygen
+        path: build/src/cpp/docs/html
 
   lcov_ctest:
     runs-on: ubuntu-latest
@@ -118,9 +147,8 @@ jobs:
         name: pairinteraction-lcov-pytest
         path: build/docs/coverage
 
-
   deploy_docs:
-    needs: [build_docs, lcov_ctest, lcov_pytest]
+    needs: [build_sphinx, build_doxygen, lcov_ctest, lcov_pytest]
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
@@ -137,11 +165,19 @@ jobs:
       with:
         name: pairinteraction-docs
         path: public/sphinx/html
+
+    - name: Download artifacts doxygen
+      uses: actions/download-artifact@v4
+      with:
+        name: pairinteraction-doxygen
+        path: public/doxygen/html
+
     - name: Download artifacts lcov-ctest
       uses: actions/download-artifact@v4
       with:
         name: pairinteraction-lcov-ctest
         path: public/coverage/ctest/html
+
     - name: Download artifacts lcov-pytest
       uses: actions/download-artifact@v4
       with:

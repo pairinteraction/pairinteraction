@@ -43,13 +43,11 @@ jobs:
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On -DWITH_DOXYGEN=On
+        cmake -S . -B build/ -DBUILD_TESTING=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - name: Doxygen Documentation
-      run: cmake --build build/ --target doxygen -- --keep-going
 
   manylinux:
     runs-on: ubuntu-latest
@@ -153,13 +151,11 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DWITH_DOXYGEN=On
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - name: Doxygen Documentation
-      run: cmake --build build/ --target doxygen -- --keep-going
 
   ubuntu:
     runs-on: ubuntu-latest
