@@ -30,6 +30,7 @@ extensions = [
     "sphinxcontrib.autodoc_pydantic",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
+    "sphinx_autodoc_typehints",
 ]
 
 templates_path = ["_templates"]
