@@ -57,7 +57,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOXYGEN=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         CXXFLAGS: "-fno-omit-frame-pointer -fsanitize=address"
         LDFLAGS: "-fsanitize=address"
@@ -94,7 +94,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOXYGEN=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         CXXFLAGS: "-fsanitize=undefined"
         LDFLAGS: "-fsanitize=undefined"
@@ -147,7 +147,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug -DWITH_DOXYGEN=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         # For now only lightweight assertions until DuckDB is also compiled with _GLIBCXX_DEBUG
         CXXFLAGS: "-D_GLIBCXX_ASSERTIONS"
