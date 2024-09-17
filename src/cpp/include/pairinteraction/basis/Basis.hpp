@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <memory>
+#include <set>
 #include <unordered_map>
 #include <vector>
 
@@ -68,11 +69,15 @@ public:
 
     const Transformation<scalar_t> &get_transformation() const override;
     Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
-    Sorting get_sorter(TransformationType label) const override;
-    Blocks get_blocks(TransformationType label) const override;
+    Sorting get_sorter(const std::vector<TransformationType> &labels) const override;
+    Blocks get_blocks(const std::vector<TransformationType> &labels) const override;
 
-    Sorting get_sorter_without_checks(TransformationType label) const;
-    Blocks get_blocks_without_checks(TransformationType label) const;
+    void perform_sorter_checks(const std::vector<TransformationType> &labels) const;
+    void perform_blocks_checks(const std::set<TransformationType> &unique_labels) const;
+    void get_sorter_without_checks(const std::vector<TransformationType> &labels,
+                                   Sorting &transformation) const;
+    void get_blocks_without_checks(const std::set<TransformationType> &unique_labels,
+                                   Blocks &blocks) const;
 
     std::shared_ptr<Derived> transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<Derived> transformed(const Sorting &transformation) const;
