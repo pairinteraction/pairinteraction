@@ -1,7 +1,7 @@
 """Pydantic model for the complete simulation."""
 
 from functools import cached_property
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -43,7 +43,7 @@ class ModelSimulation(BaseModel):
     overlaps: Optional[ModelOverlaps] = None
 
     @property
-    def constituents(self) -> Dict[ConstituentString, BaseModelConstituent]:
+    def constituents(self) -> dict[ConstituentString, BaseModelConstituent]:
         """Return a dictionary of all not None constituents."""
         constituents = {
             "atom1": self.atom1,
@@ -54,7 +54,7 @@ class ModelSimulation(BaseModel):
         return {k: v for k, v in constituents.items() if v is not None}
 
     @property
-    def unique_constituents(self) -> Dict[ConstituentString, BaseModelConstituent]:
+    def unique_constituents(self) -> dict[ConstituentString, BaseModelConstituent]:
         """Return a dictionary of all unique constituents."""
         constituents = {
             "atom1": self.atom1,
@@ -65,7 +65,7 @@ class ModelSimulation(BaseModel):
         return {k: v for k, v in constituents.items() if v is not None and k not in self._constituent_mapping}
 
     @cached_property
-    def dict_of_parameter_lists(self) -> Dict[str, BaseParameterIterable]:
+    def dict_of_parameter_lists(self) -> dict[str, BaseParameterIterable]:
         """Return a collection of all parameter ranges."""
         parameters = {}
         for submodel in [self.interactions, self.atom1, self.atom2, self.classical_light1, self.classical_light2]:

@@ -1,10 +1,9 @@
 """Define some useful types and unions."""
 
-from typing import Any, List, Literal, Type, TypeVar, Union
+from typing import Annotated, Any, Literal, TypeVar, Union
 
 from pydantic import Field, GetCoreSchemaHandler
 from pydantic_core import core_schema
-from typing_extensions import Annotated
 
 T = TypeVar("T")
 
@@ -15,7 +14,7 @@ SpeciesString = Annotated[str, Field(pattern=r"^[A-Z][a-z]?[0-9]{0,3}(_singlet|_
 SpeciesStringSQDT = Annotated[str, Field(pattern=r"^[A-Z][a-z]?[0-9]{0,3}(_singlet|_triplet)?$")]
 SpeciesStringMQDT = Annotated[str, Field(pattern=r"^[A-Z][a-z]?[0-9]{0,3}_mqdt$")]
 
-Vector = Annotated[List[float], Field(min_length=3, max_length=3)]
+Vector = Annotated[list[float], Field(min_length=3, max_length=3)]
 
 Symmetry = Literal[None, 1, -1]
 
@@ -29,7 +28,7 @@ class HalfInt(float):
             raise ValueError(f"{value} is not a half integer")
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source: type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
         assert source is HalfInt
         return core_schema.no_info_after_validator_function(
             cls,
@@ -40,4 +39,4 @@ class HalfInt(float):
 Positive = Annotated[T, Field(gt=0)]
 PositiveZero = Annotated[T, Field(ge=0)]
 
-QnTypes = Union[T, List[T], Literal["any"], None]  # TODO allow range from dict
+QnTypes = Union[T, list[T], Literal["any"], None]  # TODO allow range from dict

@@ -23,7 +23,6 @@ maintainers = [
 classifiers = [
   "Intended Audience :: Science/Research",
   "Topic :: Scientific/Engineering :: Physics",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
@@ -34,7 +33,7 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
   "mkl; sys_platform != 'darwin'",
   "mkl-devel; sys_platform != 'darwin'",
@@ -95,18 +94,15 @@ input = "src/pairinteraction/__init__.py"
 
 [tool.cibuildwheel]
 build = [
-  "cp38-manylinux_x86_64",
-  "cp38-win_amd64",
+  "cp39-manylinux_x86_64",
+  "cp39-win_amd64",
   "cp39-macosx_x86_64",
 ]
 build-verbosity = 1
 
 test-extras = ["test"]
 test-command = [
-  "python -c \"import pairinteraction\"",
-  "python -c \"from pairinteraction import backend\"",
-  "python -c \"from pairinteraction import gui\"",
-  "pytest -v {project}/tests",
+  "pytest -v {project}/tests {project}/docs/examples_python",  # keep this up to date with tool.pytest.ini_options.testpaths
 ]
 
 manylinux-x86_64-image = "ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker"
@@ -129,7 +125,7 @@ before-all = "pip install delvewheel" # build-system.requires is unavailable in 
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 
 [tool.pytest.ini_options]
-testpaths = [
+testpaths = [  # keep this up to date with tool.cibuildwheel.test-command
   "tests",
   "docs/examples_python",
 ]
@@ -146,7 +142,7 @@ sources = ["src"]
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py39"
 extend-include = ["*.ipynb"]
 lint.select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
 lint.extend-ignore = ["E741", "C901", "B905"]

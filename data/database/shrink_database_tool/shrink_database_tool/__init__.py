@@ -2,7 +2,6 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict
 
 import duckdb
 
@@ -42,7 +41,7 @@ def main() -> None:
     path_target = Path(__file__).parent.parent.parent
 
     # Get the latest parquet files in the source directory
-    parquet_files: Dict[str, ParquetFile] = {}
+    parquet_files: dict[str, ParquetFile] = {}
     for path in path_source.glob("*.parquet"):
         name, version = path.stem.rsplit("_v", 1)
         parquet_files[name] = ParquetFile(name, int(version), path)

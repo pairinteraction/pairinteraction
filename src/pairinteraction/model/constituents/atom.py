@@ -1,7 +1,7 @@
 """Pydantic models for atoms."""
 
 from abc import ABC
-from typing import Generic, List, Optional, TypeVar, Union
+from typing import Generic, Optional, TypeVar, Union
 
 from pydantic import Field, ValidationInfo, field_validator
 
@@ -42,8 +42,8 @@ class BaseModelAtom(BaseModelConstituent, ABC):
     bfield_z: UnionParameterFloat = Field(0, validate_default=True)
 
     # TODO abstract class verify that states_of_interest is implemented
-    states_of_interest: List[BaseModelStateAtom] = []
-    additionally_included_states: List[BaseModelStateAtom] = []
+    states_of_interest: list[BaseModelStateAtom] = []
+    additionally_included_states: list[BaseModelStateAtom] = []
 
     @property
     def is_real(self) -> bool:
@@ -54,7 +54,7 @@ class BaseModelAtom(BaseModelConstituent, ABC):
 
     @field_validator("states_of_interest", "additionally_included_states", mode="before")
     @classmethod
-    def set_species_for_all_states(cls, states: List, info: ValidationInfo) -> List:
+    def set_species_for_all_states(cls, states: list, info: ValidationInfo) -> list:
         """If states are provided, set the species of the states to the species of the atom.
 
         This allows to define the species only once and not for each state separately.
@@ -95,8 +95,8 @@ class ModelAtomSQDT(BaseModelAtom, Generic[SpinType]):
     max_m: Optional[SpinType] = None
     delta_m: Optional[PositiveZero[int]] = None
 
-    states_of_interest: List[ModelStateAtomSQDT[SpinType]] = []
-    additionally_included_states: List[ModelStateAtomSQDT[SpinType]] = []
+    states_of_interest: list[ModelStateAtomSQDT[SpinType]] = []
+    additionally_included_states: list[ModelStateAtomSQDT[SpinType]] = []
 
 
 class ModelAtomMQDT(BaseModelAtom, Generic[FType]):
@@ -132,5 +132,5 @@ class ModelAtomMQDT(BaseModelAtom, Generic[FType]):
     max_m: Optional[FType] = None
     delta_m: Optional[PositiveZero[int]] = None
 
-    states_of_interest: List[ModelStateAtomMQDT[FType]] = []
-    additionally_included_states: List[ModelStateAtomMQDT[FType]] = []
+    states_of_interest: list[ModelStateAtomMQDT[FType]] = []
+    additionally_included_states: list[ModelStateAtomMQDT[FType]] = []

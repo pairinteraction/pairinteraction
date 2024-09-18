@@ -112,7 +112,7 @@ Creating and activating a virtual environment with `uv`_ can be done by running 
 
 .. code-block:: bash
 
-    uv venv --python=3.8 .venv
+    uv venv --python=3.9 .venv
     source .venv/bin/activate
 
 In the following, we will describe how to build the software inside this environment using `uv`_.
@@ -195,7 +195,7 @@ Again, we strongly recommend installing the dependencies into a virtual environm
 
 .. code-block:: bash
 
-    uv venv --python=3.8 .venv
+    uv venv --python=3.9 .venv
     source .venv/bin/activate
 
     uv pip compile pyproject.toml --all-extras > requirements.txt

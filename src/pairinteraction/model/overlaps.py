@@ -1,6 +1,6 @@
 """Pydantic model for defining what kind of overlaps to calculate."""
 
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict
 
@@ -22,5 +22,5 @@ class ModelOverlaps(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=False, validate_assignment=True)
 
-    combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
-    transformation: Dict[ConstituentString, Optional[str]] = {}
+    combined_states_of_interest: list[dict[ConstituentString, Union[int, UnionModelStates]]] = []
+    transformation: dict[ConstituentString, Optional[str]] = {}
