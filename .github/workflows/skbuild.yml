@@ -20,9 +20,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
+<<<<<<< HEAD
       with:
         fetch-depth: 0
         submodules: true
+=======
+>>>>>>> 453e1a5a0 ([ci] remove unnecessary actions)
 
     - name: Build SDist
       run: pipx run build --sdist
@@ -46,9 +49,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
 
     - name: Log in to the Container registry
       if: runner.os == 'Linux'

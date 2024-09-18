@@ -27,16 +27,6 @@ jobs:
     runs-on: windows-2019
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          submodules: true
-
-      - uses: actions/cache@v4
-        with:
-          path: ~\AppData\Local\pairinteraction\database\
-          key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-          restore-keys:
-            pairinteraction-${{ github.job }}
 
       - name: Install Windows dependencies
         uses: ./.github/actions/setup-vcpkg

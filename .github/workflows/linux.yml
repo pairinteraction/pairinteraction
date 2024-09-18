@@ -23,17 +23,6 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pairinteraction/database/
-        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-        restore-keys:
-          pairinteraction-${{ github.job }}
     - name: Install Python dependencies
       env:
         NO_COLOR: 1
@@ -55,17 +44,6 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pairinteraction/database/
-        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-        restore-keys:
-          pairinteraction-${{ github.job }}
     - name: Setup Python Path
       run: |
         echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
@@ -81,7 +59,7 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: pairinteraction-manylinux-wheel
         path: build/artifact/
@@ -95,17 +73,6 @@ jobs:
       package: pairinteraction-install-opensuse.rpm
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pairinteraction/database/
-        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-        restore-keys:
-          pairinteraction-${{ github.job }}
     - name: Install Python dependencies
       env:
         NO_COLOR: 1
@@ -133,17 +100,6 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-static-analysis:docker
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pairinteraction/database/
-        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-        restore-keys:
-          pairinteraction-${{ github.job }}
     - name: Install Python dependencies
       env:
         NO_COLOR: 1
@@ -165,17 +121,6 @@ jobs:
       package: pairinteraction-install-ubuntu.deb
     steps:
     - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        submodules: true
-    - name: Fixup Run actions/checkout
-      run: git config --global --add safe.directory '*'
-    - uses: actions/cache@v4
-      with:
-        path: ~/.cache/pairinteraction/database/
-        key: pairinteraction-${{ github.job }}-${{ github.run_id }}
-        restore-keys:
-          pairinteraction-${{ github.job }}
     - name: Install Python dependencies
       env:
         NO_COLOR: 1
