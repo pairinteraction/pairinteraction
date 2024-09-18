@@ -44,7 +44,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Build options
-option(WITH_DOXYGEN "Generate doxygen documentation" OFF)
 option(WITH_DMG "Generate a DMG file (Mac OS X only)" OFF) # TODO treat building a windows installer and dmg the same
 option(WITH_COVERAGE "Generate code coverage report" OFF)
 
@@ -179,9 +178,7 @@ if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(src/cpp/tests)
 endif()
 
-if(WITH_DOXYGEN)
-  add_subdirectory(src/cpp/docs)
-endif()
+add_subdirectory(src/cpp/docs)
 
 # Concatenate licenses
 file(READ ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt LICENSE_LGPL)

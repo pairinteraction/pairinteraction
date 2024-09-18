@@ -227,8 +227,6 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_DOXYGEN``    | Generate C++ doxygen documentation   | OFF     |
-+---------------------+--------------------------------------+---------+
 | ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
 |                     | only)                                |         |
 +---------------------+--------------------------------------+---------+
@@ -252,7 +250,7 @@ Note that some targets require specific build options to be enabled in addition 
 |              | (without any python tests,                |                      |
 |              | use the automatic build above for this)   |                      |
 +--------------+-------------------------------------------+----------------------+
-| ``doxygen``  | Build the Doxygen documentation           | ``WITH_DOXYGEN=ON``  |
+| ``doxygen``  | Build the Doxygen documentation           |                      |
 |              | in ``src/cpp/docs``                       |                      |
 +--------------+-------------------------------------------+----------------------+
 | ``package``  | Create a packages for GNU/Linux           |                      |

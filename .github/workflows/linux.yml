@@ -113,7 +113,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOXYGEN=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -183,7 +183,7 @@ jobs:
         uv pip compile pyproject.toml --all-extras > requirements.txt
         uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DWITH_DOXYGEN=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
