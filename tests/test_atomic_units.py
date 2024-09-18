@@ -33,16 +33,14 @@ def test_joules_to_hartree(ureg: UnitRegistry) -> None:
 def test_hartree_to_thz(ureg: UnitRegistry) -> None:
     """Test conversion from Hartree to THz."""
     one_hartree = 1 * ureg.hartree
-    with ureg.context("spectroscopy"):
-        one_hartree_in_thz = one_hartree.to("terahertz")
+    one_hartree_in_thz = one_hartree.to("terahertz", "spectroscopy")
     assert pytest.approx(one_hartree_in_thz.magnitude, rel=1e-12) == HARTREE_IN_THZ
 
 
 def test_hartree_to_inverse_cm(ureg: UnitRegistry) -> None:
     """Test conversion from Hartree to inverse cm."""
     one_hartree = 1 * ureg.hartree
-    with ureg.context("spectroscopy"):
-        one_hartree_in_inverse_cm = one_hartree.to("1/cm")
+    one_hartree_in_inverse_cm = one_hartree.to("1/cm", "spectroscopy")
     assert pytest.approx(one_hartree_in_inverse_cm.magnitude, rel=1e-12) == HARTREE_IN_INVERSE_CM
 
 

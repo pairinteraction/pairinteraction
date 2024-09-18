@@ -2,20 +2,19 @@ from pathlib import Path
 
 import pytest
 
-# TODO from pairinteraction.backend_double import BasisAtomCreator, Database, DiagonalizerEigen, SystemAtom
+from pairinteraction.backend import (
+    BasisAtomCreatorDouble,
+    Database,
+    DiagonalizerEigenDouble,
+    SystemAtomDouble,
+    diagonalize,
+)
 
 databasedir = Path(__file__).parent.parent / "data/database"
 
 
-@pytest.mark.skip(reason="Requires #34 to be merged")
+@pytest.mark.skip(reason="This test is not yet working properly")
 def test_starkmap():
-    from pairinteraction.backend import (  # TODO
-        BasisAtomCreatorDouble,
-        Database,
-        DiagonalizerEigenDouble,
-        SystemAtomDouble,
-    )
-
     database = Database(False, True, databasedir)
     diagonalizer = DiagonalizerEigenDouble()
 
@@ -36,8 +35,6 @@ def test_starkmap():
     assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) > 1e-10
 
     # Diagonalize the systems in parallel
-    systems[1].diagonalize(diagonalizer)
-
-    # TODO diagonalize(systemms, diagonalizer)
+    diagonalize(systems, diagonalizer)
 
     assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) < 1e-10

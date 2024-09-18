@@ -26,6 +26,11 @@ build*/
 vcpkg_installed/
 .venv/
 *.egg-info/
-requirements.txt
 wheelhouse/
 .pytest_cache/
+
+# Ignore lockfiles as the software should work for different dependency versions
+uv.lock
+
+# Others
+requirements.txt
