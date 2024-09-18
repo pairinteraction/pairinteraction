@@ -1,6 +1,6 @@
 """Defining the simulation class for pairinteraction"""
 
-from typing import Dict, Union
+from typing import Union
 
 # from pairinteraction import (
 #     BasisAtom,
@@ -33,7 +33,7 @@ class BaseSimulation:
     the results.
     """
 
-    def __init__(self, model: Union[ModelSimulation, Dict]):
+    def __init__(self, model: Union[ModelSimulation, dict]):
         """Initialize the simulation object
 
         Args:

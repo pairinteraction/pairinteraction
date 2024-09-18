@@ -1,6 +1,6 @@
 """Pydantic model for combined system with interactions."""
 
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -48,4 +48,4 @@ class ModelInteractions(BaseModel):
     distance: Optional[UnionParameterFloat] = None
     angle: UnionParameterFloat = Field(0, validate_default=True)
 
-    combined_states_of_interest: List[Dict[ConstituentString, Union[int, UnionModelStates]]] = []
+    combined_states_of_interest: list[dict[ConstituentString, Union[int, UnionModelStates]]] = []

@@ -2,7 +2,7 @@
 
 import typing
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Generic, List, Literal, Optional, Tuple, Type, TypeVar, Union
+from typing import Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from pydantic import GetCoreSchemaHandler
@@ -23,7 +23,7 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
         return f"{self.__class__.__name__}({self.raw})"
 
     @classmethod
-    def __get_pydantic_core_schema__(cls, source: Type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
+    def __get_pydantic_core_schema__(cls, source: type[Any], handler: GetCoreSchemaHandler) -> core_schema.CoreSchema:
         return core_schema.no_info_after_validator_function(
             cls._validate_raw,
             cls._get_pydantic_raw_schema(source),
@@ -36,11 +36,11 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
 
     @classmethod
     @abstractmethod
-    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         """Get the pydantic schema for the raw data."""
 
     @classmethod
-    def _get_pydantic_parameter_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+    def _get_pydantic_parameter_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         """Get the pydantic schema for the type of a single parameter value."""
         generic_type = typing.get_args(source)
         if len(generic_type) == 0:
@@ -77,7 +77,7 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
         """Get the size of the parameter (None for a constant parameter)."""
 
     @abstractmethod
-    def get_list(self) -> Optional[List[ParamType]]:
+    def get_list(self) -> Optional[list[ParamType]]:
         """Get the list of values (None for a constant parameter)."""
 
     @abstractmethod
@@ -92,33 +92,33 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
 class BaseParameterIterable(BaseParameter[ParamType, RawType]):
     """Baseclass for an iterable parameter (e.g. list or range)."""
 
-    list = None
+    _list = None
 
     def __init__(self, raw: RawType):
-        assert getattr(self, "list", None) is not None, "BaseParameterIterable needs to have a list attribute"
+        assert getattr(self, "_list", None) is not None, "BaseParameterIterable needs to have a _list attribute"
         super().__init__(raw)
 
     def get_value(self, step: int) -> ParamType:
-        return self.list[step]
+        return self._list[step]
 
     def get_size(self) -> int:
-        return len(self.list)
+        return len(self._list)
 
-    def get_list(self) -> List[ParamType]:
-        return self.list
+    def get_list(self) -> list[ParamType]:
+        return self._list
 
     def get_min(self) -> ParamType:
-        return min(self.list)
+        return min(self._list)
 
     def get_max(self) -> ParamType:
-        return max(self.list)
+        return max(self._list)
 
 
 class ParameterConstant(BaseParameter[ParamType, ParamType]):
     """Class for a constant parameter."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         return cls._get_pydantic_parameter_schema(source)
 
     def __init__(self, value: ParamType):
@@ -141,35 +141,35 @@ class ParameterConstant(BaseParameter[ParamType, ParamType]):
         return self.value
 
 
-class ParameterList(BaseParameterIterable[ParamType, List[ParamType]]):
+class ParameterList(BaseParameterIterable[ParamType, list[ParamType]]):
     """Class for a list of parameters."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         return core_schema.list_schema(cls._get_pydantic_parameter_schema(source), min_length=1)
 
-    def __init__(self, values: Union[List[ParamType], Tuple[ParamType]]):
-        self.list = values
+    def __init__(self, values: Union[list[ParamType], tuple[ParamType]]):
+        self._list = values
         super().__init__(values)
 
 
-class ParameterRange(BaseParameterIterable[ParamType, Dict[str, Union[ParamType, int]]]):
+class ParameterRange(BaseParameterIterable[ParamType, dict[str, Union[ParamType, int]]]):
     """Class for a parameter range."""
 
     @classmethod
-    def _get_pydantic_raw_schema(cls, source: Type[Any]) -> core_schema.CoreSchema:
+    def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         # TODO enforce check that start and stop are of type ParamType
         return core_schema.dict_schema(keys_schema=core_schema.str_schema(), min_length=3, max_length=3)
 
     def __init__(self, start: ParamType, stop: ParamType, steps: int):
-        self.list = list(np.linspace(start, stop, steps))
+        self._list = list(np.linspace(start, stop, steps))
         self.raw = {"start": start, "stop": stop, "steps": steps}
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(" + ", ".join([f"{k}={v!r}" for k, v in self.raw.items()]) + ")"
 
     @classmethod
-    def _validate_raw(cls, raw: Dict[str, Union[ParamType, int]]) -> Self:
+    def _validate_raw(cls, raw: dict[str, Union[ParamType, int]]) -> Self:
         if not all(key in raw for key in ["start", "stop", "steps"]):
             raise ValueError("ParameterRange needs to have keys 'start', 'stop', 'steps'")
         return cls(raw["start"], raw["stop"], raw["steps"])

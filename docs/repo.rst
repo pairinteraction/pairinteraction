@@ -23,7 +23,7 @@ Step-by-Step Instructions
 
     .. code-block:: bash
 
-        uv venv --python=3.8 .venv
+        uv venv --python=3.9 .venv
         source .venv/bin/activate
 
     and install the Python dependencies:
