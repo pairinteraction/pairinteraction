@@ -23,12 +23,8 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
@@ -45,14 +41,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Setup Python Path
-      run: |
-        echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+      run: echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
@@ -73,12 +64,8 @@ jobs:
       package: pairinteraction-install-opensuse.rpm
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build
@@ -100,12 +87,8 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-static-analysis:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
     - name: Build
@@ -121,12 +104,8 @@ jobs:
       package: pairinteraction-install-ubuntu.deb
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
     - name: Build

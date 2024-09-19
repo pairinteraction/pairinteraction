@@ -39,12 +39,8 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
@@ -65,12 +61,8 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
@@ -107,12 +99,8 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies
-      env:
-        NO_COLOR: 1
-      run: |
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install --system --break-system-packages --no-cache-dir -r requirements.txt
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:

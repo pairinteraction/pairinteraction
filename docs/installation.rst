@@ -198,8 +198,7 @@ Again, we strongly recommend installing the dependencies into a virtual environm
     uv venv --python=3.9 .venv
     source .venv/bin/activate
 
-    uv pip compile pyproject.toml --all-extras > requirements.txt
-    uv pip install -r requirements.txt
+    uv pip install nanobind numpy
 
 For **GNU/Linux and OS X**, you can then build the software with standard CMake commands:
 
