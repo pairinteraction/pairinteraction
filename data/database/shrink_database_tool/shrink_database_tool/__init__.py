@@ -65,7 +65,7 @@ def main() -> None:
             connection.execute(
                 f"CREATE TEMP TABLE {parquet_file.name} "
                 f"AS SELECT * FROM '{parquet_file.path}' "
-                "WHERE exp_nu BETWEEN 55 AND 65 AND f BETWEEN 0 AND 5"
+                "WHERE exp_nu BETWEEN 50 AND 70 AND f BETWEEN 0 AND 5"
             )
 
     for parquet_file in parquet_files.values():

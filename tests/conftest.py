@@ -23,8 +23,8 @@ def generate_reference(pytestconfig: Config) -> bool:
 
 
 @pytest.fixture(scope="session")
-def database_dir(pytestconfig: Config) -> Path:
-    return Path(pytestconfig.getoption("--database-dir"))
+def database_dir(pytestconfig: Config) -> str:
+    return pytestconfig.getoption("--database-dir")
 
 
 @pytest.fixture(scope="session")
