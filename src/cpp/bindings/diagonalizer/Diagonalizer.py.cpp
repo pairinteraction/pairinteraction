@@ -58,13 +58,15 @@ static void declare_diagonalize(nb::module_ &m, std::string const & /* type_name
         "diagonalize",
         [](nb::list pylist, // NOLINT
            const DiagonalizerInterface<scalar_t> &diagonalizer, int precision) {
-            std::vector<std::reference_wrapper<T>> systems;
+            std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
-                T &obj = nb::cast<T &>(h);
-                systems.push_back(std::ref(obj));
+                systems.push_back(nb::cast<T>(h));
             }
-            return diagonalize(systems, diagonalizer, precision);
+            diagonalize(systems, diagonalizer, precision);
+            for (size_t i = 0; i < systems.size(); ++i) {
+                pylist[i] = nb::cast(systems[i]);
+            }
         },
         "systems"_a, "diagonalizer"_a, "precision"_a = 12);
     m.def(
@@ -72,13 +74,15 @@ static void declare_diagonalize(nb::module_ &m, std::string const & /* type_name
         [](nb::list pylist, // NOLINT
            const DiagonalizerInterface<scalar_t> &diagonalizer, real_t min_eigenvalue,
            real_t max_eigenvalue, int precision) {
-            std::vector<std::reference_wrapper<T>> systems;
+            std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
-                T &obj = nb::cast<T &>(h);
-                systems.push_back(std::ref(obj));
+                systems.push_back(nb::cast<T>(h));
             }
-            return diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+            for (size_t i = 0; i < systems.size(); ++i) {
+                pylist[i] = nb::cast(systems[i]);
+            }
         },
         "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a, "max_eigenvalue"_a, "precision"_a = 12);
 }

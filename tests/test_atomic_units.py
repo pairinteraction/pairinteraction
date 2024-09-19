@@ -10,12 +10,6 @@ HARTREE_IN_THZ = 6579.683920502
 HARTREE_IN_INVERSE_CM = 219474.63136320
 
 
-@pytest.fixture(scope="module")
-def ureg() -> UnitRegistry:
-    """Create and return a UnitRegistry with atomic units."""
-    return UnitRegistry(system="atomic")
-
-
 def test_hartree_to_joules(ureg: UnitRegistry) -> None:
     """Test conversion from Hartree to Joules."""
     one_hartree = 1 * ureg.hartree
