@@ -30,8 +30,7 @@ Step-by-Step Instructions
 
     .. code-block:: bash
 
-        uv pip compile pyproject.toml --all-extras > requirements.txt
-        uv pip install -r requirements.txt
+        uv pip install nanobind numpy
 
     * Build the software using CMake:
 
@@ -41,12 +40,6 @@ Step-by-Step Instructions
         cd build
         cmake ..
         cmake --build .
-
-    * The graphical user interface can be started by executing:
-
-    .. code-block:: bash
-
-        ./start_pairinteraction_gui.py
 
     Familiarize yourself with the repository's architecture. The software is divided into a :github:`C++ backend <tree/master/src/cpp>` with Python bindings and a :github:`Python library <tree/master/src/pairinteraction>`. The Python library makes the Python bindings accessible and add additional functionality like a graphical user interface.
 
