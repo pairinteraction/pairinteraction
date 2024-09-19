@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            pairinteraction::args::parse_database(i, argc, argv, database_dir);
+            pairinteraction::args::parse_database_dir(i, argc, argv, database_dir);
         }
     }
 
