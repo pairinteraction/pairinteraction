@@ -101,7 +101,7 @@ build = [
 ]
 build-verbosity = 1
 
-test-extras = ["test", "gui"]
+test-extras = ["test"]
 test-command = [
   "python -c \"import pairinteraction\"",
   "python -c \"from pairinteraction import backend\"",
