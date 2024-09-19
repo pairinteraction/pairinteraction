@@ -1,0 +1,5 @@
+ignored:
+  - DL3033  # yum install non pinned versions
+  - DL3008  # apt-get install non pinned versions
+  - DL3037  # zypper install non pinned versions
+  - DL4006  # RUN dont handle pipefail

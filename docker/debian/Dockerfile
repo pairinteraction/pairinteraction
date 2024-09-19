@@ -1,8 +1,9 @@
 FROM debian:bookworm
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt-get update && apt-get install --no-install-recommends -y wget gnupg ca-certificates
-RUN wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+RUN apt-get update && apt-get install --no-install-recommends -y curl gnupg ca-certificates \
+  && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
+RUN curl -LsSf https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB | gpg --dearmor | tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
 RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | tee /etc/apt/sources.list.d/oneAPI.list
 
 RUN apt-get update \
@@ -16,11 +17,10 @@ RUN apt-get update \
     locales \
     dpkg rpm \
     lcov \
-    curl ca-certificates \
+    ca-certificates \
     doxygen graphviz libgraphviz-dev ca-certificates rsync pandoc \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
-  && apt-get clean -qq \
-  && rm -rf /var/lib/apt/lists/*
+  && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
 ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
 ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH

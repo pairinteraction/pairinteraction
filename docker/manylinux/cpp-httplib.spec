@@ -20,7 +20,7 @@ Summary:        A C++11 single-file header-only cross platform HTTP/HTTPS librar
 License:        MIT
 URL:            https://github.com/yhirose/cpp-httplib
 VCS:            git:%{forgeurl0}
-Source0:	%{url}/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:        %{url}/archive/v%{version}/%{name}-%{version}.tar.gz
 
 BuildRequires:  redhat-rpm-config
 BuildRequires:  gcc-c++

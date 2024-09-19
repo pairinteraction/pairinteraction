@@ -1,4 +1,4 @@
-FROM quay.io/pypa/manylinux_2_28_x86_64
+FROM quay.io/pypa/manylinux_2_28_x86_64:2024.09.16-1
 
 COPY oneAPI.repo /etc/yum.repos.d/oneAPI.repo
 
@@ -18,7 +18,8 @@ RUN yum install -y epel-release \
     swig \
     spdlog-devel \
     cpp-httplib-devel \
-    graphviz-devel
+    graphviz-devel \
+    && yum clean all
 
 ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH
 ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
