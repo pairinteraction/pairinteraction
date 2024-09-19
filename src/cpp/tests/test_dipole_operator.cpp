@@ -15,11 +15,14 @@ int main(int argc, char **argv) {
     for (int i = 1; i < argc; ++i) {
         bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            pairinteraction::args::parse_database(i, argc, argv, database_dir);
+            pairinteraction::args::parse_database_dir(i, argc, argv, database_dir);
         }
     }
 
     pairinteraction::Database database(download_missing, true, database_dir);
+
+    // Test the calculation of a dipole operator
+    bool success = true;
 
     // Create a dipole operator coupling two specific states
     auto ket1 = pairinteraction::KetAtomCreator<float>()
@@ -48,7 +51,7 @@ int main(int argc, char **argv) {
     if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) >
         10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct.");
-        return 1;
+        success = false;
     }
 
     dipole_ket1_ket2 = 2 * dipole_ket1_ket2;
@@ -57,7 +60,7 @@ int main(int argc, char **argv) {
     if (std::abs(dipole_ket1_ket2_value - 2 * 1247.5955810546875) >
         10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after multiplication by a scalar.");
-        return 1;
+        success = false;
     }
 
     dipole_ket1_ket2 = dipole_ket1_ket2 + dipole_ket1_ket2;
@@ -66,7 +69,7 @@ int main(int argc, char **argv) {
     if (std::abs(dipole_ket1_ket2_value - 4 * 1247.5955810546875) >
         10 * std::numeric_limits<float>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after summation.");
-        return 1;
+        success = false;
     }
 
     // Create dipole operators in a typical basis
@@ -85,33 +88,33 @@ int main(int argc, char **argv) {
 
     if (dipole_0.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
-        return 1;
+        success = false;
     }
 
     if (dipole_p.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
-        return 1;
+        success = false;
     }
 
     if (dipole_m.get_matrix().rows() != 64) {
         SPDLOG_ERROR("Wrong dimension.");
-        return 1;
+        success = false;
     }
 
     if (dipole_0.get_matrix().nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
-        return 1;
+        success = false;
     }
 
     if (dipole_p.get_matrix().nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
-        return 1;
+        success = false;
     }
 
     if (dipole_m.get_matrix().nonZeros() != 288) {
         SPDLOG_ERROR("Wrong number of non-zeros.");
-        return 1;
+        success = false;
     }
 
-    return 0;
+    return success ? 0 : 1;
 }

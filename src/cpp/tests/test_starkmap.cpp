@@ -1,7 +1,9 @@
 #include "pairinteraction/pairinteraction.hpp"
 #include "pairinteraction/utils/args.hpp"
 
+#include <Eigen/Dense>
 #include <filesystem>
+#include <fstream>
 #include <spdlog/spdlog.h>
 #include <vector>
 
@@ -11,12 +13,16 @@ int main(int argc, char **argv) {
 
     // Create a database instance
     std::filesystem::path database_dir;
+    std::filesystem::path data_dir;
     bool download_missing = false;
 
     for (int i = 1; i < argc; ++i) {
         bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            pairinteraction::args::parse_database(i, argc, argv, database_dir);
+            found = pairinteraction::args::parse_database_dir(i, argc, argv, database_dir);
+        }
+        if (!found) {
+            pairinteraction::args::parse_data_dir(i, argc, argv, data_dir);
         }
     }
 
@@ -34,32 +40,111 @@ int main(int argc, char **argv) {
 
     // Create systems for different values of the electric field
     std::vector<pairinteraction::SystemAtom<double>> systems;
-    systems.reserve(10);
-    for (int i = 0; i < 10; ++i) {
+    systems.reserve(11);
+    for (int i = 0; i < 11; ++i) {
         auto system = pairinteraction::SystemAtom<double>(basis);
-        system.set_electric_field({0, 0, i * 1e-4});
+        system.set_electric_field({0, 0, i * 1.9446903811524456e-10});
         systems.push_back(std::move(system));
-    }
-
-    // Ensure that off-diagonal elements are non-zero
-    auto hamiltonian = systems[1].get_matrix();
-    hamiltonian -= hamiltonian.diagonal().asDiagonal();
-    if (hamiltonian.norm() < 1e-10) {
-        SPDLOG_ERROR("Off-diagonal elements are zero: {}", hamiltonian.norm());
-        return 1;
     }
 
     // Diagonalize the systems in parallel
     pairinteraction::DiagonalizerEigen<double> diagonalizer;
     pairinteraction::diagonalize(systems, diagonalizer);
 
-    // Ensure that off-diagonal elements are zero
-    hamiltonian = systems[1].get_matrix();
-    hamiltonian -= hamiltonian.diagonal().asDiagonal();
-    if (hamiltonian.norm() > 1e-10) {
-        SPDLOG_ERROR("Off-diagonal elements are non-zero: {}", hamiltonian.norm());
-        return 1;
+    // Extract results
+    std::vector<std::string> kets;
+    Eigen::MatrixX<double> eigenvalues(systems.size(), basis->get_number_of_states());
+    Eigen::MatrixX<double> eigenstates(
+        systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
+
+    kets.reserve(basis->get_number_of_states());
+    for (auto ket : *systems[0].get_basis()) {
+        std::stringstream ss;
+        ss << *ket;
+        kets.push_back(ss.str());
+    }
+    for (size_t i = 0; i < systems.size(); ++i) {
+        eigenvalues.row(i) = systems[i].get_matrix().diagonal().real() * 6579683.920501762;
+        Eigen::MatrixX<double> tmp =
+            systems[i].get_basis()->get_coefficients().toDense().transpose();
+        eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
     }
 
-    return 0;
+    // Compare with reference data
+    bool success = true;
+
+    // Check kets
+    const std::filesystem::path reference_kets_file = data_dir / "reference_stark_map/kets.txt";
+    SPDLOG_INFO("Reference kets: {}", reference_kets_file.string());
+
+    std::vector<std::string> reference_kets;
+    std::string line;
+    std::ifstream stream(reference_kets_file);
+    if (!stream) {
+        SPDLOG_ERROR("Could not open reference kets file");
+        success = false;
+    } else {
+        reference_kets.reserve(basis->get_number_of_states());
+        while (std::getline(stream, line)) {
+            reference_kets.push_back(line);
+        }
+        stream.close();
+        if (kets != reference_kets) {
+            SPDLOG_ERROR("Kets do not match reference data");
+            success = false;
+        }
+    }
+
+    // Check eigenvalues
+    const std::filesystem::path reference_eigenvalues_file =
+        data_dir / "reference_stark_map/eigenvalues.txt";
+    SPDLOG_INFO("Reference eigenvalues: {}", reference_eigenvalues_file.string());
+
+    Eigen::MatrixXd reference_eigenvalues(systems.size(), basis->get_number_of_states());
+    stream = std::ifstream(reference_eigenvalues_file);
+    if (!stream) {
+        SPDLOG_ERROR("Could not open reference eigenvalues file");
+        success = false;
+    } else {
+        for (size_t i = 0; i < systems.size(); ++i) {
+            for (size_t j = 0; j < basis->get_number_of_states(); ++j) {
+                stream >> reference_eigenvalues(i, j);
+            }
+        }
+        stream.close();
+        if (!eigenvalues.isApprox(reference_eigenvalues)) {
+            SPDLOG_ERROR("Eigenvalues do not match reference data");
+            success = false;
+        }
+    }
+
+    // Check eigenstates
+    // Because of degeneracies, checking the eigenstates will require a more sophisticated
+    // comparison than the simple approach below that is currently commented out.
+
+    // const std::filesystem::path reference_eigenstates_file =
+    //     data_dir / "reference_stark_map/eigenstates.txt";
+    // SPDLOG_INFO("Reference eigenstates: {}", reference_eigenstates_file.string());
+
+    // Eigen::MatrixXd reference_eigenstates(
+    //     systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
+    // stream = std::ifstream(reference_eigenstates_file);
+    // if (!stream) {
+    //     SPDLOG_ERROR("Could not open reference eigenstates file");
+    //     success = false;
+    // } else {
+    //     for (size_t i = 0; i < systems.size(); ++i) {
+    //         for (size_t j = 0; j < basis->get_number_of_states() * basis->get_number_of_states();
+    //              ++j) {
+    //             stream >> reference_eigenstates(i, j);
+    //         }
+    //     }
+    //     stream.close();
+    //     if (!eigenstates.isApprox(reference_eigenstates)) {
+    //         SPDLOG_ERROR("Eigenstates do not match reference data");
+    //         success = false;
+    //     }
+    // }
+
+    return success ? 0 : 1;
 }
