@@ -47,9 +47,9 @@ std::string KetAtom<Real>::get_label() const {
     }
 
     if (this->quantum_number_f == std::rintf(this->quantum_number_f)) {
-        label += fmt::format("_{{{}}}", this->quantum_number_f);
+        label += fmt::format("_{{{:.0f}}}", this->quantum_number_f);
     } else if (2 * this->quantum_number_f == std::rintf(2 * this->quantum_number_f)) {
-        label += fmt::format("_{{{}/2}}", 2 * this->quantum_number_f);
+        label += fmt::format("_{{{:.0f}/2}}", 2 * this->quantum_number_f);
     } else {
         std::abort(); // can't happen because the quantum number f is validated to be an integer
                       // or half-integer
