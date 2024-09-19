@@ -44,7 +44,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif(NOT CMAKE_BUILD_TYPE)
 
 # Build options
-option(WITH_DMG "Generate a DMG file (Mac OS X only)" OFF) # TODO treat building a windows installer and dmg the same
 option(WITH_COVERAGE "Generate code coverage report" OFF)
 
 # Windows specific build instructions
@@ -53,10 +52,6 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/extra/apple")
-if(WITH_DMG)
-  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
-endif()
 
 # General build instructions
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -194,30 +189,7 @@ file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
 
 # Make packages for different platforms
 
-if(APPLE AND WITH_DMG)
-
-  find_package(
-    Python
-    COMPONENTS Interpreter
-    REQUIRED)
-
-  install(FILES ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt
-                ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt DESTINATION licenses)
-
-  set(CPACK_GENERATOR "Bundle")
-
-  set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-osx")
-  set(CPACK_PACKAGE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
-  set(CPACK_BUNDLE_NAME "pairinteraction")
-  set(CPACK_BUNDLE_ICON "${CMAKE_MACOSX_GOODIES_PATH}/pairinteraction.icns")
-  set(CPACK_BUNDLE_PLIST "${CMAKE_MACOSX_GOODIES_PATH}/Info.plist")
-  set(CPACK_BUNDLE_STARTUP_COMMAND "${CMAKE_MACOSX_GOODIES_PATH}/launcher.sh")
-
-  add_custom_target(
-    license COMMAND ${Python_EXECUTABLE} ${CMAKE_MACOSX_GOODIES_PATH}/licenseDMG.py
-                    ${PROJECT_BINARY_DIR}/${CPACK_PACKAGE_FILE_NAME}.dmg ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt)
-
-elseif(UNIX AND NOT SKBUILD)
+if(UNIX AND NOT SKBUILD)
 
   add_subdirectory(extra/flatpak)
 

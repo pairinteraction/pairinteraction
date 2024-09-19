@@ -50,36 +50,22 @@ jobs:
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - uses: actions/upload-artifact@v4
-      with:
-        name: pairinteraction-manylinux-wheel
-        path: build/artifact/
 
   opensuse:
     if: false # disabled until OpenSUSE upgrades Python
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-opensuse:docker
-    env:
-      package: pairinteraction-install-opensuse.rpm
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
       run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - name: Doxygen Documentation
-      run: cmake --build build/ --target doxygen -- --keep-going
-    - name: Package
-      run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.package }}
-        path: build/${{ env.package }}
 
   static-analysis:
     runs-on: ubuntu-latest
@@ -100,23 +86,13 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-ubuntu:docker
-    env:
-      package: pairinteraction-install-ubuntu.deb
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
       run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCPACK_PACKAGE_FILE_NAME="${package}"
+      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
-    - name: Doxygen Documentation
-      run: cmake --build build/ --target doxygen -- --keep-going
-    - name: Package
-      run: cmake --build build/ --target package -- --keep-going
-    - uses: actions/upload-artifact@v4
-      with:
-        name: ${{ env.package }}
-        path: build/${{ env.package }}
