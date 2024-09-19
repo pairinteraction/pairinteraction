@@ -20,12 +20,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-<<<<<<< HEAD
-      with:
-        fetch-depth: 0
-        submodules: true
-=======
->>>>>>> 453e1a5a0 ([ci] remove unnecessary actions)
 
     - name: Build SDist
       run: pipx run build --sdist
@@ -70,8 +64,7 @@ jobs:
     - uses: pypa/cibuildwheel@v2.16
 
     - name: Upload wheels
-      if: runner.os != 'Windows'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v3
       with:
         name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl
