@@ -17,82 +17,37 @@ env:
   CXXFLAGS: "-march=broadwell"
 
 jobs:
-  debian:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
-    - name: Configure
-      run: |
-        . /opt/intel/oneapi/setvars.sh
-        cmake -S . -B build/ -DBUILD_TESTING=On
-    - name: Build
-      run: cmake --build build/ -- --keep-going
-    - name: Test
-      run: cmake --build build/ --target test -- --keep-going
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        distro: [debian, ubuntu, manylinux, opensuse, static-analysis]
+        include:
+        - distro: static-analysis
+          CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
 
-  manylinux:
+    name: ${{ matrix.distro }}
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker
+      image: ghcr.io/atom-pairinteraction/pairinteraction-${{ matrix.distro }}:docker
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup Python Path
+      if: ${{ matrix.distro == 'manylinux' }}
       run: echo "/opt/python/cp39-cp39/bin" >> $GITHUB_PATH
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
-    - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
-    - name: Build
-      run: cmake --build build/ -- --keep-going
-    - name: Test
-      run: cmake --build build/ --target test -- --keep-going
 
-  opensuse:
-    if: false # disabled until OpenSUSE upgrades Python
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-opensuse:docker
-    steps:
-    - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
       run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
-    - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
-    - name: Build
-      run: cmake --build build/ -- --keep-going
-    - name: Test
-      run: cmake --build build/ --target test -- --keep-going
 
-  static-analysis:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-static-analysis:docker
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
-    - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
-    - name: Build
-      run: cmake --build build/ -- --keep-going
-    - name: Test
-      run: cmake --build build/ --target test -- --keep-going
+    - name: Install MKL
+      run: uv pip install --system --break-system-packages --no-cache-dir mkl mkl-devel
 
-  ubuntu:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-ubuntu:docker
-    steps:
-    - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
     - name: Configure
-      run: cmake -S . -B build/ -DBLA_VENDOR=OpenBLAS -DBUILD_TESTING=On
+      run: cmake -S . -B build/ -DBUILD_TESTING=On ${{ matrix.CMAKE_ARGS }}
+
     - name: Build
       run: cmake --build build/ -- --keep-going
+
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
