@@ -64,7 +64,6 @@ jobs:
     - uses: pypa/cibuildwheel@v2.16
 
     - name: Upload wheels
-      if: runner.os != 'Windows'
       uses: actions/upload-artifact@v3
       with:
         path: wheelhouse/*.whl
