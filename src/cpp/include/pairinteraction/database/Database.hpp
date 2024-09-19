@@ -52,16 +52,16 @@ public:
 
     Database();
     Database(bool download_missing);
-    Database(std::filesystem::path databasedir);
-    Database(bool download_missing, bool wigner_in_memory, std::filesystem::path databasedir);
+    Database(std::filesystem::path database_dir);
+    Database(bool download_missing, bool wigner_in_memory, std::filesystem::path database_dir);
     ~Database();
     std::vector<AvailabilitySpecies> get_availability_of_species();
     AvailabilityWigner get_availability_of_wigner_table();
     static Database &get_global_instance();
     static Database &get_global_instance(bool download_missing);
-    static Database &get_global_instance(std::filesystem::path databasedir);
+    static Database &get_global_instance(std::filesystem::path database_dir);
     static Database &get_global_instance(bool download_missing, bool wigner_in_memory,
-                                         std::filesystem::path databasedir);
+                                         std::filesystem::path database_dir);
 
     template <typename Real>
     std::shared_ptr<const KetAtom<Real>>
@@ -92,7 +92,7 @@ private:
 
     bool _download_missing;
     bool _wigner_in_memory;
-    std::filesystem::path _databasedir;
+    std::filesystem::path _database_dir;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
     std::vector<httplib::Client> pool;
@@ -100,11 +100,11 @@ private:
 
     static constexpr bool default_download_missing{false};
     static constexpr bool default_wigner_in_memory{true};
-    static const std::filesystem::path default_databasedir;
+    static const std::filesystem::path default_database_dir;
 
     static Database &get_global_instance_without_checks(bool download_missing,
                                                         bool wigner_in_memory,
-                                                        std::filesystem::path databasedir);
+                                                        std::filesystem::path database_dir);
 
     void ensure_presence_of_table(const std::string &name);
     void ensure_quantum_number_n_is_allowed(const std::string &name);

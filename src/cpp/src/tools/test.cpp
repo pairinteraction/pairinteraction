@@ -14,7 +14,7 @@
 #include <spdlog/spdlog.h>
 
 namespace pairinteraction {
-int test(int argc, char **argv, bool download_missing, std::filesystem::path databasedir) {
+int test(int argc, char **argv, bool download_missing, std::filesystem::path database_dir) {
 
     // Configure a logger for the tests
     std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";
@@ -48,7 +48,7 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
     ctx.setOption("no-breaks", true);
 
     // Create a global database instance
-    Database::get_global_instance(download_missing, false, std::move(databasedir));
+    Database::get_global_instance(download_missing, false, std::move(database_dir));
 
     // Run the tests
     int exitcode = ctx.run();

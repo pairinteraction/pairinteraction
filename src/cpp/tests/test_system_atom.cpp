@@ -9,17 +9,17 @@ int main(int argc, char **argv) {
     pairinteraction::setup();
 
     // Create a database instance
-    std::filesystem::path databasedir;
+    std::filesystem::path database_dir;
     bool download_missing = false;
 
     for (int i = 1; i < argc; ++i) {
         bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            pairinteraction::args::parse_database(i, argc, argv, databasedir);
+            pairinteraction::args::parse_database(i, argc, argv, database_dir);
         }
     }
 
-    pairinteraction::Database database(download_missing, true, databasedir);
+    pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
     auto basis = pairinteraction::BasisAtomCreator<double>()
