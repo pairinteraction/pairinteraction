@@ -1,6 +1,12 @@
+"""
+Test the Stark map calculation.
+"""
+
 from pathlib import Path
 
+import numpy as np
 import pytest
+from pint import UnitRegistry
 
 from pairinteraction.backend import (
     BasisAtomCreatorDouble,
@@ -10,12 +16,12 @@ from pairinteraction.backend import (
     diagonalize,
 )
 
-databasedir = Path(__file__).parent.parent / "data/database"
+reference_data_file = Path(__file__).parent.parent / "data/reference_stark_map/rb_small_basis.txt"
 
 
-@pytest.mark.skip(reason="This test is not yet working properly")
-def test_starkmap():
-    database = Database(False, True, databasedir)
+def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: Path) -> None:
+    """Test calculating a Stark map."""
+    database = Database(False, True, database_dir)
     diagonalizer = DiagonalizerEigenDouble()
 
     # Create a basis
@@ -29,12 +35,25 @@ def test_starkmap():
     )
     print(f"Number of basis states: {basis.get_number_of_states()}")
 
-    # Create systems for different values of the electric field
-    systems = [SystemAtomDouble(basis).set_electric_field([0, 0, i * 1e-4]) for i in range(10)]
+    electric_fields = np.linspace(0, 10, 10) * ureg.volt / ureg.centimeter
 
-    assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) > 1e-10
+    # Create systems for different values of the electric field
+    systems = [SystemAtomDouble(basis).set_electric_field([0, 0, e.to_base_units().magnitude]) for e in electric_fields]
 
     # Diagonalize the systems in parallel
     diagonalize(systems, diagonalizer)
+    eigenvalues = [
+        (system.get_matrix().diagonal().real * ureg.hartree).to("gigahertz", "spectroscopy") for system in systems
+    ]
 
-    assert abs(systems[1].get_matrix().diagonal().sum() - systems[1].get_matrix().sum()) < 1e-10
+    # Compare eigenvalues to reference values
+    if generate_reference:
+        reference_data_file.parent.mkdir(parents=True, exist_ok=True)
+        np.savetxt(reference_data_file, [calc.magnitude for calc in eigenvalues])
+        print(f"Reference data generated and saved to {reference_data_file}")
+        pytest.skip("Reference data generated, skipping comparison test")
+    else:
+        reference_values = np.loadtxt(reference_data_file)
+        for calc, ref in zip(eigenvalues, reference_values):
+            np.testing.assert_allclose(calc.magnitude, ref)
+        print("All eigenvalues match the reference values within the specified tolerance.")
