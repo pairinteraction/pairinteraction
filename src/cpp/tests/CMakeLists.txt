@@ -20,7 +20,7 @@ function(add_test_executable TARGET_NAME SOURCE_FILE NPROC)
   # Add tests building and calling the executable
   add_test(NAME gen_${TARGET_NAME} COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --config "$<CONFIG>"
                                            --target ${TARGET_NAME} -j${NPROC})
-  add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME} --database "${CMAKE_SOURCE_DIR}/data/database")
+  add_test(NAME ${TARGET_NAME} COMMAND ${TARGET_NAME} --database-dir "${CMAKE_SOURCE_DIR}/data/database")
   set_tests_properties(gen_${TARGET_NAME} PROPERTIES FIXTURES_SETUP f_gen_${TARGET_NAME})
   set_tests_properties(${TARGET_NAME} PROPERTIES FIXTURES_REQUIRED f_gen_${TARGET_NAME})
 

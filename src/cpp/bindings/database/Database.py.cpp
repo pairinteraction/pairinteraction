@@ -83,9 +83,9 @@ static void declare_database(nb::module_ &m) {
     nb::class_<Database>(m, "Database")
         .def(nb::init<>())
         .def(nb::init<bool>(), "download_missing"_a)
-        .def(nb::init<std::filesystem::path>(), "databasedir"_a)
+        .def(nb::init<std::filesystem::path>(), "database_dir"_a)
         .def(nb::init<bool, bool, std::filesystem::path>(), "download_missing"_a,
-             "wigner_in_memory"_a, "databasedir"_a)
+             "wigner_in_memory"_a, "database_dir"_a)
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
         .def_static("get_global_instance", nb::overload_cast<>(&Database::get_global_instance))

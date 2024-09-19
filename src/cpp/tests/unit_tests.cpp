@@ -8,7 +8,7 @@
 int main(int argc, char **argv) {
     pairinteraction::setup();
 
-    std::filesystem::path databasedir;
+    std::filesystem::path database_dir;
     bool download_missing = false;
     std::vector<char *> args;
     args.reserve(argc);
@@ -16,7 +16,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < argc; ++i) {
         bool found = pairinteraction::args::parse_download_missing(i, argc, argv, download_missing);
         if (!found) {
-            found = pairinteraction::args::parse_database(i, argc, argv, databasedir);
+            found = pairinteraction::args::parse_database(i, argc, argv, database_dir);
         }
         if (!found) {
             args.push_back(argv[i]);
@@ -24,5 +24,5 @@ int main(int argc, char **argv) {
     }
 
     return pairinteraction::test(static_cast<int>(args.size()), args.data(), download_missing,
-                                 databasedir);
+                                 database_dir);
 }

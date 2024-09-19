@@ -27,30 +27,30 @@ namespace pairinteraction {
 Database::Database() : Database(default_download_missing) {}
 
 Database::Database(bool download_missing)
-    : Database(download_missing, default_wigner_in_memory, default_databasedir) {}
+    : Database(download_missing, default_wigner_in_memory, default_database_dir) {}
 
-Database::Database(std::filesystem::path databasedir)
-    : Database(default_download_missing, default_wigner_in_memory, std::move(databasedir)) {}
+Database::Database(std::filesystem::path database_dir)
+    : Database(default_download_missing, default_wigner_in_memory, std::move(database_dir)) {}
 
-Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem::path databasedir)
+Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem::path database_dir)
     : _download_missing(download_missing), _wigner_in_memory(wigner_in_memory),
-      _databasedir(std::move(databasedir)), db(std::make_unique<duckdb::DuckDB>(nullptr)),
+      _database_dir(std::move(database_dir)), db(std::make_unique<duckdb::DuckDB>(nullptr)),
       con(std::make_unique<duckdb::Connection>(*db)) {
 
-    if (_databasedir.empty()) {
-        _databasedir = default_databasedir;
+    if (_database_dir.empty()) {
+        _database_dir = default_database_dir;
     }
 
     const std::regex parquet_regex(R"(^(\w+)_v(\d+)\.parquet$)");
 
     // Ensure the database directory exists
-    if (!std::filesystem::exists(_databasedir)) {
-        std::filesystem::create_directories(_databasedir);
+    if (!std::filesystem::exists(_database_dir)) {
+        std::filesystem::create_directories(_database_dir);
     } else {
-        _databasedir = std::filesystem::canonical(_databasedir);
-        if (!std::filesystem::is_directory(_databasedir)) {
+        _database_dir = std::filesystem::canonical(_database_dir);
+        if (!std::filesystem::is_directory(_database_dir)) {
             throw std::filesystem::filesystem_error(
-                "Cannot access database", _databasedir.string(),
+                "Cannot access database", _database_dir.string(),
                 std::make_error_code(std::errc::not_a_directory));
         }
     }
@@ -134,7 +134,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     }
 
     // Get a dictionary of locally available tables
-    for (const auto &entry : std::filesystem::directory_iterator(_databasedir)) {
+    for (const auto &entry : std::filesystem::directory_iterator(_database_dir)) {
         if (entry.is_regular_file()) {
             std::smatch parquet_match;
             std::string filename = entry.path().filename().string();
@@ -169,7 +169,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         for (size_t i = 0; i < database_repo_paths.size(); i++) {
             // Get the last modified date of the last JSON response
             std::string lastmodified;
-            filenames.push_back(_databasedir /
+            filenames.push_back(_database_dir /
                                 ("latest_" +
                                  std::to_string(std::hash<std::string>{}(database_repo_paths[i])) +
                                  ".json"));
@@ -1073,7 +1073,7 @@ void Database::ensure_presence_of_table(const std::string &name) {
                 std::filesystem::remove(tables[name].local_path);
             }
             tables[name].local_version = tables[name].remote_version;
-            tables[name].local_path = _databasedir /
+            tables[name].local_path = _database_dir /
                 (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
             std::ofstream out(tables[name].local_path, std::ios::binary);
             out << res->body;
@@ -1109,12 +1109,12 @@ void Database::ensure_quantum_number_n_is_allowed(const std::string &name) {
 
 Database &Database::get_global_instance() {
     return get_global_instance_without_checks(default_download_missing, default_wigner_in_memory,
-                                              default_databasedir);
+                                              default_database_dir);
 }
 
 Database &Database::get_global_instance(bool download_missing) {
     Database &database = get_global_instance_without_checks(
-        download_missing, default_wigner_in_memory, default_databasedir);
+        download_missing, default_wigner_in_memory, default_database_dir);
     if (download_missing != database._download_missing) {
         throw std::invalid_argument(
             "The 'download_missing' argument must not change between calls to the method.");
@@ -1122,43 +1122,43 @@ Database &Database::get_global_instance(bool download_missing) {
     return database;
 }
 
-Database &Database::get_global_instance(std::filesystem::path databasedir) {
-    if (databasedir.empty()) {
-        databasedir = default_databasedir;
+Database &Database::get_global_instance(std::filesystem::path database_dir) {
+    if (database_dir.empty()) {
+        database_dir = default_database_dir;
     }
     Database &database = get_global_instance_without_checks(default_download_missing,
-                                                            default_wigner_in_memory, databasedir);
-    if (databasedir != database._databasedir) {
+                                                            default_wigner_in_memory, database_dir);
+    if (database_dir != database._database_dir) {
         throw std::invalid_argument(
-            "The 'databasedir' argument must not change between calls to the method.");
+            "The 'database_dir' argument must not change between calls to the method.");
     }
     return database;
 }
 
 Database &Database::get_global_instance(bool download_missing, bool wigner_in_memory,
-                                        std::filesystem::path databasedir) {
-    if (databasedir.empty()) {
-        databasedir = default_databasedir;
+                                        std::filesystem::path database_dir) {
+    if (database_dir.empty()) {
+        database_dir = default_database_dir;
     }
     Database &database =
-        get_global_instance_without_checks(download_missing, wigner_in_memory, databasedir);
+        get_global_instance_without_checks(download_missing, wigner_in_memory, database_dir);
     if (download_missing != database._download_missing ||
-        wigner_in_memory != database._wigner_in_memory || databasedir != database._databasedir) {
-        throw std::invalid_argument("The 'download_missing' and 'databasedir' arguments must not "
+        wigner_in_memory != database._wigner_in_memory || database_dir != database._database_dir) {
+        throw std::invalid_argument("The 'download_missing' and 'database_dir' arguments must not "
                                     "change between calls to the method.");
     }
     return database;
 }
 
 Database &Database::get_global_instance_without_checks(bool download_missing, bool wigner_in_memory,
-                                                       std::filesystem::path databasedir) {
+                                                       std::filesystem::path database_dir) {
     thread_local static Database database(download_missing, wigner_in_memory,
-                                          std::move(databasedir));
+                                          std::move(database_dir));
     return database;
 }
 
-struct databasedir_noexcept : std::filesystem::path {
-    explicit databasedir_noexcept() noexcept try : std
+struct database_dir_noexcept : std::filesystem::path {
+    explicit database_dir_noexcept() noexcept try : std
         ::filesystem::path(paths::get_pairinteraction_cache_directory() / "database") {}
     catch (...) {
         SPDLOG_ERROR("Error getting the pairinteraction cache directory.");
@@ -1166,7 +1166,7 @@ struct databasedir_noexcept : std::filesystem::path {
     }
 };
 
-const std::filesystem::path Database::default_databasedir = databasedir_noexcept();
+const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
 // Explicit instantiations
 template std::shared_ptr<const KetAtom<float>>

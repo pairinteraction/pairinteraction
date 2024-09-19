@@ -1,10 +1,12 @@
 from pathlib import Path
 
 import pytest
+from _pytest.config import Config
+from _pytest.config.argparsing import Parser
 from pint import UnitRegistry
 
 
-def pytest_addoption(parser) -> None:
+def pytest_addoption(parser: Parser) -> None:
     parser.addoption("--generate-reference", action="store_true", default=False, help="Generate reference data")
     parser.addoption(
         "--database-dir",
@@ -12,16 +14,22 @@ def pytest_addoption(parser) -> None:
         default=str(Path(__file__).parent.parent / "data/database"),
         help="Path to the database directory",
     )
+    parser.addoption("--download-missing", action="store_true", default=False, help="Download missing database files")
 
 
 @pytest.fixture(scope="session")
-def generate_reference(pytestconfig) -> bool:
+def generate_reference(pytestconfig: Config) -> bool:
     return pytestconfig.getoption("--generate-reference")
 
 
 @pytest.fixture(scope="session")
-def database_dir(pytestconfig) -> Path:
+def database_dir(pytestconfig: Config) -> Path:
     return Path(pytestconfig.getoption("--database-dir"))
+
+
+@pytest.fixture(scope="session")
+def download_missing(pytestconfig: Config) -> bool:
+    return pytestconfig.getoption("--download-missing")
 
 
 @pytest.fixture(scope="session")

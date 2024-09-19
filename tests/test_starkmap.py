@@ -19,9 +19,9 @@ from pairinteraction.backend import (
 reference_data_file = Path(__file__).parent.parent / "data/reference_stark_map/rb_small_basis.txt"
 
 
-def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: Path) -> None:
+def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: Path, download_missing: bool) -> None:
     """Test calculating a Stark map."""
-    database = Database(False, True, database_dir)
+    database = Database(download_missing, True, database_dir)
     diagonalizer = DiagonalizerEigenDouble()
 
     # Create a basis
@@ -52,8 +52,7 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: Pa
         np.savetxt(reference_data_file, [calc.magnitude for calc in eigenvalues])
         print(f"Reference data generated and saved to {reference_data_file}")
         pytest.skip("Reference data generated, skipping comparison test")
-    else:
-        reference_values = np.loadtxt(reference_data_file)
-        for calc, ref in zip(eigenvalues, reference_values):
-            np.testing.assert_allclose(calc.magnitude, ref)
-        print("All eigenvalues match the reference values within the specified tolerance.")
+
+    reference_values = np.loadtxt(reference_data_file)
+    for calc, ref in zip(eigenvalues, reference_values):
+        np.testing.assert_allclose(calc.magnitude, ref)
