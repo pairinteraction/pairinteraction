@@ -226,9 +226,6 @@ A full list of build options is provided in the following:
 +---------------------+--------------------------------------+---------+
 | Option              | Effect                               | Default |
 +=====================+======================================+=========+
-| ``WITH_DMG``        | Generate a binary DMG file (Mac OS X | OFF     |
-|                     | only)                                |         |
-+---------------------+--------------------------------------+---------+
 | ``WITH_COVERAGE``   | Generate code coverage report [#]_   | OFF     |
 +---------------------+--------------------------------------+---------+
 
@@ -251,12 +248,6 @@ Note that some targets require specific build options to be enabled in addition 
 +--------------+-------------------------------------------+----------------------+
 | ``doxygen``  | Build the Doxygen documentation           |                      |
 |              | in ``src/cpp/docs``                       |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``package``  | Create a packages for GNU/Linux           |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``package``  | Create a packages for OS X                | ``WITH_DMG=ON``      |
-+--------------+-------------------------------------------+----------------------+
-| ``license``  | Add the license to a package for OS X     | ``WITH_DMG=ON``      |
 +--------------+-------------------------------------------+----------------------+
 
 In addition, a number of options are typically available for the native build tool that is called by CMake.

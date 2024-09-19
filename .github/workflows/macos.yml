@@ -21,16 +21,13 @@ env:
 
 jobs:
   macos:
-    runs-on: macos-13
-    env:
-      package: pairinteraction-install-osx.dmg
+    runs-on: macos-12
     steps:
       - uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
           brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib uv graphviz tbb
-          npm install -g fileicon
 
       - uses: actions/setup-python@v5
         with:
@@ -40,27 +37,14 @@ jobs:
         run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
 
       - name: Configure
-        run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_DMG=On -DCPACK_PACKAGE_FILE_NAME="${package}" -DPython_FIND_FRAMEWORK=LAST
+        run: cmake -S . -B build/ -DBUILD_TESTING=On -DPython_FIND_FRAMEWORK=LAST
       - name: Build
         run: cmake --build build/ -- --keep-going
       - name: Test
         run: cmake --build build/ --target test -- --keep-going
-      - name: Package
-        run: |
-          cmake --build build/ --target package -- --keep-going
-          cmake --build build/ --target license -- --keep-going
 
       - name: Run debugging session in tmate
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
         uses: mxschmitt/action-tmate@v3
         with:
           limit-access-to-actor: true
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.package }}
-          path: build/${{ env.package }}
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pairinteraction-macos-wheel
-          path: build/wheelhouse/*.whl
