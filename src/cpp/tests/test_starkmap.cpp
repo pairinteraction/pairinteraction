@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
         ss << *ket;
         kets.push_back(ss.str());
     }
-    for (size_t i = 0; i < systems.size(); ++i) {
+    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
         eigenvalues.row(i) = systems[i].get_matrix().diagonal().real() * 6579683.920501762;
         Eigen::MatrixX<double> tmp =
             systems[i].get_basis()->get_coefficients().toDense().transpose();
@@ -106,8 +106,9 @@ int main(int argc, char **argv) {
         SPDLOG_ERROR("Could not open reference eigenvalues file");
         success = false;
     } else {
-        for (size_t i = 0; i < systems.size(); ++i) {
-            for (size_t j = 0; j < basis->get_number_of_states(); ++j) {
+        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
+            for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(basis->get_number_of_states());
+                 ++j) {
                 stream >> reference_eigenvalues(i, j);
             }
         }
@@ -133,8 +134,9 @@ int main(int argc, char **argv) {
     //     SPDLOG_ERROR("Could not open reference eigenstates file");
     //     success = false;
     // } else {
-    //     for (size_t i = 0; i < systems.size(); ++i) {
-    //         for (size_t j = 0; j < basis->get_number_of_states() * basis->get_number_of_states();
+    //     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
+    //         for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(basis->get_number_of_states()
+    //         * basis->get_number_of_states());
     //              ++j) {
     //             stream >> reference_eigenstates(i, j);
     //         }

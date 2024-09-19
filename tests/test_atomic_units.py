@@ -8,6 +8,8 @@ from pint import UnitRegistry
 HARTREE_IN_JOULES = 4.3597447222060e-18
 HARTREE_IN_THZ = 6579.683920502
 HARTREE_IN_INVERSE_CM = 219474.63136320
+VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9
+GAUSS_IN_ATOMIC_UNITS = 1 / 2.35051757077e9
 
 
 def test_hartree_to_joules(ureg: UnitRegistry) -> None:
@@ -42,11 +44,11 @@ def test_electric_field_to_atomic_units(ureg: UnitRegistry) -> None:
     """Test conversion from V/cm to atomic units of electric field."""
     one_v_per_cm = 1 * ureg.volt / ureg.centimeter
     one_v_per_cm_in_atomic_units = one_v_per_cm.to_base_units()
-    assert pytest.approx(one_v_per_cm_in_atomic_units.magnitude, rel=1e-12) == 1 / 5.14220675112e9
+    assert pytest.approx(one_v_per_cm_in_atomic_units.magnitude, rel=1e-12) == VOLT_PER_CM_IN_ATOMIC_UNITS
 
 
 def test_magnetic_field_to_atomic_units(ureg: UnitRegistry) -> None:
     """Test conversion from Gauss to atomic units of magnetic field."""
     one_gauss = 1e-4 * ureg.tesla
     one_gauss_in_atomic_units = one_gauss.to_base_units()
-    assert pytest.approx(one_gauss_in_atomic_units.magnitude, rel=1e-12) == 1 / 2.35051757077e9
+    assert pytest.approx(one_gauss_in_atomic_units.magnitude, rel=1e-12) == GAUSS_IN_ATOMIC_UNITS
