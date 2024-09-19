@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./docker/${{ matrix.name }}
-          push: true
+          push: ${{ !(github.ref == 'refs/heads/docker') }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=registry,ref=${{ steps.meta.outputs.tags }}
