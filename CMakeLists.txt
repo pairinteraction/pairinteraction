@@ -165,69 +165,18 @@ add_library(duckdb::duckdb ALIAS duckdb)
 
 # Add subdirectories for building the project
 add_subdirectory(src/cpp)
-
 add_subdirectory(src/cpp/bindings)
+add_subdirectory(src/cpp/docs)
 
 include(CTest)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(src/cpp/tests)
 endif()
 
-add_subdirectory(src/cpp/docs)
-
-# Concatenate licenses
-file(READ ${CMAKE_SOURCE_DIR}/LICENSE-LGPL.txt LICENSE_LGPL)
-file(READ ${CMAKE_SOURCE_DIR}/LICENSE-GPL.txt LICENSE_GPL)
-file(READ ${CMAKE_SOURCE_DIR}/licenses-3rd-party/LICENSE-MKL.txt LICENSE_MKL)
-
-string(
-  CONCAT LICENSE_ALL ${LICENSE_LGPL}
-         "\n\n\n=============================================================================\n\n\n" ${LICENSE_GPL}
-         "\n\n\n=============================================================================\n\n\n" ${LICENSE_MKL})
-
-file(WRITE ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt ${LICENSE_ALL})
-
-# Make packages for different platforms
-
-if(UNIX AND NOT SKBUILD)
-
+# Add flatpak specific instructions
+if(DEFINED ENV{FLATPAK_ID})
   add_subdirectory(extra/flatpak)
-
-  install(FILES ${CMAKE_SOURCE_DIR}/README.md DESTINATION share/doc/${CMAKE_PROJECT_NAME}/)
-  install(
-    FILES ${PROJECT_BINARY_DIR}/LICENSE-ALL.txt
-    DESTINATION share/doc/${CMAKE_PROJECT_NAME}/
-    RENAME copyright)
-
-  set(CPACK_GENERATOR "TGZ;RPM;DEB")
-
-  # General
-  if(NOT CPACK_PACKAGE_FILE_NAME)
-    set(CPACK_PACKAGE_FILE_NAME "pairinteraction-install-linux")
-  endif()
-  string(REGEX REPLACE "\\.(deb|rpm|tar\\.gz)$" "" CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_FILE_NAME})
-  set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Program for calculation Rydberg interaction potentials")
-
-  # DEB
-  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
-  set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-  set(CPACK_DEBIAN_PACKAGE_DEPENDS
-      "python3-pint, python3-pyqt5, python3-pyqt5.qtsvg, python3-scipy, python3-numpy, python3-pyqtgraph")
-  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "PI5")
-  set(CPACK_DEBIAN_PACKAGE_SECTION "science")
-  set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-
-  # RPM
-  set(CPACK_RPM_PACKAGE_ARCHITECTURE "x86_64")
-  set(CPACK_RPM_PACKAGE_AUTOREQPROV ON)
-  set(CPACK_RPM_PACKAGE_REQUIRES "python3-Pint, python3-qt5, python3-scipy, python3-numpy, python3-pyqtgraph")
-  set(CPACK_RPM_PACKAGE_VENDOR "PI5")
-  set(CPACK_RPM_PACKAGE_GROUP "Productivity/Scientific/Physics")
-  set(CPACK_RPM_PACKAGE_PRIORITY "optional")
-
 endif()
-
-include(CPack)
 
 # Print found packages
 include(FeatureSummary)
