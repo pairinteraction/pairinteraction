@@ -25,3 +25,5 @@ ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
 
 ENV BOOST_INCLUDEDIR=/usr/include/boost169
 ENV BOOST_LIBRARYDIR=/usr/lib64/boost169
+
+ENV PATH=/opt/python/cp39-cp39/bin/:$PATH
