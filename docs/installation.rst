@@ -189,7 +189,7 @@ Manual Build
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
 
 If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
-For this, you have to first install the Python dependencies manually.
+For this, you have to first install the some python build dependencies manually.
 
 Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
 
@@ -197,8 +197,9 @@ Again, we strongly recommend installing the dependencies into a virtual environm
 
     uv venv --python=3.9 .venv
     source .venv/bin/activate
-
     uv pip install nanobind numpy
+
+If you want to use mkl you should also run ``uv pip install mkl mkl-devel``.
 
 For **GNU/Linux and OS X**, you can then build the software with standard CMake commands:
 
