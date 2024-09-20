@@ -76,6 +76,7 @@ find_package(doctest REQUIRED)
 find_package(spdlog REQUIRED)
 find_package(nlohmann_json REQUIRED)
 find_package(TBB REQUIRED)
+find_package(fmt REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(
   Python REQUIRED

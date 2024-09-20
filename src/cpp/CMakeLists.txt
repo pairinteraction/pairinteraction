@@ -93,6 +93,7 @@ target_link_libraries(
          nlohmann_json::nlohmann_json
          spdlog::spdlog
          TBB::tbb
+         fmt::fmt
          $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
          $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>
