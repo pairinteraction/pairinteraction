@@ -9,9 +9,7 @@ on:
   - cron: '0 0 * * 1' # Every Monday at 00:00
 
 jobs:
-  linux:
-    uses: ./.github/workflows/linux.yml
-  macos:
-    uses: ./.github/workflows/macos.yml
-  windows:
-    uses: ./.github/workflows/windows.yml
+  cpp-backend:
+    uses: ./.github/workflows/cpp-backend.yml
+  python-wheel:
+    uses: ./.github/workflows/python-wheel.yml

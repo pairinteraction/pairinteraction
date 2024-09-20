@@ -1,0 +1,150 @@
+name: C++ Backend
+
+on:
+  push:
+  pull_request:
+    types: [opened, reopened]
+  workflow_call:
+  workflow_dispatch:
+    inputs:
+      debug_enabled:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled'
+        required: false
+        default: false
+
+
+env:
+  CMAKE_BUILD_PARALLEL_LEVEL: 2
+  CTEST_PARALLEL_LEVEL: 2
+  CTEST_OUTPUT_ON_FAILURE: 1
+  VERBOSE: 1
+
+
+jobs:
+  linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        distro: [debian, ubuntu, manylinux, opensuse, static-analysis]
+
+        include:
+          - distro: static-analysis
+            CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
+          - distro: opensuse
+            CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12"
+
+    name: ${{ matrix.distro }}
+    runs-on: ${{ matrix.os }}
+    container:
+      image: ghcr.io/atom-pairinteraction/pairinteraction-${{ matrix.distro }}:docker
+    env:
+      CLICOLOR_FORCE: 1
+      CXXFLAGS: "-march=broadwell"
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+
+    - name: Install MKL
+      run: uv pip install --system --break-system-packages --no-cache-dir mkl mkl-devel
+
+    - name: Configure
+      run: cmake -S . -B build/ -DBUILD_TESTING=On ${{ matrix.CMAKE_ARGS }}
+
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+
+    - name: Test
+      run: cmake --build build/ --target test -- --keep-going
+
+    - name: Run debugging session in tmate
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
+
+
+  macos:
+    runs-on: macos-12
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install MacOS dependencies
+      run: brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib uv graphviz tbb
+
+    - uses: actions/setup-python@v5
+      with:
+        python-version: '3.9'
+
+    - name: Install Python dependencies for cmake
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+
+    - name: Configure
+      run: cmake -S . -B build/ -DBUILD_TESTING=On -DPython_FIND_FRAMEWORK=LAST
+
+    - name: Build
+      run: cmake --build build/ -- --keep-going
+
+    - name: Test
+      run: cmake --build build/ --target test -- --keep-going
+
+    - name: Run debugging session in tmate
+      if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
+      uses: mxschmitt/action-tmate@v3
+      with:
+        limit-access-to-actor: true
+
+
+  windows:
+    runs-on: windows-2019
+    env:
+      CLICOLOR_FORCE: 1
+      CMAKE_BUILD_TYPE: Release
+      CXXFLAGS: "/Ox /arch:AVX2"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Windows dependencies
+        uses: ./.github/actions/setup-vcpkg
+      - name: Install Windows uv
+        run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.9'
+
+      - name: Install Python dependencies for cmake
+        run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+
+      - name: Install MKL
+        run: uv pip install --system --break-system-packages --no-cache-dir mkl mkl-devel
+
+      - name: Configure
+        shell: cmd
+        run: |
+          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat"
+          cmake -S . -B build/ -G "Visual Studio 16 2019" -DBUILD_TESTING=On ^
+              -DPython_FIND_REGISTRY=LAST -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+
+      - name: Build
+        run: cmake --build build/ --config ${{ env.CMAKE_BUILD_TYPE }}
+
+      - name: Tests
+        run: cmake --build build/ --target RUN_TESTS --config ${{ env.CMAKE_BUILD_TYPE }}
+
+      - name: Run debugging session in tmate
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.debug_enabled && always()
+        uses: mxschmitt/action-tmate@v3
+        with:
+          limit-access-to-actor: true
