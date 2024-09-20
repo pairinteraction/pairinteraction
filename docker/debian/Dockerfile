@@ -27,6 +27,3 @@ ENV LD_LIBRARY_PATH=/opt/intel/oneapi/tbb/latest/lib:$LD_LIBRARY_PATH
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin/:$PATH"
-
-# For compatiblity (to be removed)
-RUN mkdir -p /opt/intel/oneapi/ && touch /opt/intel/oneapi/setvars.sh
