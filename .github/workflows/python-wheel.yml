@@ -1,4 +1,4 @@
-name: skbuild
+name: Python Wheel
 
 on:
   push:
@@ -7,7 +7,6 @@ on:
   workflow_call:
   workflow_dispatch:
 
-# https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
@@ -58,8 +57,7 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: |
-        brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib tbb
+      run: brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib tbb
 
     - uses: pypa/cibuildwheel@v2.16
 
