@@ -11,7 +11,7 @@ COPY --from=build /usr/src/packages/RPMS/x86_64/cpp-httplib-devel-0.12.5-0.x86_6
 COPY oneAPI.repo /etc/zypp/repos.d/
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
-    patterns-devel-C-C++-devel_C_C++ \
+    patterns-devel-C-C++-devel_C_C++ gcc12-c++ \
     git cmake \
     sqlite3 sqlite3-devel \
     libboost_headers1_66_0-devel \
