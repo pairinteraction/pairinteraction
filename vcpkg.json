@@ -2,12 +2,6 @@
     "name": "pairinteraction",
     "version-string": "1",
     "dependencies": [
-        "boost-algorithm",
-        "boost-multi-index",
-        "boost-property-tree",
-        "boost-tokenizer",
-        "boost-uuid",
-        "cereal",
         {
             "name": "cpp-httplib",
             "features": [ "openssl" ]
@@ -15,13 +9,8 @@
         "doctest",
         "eigen3",
         "fmt",
-        "gsl",
         "nlohmann-json",
         "spdlog",
-        {
-            "name": "sqlite3",
-            "features": [ "tool" ]
-        },
         "tbb"
     ]
 }
