@@ -63,7 +63,7 @@ jobs:
 
     - name: Install MacOS dependencies
       if: ${{ matrix.distro == 'macos' }}
-      run: brew install boost cereal doctest spdlog eigen fmt gsl lapack nlohmann-json cpp-httplib tbb uv graphviz
+      run: brew install doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb uv graphviz
 
     - name: Install Windows dependencies
       if: ${{ matrix.distro == 'windows' }}
