@@ -1,5 +1,6 @@
 #include "pairinteraction/system/System.hpp"
 
+#include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
@@ -138,8 +139,32 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         hamiltonian_requires_construction = false;
     }
 
+    // Make use of the block structure of the Hamiltonian
+    if (!blockdiagonalizing_labels.empty()) {
+
+        // Ensure that the only transformations yet applied to the Hamiltonian are sortings
+        bool only_sortings = true;
+        for (const auto &label : hamiltonian->get_transformation().transformation_type) {
+            if (!utils::is_sorting(label)) {
+                only_sortings = false;
+            }
+        }
+
+        if (only_sortings) {
+            std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
+                                                   blockdiagonalizing_labels.end()};
+
+            // Sort the Hamiltonian according to the block structure
+            auto sorter = hamiltonian->get_sorter(labels);
+            hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(sorter));
+
+            // Get the indices of the blocks
+            auto blocks = hamiltonian->get_blocks(labels);
+        }
+    }
+
     // Diagonalize the Hamiltonian
-    // TODO get TransformationType from derived class and diagonalize blocks in parallel
+    // TODO diagonalize "blocks" in parallel
     auto eigensys =
         diagonalizer.eigh(hamiltonian->get_matrix(), min_eigenvalue, max_eigenvalue, precision);
 
