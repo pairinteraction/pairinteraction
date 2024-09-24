@@ -13,6 +13,9 @@ enum class TransformationType : unsigned char;
 template <typename Scalar>
 class DiagonalizerInterface;
 
+template <typename Sortable>
+class Range;
+
 template <typename Derived>
 class System
     : public TransformationBuilderInterface<typename traits::CrtpTraits<Derived>::scalar_t> {
@@ -41,9 +44,7 @@ public:
     Derived transformed(const Sorting &transformation) const;
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                 int precision = 12);
-    System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                 real_t min_eigenvalue, real_t max_eigenvalue, int precision = 12);
+                                 int precision = 12, const Range<real_t> &eigenvalue_range = {});
 
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;

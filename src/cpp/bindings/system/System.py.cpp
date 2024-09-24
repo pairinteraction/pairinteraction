@@ -5,6 +5,7 @@
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemClassicalLight.hpp"
+#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -35,13 +36,9 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
                                                                  nb::const_))
         .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transformed, nb::const_))
         .def("diagonalize",
-             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int>(
+             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int, const Range<real_t> &>(
                  &System<T>::diagonalize),
-             "diagonalizer"_a, "precision"_a = 12)
-        .def("diagonalize",
-             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, real_t, real_t, int>(
-                 &System<T>::diagonalize),
-             "diagonalizer"_a, "min_eigenvalue"_a, "max_eigenvalue"_a, "precision"_a = 12);
+             "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>());
 }
 
 template <typename T>
