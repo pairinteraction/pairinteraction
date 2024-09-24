@@ -22,7 +22,7 @@ static void declare_operator(nb::module_ &m, std::string const &type_name) {
         .def("get_transformation", &Operator<T>::get_transformation)
         .def("get_rotator", &Operator<T>::get_rotator)
         .def("get_sorter", &Operator<T>::get_sorter)
-        .def("get_blocks", &Operator<T>::get_blocks)
+        .def("get_indices_of_blocks", &Operator<T>::get_indices_of_blocks)
         .def("transform",
              nb::overload_cast<const Transformation<scalar_t> &>(&Operator<T>::transformed,
                                                                  nb::const_))

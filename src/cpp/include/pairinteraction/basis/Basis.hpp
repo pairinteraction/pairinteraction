@@ -70,14 +70,15 @@ public:
     const Transformation<scalar_t> &get_transformation() const override;
     Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
     Sorting get_sorter(const std::vector<TransformationType> &labels) const override;
-    Blocks get_blocks(const std::vector<TransformationType> &labels) const override;
+    IndicesOfBlocks
+    get_indices_of_blocks(const std::vector<TransformationType> &labels) const override;
 
     void perform_sorter_checks(const std::vector<TransformationType> &labels) const;
     void perform_blocks_checks(const std::set<TransformationType> &unique_labels) const;
     void get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                    Sorting &transformation) const;
-    void get_blocks_without_checks(const std::set<TransformationType> &unique_labels,
-                                   Blocks &blocks) const;
+    void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
+                                              IndicesOfBlocks &blocks) const;
 
     std::shared_ptr<Derived> transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<Derived> transformed(const Sorting &transformation) const;

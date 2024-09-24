@@ -101,7 +101,8 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
 }
 
 template <typename Derived>
-Blocks Operator<Derived>::get_blocks(const std::vector<TransformationType> &labels) const {
+IndicesOfBlocks
+Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     basis->perform_blocks_checks(unique_labels);
 
@@ -113,33 +114,22 @@ Blocks Operator<Derived>::get_blocks(const std::vector<TransformationType> &labe
     }
 
     // Initialize blocks
-    Blocks blocks;
+    IndicesOfBlocks blocks({0, static_cast<size_t>(matrix.rows())});
 
     // Handle all labels except SORT_BY_ENERGY
     if (!unique_labels.empty()) {
-        basis->get_blocks_without_checks(unique_labels, blocks);
+        basis->get_indices_of_blocks_without_checks(unique_labels, blocks);
     }
 
     // Handle SORT_BY_ENERGY if present
     if (contains_energy) {
         scalar_t last_energy = std::real(matrix.coeff(0, 0));
-
-        std::vector<int> blocks_start_original;
-        blocks_start_original.swap(blocks.start);
-        blocks.start.reserve(matrix.rows());
-        size_t idx = 0;
-
         for (int i = 0; i < matrix.rows(); ++i) {
-            if (idx < blocks_start_original.size() && i == blocks_start_original[idx]) {
-                blocks.start.push_back(i);
-                ++idx;
-            } else if (std::real(matrix.coeff(i, i)) != last_energy) {
-                blocks.start.push_back(i);
+            if (std::real(matrix.coeff(i, i)) != last_energy) {
+                blocks.add(i);
                 last_energy = std::real(matrix.coeff(i, i));
             }
         }
-
-        blocks.start.shrink_to_fit();
     }
 
     return blocks;

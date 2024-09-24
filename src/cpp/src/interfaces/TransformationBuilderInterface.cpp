@@ -4,6 +4,35 @@
 #include "pairinteraction/utils/euler.hpp"
 
 namespace pairinteraction {
+
+IndicesOfBlock::IndicesOfBlock(size_t start, size_t end) : start(start), end(end) {}
+
+size_t IndicesOfBlock::size() const { return end - start; }
+
+IndicesOfBlocks::IndicesOfBlocks(std::initializer_list<size_t> boundaries)
+    : boundaries(boundaries) {}
+
+void IndicesOfBlocks::add(size_t boundary) { boundaries.insert(boundary); }
+
+std::vector<IndicesOfBlock> IndicesOfBlocks::get() const {
+    std::vector<IndicesOfBlock> blocks;
+    if (boundaries.empty()) {
+        return blocks;
+    }
+
+    auto it = boundaries.begin();
+    size_t start = *it++;
+
+    while (it != boundaries.end()) {
+        blocks.emplace_back(start, *it);
+        start = *it++;
+    }
+
+    return blocks;
+}
+
+size_t IndicesOfBlocks::size() const { return boundaries.size(); }
+
 template <typename Scalar>
 Transformation<Scalar>::Transformation(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix,
                                        std::vector<TransformationType> transformation_type)
@@ -19,17 +48,6 @@ Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix
 
 Sorting::Sorting(Eigen::PermutationMatrix<Eigen::Dynamic, Eigen::Dynamic> matrix)
     : matrix(std::move(matrix)), transformation_type({TransformationType::ARBITRARY}) {}
-
-Blocks::Blocks(std::vector<int> start) : start(std::move(start)) {
-    if (this->start.empty() || this->start[0] != 0) {
-        throw std::invalid_argument("The first element of the start vector must be 0.");
-    }
-    for (size_t i = 1; i < this->start.size(); ++i) {
-        if (this->start[i] <= this->start[i - 1]) {
-            throw std::invalid_argument("The start vector must be sorted in ascending order.");
-        }
-    }
-}
 
 template <typename Scalar>
 Transformation<Scalar>
