@@ -31,7 +31,7 @@ std::vector<IndicesOfBlock> IndicesOfBlocks::get() const {
     return blocks;
 }
 
-size_t IndicesOfBlocks::size() const { return boundaries.size(); }
+size_t IndicesOfBlocks::size() const { return boundaries.empty() ? 0 : boundaries.size() - 1; }
 
 template <typename Scalar>
 Transformation<Scalar>::Transformation(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix,

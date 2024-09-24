@@ -5,6 +5,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -57,34 +58,19 @@ static void declare_diagonalize(nb::module_ &m, std::string const & /* type_name
     m.def(
         "diagonalize",
         [](nb::list pylist, // NOLINT
-           const DiagonalizerInterface<scalar_t> &diagonalizer, int precision) {
+           const DiagonalizerInterface<scalar_t> &diagonalizer, int precision,
+           const Range<real_t> &eigenvalue_range) {
             std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
                 systems.push_back(nb::cast<T>(h));
             }
-            diagonalize(systems, diagonalizer, precision);
+            diagonalize(systems, diagonalizer, precision, eigenvalue_range);
             for (size_t i = 0; i < systems.size(); ++i) {
                 pylist[i] = nb::cast(systems[i]);
             }
         },
-        "systems"_a, "diagonalizer"_a, "precision"_a = 12);
-    m.def(
-        "diagonalize",
-        [](nb::list pylist, // NOLINT
-           const DiagonalizerInterface<scalar_t> &diagonalizer, real_t min_eigenvalue,
-           real_t max_eigenvalue, int precision) {
-            std::vector<T> systems;
-            systems.reserve(pylist.size());
-            for (auto h : pylist) {
-                systems.push_back(nb::cast<T>(h));
-            }
-            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, precision);
-            for (size_t i = 0; i < systems.size(); ++i) {
-                pylist[i] = nb::cast(systems[i]);
-            }
-        },
-        "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a, "max_eigenvalue"_a, "precision"_a = 12);
+        "systems"_a, "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>());
 }
 
 void bind_diagonalizer(nb::module_ &m) {

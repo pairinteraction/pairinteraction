@@ -1,32 +1,21 @@
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 
 #include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/utils/Range.hpp"
 
 #include <complex>
 #include <oneapi/tbb.h>
 
 namespace pairinteraction {
-template <typename Derived>
-void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
-                 const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 int precision) {
-    oneapi::tbb::parallel_for(oneapi::tbb::blocked_range(systems.begin(), systems.end()),
-                              [&](const auto &range) {
-                                  for (auto &system : range) {
-                                      system.get().diagonalize(diagonalizer, precision);
-                                  }
-                              });
-}
 
 template <typename Derived>
 void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 typename Derived::real_t min_eigenvalue, typename Derived::real_t max_eigenvalue,
-                 int precision) {
+                 int precision, const Range<typename Derived::real_t> &eigenvalue_range) {
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+                system.get().diagonalize(diagonalizer, precision, eigenvalue_range);
             }
         });
 }
@@ -34,36 +23,11 @@ void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
 template <typename Derived>
 void diagonalize(std::vector<Derived> &systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 int precision) {
+                 int precision, const Range<typename Derived::real_t> &eigenvalue_range) {
     oneapi::tbb::parallel_for(oneapi::tbb::blocked_range(systems.begin(), systems.end()),
                               [&](const auto &range) {
                                   for (auto &system : range) {
-                                      system.diagonalize(diagonalizer, precision);
-                                  }
-                              });
-}
-
-template <typename Derived>
-void diagonalize(std::vector<Derived> &systems,
-                 const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 typename Derived::real_t min_eigenvalue, typename Derived::real_t max_eigenvalue,
-                 int precision) {
-    oneapi::tbb::parallel_for(
-        oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
-            for (auto &system : range) {
-                system.diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, precision);
-            }
-        });
-}
-
-template <typename Derived>
-void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
-                 const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 int precision) {
-    oneapi::tbb::parallel_for(oneapi::tbb::blocked_range(systems.begin(), systems.end()),
-                              [&](const auto &range) {
-                                  for (auto &system : range) {
-                                      system.get().diagonalize(diagonalizer, precision);
+                                      system.diagonalize(diagonalizer, precision, eigenvalue_range);
                                   }
                               });
 }
@@ -71,116 +35,35 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
 template <typename Derived>
 void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
-                 typename Derived::real_t min_eigenvalue, typename Derived::real_t max_eigenvalue,
-                 int precision) {
+                 int precision, const Range<typename Derived::real_t> &eigenvalue_range) {
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range(systems.begin(), systems.end()), [&](const auto &range) {
             for (auto &system : range) {
-                system.get().diagonalize(diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+                system.get().diagonalize(diagonalizer, precision, eigenvalue_range);
             }
         });
 }
 
-// Explicit instantiation
-template void diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<float>>> systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          int precision);
-template void diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<double>>> systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          int precision);
-template void
-diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<std::complex<float>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            int precision);
-template void
-diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<std::complex<double>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            int precision);
+// Explicit instantiations
+#define INSTANTIATE_DIAGONALIZE(TYPE)                                                              \
+    template void diagonalize(                                                                     \
+        std::initializer_list<std::reference_wrapper<SystemAtom<TYPE>>> systems,                   \
+        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
+        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);                                  \
+    template void diagonalize(                                                                     \
+        std::vector<SystemAtom<TYPE>> &systems,                                                    \
+        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
+        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);                                  \
+    template void diagonalize(                                                                     \
+        std::vector<std::reference_wrapper<SystemAtom<TYPE>>> systems,                             \
+        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
+        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);
 
-template void diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<float>>> systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          SystemAtom<float>::real_t min_eigenvalue,
-                          SystemAtom<float>::real_t max_eigenvalue, int precision);
-template void diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<double>>> systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          SystemAtom<double>::real_t min_eigenvalue,
-                          SystemAtom<double>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<std::complex<float>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<float>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<float>>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::initializer_list<std::reference_wrapper<SystemAtom<std::complex<double>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<double>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<double>>::real_t max_eigenvalue, int precision);
+INSTANTIATE_DIAGONALIZE(float)
+INSTANTIATE_DIAGONALIZE(double)
+INSTANTIATE_DIAGONALIZE(std::complex<float>)
+INSTANTIATE_DIAGONALIZE(std::complex<double>)
 
-template void diagonalize(std::vector<SystemAtom<float>> &systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          int precision);
-template void diagonalize(std::vector<SystemAtom<double>> &systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          int precision);
-template void
-diagonalize(std::vector<SystemAtom<std::complex<float>>> &systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            int precision);
-template void
-diagonalize(std::vector<SystemAtom<std::complex<double>>> &systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            int precision);
+#undef INSTANTIATE_DIAGONALIZE
 
-template void diagonalize(std::vector<SystemAtom<float>> &systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          SystemAtom<float>::real_t min_eigenvalue,
-                          SystemAtom<float>::real_t max_eigenvalue, int precision);
-template void diagonalize(std::vector<SystemAtom<double>> &systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          SystemAtom<double>::real_t min_eigenvalue,
-                          SystemAtom<double>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::vector<SystemAtom<std::complex<float>>> &systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<float>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<float>>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::vector<SystemAtom<std::complex<double>>> &systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<double>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<double>>::real_t max_eigenvalue, int precision);
-
-template void diagonalize(std::vector<std::reference_wrapper<SystemAtom<float>>> systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          int precision);
-template void diagonalize(std::vector<std::reference_wrapper<SystemAtom<double>>> systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          int precision);
-template void
-diagonalize(std::vector<std::reference_wrapper<SystemAtom<std::complex<float>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            int precision);
-template void
-diagonalize(std::vector<std::reference_wrapper<SystemAtom<std::complex<double>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            int precision);
-
-template void diagonalize(std::vector<std::reference_wrapper<SystemAtom<float>>> systems,
-                          const DiagonalizerInterface<SystemAtom<float>::scalar_t> &diagonalizer,
-                          SystemAtom<float>::real_t min_eigenvalue,
-                          SystemAtom<float>::real_t max_eigenvalue, int precision);
-template void diagonalize(std::vector<std::reference_wrapper<SystemAtom<double>>> systems,
-                          const DiagonalizerInterface<SystemAtom<double>::scalar_t> &diagonalizer,
-                          SystemAtom<double>::real_t min_eigenvalue,
-                          SystemAtom<double>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::vector<std::reference_wrapper<SystemAtom<std::complex<float>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<float>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<float>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<float>>::real_t max_eigenvalue, int precision);
-template void
-diagonalize(std::vector<std::reference_wrapper<SystemAtom<std::complex<double>>>> systems,
-            const DiagonalizerInterface<SystemAtom<std::complex<double>>::scalar_t> &diagonalizer,
-            SystemAtom<std::complex<double>>::real_t min_eigenvalue,
-            SystemAtom<std::complex<double>>::real_t max_eigenvalue, int precision);
 } // namespace pairinteraction

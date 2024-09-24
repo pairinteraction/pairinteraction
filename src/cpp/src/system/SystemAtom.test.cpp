@@ -143,8 +143,9 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // We specify a search interval because this is required if the FEAST routine is used.
             // To avoid overflows, the interval ranges from half the smallest possible value to half
             // the largest possible value.
-            system.diagonalize(*diagonalizer, std::numeric_limits<double>::lowest() / 2,
-                               std::numeric_limits<double>::max() / 2, precision);
+            system.diagonalize(*diagonalizer, 12,
+                               {std::numeric_limits<double>::lowest() / 2,
+                                std::numeric_limits<double>::max() / 2});
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
@@ -189,7 +190,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
             }
         }
 
-        system.diagonalize(*diagonalizer, min_energy, max_energy);
+        system.diagonalize(*diagonalizer, 12, {min_energy, max_energy});
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
         std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());

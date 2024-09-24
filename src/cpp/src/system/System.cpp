@@ -4,6 +4,7 @@
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
@@ -113,7 +114,8 @@ Derived System<Derived>::transformed(const Sorting &transformation) const {
 
 template <typename Derived>
 System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                              int precision) {
+                                              int precision,
+                                              const Range<real_t> &eigenvalue_range) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
@@ -153,7 +155,10 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         }
 
         // Diagonalize the blocks in parallel // TODO
-        auto eigensys = diagonalizer.eigh(hamiltonian->get_matrix(), precision);
+        auto eigensys = eigenvalue_range.is_finite()
+            ? diagonalizer.eigh(hamiltonian->get_matrix(), eigenvalue_range.min(),
+                                eigenvalue_range.max(), precision)
+            : diagonalizer.eigh(hamiltonian->get_matrix(), precision);
 
         // Store the diagonalized hamiltonian (possible future optimization: use
         // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
@@ -162,72 +167,10 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
 
     } else {
         // Diagonalize the full Hamiltonian at once
-        auto eigensys = diagonalizer.eigh(hamiltonian->get_matrix(), precision);
-
-        // Store the diagonalized hamiltonian (possible future optimization: use
-        // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
-        // eigenvectors, get rid of values smaller than the precision)
-        hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigensys.eigenvectors));
-    }
-
-    return *this;
-}
-
-template <typename Derived>
-System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                              real_t min_eigenvalue, real_t max_eigenvalue,
-                                              int precision) {
-    // TODO avoid code duplication
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-
-    // Figure out whether the Hamiltonian can be block-diagonalized
-    bool is_blockdiagonizable = !blockdiagonalizing_labels.empty();
-    if (is_blockdiagonizable) {
-        std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
-                                               blockdiagonalizing_labels.end()};
-        for (const auto &label : hamiltonian->get_transformation().transformation_type) {
-            if (!utils::is_sorting(label) && label != TransformationType::IDENTITY) {
-                is_blockdiagonizable = false;
-                break;
-            }
-        }
-    }
-
-    // Block-diagonalize the Hamiltonian if possible
-    if (is_blockdiagonizable) {
-        std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
-                                               blockdiagonalizing_labels.end()};
-
-        // Sort the Hamiltonian according to the block structure
-        auto sorter = hamiltonian->get_sorter(labels);
-        hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(sorter));
-
-        // Get the indices of the blocks
-        auto blocks = hamiltonian->get_indices_of_blocks(labels);
-
-        // Split the Hamiltonian matrix into blocks
-        std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> matrices;
-        matrices.reserve(blocks.size());
-        for (const auto &block : blocks.get()) {
-            matrices.push_back(hamiltonian->get_matrix().block(block.start, block.start,
-                                                               block.size(), block.size()));
-        }
-
-        // Diagonalize the blocks in parallel // TODO
-        auto eigensys = diagonalizer.eigh(hamiltonian->get_matrix(), precision);
-
-        // Store the diagonalized hamiltonian (possible future optimization: use
-        // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
-        // eigenvectors, get rid of values smaller than the precision)
-        hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigensys.eigenvectors));
-
-    } else {
-        // Diagonalize the full Hamiltonian at once
-        auto eigensys =
-            diagonalizer.eigh(hamiltonian->get_matrix(), min_eigenvalue, max_eigenvalue, precision);
+        auto eigensys = eigenvalue_range.is_finite()
+            ? diagonalizer.eigh(hamiltonian->get_matrix(), eigenvalue_range.min(),
+                                eigenvalue_range.max(), precision)
+            : diagonalizer.eigh(hamiltonian->get_matrix(), precision);
 
         // Store the diagonalized hamiltonian (possible future optimization: use
         // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
