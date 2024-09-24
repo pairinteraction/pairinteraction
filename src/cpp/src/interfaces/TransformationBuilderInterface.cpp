@@ -58,13 +58,14 @@ TransformationBuilderInterface<Scalar>::get_rotator(const std::array<real_t, 3> 
 }
 
 // Explicit instantiations
-template struct Transformation<float>;
-template struct Transformation<double>;
-template struct Transformation<std::complex<float>>;
-template struct Transformation<std::complex<double>>;
+#define INSTANTIATE_TRANSFORMATION(SCALAR)                                                         \
+    template struct Transformation<SCALAR>;                                                        \
+    template class TransformationBuilderInterface<SCALAR>;
 
-template class TransformationBuilderInterface<float>;
-template class TransformationBuilderInterface<double>;
-template class TransformationBuilderInterface<std::complex<float>>;
-template class TransformationBuilderInterface<std::complex<double>>;
+INSTANTIATE_TRANSFORMATION(float)
+INSTANTIATE_TRANSFORMATION(double)
+INSTANTIATE_TRANSFORMATION(std::complex<float>)
+INSTANTIATE_TRANSFORMATION(std::complex<double>)
+
+#undef INSTANTIATE_TRANSFORMATION
 } // namespace pairinteraction

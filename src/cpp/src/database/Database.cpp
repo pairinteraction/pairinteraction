@@ -1169,35 +1169,24 @@ struct database_dir_noexcept : std::filesystem::path {
 const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
 // Explicit instantiations
-template std::shared_ptr<const KetAtom<float>>
-Database::get_ket<float>(std::string species,
-                         const AtomDescriptionByParameters<float> &description);
-template std::shared_ptr<const KetAtom<double>>
-Database::get_ket<double>(std::string species,
-                          const AtomDescriptionByParameters<double> &description);
-template std::shared_ptr<const BasisAtom<float>>
+#define INSTANTIATE_GET_KET(TYPE)                                                                  \
+    template std::shared_ptr<const KetAtom<TYPE>> Database::get_ket<TYPE>(                         \
+        std::string species, const AtomDescriptionByParameters<TYPE> &description);
 
-Database::get_basis<float>(std::string species, const AtomDescriptionByRanges<float> &description,
-                           std::vector<size_t> additional_ket_ids);
-template std::shared_ptr<const BasisAtom<double>>
-Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
-                            std::vector<size_t> additional_ket_ids);
-template std::shared_ptr<const BasisAtom<std::complex<float>>>
-Database::get_basis<std::complex<float>>(std::string species,
-                                         const AtomDescriptionByRanges<float> &description,
-                                         std::vector<size_t> additional_ket_ids);
-template std::shared_ptr<const BasisAtom<std::complex<double>>>
-Database::get_basis<std::complex<double>>(std::string species,
-                                          const AtomDescriptionByRanges<double> &description,
-                                          std::vector<size_t> additional_ket_ids);
-template OperatorAtom<float>
-Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
-                              int q);
-template OperatorAtom<double>
-Database::get_operator<double>(std::shared_ptr<const BasisAtom<double>> basis, OperatorType type,
-                               int q);
-template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<float>>(
-    std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
-template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
-    std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
+#define INSTANTIATE_GET_BASIS_AND_OPERATOR(TYPE, REAL_TYPE)                                        \
+    template std::shared_ptr<const BasisAtom<TYPE>> Database::get_basis<TYPE>(                     \
+        std::string species, const AtomDescriptionByRanges<REAL_TYPE> &description,                \
+        std::vector<size_t> additional_ket_ids);                                                   \
+    template OperatorAtom<TYPE> Database::get_operator<TYPE>(                                      \
+        std::shared_ptr<const BasisAtom<TYPE>> basis, OperatorType type, int q);
+
+INSTANTIATE_GET_KET(float)
+INSTANTIATE_GET_KET(double)
+INSTANTIATE_GET_BASIS_AND_OPERATOR(float, float)
+INSTANTIATE_GET_BASIS_AND_OPERATOR(double, double)
+INSTANTIATE_GET_BASIS_AND_OPERATOR(std::complex<float>, float)
+INSTANTIATE_GET_BASIS_AND_OPERATOR(std::complex<double>, double)
+
+#undef INSTANTIATE_GET_KET
+#undef INSTANTIATE_GET_BASIS_AND_OPERATOR
 } // namespace pairinteraction
