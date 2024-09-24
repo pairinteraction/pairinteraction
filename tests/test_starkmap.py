@@ -32,7 +32,6 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
         .set_species("Rb")
         .restrict_quantum_number_n(58, 62)
         .restrict_quantum_number_l(0, 2)
-        .restrict_quantum_number_m(0.5, 0.5)
         .create(database)
     )
     print(f"Number of basis states: {basis.get_number_of_states()}")
@@ -45,10 +44,15 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     # Diagonalize the systems in parallel
     diagonalize(systems, diagonalizer)
 
+    # Sort by the eigenvalues
+    # TODO make the following lines work and remove "sorted" from the next code block
+    # for system in systems:
+    #     system = system.transformed(system.get_sorter(SORT_BY_ENERGY))
+
     # Compare to reference data
     kets = [str(ket) for ket in systems[0].get_basis().get_kets()]
     eigenvalues = [
-        (system.get_matrix().diagonal().real * ureg.hartree).to("gigahertz", "spectroscopy").magnitude
+        sorted((system.get_matrix().diagonal().real * ureg.hartree).to("gigahertz", "spectroscopy").magnitude)
         for system in systems
     ]
     # eigenstates = [system.get_basis().get_coefficients().todense().A1 for system in systems]
