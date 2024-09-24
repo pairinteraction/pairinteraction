@@ -39,11 +39,11 @@ struct IndicesOfBlock {
     size_t end;
 };
 
-class IndicesOfBlocks {
+class IndicesOfBlocksCreator {
 public:
-    IndicesOfBlocks(std::initializer_list<size_t> boundaries);
+    IndicesOfBlocksCreator(std::initializer_list<size_t> boundaries);
     void add(size_t boundary);
-    std::vector<IndicesOfBlock> get() const;
+    std::vector<IndicesOfBlock> create() const;
     size_t size() const;
 
 private:

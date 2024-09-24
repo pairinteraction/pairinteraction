@@ -45,6 +45,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
 }
 
 // Explicit instantiations
+// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_DIAGONALIZE(TYPE)                                                              \
     template void diagonalize(                                                                     \
         std::initializer_list<std::reference_wrapper<SystemAtom<TYPE>>> systems,                   \

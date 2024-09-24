@@ -56,6 +56,9 @@ public:
     std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::vector<TransformationType> &labels) const override;
 
+    void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
+                                              IndicesOfBlocksCreator &blocks) const;
+
     Derived transformed(const Transformation<scalar_t> &transformation) const;
     Derived transformed(const Sorting &transformation) const;
 
