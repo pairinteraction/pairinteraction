@@ -241,7 +241,7 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
 }
 
 template <typename Derived>
-IndicesOfBlocks
+std::vector<IndicesOfBlock>
 Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     perform_blocks_checks(unique_labels);
@@ -250,7 +250,7 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
     IndicesOfBlocks blocks({0, static_cast<size_t>(coefficients.matrix.cols())});
     get_indices_of_blocks_without_checks(unique_labels, blocks);
 
-    return blocks;
+    return blocks.get();
 }
 
 template <typename Derived>

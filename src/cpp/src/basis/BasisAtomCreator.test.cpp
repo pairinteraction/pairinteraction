@@ -88,7 +88,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     DOCTEST_CHECK(blocks.size() == expected_start.size());
 
     size_t idx = 0;
-    for (const auto &block : blocks.get()) {
+    for (const auto &block : blocks) {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Block {} starts at {}", idx, block.start);
         DOCTEST_CHECK(block.start == expected_start[idx]);
         idx++;
