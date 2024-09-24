@@ -4,6 +4,8 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <memory>
+#include <set>
+#include <vector>
 
 namespace pairinteraction {
 enum class TransformationType : unsigned char;
@@ -45,6 +47,7 @@ public:
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;
     mutable bool hamiltonian_requires_construction{true};
+    mutable std::set<TransformationType> blockdiagonalizing_labels{};
 
     virtual void construct_hamiltonian() const = 0;
 
