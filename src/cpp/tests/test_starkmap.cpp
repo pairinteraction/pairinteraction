@@ -33,23 +33,29 @@ int main(int argc, char **argv) {
                      .set_species("Rb")
                      .restrict_quantum_number_n(58, 62)
                      .restrict_quantum_number_l(0, 2)
-                     .restrict_quantum_number_m(0.5, 0.5)
                      .create(database);
 
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
 
     // Create systems for different values of the electric field
-    std::vector<pairinteraction::SystemAtom<double>> systems;
-    systems.reserve(11);
+    std::vector<pairinteraction::SystemAtom<double>> systems_unsorted;
+    systems_unsorted.reserve(11);
     for (int i = 0; i < 11; ++i) {
         auto system = pairinteraction::SystemAtom<double>(basis);
         system.set_electric_field({0, 0, i * 1.9446903811524456e-10});
-        systems.push_back(std::move(system));
+        systems_unsorted.push_back(std::move(system));
     }
 
     // Diagonalize the systems in parallel
     pairinteraction::DiagonalizerEigen<double> diagonalizer;
-    pairinteraction::diagonalize(systems, diagonalizer);
+    pairinteraction::diagonalize(systems_unsorted, diagonalizer);
+
+    // Sort by the eigenvalues
+    std::vector<pairinteraction::SystemAtom<double>> systems;
+    for (auto &system : systems_unsorted) {
+        auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
+        systems.push_back(system.transformed(sorter)); // TODO: system = system.transformed(sorter)
+    }
 
     // Extract results
     std::vector<std::string> kets;
