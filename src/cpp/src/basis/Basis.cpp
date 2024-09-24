@@ -241,13 +241,14 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
 }
 
 template <typename Derived>
-Blocks Basis<Derived>::get_blocks(const std::vector<TransformationType> &labels) const {
+IndicesOfBlocks
+Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     perform_blocks_checks(unique_labels);
 
     // Get the blocks
-    Blocks blocks;
-    get_blocks_without_checks(unique_labels, blocks);
+    IndicesOfBlocks blocks({0, static_cast<size_t>(coefficients.matrix.cols())});
+    get_indices_of_blocks_without_checks(unique_labels, blocks);
 
     return blocks;
 }
@@ -338,44 +339,34 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
 }
 
 template <typename Derived>
-void Basis<Derived>::get_blocks_without_checks(const std::set<TransformationType> &unique_labels,
-                                               Blocks &blocks) const {
+void Basis<Derived>::get_indices_of_blocks_without_checks(
+    const std::set<TransformationType> &unique_labels, IndicesOfBlocks &blocks) const {
     auto last_quantum_number_f = quantum_number_f_of_states[0];
     auto last_quantum_number_m = quantum_number_m_of_states[0];
     auto last_parity = parity_of_states[0];
     auto last_ket = ket_of_states[0];
 
-    std::vector<int> blocks_start_original;
-    blocks_start_original.swap(blocks.start);
-    blocks.start.reserve(coefficients.matrix.cols());
-    size_t idx = 0;
-
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
-        if (idx < blocks_start_original.size() && i == blocks_start_original[idx]) {
-            blocks.start.push_back(i);
-            ++idx;
-        } else {
-            for (auto label : unique_labels) {
-                if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
-                    if (quantum_number_f_of_states[i] != last_quantum_number_f) {
-                        blocks.start.push_back(i);
-                        break;
-                    }
-                } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
-                    if (quantum_number_m_of_states[i] != last_quantum_number_m) {
-                        blocks.start.push_back(i);
-                        break;
-                    }
-                } else if (label == TransformationType::SORT_BY_PARITY) {
-                    if (parity_of_states[i] != last_parity) {
-                        blocks.start.push_back(i);
-                        break;
-                    }
-                } else if (label == TransformationType::SORT_BY_KET) {
-                    if (ket_of_states[i] != last_ket) {
-                        blocks.start.push_back(i);
-                        break;
-                    }
+        for (auto label : unique_labels) {
+            if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
+                if (quantum_number_f_of_states[i] != last_quantum_number_f) {
+                    blocks.add(i);
+                    break;
+                }
+            } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
+                if (quantum_number_m_of_states[i] != last_quantum_number_m) {
+                    blocks.add(i);
+                    break;
+                }
+            } else if (label == TransformationType::SORT_BY_PARITY) {
+                if (parity_of_states[i] != last_parity) {
+                    blocks.add(i);
+                    break;
+                }
+            } else if (label == TransformationType::SORT_BY_KET) {
+                if (ket_of_states[i] != last_ket) {
+                    blocks.add(i);
+                    break;
                 }
             }
         }
@@ -384,8 +375,6 @@ void Basis<Derived>::get_blocks_without_checks(const std::set<TransformationType
         last_parity = parity_of_states[i];
         last_ket = ket_of_states[i];
     }
-
-    blocks.start.shrink_to_fit();
 }
 
 template <typename Derived>

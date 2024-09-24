@@ -28,9 +28,8 @@ static void declare_sorting(nb::module_ &m) {
         .def_rw("transformation_type", &Sorting::transformation_type);
 }
 
-static void declare_blocks(nb::module_ &m) {
-    nb::class_<Blocks> pyclass(m, "Blocks");
-    pyclass.def(nb::init<>()).def_rw("start", &Blocks::start);
+static void declare_indices_of_blocks(nb::module_ &m) {
+    nb::class_<IndicesOfBlocks> pyclass(m, "IndicesOfBlocks");
 }
 
 template <typename T>
@@ -47,7 +46,7 @@ void bind_transformation_builder_interface(nb::module_ &m) {
     declare_transformation<float>(m, "Float");
     declare_transformation<double>(m, "Double");
     declare_sorting(m);
-    declare_blocks(m);
+    declare_indices_of_blocks(m);
     declare_transformation_builder_interface<float>(m, "Float");
     declare_transformation_builder_interface<double>(m, "Double");
     declare_transformation_builder_interface<std::complex<float>>(m, "ComplexFloat");

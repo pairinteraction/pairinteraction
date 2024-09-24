@@ -6,6 +6,8 @@
 #include <Eigen/SparseCore>
 #include <array>
 #include <complex>
+#include <initializer_list>
+#include <set>
 #include <vector>
 
 namespace pairinteraction {
@@ -30,10 +32,22 @@ struct Sorting {
     std::vector<TransformationType> transformation_type;
 };
 
-struct Blocks {
-    Blocks() = default;
-    Blocks(std::vector<int> start);
-    std::vector<int> start{0};
+struct IndicesOfBlock {
+    IndicesOfBlock(size_t start, size_t end);
+    size_t size() const;
+    size_t start;
+    size_t end;
+};
+
+class IndicesOfBlocks {
+public:
+    IndicesOfBlocks(std::initializer_list<size_t> boundaries);
+    void add(size_t boundary);
+    std::vector<IndicesOfBlock> get() const;
+    size_t size() const;
+
+private:
+    std::set<size_t> boundaries;
 };
 
 template <typename Scalar>
@@ -47,7 +61,8 @@ public:
     virtual const Transformation<Scalar> &get_transformation() const = 0;
     virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
     virtual Sorting get_sorter(const std::vector<TransformationType> &labels) const = 0;
-    virtual Blocks get_blocks(const std::vector<TransformationType> &labels) const = 0;
+    virtual IndicesOfBlocks
+    get_indices_of_blocks(const std::vector<TransformationType> &labels) const = 0;
 
     Transformation<Scalar> get_rotator(const std::array<real_t, 3> &to_z_axis,
                                        const std::array<real_t, 3> &to_y_axis) const;

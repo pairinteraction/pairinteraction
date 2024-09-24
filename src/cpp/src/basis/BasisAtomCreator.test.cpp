@@ -81,13 +81,17 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     }
 
     // Check that the blocks are correctly determined
-    auto blocks = basis->get_blocks(
+    auto blocks = basis->get_indices_of_blocks(
         {TransformationType::SORT_BY_PARITY, TransformationType::SORT_BY_QUANTUM_NUMBER_M});
     std::vector<size_t> expected_start = {0, 4, 8, 11};
-    DOCTEST_CHECK(blocks.start.size() == expected_start.size());
-    for (size_t i = 0; i < blocks.start.size(); ++i) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Block {} starts at {}", i, blocks.start[i]);
-        DOCTEST_CHECK(blocks.start[i] == expected_start[i]);
+
+    DOCTEST_CHECK(blocks.size() == expected_start.size());
+
+    size_t idx = 0;
+    for (const auto &block : blocks.get()) {
+        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Block {} starts at {}", idx, block.start);
+        DOCTEST_CHECK(block.start == expected_start[idx]);
+        idx++;
     }
 
     // Test implicit conversion of an eigen matrix to a transformator
