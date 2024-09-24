@@ -114,11 +114,11 @@ Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &
     }
 
     // Initialize blocks
-    IndicesOfBlocks blocks({0, static_cast<size_t>(matrix.rows())});
+    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(matrix.rows())});
 
     // Handle all labels except SORT_BY_ENERGY
     if (!unique_labels.empty()) {
-        basis->get_indices_of_blocks_without_checks(unique_labels, blocks);
+        basis->get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
     }
 
     // Handle SORT_BY_ENERGY if present
@@ -126,13 +126,13 @@ Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &
         scalar_t last_energy = std::real(matrix.coeff(0, 0));
         for (int i = 0; i < matrix.rows(); ++i) {
             if (std::real(matrix.coeff(i, i)) != last_energy) {
-                blocks.add(i);
+                blocks_creator.add(i);
                 last_energy = std::real(matrix.coeff(i, i));
             }
         }
     }
 
-    return blocks.get();
+    return blocks_creator.create();
 }
 
 template <typename Derived>
@@ -213,6 +213,7 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
 }
 
 // Explicit instantiations
+// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_OPERATOR(SCALAR)                                                               \
     template class Operator<OperatorAtom<SCALAR>>;                                                 \
     template OperatorAtom<SCALAR> operator*(const SCALAR &lhs,                                     \

@@ -247,10 +247,10 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
     perform_blocks_checks(unique_labels);
 
     // Get the blocks
-    IndicesOfBlocks blocks({0, static_cast<size_t>(coefficients.matrix.cols())});
-    get_indices_of_blocks_without_checks(unique_labels, blocks);
+    IndicesOfBlocksCreator blocks_creator({0, static_cast<size_t>(coefficients.matrix.cols())});
+    get_indices_of_blocks_without_checks(unique_labels, blocks_creator);
 
-    return blocks.get();
+    return blocks_creator.create();
 }
 
 template <typename Derived>
@@ -340,7 +340,8 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
 
 template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
-    const std::set<TransformationType> &unique_labels, IndicesOfBlocks &blocks) const {
+    const std::set<TransformationType> &unique_labels,
+    IndicesOfBlocksCreator &blocks_creator) const {
     auto last_quantum_number_f = quantum_number_f_of_states[0];
     auto last_quantum_number_m = quantum_number_m_of_states[0];
     auto last_parity = parity_of_states[0];
@@ -350,22 +351,22 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
         for (auto label : unique_labels) {
             if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
                 if (quantum_number_f_of_states[i] != last_quantum_number_f) {
-                    blocks.add(i);
+                    blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
                 if (quantum_number_m_of_states[i] != last_quantum_number_m) {
-                    blocks.add(i);
+                    blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_PARITY) {
                 if (parity_of_states[i] != last_parity) {
-                    blocks.add(i);
+                    blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_KET) {
                 if (ket_of_states[i] != last_ket) {
-                    blocks.add(i);
+                    blocks_creator.add(i);
                     break;
                 }
             }

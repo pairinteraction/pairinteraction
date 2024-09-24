@@ -1169,10 +1169,12 @@ struct database_dir_noexcept : std::filesystem::path {
 const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
 // Explicit instantiations
+// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GET_KET(TYPE)                                                                  \
     template std::shared_ptr<const KetAtom<TYPE>> Database::get_ket<TYPE>(                         \
         std::string species, const AtomDescriptionByParameters<TYPE> &description);
 
+// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GET_BASIS_AND_OPERATOR(TYPE, REAL_TYPE)                                        \
     template std::shared_ptr<const BasisAtom<TYPE>> Database::get_basis<TYPE>(                     \
         std::string species, const AtomDescriptionByRanges<REAL_TYPE> &description,                \

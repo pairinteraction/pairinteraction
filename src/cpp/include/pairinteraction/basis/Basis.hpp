@@ -78,7 +78,7 @@ public:
     void get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                    Sorting &transformation) const;
     void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
-                                              IndicesOfBlocks &blocks) const;
+                                              IndicesOfBlocksCreator &blocks) const;
 
     std::shared_ptr<Derived> transformed(const Transformation<scalar_t> &transformation) const;
     std::shared_ptr<Derived> transformed(const Sorting &transformation) const;

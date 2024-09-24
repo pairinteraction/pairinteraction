@@ -9,12 +9,12 @@ IndicesOfBlock::IndicesOfBlock(size_t start, size_t end) : start(start), end(end
 
 size_t IndicesOfBlock::size() const { return end - start; }
 
-IndicesOfBlocks::IndicesOfBlocks(std::initializer_list<size_t> boundaries)
+IndicesOfBlocksCreator::IndicesOfBlocksCreator(std::initializer_list<size_t> boundaries)
     : boundaries(boundaries) {}
 
-void IndicesOfBlocks::add(size_t boundary) { boundaries.insert(boundary); }
+void IndicesOfBlocksCreator::add(size_t boundary) { boundaries.insert(boundary); }
 
-std::vector<IndicesOfBlock> IndicesOfBlocks::get() const {
+std::vector<IndicesOfBlock> IndicesOfBlocksCreator::create() const {
     std::vector<IndicesOfBlock> blocks;
     if (boundaries.empty()) {
         return blocks;
@@ -31,7 +31,9 @@ std::vector<IndicesOfBlock> IndicesOfBlocks::get() const {
     return blocks;
 }
 
-size_t IndicesOfBlocks::size() const { return boundaries.empty() ? 0 : boundaries.size() - 1; }
+size_t IndicesOfBlocksCreator::size() const {
+    return boundaries.empty() ? 0 : boundaries.size() - 1;
+}
 
 template <typename Scalar>
 Transformation<Scalar>::Transformation(Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix,
@@ -58,6 +60,7 @@ TransformationBuilderInterface<Scalar>::get_rotator(const std::array<real_t, 3> 
 }
 
 // Explicit instantiations
+// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_TRANSFORMATION(SCALAR)                                                         \
     template struct Transformation<SCALAR>;                                                        \
     template class TransformationBuilderInterface<SCALAR>;

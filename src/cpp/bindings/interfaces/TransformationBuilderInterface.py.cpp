@@ -29,7 +29,7 @@ static void declare_sorting(nb::module_ &m) {
 }
 
 static void declare_indices_of_blocks(nb::module_ &m) {
-    nb::class_<IndicesOfBlocks> pyclass(m, "IndicesOfBlocks");
+    nb::class_<IndicesOfBlocksCreator> pyclass(m, "IndicesOfBlocksCreator");
 }
 
 template <typename T>
