@@ -79,7 +79,7 @@ Sorting System<Derived>::get_sorter(const std::vector<TransformationType> &label
 }
 
 template <typename Derived>
-IndicesOfBlocks
+std::vector<IndicesOfBlock>
 System<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
@@ -146,9 +146,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(sorter));
 
         // Get the indices of the blocks
-        auto blocks =
-            hamiltonian->get_indices_of_blocks(labels)
-                .get(); // TODO: get_indices_of_blocks should make use of a IndicesOfBlocksCreator
+        auto blocks = hamiltonian->get_indices_of_blocks(labels);
 
         // Split the Hamiltonian matrix into blocks
         std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> matrices;

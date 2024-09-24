@@ -101,7 +101,7 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
 }
 
 template <typename Derived>
-IndicesOfBlocks
+std::vector<IndicesOfBlock>
 Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     basis->perform_blocks_checks(unique_labels);
@@ -132,7 +132,7 @@ Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &
         }
     }
 
-    return blocks;
+    return blocks.get();
 }
 
 template <typename Derived>

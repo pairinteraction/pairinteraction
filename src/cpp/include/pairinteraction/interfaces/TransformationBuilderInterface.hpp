@@ -61,7 +61,7 @@ public:
     virtual const Transformation<Scalar> &get_transformation() const = 0;
     virtual Transformation<Scalar> get_rotator(real_t alpha, real_t beta, real_t gamma) const = 0;
     virtual Sorting get_sorter(const std::vector<TransformationType> &labels) const = 0;
-    virtual IndicesOfBlocks
+    virtual std::vector<IndicesOfBlock>
     get_indices_of_blocks(const std::vector<TransformationType> &labels) const = 0;
 
     Transformation<Scalar> get_rotator(const std::array<real_t, 3> &to_z_axis,
