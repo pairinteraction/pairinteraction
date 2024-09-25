@@ -18,7 +18,6 @@ from pairinteraction.backend import (
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_stark_map/kets.txt"
 reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_stark_map/eigenvalues.txt"
-# reference_eigenstates_file = Path(__file__).parent.parent / "data/reference_stark_map/eigenstates.txt"
 
 
 def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: str, download_missing: bool) -> None:
@@ -55,18 +54,18 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
         sorted((system.get_matrix().diagonal().real * ureg.hartree).to("gigahertz", "spectroscopy").magnitude)
         for system in systems
     ]
-    # eigenstates = [system.get_basis().get_coefficients().todense().A1 for system in systems]
+    eigenstates = [system.get_basis().get_coefficients().todense().A1 for system in systems]
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
         np.savetxt(reference_kets_file, kets, fmt="%s", delimiter=";")
         np.savetxt(reference_eigenvalues_file, eigenvalues)
-        # np.savetxt(reference_eigenstates_file, eigenstates)
         pytest.skip("Reference data generated, skipping comparison test")
 
     np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter=";"))
     np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
 
-    # Because of degeneracies, checking the eigenstates will require a more sophisticated comparison
-    # than the simple approach below that is currently commented out.
-    # np.testing.assert_allclose(eigenstates, np.loadtxt(reference_eigenstates_file))
+    # Because of degeneracies, checking the eigenstates against reference data is complicated.
+    # Thus, we only check their normalization and orthogonality.
+    cumulative_norm = (np.array(eigenstates) * np.array(eigenstates).conj()).sum(axis=1)
+    np.testing.assert_allclose(cumulative_norm, 90 * np.ones(11))

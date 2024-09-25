@@ -28,6 +28,9 @@ public:
 
     System(std::shared_ptr<const basis_t> basis);
     System(const System &other);
+    System(System &&other) noexcept;
+    System<Derived> &operator=(const System &other);
+    System<Derived> &operator=(System &&other) noexcept;
     virtual ~System();
 
     std::shared_ptr<const basis_t> get_basis() const;
