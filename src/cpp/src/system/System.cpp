@@ -22,12 +22,14 @@ template <typename Derived>
 System<Derived>::System(const System &other)
     : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(*other.hamiltonian)),
       hamiltonian_requires_construction(other.hamiltonian_requires_construction),
+      hamiltonian_is_diagonal(other.hamiltonian_is_diagonal),
       blockdiagonalizing_labels(other.blockdiagonalizing_labels) {}
 
 template <typename Derived>
 System<Derived>::System(System &&other) noexcept
     : hamiltonian(std::move(other.hamiltonian)),
       hamiltonian_requires_construction(other.hamiltonian_requires_construction),
+      hamiltonian_is_diagonal(other.hamiltonian_is_diagonal),
       blockdiagonalizing_labels(std::move(other.blockdiagonalizing_labels)) {}
 
 template <typename Derived>
@@ -35,6 +37,7 @@ System<Derived> &System<Derived>::operator=(const System &other) {
     if (this != &other) {
         hamiltonian = std::make_unique<operator_t>(*other.hamiltonian);
         hamiltonian_requires_construction = other.hamiltonian_requires_construction;
+        hamiltonian_is_diagonal = other.hamiltonian_is_diagonal,
         blockdiagonalizing_labels = other.blockdiagonalizing_labels;
     }
     return *this;
@@ -45,6 +48,7 @@ System<Derived> &System<Derived>::operator=(System &&other) noexcept {
     if (this != &other) {
         hamiltonian = std::move(other.hamiltonian);
         hamiltonian_requires_construction = other.hamiltonian_requires_construction;
+        hamiltonian_is_diagonal = other.hamiltonian_is_diagonal,
         blockdiagonalizing_labels = std::move(other.blockdiagonalizing_labels);
     }
     return *this;
@@ -149,6 +153,10 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         hamiltonian_requires_construction = false;
     }
 
+    if (hamiltonian_is_diagonal) {
+        return *this;
+    }
+
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvectors;
 
     // Figure out whether the Hamiltonian can be block-diagonalized
@@ -241,6 +249,8 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
     // eigenvectors, estimate from the precision the errors in the eigenvalues)
     hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigenvectors));
+
+    hamiltonian_is_diagonal = true;
 
     return *this;
 }

@@ -52,9 +52,12 @@ public:
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  int precision = 12, const Range<real_t> &eigenvalue_range = {});
 
+    bool is_diagonal() const;
+
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;
     mutable bool hamiltonian_requires_construction{true};
+    mutable bool hamiltonian_is_diagonal{false};
     mutable std::set<TransformationType> blockdiagonalizing_labels{};
 
     virtual void construct_hamiltonian() const = 0;
