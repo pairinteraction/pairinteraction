@@ -1169,18 +1169,18 @@ struct database_dir_noexcept : std::filesystem::path {
 const std::filesystem::path Database::default_database_dir = database_dir_noexcept();
 
 // Explicit instantiations
-// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GET_KET(TYPE)                                                                  \
     template std::shared_ptr<const KetAtom<TYPE>> Database::get_ket<TYPE>(                         \
         std::string species, const AtomDescriptionByParameters<TYPE> &description);
 
-// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GET_BASIS_AND_OPERATOR(TYPE, REAL_TYPE)                                        \
     template std::shared_ptr<const BasisAtom<TYPE>> Database::get_basis<TYPE>(                     \
         std::string species, const AtomDescriptionByRanges<REAL_TYPE> &description,                \
         std::vector<size_t> additional_ket_ids);                                                   \
     template OperatorAtom<TYPE> Database::get_operator<TYPE>(                                      \
         std::shared_ptr<const BasisAtom<TYPE>> basis, OperatorType type, int q);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_GET_KET(float)
 INSTANTIATE_GET_KET(double)

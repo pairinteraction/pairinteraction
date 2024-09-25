@@ -53,7 +53,7 @@ int main(int argc, char **argv) {
     // Sort by the eigenvalues
     for (auto &system : systems) {
         auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
-        system = std::move(system.transformed(sorter));
+        system = system.transformed(sorter);
     }
 
     // Extract results
@@ -69,9 +69,8 @@ int main(int argc, char **argv) {
         kets.push_back(ss.str());
     }
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
-        eigenvalues.row(i) = systems[i].get_matrix().diagonal().real() * 6579683.920501762;
-        Eigen::MatrixX<double> tmp =
-            systems[i].get_basis()->get_coefficients().toDense().transpose();
+        eigenvalues.row(i) = systems[i].get_eigenvalues() * 6579683.920501762;
+        Eigen::MatrixX<double> tmp = systems[i].get_eigenstates().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
     }
 

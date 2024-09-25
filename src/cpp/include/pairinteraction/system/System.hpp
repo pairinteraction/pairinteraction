@@ -1,8 +1,11 @@
 #pragma once
 
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <Eigen/SparseCore>
 #include <memory>
 #include <set>
 #include <vector>
@@ -51,8 +54,9 @@ public:
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  int precision = 12, const Range<real_t> &eigenvalue_range = {});
-
     bool is_diagonal() const;
+    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_eigenstates() const;
+    Eigen::VectorX<real_t> get_eigenvalues() const;
 
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;
