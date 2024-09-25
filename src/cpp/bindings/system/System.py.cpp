@@ -7,6 +7,7 @@
 #include "pairinteraction/system/SystemClassicalLight.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
+#include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/array.h>
@@ -38,7 +39,10 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
         .def("diagonalize",
              nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int, const Range<real_t> &>(
                  &System<T>::diagonalize),
-             "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>());
+             "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>())
+        .def("is_diagonal", &System<T>::is_diagonal)
+        .def("get_eigenstates", &System<T>::get_eigenstates)
+        .def("get_eigenvalues", &System<T>::get_eigenvalues);
 }
 
 template <typename T>

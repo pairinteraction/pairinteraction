@@ -45,7 +45,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
 }
 
 // Explicit instantiations
-// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_DIAGONALIZE(TYPE)                                                              \
     template void diagonalize(                                                                     \
         std::initializer_list<std::reference_wrapper<SystemAtom<TYPE>>> systems,                   \
@@ -59,6 +59,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
         std::vector<std::reference_wrapper<SystemAtom<TYPE>>> systems,                             \
         const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
         const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_DIAGONALIZE(float)
 INSTANTIATE_DIAGONALIZE(double)

@@ -213,7 +213,7 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
 }
 
 // Explicit instantiations
-// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_OPERATOR(SCALAR)                                                               \
     template class Operator<OperatorAtom<SCALAR>>;                                                 \
     template OperatorAtom<SCALAR> operator*(const SCALAR &lhs,                                     \
@@ -230,6 +230,7 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
                                             const Operator<OperatorAtom<SCALAR>> &rhs);            \
     template OperatorAtom<SCALAR> operator-(const Operator<OperatorAtom<SCALAR>> &lhs,             \
                                             const Operator<OperatorAtom<SCALAR>> &rhs);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_OPERATOR(float)
 INSTANTIATE_OPERATOR(double)

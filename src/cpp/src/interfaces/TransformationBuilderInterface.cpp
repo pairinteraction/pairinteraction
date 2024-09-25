@@ -60,10 +60,11 @@ TransformationBuilderInterface<Scalar>::get_rotator(const std::array<real_t, 3> 
 }
 
 // Explicit instantiations
-// NOLINTNEXTLINE(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_TRANSFORMATION(SCALAR)                                                         \
     template struct Transformation<SCALAR>;                                                        \
     template class TransformationBuilderInterface<SCALAR>;
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_TRANSFORMATION(float)
 INSTANTIATE_TRANSFORMATION(double)

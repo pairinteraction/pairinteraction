@@ -1,11 +1,13 @@
 #include "pairinteraction/system/System.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/SparseCore>
 #include <complex>
@@ -253,6 +255,36 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     hamiltonian_is_diagonal = true;
 
     return *this;
+}
+
+template <typename Derived>
+bool System<Derived>::is_diagonal() const {
+    return hamiltonian_is_diagonal;
+}
+
+template <typename Derived>
+const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
+System<Derived>::get_eigenstates() const {
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+        hamiltonian_requires_construction = false;
+    }
+    if (!hamiltonian_is_diagonal) {
+        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
+    }
+    return hamiltonian->get_basis()->get_coefficients();
+}
+
+template <typename Derived>
+Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenvalues() const {
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+        hamiltonian_requires_construction = false;
+    }
+    if (!hamiltonian_is_diagonal) {
+        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
+    }
+    return hamiltonian->get_matrix().diagonal().real();
 }
 
 // Explicit instantiation
