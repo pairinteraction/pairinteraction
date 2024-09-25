@@ -8,17 +8,11 @@ RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https:/
 
 RUN apt-get update -qq \
   && apt-get install --no-install-recommends -qq \
-    cmake build-essential git file \
-    libboost-dev \
-    doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev liblapacke-dev libopenblas-dev uuid-dev \
+    cmake build-essential file \
+    doctest-dev libspdlog-dev libeigen3-dev libfmt-dev liblapacke-dev libopenblas-dev \
     libcpp-httplib-dev nlohmann-json3-dev intel-oneapi-tbb-devel-2021.13 \
-    libsqlite3-dev sqlite3 \
-    swig python3 python3-dev libgl1 \
-    locales \
-    dpkg-dev rpm \
-    ca-certificates \
-    doxygen graphviz libgraphviz-dev pandoc \
-  && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
+    python3 python3-dev \
+    doxygen libgraphviz-dev pandoc \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
 ENV CMAKE_PREFIX_PATH=/opt/intel/oneapi/tbb/latest:$CMAKE_PREFIX_PATH

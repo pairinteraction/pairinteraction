@@ -8,17 +8,13 @@ RUN echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https:/
 
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    cmake build-essential git \
-    libboost-dev \
-    doctest-dev libspdlog-dev libcereal-dev libeigen3-dev libfmt-dev libgsl-dev uuid-dev \
+    cmake build-essential \
+    doctest-dev libspdlog-dev libeigen3-dev libfmt-dev \
     libcpp-httplib-dev nlohmann-json3-dev intel-oneapi-tbb-devel-2021.13 \
-    libsqlite3-dev sqlite3 \
-    swig python3 python3-dev libgl1 \
+    python3 python3-dev \
     locales \
-    dpkg rpm \
     lcov \
-    ca-certificates \
-    doxygen graphviz libgraphviz-dev ca-certificates rsync pandoc \
+    doxygen libgraphviz-dev pandoc \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
