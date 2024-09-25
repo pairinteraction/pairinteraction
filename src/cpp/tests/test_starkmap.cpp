@@ -38,23 +38,22 @@ int main(int argc, char **argv) {
     SPDLOG_INFO("Number of basis states: {}", basis->get_number_of_states());
 
     // Create systems for different values of the electric field
-    std::vector<pairinteraction::SystemAtom<double>> systems_unsorted;
-    systems_unsorted.reserve(11);
+    std::vector<pairinteraction::SystemAtom<double>> systems;
+    systems.reserve(11);
     for (int i = 0; i < 11; ++i) {
         auto system = pairinteraction::SystemAtom<double>(basis);
         system.set_electric_field({0, 0, i * 1.9446903811524456e-10});
-        systems_unsorted.push_back(std::move(system));
+        systems.push_back(std::move(system));
     }
 
     // Diagonalize the systems in parallel
     pairinteraction::DiagonalizerEigen<double> diagonalizer;
-    pairinteraction::diagonalize(systems_unsorted, diagonalizer);
+    pairinteraction::diagonalize(systems, diagonalizer);
 
     // Sort by the eigenvalues
-    std::vector<pairinteraction::SystemAtom<double>> systems;
-    for (auto &system : systems_unsorted) {
+    for (auto &system : systems) {
         auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
-        systems.push_back(system.transformed(sorter)); // TODO: system = system.transformed(sorter)
+        system = std::move(system.transformed(sorter));
     }
 
     // Extract results
@@ -126,33 +125,14 @@ int main(int argc, char **argv) {
     }
 
     // Check eigenstates
-    // Because of degeneracies, checking the eigenstates will require a more sophisticated
-    // comparison than the simple approach below that is currently commented out.
-
-    // const std::filesystem::path reference_eigenstates_file =
-    //     data_dir / "reference_stark_map/eigenstates.txt";
-    // SPDLOG_INFO("Reference eigenstates: {}", reference_eigenstates_file.string());
-
-    // Eigen::MatrixXd reference_eigenstates(
-    //     systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
-    // stream = std::ifstream(reference_eigenstates_file);
-    // if (!stream) {
-    //     SPDLOG_ERROR("Could not open reference eigenstates file");
-    //     success = false;
-    // } else {
-    //     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
-    //         for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(basis->get_number_of_states()
-    //         * basis->get_number_of_states());
-    //              ++j) {
-    //             stream >> reference_eigenstates(i, j);
-    //         }
-    //     }
-    //     stream.close();
-    //     if (!eigenstates.isApprox(reference_eigenstates)) {
-    //         SPDLOG_ERROR("Eigenstates do not match reference data");
-    //         success = false;
-    //     }
-    // }
+    // Because of degeneracies, checking the eigenstates against reference data is complicated.
+    // Thus, we only check their normalization and orthogonality.
+    Eigen::VectorXd cumulative_norm =
+        (eigenstates.adjoint().array() * eigenstates.transpose().array()).colwise().sum();
+    if (!cumulative_norm.isApprox(Eigen::VectorXd::Constant(11, 90))) {
+        SPDLOG_ERROR("Eigenvectors are not orthonormal.");
+        success = false;
+    }
 
     return success ? 0 : 1;
 }
