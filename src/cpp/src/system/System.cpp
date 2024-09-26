@@ -160,6 +160,7 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvectors;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvalues;
 
     // Figure out whether the Hamiltonian can be block-diagonalized
     bool is_blockdiagonizable = !blockdiagonalizing_labels.empty();
@@ -186,55 +187,73 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         // Get the indices of the blocks
         auto blocks = hamiltonian->get_indices_of_blocks(labels);
 
-        // Split the Hamiltonian matrix into blocks
-        std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> matrices;
-        matrices.reserve(blocks.size());
-        for (const auto &block : blocks) {
-            matrices.push_back(hamiltonian->get_matrix().block(block.start, block.start,
-                                                               block.size(), block.size()));
-        }
-
         // Diagonalize the blocks in parallel
-        oneapi::tbb::parallel_for(oneapi::tbb::blocked_range(matrices.begin(), matrices.end()),
-                                  [&](const auto &range) {
-                                      for (auto &matrix : range) {
-                                          auto eigensys = eigenvalue_range.is_finite()
-                                              ? diagonalizer.eigh(matrix, eigenvalue_range.min(),
-                                                                  eigenvalue_range.max(), precision)
-                                              : diagonalizer.eigh(matrix, precision);
-                                          matrix = eigensys.eigenvectors;
-                                      }
-                                  });
+        std::vector<Eigen::VectorX<real_t>> eigenvalues_blocks(blocks.size());
+        std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> eigenvectors_blocks(
+            blocks.size());
+        oneapi::tbb::parallel_for(
+            oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
+                for (size_t idx = range.begin(); idx != range.end(); ++idx) {
+                    auto eigensys = eigenvalue_range.is_finite()
+                        ? diagonalizer.eigh(hamiltonian->get_matrix().block(
+                                                blocks[idx].start, blocks[idx].start,
+                                                blocks[idx].size(), blocks[idx].size()),
+                                            eigenvalue_range.min(), eigenvalue_range.max(),
+                                            precision)
+                        : diagonalizer.eigh(hamiltonian->get_matrix().block(
+                                                blocks[idx].start, blocks[idx].start,
+                                                blocks[idx].size(), blocks[idx].size()),
+                                            precision);
+                    eigenvectors_blocks[idx] = eigensys.eigenvectors;
+                    eigenvalues_blocks[idx] = eigensys.eigenvalues;
+                }
+            });
 
-        // Get the combined eigenvector matrix
-        eigenvectors.resize(hamiltonian->get_matrix().rows(), hamiltonian->get_matrix().cols());
-
-        // Get the number of non-zeros per row
+        // Get the number of non-zeros per row of the combined eigenvector matrix
         std::vector<Eigen::Index> non_zeros_per_inner_index;
         non_zeros_per_inner_index.reserve(hamiltonian->get_matrix().rows());
-        for (const auto &matrix : matrices) {
+        Eigen::Index num_rows = 0;
+        Eigen::Index num_cols = 0;
+        for (const auto &matrix : eigenvectors_blocks) {
             for (int i = 0; i < matrix.outerSize(); ++i) {
                 non_zeros_per_inner_index.push_back(matrix.outerIndexPtr()[i + 1] -
                                                     matrix.outerIndexPtr()[i]);
             }
+            num_rows += matrix.rows();
+            num_cols += matrix.cols();
         }
 
-        // Allocate memory for the combined eigenvector matrix
+        // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
+        // square)
+        eigenvectors.resize(num_rows, num_cols);
         eigenvectors.reserve(non_zeros_per_inner_index);
-
-        // Fill the combined eigenvector matrix
-        Eigen::Index offset = 0;
-        for (const auto &matrix : matrices) {
+        Eigen::Index offset_rows = 0;
+        Eigen::Index offset_cols = 0;
+        for (const auto &matrix : eigenvectors_blocks) {
             for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
                 for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
                          matrix, i);
                      it; ++it) {
-                    eigenvectors.insert(it.row() + offset, it.col() + offset) = it.value();
+                    eigenvectors.insert(it.row() + offset_rows, it.col() + offset_cols) =
+                        it.value();
                 }
             }
-            offset += matrix.rows();
+            offset_rows += matrix.rows();
+            offset_cols += matrix.cols();
         }
         eigenvectors.makeCompressed();
+
+        // Get the combined eigenvalue matrix
+        eigenvalues.resize(num_cols, num_cols);
+        eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+        Eigen::Index offset = 0;
+        for (const auto &matrix : eigenvalues_blocks) {
+            for (int i = 0; i < matrix.size(); ++i) {
+                eigenvalues.insert(i + offset, i + offset) = matrix(i);
+            }
+            offset += matrix.size();
+        }
+        eigenvalues.makeCompressed();
 
     } else {
         // Diagonalize the full Hamiltonian at once
@@ -243,14 +262,22 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
                                 eigenvalue_range.max(), precision)
             : diagonalizer.eigh(hamiltonian->get_matrix(), precision);
 
-        // Get the eigenvector matrix
+        // Get the eigenvector matrix (in case of an restricted energy range, it is not square)
         eigenvectors = std::move(eigensys.eigenvectors);
+
+        // Get the eigenvalue matrix
+        Eigen::Index dim = eigensys.eigenvalues.size();
+        eigenvalues.resize(dim, dim);
+        eigenvalues.reserve(Eigen::VectorXi::Constant(dim, 1));
+        for (int i = 0; i < dim; ++i) {
+            eigenvalues.insert(i, i) = eigensys.eigenvalues(i);
+        }
+        eigenvalues.makeCompressed();
     }
 
-    // Store the diagonalized hamiltonian (possible future optimization: use
-    // eigensys.eigenvalues directly instead of transforming the hamiltonian with the
-    // eigenvectors, estimate from the precision the errors in the eigenvalues)
-    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(eigenvectors));
+    // Store the diagonalized hamiltonian
+    hamiltonian->get_matrix_ref() = eigenvalues;
+    hamiltonian->get_basis_ref() = hamiltonian->get_basis()->transformed(eigenvectors);
 
     hamiltonian_is_diagonal = true;
 
