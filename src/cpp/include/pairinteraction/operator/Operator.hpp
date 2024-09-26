@@ -47,8 +47,10 @@ public:
     virtual ~Operator() = default;
 
     std::shared_ptr<const basis_t> get_basis() const;
+    std::shared_ptr<const basis_t> &get_basis_ref();
 
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix_ref();
 
     const Transformation<scalar_t> &get_transformation() const override;
     Transformation<scalar_t> get_rotator(real_t alpha, real_t beta, real_t gamma) const override;
