@@ -96,47 +96,39 @@ Basis<Derived>::get_coefficients() const {
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t index_state) const {
-    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::out_of_range("The index is out of bounds.");
-    }
-    if (quantum_number_f_of_states[index_state] == std::numeric_limits<real_t>::max()) {
+    real_t quantum_number_f = quantum_number_f_of_states.at(index_state);
+    if (quantum_number_f == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number f.");
     }
-    return quantum_number_f_of_states[index_state];
+    return quantum_number_f;
 }
 
 template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t index_state) const {
-    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::out_of_range("The index is out of bounds.");
-    }
-    if (quantum_number_m_of_states[index_state] == std::numeric_limits<real_t>::max()) {
+    real_t quantum_number_m = quantum_number_m_of_states.at(index_state);
+    if (quantum_number_m == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number m.");
     }
-    return quantum_number_m_of_states[index_state];
+    return quantum_number_m;
 }
 
 template <typename Derived>
 Parity Basis<Derived>::get_parity(size_t index_state) const {
-    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::out_of_range("The index is out of bounds.");
-    }
-    if (parity_of_states[index_state] == Parity::UNKNOWN) {
+    Parity parity = parity_of_states.at(index_state);
+    if (parity == Parity::UNKNOWN) {
         throw std::invalid_argument("The state does not have a well-defined parity.");
     }
-    return parity_of_states[index_state];
+    return parity;
 }
 
 template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
 Basis<Derived>::get_ket_with_largest_overlap(size_t index_state) const {
-    if (index_state >= static_cast<size_t>(coefficients.matrix.cols())) {
-        throw std::out_of_range("The index is out of bounds.");
-    }
-    if (ket_of_states[index_state] == std::numeric_limits<int>::max()) {
+    size_t index_ket = ket_of_states.at(index_state);
+    if (index_ket == std::numeric_limits<int>::max()) {
         throw std::invalid_argument("The state does not belong to a ket in a well defined way.");
     }
-    return kets[ket_of_states[index_state]];
+    return kets[index_ket];
 }
 
 template <typename Derived>

@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
         systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
 
     kets.reserve(basis->get_number_of_states());
-    for (auto ket : *systems[0].get_basis()) {
+    for (const auto &ket : *systems[0].get_basis()) {
         std::stringstream ss;
         ss << *ket;
         kets.push_back(ss.str());

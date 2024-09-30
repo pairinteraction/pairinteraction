@@ -13,7 +13,7 @@ DOCTEST_TEST_CASE("create a classical light basis") {
                      .set_photon_energy(energy)
                      .restrict_quantum_number_q(-3, 3)
                      .create();
-    for (auto ket : *basis) {
+    for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_photon_energy() == energy);
         DOCTEST_CHECK(ket->get_energy() == ket->get_photon_energy() * ket->get_quantum_number_q());
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
