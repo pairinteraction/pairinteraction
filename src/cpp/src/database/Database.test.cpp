@@ -34,7 +34,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
 
     auto basis = database.get_basis<float>("Rb", description, {});
 
-    for (auto ket : *basis) {
+    for (const auto &ket : *basis) {
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(*ket));
     }
 }
