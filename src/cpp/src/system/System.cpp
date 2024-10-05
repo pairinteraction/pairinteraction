@@ -276,8 +276,8 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
 
     // Store the diagonalized hamiltonian
-    hamiltonian->get_matrix_ref() = eigenvalues;
-    hamiltonian->get_basis_ref() = hamiltonian->get_basis()->transformed(eigenvectors);
+    hamiltonian->get_matrix() = eigenvalues;
+    hamiltonian->get_basis() = hamiltonian->get_basis()->transformed(eigenvectors);
 
     hamiltonian_is_diagonal = true;
 

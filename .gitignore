@@ -15,7 +15,7 @@
 
 # Ignore aider specific files
 .aider*
-CONVENTIONS.md
+PRINCIPLES-FOR-AI.md
 
 # Ignore build and cache directories
 bin/
