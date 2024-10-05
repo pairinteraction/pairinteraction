@@ -49,7 +49,7 @@ void Basis<Derived>::perform_blocks_checks(
         }
         unique_labels_present.insert(label);
     }
-    if (!utils::are_same_labels(unique_labels, unique_labels_present)) {
+    if (unique_labels != unique_labels_present) {
         throw std::invalid_argument("The states are not sorted by the requested labels.");
     }
 
@@ -234,7 +234,7 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
     get_sorter_without_checks(labels, transformation);
 
     // Check if all labels have been used for sorting
-    if (!utils::are_same_labels(labels, transformation.transformation_type)) {
+    if (labels != transformation.transformation_type) {
         throw std::invalid_argument("The states could not be sorted by all the requested labels.");
     }
 
