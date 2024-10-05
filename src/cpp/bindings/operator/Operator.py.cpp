@@ -17,8 +17,8 @@ static void declare_operator(nb::module_ &m, std::string const &type_name) {
     nb::class_<Operator<T>, TransformationBuilderInterface<scalar_t>> pyclass(m,
                                                                               pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("get_basis", &Operator<T>::get_basis)
-        .def("get_matrix", &Operator<T>::get_matrix)
+        .def("get_basis", nb::overload_cast<>(&Operator<T>::get_basis, nb::const_))
+        .def("get_matrix", nb::overload_cast<>(&Operator<T>::get_matrix, nb::const_))
         .def("get_transformation", &Operator<T>::get_transformation)
         .def("get_rotator", &Operator<T>::get_rotator)
         .def("get_sorter", &Operator<T>::get_sorter)

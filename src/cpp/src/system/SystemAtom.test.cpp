@@ -8,6 +8,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
+#include "pairinteraction/utils/Range.hpp"
 
 #include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
@@ -190,7 +191,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
             }
         }
 
-        system.diagonalize(*diagonalizer, 12, {min_energy, max_energy});
+        system.diagonalize(*diagonalizer, 12, Range(min_energy, max_energy));
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
         std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());

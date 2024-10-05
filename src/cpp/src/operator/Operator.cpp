@@ -28,7 +28,7 @@ std::shared_ptr<const typename Operator<Derived>::basis_t> Operator<Derived>::ge
 }
 
 template <typename Derived>
-std::shared_ptr<const typename Operator<Derived>::basis_t> &Operator<Derived>::get_basis_ref() {
+std::shared_ptr<const typename Operator<Derived>::basis_t> &Operator<Derived>::get_basis() {
     return basis;
 }
 
@@ -40,7 +40,7 @@ Operator<Derived>::get_matrix() const {
 
 template <typename Derived>
 Eigen::SparseMatrix<typename Operator<Derived>::scalar_t, Eigen::RowMajor> &
-Operator<Derived>::get_matrix_ref() {
+Operator<Derived>::get_matrix() {
     return matrix;
 }
 
