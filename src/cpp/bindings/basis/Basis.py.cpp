@@ -39,9 +39,9 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_indices_of_blocks_without_checks",
              &Basis<T>::get_indices_of_blocks_without_checks)
         .def(
-            "transform",
+            "transformed",
             nb::overload_cast<const Transformation<scalar_t> &>(&Basis<T>::transformed, nb::const_))
-        .def("transform", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_));
+        .def("transformed", nb::overload_cast<const Sorting &>(&Basis<T>::transformed, nb::const_));
 }
 
 template <typename T>
