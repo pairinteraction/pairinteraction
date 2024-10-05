@@ -104,7 +104,7 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
     }
 
     // Check if all labels have been used for sorting
-    if (!utils::are_same_labels(labels, transformation.transformation_type)) {
+    if (labels != transformation.transformation_type) {
         throw std::invalid_argument("The states could not be sorted by all the requested labels.");
     }
 

@@ -36,15 +36,5 @@ inline bool is_sorting(TransformationType label) {
     return (label & ~MASK_SORTING) == TransformationType::IDENTITY;
 }
 
-inline bool are_same_labels(const std::vector<TransformationType> &labels1,
-                            const std::vector<TransformationType> &labels2) {
-    return labels1 == labels2;
-}
-
-inline bool are_same_labels(const std::set<TransformationType> &labels1,
-                            const std::set<TransformationType> &labels2) {
-    return labels1 == labels2;
-}
-
 } // namespace utils
 } // namespace pairinteraction

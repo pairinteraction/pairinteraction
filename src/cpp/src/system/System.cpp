@@ -163,20 +163,20 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvalues;
 
     // Figure out whether the Hamiltonian can be block-diagonalized
-    bool is_blockdiagonizable = !blockdiagonalizing_labels.empty();
-    if (is_blockdiagonizable) {
+    bool is_blockdiagonalizable = !blockdiagonalizing_labels.empty();
+    if (is_blockdiagonalizable) {
         std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
                                                blockdiagonalizing_labels.end()};
         for (const auto &label : hamiltonian->get_transformation().transformation_type) {
             if (!utils::is_sorting(label) && label != TransformationType::IDENTITY) {
-                is_blockdiagonizable = false;
+                is_blockdiagonalizable = false;
                 break;
             }
         }
     }
 
     // Block-diagonalize the Hamiltonian if possible
-    if (is_blockdiagonizable) {
+    if (is_blockdiagonalizable) {
         std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
                                                blockdiagonalizing_labels.end()};
 
