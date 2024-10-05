@@ -97,6 +97,7 @@ build = [
   "cp39-manylinux_x86_64",
   "cp39-win_amd64",
   "cp39-macosx_x86_64",
+  "cp39-macosx_arm64",
 ]
 build-verbosity = 1
 
@@ -115,6 +116,7 @@ CXXFLAGS = "-march=broadwell"
 [tool.cibuildwheel.macos.environment]
 QT_QPA_PLATFORM = "offscreen"
 MACOSX_DEPLOYMENT_TARGET = "10.15"
+CXXFLAGS = "-O3"
 
 [tool.cibuildwheel.windows.environment]
 QT_QPA_PLATFORM = "offscreen"

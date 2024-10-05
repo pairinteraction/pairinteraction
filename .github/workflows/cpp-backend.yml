@@ -13,14 +13,12 @@ on:
         required: false
         default: false
 
-
 env:
   CMAKE_BUILD_PARALLEL_LEVEL: 2
   CTEST_PARALLEL_LEVEL: 2
   CTEST_OUTPUT_ON_FAILURE: 1
   VERBOSE: 1
   CLICOLOR_FORCE: 1
-
 
 jobs:
   backend:
@@ -37,10 +35,19 @@ jobs:
             EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
           - distro: opensuse
             EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12"
-          - os: macos-12
+            CXXFLAGS: "-march=broadwell"
+            TEST_TARGET: "test"
+            BUILD_ARGS: "-- --keep-going"
+          - os: macos-13
             distro: macos
-            EXTRA_CMAKE_ARGS: -DPython_FIND_FRAMEWORK=LAST
-            CXXFLAGS:
+            name: macos-x86_64
+            CXXFLAGS: "-O3"
+            TEST_TARGET: "test"
+            BUILD_ARGS: "-- --keep-going"
+          - os: macos-14
+            distro: macos
+            name: macos-arm64
+            CXXFLAGS: "-O3"
             TEST_TARGET: "test"
             BUILD_ARGS: "-- --keep-going"
           - os: windows-2019
@@ -50,7 +57,7 @@ jobs:
             TEST_TARGET: "RUN_TESTS"
             BUILD_ARGS: "--config Release"
 
-    name: ${{ matrix.distro }}
+    name: ${{ matrix.name || matrix.distro }}
     runs-on: ${{ matrix.os }}
     env:
       CXXFLAGS: ${{ matrix.CXXFLAGS }}
