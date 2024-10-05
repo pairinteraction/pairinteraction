@@ -13,6 +13,7 @@ from pairinteraction.backend import (
     Database,
     DiagonalizerEigenDouble,
     SystemAtomDouble,
+    TransformationType,
     diagonalize,
 )
 
@@ -44,15 +45,12 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     diagonalize(systems, diagonalizer)
 
     # Sort by the eigenvalues
-    # TODO make the following lines work and remove "sorted" from the next code block
-    # for system in systems:
-    #     system = system.transformed(system.get_sorter(SORT_BY_ENERGY))
+    systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
 
     # Compare to reference data
     kets = [str(ket) for ket in systems[0].get_basis().get_kets()]
     eigenvalues = [
-        sorted((system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude)
-        for system in systems
+        (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude for system in systems
     ]
     eigenstates = [system.get_eigenstates().todense().A1 for system in systems]
 

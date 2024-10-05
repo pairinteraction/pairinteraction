@@ -13,6 +13,7 @@
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/complex.h>
 #include <nanobind/stl/shared_ptr.h>
+#include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -32,10 +33,10 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
         .def("get_rotator", &System<T>::get_rotator)
         .def("get_sorter", &System<T>::get_sorter)
         .def("get_indices_of_blocks", &System<T>::get_indices_of_blocks)
-        .def("transform",
+        .def("transformed",
              nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transformed,
                                                                  nb::const_))
-        .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transformed, nb::const_))
+        .def("transformed", nb::overload_cast<const Sorting &>(&System<T>::transformed, nb::const_))
         .def("diagonalize",
              nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int, const Range<real_t> &>(
                  &System<T>::diagonalize),
