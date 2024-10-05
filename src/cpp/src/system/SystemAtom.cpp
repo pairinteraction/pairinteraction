@@ -5,6 +5,9 @@
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 
+#include <algorithm>
+#include <limits>
+#include <memory>
 #include <set>
 
 namespace pairinteraction {
@@ -37,36 +40,37 @@ template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
     this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);
-    this->blockdiagonalizing_labels = {TransformationType::SORT_BY_QUANTUM_NUMBER_F,
-                                       TransformationType::SORT_BY_QUANTUM_NUMBER_M,
-                                       TransformationType::SORT_BY_PARITY};
     this->hamiltonian_is_diagonal = true;
 
     real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+
+    bool sort_by_quantum_number_f = true;
+    bool sort_by_quantum_number_m = true;
+    bool sort_by_parity = true;
 
     // Stark effect
     if (std::abs(electric_field_spherical[0]) > precision) {
         *this->hamiltonian -= electric_field_spherical[0] *
             OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, 0);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_PARITY);
+        sort_by_quantum_number_f = false;
+        sort_by_parity = false;
     }
     if (std::abs(electric_field_spherical[1]) > precision) {
         *this->hamiltonian += electric_field_spherical[1] *
             OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, -1);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_PARITY);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+        sort_by_quantum_number_f = false;
+        sort_by_quantum_number_m = false;
+        sort_by_parity = false;
     }
     if (std::abs(electric_field_spherical[2]) > precision) {
         *this->hamiltonian += electric_field_spherical[2] *
             OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_DIPOLE, 1);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_PARITY);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+        sort_by_quantum_number_f = false;
+        sort_by_quantum_number_m = false;
+        sort_by_parity = false;
     }
 
     // Zeeman effect
@@ -74,21 +78,21 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
         *this->hamiltonian -= magnetic_field_spherical[0] *
             OperatorAtom<Scalar>(basis, OperatorType::MAGNETIC_DIPOLE, 0);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+        sort_by_quantum_number_f = false;
     }
     if (std::abs(magnetic_field_spherical[1]) > precision) {
         *this->hamiltonian += magnetic_field_spherical[1] *
             OperatorAtom<Scalar>(basis, OperatorType::MAGNETIC_DIPOLE, -1);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+        sort_by_quantum_number_f = false;
+        sort_by_quantum_number_m = false;
     }
     if (std::abs(magnetic_field_spherical[2]) > precision) {
         *this->hamiltonian += magnetic_field_spherical[2] *
             OperatorAtom<Scalar>(basis, OperatorType::MAGNETIC_DIPOLE, 1);
         this->hamiltonian_is_diagonal = false;
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-        this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+        sort_by_quantum_number_f = false;
+        sort_by_quantum_number_m = false;
     }
 
     // Diamagnetism
@@ -101,7 +105,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[0], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+            sort_by_quantum_number_f = false;
         }
         if (std::abs(magnetic_field_spherical[1]) > precision &&
             std::abs(magnetic_field_spherical[2]) > precision) {
@@ -112,8 +116,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 magnetic_field_spherical[2] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+            sort_by_quantum_number_f = false;
         }
         if (std::abs(magnetic_field_spherical[0]) > precision &&
             std::abs(magnetic_field_spherical[2]) > precision) {
@@ -121,8 +124,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 magnetic_field_spherical[0] * magnetic_field_spherical[2] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 1);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+            sort_by_quantum_number_f = false;
+            sort_by_quantum_number_m = false;
         }
         if (std::abs(magnetic_field_spherical[0]) > precision &&
             std::abs(magnetic_field_spherical[1]) > precision) {
@@ -130,25 +133,37 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
                 magnetic_field_spherical[0] * magnetic_field_spherical[1] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -1);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+            sort_by_quantum_number_f = false;
+            sort_by_quantum_number_m = false;
         }
         if (std::abs(magnetic_field_spherical[2]) > precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[2], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 2);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+            sort_by_quantum_number_f = false;
+            sort_by_quantum_number_m = false;
         }
         if (std::abs(magnetic_field_spherical[1]) > precision) {
             *this->hamiltonian -= static_cast<real_t>(std::sqrt(1.5) / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, -2);
             this->hamiltonian_is_diagonal = false;
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
-            this->blockdiagonalizing_labels.erase(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+            sort_by_quantum_number_f = false;
+            sort_by_quantum_number_m = false;
         }
+    }
+
+    // Store which labels can be used to block-diagonalize the Hamiltonian
+    this->blockdiagonalizing_labels.clear();
+    if (sort_by_quantum_number_f) {
+        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+    }
+    if (sort_by_quantum_number_m) {
+        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+    }
+    if (sort_by_parity) {
+        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_PARITY);
     }
 }
 
