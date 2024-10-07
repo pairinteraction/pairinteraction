@@ -176,6 +176,7 @@ Advanced options for developers when building the package:
 | ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
 
 To install all dependencies without building the package, you can run:
+
 .. code-block:: bash
 
     uv pip compile pyproject.toml --all-extras > requirements.txt
