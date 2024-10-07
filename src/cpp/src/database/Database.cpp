@@ -285,16 +285,6 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         tables["wigner"].local_path = "wigner";
     }
 
-    // Disable multithreading for duckdb as this can interfere with parallelized construction of the
-    // Hamiltonians (on the long run, if we cache operators in memory, we can think about enabling
-    // it again)
-    {
-        auto result = con->Query("PRAGMA threads=1");
-        if (result->HasError()) {
-            throw std::runtime_error("Error setting the number of threads: " + result->GetError());
-        }
-    }
-
     // Print availability of tables
     auto species_availability = get_availability_of_species();
     auto wigner_availability = get_availability_of_wigner_table();
