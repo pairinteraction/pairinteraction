@@ -34,13 +34,6 @@ void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType>
 template <typename Derived>
 void Basis<Derived>::perform_blocks_checks(
     const std::set<TransformationType> &unique_labels) const {
-    // Check if the labels are valid sorting labels
-    for (const auto &label : unique_labels) {
-        if (!utils::is_sorting(label)) {
-            throw std::invalid_argument("One of the labels is not a valid sorting label.");
-        }
-    }
-
     // Check if the states are sorted by the requested labels
     std::set<TransformationType> unique_labels_present;
     for (const auto &label : get_transformation().transformation_type) {
@@ -229,8 +222,12 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
                                     "the energy. Use an energy operator instead.");
     }
 
-    // Get the sorter
+    // Initialize transformation
     Sorting transformation;
+    transformation.matrix.resize(coefficients.matrix.cols());
+    transformation.matrix.setIdentity();
+
+    // Get the sorter
     get_sorter_without_checks(labels, transformation);
 
     // Check if all labels have been used for sorting
@@ -244,6 +241,8 @@ Sorting Basis<Derived>::get_sorter(const std::vector<TransformationType> &labels
 template <typename Derived>
 std::vector<IndicesOfBlock>
 Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
+    perform_sorter_checks(labels);
+
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     perform_blocks_checks(unique_labels);
 
@@ -257,17 +256,9 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
 template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                                Sorting &transformation) const {
-    Eigen::Index const size = coefficients.matrix.cols();
-    if (size < 1) {
-        std::abort(); // Can't happen as the basis is validated to contain at least one element
-    }
-    transformation.matrix.resize(size);
-    transformation.matrix.indices().resize(size);
     int *perm_begin = transformation.matrix.indices().data();
-    int *perm_end = perm_begin + size;
+    int *perm_end = perm_begin + coefficients.matrix.cols();
     int *perm_back = perm_end - 1;
-
-    std::iota(perm_begin, perm_end, 0);
 
     // Sort the vector based on the requested labels
     std::stable_sort(perm_begin, perm_end, [&](int a, int b) {

@@ -131,6 +131,11 @@ Derived System<Derived>::transformed(const Transformation<scalar_t> &transformat
     Derived transformed = derived();
     transformed.hamiltonian =
         std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+
+    // A transformed system might have lost its block-diagonalizability if the
+    // transformation was not a sorting
+    transformed.blockdiagonalizing_labels.clear();
+
     return transformed;
 }
 
@@ -143,6 +148,7 @@ Derived System<Derived>::transformed(const Sorting &transformation) const {
     Derived transformed = derived();
     transformed.hamiltonian =
         std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+
     return transformed;
 }
 
@@ -162,118 +168,79 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvectors;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> eigenvalues;
 
-    // Figure out whether the Hamiltonian can be block-diagonalized
-    bool is_blockdiagonalizable = !blockdiagonalizing_labels.empty();
-    if (is_blockdiagonalizable) {
-        std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
-                                               blockdiagonalizing_labels.end()};
-        for (const auto &label : hamiltonian->get_transformation().transformation_type) {
-            if (!utils::is_sorting(label) && label != TransformationType::IDENTITY) {
-                is_blockdiagonalizable = false;
-                break;
-            }
-        }
-    }
-
-    // Block-diagonalize the Hamiltonian if possible
-    if (is_blockdiagonalizable) {
-        std::vector<TransformationType> labels{blockdiagonalizing_labels.begin(),
-                                               blockdiagonalizing_labels.end()};
-
-        // Sort the Hamiltonian according to the block structure
-        auto sorter = hamiltonian->get_sorter(labels);
+    // Sort the Hamiltonian according to the block structure
+    if (!blockdiagonalizing_labels.empty()) {
+        auto sorter = hamiltonian->get_sorter(blockdiagonalizing_labels);
         hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(sorter));
-
-        // Get the indices of the blocks
-        auto blocks = hamiltonian->get_indices_of_blocks(labels);
-
-        // Diagonalize the blocks in parallel
-        std::vector<Eigen::VectorX<real_t>> eigenvalues_blocks(blocks.size());
-        std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> eigenvectors_blocks(
-            blocks.size());
-        oneapi::tbb::parallel_for(
-            oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
-                for (size_t idx = range.begin(); idx != range.end(); ++idx) {
-                    auto eigensys = eigenvalue_range.is_finite()
-                        ? diagonalizer.eigh(hamiltonian->get_matrix().block(
-                                                blocks[idx].start, blocks[idx].start,
-                                                blocks[idx].size(), blocks[idx].size()),
-                                            eigenvalue_range.min(), eigenvalue_range.max(),
-                                            precision)
-                        : diagonalizer.eigh(hamiltonian->get_matrix().block(
-                                                blocks[idx].start, blocks[idx].start,
-                                                blocks[idx].size(), blocks[idx].size()),
-                                            precision);
-                    eigenvectors_blocks[idx] = eigensys.eigenvectors;
-                    eigenvalues_blocks[idx] = eigensys.eigenvalues;
-                }
-            });
-
-        // Get the number of non-zeros per row of the combined eigenvector matrix
-        std::vector<Eigen::Index> non_zeros_per_inner_index;
-        non_zeros_per_inner_index.reserve(hamiltonian->get_matrix().rows());
-        Eigen::Index num_rows = 0;
-        Eigen::Index num_cols = 0;
-        for (const auto &matrix : eigenvectors_blocks) {
-            for (int i = 0; i < matrix.outerSize(); ++i) {
-                non_zeros_per_inner_index.push_back(matrix.outerIndexPtr()[i + 1] -
-                                                    matrix.outerIndexPtr()[i]);
-            }
-            num_rows += matrix.rows();
-            num_cols += matrix.cols();
-        }
-
-        // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
-        // square)
-        eigenvectors.resize(num_rows, num_cols);
-        eigenvectors.reserve(non_zeros_per_inner_index);
-        Eigen::Index offset_rows = 0;
-        Eigen::Index offset_cols = 0;
-        for (const auto &matrix : eigenvectors_blocks) {
-            for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
-                for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
-                         matrix, i);
-                     it; ++it) {
-                    eigenvectors.insert(it.row() + offset_rows, it.col() + offset_cols) =
-                        it.value();
-                }
-            }
-            offset_rows += matrix.rows();
-            offset_cols += matrix.cols();
-        }
-        eigenvectors.makeCompressed();
-
-        // Get the combined eigenvalue matrix
-        eigenvalues.resize(num_cols, num_cols);
-        eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
-        Eigen::Index offset = 0;
-        for (const auto &matrix : eigenvalues_blocks) {
-            for (int i = 0; i < matrix.size(); ++i) {
-                eigenvalues.insert(i + offset, i + offset) = matrix(i);
-            }
-            offset += matrix.size();
-        }
-        eigenvalues.makeCompressed();
-
-    } else {
-        // Diagonalize the full Hamiltonian at once
-        auto eigensys = eigenvalue_range.is_finite()
-            ? diagonalizer.eigh(hamiltonian->get_matrix(), eigenvalue_range.min(),
-                                eigenvalue_range.max(), precision)
-            : diagonalizer.eigh(hamiltonian->get_matrix(), precision);
-
-        // Get the eigenvector matrix (in case of an restricted energy range, it is not square)
-        eigenvectors = std::move(eigensys.eigenvectors);
-
-        // Get the eigenvalue matrix
-        Eigen::Index dim = eigensys.eigenvalues.size();
-        eigenvalues.resize(dim, dim);
-        eigenvalues.reserve(Eigen::VectorXi::Constant(dim, 1));
-        for (int i = 0; i < dim; ++i) {
-            eigenvalues.insert(i, i) = eigensys.eigenvalues(i);
-        }
-        eigenvalues.makeCompressed();
     }
+
+    // Get the indices of the blocks
+    auto blocks = hamiltonian->get_indices_of_blocks(blockdiagonalizing_labels);
+
+    // Diagonalize the blocks in parallel
+    std::vector<Eigen::VectorX<real_t>> eigenvalues_blocks(blocks.size());
+    std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> eigenvectors_blocks(blocks.size());
+    oneapi::tbb::parallel_for(
+        oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
+            for (size_t idx = range.begin(); idx != range.end(); ++idx) {
+                auto eigensys = eigenvalue_range.is_finite()
+                    ? diagonalizer.eigh(
+                          hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
+                                                          blocks[idx].size(), blocks[idx].size()),
+                          eigenvalue_range.min(), eigenvalue_range.max(), precision)
+                    : diagonalizer.eigh(
+                          hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
+                                                          blocks[idx].size(), blocks[idx].size()),
+                          precision);
+                eigenvectors_blocks[idx] = eigensys.eigenvectors;
+                eigenvalues_blocks[idx] = eigensys.eigenvalues;
+            }
+        });
+
+    // Get the number of non-zeros per row of the combined eigenvector matrix
+    std::vector<Eigen::Index> non_zeros_per_inner_index;
+    non_zeros_per_inner_index.reserve(hamiltonian->get_matrix().rows());
+    Eigen::Index num_rows = 0;
+    Eigen::Index num_cols = 0;
+    for (const auto &matrix : eigenvectors_blocks) {
+        for (int i = 0; i < matrix.outerSize(); ++i) {
+            non_zeros_per_inner_index.push_back(matrix.outerIndexPtr()[i + 1] -
+                                                matrix.outerIndexPtr()[i]);
+        }
+        num_rows += matrix.rows();
+        num_cols += matrix.cols();
+    }
+
+    // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
+    // square)
+    eigenvectors.resize(num_rows, num_cols);
+    eigenvectors.reserve(non_zeros_per_inner_index);
+    Eigen::Index offset_rows = 0;
+    Eigen::Index offset_cols = 0;
+    for (const auto &matrix : eigenvectors_blocks) {
+        for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(matrix,
+                                                                                           i);
+                 it; ++it) {
+                eigenvectors.insert(it.row() + offset_rows, it.col() + offset_cols) = it.value();
+            }
+        }
+        offset_rows += matrix.rows();
+        offset_cols += matrix.cols();
+    }
+    eigenvectors.makeCompressed();
+
+    // Get the combined eigenvalue matrix
+    eigenvalues.resize(num_cols, num_cols);
+    eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+    Eigen::Index offset = 0;
+    for (const auto &matrix : eigenvalues_blocks) {
+        for (int i = 0; i < matrix.size(); ++i) {
+            eigenvalues.insert(i + offset, i + offset) = matrix(i);
+        }
+        offset += matrix.size();
+    }
+    eigenvalues.makeCompressed();
 
     // Store the diagonalized hamiltonian
     hamiltonian->get_matrix() = eigenvalues;

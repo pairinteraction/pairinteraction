@@ -157,13 +157,13 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
     if (sort_by_quantum_number_f) {
-        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
+        this->blockdiagonalizing_labels.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_F);
     }
     if (sort_by_quantum_number_m) {
-        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
+        this->blockdiagonalizing_labels.push_back(TransformationType::SORT_BY_QUANTUM_NUMBER_M);
     }
     if (sort_by_parity) {
-        this->blockdiagonalizing_labels.insert(TransformationType::SORT_BY_PARITY);
+        this->blockdiagonalizing_labels.push_back(TransformationType::SORT_BY_PARITY);
     }
 }
 

@@ -70,6 +70,8 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
 
     // Initialize transformation
     Sorting transformation;
+    transformation.matrix.resize(matrix.rows());
+    transformation.matrix.setIdentity();
 
     // Apply sorting for labels before SORT_BY_ENERGY
     if (!before_energy.empty()) {
@@ -82,12 +84,6 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
         energies_of_states.reserve(matrix.rows());
         for (int i = 0; i < matrix.rows(); ++i) {
             energies_of_states.push_back(std::real(matrix.coeff(i, i)));
-        }
-
-        if (transformation.matrix.size() == 0) {
-            // If no previous sorting, create identity permutation
-            transformation.matrix.resize(matrix.rows());
-            transformation.matrix.setIdentity();
         }
 
         std::stable_sort(
@@ -114,6 +110,8 @@ Sorting Operator<Derived>::get_sorter(const std::vector<TransformationType> &lab
 template <typename Derived>
 std::vector<IndicesOfBlock>
 Operator<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &labels) const {
+    basis->perform_sorter_checks(labels);
+
     std::set<TransformationType> unique_labels(labels.begin(), labels.end());
     basis->perform_blocks_checks(unique_labels);
 
