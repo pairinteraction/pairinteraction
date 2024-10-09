@@ -17,6 +17,7 @@ env:
 jobs:
   sdist:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
 
@@ -26,8 +27,9 @@ jobs:
     - name: Check metadata
       run: pipx run twine check dist/*
 
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
+        name: sdist
         path: dist/*.tar.gz
 
   wheel:
@@ -36,10 +38,12 @@ jobs:
       matrix:
         include:
         - os: ubuntu-latest # runs in container anyway
-        - os: macos-12
+        - os: macos-13
+        - os: macos-14
         - os: windows-2019
     name: Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
 
@@ -57,11 +61,12 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
 
     - uses: pypa/cibuildwheel@v2.16
 
     - name: Upload wheels
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
+        name: wheel-${{ matrix.os }}
         path: wheelhouse/*.whl

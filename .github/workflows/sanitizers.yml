@@ -26,6 +26,7 @@ jobs:
     # in turn might miss some actual positives.
     # https://clang.llvm.org/docs/AddressSanitizer.html
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -48,6 +49,7 @@ jobs:
     # UndefinedBehaviorSanitizer (UBSan) is a fast undefined behavior detector.
     # https://clang.llvm.org/docs/UndefinedBehaviorSanitizer.html
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -80,6 +82,7 @@ jobs:
     # without. Attempting to pass containers between them anyway will segfault.
     # https://gcc.gnu.org/onlinedocs/libstdc++/manual/debug_mode.html
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:

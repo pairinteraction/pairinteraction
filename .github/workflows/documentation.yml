@@ -13,11 +13,12 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   CLICOLOR_FORCE: 1
   VERBOSE: 1
-  CXXFLAGS: "-march=broadwell"
+  CXXFLAGS: "-march=x86-64-v3"
 
 jobs:
   build_sphinx:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -35,6 +36,7 @@ jobs:
 
   build_doxygen:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -57,6 +59,7 @@ jobs:
 
   lcov_ctest:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -85,6 +88,7 @@ jobs:
 
   lcov_pytest:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
@@ -111,6 +115,7 @@ jobs:
   deploy_docs:
     needs: [build_sphinx, build_doxygen, lcov_ctest, lcov_pytest]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
