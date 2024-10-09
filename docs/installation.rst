@@ -269,7 +269,7 @@ To speed up the software, you can pass optimization flags to the compiler by set
 
 .. code-block:: bash
 
-    export CXXFLAGS="-march=broadwell"
+    export CXXFLAGS="-march=x86-64-v3"
 
 If you are using Windows with Visual Studio, reasonable optimization flags can be set by running the following command in the PowerShell:
 

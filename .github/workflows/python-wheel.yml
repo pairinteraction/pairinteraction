@@ -17,6 +17,7 @@ env:
 jobs:
   sdist:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
 
@@ -42,6 +43,7 @@ jobs:
         - os: windows-2019
     name: Wheel on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     steps:
     - uses: actions/checkout@v4
 
@@ -59,7 +61,7 @@ jobs:
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
 
     - uses: pypa/cibuildwheel@v2.16
 
