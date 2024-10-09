@@ -111,12 +111,11 @@ environment-pass = ["CXXFLAGS", "VERBOSE"]
 
 [tool.cibuildwheel.linux.environment]
 QT_QPA_PLATFORM = "offscreen"
-CXXFLAGS = "-march=broadwell"
+CXXFLAGS = "-march=x86-64-v3"
 
 [tool.cibuildwheel.macos.environment]
 QT_QPA_PLATFORM = "offscreen"
 MACOSX_DEPLOYMENT_TARGET = "10.15"
-CXXFLAGS = "-O3"
 
 [tool.cibuildwheel.windows.environment]
 QT_QPA_PLATFORM = "offscreen"

@@ -18,6 +18,7 @@ jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     container:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     env:
