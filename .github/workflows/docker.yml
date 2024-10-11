@@ -3,6 +3,7 @@ name: Create and publish Docker images
 on:
   push:
   pull_request:
+    types: [opened, reopened]
   schedule:
   - cron: '0 0 * * 1' # Every Monday at 00:00
 
