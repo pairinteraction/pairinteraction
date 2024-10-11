@@ -14,7 +14,7 @@ COPY oneAPI.repo /etc/zypp/repos.d/
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     gcc12-c++ \
-    cmake curl \
+    cmake curl tar gzip \
     doctest-devel spdlog-devel eigen3-devel fmt-devel openblas-devel \
     nlohmann_json-devel \
     python39 python39-devel \
