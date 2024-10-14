@@ -1,8 +1,13 @@
 #include "pairinteraction/operator/Operator.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetCombined.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/operator/OperatorCombined.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
@@ -10,7 +15,21 @@
 
 namespace pairinteraction {
 template <typename Derived>
-Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(std::move(basis)) {}
+Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(std::move(basis)) {
+    this->matrix = Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>(
+        this->basis->get_number_of_states(), this->basis->get_number_of_states());
+}
+
+template <typename Derived>
+void Operator<Derived>::initialize_as_energy_operator() {
+    this->matrix.reserve(Eigen::VectorXi::Constant(this->basis->get_number_of_states(), 1));
+    size_t idx = 0;
+    for (const auto &ket : this->basis->get_kets()) {
+        this->matrix.insert(idx, idx) = ket->get_energy();
+        ++idx;
+    }
+    this->matrix.makeCompressed();
+}
 
 template <typename Derived>
 const Derived &Operator<Derived>::derived() const {
@@ -223,22 +242,22 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+#define INSTANTIATE_OPERATOR_TYPE(SCALAR, OP_TYPE)                                                 \
+    template class Operator<OP_TYPE<SCALAR>>;                                                      \
+    template OP_TYPE<SCALAR> operator*(const SCALAR &lhs, const Operator<OP_TYPE<SCALAR>> &rhs);   \
+    template OP_TYPE<SCALAR> operator*(const Operator<OP_TYPE<SCALAR>> &lhs, const SCALAR &rhs);   \
+    template OP_TYPE<SCALAR> operator/(const Operator<OP_TYPE<SCALAR>> &lhs, const SCALAR &rhs);   \
+    template OP_TYPE<SCALAR> &operator+=(Operator<OP_TYPE<SCALAR>> &lhs,                           \
+                                         const Operator<OP_TYPE<SCALAR>> &rhs);                    \
+    template OP_TYPE<SCALAR> &operator-=(Operator<OP_TYPE<SCALAR>> &lhs,                           \
+                                         const Operator<OP_TYPE<SCALAR>> &rhs);                    \
+    template OP_TYPE<SCALAR> operator+(const Operator<OP_TYPE<SCALAR>> &lhs,                       \
+                                       const Operator<OP_TYPE<SCALAR>> &rhs);                      \
+    template OP_TYPE<SCALAR> operator-(const Operator<OP_TYPE<SCALAR>> &lhs,                       \
+                                       const Operator<OP_TYPE<SCALAR>> &rhs);
 #define INSTANTIATE_OPERATOR(SCALAR)                                                               \
-    template class Operator<OperatorAtom<SCALAR>>;                                                 \
-    template OperatorAtom<SCALAR> operator*(const SCALAR &lhs,                                     \
-                                            const Operator<OperatorAtom<SCALAR>> &rhs);            \
-    template OperatorAtom<SCALAR> operator*(const Operator<OperatorAtom<SCALAR>> &lhs,             \
-                                            const SCALAR &rhs);                                    \
-    template OperatorAtom<SCALAR> operator/(const Operator<OperatorAtom<SCALAR>> &lhs,             \
-                                            const SCALAR &rhs);                                    \
-    template OperatorAtom<SCALAR> &operator+=(Operator<OperatorAtom<SCALAR>> &lhs,                 \
-                                              const Operator<OperatorAtom<SCALAR>> &rhs);          \
-    template OperatorAtom<SCALAR> &operator-=(Operator<OperatorAtom<SCALAR>> &lhs,                 \
-                                              const Operator<OperatorAtom<SCALAR>> &rhs);          \
-    template OperatorAtom<SCALAR> operator+(const Operator<OperatorAtom<SCALAR>> &lhs,             \
-                                            const Operator<OperatorAtom<SCALAR>> &rhs);            \
-    template OperatorAtom<SCALAR> operator-(const Operator<OperatorAtom<SCALAR>> &lhs,             \
-                                            const Operator<OperatorAtom<SCALAR>> &rhs);
+    INSTANTIATE_OPERATOR_TYPE(SCALAR, OperatorAtom)                                                \
+    INSTANTIATE_OPERATOR_TYPE(SCALAR, OperatorCombined)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_OPERATOR(float)
@@ -246,5 +265,7 @@ INSTANTIATE_OPERATOR(double)
 INSTANTIATE_OPERATOR(std::complex<float>)
 INSTANTIATE_OPERATOR(std::complex<double>)
 
+#undef INSTANTIATE_OPERATOR_TYPE
 #undef INSTANTIATE_OPERATOR
+
 } // namespace pairinteraction

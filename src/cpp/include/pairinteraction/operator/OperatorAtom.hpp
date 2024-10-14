@@ -43,11 +43,8 @@ public:
 private:
     friend class Database;
 
-    OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q,
+    OperatorAtom(std::shared_ptr<const basis_t> basis,
                  Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix);
-
-    OperatorType type;
-    int q;
 };
 
 extern template class OperatorAtom<float>;

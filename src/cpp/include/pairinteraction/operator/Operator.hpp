@@ -76,6 +76,7 @@ public:
     friend Derived operator-<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
 
 protected:
+    void initialize_as_energy_operator();
     std::shared_ptr<const basis_t> basis;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
 
