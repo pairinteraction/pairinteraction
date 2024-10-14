@@ -4,7 +4,7 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
-from pairinteraction import ModelSimulation
+from pairinteraction.model import ModelSimulation
 
 directory = Path(__file__).parent
 models_directory = directory / "data" / "models"
