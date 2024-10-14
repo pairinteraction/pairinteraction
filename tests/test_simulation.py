@@ -4,7 +4,8 @@ from pathlib import Path
 
 import numpy as np
 
-from pairinteraction import ModelSimulation, Simulation
+from pairinteraction.model import ModelSimulation
+from pairinteraction.simulation import Simulation
 
 directory = Path(__file__).parent
 models_directory = directory / "data" / "models"

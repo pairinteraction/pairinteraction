@@ -1,31 +1,11 @@
-from pairinteraction import gui
-from pairinteraction.model import (
-    ModelAtomMQDT,
-    ModelAtomSQDT,
-    ModelClassicalLight,
-    ModelInteractions,
-    ModelNumerics,
-    ModelOverlaps,
-    ModelSimulation,
-    ModelStateAtomMQDT,
-    ModelStateAtomSQDT,
-    ModelStateClassicalLight,
-)
-from pairinteraction.simulation import Simulation
+from pairinteraction import backend, gui, model, preprocessing, simulation
 
 __all__ = [
     "gui",
-    "ModelAtomMQDT",
-    "ModelAtomSQDT",
-    "ModelClassicalLight",
-    "ModelInteractions",
-    "ModelNumerics",
-    "ModelOverlaps",
-    "ModelSimulation",
-    "ModelStateAtomMQDT",
-    "ModelStateAtomSQDT",
-    "ModelStateClassicalLight",
-    "Simulation",
+    "backend",
+    "model",
+    "preprocessing",
+    "simulation",
 ]
 
 __version__ = "1.0.0"
