@@ -2,10 +2,12 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisClassicalLight.hpp"
+#include "pairinteraction/basis/BasisCombined.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetClassicalLight.hpp"
+#include "pairinteraction/ket/KetCombined.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/wigner.hpp"
@@ -506,4 +508,8 @@ template class Basis<BasisClassicalLight<float>>;
 template class Basis<BasisClassicalLight<double>>;
 template class Basis<BasisClassicalLight<std::complex<float>>>;
 template class Basis<BasisClassicalLight<std::complex<double>>>;
+template class Basis<BasisCombined<float>>;
+template class Basis<BasisCombined<double>>;
+template class Basis<BasisCombined<std::complex<float>>>;
+template class Basis<BasisCombined<std::complex<double>>>;
 } // namespace pairinteraction

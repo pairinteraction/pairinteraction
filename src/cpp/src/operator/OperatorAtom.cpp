@@ -9,22 +9,22 @@
 namespace pairinteraction {
 template <typename Scalar>
 OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis)
-    : Operator<OperatorAtom<Scalar>>(basis), type(OperatorType::ZERO),
-      q(std::numeric_limits<int>::max()) {
-    this->matrix = Eigen::SparseMatrix<Scalar, Eigen::RowMajor>(basis->get_number_of_states(),
-                                                                basis->get_number_of_states());
-}
+    : Operator<OperatorAtom<Scalar>>(basis) {}
 
 template <typename Scalar>
 OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q)
-    : Operator<OperatorAtom<Scalar>>(basis), type(type), q(q) {
-    *this = basis->get_database().get_operator(basis, type, q);
+    : Operator<OperatorAtom<Scalar>>(basis) {
+    if (type == OperatorType::ENERGY) {
+        this->initialize_as_energy_operator();
+    } else {
+        *this = basis->get_database().get_operator(basis, type, q);
+    }
 }
 
 template <typename Scalar>
-OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, OperatorType type, int q,
+OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis,
                                    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix)
-    : Operator<OperatorAtom<Scalar>>(basis), type(type), q(q) {
+    : Operator<OperatorAtom<Scalar>>(basis) {
     this->matrix = std::move(matrix);
 }
 

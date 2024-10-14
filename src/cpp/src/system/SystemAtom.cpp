@@ -39,11 +39,12 @@ SystemAtom<Scalar> &SystemAtom<Scalar>::enable_diamagnetism(bool enable) {
 template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
-    this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);
-    this->hamiltonian_is_diagonal = true;
 
     real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
 
+    // Construct the unperturbed Hamiltonian
+    this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);
+    this->hamiltonian_is_diagonal = true;
     bool sort_by_quantum_number_f = true;
     bool sort_by_quantum_number_m = true;
     bool sort_by_parity = true;

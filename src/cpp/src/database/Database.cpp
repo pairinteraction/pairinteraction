@@ -1022,7 +1022,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
         basis->coefficients.matrix.adjoint() * matrix_map * basis->coefficients.matrix;
 
     // Construct the operator and return it
-    return OperatorAtom(basis, type, q, std::move(matrix));
+    return OperatorAtom(basis, std::move(matrix));
 }
 
 void Database::ensure_presence_of_table(const std::string &name) {
