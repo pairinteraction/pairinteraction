@@ -40,6 +40,8 @@ jobs:
         LDFLAGS: "-fsanitize=address"
     - name: Build
       run: cmake --build build/ -- --keep-going
+      env:
+        ASAN_OPTIONS: "verify_asan_link_order=0"
     - name: Test
       run: cmake --build build/ --target test -- --keep-going
       env:

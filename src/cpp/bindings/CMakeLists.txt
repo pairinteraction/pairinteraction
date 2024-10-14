@@ -72,3 +72,14 @@ install(TARGETS backend DESTINATION pairinteraction)
 if(WIN32)
   install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction)
 endif()
+
+# cmake-format: off
+nanobind_add_stub(
+  backend_stub
+  MODULE backend
+  OUTPUT backend.pyi
+  PYTHON_PATH $<TARGET_FILE_DIR:backend>
+  DEPENDS backend
+)
+# cmake-format: on
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/backend.pyi DESTINATION pairinteraction)
