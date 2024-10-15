@@ -41,7 +41,7 @@ int main(int argc, char **argv) {
     std::vector<pairinteraction::SystemAtom<double>> systems;
     systems.reserve(11);
     for (int i = 0; i < 11; ++i) {
-        auto system = pairinteraction::SystemAtom<double>(basis);
+        pairinteraction::SystemAtom<double> system(basis);
         system.set_electric_field({0, 0, i * 1.9446903811524456e-10});
         systems.push_back(std::move(system));
     }
