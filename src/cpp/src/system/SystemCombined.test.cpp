@@ -28,14 +28,12 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
                      .restrict_quantum_number_m(-0.5, 0.5)
                      .create(database);
 
-    // Construct and diagonalize the constituents systems
+    // Construct and diagonalize the constituent systems
     auto system1 = SystemAtom<double>(basis);
-    system1.set_electric_field({0, 0, 0.00000001});
-    system1.diagonalize(diagonalizer);
-
     auto system2 = SystemAtom<double>(basis);
+    system1.set_electric_field({0, 0, 0.00000001});
     system2.set_electric_field({0, 0, 0.00000001});
-    system2.diagonalize(diagonalizer);
+    diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
     // Construct and diagonalize the combined system
     auto combined = SystemCombined<double>(system1, system2, -1, 0);

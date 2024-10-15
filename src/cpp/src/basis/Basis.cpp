@@ -74,10 +74,34 @@ Basis<Derived>::Basis(ketvec_t &&kets)
         quantum_number_m_of_states.push_back(ket->get_quantum_number_m());
         parity_of_states.push_back(ket->get_parity());
         ket_id_to_index[ket->get_id()] = index++;
+        if (ket->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
+            _has_quantum_number_f = false;
+        }
+        if (ket->get_quantum_number_m() == std::numeric_limits<real_t>::max()) {
+            _has_quantum_number_m = false;
+        }
+        if (ket->get_parity() == Parity::UNKNOWN) {
+            _has_parity = false;
+        }
     }
     ket_of_states.resize(this->kets.size());
     std::iota(ket_of_states.begin(), ket_of_states.end(), 0);
     coefficients.matrix.setIdentity();
+}
+
+template <typename Derived>
+bool Basis<Derived>::has_quantum_number_f() const {
+    return _has_quantum_number_f;
+}
+
+template <typename Derived>
+bool Basis<Derived>::has_quantum_number_m() const {
+    return _has_quantum_number_m;
+}
+
+template <typename Derived>
+bool Basis<Derived>::has_parity() const {
+    return _has_parity;
 }
 
 template <typename Derived>
@@ -438,6 +462,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 transformed->quantum_number_f_of_states[i] = val[i];
             } else {
                 transformed->quantum_number_f_of_states[i] = std::numeric_limits<real_t>::max();
+                transformed->_has_quantum_number_f = false;
             }
         }
     }
@@ -455,6 +480,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 transformed->quantum_number_m_of_states[i] = val[i];
             } else {
                 transformed->quantum_number_m_of_states[i] = std::numeric_limits<real_t>::max();
+                transformed->_has_quantum_number_m = false;
             }
         }
     }
@@ -475,6 +501,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 transformed->parity_of_states[i] = static_cast<Parity>(std::lround(val[i]));
             } else {
                 transformed->parity_of_states[i] = Parity::UNKNOWN;
+                transformed->_has_parity = false;
             }
         }
     }

@@ -53,10 +53,14 @@ public:
 
 private:
     void construct_hamiltonian() const override;
-    std::shared_ptr<const basis_t>
-    create_combined_basis(const SystemAtom<Scalar> &system1, const SystemAtom<Scalar> &system2,
-                          real_t min_energy,
-                          real_t max_energy) const; // TODO make this a static function
+    static std::shared_ptr<const basis_t> create_combined_basis(const SystemAtom<Scalar> &system1,
+                                                                const SystemAtom<Scalar> &system2,
+                                                                real_t min_energy,
+                                                                real_t max_energy);
+    static Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    calculate_tensor_product(const std::shared_ptr<const basis_t> &basis,
+                             const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
+                             const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;

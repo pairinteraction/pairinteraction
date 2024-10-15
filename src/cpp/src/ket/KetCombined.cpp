@@ -1,7 +1,6 @@
 #include "pairinteraction/ket/KetCombined.hpp"
 
 #include "pairinteraction/enums/Parity.hpp"
-#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <limits>
@@ -10,8 +9,8 @@
 namespace pairinteraction {
 template <typename Real>
 KetCombined<Real>::KetCombined(
-    size_t id, Real energy, Real quantum_number_f, Real quantum_number_m, Parity parity,
-    std::vector<std::shared_ptr<const KetAtom<Real>>> &&kets_with_largest_overlap)
+    Private /*unused*/, size_t id, Real energy, Real quantum_number_f, Real quantum_number_m,
+    Parity parity, std::vector<std::shared_ptr<const Ket<Real>>> &&kets_with_largest_overlap)
     : Ket<Real>(energy, quantum_number_f, quantum_number_m, parity), id(id),
       kets_with_largest_overlap(std::move(kets_with_largest_overlap)) {}
 
