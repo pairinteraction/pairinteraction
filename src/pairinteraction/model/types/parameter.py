@@ -2,12 +2,14 @@
 
 import typing
 from abc import ABC, abstractmethod
-from typing import Any, Generic, Literal, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 from pydantic import GetCoreSchemaHandler
 from pydantic_core import core_schema
-from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 ParamType = TypeVar("ParamType")
 RawType = TypeVar("RawType")
@@ -56,7 +58,7 @@ class BaseParameter(ABC, Generic[ParamType, RawType]):
         raise ValueError(f"Unsupported type {source}")
 
     @classmethod
-    def _validate_raw(cls, raw: RawType) -> Self:
+    def _validate_raw(cls, raw: RawType) -> "Self":
         """Validate the raw input."""
         return cls(raw)
 
@@ -169,7 +171,7 @@ class ParameterRange(BaseParameterIterable[ParamType, dict[str, Union[ParamType,
         return f"{self.__class__.__name__}(" + ", ".join([f"{k}={v!r}" for k, v in self.raw.items()]) + ")"
 
     @classmethod
-    def _validate_raw(cls, raw: dict[str, Union[ParamType, int]]) -> Self:
+    def _validate_raw(cls, raw: dict[str, Union[ParamType, int]]) -> "Self":
         if not all(key in raw for key in ["start", "stop", "steps"]):
             raise ValueError("ParameterRange needs to have keys 'start', 'stop', 'steps'")
         return cls(raw["start"], raw["stop"], raw["steps"])

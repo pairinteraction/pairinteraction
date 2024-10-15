@@ -1,7 +1,7 @@
 """Pydantic model for the complete simulation."""
 
 from functools import cached_property
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from pydantic import (
     BaseModel,
@@ -12,7 +12,9 @@ from pydantic import (
     field_serializer,
     model_validator,
 )
-from typing_extensions import Self
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 from pairinteraction.model.constituents.atom import ModelAtomMQDT, ModelAtomSQDT
 from pairinteraction.model.constituents.base import BaseModelConstituent
@@ -87,7 +89,7 @@ class ModelSimulation(BaseModel):
         return all_sizes[0]
 
     @model_validator(mode="after")
-    def validate_constituents_references(self) -> Self:
+    def validate_constituents_references(self) -> "Self":
         """Validate the constituents, i.e. replace constituents given as reference
         to another constituent via a string as reference to the same object.
 
@@ -105,7 +107,7 @@ class ModelSimulation(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def validate_submodel_combined_states(self) -> Self:
+    def validate_submodel_combined_states(self) -> "Self":
         """Validate combined_states of the submodel 'interactions' and 'overlaps',
         i.e. replace states, that are given as reference
         to a state of a constituent.state_of_interest (via an index) with the actual state.
@@ -134,7 +136,7 @@ class ModelSimulation(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def sanity_check_fields(self) -> Self:
+    def sanity_check_fields(self) -> "Self":
         """Check wether all atoms have the same applied fields, if not raise a warning."""
         if self.atom2 is None:
             return self
@@ -147,7 +149,7 @@ class ModelSimulation(BaseModel):
         return self
 
     @model_validator(mode="after")
-    def compute_properties(self) -> Self:
+    def compute_properties(self) -> "Self":
         """Compute properties of the model, so also there it is checked if everything works without errors.
 
         This is especially important for dict_of_parameter_lists.
@@ -173,7 +175,7 @@ class ModelSimulation(BaseModel):
         return nxt(constituent, info)
 
     @classmethod
-    def model_validate_json_file(cls, path: str, **kwargs) -> Self:
+    def model_validate_json_file(cls, path: str, **kwargs) -> "Self":
         """Validate the model from a json file."""
         with open(path, encoding="utf-8") as f:
             return cls.model_validate_json(f.read(), **kwargs)
