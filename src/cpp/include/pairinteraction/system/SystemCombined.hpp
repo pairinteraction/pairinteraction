@@ -52,14 +52,16 @@ public:
     Type &set_interatomic_distance(real_t distance);
 
 private:
-    real_t interatomic_distance{0};
-
     void construct_hamiltonian() const override;
-    ketvec_t create_combined_kets(const SystemAtom<Scalar> &system1,
-                                  const SystemAtom<Scalar> &system2, real_t min_energy,
-                                  real_t max_energy) const;
+    std::shared_ptr<const basis_t>
+    create_combined_basis(const SystemAtom<Scalar> &system1, const SystemAtom<Scalar> &system2,
+                          real_t min_energy,
+                          real_t max_energy) const; // TODO make this a static function
+
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
+
+    real_t interatomic_distance{0};
 };
 
 extern template class SystemCombined<float>;
