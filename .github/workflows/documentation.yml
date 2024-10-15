@@ -24,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install pairinteraction
-      run: uv pip install --system --break-system-packages --no-cache-dir -v -e .[doc]
+      run: uv pip install --system --break-system-packages --no-cache-dir .[doc]
     - name: Build documentation
       working-directory: docs/
       run: make html
@@ -57,7 +57,7 @@ jobs:
         name: pairinteraction-doxygen
         path: build/src/cpp/docs/html
 
-  lcov_ctest:
+  coverage_cpp_ctest:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
@@ -83,10 +83,10 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: pairinteraction-lcov-ctest
+        name: pairinteraction-coverage-cpp-ctest
         path: build/docs/coverage
 
-  lcov_pytest:
+  coverage_cpp_pytest:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
@@ -94,7 +94,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install pairinteraction
-      run: uv pip install --system --break-system-packages --no-cache-dir -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON -v -e .[test]
+      run: uv pip install --system --break-system-packages --no-cache-dir -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
     - name: Run pytest
       run: pytest
       env:
@@ -109,11 +109,35 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: pairinteraction-lcov-pytest
+        name: pairinteraction-coverage-cpp-pytest
         path: build/docs/coverage
 
+  coverage_python_pytest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    container:
+      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install pairinteraction
+      run: uv pip install --system --break-system-packages --no-cache-dir .[doc,test]
+    - name: Run pytest with coverage
+      run: coverage run -m pytest
+      env:
+        QT_QPA_PLATFORM: "offscreen"
+        QT_DEBUG_PLUGINS: 1
+    - name: Generate Code Coverage
+      run: |
+        coverage lcov -o coverage.info
+        genhtml coverage.info --output-directory docs/coverage/
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: pairinteraction-coverage-python-pytest
+        path: docs/coverage
+
   deploy_docs:
-    needs: [build_sphinx, build_doxygen, lcov_ctest, lcov_pytest]
+    needs: [build_sphinx, build_doxygen, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
     runs-on: ubuntu-latest
     timeout-minutes: 15
     container:
@@ -133,17 +157,23 @@ jobs:
         name: pairinteraction-doxygen
         path: public/doxygen/html
 
-    - name: Download artifacts lcov-ctest
+    - name: Download artifacts coverage-cpp-ctest
       uses: actions/download-artifact@v4
       with:
-        name: pairinteraction-lcov-ctest
-        path: public/coverage/ctest/html
+        name: pairinteraction-coverage-cpp-ctest
+        path: public/coverage/cpp-ctest/html
 
-    - name: Download artifacts lcov-pytest
+    - name: Download artifacts coverage-cpp-pytest
       uses: actions/download-artifact@v4
       with:
-        name: pairinteraction-lcov-pytest
-        path: public/coverage/pytest/html
+        name: pairinteraction-coverage-cpp-pytest
+        path: public/coverage/cpp-pytest/html
+
+    - name: Download artifacts coverage-python-pytest
+      uses: actions/download-artifact@v4
+      with:
+        name: pairinteraction-coverage-python-pytest
+        path: public/coverage/python-pytest/html
 
     - name: Deploy pages
       uses: JamesIves/github-pages-deploy-action@v4.5.0
