@@ -43,8 +43,11 @@ public:
     Basis() = delete;
     virtual ~Basis() = default;
 
-    const ketvec_t &get_kets() const;
+    bool has_quantum_number_f() const;
+    bool has_quantum_number_m() const;
+    bool has_parity() const;
 
+    const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
     real_t get_quantum_number_f(size_t index_state) const;
@@ -95,5 +98,8 @@ private:
     std::vector<real_t> quantum_number_m_of_states;
     std::vector<Parity> parity_of_states;
     std::vector<int> ket_of_states;
+    bool _has_quantum_number_f{true};
+    bool _has_quantum_number_m{true};
+    bool _has_parity{true};
 };
 } // namespace pairinteraction

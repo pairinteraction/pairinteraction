@@ -10,7 +10,8 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisCombined<Scalar>::BasisCombined(ketvec_t &&kets, map_size_t &&map_index_combined_state,
+BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets,
+                                     map_size_t &&map_index_combined_state,
                                      map_range_t &&map_range_of_index_state2,
                                      size_t number_of_index_state2)
     : Basis<BasisCombined<Scalar>>(std::move(kets)),
