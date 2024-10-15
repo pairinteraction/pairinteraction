@@ -12,7 +12,7 @@
 
 #include <nanobind/nanobind.h>
 
-NB_MODULE(backend, m) // NOLINT
+NB_MODULE(_backend, m) // NOLINT
 {
     // https://nanobind.readthedocs.io/en/latest/faq.html#why-am-i-getting-errors-about-leaked-functions-and-types
     nanobind::set_leak_warnings(false);

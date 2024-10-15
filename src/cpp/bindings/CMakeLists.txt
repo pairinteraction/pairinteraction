@@ -45,7 +45,8 @@ target_link_libraries(
 
 set_target_properties(
   backend
-  PROPERTIES PREFIX ""
+  PROPERTIES OUTPUT_NAME _backend
+             PREFIX ""
              SUFFIX "${NB_SUFFIX_EXT}"
              INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
 
@@ -67,19 +68,19 @@ if(WIN32)
     COMMAND_EXPAND_LISTS)
 endif()
 
-install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction)
-install(TARGETS backend DESTINATION pairinteraction)
+install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction/backend)
+install(TARGETS backend DESTINATION pairinteraction/backend)
 if(WIN32)
-  install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction)
+  install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction/backend)
 endif()
 
 # cmake-format: off
 nanobind_add_stub(
   backend_stub
-  MODULE backend
-  OUTPUT backend.pyi
+  MODULE _backend
+  OUTPUT _backend.pyi
   PYTHON_PATH $<TARGET_FILE_DIR:backend>
   DEPENDS backend
 )
 # cmake-format: on
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/backend.pyi DESTINATION pairinteraction)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION pairinteraction/backend)
