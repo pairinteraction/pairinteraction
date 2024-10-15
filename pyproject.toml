@@ -52,7 +52,6 @@ gui = [
 doc = [
   "sphinx >= 7",
   "sphinx-rtd-theme >= 2.0",
-  "sphinxcontrib-mermaid >= 0.9",
   "nbsphinx >= 0.9",
   "nbconvert >= 7.8",
   "jupyter >= 1.1",
