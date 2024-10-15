@@ -19,7 +19,6 @@ language = "en"
 # needs_sphinx = '1.0'
 
 extensions = [
-    "sphinxcontrib.mermaid",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.mathjax",
@@ -35,7 +34,6 @@ extensions = [
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "_doctrees", "Thumbs.db", ".DS_Store"]  # Ignore these source files and folders
-mermaid_version = ""  # We want to use the version from cdnjs
 source_suffix = ".rst"
 master_doc = "index"
 pygments_style = "sphinx"  # syntax highlighting
@@ -43,12 +41,6 @@ todo_include_todos = False
 
 
 # -- Options for HTML output -------------------------------------------------
-_html_js_attributes = {
-    "integrity": "sha512-3j181LWtFFhf1Y8tix6sEqRuN4e9p6V8dH6J6O/bGh5mPk82EA0Y88UZtmlh9awZnhPQqOeB1ogq/NzExIqwKw==",
-    "crossorigin": "anonymous",
-    "referrerpolicy": "no-referrer",
-}
-html_js_files = [("https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.min.js", _html_js_attributes)]
 html_css_files = ["gallery.css"]
 
 html_theme = "sphinx_rtd_theme"
