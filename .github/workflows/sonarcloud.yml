@@ -32,7 +32,7 @@ jobs:
       - name: Install sonar-scanner and build-wrapper
         uses: SonarSource/sonarcloud-github-c-cpp@v2
       - name: Install Python dependencies for cmake
-        run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+        run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
       - name: Configure
         run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
       - name: Run build-wrapper

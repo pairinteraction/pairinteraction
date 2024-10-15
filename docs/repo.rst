@@ -41,7 +41,7 @@ If you are planning to contribute to the C++ backend it might be beneficial to d
 
         uv venv --python=3.9 .venv
         source .venv/bin/activate
-        uv pip install nanobind numpy
+        uv pip install nanobind numpy typing_extensions
 
     If you want to use mkl you should also run ``uv pip install mkl mkl-devel``.
 

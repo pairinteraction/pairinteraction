@@ -42,7 +42,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh
@@ -65,7 +65,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy
+      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
     - name: Configure
       run: |
         . /opt/intel/oneapi/setvars.sh

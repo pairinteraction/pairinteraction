@@ -3,6 +3,7 @@ requires = [  # keep this in sync with project.optional-dependencies.build
   "scikit-build-core >=0.9.0",
   "nanobind >=1.9.0",
   "numpy >= 1.24",
+  "typing_extensions >= 4.7",
 ]
 build-backend = "scikit_build_core.build"
 
@@ -70,6 +71,7 @@ build = [  # keep this in sync with build-system.requires
   "scikit-build-core >=0.9.0",
   "nanobind >=1.9.0",
   "numpy >= 1.24",
+  "typing_extensions >= 4.7",
 ]
 
 [project.urls]
