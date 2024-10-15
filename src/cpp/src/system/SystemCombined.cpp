@@ -15,16 +15,16 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/SparseCore>
+#include <algorithm>
+#include <complex>
+#include <limits>
 #include <memory>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
-SystemCombined<Scalar>::SystemCombined(const SystemAtom<Scalar> &system1,
-                                       const SystemAtom<Scalar> &system2, real_t min_energy,
-                                       real_t max_energy)
-    : System<SystemCombined<Scalar>>(
-          create_combined_basis(system1, system2, min_energy, max_energy)),
-      basis1(system1.get_basis()), basis2(system2.get_basis()) {}
+SystemCombined<Scalar>::SystemCombined(std::shared_ptr<const basis_t> basis)
+    : System<SystemCombined<Scalar>>(basis) {}
 
 template <typename Scalar>
 SystemCombined<Scalar> &SystemCombined<Scalar>::set_interatomic_distance(real_t distance) {
@@ -36,6 +36,8 @@ SystemCombined<Scalar> &SystemCombined<Scalar>::set_interatomic_distance(real_t 
 template <typename Scalar>
 void SystemCombined<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
+    auto basis1 = basis->get_basis1();
+    auto basis2 = basis->get_basis2();
 
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorCombined<Scalar>>(basis, OperatorType::ENERGY);
@@ -83,79 +85,12 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
 }
 
 template <typename Scalar>
-std::shared_ptr<const typename SystemCombined<Scalar>::basis_t>
-SystemCombined<Scalar>::create_combined_basis(const SystemAtom<Scalar> &system1,
-                                              const SystemAtom<Scalar> &system2, real_t min_energy,
-                                              real_t max_energy) {
-    // TODO Move the content of this method into a BasisCombinedCreator, store basis1 and basis2
-    // also within this class
-
-    const auto &basis1 = system1.get_basis();
-    const auto &basis2 = system2.get_basis();
-    auto eigenvalues1 = system1.get_eigenvalues();
-    auto eigenvalues2 = system2.get_eigenvalues();
-
-    // Construct the canonical basis that contains all all combined states with energies between
-    // min_energy and max_energy
-    ketvec_t kets;
-    kets.reserve(eigenvalues1.size() * eigenvalues2.size());
-
-    typename basis_t::map_size_t map_index_combined_state;
-    map_index_combined_state.reserve(eigenvalues1.size() * eigenvalues2.size());
-
-    typename basis_t::map_range_t map_range_of_index_state2;
-    map_range_of_index_state2.reserve(eigenvalues1.size());
-
-    // Loop only over states with an allowed energy // TODO make this more efficient
-    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenvalues1.size()); ++idx1) {
-
-        // TODO set the following properly (requires the states to be sorted by energy)
-        map_range_of_index_state2.emplace(idx1, typename basis_t::range_t(0, eigenvalues2.size()));
-
-        for (size_t idx2 = 0; idx2 < static_cast<size_t>(eigenvalues2.size()); ++idx2) {
-            const real_t energy = eigenvalues1[idx1] + eigenvalues2[idx2];
-            if (energy < min_energy || energy > max_energy) {
-                continue;
-            }
-
-            // Get quantum numbers
-            Parity parity = Parity::UNKNOWN;
-            real_t quantum_number_f = std::numeric_limits<real_t>::max();
-            real_t quantum_number_m = std::numeric_limits<real_t>::max();
-            if (basis1->has_quantum_number_m() && basis2->has_quantum_number_m()) {
-                quantum_number_m =
-                    basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
-            }
-
-            // Get ket with largest overlap
-            std::shared_ptr<const KetAtom<real_t>> ket1 =
-                basis1->get_ket_with_largest_overlap(idx1);
-            std::shared_ptr<const KetAtom<real_t>> ket2 =
-                basis2->get_ket_with_largest_overlap(idx2);
-
-            // Store the combined index
-            map_index_combined_state[idx1 * eigenvalues2.size() + idx2] = kets.size();
-
-            // Store the combined state as a ket
-            kets.emplace_back(std::make_shared<ket_t>(
-                typename ket_t::Private(), kets.size(), energy, quantum_number_f, quantum_number_m,
-                parity, std::vector<std::shared_ptr<const Ket<real_t>>>{ket1, ket2}));
-        }
-    }
-
-    kets.shrink_to_fit();
-
-    return std::make_shared<basis_t>(typename basis_t::Private(), std::move(kets),
-                                     std::move(map_index_combined_state),
-                                     std::move(map_range_of_index_state2), eigenvalues2.size());
-}
-
-template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_tensor_product(
     const std::shared_ptr<const basis_t> &basis,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
     real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+
     std::vector<Eigen::Triplet<Scalar>> triplets;
 
     // Loop over the rows of the first matrix
@@ -177,12 +112,17 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
             for (Eigen::Index outer_idx2 = static_cast<Eigen::Index>(range_outer_idx2.min());
                  outer_idx2 < static_cast<Eigen::Index>(range_outer_idx2.max()); ++outer_idx2) {
 
+                if (!basis->are_valid_indices(outer_idx1, outer_idx2)) {
+                    continue;
+                }
+
                 // Calculate the minimum and maximum values of the index pointer of the second
                 // matrix
                 Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[outer_idx2];
                 Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[outer_idx2 + 1];
 
-                // Minimum value is chosen such that we start with an energetically allowed column
+                // The minimum value is chosen such that we start with an energetically allowed
+                // column
                 begin_idxptr2 +=
                     std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
                                   std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
@@ -195,6 +135,9 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                 for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2; ++idxptr2) {
 
                     Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
+                    if (!basis->are_valid_indices(col1, col2)) {
+                        continue;
+                    }
                     if (col2 >= static_cast<Eigen::Index>(range_inner_idx2.max())) {
                         break;
                     }

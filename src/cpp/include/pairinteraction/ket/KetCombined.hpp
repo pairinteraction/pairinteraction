@@ -10,14 +10,14 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class SystemCombined;
+class BasisCombinedCreator;
 
 template <typename Real>
 class KetCombined : public Ket<Real> {
     static_assert(std::is_floating_point_v<Real>);
 
-    friend class SystemCombined<Real>;
-    friend class SystemCombined<std::complex<Real>>;
+    friend class BasisCombinedCreator<Real>;
+    friend class BasisCombinedCreator<std::complex<Real>>;
     struct Private {};
 
 public:

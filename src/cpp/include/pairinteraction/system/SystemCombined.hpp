@@ -46,24 +46,16 @@ public:
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
-    SystemCombined(const SystemAtom<Scalar> &system1, const SystemAtom<Scalar> &system2,
-                   real_t min_energy, real_t max_energy);
+    SystemCombined(std::shared_ptr<const basis_t> basis);
 
     Type &set_interatomic_distance(real_t distance);
 
 private:
     void construct_hamiltonian() const override;
-    static std::shared_ptr<const basis_t> create_combined_basis(const SystemAtom<Scalar> &system1,
-                                                                const SystemAtom<Scalar> &system2,
-                                                                real_t min_energy,
-                                                                real_t max_energy);
     static Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     calculate_tensor_product(const std::shared_ptr<const basis_t> &basis,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
-
-    std::shared_ptr<const BasisAtom<Scalar>> basis1;
-    std::shared_ptr<const BasisAtom<Scalar>> basis2;
 
     real_t interatomic_distance{0};
 };

@@ -34,7 +34,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
                     .set_quantum_number_j(0.5)
                     .set_quantum_number_m(0.5)
                     .create(database);
-    auto basis = BasisAtomCreator<double>().add_ket(ket1).add_ket(ket2).create(database);
+    auto basis = BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).create(database);
 
     auto system = SystemAtom<double>(basis);
     system.set_electric_field({0, 0, 0.0001});
