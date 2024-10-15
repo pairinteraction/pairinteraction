@@ -3,6 +3,7 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisCombinedCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"

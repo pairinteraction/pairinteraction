@@ -9,7 +9,7 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class SystemCombined;
+class BasisCombinedCreator;
 
 template <typename Real>
 class KetCombined;
@@ -35,7 +35,7 @@ template <typename Scalar>
 class BasisCombined : public Basis<BasisCombined<Scalar>> {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
-    friend class SystemCombined<Scalar>;
+    friend class BasisCombinedCreator<Scalar>;
     struct Private {};
 
 public:
@@ -47,15 +47,19 @@ public:
     using map_range_t = std::unordered_map<size_t, range_t>;
 
     BasisCombined(Private /*unused*/, ketvec_t &&kets, map_size_t &&map_index_combined_state,
-                  map_range_t &&map_index_range, size_t number_of_index_state2);
+                  map_range_t &&map_index_range, std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                  std::shared_ptr<const BasisAtom<Scalar>> basis2);
+    const range_t &get_index_range(size_t index_state1) const;
+    bool are_valid_indices(size_t index_state1, size_t index_state2) const;
+    size_t get_combined_index(size_t index_state1, size_t index_state2) const;
+    std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
+    std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
 
 private:
-    const range_t &get_index_range(size_t index_state1) const;
-    size_t get_combined_index(size_t index_state1, size_t index_state2) const;
-
     map_size_t map_index_combined_state;
     map_range_t map_range_of_index_state2;
-    size_t number_of_index_state2;
+    std::shared_ptr<const BasisAtom<Scalar>> basis1;
+    std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };
 
 extern template class BasisCombined<float>;

@@ -36,12 +36,12 @@ int main(int argc, char **argv) {
     auto basis1 = pairinteraction::BasisAtomCreator<double>()
                       .set_species("Rb")
                       .restrict_quantum_number_n(59, 61)
-                      .restrict_quantum_number_l(0, 2)
+                      .restrict_quantum_number_l(0, 1)
                       .create(database);
     auto basis2 = pairinteraction::BasisAtomCreator<double>()
                       .set_species("Rb")
                       .restrict_quantum_number_n(59, 61)
-                      .restrict_quantum_number_l(0, 2)
+                      .restrict_quantum_number_l(0, 1)
                       .create(database);
 
     pairinteraction::SystemAtom<double> system1(basis1);
@@ -53,20 +53,27 @@ int main(int argc, char **argv) {
     pairinteraction::diagonalize<pairinteraction::SystemAtom<double>>({system1, system2},
                                                                       diagonalizer);
 
-    // Create an diagonalize a combined systems around |60S; 60S>
+    // Create and diagonalize a combined systems around |60S; 60S>
     auto ket = pairinteraction::KetAtomCreator<double>()
                    .set_species("Rb")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(0)
                    .set_quantum_number_m(0.5)
                    .create(database);
-    double min_energy = 2 * ket->get_energy() - 3000 / 6579683.920501762; // TODO 3000 -> 3
-    double max_energy = 2 * ket->get_energy() + 3000 / 6579683.920501762; // TODO 3000 -> 3
+    double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
+    double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
+
+    auto combined_basis = pairinteraction::BasisCombinedCreator<double>()
+                              .add(system1)
+                              .add(system2)
+                              .restrict_energy(min_energy, max_energy)
+                              .restrict_quantum_number_m(1, 1)
+                              .create();
 
     std::vector<pairinteraction::SystemCombined<double>> combined_systems;
     combined_systems.reserve(5);
     for (int i = 1; i < 6; ++i) {
-        pairinteraction::SystemCombined<double> system(system1, system2, min_energy, max_energy);
+        pairinteraction::SystemCombined<double> system(combined_basis);
         system.set_interatomic_distance(i * 1e-6 / 5.29177210544e-11);
         combined_systems.push_back(std::move(system));
     }
@@ -74,18 +81,18 @@ int main(int argc, char **argv) {
     pairinteraction::diagonalize(combined_systems, diagonalizer);
 
     // Print information about the basis
-    SPDLOG_INFO("Number states in the basis of the first atom: {}",
+    SPDLOG_INFO("Number of states in the basis of the first atom: {}",
                 system1.get_basis()->get_number_of_states());
-    SPDLOG_INFO("Number states in the basis of the second atom: {}",
+    SPDLOG_INFO("Number of states in the basis of the second atom: {}",
                 system2.get_basis()->get_number_of_states());
-    SPDLOG_INFO("Number states in the combined basis: {}",
+    SPDLOG_INFO("Number of states in the combined basis: {}",
                 combined_systems[0].get_basis()->get_number_of_states());
-    // TODO
-    // std::stringstream ss;
-    // std::string separator = "";
-    // for (auto ket : *combined.get_basis()) {
-    //     ss << separator << *ket;
-    //     separator = " | ";
-    // }
-    // SPDLOG_INFO("Kets in the combined basis: {}", ss.str());
+
+    std::stringstream ss;
+    std::string separator = "";
+    for (auto ket : *combined_basis) {
+        ss << separator << *ket;
+        separator = " | ";
+    }
+    SPDLOG_INFO("Kets in the combined basis: {}", ss.str());
 }

@@ -44,7 +44,7 @@ public:
     BasisAtomCreator<Scalar> &restrict_quantum_number_l(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_s(real_t min, real_t max);
     BasisAtomCreator<Scalar> &restrict_quantum_number_j(real_t min, real_t max);
-    BasisAtomCreator<Scalar> &add_ket(std::shared_ptr<const ket_t> ket);
+    BasisAtomCreator<Scalar> &append_ket(std::shared_ptr<const ket_t> ket);
     std::shared_ptr<const BasisAtom<Scalar>> create(Database &database) const;
 
 private:

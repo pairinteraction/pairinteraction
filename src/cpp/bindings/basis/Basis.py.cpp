@@ -67,7 +67,7 @@ static void declare_basis_atom_creator(nb::module_ &m, std::string const &type_n
         .def("restrict_quantum_number_l", &BasisAtomCreator<T>::restrict_quantum_number_l)
         .def("restrict_quantum_number_s", &BasisAtomCreator<T>::restrict_quantum_number_s)
         .def("restrict_quantum_number_j", &BasisAtomCreator<T>::restrict_quantum_number_j)
-        .def("add_ket", &BasisAtomCreator<T>::add_ket)
+        .def("append_ket", &BasisAtomCreator<T>::append_ket)
         .def("create", &BasisAtomCreator<T>::create);
 }
 

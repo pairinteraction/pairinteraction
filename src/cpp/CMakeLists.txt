@@ -10,6 +10,7 @@ add_library(
   ./include/pairinteraction/basis/BasisClassicalLight.hpp
   ./include/pairinteraction/basis/BasisClassicalLightCreator.hpp
   ./include/pairinteraction/basis/BasisCombined.hpp
+  ./include/pairinteraction/basis/BasisCombinedCreator.hpp
   ./include/pairinteraction/database/AtomDescriptionByParameters.hpp
   ./include/pairinteraction/database/AtomDescriptionByRanges.hpp
   ./include/pairinteraction/database/Database.hpp
@@ -60,6 +61,7 @@ add_library(
   ./src/basis/BasisClassicalLightCreator.cpp
   ./src/basis/BasisClassicalLightCreator.test.cpp
   ./src/basis/BasisCombined.cpp
+  ./src/basis/BasisCombinedCreator.cpp
   ./src/database/Database.cpp
   ./src/database/Database.test.cpp
   ./src/diagonalizer/diagonalize.cpp
