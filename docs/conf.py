@@ -125,12 +125,15 @@ rst_epilog = f"""
 .. |macos| image:: https://github.com/{repo_slug}/actions/workflows/macos.yml/badge.svg
            :target: https://github.com/{repo_slug}/actions/workflows/macos.yml
            :alt: macOS
-.. |codecov-ctest| image:: https://img.shields.io/badge/coverage-ctest-blue.svg?style=flat
-             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/ctest/html/index.html
-             :alt: Code Coverage Report ctest
-.. |codecov-pytest| image:: https://img.shields.io/badge/coverage-pytest-blue.svg?style=flat
-             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/pytest/html/index.html
-             :alt: Code Coverage Report pytest
+.. |coverage-cpp-ctest| image:: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
+             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-ctest/html/index.html
+             :alt: C++ Coverage - ctest
+.. |coverage-cpp-pytest| image:: https://img.shields.io/badge/C%2B%2B_coverage-pytest-blue.svg?style=flat
+             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-pytest/html/index.html
+             :alt: C++ Coverage - pytest
+.. |coverage-python-pytest| image:: https://img.shields.io/badge/Python_coverage-pytest-blue.svg?style=flat
+             :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/python-pytest/html/index.html
+             :alt: Python Coverage - pytest
 .. |pypi| image:: {pypi_image}
           :target: {pypi_target}
           :alt: PyPI Package
