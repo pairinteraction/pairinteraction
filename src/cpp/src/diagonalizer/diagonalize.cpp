@@ -1,6 +1,7 @@
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 
 #include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/system/SystemCombined.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
 #include <complex>
@@ -46,19 +47,19 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
-#define INSTANTIATE_DIAGONALIZE(TYPE)                                                              \
-    template void diagonalize(                                                                     \
-        std::initializer_list<std::reference_wrapper<SystemAtom<TYPE>>> systems,                   \
-        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
-        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);                                  \
-    template void diagonalize(                                                                     \
-        std::vector<SystemAtom<TYPE>> &systems,                                                    \
-        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
-        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);                                  \
-    template void diagonalize(                                                                     \
-        std::vector<std::reference_wrapper<SystemAtom<TYPE>>> systems,                             \
-        const DiagonalizerInterface<SystemAtom<TYPE>::scalar_t> &diagonalizer, int precision,      \
-        const Range<SystemAtom<TYPE>::real_t> &eigenvalue_range);
+#define INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, TYPE)                                               \
+    template void diagonalize(std::initializer_list<std::reference_wrapper<TYPE<SCALAR>>> systems, \
+                              const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
+                              int precision, const Range<TYPE<SCALAR>::real_t> &eigenvalue_range); \
+    template void diagonalize(std::vector<TYPE<SCALAR>> &systems,                                  \
+                              const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
+                              int precision, const Range<TYPE<SCALAR>::real_t> &eigenvalue_range); \
+    template void diagonalize(std::vector<std::reference_wrapper<TYPE<SCALAR>>> systems,           \
+                              const DiagonalizerInterface<TYPE<SCALAR>::scalar_t> &diagonalizer,   \
+                              int precision, const Range<TYPE<SCALAR>::real_t> &eigenvalue_range);
+#define INSTANTIATE_DIAGONALIZE(SCALAR)                                                            \
+    INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemAtom)                                             \
+    INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemCombined)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_DIAGONALIZE(float)
@@ -66,6 +67,7 @@ INSTANTIATE_DIAGONALIZE(double)
 INSTANTIATE_DIAGONALIZE(std::complex<float>)
 INSTANTIATE_DIAGONALIZE(std::complex<double>)
 
+#undef INSTANTIATE_DIAGONALIZE_HELPER
 #undef INSTANTIATE_DIAGONALIZE
 
 } // namespace pairinteraction

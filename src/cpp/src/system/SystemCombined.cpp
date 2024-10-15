@@ -45,7 +45,7 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
     bool sort_by_parity = basis->has_parity();
 
     // Dipole-dipole interaction along the z-axis
-    if (this->interatomic_distance != 0) {
+    if (interatomic_distance != 0) {
 
         auto d1_plus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1);
         auto d1_minus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1);
@@ -62,8 +62,11 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             calculate_tensor_product(basis, d1_minus.get_matrix(), d2_plus.get_matrix());
 
         this->hamiltonian->get_matrix() +=
-            -2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus;
+            (-2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus) /
+            std::pow(interatomic_distance, 3);
         this->hamiltonian_is_diagonal = false;
+        sort_by_quantum_number_f = false;
+        sort_by_parity = false;
     }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
@@ -84,6 +87,9 @@ std::shared_ptr<const typename SystemCombined<Scalar>::basis_t>
 SystemCombined<Scalar>::create_combined_basis(const SystemAtom<Scalar> &system1,
                                               const SystemAtom<Scalar> &system2, real_t min_energy,
                                               real_t max_energy) {
+    // TODO Move the content of this method into a BasisCombinedCreator, store basis1 and basis2
+    // also within this class
+
     const auto &basis1 = system1.get_basis();
     const auto &basis2 = system2.get_basis();
     auto eigenvalues1 = system1.get_eigenvalues();

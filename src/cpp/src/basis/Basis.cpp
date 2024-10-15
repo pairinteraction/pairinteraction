@@ -274,6 +274,8 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
 template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                                Sorting &transformation) const {
+    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+
     int *perm_begin = transformation.matrix.indices().data();
     int *perm_end = perm_begin + coefficients.matrix.cols();
     int *perm_back = perm_end - 1;
@@ -288,12 +290,14 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
                 }
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_M:
-                if (quantum_number_m_of_states[a] != quantum_number_m_of_states[b]) {
+                if (std::abs(quantum_number_m_of_states[a] - quantum_number_m_of_states[b]) >
+                    precision) {
                     return quantum_number_m_of_states[a] < quantum_number_m_of_states[b];
                 }
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_F:
-                if (quantum_number_f_of_states[a] != quantum_number_f_of_states[b]) {
+                if (std::abs(quantum_number_f_of_states[a] != quantum_number_f_of_states[b]) >
+                    precision) {
                     return quantum_number_f_of_states[a] < quantum_number_f_of_states[b];
                 }
                 break;
@@ -352,6 +356,8 @@ template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
     const std::set<TransformationType> &unique_labels,
     IndicesOfBlocksCreator &blocks_creator) const {
+    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+
     auto last_quantum_number_f = quantum_number_f_of_states[0];
     auto last_quantum_number_m = quantum_number_m_of_states[0];
     auto last_parity = parity_of_states[0];
@@ -360,12 +366,12 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
         for (auto label : unique_labels) {
             if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
-                if (quantum_number_f_of_states[i] != last_quantum_number_f) {
+                if (std::abs(quantum_number_f_of_states[i] - last_quantum_number_f) > precision) {
                     blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
-                if (quantum_number_m_of_states[i] != last_quantum_number_m) {
+                if (std::abs(quantum_number_m_of_states[i] - last_quantum_number_m) > precision) {
                     blocks_creator.add(i);
                     break;
                 }

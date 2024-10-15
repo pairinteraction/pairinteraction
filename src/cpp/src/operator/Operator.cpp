@@ -242,22 +242,22 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
-#define INSTANTIATE_OPERATOR_TYPE(SCALAR, OP_TYPE)                                                 \
-    template class Operator<OP_TYPE<SCALAR>>;                                                      \
-    template OP_TYPE<SCALAR> operator*(const SCALAR &lhs, const Operator<OP_TYPE<SCALAR>> &rhs);   \
-    template OP_TYPE<SCALAR> operator*(const Operator<OP_TYPE<SCALAR>> &lhs, const SCALAR &rhs);   \
-    template OP_TYPE<SCALAR> operator/(const Operator<OP_TYPE<SCALAR>> &lhs, const SCALAR &rhs);   \
-    template OP_TYPE<SCALAR> &operator+=(Operator<OP_TYPE<SCALAR>> &lhs,                           \
-                                         const Operator<OP_TYPE<SCALAR>> &rhs);                    \
-    template OP_TYPE<SCALAR> &operator-=(Operator<OP_TYPE<SCALAR>> &lhs,                           \
-                                         const Operator<OP_TYPE<SCALAR>> &rhs);                    \
-    template OP_TYPE<SCALAR> operator+(const Operator<OP_TYPE<SCALAR>> &lhs,                       \
-                                       const Operator<OP_TYPE<SCALAR>> &rhs);                      \
-    template OP_TYPE<SCALAR> operator-(const Operator<OP_TYPE<SCALAR>> &lhs,                       \
-                                       const Operator<OP_TYPE<SCALAR>> &rhs);
+#define INSTANTIATE_OPERATOR_HELPER(SCALAR, TYPE)                                                  \
+    template class Operator<TYPE<SCALAR>>;                                                         \
+    template TYPE<SCALAR> operator*(const SCALAR &lhs, const Operator<TYPE<SCALAR>> &rhs);         \
+    template TYPE<SCALAR> operator*(const Operator<TYPE<SCALAR>> &lhs, const SCALAR &rhs);         \
+    template TYPE<SCALAR> operator/(const Operator<TYPE<SCALAR>> &lhs, const SCALAR &rhs);         \
+    template TYPE<SCALAR> &operator+=(Operator<TYPE<SCALAR>> &lhs,                                 \
+                                      const Operator<TYPE<SCALAR>> &rhs);                          \
+    template TYPE<SCALAR> &operator-=(Operator<TYPE<SCALAR>> &lhs,                                 \
+                                      const Operator<TYPE<SCALAR>> &rhs);                          \
+    template TYPE<SCALAR> operator+(const Operator<TYPE<SCALAR>> &lhs,                             \
+                                    const Operator<TYPE<SCALAR>> &rhs);                            \
+    template TYPE<SCALAR> operator-(const Operator<TYPE<SCALAR>> &lhs,                             \
+                                    const Operator<TYPE<SCALAR>> &rhs);
 #define INSTANTIATE_OPERATOR(SCALAR)                                                               \
-    INSTANTIATE_OPERATOR_TYPE(SCALAR, OperatorAtom)                                                \
-    INSTANTIATE_OPERATOR_TYPE(SCALAR, OperatorCombined)
+    INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorAtom)                                              \
+    INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorCombined)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_OPERATOR(float)
@@ -265,7 +265,7 @@ INSTANTIATE_OPERATOR(double)
 INSTANTIATE_OPERATOR(std::complex<float>)
 INSTANTIATE_OPERATOR(std::complex<double>)
 
-#undef INSTANTIATE_OPERATOR_TYPE
+#undef INSTANTIATE_OPERATOR_HELPER
 #undef INSTANTIATE_OPERATOR
 
 } // namespace pairinteraction
