@@ -19,12 +19,13 @@
 #include <complex>
 #include <limits>
 #include <memory>
+#include <oneapi/tbb.h>
 #include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
 SystemCombined<Scalar>::SystemCombined(std::shared_ptr<const basis_t> basis)
-    : System<SystemCombined<Scalar>>(basis) {}
+    : System<SystemCombined<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
 SystemCombined<Scalar> &SystemCombined<Scalar>::set_interatomic_distance(real_t distance) {
@@ -89,76 +90,82 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
     const std::shared_ptr<const basis_t> &basis,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
-    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
-    std::vector<Eigen::Triplet<Scalar>> triplets;
+    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 
-    // Loop over the rows of the first matrix
-    for (Eigen::Index outer_idx1 = 0; outer_idx1 < matrix1.outerSize(); ++outer_idx1) {
+    // Loop over the rows of the first matrix in parallel
+    oneapi::tbb::parallel_for(
+        oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
+            for (Eigen::Index outer_idx1 = range.begin(); outer_idx1 != range.end(); ++outer_idx1) {
 
-        // Loop over the non-zero column elements of the first matrix
-        for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(matrix1,
-                                                                                      outer_idx1);
-             it1; ++it1) {
+                // Loop over the non-zero column elements of the first matrix
+                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
+                         matrix1, outer_idx1);
+                     it1; ++it1) {
 
-            Eigen::Index row1 = it1.row();
-            Eigen::Index col1 = it1.col();
-            Scalar value1 = it1.value();
+                    Eigen::Index row1 = it1.row();
+                    Eigen::Index col1 = it1.col();
+                    Scalar value1 = it1.value();
 
-            const auto &range_outer_idx2 = basis->get_index_range(outer_idx1);
-            const auto &range_inner_idx2 = basis->get_index_range(it1.index());
+                    const auto &range_outer_idx2 = basis->get_index_range(outer_idx1);
+                    const auto &range_inner_idx2 = basis->get_index_range(it1.index());
 
-            // Loop over the rows of the second matrix that are energetically allowed
-            for (Eigen::Index outer_idx2 = static_cast<Eigen::Index>(range_outer_idx2.min());
-                 outer_idx2 < static_cast<Eigen::Index>(range_outer_idx2.max()); ++outer_idx2) {
+                    // Loop over the rows of the second matrix that are energetically allowed
+                    for (auto outer_idx2 = static_cast<Eigen::Index>(range_outer_idx2.min());
+                         outer_idx2 < static_cast<Eigen::Index>(range_outer_idx2.max());
+                         ++outer_idx2) {
 
-                if (!basis->are_valid_indices(outer_idx1, outer_idx2)) {
-                    continue;
-                }
+                        if (!basis->are_valid_indices(outer_idx1, outer_idx2)) {
+                            continue;
+                        }
 
-                // Calculate the minimum and maximum values of the index pointer of the second
-                // matrix
-                Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[outer_idx2];
-                Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[outer_idx2 + 1];
+                        // Calculate the minimum and maximum values of the index pointer of the
+                        // second matrix
+                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[outer_idx2];
+                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[outer_idx2 + 1];
 
-                // The minimum value is chosen such that we start with an energetically allowed
-                // column
-                begin_idxptr2 +=
-                    std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
-                                  std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
-                                                   matrix2.innerIndexPtr() + end_idxptr2,
-                                                   range_inner_idx2.min()));
+                        // The minimum value is chosen such that we start with an energetically
+                        // allowed column
+                        begin_idxptr2 +=
+                            std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
+                                          std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
+                                                           matrix2.innerIndexPtr() + end_idxptr2,
+                                                           range_inner_idx2.min()));
 
-                // Loop over the non-zero column elements of the second matrix that are
-                // energetically allowed (we break the loop if the index pointer corresponds to
-                // a column that is not energetically allowed)
-                for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2; ++idxptr2) {
+                        // Loop over the non-zero column elements of the second matrix that are
+                        // energetically allowed (we break the loop if the index pointer corresponds
+                        // to a column that is not energetically allowed)
+                        for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2;
+                             ++idxptr2) {
 
-                    Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
-                    if (!basis->are_valid_indices(col1, col2)) {
-                        continue;
-                    }
-                    if (col2 >= static_cast<Eigen::Index>(range_inner_idx2.max())) {
-                        break;
-                    }
-                    Eigen::Index row2 = outer_idx2;
-                    Scalar value2 = matrix2.valuePtr()[idxptr2];
+                            Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
+                            if (!basis->are_valid_indices(col1, col2)) {
+                                continue;
+                            }
+                            if (col2 >= static_cast<Eigen::Index>(range_inner_idx2.max())) {
+                                break;
+                            }
+                            Eigen::Index row2 = outer_idx2;
+                            Scalar value2 = matrix2.valuePtr()[idxptr2];
 
-                    // Calculate the row and column index of the entry in the combined matrix
-                    Eigen::Index row = basis->get_combined_index(row1, row2);
-                    Eigen::Index col = basis->get_combined_index(col1, col2);
+                            // Calculate the row and column index of the entry in the combined
+                            // matrix
+                            Eigen::Index row = basis->get_combined_index(row1, row2);
+                            Eigen::Index col = basis->get_combined_index(col1, col2);
 
-                    // Calculate the value of the entry in the combined matrix
-                    Scalar value = value1 * value2;
+                            // Calculate the value of the entry in the combined matrix
+                            Scalar value = value1 * value2;
 
-                    // Store the entry
-                    if (std::abs(value) > precision) {
-                        triplets.emplace_back(row, col, value);
+                            // Store the entry
+                            if (std::abs(value) > numerical_precision) {
+                                triplets.emplace_back(row, col, value);
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
+        });
 
     // Construct the combined matrix from the triplets
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis->get_number_of_states(),

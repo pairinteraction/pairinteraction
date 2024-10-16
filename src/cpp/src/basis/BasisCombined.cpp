@@ -17,8 +17,8 @@ BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis2)
     : Basis<BasisCombined<Scalar>>(std::move(kets)),
       map_index_combined_state(std::move(map_index_combined_state)),
-      map_range_of_index_state2(std::move(map_range_of_index_state2)), basis1(basis1),
-      basis2(basis2) {}
+      map_range_of_index_state2(std::move(map_range_of_index_state2)), basis1(std::move(basis1)),
+      basis2(std::move(basis2)) {}
 
 template <typename Scalar>
 bool BasisCombined<Scalar>::are_valid_indices(size_t index_state1, size_t index_state2) const {

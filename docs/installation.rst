@@ -330,7 +330,13 @@ In addition, it is recommended to use the `include-what-you-use` tool to find un
     cmake -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_INCLUDE_WHAT_YOU_USE="iwyu" ..
     cmake --build .
 
-**6. Debugging with GDB**
+**6. Changing the log level**
+
+We use the `spdlog`_ library for logging. The log level can be set by the environment variable `SPDLOG_LEVEL`. Possible values are `info` (the default), `debug`, `warn`, and `error`.
+
+.. _spdlog: https://github.com/gabime/spdlog/
+
+**7. Debugging with GDB**
 
 For tracking down errors like segmentation faults, running a debug build with the GNU Debugger `GDB` can be very helpful.
 
