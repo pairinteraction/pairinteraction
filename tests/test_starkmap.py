@@ -14,7 +14,7 @@ from pairinteraction.backend import (
     DiagonalizerEigenDouble,
     SystemAtomDouble,
     TransformationType,
-    diagonalize,
+    diagonalizeSystemAtomDouble,
 )
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_stark_map/kets.txt"
@@ -36,13 +36,12 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     )
     print(f"Number of basis states: {basis.get_number_of_states()}")
 
-    electric_fields = np.linspace(0, 10, 11) * ureg.volt / ureg.centimeter
-
     # Create systems for different values of the electric field
+    electric_fields = np.linspace(0, 10, 11) * ureg.volt / ureg.centimeter
     systems = [SystemAtomDouble(basis).set_electric_field([0, 0, e.to_base_units().magnitude]) for e in electric_fields]
 
     # Diagonalize the systems in parallel
-    diagonalize(systems, diagonalizer)
+    diagonalizeSystemAtomDouble(systems, diagonalizer)
 
     # Sort by the eigenvalues
     systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
@@ -50,17 +49,17 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     # Compare to reference data
     kets = [str(ket) for ket in systems[0].get_basis().get_kets()]
     eigenvalues = [
-        (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude for system in systems
+        (system.get_eigenvalues() * ureg.hartree).to(ureg.gigahertz, "spectroscopy").magnitude for system in systems
     ]
     eigenstates = [system.get_eigenstates().todense().A1 for system in systems]
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
-        np.savetxt(reference_kets_file, kets, fmt="%s", delimiter=";")
+        np.savetxt(reference_kets_file, kets, fmt="%s", delimiter=",")
         np.savetxt(reference_eigenvalues_file, eigenvalues)
         pytest.skip("Reference data generated, skipping comparison test")
 
-    np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter=";"))
+    np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter=","))
     np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
 
     # Because of degeneracies, checking the eigenstates against reference data is complicated.

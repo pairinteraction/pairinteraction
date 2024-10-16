@@ -1,8 +1,10 @@
 #include "./Operator.py.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisCombined.hpp"
 #include "pairinteraction/operator/Operator.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
+#include "pairinteraction/operator/OperatorCombined.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -49,6 +51,15 @@ static void declare_operator_atom(nb::module_ &m, std::string const &type_name) 
         .def(nb::init<std::shared_ptr<const basis_t>, OperatorType, int>());
 }
 
+template <typename T>
+static void declare_operator_combined(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "OperatorCombined" + type_name;
+    using basis_t = typename OperatorCombined<T>::basis_t;
+    nb::class_<OperatorCombined<T>, Operator<OperatorCombined<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
+        .def(nb::init<std::shared_ptr<const basis_t>, OperatorType>());
+}
+
 void bind_operator(nb::module_ &m) {
     declare_operator<OperatorAtom<float>>(m, "OperatorAtomFloat");
     declare_operator<OperatorAtom<double>>(m, "OperatorAtomDouble");
@@ -58,4 +69,13 @@ void bind_operator(nb::module_ &m) {
     declare_operator_atom<double>(m, "Double");
     declare_operator_atom<std::complex<float>>(m, "ComplexFloat");
     declare_operator_atom<std::complex<double>>(m, "ComplexDouble");
+
+    declare_operator<OperatorCombined<float>>(m, "OperatorCombinedFloat");
+    declare_operator<OperatorCombined<double>>(m, "OperatorCombinedDouble");
+    declare_operator<OperatorCombined<std::complex<float>>>(m, "OperatorCombinedComplexFloat");
+    declare_operator<OperatorCombined<std::complex<double>>>(m, "OperatorCombinedComplexDouble");
+    declare_operator_combined<float>(m, "Float");
+    declare_operator_combined<double>(m, "Double");
+    declare_operator_combined<std::complex<float>>(m, "ComplexFloat");
+    declare_operator_combined<std::complex<double>>(m, "ComplexDouble");
 }
