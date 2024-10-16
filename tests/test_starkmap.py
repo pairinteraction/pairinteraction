@@ -47,7 +47,7 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
 
     # Compare to reference data
-    kets = [str(ket) for ket in systems[0].get_basis().get_kets()]
+    kets = [str(ket) for ket in basis.get_kets()]
     eigenvalues = [
         (system.get_eigenvalues() * ureg.hartree).to(ureg.gigahertz, "spectroscopy").magnitude for system in systems
     ]
