@@ -36,7 +36,6 @@ def test_potential_calc_button(qtbot, tmp_path):
 
 def setup_window(qtbot, tmp_path):
     window = MainWindow()
-    window.show()
     qtbot.addWidget(window)
     window.path_cache = tmp_path / "cache"
     window.ui.action_sconf_reset.trigger()
