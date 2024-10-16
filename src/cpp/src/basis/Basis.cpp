@@ -274,7 +274,7 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
 template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                                Sorting &transformation) const {
-    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
     int *perm_begin = transformation.matrix.indices().data();
     int *perm_end = perm_begin + coefficients.matrix.cols();
@@ -291,13 +291,13 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_M:
                 if (std::abs(quantum_number_m_of_states[a] - quantum_number_m_of_states[b]) >
-                    precision) {
+                    numerical_precision) {
                     return quantum_number_m_of_states[a] < quantum_number_m_of_states[b];
                 }
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_F:
-                if (std::abs(quantum_number_f_of_states[a] != quantum_number_f_of_states[b]) >
-                    precision) {
+                if (std::abs(quantum_number_f_of_states[a] - quantum_number_f_of_states[b]) >
+                    numerical_precision) {
                     return quantum_number_f_of_states[a] < quantum_number_f_of_states[b];
                 }
                 break;
@@ -356,7 +356,7 @@ template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
     const std::set<TransformationType> &unique_labels,
     IndicesOfBlocksCreator &blocks_creator) const {
-    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
     auto last_quantum_number_f = quantum_number_f_of_states[0];
     auto last_quantum_number_m = quantum_number_m_of_states[0];
@@ -366,12 +366,14 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
         for (auto label : unique_labels) {
             if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
-                if (std::abs(quantum_number_f_of_states[i] - last_quantum_number_f) > precision) {
+                if (std::abs(quantum_number_f_of_states[i] - last_quantum_number_f) >
+                    numerical_precision) {
                     blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
-                if (std::abs(quantum_number_m_of_states[i] - last_quantum_number_m) > precision) {
+                if (std::abs(quantum_number_m_of_states[i] - last_quantum_number_m) >
+                    numerical_precision) {
                     blocks_creator.add(i);
                     break;
                 }
@@ -423,6 +425,9 @@ std::shared_ptr<Derived> Basis<Derived>::transformed(const Sorting &transformati
 template <typename Derived>
 std::shared_ptr<Derived>
 Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
+    real_t numerical_precision =
+        10 * std::sqrt(coefficients.matrix.rows()) * std::numeric_limits<real_t>::epsilon();
+
     // If the transformation is a rotation, it should be a rotation and nothing else
     bool is_rotation = false;
     for (auto t : transformation.transformation_type) {
@@ -450,6 +455,8 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     auto transformed = std::make_shared<Derived>(derived());
 
     // Apply the transformation
+    // If a quantum number turns out to be conserved by the transformation, it will be
+    // rounded to the nearest half integer to avoid loss of numerical_precision.
     transformed->coefficients.matrix = coefficients.matrix * transformation.matrix;
     transformed->coefficients.transformation_type = transformation.transformation_type;
 
@@ -464,8 +471,8 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         transformed->quantum_number_f_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
-                transformed->quantum_number_f_of_states[i] = val[i];
+            if (diff[i] < numerical_precision) {
+                transformed->quantum_number_f_of_states[i] = std::round(val[i] * 2) / 2;
             } else {
                 transformed->quantum_number_f_of_states[i] = std::numeric_limits<real_t>::max();
                 transformed->_has_quantum_number_f = false;
@@ -482,8 +489,8 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         transformed->quantum_number_m_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
-                transformed->quantum_number_m_of_states[i] = val[i];
+            if (diff[i] < numerical_precision) {
+                transformed->quantum_number_m_of_states[i] = std::round(val[i] * 2) / 2;
             } else {
                 transformed->quantum_number_m_of_states[i] = std::numeric_limits<real_t>::max();
                 transformed->_has_quantum_number_m = false;
@@ -503,7 +510,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
         transformed->parity_of_states.resize(probs.rows());
 
         for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
-            if (diff[i] < 10 * std::numeric_limits<real_t>::epsilon()) {
+            if (diff[i] < numerical_precision) {
                 transformed->parity_of_states[i] = static_cast<Parity>(std::lround(val[i]));
             } else {
                 transformed->parity_of_states[i] = Parity::UNKNOWN;

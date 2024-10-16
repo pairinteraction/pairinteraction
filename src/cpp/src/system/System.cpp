@@ -17,11 +17,12 @@
 #include <limits>
 #include <memory>
 #include <oneapi/tbb.h>
+#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 template <typename Derived>
 System<Derived>::System(std::shared_ptr<const basis_t> basis)
-    : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(basis)) {}
+    : hamiltonian(std::make_unique<typename System<Derived>::operator_t>(std::move(basis))) {}
 
 template <typename Derived>
 System<Derived>::System(const System &other)
@@ -180,6 +181,11 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     // Get the indices of the blocks
     auto blocks = hamiltonian->get_indices_of_blocks(blockdiagonalizing_labels);
 
+    assert((blockdiagonalizing_labels.empty() && blocks.size() == 1) ||
+           !blockdiagonalizing_labels.empty());
+
+    SPDLOG_DEBUG("Diagonalizing the Hamiltonian with {} blocks.", blocks.size());
+
     // Diagonalize the blocks in parallel
     std::vector<Eigen::VectorX<real_t>> eigenvalues_blocks(blocks.size());
     std::vector<Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>> eigenvectors_blocks(blocks.size());
@@ -232,6 +238,9 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         offset_cols += matrix.cols();
     }
     eigenvectors.makeCompressed();
+
+    assert(eigenvectors.nonZeros() ==
+           std::accumulate(non_zeros_per_inner_index.begin(), non_zeros_per_inner_index.end(), 0));
 
     // Get the combined eigenvalue matrix
     eigenvalues.resize(num_cols, num_cols);

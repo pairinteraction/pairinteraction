@@ -5,6 +5,7 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/utils/paths.hpp"
 
+#include <cstdlib>
 #include <doctest/doctest.h>
 #include <filesystem>
 #include <httplib.h>
@@ -37,6 +38,11 @@ int test(int argc, char **argv, bool download_missing, std::filesystem::path dat
             std::make_shared<spdlog::logger>(spdlog::logger("doctest", {console_sink, file_sink}));
         doctest_logger->set_pattern("[doctest] [%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
         spdlog::register_logger(doctest_logger);
+
+        const char *log_level = std::getenv("SPDLOG_LEVEL");
+        if (log_level != nullptr) {
+            spdlog::set_level(spdlog::level::from_str(log_level));
+        }
     });
 
     // Setup the tests

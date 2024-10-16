@@ -121,7 +121,8 @@ target_compile_definitions(
          EIGEN_MKL_NO_DIRECT_CALL>
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:WITH_LAPACKE
          EIGEN_USE_BLAS
-         EIGEN_USE_LAPACKE>)
+         EIGEN_USE_LAPACKE>
+         SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
 
 if(TARGET MKL::MKL)
   target_compile_definitions(pairinteraction PUBLIC MKL_Complex8=std::complex<float> MKL_Complex16=std::complex<double>)

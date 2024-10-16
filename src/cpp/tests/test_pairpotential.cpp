@@ -82,11 +82,11 @@ int main(int argc, char **argv) {
 
     // Print information about the basis
     SPDLOG_INFO("Number of states in the basis of the first atom: {}",
-                system1.get_basis()->get_number_of_states());
+                basis1->get_number_of_states());
     SPDLOG_INFO("Number of states in the basis of the second atom: {}",
-                system2.get_basis()->get_number_of_states());
+                basis2->get_number_of_states());
     SPDLOG_INFO("Number of states in the combined basis: {}",
-                combined_systems[0].get_basis()->get_number_of_states());
+                combined_basis->get_number_of_states());
 
     std::stringstream ss;
     std::string separator = "";

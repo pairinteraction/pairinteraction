@@ -44,7 +44,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             "Two SystemAtom must be added before creating the combined basis.");
     }
 
-    real_t precision = 10 * std::numeric_limits<real_t>::epsilon();
+    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
     // Sort the states, which are eigenstates, by their energy
     const auto &system1_unsorted = systems_atom[0].get();
@@ -59,6 +59,8 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     auto basis2 = system2.get_basis();
     auto eigenvalues1 = system1.get_eigenvalues();
     auto eigenvalues2 = system2.get_eigenvalues();
+    real_t *eigenvalues2_begin = eigenvalues2.data();
+    real_t *eigenvalues2_end = eigenvalues2_begin + eigenvalues2.size();
 
     // Construct the canonical basis that contains all combined states with allowed energies and
     // quantum numbers
@@ -80,12 +82,10 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
         if (range_energy.is_finite()) {
             real_t min_val2 = range_energy.min() - eigenvalues1[idx1];
             real_t max_val2 = range_energy.max() - eigenvalues1[idx1];
-            min =
-                std::distance(eigenvalues2.begin(),
-                              std::lower_bound(eigenvalues2.begin(), eigenvalues2.end(), min_val2));
-            max =
-                std::distance(eigenvalues2.begin(),
-                              std::upper_bound(eigenvalues2.begin(), eigenvalues2.end(), max_val2));
+            min = std::distance(eigenvalues2_begin,
+                                std::lower_bound(eigenvalues2_begin, eigenvalues2_end, min_val2));
+            max = std::distance(eigenvalues2_begin,
+                                std::upper_bound(eigenvalues2_begin, eigenvalues2_end, max_val2));
         }
         map_range_of_index_state2.emplace(idx1, typename basis_t::range_t(min, max));
 
@@ -104,10 +104,13 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
                 quantum_number_m =
                     basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
                 if (range_quantum_number_m.is_finite() &&
-                    (quantum_number_m < range_quantum_number_m.min() - precision ||
-                     quantum_number_m > range_quantum_number_m.max() + precision)) {
+                    (quantum_number_m < range_quantum_number_m.min() - numerical_precision ||
+                     quantum_number_m > range_quantum_number_m.max() + numerical_precision)) {
                     continue;
                 }
+            } else if (range_quantum_number_m.is_finite()) {
+                throw std::invalid_argument(
+                    "The quantum number m must not be restricted because it is not well-defined.");
             }
 
             // Get ket with largest overlap

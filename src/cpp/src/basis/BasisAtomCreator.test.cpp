@@ -44,7 +44,8 @@ DOCTEST_TEST_CASE("create a basis from kets") {
     auto ket2 = KetAtomCreator<float>("Sr88_singlet", 60, 0, 0, 0).create(database);
     auto ket3 = KetAtomCreator<float>("Sr88_singlet", 61, 0, 0, 0).create(database);
     auto basis =
-        BasisAtomCreator<float>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(database);
+        BasisAtomCreator<float>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(
+            database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
         SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));

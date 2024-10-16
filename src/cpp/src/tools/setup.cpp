@@ -2,12 +2,14 @@
 
 #include "pairinteraction/utils/paths.hpp"
 
+#include <cstdlib>
 #include <filesystem>
 #include <mutex>
 #include <spdlog/async.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
+#include <vector>
 
 namespace pairinteraction {
 void setup() {
@@ -37,6 +39,11 @@ void setup() {
         logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
         spdlog::register_logger(logger);
         spdlog::set_default_logger(logger);
+
+        const char *log_level = std::getenv("SPDLOG_LEVEL");
+        if (log_level != nullptr) {
+            spdlog::set_level(spdlog::level::from_str(log_level));
+        }
     });
 }
 } // namespace pairinteraction
