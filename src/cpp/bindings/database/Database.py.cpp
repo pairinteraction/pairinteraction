@@ -9,6 +9,7 @@
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
+#include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
 #include <nanobind/stl/filesystem.h>

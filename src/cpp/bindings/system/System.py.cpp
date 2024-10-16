@@ -1,10 +1,12 @@
 #include "./System.py.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisCombined.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemClassicalLight.hpp"
+#include "pairinteraction/system/SystemCombined.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/dense.h>
@@ -57,6 +59,15 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
         .def("enable_diamagnetism", &SystemAtom<T>::enable_diamagnetism);
 }
 
+template <typename T>
+static void declare_system_combined(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "SystemCombined" + type_name;
+    using basis_t = typename SystemCombined<T>::basis_t;
+    nb::class_<SystemCombined<T>, System<SystemCombined<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
+        .def("set_interatomic_distance", &SystemCombined<T>::set_interatomic_distance);
+}
+
 void bind_system(nb::module_ &m) {
     declare_system<SystemAtom<float>>(m, "SystemAtomFloat");
     declare_system<SystemAtom<double>>(m, "SystemAtomDouble");
@@ -66,4 +77,13 @@ void bind_system(nb::module_ &m) {
     declare_system_atom<double>(m, "Double");
     declare_system_atom<std::complex<float>>(m, "ComplexFloat");
     declare_system_atom<std::complex<double>>(m, "ComplexDouble");
+
+    declare_system<SystemCombined<float>>(m, "SystemCombinedFloat");
+    declare_system<SystemCombined<double>>(m, "SystemCombinedDouble");
+    declare_system<SystemCombined<std::complex<float>>>(m, "SystemCombinedComplexFloat");
+    declare_system<SystemCombined<std::complex<double>>>(m, "SystemCombinedComplexDouble");
+    declare_system_combined<float>(m, "Float");
+    declare_system_combined<double>(m, "Double");
+    declare_system_combined<std::complex<float>>(m, "ComplexFloat");
+    declare_system_combined<std::complex<double>>(m, "ComplexDouble");
 }

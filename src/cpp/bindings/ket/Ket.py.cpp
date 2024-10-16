@@ -6,6 +6,7 @@
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/ket/KetClassicalLight.hpp"
 #include "pairinteraction/ket/KetClassicalLightCreator.hpp"
+#include "pairinteraction/ket/KetCombined.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
@@ -66,11 +67,7 @@ template <typename T>
 static void declare_ket_classical_light(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetClassicalLight" + type_name;
     nb::class_<KetClassicalLight<T>, Ket<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_label", &KetClassicalLight<T>::get_label)
-        .def("get_id", &KetClassicalLight<T>::get_id)
-        .def("get_id_for_different_quantum_number_m",
-             &KetClassicalLight<T>::get_id_for_different_quantum_number_m)
-        .def("get_photon_energy", &KetClassicalLight<T>::get_photon_energy)
+    pyclass.def("get_photon_energy", &KetClassicalLight<T>::get_photon_energy)
         .def("get_quantum_number_q", &KetClassicalLight<T>::get_quantum_number_q);
 }
 
@@ -85,6 +82,12 @@ static void declare_ket_classical_light_creator(nb::module_ &m, std::string cons
         .def("create", &KetClassicalLightCreator<T>::create);
 }
 
+template <typename T>
+static void declare_ket_combined(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "KetCombined" + type_name;
+    nb::class_<KetCombined<T>, Ket<T>> pyclass(m, pyclass_name.c_str());
+}
+
 void bind_ket(nb::module_ &m) {
     declare_ket<float>(m, "Float");
     declare_ket<double>(m, "Double");
@@ -96,4 +99,6 @@ void bind_ket(nb::module_ &m) {
     declare_ket_classical_light<double>(m, "Double");
     declare_ket_classical_light_creator<float>(m, "Float");
     declare_ket_classical_light_creator<double>(m, "Double");
+    declare_ket_combined<float>(m, "Float");
+    declare_ket_combined<double>(m, "Double");
 }

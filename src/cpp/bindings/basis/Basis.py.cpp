@@ -5,9 +5,13 @@
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisClassicalLight.hpp"
 #include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
+#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisCombinedCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
+#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -49,7 +53,6 @@ template <typename T>
 static void declare_basis_atom(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisAtom" + type_name;
     nb::class_<BasisAtom<T>, Basis<BasisAtom<T>>> pyclass(m, pyclass_name.c_str());
-    pyclass.def("get_database", &BasisAtom<T>::get_database);
 }
 
 template <typename T>
@@ -88,15 +91,28 @@ static void declare_basis_classical_light_creator(nb::module_ &m, std::string co
         .def("create", &BasisClassicalLightCreator<T>::create);
 }
 
+template <typename T>
+static void declare_basis_combined(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "BasisCombined" + type_name;
+    nb::class_<BasisCombined<T>, Basis<BasisCombined<T>>> pyclass(m, pyclass_name.c_str());
+}
+
+template <typename T>
+static void declare_basis_combined_creator(nb::module_ &m, std::string const &type_name) {
+    std::string pyclass_name = "BasisCombinedCreator" + type_name;
+    nb::class_<BasisCombinedCreator<T>> pyclass(m, pyclass_name.c_str());
+    pyclass.def(nb::init<>())
+        .def("add", &BasisCombinedCreator<T>::add)
+        .def("restrict_energy", &BasisCombinedCreator<T>::restrict_energy)
+        .def("restrict_quantum_number_m", &BasisCombinedCreator<T>::restrict_quantum_number_m)
+        .def("create", &BasisCombinedCreator<T>::create);
+}
+
 void bind_basis(nb::module_ &m) {
     declare_basis<BasisAtom<float>>(m, "BasisAtomFloat");
     declare_basis<BasisAtom<double>>(m, "BasisAtomDouble");
     declare_basis<BasisAtom<std::complex<float>>>(m, "BasisAtomComplexFloat");
     declare_basis<BasisAtom<std::complex<double>>>(m, "BasisAtomComplexDouble");
-    declare_basis<BasisClassicalLight<float>>(m, "BasisClassicalLightFloat");
-    declare_basis<BasisClassicalLight<double>>(m, "BasisClassicalLightDouble");
-    declare_basis<BasisClassicalLight<std::complex<float>>>(m, "BasisClassicalLightComplexFloat");
-    declare_basis<BasisClassicalLight<std::complex<double>>>(m, "BasisClassicalLightComplexDouble");
     declare_basis_atom<float>(m, "Float");
     declare_basis_atom<double>(m, "Double");
     declare_basis_atom<std::complex<float>>(m, "ComplexFloat");
@@ -105,6 +121,11 @@ void bind_basis(nb::module_ &m) {
     declare_basis_atom_creator<double>(m, "Double");
     declare_basis_atom_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_atom_creator<std::complex<double>>(m, "ComplexDouble");
+
+    declare_basis<BasisClassicalLight<float>>(m, "BasisClassicalLightFloat");
+    declare_basis<BasisClassicalLight<double>>(m, "BasisClassicalLightDouble");
+    declare_basis<BasisClassicalLight<std::complex<float>>>(m, "BasisClassicalLightComplexFloat");
+    declare_basis<BasisClassicalLight<std::complex<double>>>(m, "BasisClassicalLightComplexDouble");
     declare_basis_classical_light<float>(m, "Float");
     declare_basis_classical_light<double>(m, "Double");
     declare_basis_classical_light<std::complex<float>>(m, "ComplexFloat");
@@ -113,4 +134,17 @@ void bind_basis(nb::module_ &m) {
     declare_basis_classical_light_creator<double>(m, "Double");
     declare_basis_classical_light_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_classical_light_creator<std::complex<double>>(m, "ComplexDouble");
+
+    declare_basis<BasisCombined<float>>(m, "BasisCombinedFloat");
+    declare_basis<BasisCombined<double>>(m, "BasisCombinedDouble");
+    declare_basis<BasisCombined<std::complex<float>>>(m, "BasisCombinedComplexFloat");
+    declare_basis<BasisCombined<std::complex<double>>>(m, "BasisCombinedComplexDouble");
+    declare_basis_combined<float>(m, "Float");
+    declare_basis_combined<double>(m, "Double");
+    declare_basis_combined<std::complex<float>>(m, "ComplexFloat");
+    declare_basis_combined<std::complex<double>>(m, "ComplexDouble");
+    declare_basis_combined_creator<float>(m, "Float");
+    declare_basis_combined_creator<double>(m, "Double");
+    declare_basis_combined_creator<std::complex<float>>(m, "ComplexFloat");
+    declare_basis_combined_creator<std::complex<double>>(m, "ComplexDouble");
 }
