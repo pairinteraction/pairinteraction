@@ -20,11 +20,13 @@ from pairinteraction.backend import (
     diagonalizeSystemCombinedDouble,
 )
 
-reference_kets_file = Path(__file__).parent.parent / "data/reference_pairpotential/kets.txt"
-reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pairpotential/eigenvalues.txt"
+reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
+reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenvalues.txt"
 
 
-def test_pairpotential(ureg: UnitRegistry, generate_reference: bool, database_dir: str, download_missing: bool) -> None:
+def test_pair_potential(
+    ureg: UnitRegistry, generate_reference: bool, database_dir: str, download_missing: bool
+) -> None:
     """Test calculating a pairpotential."""
     database = Database(download_missing, True, database_dir)
     diagonalizer = DiagonalizerEigenDouble()
@@ -63,23 +65,26 @@ def test_pairpotential(ureg: UnitRegistry, generate_reference: bool, database_di
     )
     print(f"Number of two-atom basis states: {combined_basis.get_number_of_states()}")
 
-    distances = np.linspace(1, 5, 6) * ureg.micrometer
-    systems = [
+    distances = np.linspace(1, 5, 5) * ureg.micrometer
+    combined_systems = [
         SystemCombinedDouble(combined_basis).set_interatomic_distance(d.to_base_units().magnitude) for d in distances
     ]
 
     # Diagonalize the systems in parallel
-    diagonalizeSystemCombinedDouble(systems, diagonalizer)
+    diagonalizeSystemCombinedDouble(combined_systems, diagonalizer)
 
     # Sort by the eigenvalues
-    systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
+    combined_systems = [
+        system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in combined_systems
+    ]
 
     # Compare to reference data
-    kets = [str(ket) for ket in systems[0].get_basis().get_kets()]
+    kets = [str(ket) for ket in combined_basis.get_kets()]
     eigenvalues = [
-        (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude for system in systems
+        (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude
+        for system in combined_systems
     ]
-    eigenstates = [system.get_eigenstates().todense().A1 for system in systems]
+    eigenstates = [system.get_eigenstates().todense().A1 for system in combined_systems]
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
@@ -93,4 +98,4 @@ def test_pairpotential(ureg: UnitRegistry, generate_reference: bool, database_di
     # Because of degeneracies, checking the eigenstates against reference data is complicated.
     # Thus, we only check their normalization and orthogonality.
     cumulative_norm = (np.array(eigenstates) * np.array(eigenstates).conj()).sum(axis=1)
-    np.testing.assert_allclose(cumulative_norm, 19 * np.ones(6))
+    np.testing.assert_allclose(cumulative_norm, 19 * np.ones(5))
