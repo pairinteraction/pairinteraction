@@ -1,5 +1,5 @@
 """
-Test the Stark map calculation.
+Test the pair potential calculation.
 """
 
 from pathlib import Path
@@ -27,7 +27,7 @@ reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair
 def test_pair_potential(
     ureg: UnitRegistry, generate_reference: bool, database_dir: str, download_missing: bool
 ) -> None:
-    """Test calculating a pairpotential."""
+    """Test calculating a pair potential."""
     database = Database(download_missing, True, database_dir)
     diagonalizer = DiagonalizerEigenDouble()
 
