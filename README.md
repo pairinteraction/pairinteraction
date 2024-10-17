@@ -1,8 +1,6 @@
 # Pairinteraction - A Rydberg Interaction Calculator
 
-[![Linux](https://github.com/pairinteraction/pairinteraction/actions/workflows/linux.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/linux.yml)
-[![Windows](https://github.com/pairinteraction/pairinteraction/actions/workflows/windows.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/windows.yml)
-[![macOS](https://github.com/pairinteraction/pairinteraction/actions/workflows/macos.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/macos.yml)
+[![Python Wheel](https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml/badge.svg)](https://github.com/pairinteraction/pairinteraction/actions/workflows/python-wheel.yml)
 [![C++ Coverage - ctest][coverage-cpp-ctest-svg]][coverage-cpp-ctest-link]
 [![C++ Coverage - pytest][coverage-cpp-pytest-svg]][coverage-cpp-pytest-link]
 [![Python Coverage - pytest][coverage-python-pytest-svg]][coverage-python-pytest-link]

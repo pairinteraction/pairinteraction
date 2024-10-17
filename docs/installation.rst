@@ -78,9 +78,9 @@ Build tools
 Dependencies of the C++ backend
     * For **GNU/Linux**, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration. The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>`.
 
-    * For **OS X**, you can obtain the dependencies from the :github:`macos workflow <tree/master/.github/workflows/macos.yml>`.
+    * For **OS X**, you can obtain the dependencies from the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>`.
 
-    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`windows workflow <tree/master/.github/workflows/windows.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
 
     .. note::
         `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
@@ -190,7 +190,7 @@ Manual Build
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
 
 If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
-For this, you have to first install the some python build dependencies manually.
+For this, you have to first install the python build dependencies manually.
 
 Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
 
