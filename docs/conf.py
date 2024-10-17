@@ -108,15 +108,9 @@ else:
 user, repo = repo_slug.split("/")
 
 rst_epilog = f"""
-.. |linux| image:: https://github.com/{repo_slug}/actions/workflows/linux.yml/badge.svg
-           :target: https://github.com/{repo_slug}/actions/workflows/linux.yml
-           :alt: Linux
-.. |windows| image:: https://github.com/{repo_slug}/actions/workflows/windows.yml/badge.svg
-             :target: https://github.com/{repo_slug}/actions/workflows/windows.yml
-             :alt: Windows
-.. |macos| image:: https://github.com/{repo_slug}/actions/workflows/macos.yml/badge.svg
-           :target: https://github.com/{repo_slug}/actions/workflows/macos.yml
-           :alt: macOS
+.. |gh-workflow| image:: https://github.com/{repo_slug}/actions/workflows/python-wheel.yml/badge.svg
+           :target: https://github.com/{repo_slug}/actions/workflows/python-wheel.yml
+           :alt: Python Wheel
 .. |coverage-cpp-ctest| image:: https://img.shields.io/badge/C%2B%2B_coverage-ctest-blue.svg?style=flat
              :target: https://cuddly-adventure-1w1n2vp.pages.github.io/coverage/cpp-ctest/html/index.html
              :alt: C++ Coverage - ctest
