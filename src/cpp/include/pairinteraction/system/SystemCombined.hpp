@@ -48,7 +48,7 @@ public:
 
     SystemCombined(std::shared_ptr<const basis_t> basis);
 
-    Type &set_interatomic_distance(real_t distance);
+    Type &set_distance(real_t distance);
 
 private:
     void construct_hamiltonian() const override;
@@ -57,7 +57,7 @@ private:
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
-    real_t interatomic_distance{0};
+    real_t distance{0};
 };
 
 extern template class SystemCombined<float>;

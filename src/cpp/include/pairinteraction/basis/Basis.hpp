@@ -2,6 +2,7 @@
 
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/Dense>
@@ -54,6 +55,8 @@ public:
     real_t get_quantum_number_m(size_t index_state) const;
     Parity get_parity(size_t index_state) const;
     std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t index_state) const;
+    Eigen::VectorX<scalar_t> get_state_with_largest_overlap(size_t ket_index) const;
+    Eigen::VectorX<scalar_t> get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
 
     class Iterator {
@@ -90,14 +93,15 @@ protected:
     Basis(ketvec_t &&kets);
     ketvec_t kets;
     Transformation<scalar_t> coefficients;
-    std::unordered_map<size_t, size_t> ket_id_to_index;
+    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
 
 private:
     const Derived &derived() const;
     std::vector<real_t> quantum_number_f_of_states;
     std::vector<real_t> quantum_number_m_of_states;
     std::vector<Parity> parity_of_states;
-    std::vector<int> ket_of_states;
+    std::vector<size_t> state_index_to_ket_index;
+    std::vector<size_t> ket_index_to_state_index;
     bool _has_quantum_number_f{true};
     bool _has_quantum_number_m{true};
     bool _has_parity{true};

@@ -67,7 +67,7 @@ def test_pair_potential(
 
     distances = np.linspace(1, 5, 5) * ureg.micrometer
     combined_systems = [
-        SystemCombinedDouble(combined_basis).set_interatomic_distance(d.to_base_units().magnitude) for d in distances
+        SystemCombinedDouble(combined_basis).set_distance(d.to_base_units().magnitude) for d in distances
     ]
 
     # Diagonalize the systems in parallel
@@ -84,7 +84,7 @@ def test_pair_potential(
         (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude
         for system in combined_systems
     ]
-    eigenstates = [system.get_eigenstates().todense().A1 for system in combined_systems]
+    eigenstates = [system.get_eigenbasis().get_coefficients().todense().A1 for system in combined_systems]
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)

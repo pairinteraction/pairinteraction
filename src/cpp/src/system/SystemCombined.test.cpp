@@ -41,7 +41,7 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
     auto basis_combined = BasisCombinedCreator<double>().add(system1).add(system2).create();
 
     auto system_combined = SystemCombined<double>(basis_combined);
-    system_combined.set_interatomic_distance(0.00000001);
+    system_combined.set_distance(0.00000001);
     system_combined.diagonalize(diagonalizer);
 
     // Print the largest and smallest eigenvalues

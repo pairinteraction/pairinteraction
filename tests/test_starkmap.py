@@ -51,7 +51,7 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     eigenvalues = [
         (system.get_eigenvalues() * ureg.hartree).to(ureg.gigahertz, "spectroscopy").magnitude for system in systems
     ]
-    eigenstates = [system.get_eigenstates().todense().A1 for system in systems]
+    eigenstates = [system.get_eigenbasis().get_coefficients().todense().A1 for system in systems]
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)

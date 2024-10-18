@@ -30,6 +30,8 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
     nb::class_<System<T>, TransformationBuilderInterface<scalar_t>> pyclass(m,
                                                                             pyclass_name.c_str());
     pyclass.def("get_basis", &System<T>::get_basis)
+        .def("get_eigenbasis", &System<T>::get_eigenbasis)
+        .def("get_eigenvalues", &System<T>::get_eigenvalues)
         .def("get_matrix", &System<T>::get_matrix)
         .def("get_transformation", &System<T>::get_transformation)
         .def("get_rotator", &System<T>::get_rotator)
@@ -43,9 +45,7 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int, const Range<real_t> &>(
                  &System<T>::diagonalize),
              "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>())
-        .def("is_diagonal", &System<T>::is_diagonal)
-        .def("get_eigenstates", &System<T>::get_eigenstates)
-        .def("get_eigenvalues", &System<T>::get_eigenvalues);
+        .def("is_diagonal", &System<T>::is_diagonal);
 }
 
 template <typename T>
@@ -65,7 +65,7 @@ static void declare_system_combined(nb::module_ &m, std::string const &type_name
     using basis_t = typename SystemCombined<T>::basis_t;
     nb::class_<SystemCombined<T>, System<SystemCombined<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("set_interatomic_distance", &SystemCombined<T>::set_interatomic_distance);
+        .def("set_distance", &SystemCombined<T>::set_distance);
 }
 
 void bind_system(nb::module_ &m) {
