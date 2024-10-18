@@ -28,8 +28,8 @@ SystemCombined<Scalar>::SystemCombined(std::shared_ptr<const basis_t> basis)
     : System<SystemCombined<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
-SystemCombined<Scalar> &SystemCombined<Scalar>::set_interatomic_distance(real_t distance) {
-    this->interatomic_distance = distance;
+SystemCombined<Scalar> &SystemCombined<Scalar>::set_distance(real_t distance) {
+    this->distance = distance;
     this->hamiltonian_requires_construction = true;
     return *this;
 }
@@ -48,7 +48,7 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
     bool sort_by_parity = basis->has_parity();
 
     // Dipole-dipole interaction along the z-axis
-    if (interatomic_distance != 0) {
+    if (distance != 0) {
 
         auto d1_plus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1);
         auto d1_minus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1);
@@ -65,8 +65,7 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             calculate_tensor_product(basis, d1_minus.get_matrix(), d2_plus.get_matrix());
 
         this->hamiltonian->get_matrix() +=
-            (-2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus) /
-            std::pow(interatomic_distance, 3);
+            (-2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus) / std::pow(distance, 3);
         this->hamiltonian_is_diagonal = false;
         sort_by_quantum_number_f = false;
         sort_by_parity = false;

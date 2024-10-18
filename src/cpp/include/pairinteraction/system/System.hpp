@@ -37,6 +37,8 @@ public:
     virtual ~System();
 
     std::shared_ptr<const basis_t> get_basis() const;
+    std::shared_ptr<const basis_t> get_eigenbasis() const;
+    Eigen::VectorX<real_t> get_eigenvalues() const;
 
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_matrix() const;
 
@@ -55,8 +57,6 @@ public:
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  int precision = 12, const Range<real_t> &eigenvalue_range = {});
     bool is_diagonal() const;
-    const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_eigenstates() const;
-    Eigen::VectorX<real_t> get_eigenvalues() const;
 
 protected:
     mutable std::unique_ptr<operator_t> hamiltonian;

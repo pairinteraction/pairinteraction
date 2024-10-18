@@ -78,6 +78,30 @@ std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_ba
 }
 
 template <typename Derived>
+std::shared_ptr<const typename System<Derived>::basis_t> System<Derived>::get_eigenbasis() const {
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+        hamiltonian_requires_construction = false;
+    }
+    if (!hamiltonian_is_diagonal) {
+        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
+    }
+    return hamiltonian->get_basis();
+}
+
+template <typename Derived>
+Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenvalues() const {
+    if (hamiltonian_requires_construction) {
+        construct_hamiltonian();
+        hamiltonian_requires_construction = false;
+    }
+    if (!hamiltonian_is_diagonal) {
+        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
+    }
+    return hamiltonian->get_matrix().diagonal().real();
+}
+
+template <typename Derived>
 const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
 System<Derived>::get_matrix() const {
     if (hamiltonian_requires_construction) {
@@ -270,31 +294,6 @@ bool System<Derived>::is_diagonal() const {
         hamiltonian_requires_construction = false;
     }
     return hamiltonian_is_diagonal;
-}
-
-template <typename Derived>
-const Eigen::SparseMatrix<typename System<Derived>::scalar_t, Eigen::RowMajor> &
-System<Derived>::get_eigenstates() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-    if (!hamiltonian_is_diagonal) {
-        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
-    }
-    return hamiltonian->get_basis()->get_coefficients();
-}
-
-template <typename Derived>
-Eigen::VectorX<typename System<Derived>::real_t> System<Derived>::get_eigenvalues() const {
-    if (hamiltonian_requires_construction) {
-        construct_hamiltonian();
-        hamiltonian_requires_construction = false;
-    }
-    if (!hamiltonian_is_diagonal) {
-        throw std::runtime_error("The Hamiltonian has not been diagonalized yet.");
-    }
-    return hamiltonian->get_matrix().diagonal().real();
 }
 
 // Explicit instantiation

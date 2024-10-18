@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
     combined_systems.reserve(5);
     for (int i = 1; i < 6; ++i) {
         pairinteraction::SystemCombined<double> system(combined_basis);
-        system.set_interatomic_distance(i * 1e-6 / 5.29177210544e-11);
+        system.set_distance(i * 1e-6 / 5.29177210544e-11);
         combined_systems.push_back(std::move(system));
     }
 
@@ -91,7 +91,8 @@ int main(int argc, char **argv) {
     }
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(combined_systems.size()); ++i) {
         eigenvalues.row(i) = combined_systems[i].get_eigenvalues() * 6579683.920501762;
-        Eigen::MatrixX<double> tmp = combined_systems[i].get_eigenstates().toDense().transpose();
+        Eigen::MatrixX<double> tmp =
+            combined_systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
     }
 

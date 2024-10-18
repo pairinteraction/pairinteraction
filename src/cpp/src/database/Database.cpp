@@ -996,7 +996,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
         auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            int row = basis->ket_id_to_index.at(chunk_row[i]);
+            int row = basis->ket_id_to_ket_index.at(chunk_row[i]);
             if (row != last_row) {
                 if (row < last_row) {
                     throw std::runtime_error("The rows are not sorted.");
@@ -1005,7 +1005,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
-            innerIndices.push_back(basis->ket_id_to_index.at(chunk_col[i]));
+            innerIndices.push_back(basis->ket_id_to_ket_index.at(chunk_col[i]));
             values.push_back(chunk_val[i]);
         }
     }
