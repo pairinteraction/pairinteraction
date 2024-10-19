@@ -41,8 +41,12 @@ BasisClassicalLightCreator<Scalar>::create() const {
     for (int q = range_quantum_number_q.min(); q <= range_quantum_number_q.max(); q++) {
         kets.push_back(ket_creator.set_quantum_number_q(q).create());
     }
+
+    std::string id_of_kets = "classical_light_" + std::to_string(range_quantum_number_q.min()) +
+        "_" + std::to_string(range_quantum_number_q.max());
+
     return std::make_shared<const BasisClassicalLight<Scalar>>(
-        typename BasisClassicalLight<Scalar>::Private(), std::move(kets));
+        typename BasisClassicalLight<Scalar>::Private(), std::move(kets), std::move(id_of_kets));
 }
 
 // Explicit instantiations

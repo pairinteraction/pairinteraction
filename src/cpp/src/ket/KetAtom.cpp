@@ -69,7 +69,7 @@ size_t KetAtom<Real>::get_id_for_different_quantum_number_m(Real new_quantum_num
 }
 
 template <typename Real>
-std::string KetAtom<Real>::get_species() const {
+const std::string &KetAtom<Real>::get_species() const {
     return species;
 }
 

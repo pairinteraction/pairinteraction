@@ -599,13 +599,13 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
 
     // Create a table containing the described states
-    std::string uuid;
+    std::string id_of_kets;
     {
         auto result = con->Query(R"(SELECT UUID()::varchar)");
         if (result->HasError()) {
-            throw std::runtime_error("Error selecting uuid: " + result->GetError());
+            throw std::runtime_error("Error selecting id_of_kets: " + result->GetError());
         }
-        uuid =
+        id_of_kets =
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
     }
     {
@@ -615,7 +615,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
                 x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
-            uuid, ketid::atom::SQL_TERM, tables[species + "_states"].local_path.string(), where));
+            id_of_kets, ketid::atom::SQL_TERM, tables[species + "_states"].local_path.string(),
+            where));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
@@ -660,7 +661,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         }
 
         if (!separator.empty()) {
-            auto result = con->Query(fmt::format(R"(SELECT {} FROM '{}')", select, uuid));
+            auto result = con->Query(fmt::format(R"(SELECT {} FROM '{}')", select, id_of_kets));
 
             if (result->HasError()) {
                 throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -796,7 +797,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, m, parity, ketid, n, exp_nu, std_nu, exp_l, std_l,
         exp_s, std_s, exp_j, std_j FROM '{}' ORDER BY ketid ASC)",
-        uuid));
+        id_of_kets));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -865,7 +866,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
 
     return std::make_shared<const BasisAtom<Scalar>>(typename BasisAtom<Scalar>::Private(),
-                                                     std::move(kets), uuid, *this, species);
+                                                     std::move(kets), std::move(id_of_kets), *this);
 }
 
 template <typename Scalar>
@@ -904,7 +905,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 
     ensure_presence_of_table("wigner");
     if (specifier != "energy") {
-        ensure_presence_of_table(basis->species + "_" + specifier);
+        ensure_presence_of_table(basis->get_species() + "_" + specifier);
     }
 
     // Check that the specifications are valid
@@ -949,12 +950,12 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
             w.f_initial = s1.f AND w.m_initial = s1.m AND
             w.f_final = s2.f AND w.m_final = s2.m
             ORDER BY row ASC, col ASC)",
-            basis->table, tables["wigner"].local_path.string(), kappa, q,
-            tables[basis->species + "_" + specifier].local_path.string()));
+            basis->get_id_of_kets(), tables["wigner"].local_path.string(), kappa, q,
+            tables[basis->get_species() + "_" + specifier].local_path.string()));
     } else {
         result = con->Query(fmt::format(
             R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
-            basis->table));
+            basis->get_id_of_kets()));
     }
 
     if (result->HasError()) {
@@ -996,7 +997,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
         auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            int row = basis->ket_id_to_ket_index.at(chunk_row[i]);
+            int row = basis->get_ket_index(chunk_row[i]);
             if (row != last_row) {
                 if (row < last_row) {
                     throw std::runtime_error("The rows are not sorted.");
@@ -1005,7 +1006,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
-            innerIndices.push_back(basis->ket_id_to_ket_index.at(chunk_col[i]));
+            innerIndices.push_back(basis->get_ket_index(chunk_col[i]));
             values.push_back(chunk_val[i]);
         }
     }
@@ -1019,7 +1020,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
 
     // Transform the matrix into the provided basis and return it
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix =
-        basis->coefficients.matrix.adjoint() * matrix_map * basis->coefficients.matrix;
+        basis->get_coefficients().adjoint() * matrix_map * basis->get_coefficients();
 
     // Construct the operator and return it
     return OperatorAtom(basis, std::move(matrix));

@@ -47,17 +47,22 @@ public:
     bool has_quantum_number_f() const;
     bool has_quantum_number_m() const;
     bool has_parity() const;
+    bool has_ket_index() const;
+    bool has_ket_index(size_t ket_id) const;
 
+    const std::string &get_id_of_kets() const;
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
-    real_t get_quantum_number_f(size_t index_state) const;
-    real_t get_quantum_number_m(size_t index_state) const;
-    Parity get_parity(size_t index_state) const;
-    std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t index_state) const;
-    Eigen::VectorX<scalar_t> get_state_with_largest_overlap(size_t ket_index) const;
-    Eigen::VectorX<scalar_t> get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const;
+    real_t get_quantum_number_f(size_t state_index) const;
+    real_t get_quantum_number_m(size_t state_index) const;
+    Parity get_parity(size_t state_index) const;
+    std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t state_index) const;
+    std::shared_ptr<Derived> get_state_with_largest_overlap(size_t ket_index) const;
+    std::shared_ptr<Derived> get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
+    size_t get_ket_index(size_t ket_id) const;
 
     class Iterator {
     public:
@@ -90,20 +95,25 @@ public:
     std::shared_ptr<Derived> transformed(const Sorting &transformation) const;
 
 protected:
-    Basis(ketvec_t &&kets);
+    Basis(ketvec_t &&kets, std::string &&id_of_kets);
     ketvec_t kets;
-    Transformation<scalar_t> coefficients;
-    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
 
 private:
     const Derived &derived() const;
-    std::vector<real_t> quantum_number_f_of_states;
-    std::vector<real_t> quantum_number_m_of_states;
-    std::vector<Parity> parity_of_states;
-    std::vector<size_t> state_index_to_ket_index;
+
+    Transformation<scalar_t> coefficients;
+    std::string id_of_kets;
+    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
     std::vector<size_t> ket_index_to_state_index;
+
+    std::vector<real_t> state_index_to_quantum_number_f;
+    std::vector<real_t> state_index_to_quantum_number_m;
+    std::vector<Parity> state_index_to_parity;
+    std::vector<size_t> state_index_to_ket_index;
+
     bool _has_quantum_number_f{true};
     bool _has_quantum_number_m{true};
     bool _has_parity{true};
+    bool _has_ket_index{true};
 };
 } // namespace pairinteraction

@@ -31,7 +31,7 @@ public:
     std::string get_label() const override;
     size_t get_id() const override;
     size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;
-    std::string get_species() const;
+    const std::string &get_species() const;
     int get_quantum_number_n() const;
     Real get_quantum_number_nu() const;
     Real get_quantum_number_l() const;

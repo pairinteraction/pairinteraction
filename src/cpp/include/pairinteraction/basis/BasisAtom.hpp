@@ -42,12 +42,11 @@ public:
     using Type = BasisAtom<Scalar>;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
-    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string table, Database &database,
-              std::string species);
+    BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets, Database &database);
     Database &get_database() const;
+    const std::string &get_species() const;
 
 private:
-    std::string table;
     Database &database;
     std::string species;
 };

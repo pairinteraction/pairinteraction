@@ -115,7 +115,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                          outer_idx2 < static_cast<Eigen::Index>(range_outer_idx2.max());
                          ++outer_idx2) {
 
-                        if (!basis->are_valid_indices(outer_idx1, outer_idx2)) {
+                        Eigen::Index row2 = outer_idx2;
+                        size_t row_ket_id =
+                            row1 * basis->get_basis2()->get_number_of_states() + row2;
+                        if (!basis->has_ket_index(row_ket_id)) {
                             continue;
                         }
 
@@ -139,19 +142,20 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                              ++idxptr2) {
 
                             Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
-                            if (!basis->are_valid_indices(col1, col2)) {
+                            size_t col_ket_id =
+                                col1 * basis->get_basis2()->get_number_of_states() + col2;
+                            if (!basis->has_ket_index(col_ket_id)) {
                                 continue;
                             }
                             if (col2 >= static_cast<Eigen::Index>(range_inner_idx2.max())) {
                                 break;
                             }
-                            Eigen::Index row2 = outer_idx2;
                             Scalar value2 = matrix2.valuePtr()[idxptr2];
 
                             // Calculate the row and column index of the entry in the combined
                             // matrix
-                            Eigen::Index row = basis->get_combined_index(row1, row2);
-                            Eigen::Index col = basis->get_combined_index(col1, col2);
+                            Eigen::Index row = basis->get_ket_index(row_ket_id);
+                            Eigen::Index col = basis->get_ket_index(col_ket_id);
 
                             // Calculate the value of the entry in the combined matrix
                             Scalar value = value1 * value2;
