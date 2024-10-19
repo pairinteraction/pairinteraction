@@ -10,32 +10,18 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets,
-                                     map_size_t &&map_index_combined_state,
-                                     map_range_t &&map_range_of_index_state2,
+BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
+                                     map_range_t &&map_range_of_state_index2,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis1,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis2)
-    : Basis<BasisCombined<Scalar>>(std::move(kets)),
-      map_index_combined_state(std::move(map_index_combined_state)),
-      map_range_of_index_state2(std::move(map_range_of_index_state2)), basis1(std::move(basis1)),
+    : Basis<BasisCombined<Scalar>>(std::move(kets), std::move(id_of_kets)),
+      map_range_of_state_index2(std::move(map_range_of_state_index2)), basis1(std::move(basis1)),
       basis2(std::move(basis2)) {}
 
 template <typename Scalar>
-bool BasisCombined<Scalar>::are_valid_indices(size_t index_state1, size_t index_state2) const {
-    return map_index_combined_state.count(index_state1 * basis2->get_number_of_states() +
-                                          index_state2) > 0;
-}
-
-template <typename Scalar>
 const typename BasisCombined<Scalar>::range_t &
-BasisCombined<Scalar>::get_index_range(size_t index_state1) const {
-    return map_range_of_index_state2.at(index_state1);
-}
-
-template <typename Scalar>
-size_t BasisCombined<Scalar>::get_combined_index(size_t index_state1, size_t index_state2) const {
-    return map_index_combined_state.at(index_state1 * basis2->get_number_of_states() +
-                                       index_state2);
+BasisCombined<Scalar>::get_index_range(size_t state_index1) const {
+    return map_range_of_state_index2.at(state_index1);
 }
 
 template <typename Scalar>

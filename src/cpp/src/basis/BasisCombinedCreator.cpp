@@ -9,6 +9,9 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 
 #include <algorithm>
+#include <chrono>
+#include <cstdint>
+#include <fmt/core.h>
 #include <limits>
 #include <memory>
 
@@ -67,11 +70,8 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     ketvec_t kets;
     kets.reserve(eigenvalues1.size() * eigenvalues2.size());
 
-    typename basis_t::map_size_t map_index_combined_state;
-    map_index_combined_state.reserve(eigenvalues1.size() * eigenvalues2.size());
-
-    typename basis_t::map_range_t map_range_of_index_state2;
-    map_range_of_index_state2.reserve(eigenvalues1.size());
+    typename basis_t::map_range_t map_range_of_state_index2;
+    map_range_of_state_index2.reserve(eigenvalues1.size());
 
     // Loop only over states with an allowed energy
     for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenvalues1.size()); ++idx1) {
@@ -87,7 +87,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             max = std::distance(eigenvalues2_begin,
                                 std::upper_bound(eigenvalues2_begin, eigenvalues2_end, max_val2));
         }
-        map_range_of_index_state2.emplace(idx1, typename basis_t::range_t(min, max));
+        map_range_of_state_index2.emplace(idx1, typename basis_t::range_t(min, max));
 
         // Loop over the energetically allowed range of the second index
         for (size_t idx2 = min; idx2 < max; ++idx2) {
@@ -119,21 +119,25 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             std::shared_ptr<const KetAtom<real_t>> ket2 =
                 basis2->get_ket_with_largest_overlap(idx2);
 
-            // Store the combined index
-            map_index_combined_state[idx1 * eigenvalues2.size() + idx2] = kets.size();
-
-            // Store the combined state as a ket
+            // Store the combined state as a ket. The combined, linearized index is the ID of the
+            // ket.
             kets.emplace_back(std::make_shared<ket_t>(
-                typename ket_t::Private(), kets.size(), energy, quantum_number_f, quantum_number_m,
-                parity, std::vector<std::shared_ptr<const Ket<real_t>>>{ket1, ket2}));
+                typename ket_t::Private(), idx1 * basis2->get_number_of_states() + idx2, energy,
+                quantum_number_f, quantum_number_m, parity,
+                std::vector<std::shared_ptr<const Ket<real_t>>>{ket1, ket2}));
         }
     }
 
     kets.shrink_to_fit();
 
+    auto now = std::chrono::high_resolution_clock::now();
+    std::uint64_t nanoseconds =
+        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
+    std::string id_of_kets = fmt::format("{:016x}", nanoseconds);
+
     return std::make_shared<basis_t>(typename basis_t::Private(), std::move(kets),
-                                     std::move(map_index_combined_state),
-                                     std::move(map_range_of_index_state2), basis1, basis2);
+                                     std::move(id_of_kets), std::move(map_range_of_state_index2),
+                                     basis1, basis2);
 }
 
 // Explicit instantiations

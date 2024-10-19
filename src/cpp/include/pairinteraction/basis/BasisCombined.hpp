@@ -46,19 +46,16 @@ public:
     using map_size_t = std::unordered_map<size_t, size_t>;
     using map_range_t = std::unordered_map<size_t, range_t>;
 
-    BasisCombined(Private /*unused*/, ketvec_t &&kets, map_size_t &&map_index_combined_state,
-                  map_range_t &&map_range_of_index_state2,
+    BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
+                  map_range_t &&map_range_of_state_index2,
                   std::shared_ptr<const BasisAtom<Scalar>> basis1,
                   std::shared_ptr<const BasisAtom<Scalar>> basis2);
-    const range_t &get_index_range(size_t index_state1) const;
-    bool are_valid_indices(size_t index_state1, size_t index_state2) const;
-    size_t get_combined_index(size_t index_state1, size_t index_state2) const;
+    const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
 
 private:
-    map_size_t map_index_combined_state;
-    map_range_t map_range_of_index_state2;
+    map_range_t map_range_of_state_index2;
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };

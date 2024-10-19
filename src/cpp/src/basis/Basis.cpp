@@ -17,11 +17,15 @@
 
 namespace pairinteraction {
 
-// Forward declarations
 template <typename Scalar>
 class BasisAtom;
 template <typename Scalar>
 class BasisClassicalLight;
+
+template <typename Derived>
+const std::string &Basis<Derived>::get_id_of_kets() const {
+    return id_of_kets;
+}
 
 template <typename Derived>
 void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType> &labels) const {
@@ -57,22 +61,23 @@ void Basis<Derived>::perform_blocks_checks(
 }
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets)
+Basis<Derived>::Basis(ketvec_t &&kets, std::string &&id_of_kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
                                            static_cast<Eigen::Index>(this->kets.size())},
-                                          {TransformationType::SORT_BY_KET}} {
+                                          {TransformationType::SORT_BY_KET}},
+      id_of_kets(std::move(id_of_kets)) {
     if (this->kets.empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
-    quantum_number_f_of_states.reserve(this->kets.size());
-    quantum_number_m_of_states.reserve(this->kets.size());
-    parity_of_states.reserve(this->kets.size());
+    state_index_to_quantum_number_f.reserve(this->kets.size());
+    state_index_to_quantum_number_m.reserve(this->kets.size());
+    state_index_to_parity.reserve(this->kets.size());
     ket_id_to_ket_index.reserve(this->kets.size());
     size_t index = 0;
     for (const auto &ket : this->kets) {
-        quantum_number_f_of_states.push_back(ket->get_quantum_number_f());
-        quantum_number_m_of_states.push_back(ket->get_quantum_number_m());
-        parity_of_states.push_back(ket->get_parity());
+        state_index_to_quantum_number_f.push_back(ket->get_quantum_number_f());
+        state_index_to_quantum_number_m.push_back(ket->get_quantum_number_m());
+        state_index_to_parity.push_back(ket->get_parity());
         ket_id_to_ket_index[ket->get_id()] = index++;
         if (ket->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
             _has_quantum_number_f = false;
@@ -107,6 +112,16 @@ bool Basis<Derived>::has_parity() const {
 }
 
 template <typename Derived>
+bool Basis<Derived>::has_ket_index() const {
+    return _has_ket_index;
+}
+
+template <typename Derived>
+bool Basis<Derived>::has_ket_index(size_t ket_id) const {
+    return ket_id_to_ket_index.count(ket_id) > 0;
+}
+
+template <typename Derived>
 const Derived &Basis<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
 }
@@ -123,8 +138,19 @@ Basis<Derived>::get_coefficients() const {
 }
 
 template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t index_state) const {
-    real_t quantum_number_f = quantum_number_f_of_states.at(index_state);
+Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor> &
+Basis<Derived>::get_coefficients() {
+    return coefficients.matrix;
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_ket_index(size_t ket_id) const {
+    return ket_id_to_ket_index.at(ket_id);
+}
+
+template <typename Derived>
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t state_index) const {
+    real_t quantum_number_f = state_index_to_quantum_number_f.at(state_index);
     if (quantum_number_f == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number f.");
     }
@@ -132,8 +158,8 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t inde
 }
 
 template <typename Derived>
-typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t index_state) const {
-    real_t quantum_number_m = quantum_number_m_of_states.at(index_state);
+typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t state_index) const {
+    real_t quantum_number_m = state_index_to_quantum_number_m.at(state_index);
     if (quantum_number_m == std::numeric_limits<real_t>::max()) {
         throw std::invalid_argument("The state does not have a well-defined quantum number m.");
     }
@@ -141,8 +167,8 @@ typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_m(size_t inde
 }
 
 template <typename Derived>
-Parity Basis<Derived>::get_parity(size_t index_state) const {
-    Parity parity = parity_of_states.at(index_state);
+Parity Basis<Derived>::get_parity(size_t state_index) const {
+    Parity parity = state_index_to_parity.at(state_index);
     if (parity == Parity::UNKNOWN) {
         throw std::invalid_argument("The state does not have a well-defined parity.");
     }
@@ -151,26 +177,48 @@ Parity Basis<Derived>::get_parity(size_t index_state) const {
 
 template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
-Basis<Derived>::get_ket_with_largest_overlap(size_t index_state) const {
-    size_t index_ket = state_index_to_ket_index.at(index_state);
-    if (index_ket == std::numeric_limits<int>::max()) {
+Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
+    size_t ket_index = state_index_to_ket_index.at(state_index);
+    if (ket_index == std::numeric_limits<int>::max()) {
         throw std::invalid_argument("The state does not belong to a ket in a well-defined way.");
     }
-    return kets[index_ket];
+    return kets[ket_index];
 }
 
 template <typename Derived>
-Eigen::VectorX<typename Basis<Derived>::scalar_t>
-Basis<Derived>::get_state_with_largest_overlap(size_t index_ket) const {
-    int index_state = ket_index_to_state_index[index_ket];
-    if (index_state == std::numeric_limits<int>::max()) {
+std::shared_ptr<Derived> Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
+    int state_index = ket_index_to_state_index[ket_index];
+    if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
     }
-    return coefficients.matrix.col(index_state);
+    // Create a copy of the current object
+    auto restricted = std::make_shared<Derived>(derived());
+
+    // Restrict the current object to the state with the largest overlap
+    restricted->coefficients.matrix = restricted->coefficients.matrix.col(state_index);
+
+    std::fill(restricted->ket_index_to_state_index.begin(),
+              restricted->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
+    restricted->ket_index_to_state_index[ket_index] = 0;
+
+    restricted->state_index_to_quantum_number_f = {state_index_to_quantum_number_f[state_index]};
+    restricted->state_index_to_quantum_number_m = {state_index_to_quantum_number_m[state_index]};
+    restricted->state_index_to_parity = {state_index_to_parity[state_index]};
+    restricted->state_index_to_ket_index = {state_index_to_ket_index[state_index]};
+
+    restricted->_has_quantum_number_f =
+        restricted->state_index_to_quantum_number_f[0] != std::numeric_limits<real_t>::max();
+    restricted->_has_quantum_number_m =
+        restricted->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
+    restricted->_has_parity = restricted->state_index_to_parity[0] != Parity::UNKNOWN;
+    restricted->_has_ket_index =
+        restricted->state_index_to_ket_index[0] != std::numeric_limits<int>::max();
+
+    return restricted;
 }
 
 template <typename Derived>
-Eigen::VectorX<typename Basis<Derived>::scalar_t>
+std::shared_ptr<Derived>
 Basis<Derived>::get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const {
     return get_state_with_largest_overlap(ket_id_to_ket_index.at(ket->get_id()));
 }
@@ -303,20 +351,20 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
         for (const auto &label : labels) {
             switch (label) {
             case TransformationType::SORT_BY_PARITY:
-                if (parity_of_states[a] != parity_of_states[b]) {
-                    return parity_of_states[a] < parity_of_states[b];
+                if (state_index_to_parity[a] != state_index_to_parity[b]) {
+                    return state_index_to_parity[a] < state_index_to_parity[b];
                 }
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_M:
-                if (std::abs(quantum_number_m_of_states[a] - quantum_number_m_of_states[b]) >
-                    numerical_precision) {
-                    return quantum_number_m_of_states[a] < quantum_number_m_of_states[b];
+                if (std::abs(state_index_to_quantum_number_m[a] -
+                             state_index_to_quantum_number_m[b]) > numerical_precision) {
+                    return state_index_to_quantum_number_m[a] < state_index_to_quantum_number_m[b];
                 }
                 break;
             case TransformationType::SORT_BY_QUANTUM_NUMBER_F:
-                if (std::abs(quantum_number_f_of_states[a] - quantum_number_f_of_states[b]) >
-                    numerical_precision) {
-                    return quantum_number_f_of_states[a] < quantum_number_f_of_states[b];
+                if (std::abs(state_index_to_quantum_number_f[a] -
+                             state_index_to_quantum_number_f[b]) > numerical_precision) {
+                    return state_index_to_quantum_number_f[a] < state_index_to_quantum_number_f[b];
                 }
                 break;
             case TransformationType::SORT_BY_KET:
@@ -335,14 +383,14 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
     for (const auto &label : labels) {
         switch (label) {
         case TransformationType::SORT_BY_PARITY:
-            if (parity_of_states[*perm_back] == Parity::UNKNOWN) {
+            if (state_index_to_parity[*perm_back] == Parity::UNKNOWN) {
                 throw std::invalid_argument(
                     "States cannot be labeled and thus not sorted by the parity.");
             }
             transformation.transformation_type.push_back(TransformationType::SORT_BY_PARITY);
             break;
         case TransformationType::SORT_BY_QUANTUM_NUMBER_M:
-            if (quantum_number_m_of_states[*perm_back] == std::numeric_limits<real_t>::max()) {
+            if (state_index_to_quantum_number_m[*perm_back] == std::numeric_limits<real_t>::max()) {
                 throw std::invalid_argument(
                     "States cannot be labeled and thus not sorted by the quantum number m.");
             }
@@ -350,7 +398,7 @@ void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationT
                 TransformationType::SORT_BY_QUANTUM_NUMBER_M);
             break;
         case TransformationType::SORT_BY_QUANTUM_NUMBER_F:
-            if (quantum_number_f_of_states[*perm_back] == std::numeric_limits<real_t>::max()) {
+            if (state_index_to_quantum_number_f[*perm_back] == std::numeric_limits<real_t>::max()) {
                 throw std::invalid_argument(
                     "States cannot be labeled and thus not sorted by the quantum number f.");
             }
@@ -376,27 +424,27 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
     IndicesOfBlocksCreator &blocks_creator) const {
     real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
-    auto last_quantum_number_f = quantum_number_f_of_states[0];
-    auto last_quantum_number_m = quantum_number_m_of_states[0];
-    auto last_parity = parity_of_states[0];
+    auto last_quantum_number_f = state_index_to_quantum_number_f[0];
+    auto last_quantum_number_m = state_index_to_quantum_number_m[0];
+    auto last_parity = state_index_to_parity[0];
     auto last_ket = state_index_to_ket_index[0];
 
     for (int i = 0; i < coefficients.matrix.cols(); ++i) {
         for (auto label : unique_labels) {
             if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_F) {
-                if (std::abs(quantum_number_f_of_states[i] - last_quantum_number_f) >
+                if (std::abs(state_index_to_quantum_number_f[i] - last_quantum_number_f) >
                     numerical_precision) {
                     blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_QUANTUM_NUMBER_M) {
-                if (std::abs(quantum_number_m_of_states[i] - last_quantum_number_m) >
+                if (std::abs(state_index_to_quantum_number_m[i] - last_quantum_number_m) >
                     numerical_precision) {
                     blocks_creator.add(i);
                     break;
                 }
             } else if (label == TransformationType::SORT_BY_PARITY) {
-                if (parity_of_states[i] != last_parity) {
+                if (state_index_to_parity[i] != last_parity) {
                     blocks_creator.add(i);
                     break;
                 }
@@ -407,9 +455,9 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
                 }
             }
         }
-        last_quantum_number_f = quantum_number_f_of_states[i];
-        last_quantum_number_m = quantum_number_m_of_states[i];
-        last_parity = parity_of_states[i];
+        last_quantum_number_f = state_index_to_quantum_number_f[i];
+        last_quantum_number_m = state_index_to_quantum_number_m[i];
+        last_parity = state_index_to_parity[i];
         last_ket = state_index_to_ket_index[i];
     }
 }
@@ -423,18 +471,19 @@ std::shared_ptr<Derived> Basis<Derived>::transformed(const Sorting &transformati
     transformed->coefficients.matrix = transformed->coefficients.matrix * transformation.matrix;
     transformed->coefficients.transformation_type = transformation.transformation_type;
 
-    transformed->quantum_number_f_of_states.resize(transformation.matrix.size());
-    transformed->quantum_number_m_of_states.resize(transformation.matrix.size());
-    transformed->parity_of_states.resize(transformation.matrix.size());
+    transformed->state_index_to_quantum_number_f.resize(transformation.matrix.size());
+    transformed->state_index_to_quantum_number_m.resize(transformation.matrix.size());
+    transformed->state_index_to_parity.resize(transformation.matrix.size());
     transformed->state_index_to_ket_index.resize(transformation.matrix.size());
     transformed->ket_index_to_state_index.resize(transformation.matrix.size());
 
     for (int i = 0; i < transformation.matrix.size(); ++i) {
-        transformed->quantum_number_f_of_states[i] =
-            quantum_number_f_of_states[transformation.matrix.indices()[i]];
-        transformed->quantum_number_m_of_states[i] =
-            quantum_number_m_of_states[transformation.matrix.indices()[i]];
-        transformed->parity_of_states[i] = parity_of_states[transformation.matrix.indices()[i]];
+        transformed->state_index_to_quantum_number_f[i] =
+            state_index_to_quantum_number_f[transformation.matrix.indices()[i]];
+        transformed->state_index_to_quantum_number_m[i] =
+            state_index_to_quantum_number_m[transformation.matrix.indices()[i]];
+        transformed->state_index_to_parity[i] =
+            state_index_to_parity[transformation.matrix.indices()[i]];
         transformed->state_index_to_ket_index[i] =
             state_index_to_ket_index[transformation.matrix.indices()[i]];
         transformed->ket_index_to_state_index[transformation.matrix.indices()[i]] = i;
@@ -484,36 +533,38 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     Eigen::SparseMatrix<real_t> probs = transformation.matrix.cwiseAbs2().transpose();
 
     {
-        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(quantum_number_f_of_states.data(),
-                                                            quantum_number_f_of_states.size());
+        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(state_index_to_quantum_number_f.data(),
+                                                            state_index_to_quantum_number_f.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
-        transformed->quantum_number_f_of_states.resize(probs.rows());
+        transformed->state_index_to_quantum_number_f.resize(probs.rows());
 
-        for (size_t i = 0; i < transformed->quantum_number_f_of_states.size(); ++i) {
+        for (size_t i = 0; i < transformed->state_index_to_quantum_number_f.size(); ++i) {
             if (diff[i] < numerical_precision) {
-                transformed->quantum_number_f_of_states[i] = std::round(val[i] * 2) / 2;
+                transformed->state_index_to_quantum_number_f[i] = std::round(val[i] * 2) / 2;
             } else {
-                transformed->quantum_number_f_of_states[i] = std::numeric_limits<real_t>::max();
+                transformed->state_index_to_quantum_number_f[i] =
+                    std::numeric_limits<real_t>::max();
                 transformed->_has_quantum_number_f = false;
             }
         }
     }
 
     {
-        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(quantum_number_m_of_states.data(),
-                                                            quantum_number_m_of_states.size());
+        auto map = Eigen::Map<const Eigen::VectorX<real_t>>(state_index_to_quantum_number_m.data(),
+                                                            state_index_to_quantum_number_m.size());
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
-        transformed->quantum_number_m_of_states.resize(probs.rows());
+        transformed->state_index_to_quantum_number_m.resize(probs.rows());
 
-        for (size_t i = 0; i < transformed->quantum_number_m_of_states.size(); ++i) {
+        for (size_t i = 0; i < transformed->state_index_to_quantum_number_m.size(); ++i) {
             if (diff[i] < numerical_precision) {
-                transformed->quantum_number_m_of_states[i] = std::round(val[i] * 2) / 2;
+                transformed->state_index_to_quantum_number_m[i] = std::round(val[i] * 2) / 2;
             } else {
-                transformed->quantum_number_m_of_states[i] = std::numeric_limits<real_t>::max();
+                transformed->state_index_to_quantum_number_m[i] =
+                    std::numeric_limits<real_t>::max();
                 transformed->_has_quantum_number_m = false;
             }
         }
@@ -521,20 +572,20 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
 
     {
         using utype = std::underlying_type<Parity>::type;
-        Eigen::VectorX<real_t> map(parity_of_states.size());
-        for (size_t i = 0; i < parity_of_states.size(); ++i) {
-            map[i] = static_cast<utype>(parity_of_states[i]);
+        Eigen::VectorX<real_t> map(state_index_to_parity.size());
+        for (size_t i = 0; i < state_index_to_parity.size(); ++i) {
+            map[i] = static_cast<utype>(state_index_to_parity[i]);
         }
         Eigen::VectorX<real_t> val = probs * map;
         Eigen::VectorX<real_t> sq = probs * map.cwiseAbs2();
         Eigen::VectorX<real_t> diff = (val.cwiseAbs2() - sq).cwiseAbs();
-        transformed->parity_of_states.resize(probs.rows());
+        transformed->state_index_to_parity.resize(probs.rows());
 
-        for (size_t i = 0; i < transformed->parity_of_states.size(); ++i) {
+        for (size_t i = 0; i < transformed->state_index_to_parity.size(); ++i) {
             if (diff[i] < numerical_precision) {
-                transformed->parity_of_states[i] = static_cast<Parity>(std::lround(val[i]));
+                transformed->state_index_to_parity[i] = static_cast<Parity>(std::lround(val[i]));
             } else {
-                transformed->parity_of_states[i] = Parity::UNKNOWN;
+                transformed->state_index_to_parity[i] = Parity::UNKNOWN;
                 transformed->_has_parity = false;
             }
         }
@@ -557,6 +608,15 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                     transformed->state_index_to_ket_index[it.col()] = row;
                     transformed->ket_index_to_state_index[row] = it.col();
                 }
+            }
+        }
+
+        // Set _has_ket_index to false if any of the ket indices is invalid
+        transformed->_has_ket_index = true;
+        for (auto ket_index : transformed->state_index_to_ket_index) {
+            if (ket_index == std::numeric_limits<int>::max()) {
+                transformed->_has_ket_index = false;
+                break;
             }
         }
     }
