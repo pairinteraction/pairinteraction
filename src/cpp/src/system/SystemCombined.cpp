@@ -91,49 +91,48 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
     real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
+    size_t number_of_states2 = basis->get_basis2()->get_number_of_states();
+
     oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 
-    // Loop over the rows of the first matrix in parallel
+    // Loop over the rows of the first matrix in parallel (outer index == row)
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
-            for (Eigen::Index outer_idx1 = range.begin(); outer_idx1 != range.end(); ++outer_idx1) {
+            for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
 
-                // Loop over the non-zero column elements of the first matrix
-                for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
-                         matrix1, outer_idx1);
-                     it1; ++it1) {
+                const auto &range_row2 = basis->get_index_range(row1);
 
-                    Eigen::Index row1 = it1.row();
-                    Eigen::Index col1 = it1.col();
-                    Scalar value1 = it1.value();
+                // Loop over the rows of the second matrix that are energetically allowed
+                for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
+                     row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
 
-                    const auto &range_outer_idx2 = basis->get_index_range(outer_idx1);
-                    const auto &range_inner_idx2 = basis->get_index_range(it1.index());
+                    size_t row_ket_id = row1 * number_of_states2 + row2;
+                    if (!basis->has_ket_index(row_ket_id)) {
+                        continue;
+                    }
+                    Eigen::Index row = basis->get_ket_index(row_ket_id);
 
-                    // Loop over the rows of the second matrix that are energetically allowed
-                    for (auto outer_idx2 = static_cast<Eigen::Index>(range_outer_idx2.min());
-                         outer_idx2 < static_cast<Eigen::Index>(range_outer_idx2.max());
-                         ++outer_idx2) {
+                    // Loop over the non-zero column elements of the first matrix
+                    for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
+                             matrix1, row1);
+                         it1; ++it1) {
 
-                        Eigen::Index row2 = outer_idx2;
-                        size_t row_ket_id =
-                            row1 * basis->get_basis2()->get_number_of_states() + row2;
-                        if (!basis->has_ket_index(row_ket_id)) {
-                            continue;
-                        }
+                        Eigen::Index col1 = it1.col();
+                        Scalar value1 = it1.value();
 
                         // Calculate the minimum and maximum values of the index pointer of the
                         // second matrix
-                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[outer_idx2];
-                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[outer_idx2 + 1];
+                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[row2];
+                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[row2 + 1];
 
                         // The minimum value is chosen such that we start with an energetically
                         // allowed column
+                        const auto &range_col2 = basis->get_index_range(it1.index());
                         begin_idxptr2 +=
                             std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
                                           std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
                                                            matrix2.innerIndexPtr() + end_idxptr2,
-                                                           range_inner_idx2.min()));
+                                                           range_col2.min()));
 
                         // Loop over the non-zero column elements of the second matrix that are
                         // energetically allowed (we break the loop if the index pointer corresponds
@@ -142,25 +141,18 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                              ++idxptr2) {
 
                             Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
-                            size_t col_ket_id =
-                                col1 * basis->get_basis2()->get_number_of_states() + col2;
+                            size_t col_ket_id = col1 * number_of_states2 + col2;
                             if (!basis->has_ket_index(col_ket_id)) {
                                 continue;
                             }
-                            if (col2 >= static_cast<Eigen::Index>(range_inner_idx2.max())) {
+                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
                                 break;
                             }
                             Scalar value2 = matrix2.valuePtr()[idxptr2];
-
-                            // Calculate the row and column index of the entry in the combined
-                            // matrix
-                            Eigen::Index row = basis->get_ket_index(row_ket_id);
                             Eigen::Index col = basis->get_ket_index(col_ket_id);
 
-                            // Calculate the value of the entry in the combined matrix
-                            Scalar value = value1 * value2;
-
                             // Store the entry
+                            Scalar value = value1 * value2;
                             if (std::abs(value) > numerical_precision) {
                                 triplets.emplace_back(row, col, value);
                             }

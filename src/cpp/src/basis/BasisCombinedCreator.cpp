@@ -57,16 +57,17 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     auto system2 = system2_unsorted.transformed(
         system2_unsorted.get_sorter({TransformationType::SORT_BY_ENERGY}));
 
-    // Create the combined basis
+    // Construct the canonical basis that contains all combined states with allowed energies and
+    // quantum numbers
     auto basis1 = system1.get_basis();
     auto basis2 = system2.get_basis();
     auto eigenvalues1 = system1.get_eigenvalues();
     auto eigenvalues2 = system2.get_eigenvalues();
     real_t *eigenvalues2_begin = eigenvalues2.data();
     real_t *eigenvalues2_end = eigenvalues2_begin + eigenvalues2.size();
+    size_t number_of_states2 = basis2->get_number_of_states();
+    bool has_quantum_number_m = basis1->has_quantum_number_m() && basis2->has_quantum_number_m();
 
-    // Construct the canonical basis that contains all combined states with allowed energies and
-    // quantum numbers
     ketvec_t kets;
     kets.reserve(eigenvalues1.size() * eigenvalues2.size());
 
@@ -100,7 +101,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             Parity parity = Parity::UNKNOWN;
             real_t quantum_number_f = std::numeric_limits<real_t>::max();
             real_t quantum_number_m = std::numeric_limits<real_t>::max();
-            if (basis1->has_quantum_number_m() && basis2->has_quantum_number_m()) {
+            if (has_quantum_number_m) {
                 quantum_number_m =
                     basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
                 if (range_quantum_number_m.is_finite() &&
@@ -122,7 +123,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             // Store the combined state as a ket. The combined, linearized index is the ID of the
             // ket.
             kets.emplace_back(std::make_shared<ket_t>(
-                typename ket_t::Private(), idx1 * basis2->get_number_of_states() + idx2, energy,
+                typename ket_t::Private(), idx1 * number_of_states2 + idx2, energy,
                 quantum_number_f, quantum_number_m, parity,
                 std::vector<std::shared_ptr<const Ket<real_t>>>{ket1, ket2}));
         }

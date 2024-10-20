@@ -5,7 +5,9 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
+#include <memory>
 #include <unordered_map>
+#include <vector>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -53,6 +55,19 @@ public:
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
+
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
+                   std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other1,
+                   std::shared_ptr<const BasisAtom<Scalar>> other2) const;
+    Eigen::SparseMatrix<real_t, Eigen::RowMajor>
+    get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
+                 std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::SparseMatrix<real_t, Eigen::RowMajor>
+    get_overlaps(std::shared_ptr<const BasisAtom<Scalar>> other1,
+                 std::shared_ptr<const BasisAtom<Scalar>> other2) const;
 
 private:
     map_range_t map_range_of_state_index2;
