@@ -149,6 +149,38 @@ size_t Basis<Derived>::get_ket_index(size_t ket_id) const {
 }
 
 template <typename Derived>
+Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor>
+Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
+    if (!has_ket_index(ket->get_id())) {
+        throw std::invalid_argument("The ket does not belong to the basis.");
+    }
+    // The following line is a more efficient alternative to
+    // "get_amplitudes(get_state_from_ket(ket))"
+    return coefficients.matrix.row(ket_id_to_ket_index.at(ket->get_id()));
+}
+
+template <typename Derived>
+Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor>
+Basis<Derived>::get_amplitudes(std::shared_ptr<const Derived> other) const {
+    if (other->get_id_of_kets() != get_id_of_kets()) {
+        throw std::invalid_argument("The other object must be expressed using the same kets.");
+    }
+    return other->coefficients.matrix.adjoint() * coefficients.matrix;
+}
+
+template <typename Derived>
+Eigen::SparseMatrix<typename Basis<Derived>::real_t, Eigen::RowMajor>
+Basis<Derived>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
+    return get_amplitudes(ket).cwiseAbs2();
+}
+
+template <typename Derived>
+Eigen::SparseMatrix<typename Basis<Derived>::real_t, Eigen::RowMajor>
+Basis<Derived>::get_overlaps(std::shared_ptr<const Derived> other) const {
+    return get_amplitudes(other).cwiseAbs2();
+}
+
+template <typename Derived>
 typename Basis<Derived>::real_t Basis<Derived>::get_quantum_number_f(size_t state_index) const {
     real_t quantum_number_f = state_index_to_quantum_number_f.at(state_index);
     if (quantum_number_f == std::numeric_limits<real_t>::max()) {
@@ -186,7 +218,8 @@ Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
 }
 
 template <typename Derived>
-std::shared_ptr<Derived> Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
+std::shared_ptr<const Derived>
+Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
     int state_index = ket_index_to_state_index[ket_index];
     if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
@@ -194,7 +227,7 @@ std::shared_ptr<Derived> Basis<Derived>::get_state_with_largest_overlap(size_t k
     // Create a copy of the current object
     auto restricted = std::make_shared<Derived>(derived());
 
-    // Restrict the current object to the state with the largest overlap
+    // Restrict the copy to the state with the largest overlap
     restricted->coefficients.matrix = restricted->coefficients.matrix.col(state_index);
 
     std::fill(restricted->ket_index_to_state_index.begin(),
@@ -218,9 +251,52 @@ std::shared_ptr<Derived> Basis<Derived>::get_state_with_largest_overlap(size_t k
 }
 
 template <typename Derived>
-std::shared_ptr<Derived>
+std::shared_ptr<const Derived>
 Basis<Derived>::get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const {
+    if (!has_ket_index(ket->get_id())) {
+        throw std::invalid_argument("The ket does not belong to the basis.");
+    }
     return get_state_with_largest_overlap(ket_id_to_ket_index.at(ket->get_id()));
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::get_state_from_ket(size_t ket_index) const {
+    // Create a copy of the current object
+    auto created = std::make_shared<Derived>(derived());
+
+    // Fill the copy with the state corresponding to the ket index
+    created->coefficients.matrix =
+        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>(coefficients.matrix.rows(), 1);
+    created->coefficients.matrix.coeffRef(ket_index, 0) = 1;
+    created->coefficients.matrix.makeCompressed();
+
+    std::fill(created->ket_index_to_state_index.begin(), created->ket_index_to_state_index.end(),
+              std::numeric_limits<int>::max());
+    created->ket_index_to_state_index[ket_index] = 0;
+
+    created->state_index_to_quantum_number_f = {kets[ket_index]->get_quantum_number_f()};
+    created->state_index_to_quantum_number_m = {kets[ket_index]->get_quantum_number_m()};
+    created->state_index_to_parity = {kets[ket_index]->get_parity()};
+    created->state_index_to_ket_index = {ket_index};
+
+    created->_has_quantum_number_f =
+        created->state_index_to_quantum_number_f[0] != std::numeric_limits<real_t>::max();
+    created->_has_quantum_number_m =
+        created->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
+    created->_has_parity = created->state_index_to_parity[0] != Parity::UNKNOWN;
+    created->_has_ket_index =
+        created->state_index_to_ket_index[0] != std::numeric_limits<int>::max();
+
+    return created;
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived>
+Basis<Derived>::get_state_from_ket(std::shared_ptr<const ket_t> ket) const {
+    if (!has_ket_index(ket->get_id())) {
+        throw std::invalid_argument("The ket does not belong to the basis.");
+    }
+    return get_state_from_ket(ket_id_to_ket_index.at(ket->get_id()));
 }
 
 template <typename Derived>
@@ -463,7 +539,7 @@ void Basis<Derived>::get_indices_of_blocks_without_checks(
 }
 
 template <typename Derived>
-std::shared_ptr<Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
+std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transformation) const {
     // Create a copy of the current object
     auto transformed = std::make_shared<Derived>(derived());
 
@@ -493,7 +569,7 @@ std::shared_ptr<Derived> Basis<Derived>::transformed(const Sorting &transformati
 }
 
 template <typename Derived>
-std::shared_ptr<Derived>
+std::shared_ptr<const Derived>
 Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
     real_t numerical_precision =
         10 * std::sqrt(coefficients.matrix.rows()) * std::numeric_limits<real_t>::epsilon();
