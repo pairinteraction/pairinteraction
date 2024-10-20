@@ -22,6 +22,7 @@ from pairinteraction.backend import (
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
 reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenvalues.txt"
+reference_overlaps_file = Path(__file__).parent.parent / "data/reference_pair_potential/overlaps.txt"
 
 
 def test_pair_potential(
@@ -78,6 +79,12 @@ def test_pair_potential(
         system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in combined_systems
     ]
 
+    # Get the overlap with |ket, ket>
+    overlaps = [system.get_eigenbasis().get_overlaps(ket, ket).todense().A1 for system in combined_systems]
+
+    # Ensure that the overlaps sum up to one
+    np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))
+
     # Compare to reference data
     kets = [str(ket) for ket in combined_basis.get_kets()]
     eigenvalues = [
@@ -90,10 +97,12 @@ def test_pair_potential(
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
         np.savetxt(reference_kets_file, kets, fmt="%s", delimiter=",")
         np.savetxt(reference_eigenvalues_file, eigenvalues)
+        np.savetxt(reference_overlaps_file, overlaps)
         pytest.skip("Reference data generated, skipping comparison test")
 
     np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter=","))
     np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
+    np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file))
 
     # Because of degeneracies, checking the eigenstates against reference data is complicated.
     # Thus, we only check their normalization and orthogonality.

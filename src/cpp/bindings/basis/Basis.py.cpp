@@ -56,7 +56,18 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
                  &Basis<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
-             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_overlaps, nb::const_));
+             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_overlaps, nb::const_))
+        .def("get_state_with_largest_overlap",
+             nb::overload_cast<size_t>(&Basis<T>::get_state_with_largest_overlap, nb::const_))
+        .def("get_state_with_largest_overlap",
+             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
+                 &Basis<T>::get_state_with_largest_overlap, nb::const_))
+        .def("get_state_from_ket",
+             nb::overload_cast<size_t>(&Basis<T>::get_state_from_ket, nb::const_))
+        .def("get_state_from_ket",
+             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
+                 &Basis<T>::get_state_from_ket, nb::const_))
+        .def("get_ket_with_largest_overlap", &Basis<T>::get_ket_with_largest_overlap);
 }
 
 template <typename T>
@@ -105,6 +116,23 @@ template <typename T>
 static void declare_basis_combined(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisCombined" + type_name;
     nb::class_<BasisCombined<T>, Basis<BasisCombined<T>>> pyclass(m, pyclass_name.c_str());
+    pyclass
+        .def("get_amplitudes",
+             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>,
+                               std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>>(
+                 &BasisCombined<T>::get_amplitudes, nb::const_))
+        .def("get_amplitudes",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
+                               std::shared_ptr<const BasisAtom<T>>>(
+                 &BasisCombined<T>::get_amplitudes, nb::const_))
+        .def("get_overlaps",
+             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>,
+                               std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>>(
+                 &BasisCombined<T>::get_overlaps, nb::const_))
+        .def("get_overlaps",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
+                               std::shared_ptr<const BasisAtom<T>>>(&BasisCombined<T>::get_overlaps,
+                                                                    nb::const_));
 }
 
 template <typename T>
