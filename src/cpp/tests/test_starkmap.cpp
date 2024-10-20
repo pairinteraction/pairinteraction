@@ -29,6 +29,13 @@ int main(int argc, char **argv) {
     thread_local pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
+    auto ket = pairinteraction::KetAtomCreator<double>()
+                   .set_species("Rb")
+                   .set_quantum_number_n(60)
+                   .set_quantum_number_l(0)
+                   .set_quantum_number_m(0.5)
+                   .create(database);
+
     auto basis = pairinteraction::BasisAtomCreator<double>()
                      .set_species("Rb")
                      .restrict_quantum_number_n(58, 62)
@@ -61,6 +68,7 @@ int main(int argc, char **argv) {
     Eigen::MatrixX<double> eigenvalues(systems.size(), basis->get_number_of_states());
     Eigen::MatrixX<double> eigenstates(
         systems.size(), basis->get_number_of_states() * basis->get_number_of_states());
+    Eigen::MatrixX<double> overlaps(systems.size(), basis->get_number_of_states());
 
     kets.reserve(basis->get_number_of_states());
     for (const auto &ket : *basis) {
@@ -68,11 +76,15 @@ int main(int argc, char **argv) {
         ss << *ket;
         kets.push_back(ss.str());
     }
+
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
         eigenvalues.row(i) = systems[i].get_eigenvalues() * 6579683.920501762;
+
         Eigen::MatrixX<double> tmp =
             systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
+
+        overlaps.row(i) = systems[i].get_eigenbasis()->get_overlaps(ket);
     }
 
     // Compare with reference data
@@ -125,6 +137,34 @@ int main(int argc, char **argv) {
                              std::abs(eigenvalues(i) - reference_eigenvalues(i)));
             }
             SPDLOG_ERROR("Eigenvalues do not match reference data");
+            success = false;
+        }
+    }
+
+    // Check overlaps
+    const std::filesystem::path reference_overlaps_file =
+        data_dir / "reference_stark_map/overlaps.txt";
+    SPDLOG_INFO("Reference overlaps: {}", reference_overlaps_file.string());
+
+    Eigen::MatrixXd reference_overlaps(systems.size(), basis->get_number_of_states());
+    stream = std::ifstream(reference_overlaps_file);
+    if (!stream) {
+        SPDLOG_ERROR("Could not open reference overlap file");
+        success = false;
+    } else {
+        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
+            for (Eigen::Index j = 0; j < static_cast<Eigen::Index>(basis->get_number_of_states());
+                 ++j) {
+                stream >> reference_overlaps(i, j);
+            }
+        }
+        stream.close();
+        if ((overlaps - reference_overlaps).norm() > 1e-9) {
+            for (Eigen::Index i = 0; i < overlaps.size(); ++i) {
+                SPDLOG_DEBUG("Overlap: {} vs {}, delta: {}", overlaps(i), reference_overlaps(i),
+                             std::abs(overlaps(i) - reference_overlaps(i)));
+            }
+            SPDLOG_ERROR("Overlaps do not match reference data");
             success = false;
         }
     }
