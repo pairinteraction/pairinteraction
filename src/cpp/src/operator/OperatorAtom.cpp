@@ -17,7 +17,8 @@ OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis, Operato
     if (type == OperatorType::ENERGY) {
         this->initialize_as_energy_operator();
     } else {
-        *this = this->basis->get_database().get_operator(this->basis, type, q);
+        this->initialize_from_matrix(
+            this->basis->get_database().get_matrix_elements(this->basis, this->basis, type, q));
     }
 }
 

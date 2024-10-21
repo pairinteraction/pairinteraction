@@ -48,11 +48,11 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
 
     auto basis = database.get_basis<float>("Rb", description, {});
 
-    auto dipole = database.get_operator<float>(basis, OperatorType::ELECTRIC_DIPOLE, 0);
+    auto dipole =
+        database.get_matrix_elements<float>(basis, basis, OperatorType::ELECTRIC_DIPOLE, 0);
 
     SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
                        basis->get_number_of_states());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}",
-                       dipole.get_matrix().nonZeros());
+    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}", dipole.nonZeros());
 }
 } // namespace pairinteraction

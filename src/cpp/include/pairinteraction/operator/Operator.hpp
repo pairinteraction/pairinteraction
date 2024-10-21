@@ -77,6 +77,7 @@ public:
 
 protected:
     void initialize_as_energy_operator();
+    void initialize_from_matrix(Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&matrix);
     std::shared_ptr<const basis_t> basis;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> matrix;
 

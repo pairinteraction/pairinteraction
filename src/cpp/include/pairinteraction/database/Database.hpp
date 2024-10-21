@@ -1,7 +1,9 @@
 #pragma once
 
+#include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <Eigen/SparseCore>
 #include <complex>
 #include <filesystem>
 #include <memory>
@@ -32,9 +34,6 @@ class KetAtom;
 
 template <typename Scalar>
 class BasisAtom;
-
-template <typename Scalar>
-class OperatorAtom;
 
 class Database {
 public:
@@ -74,8 +73,10 @@ public:
         std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
-    OperatorAtom<Scalar> get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
-                                      OperatorType type, int q);
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
+                        std::shared_ptr<const BasisAtom<Scalar>> final_basis, OperatorType type,
+                        int q);
 
 private:
     struct Table {
@@ -130,14 +131,20 @@ extern template std::shared_ptr<const BasisAtom<std::complex<double>>>
 Database::get_basis<std::complex<double>>(std::string species,
                                           const AtomDescriptionByRanges<double> &description,
                                           std::vector<size_t> additional_ket_ids);
-extern template OperatorAtom<float>
-Database::get_operator<float>(std::shared_ptr<const BasisAtom<float>> basis, OperatorType type,
-                              int q);
-extern template OperatorAtom<double>
-Database::get_operator<double>(std::shared_ptr<const BasisAtom<double>> basis, OperatorType type,
-                               int q);
-extern template OperatorAtom<std::complex<float>> Database::get_operator<std::complex<float>>(
-    std::shared_ptr<const BasisAtom<std::complex<float>>> basis, OperatorType type, int q);
-extern template OperatorAtom<std::complex<double>> Database::get_operator<std::complex<double>>(
-    std::shared_ptr<const BasisAtom<std::complex<double>>> basis, OperatorType type, int q);
+extern template Eigen::SparseMatrix<float, Eigen::RowMajor>
+Database::get_matrix_elements<float>(std::shared_ptr<const BasisAtom<float>> initial_basis,
+                                     std::shared_ptr<const BasisAtom<float>> final_basis,
+                                     OperatorType type, int q);
+extern template Eigen::SparseMatrix<double, Eigen::RowMajor>
+Database::get_matrix_elements<double>(std::shared_ptr<const BasisAtom<double>> initial_basis,
+                                      std::shared_ptr<const BasisAtom<double>> final_basis,
+                                      OperatorType type, int q);
+extern template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
+Database::get_matrix_elements<std::complex<float>>(
+    std::shared_ptr<const BasisAtom<std::complex<float>>> initial_basis,
+    std::shared_ptr<const BasisAtom<std::complex<float>>> final_basis, OperatorType type, int q);
+extern template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
+Database::get_matrix_elements<std::complex<double>>(
+    std::shared_ptr<const BasisAtom<std::complex<double>>> initial_basis,
+    std::shared_ptr<const BasisAtom<std::complex<double>>> final_basis, OperatorType type, int q);
 } // namespace pairinteraction
