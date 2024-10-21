@@ -512,7 +512,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         result_quantum_number_m, static_cast<Parity>(result_parity), result_id, species,
         result_quantum_number_n, result_quantum_number_nu_exp, result_quantum_number_nu_std,
         result_quantum_number_l_exp, result_quantum_number_l_std, result_quantum_number_s_exp,
-        result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std);
+        result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std,
+        *this);
 }
 
 template <typename Scalar>
@@ -860,7 +861,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                 chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
                 chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
                 chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
-                chunk_quantum_number_j_std[i]));
+                chunk_quantum_number_j_std[i], *this));
         }
     }
 
@@ -873,6 +874,8 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
                               std::shared_ptr<const BasisAtom<Scalar>> final_basis,
                               OperatorType type, int q) {
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
+
     std::string specifier;
     int kappa{};
     switch (type) {
@@ -991,7 +994,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
 
     std::vector<int> outerIndexPtr;
     std::vector<int> innerIndices;
-    std::vector<Scalar> values;
+    std::vector<real_t> values;
     outerIndexPtr.reserve(dim + 1);
     innerIndices.reserve(num_entries);
     values.reserve(num_entries);
@@ -1023,7 +1026,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
     }
 
-    Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
+    Eigen::Map<const Eigen::SparseMatrix<real_t, Eigen::RowMajor>> matrix_map(
         dim, dim, num_entries, outerIndexPtr.data(), innerIndices.data(), values.data());
 
     // Construct the operator and return it

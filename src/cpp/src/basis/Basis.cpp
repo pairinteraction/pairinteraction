@@ -220,7 +220,7 @@ Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
-    int state_index = ket_index_to_state_index[ket_index];
+    int state_index = ket_index_to_state_index.at(ket_index);
     if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
     }

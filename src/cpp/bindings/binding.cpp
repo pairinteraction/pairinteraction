@@ -1,4 +1,5 @@
 #include "./basis/Basis.py.hpp"
+#include "./convenience/matrix_elements.py.hpp"
 #include "./database/Database.py.hpp"
 #include "./diagonalizer/Diagonalizer.py.hpp"
 #include "./enums/OperatorType.py.hpp"
@@ -46,4 +47,7 @@ NB_MODULE(_backend, m) // NOLINT
 
     // system
     bind_system(m);
+
+    // convenience functions
+    bind_matrix_elements(m);
 }

@@ -27,7 +27,8 @@ class KetAtom : public Ket<Real> {
 public:
     KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p, size_t id,
             std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
-            Real s_exp, Real s_std, Real j_exp, Real j_std);
+            Real s_exp, Real s_std, Real j_exp, Real j_std, Database &database);
+    Database &get_database() const;
     std::string get_label() const override;
     size_t get_id() const override;
     size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;
@@ -54,6 +55,7 @@ private:
     Real quantum_number_s_std;
     Real quantum_number_j_exp;
     Real quantum_number_j_std;
+    Database &database;
 };
 
 extern template class KetAtom<float>;
