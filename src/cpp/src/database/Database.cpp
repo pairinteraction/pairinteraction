@@ -6,7 +6,6 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 #include "pairinteraction/utils/ketid.hpp"
 #include "pairinteraction/utils/paths.hpp"
@@ -870,8 +869,10 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 }
 
 template <typename Scalar>
-OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scalar>> basis,
-                                            OperatorType type, int q) {
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_basis,
+                              std::shared_ptr<const BasisAtom<Scalar>> final_basis,
+                              OperatorType type, int q) {
     std::string specifier;
     int kappa{};
     switch (type) {
@@ -903,9 +904,17 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
         throw std::runtime_error("Unknown operator type.");
     }
 
+    if (initial_basis->get_id_of_kets() != final_basis->get_id_of_kets()) {
+        throw std::runtime_error(
+            "The initial and final basis must be expressed using the same kets.");
+    }
+    std::string id_of_kets = initial_basis->get_id_of_kets();
+    std::string species = initial_basis->get_species();
+    Eigen::Index dim = initial_basis->get_number_of_kets();
+
     ensure_presence_of_table("wigner");
     if (specifier != "energy") {
-        ensure_presence_of_table(basis->get_species() + "_" + specifier);
+        ensure_presence_of_table(species + "_" + specifier);
     }
 
     // Check that the specifications are valid
@@ -950,12 +959,12 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
             w.f_initial = s1.f AND w.m_initial = s1.m AND
             w.f_final = s2.f AND w.m_final = s2.m
             ORDER BY row ASC, col ASC)",
-            basis->get_id_of_kets(), tables["wigner"].local_path.string(), kappa, q,
-            tables[basis->get_species() + "_" + specifier].local_path.string()));
+            id_of_kets, tables["wigner"].local_path.string(), kappa, q,
+            tables[species + "_" + specifier].local_path.string()));
     } else {
         result = con->Query(fmt::format(
             R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
-            basis->get_id_of_kets()));
+            id_of_kets));
     }
 
     if (result->HasError()) {
@@ -978,7 +987,6 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
     }
 
     // Construct the matrix
-    int dim = basis->get_number_of_states();
     int num_entries = static_cast<int>(result->RowCount());
 
     std::vector<int> outerIndexPtr;
@@ -997,7 +1005,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
         auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            int row = basis->get_ket_index(chunk_row[i]);
+            int row = final_basis->get_ket_index(chunk_row[i]);
             if (row != last_row) {
                 if (row < last_row) {
                     throw std::runtime_error("The rows are not sorted.");
@@ -1006,7 +1014,7 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
-            innerIndices.push_back(basis->get_ket_index(chunk_col[i]));
+            innerIndices.push_back(initial_basis->get_ket_index(chunk_col[i]));
             values.push_back(chunk_val[i]);
         }
     }
@@ -1018,12 +1026,9 @@ OperatorAtom<Scalar> Database::get_operator(std::shared_ptr<const BasisAtom<Scal
     Eigen::Map<const Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> matrix_map(
         dim, dim, num_entries, outerIndexPtr.data(), innerIndices.data(), values.data());
 
-    // Transform the matrix into the provided basis and return it
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix =
-        basis->get_coefficients().adjoint() * matrix_map * basis->get_coefficients();
-
     // Construct the operator and return it
-    return OperatorAtom(basis, std::move(matrix));
+    return final_basis->get_coefficients().adjoint() * matrix_map *
+        initial_basis->get_coefficients();
 }
 
 void Database::ensure_presence_of_table(const std::string &name) {
@@ -1169,8 +1174,9 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
     template std::shared_ptr<const BasisAtom<TYPE>> Database::get_basis<TYPE>(                     \
         std::string species, const AtomDescriptionByRanges<REAL_TYPE> &description,                \
         std::vector<size_t> additional_ket_ids);                                                   \
-    template OperatorAtom<TYPE> Database::get_operator<TYPE>(                                      \
-        std::shared_ptr<const BasisAtom<TYPE>> basis, OperatorType type, int q);
+    template Eigen::SparseMatrix<TYPE, Eigen::RowMajor> Database::get_matrix_elements<TYPE>(       \
+        std::shared_ptr<const BasisAtom<TYPE>> initial_basis,                                      \
+        std::shared_ptr<const BasisAtom<TYPE>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_GET_KET(float)

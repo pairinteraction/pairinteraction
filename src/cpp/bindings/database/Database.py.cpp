@@ -115,18 +115,22 @@ static void declare_database(nb::module_ &m) {
         .def("get_basis",
              nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &,
                                std::vector<size_t>>(&Database::get_basis<std::complex<double>>))
-        .def("get_operator",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<float>>, OperatorType, int>(
-                 &Database::get_operator<float>))
-        .def("get_operator",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(
-                 &Database::get_operator<double>))
-        .def("get_operator",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<float>>>, OperatorType,
-                               int>(&Database::get_operator<std::complex<float>>))
-        .def("get_operator",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<double>>>, OperatorType,
-                               int>(&Database::get_operator<std::complex<double>>));
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<float>>,
+                               std::shared_ptr<const BasisAtom<float>>, OperatorType, int>(
+                 &Database::get_matrix_elements<float>))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<double>>,
+                               std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(
+                 &Database::get_matrix_elements<double>))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<float>>>,
+                               std::shared_ptr<const BasisAtom<std::complex<float>>>, OperatorType,
+                               int>(&Database::get_matrix_elements<std::complex<float>>))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<double>>>,
+                               std::shared_ptr<const BasisAtom<std::complex<double>>>, OperatorType,
+                               int>(&Database::get_matrix_elements<std::complex<double>>));
 }
 
 void bind_database(nb::module_ &m) {

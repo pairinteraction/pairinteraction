@@ -32,6 +32,16 @@ void Operator<Derived>::initialize_as_energy_operator() {
 }
 
 template <typename Derived>
+void Operator<Derived>::initialize_from_matrix(
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &&matrix) {
+    if (static_cast<size_t>(matrix.rows()) != this->basis->get_number_of_states() ||
+        static_cast<size_t>(matrix.cols()) != this->basis->get_number_of_states()) {
+        throw std::invalid_argument("The matrix has the wrong dimensions.");
+    }
+    this->matrix = std::move(matrix);
+}
+
+template <typename Derived>
 const Derived &Operator<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
 }

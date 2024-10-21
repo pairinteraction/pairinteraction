@@ -159,7 +159,7 @@ int main(int argc, char **argv) {
             }
         }
         stream.close();
-        if ((overlaps - reference_overlaps).norm() > 1e-9) {
+        if (!overlaps.isApprox(reference_overlaps, 1e-9)) {
             for (Eigen::Index i = 0; i < overlaps.size(); ++i) {
                 SPDLOG_DEBUG("Overlap: {} vs {}, delta: {}", overlaps(i), reference_overlaps(i),
                              std::abs(overlaps(i) - reference_overlaps(i)));
