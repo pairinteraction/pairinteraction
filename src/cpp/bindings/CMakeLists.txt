@@ -6,6 +6,8 @@ add_library(
   bindings OBJECT
   basis/Basis.py.hpp
   basis/Basis.py.cpp
+  convenience/matrix_elements.py.hpp
+  convenience/matrix_elements.py.cpp
   database/Database.py.hpp
   database/Database.py.cpp
   diagonalizer/Diagonalizer.py.cpp
