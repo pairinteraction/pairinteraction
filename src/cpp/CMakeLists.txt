@@ -64,6 +64,7 @@ add_library(
   ./src/basis/BasisCombined.cpp
   ./src/basis/BasisCombinedCreator.cpp
   ./src/convenience/matrix_elements.cpp
+  ./src/convenience/matrix_elements.test.cpp
   ./src/database/Database.cpp
   ./src/database/Database.test.cpp
   ./src/diagonalizer/diagonalize.cpp

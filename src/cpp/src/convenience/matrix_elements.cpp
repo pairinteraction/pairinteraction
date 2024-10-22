@@ -28,22 +28,6 @@ calculate_energy(std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar
     }
 
     return std::real(system.get_matrix().coeff(state_index, state_index));
-
-    // TODO use the following code in a test case
-    // auto state = system.get_basis()->get_state_with_largest_overlap(ket);
-
-    // if (state->get_overlaps(ket).coeff(0, 0) < 0.5) {
-    //     throw std::invalid_argument("There is no eigenstate that corresponds clearly to the
-    //     ket.");
-    // }
-
-    // auto matrix_element =
-    //     ket->get_database().get_matrix_elements(state, state, OperatorType::ENERGY, 0);
-
-    // assert(matrix_element.rows() == 1);
-    // assert(matrix_element.cols() == 1);
-
-    // return std::real(matrix_element.coeff(0, 0));
 }
 
 template <typename Real>
@@ -93,8 +77,6 @@ Real calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real
 
     return calculate_electric_dipole_matrix_element(initial_ket, final_ket, system, q);
 }
-
-// TODO add test cases in cpp and python for this calculate functions
 
 // Explicit instantiation
 // TODO simplify the following code using macros
