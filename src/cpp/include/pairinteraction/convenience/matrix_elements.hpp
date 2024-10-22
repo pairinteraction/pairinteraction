@@ -28,9 +28,9 @@ Scalar calculate_electric_dipole_matrix_element(
     const SystemAtom<Scalar> &system, int q);
 
 template <typename Real>
-std::complex<Real>
-calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real>> initial_ket,
-                                         std::shared_ptr<const KetAtom<Real>> final_ket, int q);
+Real calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real>> initial_ket,
+                                              std::shared_ptr<const KetAtom<Real>> final_ket,
+                                              int q);
 
 // TODO simplify the following code using macros
 extern template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>,
@@ -62,10 +62,10 @@ extern template std::complex<double> calculate_electric_dipole_matrix_element<st
 extern template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>);
 extern template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>);
 
-extern template std::complex<float>
+extern template float
 calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
                                                 std::shared_ptr<const KetAtom<float>>, int);
-extern template std::complex<double>
+extern template double
 calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
                                                  std::shared_ptr<const KetAtom<double>>, int);
 

@@ -974,10 +974,6 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         throw std::runtime_error("Error querying the database: " + result->GetError());
     }
 
-    if (result->RowCount() == 0) {
-        throw std::runtime_error("No matrix elements founds.");
-    }
-
     // Check the types of the columns
     const auto &types = result->types;
     const auto &labels = result->names;
@@ -1008,7 +1004,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         auto *chunk_val = duckdb::FlatVector::GetData<double>(chunk->data[2]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
-            int row = final_basis->get_ket_index(chunk_row[i]);
+            int row = final_basis->get_ket_index_from_id(chunk_row[i]);
             if (row != last_row) {
                 if (row < last_row) {
                     throw std::runtime_error("The rows are not sorted.");
@@ -1017,7 +1013,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                     outerIndexPtr.push_back(static_cast<int>(innerIndices.size()));
                 }
             }
-            innerIndices.push_back(initial_basis->get_ket_index(chunk_col[i]));
+            innerIndices.push_back(initial_basis->get_ket_index_from_id(chunk_col[i]));
             values.push_back(chunk_val[i]);
         }
     }

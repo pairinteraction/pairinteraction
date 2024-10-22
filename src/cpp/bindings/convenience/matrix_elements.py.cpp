@@ -6,6 +6,8 @@
 
 #include <complex>
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/complex.h>
+#include <nanobind/stl/shared_ptr.h>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
@@ -26,14 +28,14 @@ template <typename T>
 static void declare_calculate_electric_dipole_matrix_element(nb::module_ &m) {
     using ket_ptr_t = std::shared_ptr<const KetAtom<T>>;
 
-    m.def("declare_calculate_electric_dipole_matrix_element",
+    m.def("calculate_electric_dipole_matrix_element",
           nb::overload_cast<ket_ptr_t, ket_ptr_t, const SystemAtom<T> &, int>(
               &calculate_electric_dipole_matrix_element<T>));
-    m.def("declare_calculate_electric_dipole_matrix_element",
+    m.def("calculate_electric_dipole_matrix_element",
           nb::overload_cast<ket_ptr_t, ket_ptr_t, const SystemAtom<std::complex<T>> &, int>(
               &calculate_electric_dipole_matrix_element<std::complex<T>>));
     m.def(
-        "declare_calculate_electric_dipole_matrix_element",
+        "calculate_electric_dipole_matrix_element",
         nb::overload_cast<ket_ptr_t, ket_ptr_t, int>(&calculate_electric_dipole_matrix_element<T>));
 }
 
