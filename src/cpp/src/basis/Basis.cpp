@@ -144,7 +144,7 @@ Basis<Derived>::get_coefficients() {
 }
 
 template <typename Derived>
-size_t Basis<Derived>::get_ket_index(size_t ket_id) const {
+size_t Basis<Derived>::get_ket_index_from_id(size_t ket_id) const {
     return ket_id_to_ket_index.at(ket_id);
 }
 
@@ -155,7 +155,7 @@ Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
     // The following line is a more efficient alternative to
-    // "get_amplitudes(get_state_from_ket(ket))"
+    // "get_amplitudes(get_canonical_state_from_ket(ket))"
     return coefficients.matrix.row(ket_id_to_ket_index.at(ket->get_id()));
 }
 
@@ -220,7 +220,7 @@ Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
-    int state_index = ket_index_to_state_index.at(ket_index);
+    size_t state_index = ket_index_to_state_index.at(ket_index);
     if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
     }
@@ -260,7 +260,35 @@ Basis<Derived>::get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket)
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::get_state_from_ket(size_t ket_index) const {
+size_t Basis<Derived>::get_state_index_with_largest_overlap(size_t ket_index) const {
+    int state_index = ket_index_to_state_index.at(ket_index);
+    if (state_index == std::numeric_limits<int>::max()) {
+        throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
+    }
+    return state_index;
+}
+
+template <typename Derived>
+size_t
+Basis<Derived>::get_state_index_with_largest_overlap(std::shared_ptr<const ket_t> ket) const {
+    if (!has_ket_index(ket->get_id())) {
+        throw std::invalid_argument("The ket does not belong to the basis.");
+    }
+    return get_state_index_with_largest_overlap(ket_id_to_ket_index.at(ket->get_id()));
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_ket_index_with_largest_overlap(size_t state_index) const {
+    int ket_index = state_index_to_ket_index.at(state_index);
+    if (ket_index == std::numeric_limits<int>::max()) {
+        throw std::runtime_error("The state does not belong to a ket in a well-defined way.");
+    }
+    return ket_index;
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived>
+Basis<Derived>::get_canonical_state_from_ket(size_t ket_index) const {
     // Create a copy of the current object
     auto created = std::make_shared<Derived>(derived());
 
@@ -292,11 +320,11 @@ std::shared_ptr<const Derived> Basis<Derived>::get_state_from_ket(size_t ket_ind
 
 template <typename Derived>
 std::shared_ptr<const Derived>
-Basis<Derived>::get_state_from_ket(std::shared_ptr<const ket_t> ket) const {
+Basis<Derived>::get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const {
     if (!has_ket_index(ket->get_id())) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_state_from_ket(ket_id_to_ket_index.at(ket->get_id()));
+    return get_canonical_state_from_ket(ket_id_to_ket_index.at(ket->get_id()));
 }
 
 template <typename Derived>
@@ -669,11 +697,9 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
 
     {
         transformed->state_index_to_ket_index.resize(transformed->coefficients.matrix.cols());
-        transformed->ket_index_to_state_index.resize(transformed->coefficients.matrix.rows());
         std::fill(transformed->state_index_to_ket_index.begin(),
                   transformed->state_index_to_ket_index.end(), std::numeric_limits<int>::max());
-        std::fill(transformed->ket_index_to_state_index.begin(),
-                  transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
+
         std::vector<real_t> map_idx_to_max(transformed->coefficients.matrix.cols(), 0);
         for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
             for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
@@ -682,8 +708,17 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
                 if (std::abs(it.value()) > map_idx_to_max[it.col()]) {
                     map_idx_to_max[it.col()] = std::abs(it.value());
                     transformed->state_index_to_ket_index[it.col()] = row;
-                    transformed->ket_index_to_state_index[row] = it.col();
                 }
+            }
+        }
+
+        transformed->ket_index_to_state_index.resize(transformed->coefficients.matrix.rows());
+        std::fill(transformed->ket_index_to_state_index.begin(),
+                  transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
+
+        for (size_t i = 0; i < transformed->state_index_to_ket_index.size(); ++i) {
+            if (transformed->state_index_to_ket_index[i] != std::numeric_limits<int>::max()) {
+                transformed->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
             }
         }
 

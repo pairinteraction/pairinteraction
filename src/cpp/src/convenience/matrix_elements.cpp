@@ -17,18 +17,33 @@ template <typename Scalar>
 typename traits::NumTraits<Scalar>::real_t
 calculate_energy(std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar>::real_t>> ket,
                  const SystemAtom<Scalar> &system) {
+    if (!system.is_diagonal()) {
+        throw std::invalid_argument("The system must be diagonalized.");
+    }
 
-    auto state = system.get_basis()->get_state_with_largest_overlap(ket);
+    size_t state_index = system.get_basis()->get_state_index_with_largest_overlap(ket);
 
-    // TODO throw an exception if ket has a small overlap with the state
+    if (system.get_basis()->get_overlaps(ket).coeff(0, state_index) < 0.5) {
+        throw std::invalid_argument("There is no eigenstate that corresponds clearly to the ket.");
+    }
 
-    auto matrix_element =
-        ket->get_database().get_matrix_elements(state, state, OperatorType::ENERGY, 0);
+    return std::real(system.get_matrix().coeff(state_index, state_index));
 
-    assert(matrix_element.rows() == 1);
-    assert(matrix_element.cols() == 1);
+    // TODO use the following code in a test case
+    // auto state = system.get_basis()->get_state_with_largest_overlap(ket);
 
-    return std::real(matrix_element.coeff(0, 0));
+    // if (state->get_overlaps(ket).coeff(0, 0) < 0.5) {
+    //     throw std::invalid_argument("There is no eigenstate that corresponds clearly to the
+    //     ket.");
+    // }
+
+    // auto matrix_element =
+    //     ket->get_database().get_matrix_elements(state, state, OperatorType::ENERGY, 0);
+
+    // assert(matrix_element.rows() == 1);
+    // assert(matrix_element.cols() == 1);
+
+    // return std::real(matrix_element.coeff(0, 0));
 }
 
 template <typename Real>
@@ -41,10 +56,21 @@ Scalar calculate_electric_dipole_matrix_element(
     std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar>::real_t>> initial_ket,
     std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar>::real_t>> final_ket,
     const SystemAtom<Scalar> &system, int q) {
+    if (!system.is_diagonal()) {
+        throw std::invalid_argument("The system must be diagonalized.");
+    }
+
     auto initial_state = system.get_basis()->get_state_with_largest_overlap(initial_ket);
     auto final_state = system.get_basis()->get_state_with_largest_overlap(final_ket);
 
-    // TODO throw an exception if a ket has a small overlap with a state
+    if (initial_state->get_overlaps(initial_ket).coeff(0, 0) < 0.5) {
+        throw std::invalid_argument(
+            "There is no eigenstate that corresponds clearly to the initial ket.");
+    }
+    if (final_state->get_overlaps(final_ket).coeff(0, 0) < 0.5) {
+        throw std::invalid_argument(
+            "There is no eigenstate that corresponds clearly to the final ket.");
+    }
 
     auto matrix_element = initial_ket->get_database().get_matrix_elements(
         initial_state, final_state, OperatorType::ELECTRIC_DIPOLE, q);
@@ -56,9 +82,9 @@ Scalar calculate_electric_dipole_matrix_element(
 }
 
 template <typename Real>
-std::complex<Real>
-calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real>> initial_ket,
-                                         std::shared_ptr<const KetAtom<Real>> final_ket, int q) {
+Real calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real>> initial_ket,
+                                              std::shared_ptr<const KetAtom<Real>> final_ket,
+                                              int q) {
     auto basis = BasisAtomCreator<Real>()
                      .append_ket(initial_ket)
                      .append_ket(final_ket)
@@ -99,10 +125,10 @@ template std::complex<double> calculate_electric_dipole_matrix_element<std::comp
 template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>);
 template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>);
 
-template std::complex<float>
+template float
 calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
                                                 std::shared_ptr<const KetAtom<float>>, int);
-template std::complex<double>
+template double
 calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
                                                  std::shared_ptr<const KetAtom<double>>, int);
 

@@ -110,7 +110,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                     if (!basis->has_ket_index(row_ket_id)) {
                         continue;
                     }
-                    Eigen::Index row = basis->get_ket_index(row_ket_id);
+                    Eigen::Index row = basis->get_ket_index_from_id(row_ket_id);
 
                     // Loop over the non-zero column elements of the first matrix
                     for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
@@ -149,7 +149,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                                 break;
                             }
                             Scalar value2 = matrix2.valuePtr()[idxptr2];
-                            Eigen::Index col = basis->get_ket_index(col_ket_id);
+                            Eigen::Index col = basis->get_ket_index_from_id(col_ket_id);
 
                             // Store the entry
                             Scalar value = value1 * value2;

@@ -62,12 +62,13 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
         .def("get_state_with_largest_overlap",
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
                  &Basis<T>::get_state_with_largest_overlap, nb::const_))
-        .def("get_state_from_ket",
-             nb::overload_cast<size_t>(&Basis<T>::get_state_from_ket, nb::const_))
-        .def("get_state_from_ket",
+        .def("get_state_index_with_largest_overlap",
+             nb::overload_cast<size_t>(&Basis<T>::get_state_index_with_largest_overlap, nb::const_))
+        .def("get_state_index_with_largest_overlap",
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
-                 &Basis<T>::get_state_from_ket, nb::const_))
-        .def("get_ket_with_largest_overlap", &Basis<T>::get_ket_with_largest_overlap);
+                 &Basis<T>::get_state_index_with_largest_overlap, nb::const_))
+        .def("get_ket_with_largest_overlap", &Basis<T>::get_ket_with_largest_overlap)
+        .def("get_ket_index_with_largest_overlap", &Basis<T>::get_ket_index_with_largest_overlap);
 }
 
 template <typename T>

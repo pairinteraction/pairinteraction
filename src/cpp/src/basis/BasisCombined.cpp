@@ -42,7 +42,8 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket
     if (!basis1->has_ket_index(ket1->get_id()) || !basis2->has_ket_index(ket2->get_id())) {
         throw std::invalid_argument("The kets do not belong to the basis.");
     }
-    return get_amplitudes(basis1->get_state_from_ket(ket1), basis2->get_state_from_ket(ket2));
+    return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
+                          basis2->get_canonical_state_from_ket(ket2));
 }
 
 template <typename Scalar>
@@ -80,7 +81,7 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
                     if (!this->has_ket_index(row_ket_id)) {
                         continue;
                     }
-                    Eigen::Index row = this->get_ket_index(row_ket_id);
+                    Eigen::Index row = this->get_ket_index_from_id(row_ket_id);
 
                     // Loop over the non-zero column elements of the first coefficient matrix
                     for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
