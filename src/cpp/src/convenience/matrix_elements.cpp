@@ -78,40 +78,28 @@ Real calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real
     return calculate_electric_dipole_matrix_element(initial_ket, final_ket, system, q);
 }
 
-// Explicit instantiation
-// TODO simplify the following code using macros
-template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>,
-                                       const SystemAtom<float> &);
-template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>,
-                                         const SystemAtom<double> &);
-template float calculate_energy<std::complex<float>>(std::shared_ptr<const KetAtom<float>>,
-                                                     const SystemAtom<std::complex<float>> &);
-template double calculate_energy<std::complex<double>>(std::shared_ptr<const KetAtom<double>>,
-                                                       const SystemAtom<std::complex<double>> &);
+// Explicit instantiations
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+#define INSTANTIATE_CALCULATE_FUNCTIONS_REAL(REAL)                                                 \
+    template REAL calculate_energy<REAL>(std::shared_ptr<const KetAtom<REAL>>);                    \
+    template REAL calculate_electric_dipole_matrix_element<REAL>(                                  \
+        std::shared_ptr<const KetAtom<REAL>>, std::shared_ptr<const KetAtom<REAL>>, int);
+#define INSTANTIATE_CALCULATE_FUNCTIONS(SCALAR, REAL)                                              \
+    template REAL calculate_energy<SCALAR>(std::shared_ptr<const KetAtom<REAL>>,                   \
+                                           const SystemAtom<SCALAR> &);                            \
+    template SCALAR calculate_electric_dipole_matrix_element<SCALAR>(                              \
+        std::shared_ptr<const KetAtom<REAL>>, std::shared_ptr<const KetAtom<REAL>>,                \
+        const SystemAtom<SCALAR> &, int);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-template float
-calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
-                                                std::shared_ptr<const KetAtom<float>>,
-                                                const SystemAtom<float> &, int);
-template double
-calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
-                                                 std::shared_ptr<const KetAtom<double>>,
-                                                 const SystemAtom<double> &, int);
-template std::complex<float> calculate_electric_dipole_matrix_element<std::complex<float>>(
-    std::shared_ptr<const KetAtom<float>>, std::shared_ptr<const KetAtom<float>>,
-    const SystemAtom<std::complex<float>> &, int);
-template std::complex<double> calculate_electric_dipole_matrix_element<std::complex<double>>(
-    std::shared_ptr<const KetAtom<double>>, std::shared_ptr<const KetAtom<double>>,
-    const SystemAtom<std::complex<double>> &, int);
+INSTANTIATE_CALCULATE_FUNCTIONS_REAL(float)
+INSTANTIATE_CALCULATE_FUNCTIONS_REAL(double)
 
-template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>);
-template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>);
+INSTANTIATE_CALCULATE_FUNCTIONS(float, float)
+INSTANTIATE_CALCULATE_FUNCTIONS(double, double)
+INSTANTIATE_CALCULATE_FUNCTIONS(std::complex<float>, float)
+INSTANTIATE_CALCULATE_FUNCTIONS(std::complex<double>, double)
 
-template float
-calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
-                                                std::shared_ptr<const KetAtom<float>>, int);
-template double
-calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
-                                                 std::shared_ptr<const KetAtom<double>>, int);
-
+#undef INSTANTIATE_CALCULATE_FUNCTIONS_REAL
+#undef INSTANTIATE_CALCULATE_FUNCTIONS
 } // namespace pairinteraction
