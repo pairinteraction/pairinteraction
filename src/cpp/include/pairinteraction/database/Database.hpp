@@ -115,40 +115,30 @@ private:
     void ensure_quantum_number_n_is_allowed(const std::string &name);
 };
 
-extern template std::shared_ptr<const KetAtom<float>>
-Database::get_ket<float>(std::string species,
-                         const AtomDescriptionByParameters<float> &description);
-extern template std::shared_ptr<const KetAtom<double>>
-Database::get_ket<double>(std::string species,
-                          const AtomDescriptionByParameters<double> &description);
-extern template std::shared_ptr<const BasisAtom<float>>
-Database::get_basis<float>(std::string species, const AtomDescriptionByRanges<float> &description,
-                           std::vector<size_t> additional_ket_ids);
-extern template std::shared_ptr<const BasisAtom<double>>
-Database::get_basis<double>(std::string species, const AtomDescriptionByRanges<double> &description,
-                            std::vector<size_t> additional_ket_ids);
-extern template std::shared_ptr<const BasisAtom<std::complex<float>>>
-Database::get_basis<std::complex<float>>(std::string species,
-                                         const AtomDescriptionByRanges<float> &description,
-                                         std::vector<size_t> additional_ket_ids);
-extern template std::shared_ptr<const BasisAtom<std::complex<double>>>
-Database::get_basis<std::complex<double>>(std::string species,
-                                          const AtomDescriptionByRanges<double> &description,
-                                          std::vector<size_t> additional_ket_ids);
-extern template Eigen::SparseMatrix<float, Eigen::RowMajor>
-Database::get_matrix_elements<float>(std::shared_ptr<const BasisAtom<float>> initial_basis,
-                                     std::shared_ptr<const BasisAtom<float>> final_basis,
-                                     OperatorType type, int q);
-extern template Eigen::SparseMatrix<double, Eigen::RowMajor>
-Database::get_matrix_elements<double>(std::shared_ptr<const BasisAtom<double>> initial_basis,
-                                      std::shared_ptr<const BasisAtom<double>> final_basis,
-                                      OperatorType type, int q);
-extern template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
-Database::get_matrix_elements<std::complex<float>>(
-    std::shared_ptr<const BasisAtom<std::complex<float>>> initial_basis,
-    std::shared_ptr<const BasisAtom<std::complex<float>>> final_basis, OperatorType type, int q);
-extern template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
-Database::get_matrix_elements<std::complex<double>>(
-    std::shared_ptr<const BasisAtom<std::complex<double>>> initial_basis,
-    std::shared_ptr<const BasisAtom<std::complex<double>>> final_basis, OperatorType type, int q);
+// Extern template declarations
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+#define EXTERN_GETTERS_REAL(REAL)                                                                  \
+    extern template std::shared_ptr<const KetAtom<REAL>> Database::get_ket<REAL>(                  \
+        std::string species, const AtomDescriptionByParameters<REAL> &description);
+
+#define EXTERN_GETTERS(SCALAR, REAL)                                                               \
+    extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(          \
+        std::string species, const AtomDescriptionByRanges<REAL> &description,                     \
+        std::vector<size_t> additional_ket_ids);                                                   \
+    extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
+    Database::get_matrix_elements<SCALAR>(std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,  \
+                                          std::shared_ptr<const BasisAtom<SCALAR>> final_basis,    \
+                                          OperatorType type, int q);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+
+EXTERN_GETTERS_REAL(float)
+EXTERN_GETTERS_REAL(double)
+
+EXTERN_GETTERS(float, float)
+EXTERN_GETTERS(double, double)
+EXTERN_GETTERS(std::complex<float>, float)
+EXTERN_GETTERS(std::complex<double>, double)
+
+#undef EXTERN_GETTERS_REAL
+#undef EXTERN_GETTERS
 } // namespace pairinteraction

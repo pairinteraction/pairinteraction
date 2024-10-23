@@ -32,41 +32,29 @@ Real calculate_electric_dipole_matrix_element(std::shared_ptr<const KetAtom<Real
                                               std::shared_ptr<const KetAtom<Real>> final_ket,
                                               int q);
 
-// TODO simplify the following code using macros
-extern template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>,
-                                              const SystemAtom<float> &);
-extern template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>,
-                                                const SystemAtom<double> &);
-extern template float
-calculate_energy<std::complex<float>>(std::shared_ptr<const KetAtom<float>>,
-                                      const SystemAtom<std::complex<float>> &);
-extern template double
-calculate_energy<std::complex<double>>(std::shared_ptr<const KetAtom<double>>,
-                                       const SystemAtom<std::complex<double>> &);
+// Extern template declarations
+// NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
+#define EXTERN_CALCULATE_FUNCTIONS_REAL(REAL)                                                      \
+    extern template REAL calculate_energy<REAL>(std::shared_ptr<const KetAtom<REAL>>);             \
+    extern template REAL calculate_electric_dipole_matrix_element<REAL>(                           \
+        std::shared_ptr<const KetAtom<REAL>>, std::shared_ptr<const KetAtom<REAL>>, int);
 
-extern template float
-calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
-                                                std::shared_ptr<const KetAtom<float>>,
-                                                const SystemAtom<float> &, int);
-extern template double
-calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
-                                                 std::shared_ptr<const KetAtom<double>>,
-                                                 const SystemAtom<double> &, int);
-extern template std::complex<float> calculate_electric_dipole_matrix_element<std::complex<float>>(
-    std::shared_ptr<const KetAtom<float>>, std::shared_ptr<const KetAtom<float>>,
-    const SystemAtom<std::complex<float>> &, int);
-extern template std::complex<double> calculate_electric_dipole_matrix_element<std::complex<double>>(
-    std::shared_ptr<const KetAtom<double>>, std::shared_ptr<const KetAtom<double>>,
-    const SystemAtom<std::complex<double>> &, int);
+#define EXTERN_CALCULATE_FUNCTIONS(SCALAR, REAL)                                                   \
+    extern template REAL calculate_energy<SCALAR>(std::shared_ptr<const KetAtom<REAL>>,            \
+                                                  const SystemAtom<SCALAR> &);                     \
+    extern template SCALAR calculate_electric_dipole_matrix_element<SCALAR>(                       \
+        std::shared_ptr<const KetAtom<REAL>>, std::shared_ptr<const KetAtom<REAL>>,                \
+        const SystemAtom<SCALAR> &, int);
+// NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-extern template float calculate_energy<float>(std::shared_ptr<const KetAtom<float>>);
-extern template double calculate_energy<double>(std::shared_ptr<const KetAtom<double>>);
+EXTERN_CALCULATE_FUNCTIONS_REAL(float)
+EXTERN_CALCULATE_FUNCTIONS_REAL(double)
 
-extern template float
-calculate_electric_dipole_matrix_element<float>(std::shared_ptr<const KetAtom<float>>,
-                                                std::shared_ptr<const KetAtom<float>>, int);
-extern template double
-calculate_electric_dipole_matrix_element<double>(std::shared_ptr<const KetAtom<double>>,
-                                                 std::shared_ptr<const KetAtom<double>>, int);
+EXTERN_CALCULATE_FUNCTIONS(float, float)
+EXTERN_CALCULATE_FUNCTIONS(double, double)
+EXTERN_CALCULATE_FUNCTIONS(std::complex<float>, float)
+EXTERN_CALCULATE_FUNCTIONS(std::complex<double>, double)
 
+#undef EXTERN_CALCULATE_FUNCTIONS_REAL
+#undef EXTERN_CALCULATE_FUNCTIONS
 } // namespace pairinteraction

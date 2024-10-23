@@ -1182,26 +1182,27 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
-#define INSTANTIATE_GET_KET(TYPE)                                                                  \
-    template std::shared_ptr<const KetAtom<TYPE>> Database::get_ket<TYPE>(                         \
-        std::string species, const AtomDescriptionByParameters<TYPE> &description);
+#define INSTANTIATE_GETTERS_REAL(REAL)                                                             \
+    template std::shared_ptr<const KetAtom<REAL>> Database::get_ket<REAL>(                         \
+        std::string species, const AtomDescriptionByParameters<REAL> &description);
 
-#define INSTANTIATE_GET_BASIS_AND_OPERATOR(TYPE, REAL_TYPE)                                        \
-    template std::shared_ptr<const BasisAtom<TYPE>> Database::get_basis<TYPE>(                     \
-        std::string species, const AtomDescriptionByRanges<REAL_TYPE> &description,                \
+#define INSTANTIATE_GETTERS(SCALAR, REAL)                                                          \
+    template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
+        std::string species, const AtomDescriptionByRanges<REAL> &description,                     \
         std::vector<size_t> additional_ket_ids);                                                   \
-    template Eigen::SparseMatrix<TYPE, Eigen::RowMajor> Database::get_matrix_elements<TYPE>(       \
-        std::shared_ptr<const BasisAtom<TYPE>> initial_basis,                                      \
-        std::shared_ptr<const BasisAtom<TYPE>> final_basis, OperatorType type, int q);
+    template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor> Database::get_matrix_elements<SCALAR>(   \
+        std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
+        std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_GET_KET(float)
-INSTANTIATE_GET_KET(double)
-INSTANTIATE_GET_BASIS_AND_OPERATOR(float, float)
-INSTANTIATE_GET_BASIS_AND_OPERATOR(double, double)
-INSTANTIATE_GET_BASIS_AND_OPERATOR(std::complex<float>, float)
-INSTANTIATE_GET_BASIS_AND_OPERATOR(std::complex<double>, double)
+INSTANTIATE_GETTERS_REAL(float)
+INSTANTIATE_GETTERS_REAL(double)
 
-#undef INSTANTIATE_GET_KET
-#undef INSTANTIATE_GET_BASIS_AND_OPERATOR
+INSTANTIATE_GETTERS(float, float)
+INSTANTIATE_GETTERS(double, double)
+INSTANTIATE_GETTERS(std::complex<float>, float)
+INSTANTIATE_GETTERS(std::complex<double>, double)
+
+#undef INSTANTIATE_GETTERS_REAL
+#undef INSTANTIATE_GETTERS
 } // namespace pairinteraction
