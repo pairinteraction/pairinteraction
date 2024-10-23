@@ -85,3 +85,5 @@ nanobind_add_stub(
 )
 # cmake-format: on
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION pairinteraction/backend)
+# install the .pyi file also to the python src dir to make static type checking possible with pip editable installs
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION ${CMAKE_SOURCE_DIR}/src/pairinteraction/backend)
