@@ -149,13 +149,13 @@ size_t Basis<Derived>::get_ket_index_from_id(size_t ket_id) const {
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor>
+Eigen::VectorX<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
     if (!has_ket_index(ket->get_id())) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
     // The following line is a more efficient alternative to
-    // "get_amplitudes(get_canonical_state_from_ket(ket))"
+    // "get_amplitudes(get_canonical_state_from_ket(ket)).transpose()"
     return coefficients.matrix.row(ket_id_to_ket_index.at(ket->get_id()));
 }
 
@@ -169,7 +169,7 @@ Basis<Derived>::get_amplitudes(std::shared_ptr<const Derived> other) const {
 }
 
 template <typename Derived>
-Eigen::SparseMatrix<typename Basis<Derived>::real_t, Eigen::RowMajor>
+Eigen::VectorX<typename Basis<Derived>::real_t>
 Basis<Derived>::get_overlaps(std::shared_ptr<const ket_t> ket) const {
     return get_amplitudes(ket).cwiseAbs2();
 }

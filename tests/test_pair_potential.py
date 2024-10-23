@@ -80,7 +80,7 @@ def test_pair_potential(
     ]
 
     # Get the overlap with |ket, ket>
-    overlaps = [system.get_eigenbasis().get_overlaps(ket, ket).todense().A1 for system in combined_systems]
+    overlaps = [system.get_eigenbasis().get_overlaps(ket, ket) for system in combined_systems]
 
     # Ensure that the overlaps sum up to one
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))

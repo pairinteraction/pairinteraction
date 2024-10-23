@@ -103,6 +103,10 @@ private:
     static constexpr bool default_wigner_in_memory{true};
     static const std::filesystem::path default_database_dir;
 
+    template <typename Real>
+    std::unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
+    get_matrix_elements_cache();
+
     static Database &get_global_instance_without_checks(bool download_missing,
                                                         bool wigner_in_memory,
                                                         std::filesystem::path database_dir);
