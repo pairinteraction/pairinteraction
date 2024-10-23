@@ -36,14 +36,15 @@ std::shared_ptr<const BasisAtom<Scalar>> BasisCombined<Scalar>::get_basis2() con
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+Eigen::VectorX<Scalar>
 BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
                                       std::shared_ptr<const KetAtom<real_t>> ket2) const {
     if (!basis1->has_ket_index(ket1->get_id()) || !basis2->has_ket_index(ket2->get_id())) {
         throw std::invalid_argument("The kets do not belong to the basis.");
     }
     return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
-                          basis2->get_canonical_state_from_ket(ket2));
+                          basis2->get_canonical_state_from_ket(ket2))
+        .transpose();
 }
 
 template <typename Scalar>
@@ -122,7 +123,7 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<typename BasisCombined<Scalar>::real_t, Eigen::RowMajor>
+Eigen::VectorX<typename BasisCombined<Scalar>::real_t>
 BasisCombined<Scalar>::get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
                                     std::shared_ptr<const KetAtom<real_t>> ket2) const {
     return get_amplitudes(ket1, ket2).cwiseAbs2();

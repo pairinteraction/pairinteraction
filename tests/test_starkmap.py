@@ -58,7 +58,7 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
 
     # Get the overlap with |ket>
-    overlaps = [system.get_eigenbasis().get_overlaps(ket).todense().A1 for system in systems]
+    overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in systems]
 
     # Ensure that the overlaps sum up to one
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(11))

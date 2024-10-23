@@ -2,8 +2,12 @@
 
 #include "pairinteraction/basis/Basis.hpp"
 #include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/eigen_assertion.hpp"
+#include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <Eigen/Dense>
+#include <Eigen/SparseCore>
 #include <complex>
 #include <memory>
 #include <unordered_map>
@@ -56,15 +60,13 @@ public:
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
 
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
-                   std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
+                                          std::shared_ptr<const KetAtom<real_t>> ket2) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other1,
                    std::shared_ptr<const BasisAtom<Scalar>> other2) const;
-    Eigen::SparseMatrix<real_t, Eigen::RowMajor>
-    get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
-                 std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
+                                        std::shared_ptr<const KetAtom<real_t>> ket2) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
     get_overlaps(std::shared_ptr<const BasisAtom<Scalar>> other1,
                  std::shared_ptr<const BasisAtom<Scalar>> other2) const;
