@@ -59,7 +59,10 @@ private:
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_dipole{3, 3};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_quadrupole{3, 5};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_dipole{5, 3};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_quadrupole{5, 5};
 };
 
 extern template class SystemCombined<float>;

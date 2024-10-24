@@ -13,7 +13,7 @@ DOCTEST_TEST_CASE("convert cartesian to spherical basis") {
 
         auto identity =
             spherical::CARTESIAN_TO_SPHERICAL1 * spherical::CARTESIAN_TO_SPHERICAL1.adjoint();
-        DOCTEST_CHECK(identity.isApprox(Eigen::Matrix<double, 3, 3>::Identity(), 1e-9));
+        DOCTEST_CHECK(identity.isApprox(Eigen::Matrix3<double>::Identity(), 1e-9));
     }
 
     DOCTEST_SUBCASE("kappa == 2") {
