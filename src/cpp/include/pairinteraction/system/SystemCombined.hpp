@@ -3,6 +3,7 @@
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <array>
 #include <memory>
 #include <vector>
 
@@ -49,6 +50,7 @@ public:
     SystemCombined(std::shared_ptr<const basis_t> basis);
 
     Type &set_distance(real_t distance);
+    Type &set_distance_vector(const std::array<real_t, 3> &vector);
 
 private:
     void construct_hamiltonian() const override;
@@ -57,7 +59,7 @@ private:
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
-    real_t distance{0};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole;
 };
 
 extern template class SystemCombined<float>;

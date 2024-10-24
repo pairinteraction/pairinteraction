@@ -95,6 +95,8 @@ add_library(
   ./src/tools/setup.cpp
   ./src/tools/test.cpp
   ./src/utils/euler.test.cpp
+  ./src/utils/spherical.cpp
+  ./src/utils/spherical.test.cpp
   ./src/utils/wigner.test.cpp)
 
 target_link_libraries(

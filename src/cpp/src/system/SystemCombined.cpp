@@ -16,6 +16,7 @@
 
 #include <Eigen/SparseCore>
 #include <algorithm>
+#include <array>
 #include <complex>
 #include <limits>
 #include <memory>
@@ -29,8 +30,21 @@ SystemCombined<Scalar>::SystemCombined(std::shared_ptr<const basis_t> basis)
 
 template <typename Scalar>
 SystemCombined<Scalar> &SystemCombined<Scalar>::set_distance(real_t distance) {
-    this->distance = distance;
+    return set_distance_vector({0, 0, distance});
+}
+
+template <typename Scalar>
+SystemCombined<Scalar> &
+SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     this->hamiltonian_requires_construction = true;
+
+    // https://doi.org/10.1103/PhysRevA.96.062509
+    // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
+
+    // Dyadic green function of dipole-dipole interaction
+    Eigen::MatrixX<Scalar> green_function_dipole_cartesian(3, 3);
+    green_function_dipole_cartesian << 1, 0, 0, 0, 1, 0, 0, 0, 1;
+
     return *this;
 }
 
@@ -48,28 +62,29 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
     bool sort_by_parity = basis->has_parity();
 
     // Dipole-dipole interaction along the z-axis
-    if (distance != 0) {
+    // if (distance != 0) {
 
-        auto d1_plus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1);
-        auto d1_minus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1);
-        auto d1_zero = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 0);
-        auto d2_plus = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 1);
-        auto d2_minus = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, -1);
-        auto d2_zero = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 0);
+    //     auto d1_plus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 1);
+    //     auto d1_minus = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, -1);
+    //     auto d1_zero = OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_DIPOLE, 0);
+    //     auto d2_plus = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 1);
+    //     auto d2_minus = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, -1);
+    //     auto d2_zero = OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_DIPOLE, 0);
 
-        auto matrix_zero_zero =
-            calculate_tensor_product(basis, d1_zero.get_matrix(), d2_zero.get_matrix());
-        auto matrix_plus_minus =
-            calculate_tensor_product(basis, d1_plus.get_matrix(), d2_minus.get_matrix());
-        auto matrix_minus_plus =
-            calculate_tensor_product(basis, d1_minus.get_matrix(), d2_plus.get_matrix());
+    //     auto matrix_zero_zero =
+    //         calculate_tensor_product(basis, d1_zero.get_matrix(), d2_zero.get_matrix());
+    //     auto matrix_plus_minus =
+    //         calculate_tensor_product(basis, d1_plus.get_matrix(), d2_minus.get_matrix());
+    //     auto matrix_minus_plus =
+    //         calculate_tensor_product(basis, d1_minus.get_matrix(), d2_plus.get_matrix());
 
-        this->hamiltonian->get_matrix() +=
-            (-2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus) / std::pow(distance, 3);
-        this->hamiltonian_is_diagonal = false;
-        sort_by_quantum_number_f = false;
-        sort_by_parity = false;
-    }
+    //     this->hamiltonian->get_matrix() +=
+    //         (-2 * matrix_zero_zero - matrix_plus_minus - matrix_minus_plus) / std::pow(distance,
+    //         3);
+    //     this->hamiltonian_is_diagonal = false;
+    //     sort_by_quantum_number_f = false;
+    //     sort_by_parity = false;
+    // }
 
     // Store which labels can be used to block-diagonalize the Hamiltonian
     this->blockdiagonalizing_labels.clear();
