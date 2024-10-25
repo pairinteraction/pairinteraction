@@ -49,7 +49,8 @@ public:
 
     SystemCombined(std::shared_ptr<const basis_t> basis);
 
-    Type &set_distance(real_t distance);
+    Type &set_order(int value);
+    Type &set_distance(real_t value);
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
 
 private:
@@ -59,10 +60,11 @@ private:
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
+    int order{3};
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_dipole{3, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_quadrupole{3, 5};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_dipole{5, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_quadrupole{5, 5};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_quadrupole{3, 6};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_dipole{6, 3};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_quadrupole{6, 6};
 };
 
 extern template class SystemCombined<float>;

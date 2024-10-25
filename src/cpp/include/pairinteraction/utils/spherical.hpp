@@ -15,7 +15,7 @@ using namespace std::complex_literals;
 namespace pairinteraction::spherical {
 
 extern const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL1;
-extern const Eigen::Matrix<std::complex<double>, 5, 9> CARTESIAN_TO_SPHERICAL2;
+extern const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL2;
 
 template <typename Scalar>
 inline std::array<Scalar, 3>

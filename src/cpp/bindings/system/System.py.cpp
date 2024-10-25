@@ -65,7 +65,9 @@ static void declare_system_combined(nb::module_ &m, std::string const &type_name
     using basis_t = typename SystemCombined<T>::basis_t;
     nb::class_<SystemCombined<T>, System<SystemCombined<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("set_distance", &SystemCombined<T>::set_distance);
+        .def("set_order", &SystemCombined<T>::set_order)
+        .def("set_distance", &SystemCombined<T>::set_distance)
+        .def("set_distance_vector", &SystemCombined<T>::set_distance_vector);
 }
 
 void bind_system(nb::module_ &m) {
