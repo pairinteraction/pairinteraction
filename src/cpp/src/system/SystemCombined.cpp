@@ -51,9 +51,9 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
-    auto to_spherical1 =
+    const auto &to_spherical1 =
         pairinteraction::spherical::CARTESIAN_TO_SPHERICAL1.template cast<std::complex<real_t>>();
-    auto to_spherical2 =
+    const auto &to_spherical2 =
         pairinteraction::spherical::CARTESIAN_TO_SPHERICAL2.template cast<std::complex<real_t>>();
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(vector.data(), vector.size());
     real_t distance = vector_map.norm();

@@ -23,7 +23,7 @@ convert_to_spherical_basis(const std::array<typename traits::NumTraits<Scalar>::
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
-    std::array<Scalar, 3> field_spherical;
+    std::array<Scalar, 3> field_spherical{};
     if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
         Eigen::Map<Eigen::Vector3<Scalar>>(field_spherical.data(), field_spherical.size()) =
             CARTESIAN_TO_SPHERICAL1.template cast<Scalar>() *
