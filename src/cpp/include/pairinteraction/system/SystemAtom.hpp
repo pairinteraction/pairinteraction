@@ -46,8 +46,8 @@ public:
     Type &enable_diamagnetism(bool enable);
 
 private:
-    std::array<Scalar, 3> electric_field_spherical{0, 0, 0};
-    std::array<Scalar, 3> magnetic_field_spherical{0, 0, 0};
+    std::array<Scalar, 3> electric_field_spherical{};
+    std::array<Scalar, 3> magnetic_field_spherical{};
     bool diamagnetism_enabled{false};
 
     void construct_hamiltonian() const override;
