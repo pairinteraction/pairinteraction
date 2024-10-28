@@ -11,6 +11,7 @@ RUN apt-get update \
     lcov \
     doxygen libgraphviz-dev pandoc \
     curl ca-certificates \
+    libgl1 \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 

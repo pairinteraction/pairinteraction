@@ -9,6 +9,7 @@ RUN apt-get update -qq \
     python3 python3-dev \
     doxygen libgraphviz-dev pandoc \
     curl ca-certificates \
+    libgl1 \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh

@@ -10,6 +10,7 @@ RUN yum install -y epel-release \
     spdlog-devel \
     cpp-httplib-devel \
     graphviz-devel \
+    libglvnd \
     && yum clean all
 
 ENV PATH=/opt/python/cp39-cp39/bin/:$PATH
