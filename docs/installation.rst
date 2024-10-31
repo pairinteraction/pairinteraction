@@ -6,23 +6,26 @@ Installation
 This guide provides installation instructions for the `pairinteraction` software, catering to users of all levels.
 It offers three different installation methods:
 
-- `Using Pip`_: Ideal for most users, this method employs `pip`_ for straightforward installation from the
-  Python Package Index, providing access to the software's Python library and graphical interface.
+- `Installing from Python Package Index`_: Ideal for most users, this method employs `pip`_ for straightforward automatic installation from the
+  `Python Package Index`_, providing access to the software's Python library and graphical interface.
 
-- `Binary Installers`_: If you are mainly interested in the graphical interface, you can download
+- `Binary Installers`_: If you are only interested in the graphical interface, you can download
   an installer for pairinteraction (Windows, OS X) or use the `Flatpak` package manager (GNU/Linux).
 
 - `Building from Source`_: Aimed at developers and experienced users, this approach involves compiling the software from source,
-  detailing necessary dependencies, and offering steps for either an automated build with `pip`_ / `uv`_ or a manual build.
+  detailing necessary dependencies, and offering steps for either an automated build or a manual build.
   The latter allows for additional customization and the execution of different targets, such as generating documentation.
 
-All methods install the graphical user interface of pairinteraction. It allows for calculating pair potential, taking into
-account electric and magnetic fields. In addition, all methods except for the binary installers, provide a Python library which can be used to
+All methods install the graphical user interface of pairinteraction. It allows for calculating pair potentials taking into
+account electric and magnetic fields, as well as Stark and Zeeman maps. In addition, all methods except for the binary installers, provide a Python library which can be used to
 write your own code and have more fine-grained control over what pairinteraction does. For usage examples
 visit the :ref:`tutorials <Tutorials>` section of the documentation.
 
-Using Pip
----------
+Installing from Python Package Index
+------------------------------------
+
+For an automatic installation, you first need to install pip in a virtual python environment.
+In order to install pip, we recommend using `conda`_ if you are working from a **Windows** machine and `uv`_ if you are working from a **GNU/Linux** or **OS X** machine.
 
 We recommend installing pairinteraction from the `Python Package Index`_ by calling
 
@@ -61,53 +64,311 @@ Advanced users, especially those who want to contribute to the development of pa
 
 The ``--single-branch`` flag is not essential but will speed up the download significantly by omitting all other branches except master.
 
-Requirements
-^^^^^^^^^^^^
-
-Before compiling the source code, you have to install the following tools and dependencies:
-
-Build tools
-    `CMake`_ for running the build system (at least CMake 3.21 is required), `pip`_ / `uv`_ for managing the Python dependencies. In addition, we require a package manager for the C++ dependencies and a compiler for building the C++ backend. In the following, we provide recommendations for different operating systems:
-
-    * For **GNU/Linux**, use the distribution's package manager and the gcc or clang compiler.
-
-    * For **OS X**, use `Homebrew`_ and the clang compiler.
-
-    * For **Windows**, use `VCPKG`_ and `Visual Studio`_.
-
-Dependencies of the C++ backend
-    * For **GNU/Linux**, complete lists of dependencies can be found in the Dockerfiles that we use for continuous integration. The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>`.
-
-    * For **OS X**, you can obtain the dependencies from the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>`.
-
-    * For **Windows**, you can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
-
-    .. note::
-        `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
-
-Dependencies of the Python library
-    All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_ / `uv`_.
+All Python dependencies are listed within the :github:`pyproject.toml <tree/master/pyproject.toml>` file. They are installed automatically when you build the Python library using `pip`_.
 
 .. _git: https://git-scm.com/download/
 .. _CMake: https://cmake.org/download/
 .. _uv: https://pypi.org/project/uv/
 .. _pip: https://pypi.org/project/pip/
+.. _conda: https://anaconda.org/anaconda/conda
 .. _Homebrew: https://brew.sh/
 .. _VCPKG: https://github.com/microsoft/vcpkg?tab=readme-ov-file#quick-start-windows
 .. _Visual Studio: https://visualstudio.microsoft.com/downloads/
+.. _MinGW: https://www.mingw-w64.org/downloads/
 .. _Intel oneAPI MKL: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onemkl-download.html
 .. _Intel oneAPI TBB: https://www.intel.com/content/www/us/en/developer/tools/oneapi/onetbb-download.html
 .. _Intel repository: https://www.intel.com/content/www/us/en/docs/oneapi/installation-guide-linux/2023-0/apt.html
 
+As the manual build up depends on your operating system, from here on we will give a step-by-step instruction for the different operating systems.
+
+Windows
+^^^^^^^
+
+Requirements
+""""""""""""
+
+Before compiling the source code, you have to install the following tools and dependencies:
+
+Build tools
+    * `CMake`_ for running the build system (at least CMake 3.21 is required)
+
+    * `conda`_ to install `pip`_ and to manage the Python dependencies
+
+    * `VCPKG`_ for managing the C++ packages
+
+    * `Visual Studio`_ or `MinGW`_ as a compiler. We recommend `Visual Studio`_ and will use it in further descriptions.
+
+You can use VCPKG with :github:`our configuration file <tree/master/vcpkg.json>` to install most C++ dependencies. Further dependencies such as `Intel oneAPI MKL`_ and `Intel oneAPI TBB`_ can be found in the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>` and :github:`actions folder <tree/master/.github/actions>` of the pairinteraction repository.
+
+    .. note::
+        `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
+
+In addition, you need to adjust your path environment variable if you want to use certain tools from the command line. In order to smoothly run all the commands described on this page, add the following paths for to your path environment variable:
+
++--------------+---------------------------------------------------------+
+| Tool         | Path to add                                             |
++==============+=========================================================+
+| Cmake        | ``C:\\path\to\cmake\bin``                               |
++--------------+---------------------------------------------------------+
+| VCPKG        | ``C:\\path\to\vcpkg``                                   |
++--------------+---------------------------------------------------------+
+| clang-tidy   | ``C:\\path\to\VisualStudio\Community\VC\Tools\Llvm\bin``|
+| clang-format |                                                         |
++--------------+---------------------------------------------------------+
+
+
+
+
 Automatic Build
-^^^^^^^^^^^^^^^
+"""""""""""""""
 
 **1. Setup**
 
 .. note::
     If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running ``pip install git+https://github.com/pairinteraction/pairinteraction``.
 
-We strongly recommend using the `uv`_ tool, to create a virtual environment and build the software inside this virtual environment.
+We recommend using the `conda`_ tool, to create a virtual environment and build the software inside this virtual environment.
+Creating and activating a virtual environment that is able to use all pip functionality with `conda`_ can be done by running the following commands:
+
+.. code-block:: bash
+
+    conda create --name venv python=3.9
+    conda activate venv
+    conda install pip-tools
+
+In the following, we will describe how to build the software inside this environment using `conda`_.
+If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of the pairinteraction repository.
+However, you can also use a different virtual environment manager like `venv` or `uv`_, or build the software into your system-wide Python environment running the following commands from your base environment.
+
+**2. Basic installation**
+
+After cloning the repository and creating the virtual environment, you can build and install the software by running:
+
+.. code-block:: bash
+
+    pip install -e .[gui]
+
+This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface. In order for pip to find CMake and VCPKG, make sure you have adjusted you environment variables as discussed above.
+By omitting the ``[gui]`` option, you can build the software without installing the additional dependencies needed for the graphical user interface.
+The option ``-e`` installs the software in editable mode, which means that changes to the python source code are directly reflected in the installed package.
+If you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual environment.
+
+The graphical user interface can now be started by executing:
+
+.. code-block:: bash
+
+    start_pairinteraction_gui
+
+To use the Python library within your code, you can simply run your python code from inside the virtual environment.
+
+**3. Testing**
+
+First run
+
+.. code-block:: bash
+
+    pip install .[test]
+
+to install the relevant packages for your python environment.
+Tests of the Python library and graphical user interface can be run by executing:
+
+.. code-block:: bash
+
+    pytest
+
+Some tests might be skipped. In order to get more information on them, run
+
+
+.. code-block:: bash
+
+    pytest -rsx
+
+
+**4. Build Documentation**
+
+First run
+
+.. code-block:: bash
+
+    pip install .[doc]
+
+to install the relevant packages for your python environment.
+Then go inside the ``docs`` directory and run the following command
+
+.. code-block:: bash
+
+    call make.bat html
+
+You can then open the documentation by opening the file ``docs/_build/html/index.html`` with your browser.
+
+Alternatively, you can let the documentation automatically rebuild by running
+
+.. code-block:: bash
+
+    call make.bat livehtml
+
+This will start a local web server that serves the documentation at ``http://127.0.0.1:8000`` and automatically rebuilds the documentation whenever you change the source code or a documentation file.
+
+**5. Advanced installation**
+
+Advanced options for developers when building the package:
+
+.. code-block:: bash
+
+    pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+
+| ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies, which are stored inside ``.build_requirements.txt`` so you can install them via ``uv pip install -r .build_requirements.txt``).
+| ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
+| ``-v``: Make the output more verbose.
+| ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction are immediately effective).
+
+To install all dependencies without building the package, you can run:
+
+.. code-block:: bash
+
+    pip-compile pyproject.toml --all-extras --output-file=requirements.txt
+    pip install -r requirements.txt
+
+Manual Build
+""""""""""""
+
+.. note::
+    Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
+
+If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ manually.
+For this, you have to first install the python build dependencies manually.
+
+Again, we strongly recommend installing the dependencies into a virtual environment using `conda`_:
+
+.. code-block:: bash
+
+    conda create --name venv python=3.9
+    conda activate venv
+    conda install pip-tools
+    pip install -r .build_requirements.txt
+
+If you want to use mkl you should also run ``pip install mkl mkl-devel``.
+
+In order to build from source using CMake, you must specify a generator, provide a path to the VCPKG toolchain file, and define the build type manually. For example, if you are using Visual Studio 2022, you can build the software with the following commands:
+
+.. code-block:: bash
+
+    mkdir build
+    cd build
+    cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:\\path\to\vcpkg\scripts\buildsystems\vcpkg.cmake ..
+    cmake --build . --config RelWithDebInfo
+
+This creates the C++ backend.
+You can also run
+
+.. code-block:: bash
+
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build . --config RelWithDebInfo
+
+with the specified environment variables
++---------------------+----------------------------------------------------------+
+| Variabel Name              | Value                                             |
++=====================+==========================================================+
+| CMAKE_TOOLCHAIN_FILE| C:\\\\path\\to\\vcpkg\\scripts\\buildsystems\\vcpkg.cmake|
++---------------------+----------------------------------------------------------+
+| CMAKE_GENERATOR     | Visual Studio 17 2022                                    |
++---------------------+----------------------------------------------------------+
+
+.. note::
+    Since ``Visual Studio 17 2022`` is a multi-configuration generator, you have to specify a configuration, otherwise the build will not work. You can choose between ``Release``, ``RelWithDebInfo``, ``Debug`` and ``MinSizeRel``. They are optimizing different purposes:
+
+    +--------------+-----------------------------------------------+
+    |Configuration | Purpose                                       |
+    +==============+===============================================+
+    |Release       |Performance optimized, no debug information    |
+    +--------------+-----------------------------------------------+
+    |Debug         |Includes debugging information, no optimization|
+    +--------------+-----------------------------------------------+
+    |RelWithDebInfo|Combines optimization with Debug information   |
+    +--------------+-----------------------------------------------+
+    |MinSizeRel    |Optimizes binary size of output                |
+    +--------------+-----------------------------------------------+
+
+    When testing, you should use the same configuration as in the build, for example
+
+    .. code-block:: bash
+
+      ctest -C RelWithDebInfo
+
+
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the code coverage by running CMake with ``cmake -DWITH_COVERAGE=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+A full list of build options is provided in the following:
+
++---------------------+--------------------------------------+---------+
+| Option              | Effect                               | Default |
++=====================+======================================+=========+
+| ``WITH_COVERAGE``   | Generate code coverage report [#]_   | OFF     |
++---------------------+--------------------------------------+---------+
+
+.. [#] This mode implies building the debug version of the software.
+
+Moreover, executing the commands manually allows for running additional targets.
+For example, you can use the ``doxygen`` target to build the C++ `doxygen documentation <https://cuddly-adventure-1w1n2vp.pages.github.io/doxygen/html/index.html>`_ by executing ``cmake --build . --target doxygen``.
+In contrast, if you use `pip`_ / `uv`_ to build the software, only the default target for building the library is executed.
+In the following, a list of all available targets is provided.
+Note that some targets require specific build options to be enabled in addition to the default options.
+
++------------------+------------------------------------------+--------------------------------------+
+| Target (Windows) |Task                                      | Requirement                          |
++==================+==========================================+======================================+
+| ``ALL_BUILD``    | Build the software (default target)      | Not available in Debug configuration |
++------------------+------------------------------------------+--------------------------------------+
+| ``RUN_TESTS``    | Run the C++ tests                        |                                      |
+|                  | (without any python tests,               |                                      |
+|                  | use the automatic build above for this)  |                                      |
++------------------+------------------------------------------+--------------------------------------+
+| ``DOXYGEN``      | Build the Doxygen documentation          |                                      |
+|                  | in ``src/cpp/docs``                      |                                      |
++------------------+------------------------------------------+--------------------------------------+
+
+In addition, a number of options are typically available for the native build tool that is called by CMake.
+For example, you can pass the ``-j num_jobs`` option to the native build tool to enable parallel compilation,
+where ``num_jobs`` specifies the maximal number of jobs that will be run. Setting ``num_jobs`` to the number of available
+processors can speed up the compilation process significantly.
+
+.. code-block:: bash
+
+    cmake --build . -j 8
+
+GNU/Linux
+^^^^^^^^^
+
+Requirements
+""""""""""""
+
+Before compiling the source code, you have to install the following tools and dependencies:
+
+Build tools
+    * `CMake`_ for running the build system (at least CMake 3.21 is required)
+
+    * `uv`_ to install `pip`_ and to manage the Python dependencies
+
+    * the distribution's package manager for managing C++ packages
+
+    * gcc or clang compiler for compiling C++
+
+A complete lists of all C++ dependencies dependencies can be found in the Dockerfiles that we use for continuous integration. The Dockerfiles are located in the :github:`docker branch <tree/docker/docker>`.
+
+    .. note::
+        `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
+
+
+Automatic Build
+"""""""""""""""
+**1. Setup**
+
+.. note::
+    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running ``pip install git+https://github.com/pairinteraction/pairinteraction``.
+
+We recommend using the `uv`_ tool, to create a virtual environment and build the software inside this virtual environment.
 Creating and activating a virtual environment with `uv`_ can be done by running the following commands:
 
 .. code-block:: bash
@@ -117,9 +378,10 @@ Creating and activating a virtual environment with `uv`_ can be done by running 
 
 In the following, we will describe how to build the software inside this environment using `uv`_.
 If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of the pairinteraction repository.
-However, you can also use a different virtual environment manager like `venv` or `conda`, or build the software into your system-wide Python environment by replacing in all following commands ``uv pip`` with ``pip``.
+However, you can also use a different virtual environment manager like `venv` or `conda`_, or build the software into your system-wide Python environment by replacing in all following commands ``uv pip`` with ``pip``.
 
 **2. Basic installation**
+
 After cloning the repository and creating the virtual environment, you can build and install the software by running:
 
 .. code-block:: bash
@@ -140,14 +402,39 @@ The graphical user interface can now be started by executing:
 To use the Python library within your code, you can simply run your python code from inside the virtual environment.
 
 **3. Testing**
+
+First run
+
+.. code-block:: bash
+
+    uv pip install .[test]
+
+to install the relevant packages for your python environment.
 Tests of the Python library and graphical user interface can be run by executing:
 
 .. code-block:: bash
 
     pytest
 
+Some tests might be skipped. In order to get more information on them, run
+
+
+
+.. code-block:: bash
+
+    pytest -rsx
+
+
 **4. Build Documentation**
-Go inside the ``docs`` directory and run the following command to build the documentation:
+
+First run
+
+.. code-block:: bash
+
+    uv pip install .[doc]
+
+to install the relevant packages for your python environment.
+Then go inside the ``docs`` directory and run the following command to build the documentation:
 
 .. code-block:: bash
 
@@ -164,6 +451,7 @@ Alternatively, you can let the documentation automatically rebuild by running:
 This will start a local web server that serves the documentation at ``http://127.0.0.1:8000`` and automatically rebuilds the documentation whenever you change the source code or a documentation file.
 
 **5. Advanced installation**
+
 Advanced options for developers when building the package:
 
 .. code-block:: bash
@@ -174,7 +462,7 @@ Advanced options for developers when building the package:
 | ``--config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb``: Assuming that you have compiled `DuckDB`_ manually and have the library ``libduckdb.so`` and amalgamation header file `duckdb.hpp` in the directory ``/opt/duckdb``, you can pass this option. Under GNU/Linux, this allows to use a more recent version of DuckDB than the one that is installed during the build process.
   ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
 | ``-v``: Make the output more verbose.
-| ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
+| ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction are immediately effective).
 
 .. _DuckDB: https://github.com/duckdb/duckdb
 
@@ -185,14 +473,12 @@ To install all dependencies without building the package, you can run:
     uv pip compile pyproject.toml --all-extras > requirements.txt
     uv pip install -r requirements.txt
 
-
 Manual Build
-^^^^^^^^^^^^
-
+""""""""""""
 .. note::
     Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
 
-If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ / `uv`_ manually.
+If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ manually.
 For this, you have to first install the python build dependencies manually.
 
 Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
@@ -205,7 +491,7 @@ Again, we strongly recommend installing the dependencies into a virtual environm
 
 If you want to use mkl you should also run ``uv pip install mkl mkl-devel``.
 
-For **GNU/Linux and OS X**, you can then build the software with standard CMake commands:
+You can then build the software with standard CMake commands:
 
 .. code-block:: bash
 
@@ -222,10 +508,12 @@ For **Windows**, you must specify a visual studio generator, provide a path to t
 
     mkdir build
     cd build
-    cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake ..
+    cmake -G "Visual Studio 17 2022" -DCMAKE_TOOLCHAIN_FILE=C:\\path\to\vcpkg\scripts\buildsystems\vcpkg.cmake ..
     cmake --build . --config RelWithDebInfo
 
 This creates the C++ backend.
+
+
 
 Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the code coverage by running CMake with ``cmake -DWITH_COVERAGE=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
 A full list of build options is provided in the following:
@@ -244,27 +532,228 @@ In contrast, if you use `pip`_ / `uv`_ to build the software, only the default t
 In the following, a list of all available targets is provided.
 Note that some targets require specific build options to be enabled in addition to the default options.
 
-+--------------+-------------------------------------------+----------------------+
-| Target       | Task                                      | Requirement          |
-+==============+===========================================+======================+
-| ``all``      | Build the software (default target)       |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``test``     | Run the C++ tests                         |                      |
-|              | (without any python tests,                |                      |
-|              | use the automatic build above for this)   |                      |
-+--------------+-------------------------------------------+----------------------+
-| ``doxygen``  | Build the Doxygen documentation           |                      |
-|              | in ``src/cpp/docs``                       |                      |
-+--------------+-------------------------------------------+----------------------+
++----------------------------+------------------------------------------+----------------------+
+| Target (OS X and Unix)     |Task                                      | Requirement          |
++============================+==========================================+======================+
+| ``all``                    | Build the software (default target)      |                      |
++----------------------------+------------------------------------------+----------------------+
+| ``test``                   | Run the C++ tests                        |                      |
+|                            | (without any python tests,               |                      |
+|                            | use the automatic build above for this)  |                      |
++----------------------------+------------------------------------------+----------------------+
+| ``doxygen``                | Build the Doxygen documentation          |                      |
+|                            | in ``src/cpp/docs``                      |                      |
++----------------------------+------------------------------------------+----------------------+
 
 In addition, a number of options are typically available for the native build tool that is called by CMake.
-For example, on GNU/Linux and OS X, you can pass the ``-j num_jobs`` option to the native build tool to enable parallel compilation,
+For example, you can pass the ``-j num_jobs`` option to the native build tool to enable parallel compilation,
 where ``num_jobs`` specifies the maximal number of jobs that will be run. Setting ``num_jobs`` to the number of available
 processors can speed up the compilation process significantly.
 
 .. code-block:: bash
 
-    cmake --build . -- -j 8
+    cmake --build . -j 8
+
+
+OS X
+^^^^
+
+Requirements
+""""""""""""
+
+Before compiling the source code, you have to install the following tools and dependencies:
+
+Build tools
+    * `CMake`_ for running the build system (at least CMake 3.21 is required)
+
+    * `uv`_ to install `pip`_  and to manage the Python dependencies
+
+    * `Homebrew`_ and the clang compiler.
+
+
+You can obtain the C++ dependencies from the :github:`github workflow <tree/master/.github/workflows/cpp-backend.yml>`.
+
+    .. note::
+        `Intel oneAPI MKL`_ is an optional dependency that provides optimized linear algebra routines and the FEAST eigensolver. If this dependency is available, it is important that a compatible version of `Intel oneAPI TBB`_ is available as well. For example, on Debian, the package ``intel-oneapi-mkl-devel-2023.1.0`` and ``intel-oneapi-tbb-devel-2021.13`` are compatible that can be installed using APT from the `Intel repository`_. To allow the build system to find these oneAPI libraries, one has to set the ``CMAKE_PREFIX_PATH`` and ``LD_LIBRARY_PATH`` environment variables. To do so, the libraries provide scripts that can be sourced before running CMake. On Debian, ``source /opt/intel/oneapi/mkl/latest/env/vars.sh`` and ``source /opt/intel/oneapi/tbb/latest/env/vars.sh`` will set the environment variables.
+
+Automatic Build
+"""""""""""""""
+**1. Setup**
+
+.. note::
+    If you do not want to modify the source code and just want to use the most recent version of pairinteraction, you can install pairinteraction directly from the :github:`GitHub <>` repository by running ``pip install git+https://github.com/pairinteraction/pairinteraction``.
+
+We recommend using the `uv`_ tool, to create a virtual environment and build the software inside this virtual environment.
+Creating and activating a virtual environment with `uv`_ can be done by running the following commands:
+
+.. code-block:: bash
+
+    uv venv --python=3.9 .venv
+    source .venv/bin/activate
+
+In the following, we will describe how to build the software inside this environment using `uv`_.
+If not stated otherwise, all commands should be executed from inside the virtual environment and the root directory of the pairinteraction repository.
+However, you can also use a different virtual environment manager like `venv` or `conda`, or build the software into your system-wide Python environment by replacing in all following commands ``uv pip`` with ``pip``.
+
+**2. Basic installation**
+
+After cloning the repository and creating the virtual environment, you can build and install the software by running:
+
+.. code-block:: bash
+
+    uv pip install -e .[gui]
+
+This will call CMake automatically to build the C++ backend, the Python library, and the graphical user interface.
+By omitting the ``[gui]`` option, you can build the software without installing the additional dependencies needed for the graphical user interface.
+The option ``-e`` installs the software in editable mode, which means that changes to the python source code are directly reflected in the installed package.
+If you don't want this, you can omit the ``-e`` option to install the current version of the software into the virtual environment.
+
+The graphical user interface can now be started by executing:
+
+.. code-block:: bash
+
+    start_pairinteraction_gui
+
+To use the Python library within your code, you can simply run your python code from inside the virtual environment.
+
+**3. Testing**
+
+First run
+
+.. code-block:: bash
+
+    uv pip install .[test]
+
+to install the relevant packages for your python environment.
+Tests of the Python library and graphical user interface can be run by executing:
+
+.. code-block:: bash
+
+    pytest
+
+Some tests might be skipped. In order to get more information on them, run
+
+
+.. code-block:: bash
+
+    pytest -rsx
+
+
+**4. Build Documentation**
+
+First run
+
+.. code-block:: bash
+
+    uv pip install .[doc]
+
+to install the relevant packages for your python environment.
+Then go inside the ``docs`` directory and run the following command to build the documentation:
+
+.. code-block:: bash
+
+    make html
+
+You can then open the documentation by opening the file ``docs/_build/html/index.html`` with your browser.
+
+Alternatively, you can let the documentation automatically rebuild by running:
+
+.. code-block:: bash
+
+    make livehtml
+
+This will start a local web server that serves the documentation at ``http://127.0.0.1:8000`` and automatically rebuilds the documentation whenever you change the source code or a documentation file.
+
+**5. Advanced installation**
+
+Advanced options for developers when building the package:
+
+.. code-block:: bash
+
+    uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+
+| ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies, which are stored inside ``.build_requirements.txt`` so you can install them via ``uv pip install -r .build_requirements.txt``).
+| ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
+| ``-v``: Make the output more verbose.
+| ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction are immediately effective).
+
+To install all dependencies without building the package, you can run:
+
+.. code-block:: bash
+
+    uv pip compile pyproject.toml --all-extras > requirements.txt
+    uv pip install -r requirements.txt
+
+Manual Build
+""""""""""""
+
+.. note::
+    Advanced examples for the usage of CMake to build the software for various operating systems can be found in the :github:`workflows <tree/master/.github/workflows>` directory of the pairinteraction repository.
+
+If you want to build only the C++ part and want to have more control over the build process, you can run the tasks that have been executed by `pip`_ manually.
+For this, you have to first install the python build dependencies manually.
+
+Again, we strongly recommend installing the dependencies into a virtual environment using `uv`_:
+
+.. code-block:: bash
+
+    uv venv --python=3.9 .venv
+    source .venv/bin/activate
+    uv pip install -r .build_requirements.txt
+
+If you want to use mkl you should also run ``uv pip install mkl mkl-devel``.
+
+You can then build the software with standard CMake commands:
+
+.. code-block:: bash
+
+    mkdir build
+    cd build
+    cmake ..
+    cmake --build .
+
+This creates the C++ backend.
+
+
+Running the different build commands manually has the advantage that you can pass additional options to the build system. For example, you can enable the code coverage by running CMake with ``cmake -DWITH_COVERAGE=ON ..`` (the general format to set an option is ``-D<OPTION_NAME>=<VALUE>``).
+A full list of build options is provided in the following:
+
++---------------------+--------------------------------------+---------+
+| Option              | Effect                               | Default |
++=====================+======================================+=========+
+| ``WITH_COVERAGE``   | Generate code coverage report [#]_   | OFF     |
++---------------------+--------------------------------------+---------+
+
+.. [#] This mode implies building the debug version of the software.
+
+Moreover, executing the commands manually allows for running additional targets.
+For example, you can use the ``doxygen`` target to build the C++ `doxygen documentation <https://cuddly-adventure-1w1n2vp.pages.github.io/doxygen/html/index.html>`_ by executing ``cmake --build . --target doxygen``.
+In contrast, if you use `pip`_ / `uv`_ to build the software, only the default target for building the library is executed.
+In the following, a list of all available targets is provided.
+Note that some targets require specific build options to be enabled in addition to the default options.
+
++----------------------------+------------------------------------------+----------------------+
+| Target (OS X and Unix)     |Task                                      | Requirement          |
++============================+==========================================+======================+
+| ``all``                    | Build the software (default target)      |                      |
++----------------------------+------------------------------------------+----------------------+
+| ``test``                   | Run the C++ tests                        |                      |
+|                            | (without any python tests,               |                      |
+|                            | use the automatic build above for this)  |                      |
++----------------------------+------------------------------------------+----------------------+
+| ``doxygen``                | Build the Doxygen documentation          |                      |
+|                            | in ``src/cpp/docs``                      |                      |
++----------------------------+------------------------------------------+----------------------+
+
+In addition, a number of options are typically available for the native build tool that is called by CMake.
+For example, you can pass the ``-j num_jobs`` option to the native build tool to enable parallel compilation,
+where ``num_jobs`` specifies the maximal number of jobs that will be run. Setting ``num_jobs`` to the number of available
+processors can speed up the compilation process significantly.
+
+.. code-block:: bash
+
+    cmake --build . -j 8
+
 
 Tips and Tricks
 ^^^^^^^^^^^^^^^
