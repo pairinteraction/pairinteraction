@@ -32,7 +32,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
+      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
@@ -57,7 +57,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
+      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
@@ -90,7 +90,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir nanobind numpy typing_extensions
+      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
     - name: Configure
       run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
