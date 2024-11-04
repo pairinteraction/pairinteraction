@@ -38,6 +38,7 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
+  "typing_extensions >= 4.7",
   "numpy >= 1.24",
   "scipy >= 1.10",
   "pydantic  >=  2.3",
@@ -48,7 +49,6 @@ dependencies = [
 gui = [
   "pyqt5 >= 5.15.8",
   "pyqtgraph >= 0.13",
-  "pint >= 0.21",
 ]
 doc = [
   "sphinx >= 7",
