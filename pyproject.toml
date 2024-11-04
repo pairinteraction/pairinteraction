@@ -38,7 +38,6 @@ classifiers = [
 ]
 requires-python = ">=3.9"
 dependencies = [
-  "mkl; sys_platform != 'darwin'",
   "numpy >= 1.24",
   "scipy >= 1.10",
   "pydantic  >=  2.3",
@@ -67,6 +66,9 @@ test = [
   "nbmake >= 1.3",
   "pairinteraction[gui]",
   "coverage >= 7.2",
+]
+mkl = [
+  "mkl == 2025.0",
 ]
 
 [project.urls]
