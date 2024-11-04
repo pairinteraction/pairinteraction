@@ -170,7 +170,7 @@ Advanced options for developers when building the package:
 
     uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
 
-| ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies like ``uv pip install scikit-build-core nanobind numpy typing_extensions``).
+| ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies, which are stored inside ``.build_requirements.txt`` so you can install them via ``uv pip install -r .build_requirements.txt``).
 | ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
 | ``-v``: Make the output more verbose.
 | ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
@@ -198,7 +198,7 @@ Again, we strongly recommend installing the dependencies into a virtual environm
 
     uv venv --python=3.9 .venv
     source .venv/bin/activate
-    uv pip install nanobind numpy typing_extensions
+    uv pip install -r .build_requirements.txt
 
 If you want to use mkl you should also run ``uv pip install mkl mkl-devel``.
 

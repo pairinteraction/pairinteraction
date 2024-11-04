@@ -69,6 +69,7 @@ if(WIN32)
 endif()
 
 install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction/backend)
+install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction/backend)
 install(TARGETS backend DESTINATION pairinteraction/backend)
 if(WIN32)
   install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction/backend)
