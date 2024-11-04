@@ -136,8 +136,6 @@ jobs:
     needs: [build_sphinx, build_doxygen, coverage_cpp_ctest, coverage_cpp_pytest, coverage_python_pytest]
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    container:
-      image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
 
