@@ -11,9 +11,11 @@ add_library(
   diagonalizer/Diagonalizer.py.cpp
   diagonalizer/Diagonalizer.py.hpp
   enums/OperatorType.py.hpp
+  enums/OperatorType.py.cpp
+  enums/Parity.py.hpp
+  enums/Parity.py.cpp
   enums/TransformationType.py.hpp
   enums/TransformationType.py.cpp
-  enums/OperatorType.py.cpp
   interfaces/DiagonalizerInterface.py.hpp
   interfaces/DiagonalizerInterface.py.cpp
   interfaces/TransformationBuilderInterface.py.hpp

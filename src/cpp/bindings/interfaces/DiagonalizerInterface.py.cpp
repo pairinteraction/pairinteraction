@@ -24,9 +24,21 @@ static void declare_diagonalizer_interface(nb::module_ &m, std::string const &ty
                 &DiagonalizerInterface<T>::eigh, nb::const_));
 }
 
+template <typename T>
+static void declare_eigen_system_h(nb::module_ &m, std::string const &type_name) {
+    std::string pylass_name = "EigenSystemH" + type_name;
+    nb::class_<EigenSystemH<T>> pyclass(m, pylass_name.c_str());
+    pyclass.def_rw("eigenvectors", &EigenSystemH<T>::eigenvectors)
+        .def_rw("eigenvalues", &EigenSystemH<T>::eigenvalues);
+}
+
 void bind_diagonalizer_interface(nb::module_ &m) {
     declare_diagonalizer_interface<float>(m, "Float");
     declare_diagonalizer_interface<double>(m, "Double");
     declare_diagonalizer_interface<std::complex<float>>(m, "ComplexFloat");
     declare_diagonalizer_interface<std::complex<double>>(m, "ComplexDouble");
+    declare_eigen_system_h<float>(m, "Float");
+    declare_eigen_system_h<double>(m, "Double");
+    declare_eigen_system_h<std::complex<float>>(m, "ComplexFloat");
+    declare_eigen_system_h<std::complex<double>>(m, "ComplexDouble");
 }

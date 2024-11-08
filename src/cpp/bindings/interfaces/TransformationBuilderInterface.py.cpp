@@ -10,6 +10,7 @@
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;
+using namespace nb::literals;
 using namespace pairinteraction;
 
 template <typename T>
@@ -29,6 +30,13 @@ static void declare_sorting(nb::module_ &m) {
 }
 
 static void declare_indices_of_blocks(nb::module_ &m) {
+    nb::class_<IndicesOfBlock> pyclass(m, "IndicesOfBlock");
+    pyclass.def(nb::init<size_t, size_t>(), "start"_a, "end"_a)
+        .def_rw("start", &IndicesOfBlock::start)
+        .def_rw("end", &IndicesOfBlock::end);
+}
+
+static void declare_indices_of_blocks_creator(nb::module_ &m) {
     nb::class_<IndicesOfBlocksCreator> pyclass(m, "IndicesOfBlocksCreator");
 }
 
@@ -45,8 +53,11 @@ static void declare_transformation_builder_interface(nb::module_ &m, std::string
 void bind_transformation_builder_interface(nb::module_ &m) {
     declare_transformation<float>(m, "Float");
     declare_transformation<double>(m, "Double");
+    declare_transformation<std::complex<float>>(m, "ComplexFloat");
+    declare_transformation<std::complex<double>>(m, "ComplexDouble");
     declare_sorting(m);
     declare_indices_of_blocks(m);
+    declare_indices_of_blocks_creator(m);
     declare_transformation_builder_interface<float>(m, "Float");
     declare_transformation_builder_interface<double>(m, "Double");
     declare_transformation_builder_interface<std::complex<float>>(m, "ComplexFloat");
