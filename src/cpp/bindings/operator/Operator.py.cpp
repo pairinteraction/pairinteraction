@@ -1,10 +1,14 @@
 #include "./Operator.py.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/operator/Operator.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
 
+#include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/operators.h>
+#include <nanobind/stl/complex.h>
+#include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/vector.h>
 
 namespace nb = nanobind;

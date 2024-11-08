@@ -4,6 +4,7 @@
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
+#include <nanobind/stl/complex.h>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
