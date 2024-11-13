@@ -144,7 +144,12 @@ sources = ["src"]
 line-length = 120
 target-version = "py39"
 extend-include = ["*.ipynb"]
+exclude = ["src/pairinteraction/backend/*float.py", "src/pairinteraction/backend/*double.py"]
 lint.select = ["F", "E", "B", "C", "W", "I", "UP", "TID25"]
 lint.extend-ignore = ["E741", "C901", "B905"]
 lint.per-file-ignores = {"src/pairinteraction/gui/app.py" = ["E402"]}
 lint.flake8-tidy-imports.ban-relative-imports = "all"
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+force-wrap-aliases = true
