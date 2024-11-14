@@ -50,12 +50,10 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
     // Sort the states, which are eigenstates, by their energy
-    const auto &system1_unsorted = systems_atom[0].get();
-    const auto &system2_unsorted = systems_atom[1].get();
-    auto system1 = system1_unsorted.transformed(
-        system1_unsorted.get_sorter({TransformationType::SORT_BY_ENERGY}));
-    auto system2 = system2_unsorted.transformed(
-        system2_unsorted.get_sorter({TransformationType::SORT_BY_ENERGY}));
+    auto system1 = systems_atom[0].get();
+    auto system2 = systems_atom[1].get();
+    system1.transform(system1.get_sorter({TransformationType::SORT_BY_ENERGY}));
+    system2.transform(system2.get_sorter({TransformationType::SORT_BY_ENERGY}));
 
     // Construct the canonical basis that contains all combined states with allowed energies and
     // quantum numbers
@@ -115,10 +113,8 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             }
 
             // Get ket with largest overlap
-            std::shared_ptr<const KetAtom<real_t>> ket1 =
-                basis1->get_ket_with_largest_overlap(idx1);
-            std::shared_ptr<const KetAtom<real_t>> ket2 =
-                basis2->get_ket_with_largest_overlap(idx2);
+            std::shared_ptr<const KetAtom<real_t>> ket1 = basis1->get_corresponding_ket(idx1);
+            std::shared_ptr<const KetAtom<real_t>> ket2 = basis2->get_corresponding_ket(idx2);
 
             // Store the combined state as a ket. The combined, linearized index is the ID of the
             // ket.

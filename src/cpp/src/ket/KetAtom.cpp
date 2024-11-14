@@ -70,7 +70,7 @@ size_t KetAtom<Real>::get_id() const {
 
 template <typename Real>
 size_t KetAtom<Real>::get_id_for_different_quantum_number_m(Real new_quantum_number_m) const {
-    return ketid::atom::transform(id, this->quantum_number_m, new_quantum_number_m);
+    return ketid::atom::update_linearized_index(id, this->quantum_number_m, new_quantum_number_m);
 }
 
 template <typename Real>

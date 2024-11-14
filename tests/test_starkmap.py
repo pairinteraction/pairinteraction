@@ -55,7 +55,8 @@ def test_starkmap(ureg: UnitRegistry, generate_reference: bool, database_dir: st
     diagonalizeSystemAtomDouble(systems, diagonalizer)
 
     # Sort by the eigenvalues
-    systems = [system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in systems]
+    for system in systems:
+        system.transform(system.get_sorter([TransformationType.SORT_BY_ENERGY]))
 
     # Get the overlap with |ket>
     overlaps = [system.get_eigenbasis().get_overlaps(ket) for system in systems]

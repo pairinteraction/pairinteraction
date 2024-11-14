@@ -21,7 +21,8 @@ inline size_t get(size_t id, Real quantum_number_m) {
 
 // Method to update the linearized index when the quantum number m changes
 template <typename Real>
-inline size_t transform(size_t ketid, Real old_quantum_number_m, Real new_quantum_number_m) {
+inline size_t update_linearized_index(size_t ketid, Real old_quantum_number_m,
+                                      Real new_quantum_number_m) {
     static_assert(std::is_arithmetic_v<Real>);
 
     return ketid + static_cast<size_t>(2 * new_quantum_number_m + OFFSET) -

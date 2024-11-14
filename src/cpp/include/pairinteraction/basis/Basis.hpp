@@ -57,13 +57,14 @@ public:
     real_t get_quantum_number_f(size_t state_index) const;
     real_t get_quantum_number_m(size_t state_index) const;
     Parity get_parity(size_t state_index) const;
-    std::shared_ptr<const ket_t> get_ket_with_largest_overlap(size_t state_index) const;
-    size_t get_ket_index_with_largest_overlap(size_t state_index) const;
-    std::shared_ptr<const Derived> get_state_with_largest_overlap(size_t ket_index) const;
-    std::shared_ptr<const Derived>
-    get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const;
-    size_t get_state_index_with_largest_overlap(size_t ket_index) const;
-    size_t get_state_index_with_largest_overlap(std::shared_ptr<const ket_t> ket) const;
+    std::shared_ptr<const ket_t> get_corresponding_ket(size_t state_index) const;
+    std::shared_ptr<const ket_t> get_corresponding_ket(std::shared_ptr<const Derived> state) const;
+    size_t get_corresponding_ket_index(size_t state_index) const;
+    size_t get_corresponding_ket_index(std::shared_ptr<const Derived> state) const;
+    std::shared_ptr<const Derived> get_corresponding_state(size_t ket_index) const;
+    std::shared_ptr<const Derived> get_corresponding_state(std::shared_ptr<const ket_t> ket) const;
+    size_t get_corresponding_state_index(size_t ket_index) const;
+    size_t get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const;
     std::shared_ptr<const Derived> get_canonical_state_from_ket(size_t ket_index) const;
     std::shared_ptr<const Derived>
     get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const;

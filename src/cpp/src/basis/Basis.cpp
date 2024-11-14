@@ -209,7 +209,7 @@ Parity Basis<Derived>::get_parity(size_t state_index) const {
 
 template <typename Derived>
 std::shared_ptr<const typename Basis<Derived>::ket_t>
-Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
+Basis<Derived>::get_corresponding_ket(size_t state_index) const {
     size_t ket_index = state_index_to_ket_index.at(state_index);
     if (ket_index == std::numeric_limits<int>::max()) {
         throw std::invalid_argument("The state does not belong to a ket in a well-defined way.");
@@ -218,8 +218,13 @@ Basis<Derived>::get_ket_with_largest_overlap(size_t state_index) const {
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived>
-Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
+std::shared_ptr<const typename Basis<Derived>::ket_t>
+Basis<Derived>::get_corresponding_ket(std::shared_ptr<const Derived> /*state*/) const {
+    throw std::runtime_error("Not implemented yet.");
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ket_index) const {
     size_t state_index = ket_index_to_state_index.at(ket_index);
     if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
@@ -252,15 +257,15 @@ Basis<Derived>::get_state_with_largest_overlap(size_t ket_index) const {
 
 template <typename Derived>
 std::shared_ptr<const Derived>
-Basis<Derived>::get_state_with_largest_overlap(std::shared_ptr<const ket_t> ket) const {
+Basis<Derived>::get_corresponding_state(std::shared_ptr<const ket_t> ket) const {
     if (!has_ket_index(ket->get_id())) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_state_with_largest_overlap(ket_id_to_ket_index.at(ket->get_id()));
+    return get_corresponding_state(ket_id_to_ket_index.at(ket->get_id()));
 }
 
 template <typename Derived>
-size_t Basis<Derived>::get_state_index_with_largest_overlap(size_t ket_index) const {
+size_t Basis<Derived>::get_corresponding_state_index(size_t ket_index) const {
     int state_index = ket_index_to_state_index.at(ket_index);
     if (state_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
@@ -269,21 +274,25 @@ size_t Basis<Derived>::get_state_index_with_largest_overlap(size_t ket_index) co
 }
 
 template <typename Derived>
-size_t
-Basis<Derived>::get_state_index_with_largest_overlap(std::shared_ptr<const ket_t> ket) const {
+size_t Basis<Derived>::get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const {
     if (!has_ket_index(ket->get_id())) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_state_index_with_largest_overlap(ket_id_to_ket_index.at(ket->get_id()));
+    return get_corresponding_state_index(ket_id_to_ket_index.at(ket->get_id()));
 }
 
 template <typename Derived>
-size_t Basis<Derived>::get_ket_index_with_largest_overlap(size_t state_index) const {
+size_t Basis<Derived>::get_corresponding_ket_index(size_t state_index) const {
     int ket_index = state_index_to_ket_index.at(state_index);
     if (ket_index == std::numeric_limits<int>::max()) {
         throw std::runtime_error("The state does not belong to a ket in a well-defined way.");
     }
     return ket_index;
+}
+
+template <typename Derived>
+size_t Basis<Derived>::get_corresponding_ket_index(std::shared_ptr<const Derived> /*state*/) const {
+    throw std::runtime_error("Not implemented yet.");
 }
 
 template <typename Derived>

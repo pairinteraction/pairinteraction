@@ -151,33 +151,29 @@ System<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &la
 }
 
 template <typename Derived>
-Derived System<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
+System<Derived> &System<Derived>::transform(const Transformation<scalar_t> &transformation) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    Derived transformed = derived();
-    transformed.hamiltonian =
-        std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(transformation));
 
     // A transformed system might have lost its block-diagonalizability if the
     // transformation was not a sorting
-    transformed.blockdiagonalizing_labels.clear();
+    blockdiagonalizing_labels.clear();
 
-    return transformed;
+    return *this;
 }
 
 template <typename Derived>
-Derived System<Derived>::transformed(const Sorting &transformation) const {
+System<Derived> &System<Derived>::transform(const Sorting &transformation) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
     }
-    Derived transformed = derived();
-    transformed.hamiltonian =
-        std::make_unique<operator_t>(hamiltonian->transformed(transformation));
+    hamiltonian = std::make_unique<operator_t>(hamiltonian->transformed(transformation));
 
-    return transformed;
+    return *this;
 }
 
 template <typename Derived>

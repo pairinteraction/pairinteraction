@@ -16,7 +16,7 @@ const double SQRT_8_3 = std::sqrt(8. / 3.);
 
 // clang-format off
 // NOLINTNEXTLINE(cert-err58-cpp)
-const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL1 =
+const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL_KAPPA1 =
 (Eigen::Matrix3<std::complex<double>>() <<
 //  x           y           z
     1,          -1i,        0,      // p_{1,-1}
@@ -27,7 +27,7 @@ const Eigen::Matrix3<std::complex<double>> CARTESIAN_TO_SPHERICAL1 =
 
 // clang-format off
 // NOLINTNEXTLINE(cert-err58-cpp)
-const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL2 =
+const Eigen::Matrix<std::complex<double>, 6, 9> CARTESIAN_TO_SPHERICAL_KAPPA2 =
 (Eigen::Matrix<std::complex<double>, 6, 9>() <<
 // xx           xy          xz          yx          yy          yz          zx          zy          zz
     1,          -1i,        0,          -1i,        -1,         0,          0,          0,          0,          // p_{2,-2}

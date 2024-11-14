@@ -51,8 +51,8 @@ public:
     void get_indices_of_blocks_without_checks(const std::set<TransformationType> &unique_labels,
                                               IndicesOfBlocksCreator &blocks) const;
 
-    Derived transformed(const Transformation<scalar_t> &transformation) const;
-    Derived transformed(const Sorting &transformation) const;
+    System<Derived> &transform(const Transformation<scalar_t> &transformation);
+    System<Derived> &transform(const Sorting &transformation);
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  int precision = 12, const Range<real_t> &eigenvalue_range = {});

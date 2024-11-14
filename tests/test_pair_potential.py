@@ -75,9 +75,8 @@ def test_pair_potential(
     diagonalizeSystemCombinedDouble(combined_systems, diagonalizer)
 
     # Sort by the eigenvalues
-    combined_systems = [
-        system.transformed(system.get_sorter([TransformationType.SORT_BY_ENERGY])) for system in combined_systems
-    ]
+    for system in combined_systems:
+        system.transform(system.get_sorter([TransformationType.SORT_BY_ENERGY]))
 
     # Get the overlap with |ket, ket>
     overlaps = [system.get_eigenbasis().get_overlaps(ket, ket) for system in combined_systems]

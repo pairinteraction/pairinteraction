@@ -57,18 +57,26 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
                  &Basis<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_overlaps, nb::const_))
-        .def("get_state_with_largest_overlap",
-             nb::overload_cast<size_t>(&Basis<T>::get_state_with_largest_overlap, nb::const_))
-        .def("get_state_with_largest_overlap",
+        .def("get_corresponding_state",
+             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state, nb::const_))
+        .def("get_corresponding_state",
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
-                 &Basis<T>::get_state_with_largest_overlap, nb::const_))
-        .def("get_state_index_with_largest_overlap",
-             nb::overload_cast<size_t>(&Basis<T>::get_state_index_with_largest_overlap, nb::const_))
-        .def("get_state_index_with_largest_overlap",
+                 &Basis<T>::get_corresponding_state, nb::const_))
+        .def("get_corresponding_state_index",
+             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state_index, nb::const_))
+        .def("get_corresponding_state_index",
              nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>>(
-                 &Basis<T>::get_state_index_with_largest_overlap, nb::const_))
-        .def("get_ket_with_largest_overlap", &Basis<T>::get_ket_with_largest_overlap)
-        .def("get_ket_index_with_largest_overlap", &Basis<T>::get_ket_index_with_largest_overlap);
+                 &Basis<T>::get_corresponding_state_index, nb::const_))
+        .def("get_corresponding_ket",
+             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_ket, nb::const_))
+        .def("get_corresponding_ket",
+             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket,
+                                                         nb::const_))
+        .def("get_corresponding_ket_index",
+             nb::overload_cast<size_t>(&Basis<T>::get_corresponding_ket_index, nb::const_))
+        .def("get_corresponding_ket_index",
+             nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_corresponding_ket_index,
+                                                         nb::const_));
 }
 
 template <typename T>

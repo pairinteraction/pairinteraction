@@ -47,7 +47,7 @@ DOCTEST_TEST_CASE("Test the calculation of matrix elements") {
         double energy2 = calculate_energy(ket_s, system);
         double energy3 = ket_s->get_energy();
 
-        auto state = system.get_basis()->get_state_with_largest_overlap(ket_s);
+        auto state = system.get_basis()->get_corresponding_state(ket_s);
         auto matrix_element =
             ket_s->get_database().get_matrix_elements(state, state, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(matrix_element.rows() == 1);
