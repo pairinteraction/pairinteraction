@@ -62,10 +62,10 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
             "The distance vector must not have a y-component if the scalar type is real.");
     }
 
-    const auto &to_spherical1 =
-        pairinteraction::spherical::CARTESIAN_TO_SPHERICAL1.template cast<std::complex<real_t>>();
-    const auto &to_spherical2 =
-        pairinteraction::spherical::CARTESIAN_TO_SPHERICAL2.template cast<std::complex<real_t>>();
+    const auto &to_spherical_kappa1 = pairinteraction::spherical::CARTESIAN_TO_SPHERICAL_KAPPA1
+                                          .template cast<std::complex<real_t>>();
+    const auto &to_spherical_kappa2 = pairinteraction::spherical::CARTESIAN_TO_SPHERICAL_KAPPA2
+                                          .template cast<std::complex<real_t>>();
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(vector.data(), vector.size());
     real_t distance = vector_map.norm();
     Eigen::Vector3<real_t> vector_normalized = vector_map / distance;
@@ -86,7 +86,7 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
         Eigen::Matrix3<real_t> green_function_cartesian = Eigen::Matrix3<real_t>::Identity() -
             3 * vector_normalized * vector_normalized.transpose();
 
-        auto tmp = to_spherical1 * green_function_cartesian * to_spherical1.adjoint();
+        auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa1.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_function_dipole_dipole =
                 tmp.sparseView(numerical_precision, 1) / std::pow(distance, 3);
@@ -125,7 +125,7 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
             }
         }
 
-        auto tmp = to_spherical1 * green_function_cartesian * to_spherical2.adjoint();
+        auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa2.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_function_dipole_quadrupole =
                 tmp.sparseView(numerical_precision, 1) / std::pow(distance, 4);
@@ -164,7 +164,7 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
             }
         }
 
-        auto tmp = to_spherical2 * green_function_cartesian * to_spherical1.adjoint();
+        auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa1.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_function_quadrupole_dipole =
                 tmp.sparseView(numerical_precision, 1) / std::pow(distance, 4);
@@ -229,7 +229,7 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
             }
         }
 
-        auto tmp = to_spherical2 * green_function_cartesian * to_spherical2.adjoint();
+        auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa2.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_function_quadrupole_quadrupole =
                 tmp.sparseView(numerical_precision, 1) / std::pow(distance, 5);

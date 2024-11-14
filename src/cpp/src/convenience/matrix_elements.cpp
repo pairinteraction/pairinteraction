@@ -21,7 +21,7 @@ calculate_energy(std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar
         throw std::invalid_argument("The system must be diagonalized.");
     }
 
-    size_t state_index = system.get_basis()->get_state_index_with_largest_overlap(ket);
+    size_t state_index = system.get_basis()->get_corresponding_state_index(ket);
 
     if (system.get_basis()->get_overlaps(ket)[state_index] < 0.5) {
         throw std::invalid_argument("There is no eigenstate that corresponds clearly to the ket.");
@@ -44,8 +44,8 @@ Scalar calculate_electric_dipole_matrix_element(
         throw std::invalid_argument("The system must be diagonalized.");
     }
 
-    auto initial_state = system.get_basis()->get_state_with_largest_overlap(initial_ket);
-    auto final_state = system.get_basis()->get_state_with_largest_overlap(final_ket);
+    auto initial_state = system.get_basis()->get_corresponding_state(initial_ket);
+    auto final_state = system.get_basis()->get_corresponding_state(final_ket);
 
     if (initial_state->get_overlaps(initial_ket)[0] < 0.5) {
         throw std::invalid_argument(

@@ -60,7 +60,7 @@ int main(int argc, char **argv) {
     // Sort by the eigenvalues
     for (auto &system : systems) {
         auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
-        system = system.transformed(sorter);
+        system.transform(sorter);
     }
 
     // Extract results
