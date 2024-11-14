@@ -34,7 +34,7 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
     SystemAtom<double> system1(basis);
     SystemAtom<double> system2(basis);
     system1.set_electric_field({0, 0, 0.00000001});
-    system2.set_electric_field({0, 0, 0.00000001});
+    system2.set_electric_field({0, 0, 0.00000002});
     diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
     // Construct and diagonalize the combined system
