@@ -72,15 +72,6 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
 
     SPDLOG_DEBUG("Interatomic distance: {}", distance);
 
-    // If the distance is zero, disable interaction
-    if (distance < numerical_precision) {
-        green_function_dipole_dipole.setZero();
-        green_function_dipole_quadrupole.setZero();
-        green_function_quadrupole_dipole.setZero();
-        green_function_quadrupole_quadrupole.setZero();
-        return *this;
-    }
-
     // Dyadic green function of dipole-dipole interaction
     if (order >= 3) {
         Eigen::Matrix3<real_t> green_function_cartesian = Eigen::Matrix3<real_t>::Identity() -
@@ -459,12 +450,12 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                              ++idxptr2) {
 
                             Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
+                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
+                                break;
+                            }
                             size_t col_ket_id = col1 * number_of_states2 + col2;
                             if (!basis->has_ket_index(col_ket_id)) {
                                 continue;
-                            }
-                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
-                                break;
                             }
                             Scalar value2 = matrix2.valuePtr()[idxptr2];
                             Eigen::Index col = basis->get_ket_index_from_id(col_ket_id);
