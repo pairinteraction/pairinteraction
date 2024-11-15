@@ -4,6 +4,7 @@
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
+#include "pairinteraction/utils/hash.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/Dense>
@@ -51,9 +52,12 @@ public:
     using range_t = Range<size_t>;
     using map_size_t = std::unordered_map<size_t, size_t>;
     using map_range_t = std::unordered_map<size_t, range_t>;
+    using map_indices_t =
+        std::unordered_map<std::vector<size_t>, size_t, hash::hash<std::vector<size_t>>>;
 
     BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
                   map_range_t &&map_range_of_state_index2,
+                  map_indices_t &&state_indices_to_ket_index,
                   std::shared_ptr<const BasisAtom<Scalar>> basis1,
                   std::shared_ptr<const BasisAtom<Scalar>> basis2);
     const range_t &get_index_range(size_t state_index1) const;
@@ -74,6 +78,7 @@ public:
 
 private:
     map_range_t map_range_of_state_index2;
+    map_indices_t state_indices_to_ket_index;
     std::shared_ptr<const BasisAtom<Scalar>> basis1;
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };
