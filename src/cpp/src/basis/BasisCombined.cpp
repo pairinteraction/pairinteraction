@@ -36,12 +36,17 @@ std::shared_ptr<const BasisAtom<Scalar>> BasisCombined<Scalar>::get_basis2() con
 }
 
 template <typename Scalar>
+int BasisCombined<Scalar>::get_ket_index_from_tuple(size_t state_index1,
+                                                    size_t state_index2) const {
+    size_t ket_id = state_index1 * basis2->get_number_of_states() + state_index2;
+    // TODO this method should not rely on get_ket_index_from_id
+    return this->get_ket_index_from_id(ket_id);
+}
+
+template <typename Scalar>
 Eigen::VectorX<Scalar>
 BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
                                       std::shared_ptr<const KetAtom<real_t>> ket2) const {
-    if (!basis1->has_ket_index(ket1->get_id()) || !basis2->has_ket_index(ket2->get_id())) {
-        throw std::invalid_argument("The kets do not belong to the basis.");
-    }
     return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
                           basis2->get_canonical_state_from_ket(ket2))
         .transpose();
@@ -78,11 +83,10 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
                 for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
                      row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
 
-                    size_t row_ket_id = row1 * coefficients2.rows() + row2;
-                    if (!this->has_ket_index(row_ket_id)) {
+                    Eigen::Index row = get_ket_index_from_tuple(row1, row2);
+                    if (row < 0) {
                         continue;
                     }
-                    Eigen::Index row = this->get_ket_index_from_id(row_ket_id);
 
                     // Loop over the non-zero column elements of the first coefficient matrix
                     for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(

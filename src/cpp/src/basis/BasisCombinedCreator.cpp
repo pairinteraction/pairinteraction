@@ -63,7 +63,6 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     auto eigenvalues2 = system2.get_eigenvalues();
     real_t *eigenvalues2_begin = eigenvalues2.data();
     real_t *eigenvalues2_end = eigenvalues2_begin + eigenvalues2.size();
-    size_t number_of_states2 = basis2->get_number_of_states();
     bool has_quantum_number_m = basis1->has_quantum_number_m() && basis2->has_quantum_number_m();
 
     ketvec_t kets;
@@ -112,16 +111,16 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
                     "The quantum number m must not be restricted because it is not well-defined.");
             }
 
-            // Get ket with largest overlap
-            std::shared_ptr<const KetAtom<real_t>> ket1 = basis1->get_corresponding_ket(idx1);
-            std::shared_ptr<const KetAtom<real_t>> ket2 = basis2->get_corresponding_ket(idx2);
+            // Get labels for the kets with largest overlap
+            auto label1 = basis1->get_corresponding_ket(idx1)->get_label();
+            auto label2 = basis2->get_corresponding_ket(idx2)->get_label();
 
-            // Store the combined state as a ket. The combined, linearized index is the ID of the
-            // ket.
+            // Store the combined state as a ket.
             kets.emplace_back(std::make_shared<ket_t>(
-                typename ket_t::Private(), idx1 * number_of_states2 + idx2, energy,
-                quantum_number_f, quantum_number_m, parity,
-                std::vector<std::shared_ptr<const Ket<real_t>>>{ket1, ket2}));
+                typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
+                std::initializer_list<std::string>{label1, label2},
+                std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
+                energy, quantum_number_f, quantum_number_m, parity));
         }
     }
 

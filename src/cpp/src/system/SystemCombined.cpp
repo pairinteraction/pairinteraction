@@ -400,8 +400,6 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
     real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
 
-    size_t number_of_states2 = basis->get_basis2()->get_number_of_states();
-
     oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 
     // Loop over the rows of the first matrix in parallel (outer index == row)
@@ -415,11 +413,10 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                 for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
                      row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
 
-                    size_t row_ket_id = row1 * number_of_states2 + row2;
-                    if (!basis->has_ket_index(row_ket_id)) {
+                    Eigen::Index row = basis->get_ket_index_from_tuple(row1, row2);
+                    if (row < 0) {
                         continue;
                     }
-                    Eigen::Index row = basis->get_ket_index_from_id(row_ket_id);
 
                     // Loop over the non-zero column elements of the first matrix
                     for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
@@ -453,12 +450,13 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
                             if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
                                 break;
                             }
-                            size_t col_ket_id = col1 * number_of_states2 + col2;
-                            if (!basis->has_ket_index(col_ket_id)) {
+
+                            Eigen::Index col = basis->get_ket_index_from_tuple(col1, col2);
+                            if (col < 0) {
                                 continue;
                             }
+
                             Scalar value2 = matrix2.valuePtr()[idxptr2];
-                            Eigen::Index col = basis->get_ket_index_from_id(col_ket_id);
 
                             // Store the entry
                             Scalar value = value1 * value2;

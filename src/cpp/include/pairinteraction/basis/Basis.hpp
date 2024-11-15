@@ -48,7 +48,6 @@ public:
     bool has_quantum_number_m() const;
     bool has_parity() const;
     bool has_ket_index() const;
-    bool has_ket_index(size_t ket_id) const;
 
     const std::string &get_id_of_kets() const;
     const ketvec_t &get_kets() const;
@@ -70,7 +69,7 @@ public:
     get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
-    size_t get_ket_index_from_id(size_t ket_id) const;
+    int get_ket_index_from_id(size_t ket_id) const;
     Eigen::VectorX<scalar_t> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const Derived> other) const;

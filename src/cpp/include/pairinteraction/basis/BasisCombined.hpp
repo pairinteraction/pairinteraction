@@ -33,7 +33,7 @@ template <typename Scalar>
 struct traits::CrtpTraits<BasisCombined<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetCombined<real_t>;
+    using ket_t = KetCombined<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
 
@@ -59,6 +59,7 @@ public:
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
+    int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
 
     Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
                                           std::shared_ptr<const KetAtom<real_t>> ket2) const;

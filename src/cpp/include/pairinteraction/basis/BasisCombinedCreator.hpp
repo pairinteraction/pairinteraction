@@ -24,7 +24,7 @@ class BasisCombinedCreator {
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
     using basis_t = BasisCombined<Scalar>;
-    using ket_t = KetCombined<real_t>;
+    using ket_t = KetCombined<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 
     BasisCombinedCreator() = default;
