@@ -36,8 +36,9 @@ std::string KetCombined<Scalar>::get_label() const {
 
 template <typename Scalar>
 size_t KetCombined<Scalar>::get_id() const {
-    if (atomic_indices.empty())
+    if (atomic_indices.empty()) {
         return 0;
+    }
     size_t linear_index = atomic_indices[0];
     for (size_t k = 1; k < atomic_indices.size(); ++k) {
         linear_index = linear_index * atomic_bases[k]->get_number_of_states() + atomic_indices[k];

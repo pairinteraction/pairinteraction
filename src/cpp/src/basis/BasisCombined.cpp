@@ -13,10 +13,12 @@ namespace pairinteraction {
 template <typename Scalar>
 BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
                                      map_range_t &&map_range_of_state_index2,
+                                     map_indices_t &&state_indices_to_ket_index,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis1,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis2)
     : Basis<BasisCombined<Scalar>>(std::move(kets), std::move(id_of_kets)),
-      map_range_of_state_index2(std::move(map_range_of_state_index2)), basis1(std::move(basis1)),
+      map_range_of_state_index2(std::move(map_range_of_state_index2)),
+      state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
       basis2(std::move(basis2)) {}
 
 template <typename Scalar>
@@ -38,9 +40,10 @@ std::shared_ptr<const BasisAtom<Scalar>> BasisCombined<Scalar>::get_basis2() con
 template <typename Scalar>
 int BasisCombined<Scalar>::get_ket_index_from_tuple(size_t state_index1,
                                                     size_t state_index2) const {
-    size_t ket_id = state_index1 * basis2->get_number_of_states() + state_index2;
-    // TODO this method should not rely on get_ket_index_from_id
-    return this->get_ket_index_from_id(ket_id);
+    if (state_indices_to_ket_index.count({state_index1, state_index2}) == 0) {
+        return -1;
+    }
+    return state_indices_to_ket_index.at({state_index1, state_index2});
 }
 
 template <typename Scalar>

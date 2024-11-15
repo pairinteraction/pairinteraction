@@ -71,9 +71,11 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     typename basis_t::map_range_t map_range_of_state_index2;
     map_range_of_state_index2.reserve(eigenvalues1.size());
 
-    // Loop only over states with an allowed energy
-    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenvalues1.size()); ++idx1) {
+    typename basis_t::map_indices_t state_indices_to_ket_index;
 
+    // Loop only over states with an allowed energy
+    size_t ket_index = 0;
+    for (size_t idx1 = 0; idx1 < static_cast<size_t>(eigenvalues1.size()); ++idx1) {
         // Get the energetically allowed range of the second index
         size_t min = 0;
         size_t max = eigenvalues2.size();
@@ -115,12 +117,15 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             auto label1 = basis1->get_corresponding_ket(idx1)->get_label();
             auto label2 = basis2->get_corresponding_ket(idx2)->get_label();
 
-            // Store the combined state as a ket.
+            // Store the combined state as a ket
             kets.emplace_back(std::make_shared<ket_t>(
                 typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
                 std::initializer_list<std::string>{label1, label2},
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
                 energy, quantum_number_f, quantum_number_m, parity));
+
+            // Store the ket index of the combined state
+            state_indices_to_ket_index.emplace(std::vector<size_t>{idx1, idx2}, ket_index++);
         }
     }
 
@@ -133,7 +138,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
 
     return std::make_shared<basis_t>(typename basis_t::Private(), std::move(kets),
                                      std::move(id_of_kets), std::move(map_range_of_state_index2),
-                                     basis1, basis2);
+                                     std::move(state_indices_to_ket_index), basis1, basis2);
 }
 
 // Explicit instantiations
