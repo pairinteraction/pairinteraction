@@ -13,27 +13,18 @@ class KetClassicalLightBase:
         photon_energy: Optional[float] = None,
         q: Optional[int] = None,
     ) -> None:
-        self._cpp = self._create_obj(photon_energy, q)
+        creator = self._KetClassicalLightCreator()
+        if photon_energy is not None:
+            creator.set_photon_energy(photon_energy)
+        if q is not None:
+            creator.set_quantum_number_q(q)
+        self._cpp = creator.create()
 
     @classmethod
     def _from_cpp_object(cls, cpp_obj: Union[_backend.KetClassicalLightFloat, _backend.KetClassicalLightDouble]):
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
-
-    @classmethod
-    def _create_obj(
-        cls,
-        photon_energy: Optional[float] = None,
-        q: Optional[int] = None,
-    ):
-        creator = cls._KetClassicalLightCreator()
-        if photon_energy is not None:
-            creator.set_photon_energy(photon_energy)
-        if q is not None:
-            creator.set_quantum_number_q(q)
-        cpp_obj = creator.create()
-        return cpp_obj
 
     # # # Define convenience properties # # #
     @property
