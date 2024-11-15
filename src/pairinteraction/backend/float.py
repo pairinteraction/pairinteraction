@@ -18,6 +18,7 @@ from pairinteraction.backend._wrapped import (
     # import objects without types (i.e. that are valid for all types)
     # import objects with only real types (i.e. either float or double)
     KetAtomFloat as KetAtom,
+    KetClassicalLightFloat as KetClassicalLight,
     # import objects with specific types (i.e. float, double, complexfloat or complexdouble)
     BasisAtomFloat as BasisAtom,
     SystemAtomFloat as SystemAtom,

@@ -10,6 +10,11 @@ from pairinteraction.backend._wrapped.KetAtom import (
     KetAtomDouble as KetAtomDouble,
     KetAtomFloat as KetAtomFloat,
 )
+from pairinteraction.backend._wrapped.KetClassicalLight import (
+    KetClassicalLightBase as KetClassicalLightBase,
+    KetClassicalLightDouble as KetClassicalLightDouble,
+    KetClassicalLightFloat as KetClassicalLightFloat,
+)
 from pairinteraction.backend._wrapped.SystemAtom import (
     SystemAtomBase as SystemAtomBase,
     SystemAtomComplexDouble as SystemAtomComplexDouble,
