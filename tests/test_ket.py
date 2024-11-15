@@ -1,7 +1,7 @@
-from pairinteraction.backend import KetClassicalLightCreatorFloat
+import pairinteraction.backend.float as pi
 
 
 def test_ket_classical_light_creator():
-    ket = KetClassicalLightCreatorFloat(1.0, 2).create()
-    assert ket.get_photon_energy() == 1.0
-    assert ket.get_quantum_number_q() == 2
+    ket = pi.KetClassicalLight(photon_energy=1.0, q=2)
+    assert ket.photon_energy == 1.0
+    assert ket.q == 2
