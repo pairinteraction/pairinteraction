@@ -1,10 +1,15 @@
 from functools import cached_property
-from typing import Optional, Union
+from typing import TYPE_CHECKING, Optional, Union
 
+import numpy as np
 import scipy.sparse
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.KetAtom import KetAtomDouble, KetAtomFloat
+from pairinteraction.unit_system import convert_quantity_to_base
+
+if TYPE_CHECKING:
+    from pint.facets.plain import PlainQuantity
 
 
 class BasisAtomBase:
@@ -26,31 +31,14 @@ class BasisAtomBase:
         j: Optional[tuple[float, float]] = None,
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
-        energy: Optional[tuple[float, float]] = None,
+        energy: Optional[
+            tuple[Union[tuple[float, str], "PlainQuantity"], Union[tuple[float, str], "PlainQuantity"]]
+        ] = None,
         parity: Optional[_backend.Parity] = None,
         database: Optional[_backend.Database] = None,
     ) -> None:
-        self._cpp = self._create_obj(species, n, nu, l, s, j, f, m, energy, parity, database)
-
-    @classmethod
-    def _create_obj(
-        cls,
-        species: str,
-        n: Optional[tuple[int, int]] = None,
-        nu: Optional[tuple[float, float]] = None,
-        l: Optional[tuple[float, float]] = None,
-        s: Optional[tuple[float, float]] = None,
-        j: Optional[tuple[float, float]] = None,
-        f: Optional[tuple[float, float]] = None,
-        m: Optional[tuple[float, float]] = None,
-        energy: Optional[tuple[float, float]] = None,
-        parity: Optional[_backend.Parity] = None,
-        database: Optional[_backend.Database] = None,
-    ):
-        creator = cls._BasisAtomCreator()
+        creator = self._BasisAtomCreator()
         creator.set_species(species)
-        if energy is not None:
-            creator.restrict_energy(*energy)
         if f is not None:
             creator.restrict_quantum_number_f(*f)
         if m is not None:
@@ -67,12 +55,28 @@ class BasisAtomBase:
             creator.restrict_quantum_number_s(*s)
         if j is not None:
             creator.restrict_quantum_number_j(*j)
+        if energy is not None:
+            energy_au: np.ndarray = convert_quantity_to_base(energy, "energy")
+            creator.restrict_energy(*energy_au)
         if database is None:
             database = _backend.Database.get_global_instance(
                 download_missing=False, wigner_in_memory=True, database_dir=""
             )  # Use the default database
-        cpp_obj = creator.create(database)
-        return cpp_obj
+        self._cpp = creator.create(database)
+
+    @classmethod
+    def _from_cpp_object(
+        cls,
+        cpp_obj: Union[
+            _backend.BasisAtomFloat,
+            _backend.BasisAtomComplexFloat,
+            _backend.BasisAtomDouble,
+            _backend.BasisAtomComplexDouble,
+        ],
+    ):
+        obj = cls.__new__(cls)
+        obj._cpp = cpp_obj
+        return obj
 
     @cached_property
     def kets(self) -> list[Union[KetAtomFloat, KetAtomDouble]]:
