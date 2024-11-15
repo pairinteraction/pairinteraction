@@ -7,7 +7,9 @@
 #include "pairinteraction/ket/KetClassicalLight.hpp"
 #include "pairinteraction/ket/KetClassicalLightCreator.hpp"
 #include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
+#include <complex>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
@@ -85,7 +87,8 @@ static void declare_ket_classical_light_creator(nb::module_ &m, std::string cons
 template <typename T>
 static void declare_ket_combined(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetCombined" + type_name;
-    nb::class_<KetCombined<T>, Ket<T>> pyclass(m, pyclass_name.c_str());
+    using real_t = typename traits::NumTraits<T>::real_t;
+    nb::class_<KetCombined<T>, Ket<real_t>> pyclass(m, pyclass_name.c_str());
 }
 
 void bind_ket(nb::module_ &m) {
@@ -101,4 +104,6 @@ void bind_ket(nb::module_ &m) {
     declare_ket_classical_light_creator<double>(m, "Double");
     declare_ket_combined<float>(m, "Float");
     declare_ket_combined<double>(m, "Double");
+    declare_ket_combined<std::complex<float>>(m, "ComplexFloat");
+    declare_ket_combined<std::complex<double>>(m, "ComplexDouble");
 }

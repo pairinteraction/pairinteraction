@@ -30,7 +30,7 @@ template <typename Scalar>
 struct traits::CrtpTraits<SystemCombined<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetCombined<real_t>;
+    using ket_t = KetCombined<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
     using basis_t = BasisCombined<scalar_t>;
     using operator_t = OperatorCombined<scalar_t>;

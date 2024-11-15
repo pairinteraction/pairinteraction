@@ -117,11 +117,6 @@ bool Basis<Derived>::has_ket_index() const {
 }
 
 template <typename Derived>
-bool Basis<Derived>::has_ket_index(size_t ket_id) const {
-    return ket_id_to_ket_index.count(ket_id) > 0;
-}
-
-template <typename Derived>
 const Derived &Basis<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
 }
@@ -144,19 +139,23 @@ Basis<Derived>::get_coefficients() {
 }
 
 template <typename Derived>
-size_t Basis<Derived>::get_ket_index_from_id(size_t ket_id) const {
+int Basis<Derived>::get_ket_index_from_id(size_t ket_id) const {
+    if (ket_id_to_ket_index.count(ket_id) == 0) {
+        return -1;
+    }
     return ket_id_to_ket_index.at(ket_id);
 }
 
 template <typename Derived>
 Eigen::VectorX<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
-    if (!has_ket_index(ket->get_id())) {
+    int ket_index = get_ket_index_from_id(ket->get_id());
+    if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
     // The following line is a more efficient alternative to
     // "get_amplitudes(get_canonical_state_from_ket(ket)).transpose()"
-    return coefficients.matrix.row(ket_id_to_ket_index.at(ket->get_id()));
+    return coefficients.matrix.row(ket_index);
 }
 
 template <typename Derived>
@@ -258,10 +257,11 @@ std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ke
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_corresponding_state(std::shared_ptr<const ket_t> ket) const {
-    if (!has_ket_index(ket->get_id())) {
+    int ket_index = get_ket_index_from_id(ket->get_id());
+    if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_corresponding_state(ket_id_to_ket_index.at(ket->get_id()));
+    return get_corresponding_state(ket_index);
 }
 
 template <typename Derived>
@@ -275,10 +275,11 @@ size_t Basis<Derived>::get_corresponding_state_index(size_t ket_index) const {
 
 template <typename Derived>
 size_t Basis<Derived>::get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const {
-    if (!has_ket_index(ket->get_id())) {
+    int ket_index = get_ket_index_from_id(ket->get_id());
+    if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_corresponding_state_index(ket_id_to_ket_index.at(ket->get_id()));
+    return get_corresponding_state_index(ket_index);
 }
 
 template <typename Derived>
@@ -330,10 +331,11 @@ Basis<Derived>::get_canonical_state_from_ket(size_t ket_index) const {
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const {
-    if (!has_ket_index(ket->get_id())) {
+    int ket_index = get_ket_index_from_id(ket->get_id());
+    if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
-    return get_canonical_state_from_ket(ket_id_to_ket_index.at(ket->get_id()));
+    return get_canonical_state_from_ket(ket_index);
 }
 
 template <typename Derived>
