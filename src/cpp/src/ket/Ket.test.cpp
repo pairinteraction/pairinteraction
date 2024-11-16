@@ -18,19 +18,11 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     public:
         KetDerived(Private /*unused*/, float f, float m, Parity p) : Ket<float>(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
-        size_t get_id() const override {
-            size_t seed = 0;
-            hash::hash_combine(seed, this->quantum_number_f);
-            hash::hash_combine(seed, this->quantum_number_m);
-            hash::hash_combine(seed, this->parity);
-            return seed;
-        }
-        size_t get_id_for_different_quantum_number_m(float new_quantum_number_m) const override {
-            size_t seed = 0;
-            hash::hash_combine(seed, this->quantum_number_f);
-            hash::hash_combine(seed, new_quantum_number_m);
-            hash::hash_combine(seed, this->parity);
-            return seed;
+        std::shared_ptr<KetDerived>
+        get_ket_for_different_quantum_number_m(float new_quantum_number_m) const {
+            auto ket = *this;
+            ket.quantum_number_m = new_quantum_number_m;
+            return std::make_shared<KetDerived>(ket);
         }
     };
 

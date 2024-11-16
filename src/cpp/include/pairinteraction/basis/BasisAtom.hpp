@@ -5,6 +5,7 @@
 
 #include <complex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace pairinteraction {
@@ -46,9 +47,12 @@ public:
     Database &get_database() const;
     const std::string &get_species() const;
 
+    int get_ket_index_from_id(size_t ket_id) const;
+
 private:
     Database &database;
     std::string species;
+    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
 };
 
 extern template class BasisAtom<float>;

@@ -4,6 +4,7 @@
 #include "pairinteraction/utils/hash.hpp"
 
 #include <fmt/core.h>
+#include <memory>
 #include <string>
 
 namespace pairinteraction {
@@ -26,26 +27,32 @@ std::string KetClassicalLight<Real>::get_label() const {
 }
 
 template <typename Real>
-size_t KetClassicalLight<Real>::get_id() const {
-    size_t seed = 0;
-    hash::hash_combine(seed, quantum_number_q);
-    hash::hash_combine(seed, photon_energy);
-    return seed;
-}
-
-template <typename Real>
-size_t
-KetClassicalLight<Real>::get_id_for_different_quantum_number_m(Real new_quantum_number_m) const {
+std::shared_ptr<KetClassicalLight<Real>>
+KetClassicalLight<Real>::get_ket_for_different_quantum_number_m(Real new_quantum_number_m) const {
     if (new_quantum_number_m != 0) {
         throw std::invalid_argument(
             "Classical light cannot have a different quantum number m than zero.");
     }
-    return this->get_id();
+    return std::make_shared<KetClassicalLight<Real>>(*this);
 }
 
 template <typename Real>
 int KetClassicalLight<Real>::get_quantum_number_q() const {
     return quantum_number_q;
+}
+
+template <typename Real>
+bool KetClassicalLight<Real>::operator==(const KetClassicalLight<Real> &other) const {
+    return Ket<Real>::operator==(other) && photon_energy == other.photon_energy &&
+        quantum_number_q == other.quantum_number_q;
+}
+
+template <typename Real>
+size_t KetClassicalLight<Real>::hash::operator()(const KetClassicalLight<Real> &k) const {
+    size_t seed = typename Ket<Real>::hash()(k);
+    utils::hash_combine(seed, k.photon_energy);
+    utils::hash_combine(seed, k.quantum_number_q);
+    return seed;
 }
 
 // Explicit instantiations

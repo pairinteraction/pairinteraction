@@ -68,7 +68,6 @@ public:
     get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const;
     const Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients() const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> &get_coefficients();
-    int get_ket_index_from_id(size_t ket_id) const;
     Eigen::VectorX<scalar_t> get_amplitudes(std::shared_ptr<const ket_t> ket) const;
     Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const Derived> other) const;
@@ -109,14 +108,25 @@ public:
 
 protected:
     Basis(ketvec_t &&kets, std::string &&id_of_kets);
+    int get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const;
     ketvec_t kets;
 
 private:
     const Derived &derived() const;
 
+    struct hash {
+        std::size_t operator()(const std::shared_ptr<const ket_t> &k) const;
+    };
+
+    struct equal_to {
+        bool operator()(const std::shared_ptr<const ket_t> &lhs,
+                        const std::shared_ptr<const ket_t> &rhs) const;
+    };
+
     Transformation<scalar_t> coefficients;
     std::string id_of_kets;
-    std::unordered_map<size_t, size_t> ket_id_to_ket_index;
+
+    std::unordered_map<std::shared_ptr<const ket_t>, size_t, hash, equal_to> ket_to_ket_index;
     std::vector<size_t> ket_index_to_state_index;
 
     std::vector<real_t> state_index_to_quantum_number_f;

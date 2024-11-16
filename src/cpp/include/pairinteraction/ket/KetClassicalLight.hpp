@@ -18,11 +18,18 @@ class KetClassicalLight : public Ket<Real> {
 
 public:
     KetClassicalLight(Private /*unused*/, Real photon_energy, int q);
+
     std::string get_label() const override;
-    size_t get_id() const override;
-    size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const override;
+    std::shared_ptr<KetClassicalLight<Real>>
+    get_ket_for_different_quantum_number_m(Real new_quantum_number_m) const;
     Real get_photon_energy() const;
     int get_quantum_number_q() const;
+
+    bool operator==(const KetClassicalLight<Real> &other) const;
+
+    struct hash {
+        std::size_t operator()(const KetClassicalLight<Real> &k) const;
+    };
 
 private:
     Real photon_energy;

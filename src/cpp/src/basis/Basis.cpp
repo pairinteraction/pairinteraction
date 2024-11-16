@@ -72,13 +72,13 @@ Basis<Derived>::Basis(ketvec_t &&kets, std::string &&id_of_kets)
     state_index_to_quantum_number_f.reserve(this->kets.size());
     state_index_to_quantum_number_m.reserve(this->kets.size());
     state_index_to_parity.reserve(this->kets.size());
-    ket_id_to_ket_index.reserve(this->kets.size());
+    ket_to_ket_index.reserve(this->kets.size());
     size_t index = 0;
     for (const auto &ket : this->kets) {
         state_index_to_quantum_number_f.push_back(ket->get_quantum_number_f());
         state_index_to_quantum_number_m.push_back(ket->get_quantum_number_m());
         state_index_to_parity.push_back(ket->get_parity());
-        ket_id_to_ket_index[ket->get_id()] = index++;
+        ket_to_ket_index[ket] = index++;
         if (ket->get_quantum_number_f() == std::numeric_limits<real_t>::max()) {
             _has_quantum_number_f = false;
         }
@@ -134,17 +134,17 @@ Basis<Derived>::get_coefficients() {
 }
 
 template <typename Derived>
-int Basis<Derived>::get_ket_index_from_id(size_t ket_id) const {
-    if (ket_id_to_ket_index.count(ket_id) == 0) {
+int Basis<Derived>::get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const {
+    if (ket_to_ket_index.count(ket) == 0) {
         return -1;
     }
-    return ket_id_to_ket_index.at(ket_id);
+    return ket_to_ket_index.at(ket);
 }
 
 template <typename Derived>
 Eigen::VectorX<typename Basis<Derived>::scalar_t>
 Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_id(ket->get_id());
+    int ket_index = get_ket_index_from_ket(ket);
     if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
@@ -250,7 +250,7 @@ std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ke
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_corresponding_state(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_id(ket->get_id());
+    int ket_index = get_ket_index_from_ket(ket);
     if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
@@ -268,7 +268,7 @@ size_t Basis<Derived>::get_corresponding_state_index(size_t ket_index) const {
 
 template <typename Derived>
 size_t Basis<Derived>::get_corresponding_state_index(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_id(ket->get_id());
+    int ket_index = get_ket_index_from_ket(ket);
     if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
@@ -322,7 +322,7 @@ Basis<Derived>::get_canonical_state_from_ket(size_t ket_index) const {
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::get_canonical_state_from_ket(std::shared_ptr<const ket_t> ket) const {
-    int ket_index = get_ket_index_from_id(ket->get_id());
+    int ket_index = get_ket_index_from_ket(ket);
     if (ket_index < 0) {
         throw std::invalid_argument("The ket does not belong to the basis.");
     }
@@ -389,8 +389,8 @@ Basis<Derived>::get_rotator(real_t alpha, real_t beta, real_t gamma) const {
         for (real_t m_final = -f; m_final <= f; ++m_final) {
             auto val = wigner::wigner_uppercase_d_matrix<scalar_t>(f, m_initial, m_final, alpha,
                                                                    beta, gamma);
-            size_t idx_final = ket_id_to_ket_index.at(
-                kets[idx_initial]->get_id_for_different_quantum_number_m(m_final));
+            size_t idx_final = get_ket_index_from_ket(
+                kets[idx_initial]->get_ket_for_different_quantum_number_m(m_final));
             entries.emplace_back(idx_final, idx_initial, val);
         }
     }
@@ -762,6 +762,17 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     return transformed;
+}
+
+template <typename Derived>
+size_t Basis<Derived>::hash::operator()(const std::shared_ptr<const ket_t> &k) const {
+    return typename ket_t::hash()(*k);
+}
+
+template <typename Derived>
+bool Basis<Derived>::equal_to::operator()(const std::shared_ptr<const ket_t> &lhs,
+                                          const std::shared_ptr<const ket_t> &rhs) const {
+    return *lhs == *rhs;
 }
 
 // Explicit instantiations

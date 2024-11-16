@@ -1,7 +1,7 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 
 #include "pairinteraction/enums/Parity.hpp"
-#include "pairinteraction/utils/ketid.hpp"
+#include "pairinteraction/utils/hash.hpp"
 
 #include <cmath>
 #include <fmt/core.h>
@@ -10,17 +10,24 @@
 
 namespace pairinteraction {
 template <typename Real>
-KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p, size_t id,
+KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
-                       Real s_exp, Real s_std, Real j_exp, Real j_std, Database &database)
-    : Ket<Real>(energy, f, m, p), id(id), species(std::move(species)), quantum_number_n(n),
+                       Real s_exp, Real s_std, Real j_exp, Real j_std, Database &database,
+                       size_t id_in_database)
+    : Ket<Real>(energy, f, m, p), species(std::move(species)), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
-      quantum_number_j_exp(j_exp), quantum_number_j_std(j_std), database(database) {}
+      quantum_number_j_exp(j_exp), quantum_number_j_std(j_std), database(database),
+      id_in_database(id_in_database) {}
 
 template <typename Real>
 Database &KetAtom<Real>::get_database() const {
     return database;
+}
+
+template <typename Real>
+size_t KetAtom<Real>::get_id_in_database() const {
+    return id_in_database;
 }
 
 template <typename Real>
@@ -72,13 +79,11 @@ std::string KetAtom<Real>::get_label() const {
 }
 
 template <typename Real>
-size_t KetAtom<Real>::get_id() const {
-    return id;
-}
-
-template <typename Real>
-size_t KetAtom<Real>::get_id_for_different_quantum_number_m(Real new_quantum_number_m) const {
-    return ketid::atom::update_linearized_index(id, this->quantum_number_m, new_quantum_number_m);
+std::shared_ptr<KetAtom<Real>>
+KetAtom<Real>::get_ket_for_different_quantum_number_m(Real new_quantum_number_m) const {
+    auto ket = *this;
+    ket.quantum_number_m = new_quantum_number_m;
+    return std::make_shared<KetAtom<Real>>(ket);
 }
 
 template <typename Real>
@@ -129,6 +134,36 @@ Real KetAtom<Real>::get_quantum_number_s_std() const {
 template <typename Real>
 Real KetAtom<Real>::get_quantum_number_j_std() const {
     return quantum_number_j_std;
+}
+
+template <typename Real>
+bool KetAtom<Real>::operator==(const KetAtom<Real> &other) const {
+    return Ket<Real>::operator==(other) && species == other.species &&
+        quantum_number_n == other.quantum_number_n &&
+        quantum_number_nu_exp == other.quantum_number_nu_exp &&
+        quantum_number_nu_std == other.quantum_number_nu_std &&
+        quantum_number_l_exp == other.quantum_number_l_exp &&
+        quantum_number_l_std == other.quantum_number_l_std &&
+        quantum_number_s_exp == other.quantum_number_s_exp &&
+        quantum_number_s_std == other.quantum_number_s_std &&
+        quantum_number_j_exp == other.quantum_number_j_exp &&
+        quantum_number_j_std == other.quantum_number_j_std;
+}
+
+template <typename Real>
+size_t KetAtom<Real>::hash::operator()(const KetAtom<Real> &k) const {
+    size_t seed = typename Ket<Real>::hash()(k);
+    utils::hash_combine(seed, k.species);
+    utils::hash_combine(seed, k.quantum_number_n);
+    utils::hash_combine(seed, k.quantum_number_nu_exp);
+    utils::hash_combine(seed, k.quantum_number_nu_std);
+    utils::hash_combine(seed, k.quantum_number_l_exp);
+    utils::hash_combine(seed, k.quantum_number_l_std);
+    utils::hash_combine(seed, k.quantum_number_s_exp);
+    utils::hash_combine(seed, k.quantum_number_s_std);
+    utils::hash_combine(seed, k.quantum_number_j_exp);
+    utils::hash_combine(seed, k.quantum_number_j_std);
+    return seed;
 }
 
 // Explicit instantiations
