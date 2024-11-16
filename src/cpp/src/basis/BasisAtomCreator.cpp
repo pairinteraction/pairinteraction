@@ -85,7 +85,7 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::append_ket(std::shared_ptr<c
         throw std::invalid_argument("Species mismatch.");
     }
     additional_ket_species.emplace(ket->get_species());
-    additional_ket_ids.push_back(ket->get_id());
+    additional_ket_ids.push_back(ket->get_id_in_database());
     return *this;
 }
 

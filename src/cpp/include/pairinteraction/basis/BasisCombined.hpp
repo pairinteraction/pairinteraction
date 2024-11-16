@@ -53,7 +53,7 @@ public:
     using map_size_t = std::unordered_map<size_t, size_t>;
     using map_range_t = std::unordered_map<size_t, range_t>;
     using map_indices_t =
-        std::unordered_map<std::vector<size_t>, size_t, hash::hash<std::vector<size_t>>>;
+        std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
     BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
                   map_range_t &&map_range_of_state_index2,

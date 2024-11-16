@@ -31,9 +31,16 @@ public:
                 std::initializer_list<std::string> atomic_labels,
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
                 real_t energy);
+
     std::string get_label() const override;
-    size_t get_id() const override;
-    size_t get_id_for_different_quantum_number_m(real_t new_quantum_number_m) const override;
+    std::shared_ptr<KetCombined<Scalar>>
+    get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
+
+    bool operator==(const KetCombined<Scalar> &other) const;
+
+    struct hash {
+        std::size_t operator()(const KetCombined<Scalar> &k) const;
+    };
 
 private:
     std::vector<size_t> atomic_indices;

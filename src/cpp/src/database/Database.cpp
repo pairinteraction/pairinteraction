@@ -7,7 +7,7 @@
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
-#include "pairinteraction/utils/ketid.hpp"
+#include "pairinteraction/utils/id_in_database.hpp"
 #include "pairinteraction/utils/paths.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 
@@ -83,8 +83,8 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
             if (database_repo_host != default_database_repo_host ||
                 database_repo_paths != default_database_repo_paths) {
                 std::size_t seed = 0;
-                hash::hash_combine(seed, database_repo_paths);
-                hash::hash_combine(seed, database_repo_host);
+                utils::hash_combine(seed, database_repo_paths);
+                utils::hash_combine(seed, database_repo_host);
                 if (seed == doc["hash"].get<std::size_t>()) {
                     database_repo_host.clear();
                     database_repo_paths.clear();
@@ -114,8 +114,8 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         doc["database_repo_paths"] = database_repo_paths;
 
         std::size_t seed = 0;
-        hash::hash_combine(seed, default_database_repo_paths);
-        hash::hash_combine(seed, default_database_repo_host);
+        utils::hash_combine(seed, default_database_repo_paths);
+        utils::hash_combine(seed, default_database_repo_host);
         doc["hash"] = seed;
 
         file << doc.dump(4);
@@ -516,8 +516,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[0];
     auto result_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1])[0];
     auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[0];
-    auto result_id = ketid::atom::get(duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0],
-                                      result_quantum_number_m);
+    auto result_id = utils::get_linearized_id_in_database(
+        duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0], result_quantum_number_m);
     auto result_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[0];
     auto result_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[5])[0];
     auto result_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[6])[0];
@@ -541,11 +541,11 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     return std::make_shared<const KetAtom<Real>>(
         typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
-        result_quantum_number_m, static_cast<Parity>(result_parity), result_id, species,
+        result_quantum_number_m, static_cast<Parity>(result_parity), species,
         result_quantum_number_n, result_quantum_number_nu_exp, result_quantum_number_nu_std,
         result_quantum_number_l_exp, result_quantum_number_l_std, result_quantum_number_s_exp,
         result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std,
-        *this);
+        *this, result_id);
 }
 
 template <typename Scalar>
@@ -626,7 +626,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
     where += ")";
     if (!additional_ket_ids.empty()) {
-        where += fmt::format(" OR {} IN ({})", ketid::atom::SQL_TERM,
+        where += fmt::format(" OR {} IN ({})", utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
                              fmt::join(additional_ket_ids, ","));
     }
 
@@ -647,8 +647,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                 UNNEST(list_transform(generate_series(0,(2*f)::bigint),
                 x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
-            id_of_kets, ketid::atom::SQL_TERM, tables[species + "_states"].local_path.string(),
-            where));
+            id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
+            tables[species + "_states"].local_path.string(), where));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
@@ -889,12 +889,12 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             // Append a new state
             kets.push_back(std::make_shared<const KetAtom<real_t>>(
                 typename KetAtom<real_t>::Private(), chunk_energy[i], chunk_quantum_number_f[i],
-                chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), chunk_id[i],
-                species, chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
+                chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), species,
+                chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
                 chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
                 chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
                 chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
-                chunk_quantum_number_j_std[i], *this));
+                chunk_quantum_number_j_std[i], *this, chunk_id[i]));
         }
     }
 

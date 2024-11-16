@@ -36,20 +36,8 @@ std::string KetCombined<Scalar>::get_label() const {
 }
 
 template <typename Scalar>
-size_t KetCombined<Scalar>::get_id() const {
-    if (atomic_indices.empty()) {
-        return 0;
-    }
-    size_t linear_index = atomic_indices[0];
-    for (size_t k = 1; k < atomic_indices.size(); ++k) {
-        linear_index = linear_index * atomic_bases[k]->get_number_of_states() + atomic_indices[k];
-    }
-    return linear_index;
-}
-
-template <typename Scalar>
-size_t
-KetCombined<Scalar>::get_id_for_different_quantum_number_m(real_t /*new_quantum_number_m*/) const {
+std::shared_ptr<KetCombined<Scalar>>
+KetCombined<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum_number_m*/) const {
     // If we use symmetrized states so that the quantum_number_f is the total
     // angular quantum number, the quantum_number_m is the magnetic quantum number
     // corresponding to the total angular quantum number and we can implement this
@@ -87,6 +75,24 @@ Parity KetCombined<Scalar>::calculate_parity(
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
     // Because this ket state is not symmetrized, the parity is not well-defined.
     return Parity::UNKNOWN;
+}
+
+template <typename Scalar>
+bool KetCombined<Scalar>::operator==(const KetCombined<Scalar> &other) const {
+    return Ket<real_t>::operator==(other) && atomic_indices == other.atomic_indices &&
+        atomic_bases == other.atomic_bases;
+}
+
+template <typename Scalar>
+size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const {
+    size_t seed = typename Ket<real_t>::hash()(k);
+    for (const auto &index : k.atomic_indices) {
+        utils::hash_combine(seed, index);
+    }
+    for (const auto &basis : k.atomic_bases) {
+        utils::hash_combine(seed, reinterpret_cast<std::uintptr_t>(basis.get()));
+    }
+    return seed;
 }
 
 // Explicit instantiations

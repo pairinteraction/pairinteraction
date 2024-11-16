@@ -44,7 +44,7 @@ add_library(
   ./include/pairinteraction/utils/eigen_compat.hpp
   ./include/pairinteraction/utils/euler.hpp
   ./include/pairinteraction/utils/hash.hpp
-  ./include/pairinteraction/utils/ketid.hpp
+  ./include/pairinteraction/utils/id_in_database.hpp
   ./include/pairinteraction/utils/maths.hpp
   ./include/pairinteraction/utils/paths.hpp
   ./include/pairinteraction/utils/Range.hpp

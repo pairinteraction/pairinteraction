@@ -1,6 +1,7 @@
 #include "pairinteraction/ket/Ket.hpp"
 
 #include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/utils/hash.hpp"
 
 #include <limits>
 
@@ -42,6 +43,22 @@ Real Ket<Real>::get_quantum_number_m() const {
 template <typename Real>
 Parity Ket<Real>::get_parity() const {
     return parity;
+}
+
+template <typename Real>
+bool Ket<Real>::operator==(const Ket<Real> &other) const {
+    return energy == other.energy && quantum_number_f == other.quantum_number_f &&
+        quantum_number_m == other.quantum_number_m && parity == other.parity;
+}
+
+template <typename Real>
+size_t Ket<Real>::hash::operator()(const Ket<Real> &k) const {
+    size_t seed = 0;
+    utils::hash_combine(seed, k.energy);
+    utils::hash_combine(seed, k.quantum_number_f);
+    utils::hash_combine(seed, k.quantum_number_m);
+    utils::hash_combine(seed, static_cast<int>(k.parity));
+    return seed;
 }
 
 // Explicit instantiations
