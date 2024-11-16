@@ -30,7 +30,7 @@ public:
     KetCombined(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
                 std::initializer_list<std::string> atomic_labels,
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
-                real_t energy, real_t quantum_number_f, real_t quantum_number_m, Parity parity);
+                real_t energy);
     std::string get_label() const override;
     size_t get_id() const override;
     size_t get_id_for_different_quantum_number_m(real_t new_quantum_number_m) const override;
@@ -39,6 +39,15 @@ private:
     std::vector<size_t> atomic_indices;
     std::vector<std::string> atomic_labels;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases;
+    static real_t
+    calculate_quantum_number_f(const std::vector<size_t> &indices,
+                               const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
+    static real_t
+    calculate_quantum_number_m(const std::vector<size_t> &indices,
+                               const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
+    static Parity
+    calculate_parity(const std::vector<size_t> &indices,
+                     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
 };
 
 extern template class KetCombined<float>;

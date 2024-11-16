@@ -27,10 +27,16 @@ class Ket {
 public:
     Ket() = delete;
     virtual ~Ket() = default;
+
+    bool has_quantum_number_f() const;
+    bool has_quantum_number_m() const;
+    bool has_parity() const;
+
     Real get_energy() const;
     Real get_quantum_number_f() const;
     Real get_quantum_number_m() const;
     Parity get_parity() const;
+
     virtual std::string get_label() const = 0;
     virtual size_t get_id() const = 0;
     virtual size_t get_id_for_different_quantum_number_m(Real new_quantum_number_m) const = 0;

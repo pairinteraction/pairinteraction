@@ -12,9 +12,10 @@ template <typename Scalar>
 KetCombined<Scalar>::KetCombined(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
     std::initializer_list<std::string> atomic_labels,
-    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy,
-    real_t quantum_number_f, real_t quantum_number_m, Parity parity)
-    : Ket<real_t>(energy, quantum_number_f, quantum_number_m, parity),
+    std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
+    : Ket<real_t>(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
+                  calculate_quantum_number_m(atomic_indices, atomic_bases),
+                  calculate_parity(atomic_indices, atomic_bases)),
       atomic_indices(atomic_indices), atomic_labels(atomic_labels), atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_labels.size() ||
         atomic_indices.size() != atomic_bases.size()) {
@@ -54,6 +55,38 @@ KetCombined<Scalar>::get_id_for_different_quantum_number_m(real_t /*new_quantum_
     // corresponding to the total angular quantum number and we can implement this
     // method.
     throw std::runtime_error("Not implemented.");
+}
+
+template <typename Scalar>
+typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_number_f(
+    const std::vector<size_t> & /*indices*/,
+    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
+    // Because this ket state is not symmetrized, the quantum_number_f is not well-defined.
+    return std::numeric_limits<real_t>::max();
+}
+
+template <typename Scalar>
+typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_number_m(
+    const std::vector<size_t> &indices,
+    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases) {
+    for (const auto &basis : bases) {
+        if (!basis->has_quantum_number_m()) {
+            return std::numeric_limits<real_t>::max();
+        }
+    }
+    real_t total_quantum_number_m = 0;
+    for (size_t i = 0; i < indices.size(); ++i) {
+        total_quantum_number_m += bases[i]->get_quantum_number_m(indices[i]);
+    }
+    return total_quantum_number_m;
+}
+
+template <typename Scalar>
+Parity KetCombined<Scalar>::calculate_parity(
+    const std::vector<size_t> & /*indices*/,
+    const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
+    // Because this ket state is not symmetrized, the parity is not well-defined.
+    return Parity::UNKNOWN;
 }
 
 // Explicit instantiations
