@@ -63,7 +63,6 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
     auto eigenvalues2 = system2.get_eigenvalues();
     real_t *eigenvalues2_begin = eigenvalues2.data();
     real_t *eigenvalues2_end = eigenvalues2_begin + eigenvalues2.size();
-    bool has_quantum_number_m = basis1->has_quantum_number_m() && basis2->has_quantum_number_m();
 
     ketvec_t kets;
     kets.reserve(eigenvalues1.size() * eigenvalues2.size());
@@ -96,16 +95,24 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             assert(!range_energy.is_finite() ||
                    (energy >= range_energy.min() && energy <= range_energy.max()));
 
-            // Get quantum numbers
-            Parity parity = Parity::UNKNOWN;
-            real_t quantum_number_f = std::numeric_limits<real_t>::max();
-            real_t quantum_number_m = std::numeric_limits<real_t>::max();
-            if (has_quantum_number_m) {
-                quantum_number_m =
-                    basis1->get_quantum_number_m(idx1) + basis2->get_quantum_number_m(idx2);
+            // Get labels for the kets with largest overlap
+            auto label1 = basis1->get_corresponding_ket(idx1)->get_label();
+            auto label2 = basis2->get_corresponding_ket(idx2)->get_label();
+
+            // Create a combined state
+            auto ket = std::make_shared<ket_t>(
+                typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
+                std::initializer_list<std::string>{label1, label2},
+                std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
+                energy);
+
+            // Check the quantum number m
+            if (ket->has_quantum_number_m()) {
                 if (range_quantum_number_m.is_finite() &&
-                    (quantum_number_m < range_quantum_number_m.min() - numerical_precision ||
-                     quantum_number_m > range_quantum_number_m.max() + numerical_precision)) {
+                    (ket->get_quantum_number_m() <
+                         range_quantum_number_m.min() - numerical_precision ||
+                     ket->get_quantum_number_m() >
+                         range_quantum_number_m.max() + numerical_precision)) {
                     continue;
                 }
             } else if (range_quantum_number_m.is_finite()) {
@@ -113,16 +120,8 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
                     "The quantum number m must not be restricted because it is not well-defined.");
             }
 
-            // Get labels for the kets with largest overlap
-            auto label1 = basis1->get_corresponding_ket(idx1)->get_label();
-            auto label2 = basis2->get_corresponding_ket(idx2)->get_label();
-
             // Store the combined state as a ket
-            kets.emplace_back(std::make_shared<ket_t>(
-                typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
-                std::initializer_list<std::string>{label1, label2},
-                std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
-                energy, quantum_number_f, quantum_number_m, parity));
+            kets.emplace_back(std::move(ket));
 
             // Store the ket index of the combined state
             state_indices_to_ket_index.emplace(std::vector<size_t>{idx1, idx2}, ket_index++);
