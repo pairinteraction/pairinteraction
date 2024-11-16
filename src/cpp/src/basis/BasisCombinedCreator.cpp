@@ -7,11 +7,9 @@
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetCombined.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
+#include "pairinteraction/utils/uid.hpp"
 
 #include <algorithm>
-#include <chrono>
-#include <cstdint>
-#include <fmt/core.h>
 #include <limits>
 #include <memory>
 
@@ -130,13 +128,9 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
 
     kets.shrink_to_fit();
 
-    auto now = std::chrono::high_resolution_clock::now();
-    std::uint64_t nanoseconds =
-        std::chrono::duration_cast<std::chrono::nanoseconds>(now.time_since_epoch()).count();
-    std::string id_of_kets = fmt::format("{:016x}", nanoseconds);
-
     return std::make_shared<basis_t>(typename basis_t::Private(), std::move(kets),
-                                     std::move(id_of_kets), std::move(map_range_of_state_index2),
+                                     std::move(utils::generate_uid()),
+                                     std::move(map_range_of_state_index2),
                                      std::move(state_indices_to_ket_index), basis1, basis2);
 }
 
