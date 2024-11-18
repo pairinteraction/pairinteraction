@@ -16,6 +16,8 @@ from pairinteraction.backend._backend import (
 from pairinteraction.backend._wrapped import (
     # import objects without types (i.e. that are valid for all types)
     diagonalize,
+    calculate_energy,
+    calculate_electric_dipole_matrix_element,
     # import objects with only real types (i.e. either float or double)
     KetAtomDouble as KetAtom,
     KetClassicalLightDouble as KetClassicalLight,
@@ -44,4 +46,6 @@ __all__ = [
     "SystemAtom",
     "BasisCombined",
     "SystemCombined",
+    "calculate_energy",
+    "calculate_electric_dipole_matrix_element",
 ]
