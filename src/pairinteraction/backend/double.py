@@ -4,7 +4,6 @@ from pairinteraction.backend._backend import (
     DatabaseAvailabilitySpecies,
     DatabaseAvailabilityWigner,
     Parity,
-    diagonalize,
     # import objects with only real types (i.e. either float or double)
     KetDouble as Ket,
     # import objects with specific types (i.e. float, double, complexfloat or complexdouble)
@@ -16,6 +15,7 @@ from pairinteraction.backend._backend import (
 )
 from pairinteraction.backend._wrapped import (
     # import objects without types (i.e. that are valid for all types)
+    diagonalize,
     # import objects with only real types (i.e. either float or double)
     KetAtomDouble as KetAtom,
     KetClassicalLightDouble as KetClassicalLight,
