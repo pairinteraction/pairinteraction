@@ -1,12 +1,11 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, Optional, Union
 
-import numpy as np
 import scipy.sparse
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.KetAtom import KetAtomDouble, KetAtomFloat
-from pairinteraction.unit_system import convert_quantity_to_base
+from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -31,9 +30,8 @@ class BasisAtomBase:
         j: Optional[tuple[float, float]] = None,
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
-        energy: Optional[
-            tuple[Union[tuple[float, str], "PlainQuantity"], Union[tuple[float, str], "PlainQuantity"]]
-        ] = None,
+        energy: Union[tuple[float, float], tuple["PlainQuantity", "PlainQuantity"], None] = None,
+        energy_unit: str = "pint",
         parity: Optional[_backend.Parity] = None,
         database: Optional[_backend.Database] = None,
     ) -> None:
@@ -56,8 +54,9 @@ class BasisAtomBase:
         if j is not None:
             creator.restrict_quantum_number_j(*j)
         if energy is not None:
-            energy_au: np.ndarray = convert_quantity_to_base(energy, "energy")
-            creator.restrict_energy(*energy_au)
+            min_energy_au = Qty(energy[0], energy_unit).to_base("energy")
+            max_energy_au = Qty(energy[1], energy_unit).to_base("energy")
+            creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
             database = _backend.Database.get_global_instance(
                 download_missing=False, wigner_in_memory=True, database_dir=""

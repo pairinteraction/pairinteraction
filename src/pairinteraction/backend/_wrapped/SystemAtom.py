@@ -1,8 +1,6 @@
 from abc import ABC
-from collections.abc import Sequence
+from collections.abc import Collection
 from typing import TYPE_CHECKING, Union
-
-import numpy as np
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.BasisAtom import (
@@ -12,10 +10,10 @@ from pairinteraction.backend._wrapped.BasisAtom import (
     BasisAtomDouble,
     BasisAtomFloat,
 )
-from pairinteraction.unit_system import convert_base_to_quantity, convert_quantity_to_base, convert_raw_to_base
+from pairinteraction.unit_system import Qties, Qty
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity, PlainUnit
+    from pint.facets.plain import PlainQuantity
 
 
 class SystemAtomBase(ABC):
@@ -59,24 +57,18 @@ class SystemAtomBase(ABC):
     def update_basis(self) -> None:
         self._basis = self._BasisAtom._from_cpp_object(self._cpp.get_basis())
 
-    def set_electric_field(self, electric_field: Sequence[float], unit: Union[str, "PlainUnit"] = "G"):
-        electric_field_base_units: np.ndarray = convert_raw_to_base(electric_field, unit, "electric_field")
-        self._cpp.set_electric_field(list(electric_field_base_units))
+    def set_electric_field(
+        self, electric_field: Union["PlainQuantity", Collection[Union[float, "PlainQuantity"]]], unit: str = "pint"
+    ):
+        electric_field_au = [Qty(v, unit).to_base("electric_field") for v in electric_field]
+        self._cpp.set_electric_field(electric_field_au)
         return self
 
-    def set_electric_field_from_quantity(self, electric_field: Sequence["PlainQuantity"]):
-        electric_field_base_units: np.ndarray = convert_quantity_to_base(electric_field, "electric_field")
-        self._cpp.set_electric_field(list(electric_field_base_units))
-        return self
-
-    def set_magnetic_field(self, magnetic_field: Sequence[float], unit: Union[str, "PlainUnit"] = "G"):
-        magnetic_field_base_units: np.ndarray = convert_raw_to_base(magnetic_field, unit, "magnetic_field")
-        self._cpp.set_magnetic_field(list(magnetic_field_base_units))
-        return self
-
-    def set_magnetic_field_from_quantity(self, magnetic_field: Sequence["PlainQuantity"]):
-        magnetic_field_base_units: np.ndarray = convert_quantity_to_base(magnetic_field, "magnetic_field")
-        self._cpp.set_magnetic_field(list(magnetic_field_base_units))
+    def set_magnetic_field(
+        self, magnetic_field: Union["PlainQuantity", Collection[Union[float, "PlainQuantity"]]], unit: str = "pint"
+    ):
+        magnetic_field_au = [Qty(v, unit).to_base("magnetic_field") for v in magnetic_field]
+        self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
     def enable_diamagnetism(self, enable: bool):
@@ -106,12 +98,10 @@ class SystemAtomBase(ABC):
         self._cpp.transform(transformation)
         return self
 
-    def get_eigenvalues(self, unit: Union[str, "PlainUnit"] = "GHz") -> np.ndarray:
-        return self.get_eigenvalues_as_quantity(unit).magnitude
-
-    def get_eigenvalues_as_quantity(self, unit: Union[str, "PlainUnit"] = "GHz") -> "PlainQuantity":
+    def get_eigenvalues(self, unit: str = "pint"):
         eigenvalues_au = self._cpp.get_eigenvalues()
-        return convert_base_to_quantity(eigenvalues_au, "energy", unit)
+        eigenvalues = Qties.from_base(eigenvalues_au, "energy")
+        return eigenvalues.to_unit(unit)
 
     def get_eigenbasis(self):
         return self._cpp.get_eigenbasis()

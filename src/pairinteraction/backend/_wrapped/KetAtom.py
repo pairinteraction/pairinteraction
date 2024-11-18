@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.unit_system import convert_base_to_quantity, convert_quantity_to_base
+from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity, PlainUnit
+    from pint.facets.plain import PlainQuantity
 
 
 class KetAtomBase:
@@ -20,7 +20,8 @@ class KetAtomBase:
         j: Optional[float] = None,
         f: Optional[float] = None,
         m: Optional[float] = None,
-        energy: Union[tuple[float, str], "PlainQuantity", None] = None,
+        energy: Union[float, "PlainQuantity", None] = None,
+        energy_unit: str = "pint",
         parity: Optional[_backend.Parity] = None,
         database: Optional[_backend.Database] = None,
     ) -> None:
@@ -41,7 +42,7 @@ class KetAtomBase:
         if m is not None:
             creator.set_quantum_number_m(m)
         if energy is not None:
-            energy_au: float = convert_quantity_to_base(energy, "energy")
+            energy_au = Qty(energy, energy_unit).to_base("energy")
             creator.set_energy(energy_au)
         if parity is not None:
             creator.set_parity(parity)
@@ -97,12 +98,10 @@ class KetAtomBase:
     def species(self) -> str:
         return self._cpp.get_species()
 
-    def get_energy_as_quantity(self, unit: Union[str, "PlainUnit"] = "GHz") -> "PlainQuantity":
+    def get_energy(self, unit: str = "pint"):
         energy_au = self._cpp.get_energy()
-        return convert_base_to_quantity(energy_au, "energy", unit)
-
-    def get_energy(self, unit: Union[str, "PlainUnit"] = "GHz") -> float:
-        return self.get_energy_as_quantity(unit).magnitude
+        energy = Qty.from_base(energy_au, "energy")
+        return energy.to_unit(unit)
 
 
 class KetAtomFloat(KetAtomBase):

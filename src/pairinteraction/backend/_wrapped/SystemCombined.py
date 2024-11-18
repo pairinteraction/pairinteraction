@@ -1,8 +1,6 @@
 from abc import ABC
-from collections.abc import Sequence
+from collections.abc import Collection
 from typing import TYPE_CHECKING, Union
-
-import numpy as np
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.BasisCombined import (
@@ -12,10 +10,10 @@ from pairinteraction.backend._wrapped.BasisCombined import (
     BasisCombinedDouble,
     BasisCombinedFloat,
 )
-from pairinteraction.unit_system import convert_base_to_quantity, convert_raw_to_base
+from pairinteraction.unit_system import Qties, Qty
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity, PlainUnit
+    from pint.facets.plain import PlainQuantity
 
 
 class SystemCombinedBase(ABC):
@@ -63,14 +61,16 @@ class SystemCombinedBase(ABC):
         self._cpp.set_order(order)
         return self
 
-    def set_distance(self, distance: float, unit: Union[str, "PlainUnit"] = "mircrometer"):
-        distance_base_units: float = convert_raw_to_base(distance, unit, "distance")
-        self._cpp.set_distance(distance_base_units)
+    def set_distance(self, distance: Union[float, "PlainQuantity"], unit: str = "pint"):
+        distance_au = Qty(distance, unit).to_base("distance")
+        self._cpp.set_distance(distance_au)
         return self
 
-    def set_distance_vector(self, distance: Sequence[float], unit: Union[str, "PlainUnit"] = "mircrometer"):
-        distance_base_units: np.ndarray = convert_raw_to_base(distance, unit, "distance")
-        self._cpp.set_distance_vector(list(distance_base_units))
+    def set_distance_vector(
+        self, distance: Union["PlainQuantity", Collection[Union[float, "PlainQuantity"]]], unit: str = "pint"
+    ):
+        distance_au = [Qty(v, unit).to_base("distance") for v in distance]
+        self._cpp.set_distance_vector(distance_au)
         return self
 
     def diagonalize(
@@ -92,16 +92,14 @@ class SystemCombinedBase(ABC):
     def matrix(self):
         return self._cpp.get_matrix()
 
-    def transformed(self, transformation) -> "SystemCombinedBase":
-        new_cpp = self._cpp.transformed(transformation)
-        return self._from_cpp_object(new_cpp)
+    def transform(self, transformation) -> "SystemCombinedBase":
+        self._cpp.transform(transformation)
+        return self
 
-    def get_eigenvalues(self, unit: Union[str, "PlainUnit"] = "GHz") -> np.ndarray:
-        return self.get_eigenvalues_as_quantity(unit).magnitude
-
-    def get_eigenvalues_as_quantity(self, unit: Union[str, "PlainUnit"] = "GHz") -> "PlainQuantity":
+    def get_eigenvalues(self, unit: str = "pint"):
         eigenvalues_au = self._cpp.get_eigenvalues()
-        return convert_base_to_quantity(eigenvalues_au, "energy", unit)
+        eigenvalues = Qties.from_base(eigenvalues_au, "energy")
+        return eigenvalues.to_unit(unit)
 
     def get_eigenbasis(self):
         return self._cpp.get_eigenbasis()

@@ -1,7 +1,6 @@
 from functools import cached_property
 from typing import TYPE_CHECKING, Optional, Union
 
-import numpy as np
 import scipy.sparse
 
 import pairinteraction.backend._backend as _backend
@@ -12,7 +11,7 @@ from pairinteraction.backend._backend import (
     KetCombinedFloat,
 )
 from pairinteraction.backend._wrapped.SystemAtom import SystemAtomBase
-from pairinteraction.unit_system import convert_quantity_to_base
+from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -33,9 +32,8 @@ class BasisCombinedBase:
         self,
         systems: list[SystemAtomBase],
         m: Optional[tuple[float, float]] = None,
-        energy: Optional[
-            tuple[Union[tuple[float, str], "PlainQuantity"], Union[tuple[float, str], "PlainQuantity"]]
-        ] = None,
+        energy: Union[tuple[float, float], tuple["PlainQuantity", "PlainQuantity"], None] = None,
+        energy_unit: str = "pint",
     ) -> None:
         creator = self._BasisCombinedCreator()
         for system in systems:
@@ -43,8 +41,9 @@ class BasisCombinedBase:
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if energy is not None:
-            energy_au: np.ndarray = convert_quantity_to_base(energy, "energy")
-            creator.restrict_energy(*energy_au)
+            min_energy_au = Qty(energy[0], energy_unit).to_base("energy")
+            max_energy_au = Qty(energy[1], energy_unit).to_base("energy")
+            creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 
     @classmethod
