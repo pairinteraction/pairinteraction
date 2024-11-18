@@ -21,7 +21,9 @@ from pairinteraction.backend._wrapped import (
     KetClassicalLightDouble as KetClassicalLight,
     # import objects with specific types (i.e. float, double, complexfloat or complexdouble)
     BasisAtomComplexDouble as BasisAtom,
+    BasisCombinedComplexDouble as BasisCombined,
     SystemAtomComplexDouble as SystemAtom,
+    SystemCombinedComplexDouble as SystemCombined,
 )
 
 __all__ = [
@@ -40,4 +42,6 @@ __all__ = [
     "DiagonalizerLapacke",
     "EigenSystemH",
     "SystemAtom",
+    "BasisCombined",
+    "SystemCombined",
 ]
