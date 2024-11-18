@@ -6,70 +6,44 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-from pint import UnitRegistry
 
-from pairinteraction.backend import (
-    BasisAtomCreatorDouble,
-    BasisCombinedCreatorDouble,
-    Database,
-    DiagonalizerEigenDouble,
-    KetAtomCreatorDouble,
-    SystemAtomDouble,
-    SystemCombinedDouble,
-    TransformationType,
-    diagonalizeSystemCombinedDouble,
-)
+import pairinteraction.backend.double as pi
+from pairinteraction import ureg
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
 reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenvalues.txt"
 reference_overlaps_file = Path(__file__).parent.parent / "data/reference_pair_potential/overlaps.txt"
 
 
-def test_pair_potential(
-    ureg: UnitRegistry, generate_reference: bool, database_dir: str, download_missing: bool
-) -> None:
+def test_pair_potential(generate_reference: bool, database_dir: str, download_missing: bool) -> None:
     """Test calculating a pair potential."""
-    database = Database(download_missing, True, database_dir)
-    diagonalizer = DiagonalizerEigenDouble()
+    database = pi.Database(download_missing, True, database_dir)
+    diagonalizer = pi.DiagonalizerEigen()
 
     # Create a single-atom system
-    basis = (
-        BasisAtomCreatorDouble()
-        .set_species("Rb")
-        .restrict_quantum_number_n(58, 62)
-        .restrict_quantum_number_l(0, 2)
-        .create(database)
-    )
-    print(f"Number of single-atom basis states: {basis.get_number_of_states()}")
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
+    print(f"Number of single-atom basis states: {basis.number_of_states}")
 
-    system = SystemAtomDouble(basis)
+    system = pi.SystemAtom(basis)
 
     # Create two-atom systems for different interatomic distances
-    ket = (
-        KetAtomCreatorDouble()
-        .set_species("Rb")
-        .set_quantum_number_n(60)
-        .set_quantum_number_l(0)
-        .set_quantum_number_m(0.5)
-        .create(database)
-    )
-    min_energy = 2 * ket.get_energy() * ureg.hartree - (3 * ureg.gigahertz).to(ureg.hartree, "spectroscopy")
-    max_energy = 2 * ket.get_energy() * ureg.hartree + (3 * ureg.gigahertz).to(ureg.hartree, "spectroscopy")
+    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
+    delta_energy = (3 * ureg.gigahertz).to(ureg.hartree, "spectroscopy").magnitude
+    min_energy = 2 * ket.get_energy(unit="hartree") - delta_energy
+    max_energy = 2 * ket.get_energy(unit="hartree") + delta_energy
 
     combined_basis = (
         BasisCombinedCreatorDouble()
         .add(system)
         .add(system)
-        .restrict_energy(min_energy.to_base_units().magnitude, max_energy.to_base_units().magnitude)
+        .restrict_energy(min_energy, max_energy)
         .restrict_quantum_number_m(1, 1)
         .create()
     )
     print(f"Number of two-atom basis states: {combined_basis.get_number_of_states()}")
 
-    distances = np.linspace(1, 5, 5) * ureg.micrometer
-    combined_systems = [
-        SystemCombinedDouble(combined_basis).set_distance(d.to_base_units().magnitude) for d in distances
-    ]
+    distances = np.linspace(1, 5, 5)
+    combined_systems = [SystemCombinedDouble(combined_basis).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
     diagonalizeSystemCombinedDouble(combined_systems, diagonalizer)
@@ -86,10 +60,7 @@ def test_pair_potential(
 
     # Compare to reference data
     kets = [str(ket) for ket in combined_basis.get_kets()]
-    eigenvalues = [
-        (system.get_eigenvalues() * ureg.hartree).to("gigahertz", "spectroscopy").magnitude
-        for system in combined_systems
-    ]
+    eigenvalues = [system.get_eigenvalues(unit="GHz") for system in combined_systems]
     eigenstates = [system.get_eigenbasis().get_coefficients().todense().A1 for system in combined_systems]
 
     if generate_reference:
