@@ -5,6 +5,7 @@ from pairinteraction.backend._wrapped.BasisAtom import (
     BasisAtomDouble as BasisAtomDouble,
     BasisAtomFloat as BasisAtomFloat,
 )
+from pairinteraction.backend._wrapped.diagonalize import diagonalize as diagonalize
 from pairinteraction.backend._wrapped.KetAtom import (
     KetAtomBase as KetAtomBase,
     KetAtomDouble as KetAtomDouble,
