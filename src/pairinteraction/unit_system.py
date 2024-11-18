@@ -1,15 +1,15 @@
-from collections.abc import Sequence
+from collections.abc import Collection
 from typing import TYPE_CHECKING, Literal, Union
 
 import numpy as np
-from numpy.typing import ArrayLike
 from pint import UnitRegistry
+from pint.facets.plain import PlainQuantity
 
 if TYPE_CHECKING:
-    from pint.facets.plain import PlainQuantity, PlainUnit
+    from numpy.typing import ArrayLike
+    from pint.facets.plain import PlainUnit
 
 ureg = UnitRegistry(system="atomic")
-
 
 Dimension = Literal["electric_field", "magnetic_field", "distance", "energy"]
 BaseUnits: dict[Dimension, "PlainUnit"] = {
@@ -20,45 +20,71 @@ BaseUnits: dict[Dimension, "PlainUnit"] = {
 }
 
 
-def convert_quantity_to_raw(
-    quantity: Union["PlainQuantity", tuple[float, str]], unit_to: Union[str, "PlainUnit"]
-) -> Union[float, np.ndarray]:
-    """Convert a pint.Quantity object to a raw float value in the given unit."""
-    if isinstance(quantity, (float, int, complex)) and quantity == 0:
-        return 0
-    if isinstance(quantity, Sequence) and len(quantity) == 2:
-        quantity = ureg.Quantity(*quantity)
-    if not isinstance(quantity, ureg.Quantity):
-        raise TypeError("quantity must be a pairinteraction.ureg.Quantity or a tuple[float, str] of (value, unit)")
-    return quantity.to(unit_to, "spectroscopy").magnitude
+class Qty:
+    def __init__(self, value: Union[float, "PlainQuantity"], unit: Union[str, "PlainUnit"] = "pint"):
+        if isinstance(value, ureg.Quantity):
+            if unit != "pint":
+                raise ValueError("unit must be 'pint' if value is a pairinteraction.ureg.Quantity")
+            self.quantity = value
+        elif isinstance(value, PlainQuantity):
+            raise TypeError(
+                "Only use pint quantities genereated by pairinteraction.ureg and not by a different pint.UnitRegistry."
+            )
+        elif np.isscalar(value):
+            if unit == "pint":
+                raise ValueError(
+                    "unit must be a string specifiying the unit of the value if value is a scalar (e.g. unit='GHz')"
+                )
+            self.quantity = ureg.Quantity(value, unit)
+        else:
+            raise TypeError("value must be a scalar or a pairinteraction.ureg.Quantity")
+
+    @classmethod
+    def from_base(cls, value: float, dimension: Dimension) -> "Qty":
+        return cls(value, BaseUnits[dimension])
+
+    def to_base(self, dimension: Dimension) -> float:
+        return self.quantity.to(BaseUnits[dimension], "spectroscopy").magnitude
+
+    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union[float, "PlainQuantity"]:
+        if unit == "pint":
+            return self.quantity
+        return self.quantity.to(unit, "spectroscopy").magnitude
 
 
-def convert_quantity_to_base(
-    quantity: Union["PlainQuantity", tuple[float, str]], dimension: Dimension
-) -> Union[float, np.ndarray]:
-    """Convert a pint.Quantity object to a raw float value in the base unit of the given dimension."""
-    if dimension not in BaseUnits:
-        raise ValueError(f"dimension must be one of {BaseUnits.keys()}")
-    return convert_quantity_to_raw(quantity, BaseUnits[dimension])
+class Qties:
+    def __init__(
+        self, values: Union["PlainQuantity", Collection[float], "ArrayLike"], unit: Union[str, "PlainUnit"] = "pint"
+    ):
+        if isinstance(values, ureg.Quantity):
+            if unit != "pint":
+                raise ValueError("unit must be 'pint' if values is a pairinteraction.ureg.Quantity")
+            self.quantities = values
+        elif isinstance(values, PlainQuantity):
+            raise TypeError(
+                "Only use pint quantities genereated by pairinteraction.ureg and not by a different pint.UnitRegistry."
+            )
+        elif isinstance(values, Collection):
+            if not all(np.isscalar(v) for v in values):
+                raise TypeError("values must be a a list of scalars")
+            if unit == "pint":
+                raise ValueError(
+                    "if values is a list of scalars, unit must be a string specifiying the unit (e.g. unit='GHz')"
+                )
+            self.quantities = ureg.Quantity(values, unit)
+        else:
+            raise TypeError(
+                f"values must be a list of scalars or a pairinteraction.ureg.Quantity, but were of type {type(values)}"
+            )
 
+    @classmethod
+    def from_base(cls, values: Union[Collection[float], "ArrayLike"], dimension: Dimension) -> "Qties":
+        return cls(values, BaseUnits[dimension])
 
-def convert_raw_to_base(
-    value: Union[float, Sequence[float], ArrayLike], unit_from: Union[str, "PlainUnit"], dimension: Dimension
-) -> Union[float, np.ndarray]:
-    """Convert a raw float value with a given unit to the base unit of the given dimension."""
-    if not isinstance(unit_from, (str, ureg.Unit)):
-        raise TypeError("unit_from must be a string or a pairinteraction.ureg.Unit")
-    quantity = ureg.Quantity(value, unit_from)
-    return convert_quantity_to_base(quantity, dimension)
+    def to_base(self, dimension: Dimension) -> "ArrayLike":
+        return self.quantities.to(BaseUnits[dimension], "spectroscopy").magnitude
 
-
-def convert_base_to_quantity(
-    value: Union[float, Sequence[float], ArrayLike], dimension: Dimension, unit_to: Union[str, "PlainUnit", None]
-) -> "PlainQuantity":
-    """Convert a raw float value in the base unit to a pint.Quantity object in the given unit."""
-    if dimension not in BaseUnits:
-        raise ValueError(f"dimension must be one of {BaseUnits.keys()}")
-    quantity = ureg.Quantity(value, BaseUnits[dimension])
-    if unit_to is None:
-        return quantity
-    return quantity.to(unit_to, "spectroscopy")
+    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union["ArrayLike", "PlainQuantity"]:
+        if unit == "pint":
+            return self.quantities
+        return self.quantities.to(unit, "spectroscopy").magnitude

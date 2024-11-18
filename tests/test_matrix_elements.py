@@ -5,7 +5,6 @@ Test the calculation of matrix elements.
 import numpy as np
 
 import pairinteraction.backend.double as pi
-from pairinteraction import ureg
 
 
 def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
@@ -15,22 +14,18 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
 
     # Energy of unperturbed state
     ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5, database=database)
-    energy_unperturbed = pi.calculate_energy(ket)
+    energy_unperturbed = pi.calculate_energy(ket, unit="GHz")
 
-    assert np.isclose(energy_unperturbed, ket.get_energy())
+    assert np.isclose(energy_unperturbed, ket.get_energy("GHz"))
 
     # Energy of Stark shifted state
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5), database=database)
 
     system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer)
 
-    energy_perturbed = pi.calculate_energy(ket, system)
+    energy_perturbed = pi.calculate_energy(ket, system, unit="GHz")
 
-    shift = (
-        (energy_perturbed * ureg.hartree - energy_unperturbed * ureg.hartree)
-        .to(ureg.gigahertz, "spectroscopy")
-        .magnitude
-    )
+    shift = energy_perturbed - energy_unperturbed
     print(f"Energy shift: {shift} GHz")
 
     assert shift < 0
@@ -59,9 +54,9 @@ def test_calculate_electric_dipole_matrix_element(database_dir: str, download_mi
 
     system = pi.SystemAtom(basis).set_electric_field([1, 0, 1], unit="V/cm").diagonalize(diagonalizer)
 
-    dipole_zero = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, system, 0)
-    dipole_plus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, system, 1)
-    dipole_minus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, system, -1)
+    dipole_zero = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 0, system)
+    dipole_plus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 1, system)
+    dipole_minus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, -1, system)
 
     dipole_z = dipole_zero
     dipole_x = (dipole_minus - dipole_plus) / np.sqrt(2)

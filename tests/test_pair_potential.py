@@ -7,8 +7,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
+import pairinteraction.backend._backend as _backend
 import pairinteraction.backend.double as pi
-from pairinteraction import ureg
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
 reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenvalues.txt"
@@ -28,29 +28,22 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
 
     # Create two-atom systems for different interatomic distances
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
-    delta_energy = (3 * ureg.gigahertz).to(ureg.hartree, "spectroscopy").magnitude
-    min_energy = 2 * ket.get_energy(unit="hartree") - delta_energy
-    max_energy = 2 * ket.get_energy(unit="hartree") + delta_energy
+    delta_energy = 3
+    min_energy: float = 2 * ket.get_energy(unit="GHz") - delta_energy
+    max_energy: float = 2 * ket.get_energy(unit="GHz") + delta_energy
 
-    combined_basis = (
-        BasisCombinedCreatorDouble()
-        .add(system)
-        .add(system)
-        .restrict_energy(min_energy, max_energy)
-        .restrict_quantum_number_m(1, 1)
-        .create()
-    )
-    print(f"Number of two-atom basis states: {combined_basis.get_number_of_states()}")
+    combined_basis = pi.BasisCombined([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    print(f"Number of two-atom basis states: {combined_basis.number_of_states}")
 
     distances = np.linspace(1, 5, 5)
-    combined_systems = [SystemCombinedDouble(combined_basis).set_distance(d, unit="micrometer") for d in distances]
+    combined_systems = [pi.SystemCombined(combined_basis).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
-    diagonalizeSystemCombinedDouble(combined_systems, diagonalizer)
+    pi.diagonalize(combined_systems, diagonalizer)
 
     # Sort by the eigenvalues
     for system in combined_systems:
-        system.transform(system.get_sorter([TransformationType.SORT_BY_ENERGY]))
+        system.transform(system._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY]))
 
     # Get the overlap with |ket, ket>
     overlaps = [system.get_eigenbasis().get_overlaps(ket, ket) for system in combined_systems]
@@ -59,8 +52,8 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))
 
     # Compare to reference data
-    kets = [str(ket) for ket in combined_basis.get_kets()]
-    eigenvalues = [system.get_eigenvalues(unit="GHz") for system in combined_systems]
+    kets = [str(ket) for ket in combined_basis.kets]
+    eigenvalues: list[float] = [system.get_eigenvalues(unit="GHz") for system in combined_systems]
     eigenstates = [system.get_eigenbasis().get_coefficients().todense().A1 for system in combined_systems]
 
     if generate_reference:
