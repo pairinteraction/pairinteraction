@@ -5,6 +5,13 @@ from pairinteraction.backend._wrapped.BasisAtom import (
     BasisAtomDouble as BasisAtomDouble,
     BasisAtomFloat as BasisAtomFloat,
 )
+from pairinteraction.backend._wrapped.BasisCombined import (
+    BasisCombinedBase as BasisCombinedBase,
+    BasisCombinedComplexDouble as BasisCombinedComplexDouble,
+    BasisCombinedComplexFloat as BasisCombinedComplexFloat,
+    BasisCombinedDouble as BasisCombinedDouble,
+    BasisCombinedFloat as BasisCombinedFloat,
+)
 from pairinteraction.backend._wrapped.diagonalize import diagonalize as diagonalize
 from pairinteraction.backend._wrapped.KetAtom import (
     KetAtomBase as KetAtomBase,
@@ -22,4 +29,11 @@ from pairinteraction.backend._wrapped.SystemAtom import (
     SystemAtomComplexFloat as SystemAtomComplexFloat,
     SystemAtomDouble as SystemAtomDouble,
     SystemAtomFloat as SystemAtomFloat,
+)
+from pairinteraction.backend._wrapped.SystemCombined import (
+    SystemCombinedBase as SystemCombinedBase,
+    SystemCombinedComplexDouble as SystemCombinedComplexDouble,
+    SystemCombinedComplexFloat as SystemCombinedComplexFloat,
+    SystemCombinedDouble as SystemCombinedDouble,
+    SystemCombinedFloat as SystemCombinedFloat,
 )
