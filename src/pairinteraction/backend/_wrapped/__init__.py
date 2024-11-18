@@ -12,6 +12,10 @@ from pairinteraction.backend._wrapped.BasisCombined import (
     BasisCombinedDouble as BasisCombinedDouble,
     BasisCombinedFloat as BasisCombinedFloat,
 )
+from pairinteraction.backend._wrapped.calculate_electric_dipole_matrix_element import (
+    calculate_electric_dipole_matrix_element as calculate_electric_dipole_matrix_element,
+)
+from pairinteraction.backend._wrapped.calculate_energy import calculate_energy as calculate_energy
 from pairinteraction.backend._wrapped.diagonalize import diagonalize as diagonalize
 from pairinteraction.backend._wrapped.KetAtom import (
     KetAtomBase as KetAtomBase,
