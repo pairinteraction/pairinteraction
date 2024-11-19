@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Union, overload
+from typing import TYPE_CHECKING, Any, Union, overload
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -9,10 +9,12 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
 UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
+UnionTypeCPPKetCreator = Any
 
 
 class KetBase(ABC):
     _cpp: UnionCPPKet
+    _cpp_creator: UnionTypeCPPKetCreator
 
     @classmethod
     def _from_cpp_object(cls, cpp_obj: UnionCPPKet):

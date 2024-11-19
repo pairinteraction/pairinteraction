@@ -4,21 +4,21 @@ import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.Ket import KetBase
 
 UnionCPPKetClassicalLight = Union[_backend.KetClassicalLightFloat, _backend.KetClassicalLightDouble]
-UnionTypeCPPKetAtomCreator = Union[
+UnionTypeCPPKetClassicalLightCreator = Union[
     type[_backend.KetClassicalLightCreatorFloat], type[_backend.KetClassicalLightCreatorDouble]
 ]
 
 
 class KetClassicalLightBase(KetBase):
     _cpp: UnionCPPKetClassicalLight
-    _KetClassicalLightCreator: UnionTypeCPPKetAtomCreator
+    _cpp_creator: UnionTypeCPPKetClassicalLightCreator
 
     def __init__(
         self,
         photon_energy: Optional[float] = None,
         q: Optional[int] = None,
     ) -> None:
-        creator = self._KetClassicalLightCreator()
+        creator = self._cpp_creator()
         if photon_energy is not None:
             creator.set_photon_energy(photon_energy)
         if q is not None:
@@ -36,9 +36,9 @@ class KetClassicalLightBase(KetBase):
 
 class KetClassicalLightFloat(KetClassicalLightBase):
     _cpp: _backend.KetClassicalLightFloat
-    _KetClassicalLightCreator = _backend.KetClassicalLightCreatorFloat
+    _cpp_creator = _backend.KetClassicalLightCreatorFloat
 
 
 class KetClassicalLightDouble(KetClassicalLightBase):
     _cpp: _backend.KetClassicalLightDouble
-    _KetClassicalLightCreator = _backend.KetClassicalLightCreatorDouble
+    _cpp_creator = _backend.KetClassicalLightCreatorDouble
