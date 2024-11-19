@@ -12,12 +12,12 @@ from pairinteraction.backend._wrapped.basis.BasisCombined import (
     BasisCombinedDouble,
     BasisCombinedFloat,
 )
-from pairinteraction.backend._wrapped.calculate_electric_dipole_matrix_element import (
+from pairinteraction.backend._wrapped.convenience.calculate_electric_dipole_matrix_element import (
     calculate_electric_dipole_matrix_element,
 )
-from pairinteraction.backend._wrapped.calculate_energy import calculate_energy
+from pairinteraction.backend._wrapped.convenience.calculate_energy import calculate_energy
+from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
 from pairinteraction.backend._wrapped.Database import Database
-from pairinteraction.backend._wrapped.diagonalize import diagonalize
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
 from pairinteraction.backend._wrapped.ket.KetAtom import (
     KetAtomBase,
