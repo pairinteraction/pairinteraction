@@ -1,8 +1,8 @@
 from typing import Optional
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.KetAtom import KetAtomBase
-from pairinteraction.backend._wrapped.SystemAtom import SystemAtomBase
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
+from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
 from pairinteraction.unit_system import Qty
 
 

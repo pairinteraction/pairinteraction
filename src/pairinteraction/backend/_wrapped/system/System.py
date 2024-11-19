@@ -2,7 +2,7 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, Optional, TypeVar, Union, overload
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.Basis import BasisBase
+from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
 from pairinteraction.unit_system import Qties
 
