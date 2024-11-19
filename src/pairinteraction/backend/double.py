@@ -1,20 +1,17 @@
 from pairinteraction.backend._wrapped import (
-    # import objects without types (i.e. that are valid for all types)
+    BasisAtomDouble as BasisAtom,
+    BasisCombinedDouble as BasisCombined,
     Database,
     Diagonalizer,
+    KetAtomDouble as KetAtom,
+    KetClassicalLightDouble as KetClassicalLight,
+    KetCombinedDouble as KetCombined,
     Parity,
+    SystemAtomDouble as SystemAtom,
+    SystemCombinedDouble as SystemCombined,
     calculate_electric_dipole_matrix_element,
     calculate_energy,
     diagonalize,
-    # import objects with only real types (i.e. either float or double)
-    KetAtomDouble as KetAtom,
-    KetClassicalLightDouble as KetClassicalLight,
-    # import objects with specific types (i.e. float, double, complexfloat or complexdouble)
-    BasisAtomDouble as BasisAtom,
-    BasisCombinedDouble as BasisCombined,
-    KetCombinedDouble as KetCombined,
-    SystemAtomDouble as SystemAtom,
-    SystemCombinedDouble as SystemCombined,
 )
 
 __all__ = [
