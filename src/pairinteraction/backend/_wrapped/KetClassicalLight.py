@@ -1,12 +1,17 @@
 from typing import Optional, Union
 
 import pairinteraction.backend._backend as _backend
+from pairinteraction.backend._wrapped.Ket import KetBase
+
+UnionCPPKetClassicalLight = Union[_backend.KetClassicalLightFloat, _backend.KetClassicalLightDouble]
+UnionTypeCPPKetAtomCreator = Union[
+    type[_backend.KetClassicalLightCreatorFloat], type[_backend.KetClassicalLightCreatorDouble]
+]
 
 
-class KetClassicalLightBase:
-    _KetClassicalLightCreator: Union[
-        type[_backend.KetClassicalLightCreatorFloat], type[_backend.KetClassicalLightCreatorDouble]
-    ]
+class KetClassicalLightBase(KetBase):
+    _cpp: UnionCPPKetClassicalLight
+    _KetClassicalLightCreator: UnionTypeCPPKetAtomCreator
 
     def __init__(
         self,
@@ -20,13 +25,6 @@ class KetClassicalLightBase:
             creator.set_quantum_number_q(q)
         self._cpp = creator.create()
 
-    @classmethod
-    def _from_cpp_object(cls, cpp_obj: Union[_backend.KetClassicalLightFloat, _backend.KetClassicalLightDouble]):
-        obj = cls.__new__(cls)
-        obj._cpp = cpp_obj
-        return obj
-
-    # # # Define convenience properties # # #
     @property
     def q(self) -> int:
         return self._cpp.get_quantum_number_q()

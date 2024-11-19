@@ -1,4 +1,3 @@
-from abc import ABC
 from collections.abc import Collection
 from typing import TYPE_CHECKING, Union
 
@@ -10,52 +9,31 @@ from pairinteraction.backend._wrapped.BasisAtom import (
     BasisAtomDouble,
     BasisAtomFloat,
 )
-from pairinteraction.unit_system import Qties, Qty
+from pairinteraction.backend._wrapped.System import SystemBase
+from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
+UnionCPPSystemAtom = Union[
+    _backend.SystemAtomFloat,
+    _backend.SystemAtomComplexFloat,
+    _backend.SystemAtomDouble,
+    _backend.SystemAtomComplexDouble,
+]
 
-class SystemAtomBase(ABC):
-    _CPPSystemAtom: Union[
-        type[_backend.SystemAtomFloat],
-        type[_backend.SystemAtomComplexFloat],
-        type[_backend.SystemAtomDouble],
-        type[_backend.SystemAtomComplexDouble],
-    ]
-    _BasisAtom: type[BasisAtomBase]
-    _DefaultDiagonalizer: Union[
-        type[_backend.DiagonalizerEigenFloat],
-        type[_backend.DiagonalizerEigenComplexFloat],
-        type[_backend.DiagonalizerEigenDouble],
-        type[_backend.DiagonalizerEigenComplexDouble],
-    ]
+UnionTypeCPPSystemAtom = Union[
+    type[_backend.SystemAtomFloat],
+    type[_backend.SystemAtomComplexFloat],
+    type[_backend.SystemAtomDouble],
+    type[_backend.SystemAtomComplexDouble],
+]
 
-    def __init__(self, basis: "BasisAtomBase") -> None:
-        self._cpp = self._CPPSystemAtom(basis._cpp)
-        self.update_basis()
 
-    @classmethod
-    def _from_cpp_object(
-        cls,
-        cpp_obj: Union[
-            _backend.SystemAtomFloat,
-            _backend.SystemAtomComplexFloat,
-            _backend.SystemAtomDouble,
-            _backend.SystemAtomComplexDouble,
-        ],
-    ):
-        obj = cls.__new__(cls)
-        obj._cpp = cpp_obj
-        obj.update_basis()
-        return obj
-
-    @property
-    def basis(self) -> "BasisAtomBase":
-        return self._basis
-
-    def update_basis(self) -> None:
-        self._basis = self._BasisAtom._from_cpp_object(self._cpp.get_basis())
+class SystemAtomBase(SystemBase):
+    _cpp: UnionCPPSystemAtom
+    _cpp_type: UnionTypeCPPSystemAtom
+    _TypeBasis: type[BasisAtomBase]
 
     def set_electric_field(
         self, electric_field: Union["PlainQuantity", Collection[Union[float, "PlainQuantity"]]], unit: str = "pint"
@@ -75,61 +53,26 @@ class SystemAtomBase(ABC):
         self._cpp.enable_diamagnetism(enable)
         return self
 
-    def diagonalize(
-        self,
-        diagonalizer: Union[_backend.DiagonalizerInterfaceFloat, _backend.DiagonalizerInterfaceDouble, None] = None,
-        precision: int = 12,
-        eigenvalue_range: Union[_backend.RangeFloat, _backend.RangeDouble, None] = None,
-    ):
-        if diagonalizer is None:
-            diagonalizer = self._DefaultDiagonalizer()
-        if eigenvalue_range is None:
-            self._cpp.diagonalize(diagonalizer, precision)
-        else:
-            self._cpp.diagonalize(diagonalizer, precision, eigenvalue_range)
-        self.update_basis()
-        return self
-
-    @property
-    def matrix(self):
-        return self._cpp.get_matrix()
-
-    def transform(self, transformation) -> "SystemAtomBase":
-        self._cpp.transform(transformation)
-        return self
-
-    def get_eigenvalues(self, unit: str = "pint"):
-        eigenvalues_au = self._cpp.get_eigenvalues()
-        eigenvalues = Qties.from_base(eigenvalues_au, "energy")
-        return eigenvalues.to_unit(unit)
-
-    def get_eigenbasis(self):
-        return self._cpp.get_eigenbasis()
-
 
 class SystemAtomFloat(SystemAtomBase):
     _cpp: _backend.SystemAtomFloat
-    _CPPSystemAtom = _backend.SystemAtomFloat
-    _BasisAtom = BasisAtomFloat
-    _DefaultDiagonalizer = _backend.DiagonalizerEigenFloat
+    _cpp_type = _backend.SystemAtomFloat
+    _TypeBasis = BasisAtomFloat
 
 
 class SystemAtomComplexFloat(SystemAtomBase):
     _cpp: _backend.SystemAtomComplexFloat
-    _CPPSystemAtom = _backend.SystemAtomComplexFloat
-    _BasisAtom = BasisAtomComplexFloat
-    _DefaultDiagonalizer = _backend.DiagonalizerEigenComplexFloat
+    _cpp_type = _backend.SystemAtomComplexFloat
+    _TypeBasis = BasisAtomComplexFloat
 
 
 class SystemAtomDouble(SystemAtomBase):
     _cpp: _backend.SystemAtomDouble
-    _CPPSystemAtom = _backend.SystemAtomDouble
-    _BasisAtom = BasisAtomDouble
-    _DefaultDiagonalizer = _backend.DiagonalizerEigenDouble
+    _cpp_type = _backend.SystemAtomDouble
+    _TypeBasis = BasisAtomDouble
 
 
 class SystemAtomComplexDouble(SystemAtomBase):
     _cpp: _backend.SystemAtomComplexDouble
-    _CPPSystemAtom = _backend.SystemAtomComplexDouble
-    _BasisAtom = BasisAtomComplexDouble
-    _DefaultDiagonalizer = _backend.DiagonalizerEigenComplexDouble
+    _cpp_type = _backend.SystemAtomComplexDouble
+    _TypeBasis = BasisAtomComplexDouble
