@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import scipy.sparse
 
-from pairinteraction.backend._wrapped.Ket import KetBase
+from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
     pass

@@ -2,14 +2,14 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, Union
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.BasisAtom import (
+from pairinteraction.backend._wrapped.basis.BasisAtom import (
     BasisAtomBase,
     BasisAtomComplexDouble,
     BasisAtomComplexFloat,
     BasisAtomDouble,
     BasisAtomFloat,
 )
-from pairinteraction.backend._wrapped.System import SystemBase
+from pairinteraction.backend._wrapped.system.System import SystemBase
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:

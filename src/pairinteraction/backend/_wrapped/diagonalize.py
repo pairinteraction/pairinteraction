@@ -1,14 +1,14 @@
 from typing import Union
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.SystemAtom import (
+from pairinteraction.backend._wrapped.system.SystemAtom import (
     SystemAtomBase,
     SystemAtomComplexDouble,
     SystemAtomComplexFloat,
     SystemAtomDouble,
     SystemAtomFloat,
 )
-from pairinteraction.backend._wrapped.SystemCombined import (
+from pairinteraction.backend._wrapped.system.SystemCombined import (
     SystemCombinedBase,
     SystemCombinedComplexDouble,
     SystemCombinedComplexFloat,

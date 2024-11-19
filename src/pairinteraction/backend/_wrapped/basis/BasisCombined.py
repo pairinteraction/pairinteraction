@@ -7,9 +7,9 @@ from pairinteraction.backend._backend import (
     KetCombinedDouble,
     KetCombinedFloat,
 )
-from pairinteraction.backend._wrapped.Basis import BasisBase
-from pairinteraction.backend._wrapped.KetCombined import KetCombinedBase
-from pairinteraction.backend._wrapped.SystemAtom import SystemAtomBase
+from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend._wrapped.ket.KetCombined import KetCombinedBase
+from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:

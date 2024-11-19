@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any, Union
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.Ket import KetBase
+from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
     pass

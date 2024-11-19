@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.Basis import BasisBase
-from pairinteraction.backend._wrapped.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
+from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
