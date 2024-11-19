@@ -20,7 +20,11 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
     # Energy of Stark shifted state
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5), database=database)
 
-    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
+    system = (
+        pi.SystemAtom(basis)
+        .set_electric_field([0, 0, 1], unit="V/cm")
+        .diagonalize(diagonalizer="Eigen", sort_by_energy=False)
+    )
 
     energy_perturbed = pi.calculate_energy(ket, system, unit="GHz")
 
@@ -42,19 +46,21 @@ def test_calculate_electric_dipole_matrix_element(database_dir: str, download_mi
     assert dipole > 0
 
     # The dipole element between the same, unperturbed state should be zero
-    ket_final = ket_initial
-
-    dipole = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 0)
+    dipole = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_initial, 0)
     assert np.isclose(dipole, 0)
 
     # Stark effect induces a permanent dipole moment
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
 
-    system = pi.SystemAtom(basis).set_electric_field([1, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
+    system = (
+        pi.SystemAtom(basis)
+        .set_electric_field([1, 0, 1], unit="V/cm")
+        .diagonalize(diagonalizer="Eigen", sort_by_energy=False)
+    )
 
-    dipole_zero = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 0, system)
-    dipole_plus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 1, system)
-    dipole_minus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, -1, system)
+    dipole_zero = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_initial, 0, system)
+    dipole_plus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_initial, 1, system)
+    dipole_minus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_initial, -1, system)
 
     dipole_z = dipole_zero
     dipole_x = (dipole_minus - dipole_plus) / np.sqrt(2)

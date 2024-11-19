@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import pairinteraction.backend._backend as _backend
 import pairinteraction.backend.double as pi
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
@@ -38,11 +37,7 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
     combined_systems = [pi.SystemCombined(combined_basis).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(combined_systems, diagonalizer="Eigen")
-
-    # Sort by the eigenvalues
-    for system in combined_systems:
-        system.transform(system._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY]))
+    pi.diagonalize(combined_systems, diagonalizer="Eigen", sort_by_energy=True)
 
     # Get the overlap with |ket, ket>
     overlaps = np.array([system.get_eigenbasis().get_overlaps_from_product(ket, ket) for system in combined_systems])

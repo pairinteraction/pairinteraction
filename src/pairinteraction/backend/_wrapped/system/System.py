@@ -51,12 +51,17 @@ class SystemBase(ABC, Generic[Basis_t]):
         diagonalizer: Diagonalizer = "Eigen",
         precision: int = 12,
         eigenvalue_range: Optional[UnionCPPRange] = None,
+        sort_by_energy: bool = True,
     ):
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
         if eigenvalue_range is None:
             self._cpp.diagonalize(cpp_diagonalizer, precision)
         else:
             self._cpp.diagonalize(cpp_diagonalizer, precision, eigenvalue_range)
+        if sort_by_energy:
+            sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
+            self._cpp.transform(sorter)
+
         self.update_basis()
         return self
 
