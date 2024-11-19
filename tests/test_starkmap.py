@@ -7,7 +7,6 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import pairinteraction.backend._backend as _backend
 import pairinteraction.backend.double as pi
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_stark_map/kets.txt"
@@ -29,11 +28,7 @@ def test_starkmap(generate_reference: bool, database_dir: str, download_missing:
     systems = [pi.SystemAtom(basis).set_electric_field([0, 0, e], unit="V/cm") for e in electric_fields]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(systems, diagonalizer="Eigen")
-
-    # Sort by the eigenvalues
-    for system in systems:
-        system.transform(system._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY]))
+    pi.diagonalize(systems, diagonalizer="Eigen", sort_by_energy=True)
 
     # Get the overlap with |ket>
     overlaps = np.array([system.basis.get_overlaps(ket) for system in systems])

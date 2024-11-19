@@ -49,7 +49,7 @@ class SystemAtomBase(SystemBase[BasisAtomBase]):
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
-    def enable_diamagnetism(self, enable: bool):
+    def enable_diamagnetism(self, enable: bool = True):
         self._cpp.enable_diamagnetism(enable)
         return self
 
