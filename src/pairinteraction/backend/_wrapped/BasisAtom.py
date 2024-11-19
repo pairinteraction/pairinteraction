@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.Basis import BasisBase
-from pairinteraction.backend._wrapped.KetAtom import KetAtomDouble, KetAtomFloat
+from pairinteraction.backend._wrapped.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
@@ -18,10 +18,9 @@ UnionTypeCPPBasisAtomCreator = Union[
     type[_backend.BasisAtomCreatorComplexDouble],
 ]
 UnionTypeKetAtom = Union[type[KetAtomFloat], type[KetAtomDouble]]
-UnionKetAtom = Union[KetAtomFloat, KetAtomDouble]
 
 
-class BasisAtomBase(BasisBase):
+class BasisAtomBase(BasisBase[KetAtomBase]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: UnionTypeCPPBasisAtomCreator
     _TypeKet: UnionTypeKetAtom

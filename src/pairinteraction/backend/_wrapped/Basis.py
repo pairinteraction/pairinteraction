@@ -1,6 +1,6 @@
 from abc import ABC
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import scipy.sparse
 
@@ -22,8 +22,10 @@ UnionTypeCPPBasisCreator = Any
 # UnionTypeKet = Union[type[KetAtomFloat], type[KetAtomDouble]]
 UnionTypeKet = Any
 
+Ket_t = TypeVar("Ket_t", bound="KetBase")
 
-class BasisBase(ABC):
+
+class BasisBase(ABC, Generic[Ket_t]):
     _cpp: UnionCPPBasis
     _cpp_creator: UnionTypeCPPBasisCreator
     _TypeKet: UnionTypeKet
@@ -38,7 +40,8 @@ class BasisBase(ABC):
         return obj
 
     @cached_property
-    def kets(self) -> list[KetBase]:
+    def kets(self) -> list[Ket_t]:
+        """Return a list containing the kets of the basis."""
         kets = [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]
         return kets
 

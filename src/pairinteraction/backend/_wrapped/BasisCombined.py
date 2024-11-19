@@ -8,6 +8,7 @@ from pairinteraction.backend._backend import (
     KetCombinedFloat,
 )
 from pairinteraction.backend._wrapped.Basis import BasisBase
+from pairinteraction.backend._wrapped.KetCombined import KetCombinedBase
 from pairinteraction.backend._wrapped.SystemAtom import SystemAtomBase
 from pairinteraction.unit_system import Qty
 
@@ -40,7 +41,7 @@ UnionKetCombined = Union[
 ]
 
 
-class BasisCombinedBase(BasisBase):
+class BasisCombinedBase(BasisBase[KetCombinedBase]):
     _cpp: UnionCPPBasisCombined
     _cpp_creator: UnionTypeCPPBasisCombinedCreator
     _TypeKet: UnionTypeKetCombined

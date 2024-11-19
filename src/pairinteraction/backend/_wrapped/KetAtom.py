@@ -13,7 +13,7 @@ UnionTypeCPPKetAtomCreator = Union[type[_backend.KetAtomCreatorFloat], type[_bac
 
 class KetAtomBase(KetBase):
     _cpp: UnionCPPKetAtom
-    _KetAtomCreator: UnionTypeCPPKetAtomCreator
+    _cpp_creator: UnionTypeCPPKetAtomCreator
 
     def __init__(
         self,
@@ -30,7 +30,7 @@ class KetAtomBase(KetBase):
         parity: Optional[_backend.Parity] = None,
         database: Optional[_backend.Database] = None,
     ) -> None:
-        creator = self._KetAtomCreator()
+        creator = self._cpp_creator()
         creator.set_species(species)
         if n is not None:
             creator.set_quantum_number_n(n)
@@ -84,9 +84,9 @@ class KetAtomBase(KetBase):
 
 class KetAtomFloat(KetAtomBase):
     _cpp: _backend.KetAtomFloat
-    _KetAtomCreator = _backend.KetAtomCreatorFloat
+    _cpp_creator = _backend.KetAtomCreatorFloat
 
 
 class KetAtomDouble(KetAtomBase):
     _cpp: _backend.KetAtomDouble
-    _KetAtomCreator = _backend.KetAtomCreatorDouble
+    _cpp_creator = _backend.KetAtomCreatorDouble
