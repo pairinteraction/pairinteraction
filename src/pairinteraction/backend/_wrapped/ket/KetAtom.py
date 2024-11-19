@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
@@ -14,8 +14,8 @@ UnionTypeCPPKetAtomCreator = Union[type[_backend.KetAtomCreatorFloat], type[_bac
 
 
 class KetAtomBase(KetBase):
-    _cpp: UnionCPPKetAtom
-    _cpp_creator: UnionTypeCPPKetAtomCreator
+    _cpp: UnionCPPKetAtom  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator: ClassVar[UnionTypeCPPKetAtomCreator]
 
     def __init__(
         self,
@@ -27,7 +27,7 @@ class KetAtomBase(KetBase):
         j: Optional[float] = None,
         f: Optional[float] = None,
         m: Optional[float] = None,
-        energy: Union[float, "PlainQuantity", None] = None,
+        energy: Union[float, "PlainQuantity[float]", None] = None,
         energy_unit: str = "pint",
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
@@ -55,7 +55,7 @@ class KetAtomBase(KetBase):
             creator.set_parity(get_cpp_parity(parity))
         if database is None:
             database = Database.get_global_instance()
-        self._cpp = creator.create(database._cpp)
+        self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
 
     @property
     def species(self) -> str:
@@ -83,10 +83,10 @@ class KetAtomBase(KetBase):
 
 
 class KetAtomFloat(KetAtomBase):
-    _cpp: _backend.KetAtomFloat
+    _cpp: _backend.KetAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetAtomCreatorFloat
 
 
 class KetAtomDouble(KetAtomBase):
-    _cpp: _backend.KetAtomDouble
+    _cpp: _backend.KetAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetAtomCreatorDouble

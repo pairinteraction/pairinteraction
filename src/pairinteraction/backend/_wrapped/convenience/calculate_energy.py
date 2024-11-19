@@ -1,12 +1,23 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional, overload
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
 from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
 from pairinteraction.unit_system import Qty
 
+if TYPE_CHECKING:
+    from pint.facets.plain import PlainQuantity
 
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None, unit: str = "pint") -> float:
+
+@overload
+def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None) -> "PlainQuantity[float]": ...
+
+
+@overload
+def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase], unit: str) -> float: ...
+
+
+def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None, unit: str = "pint"):
     """Calculate the energy of a ket state.
 
     Args:
@@ -17,7 +28,7 @@ def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None, 
         The energy of the ket state.
     """
     if system is None:
-        energy_au = _backend.calculate_energy(ket._cpp)
+        energy_au = _backend.calculate_energy(ket._cpp)  # type: ignore [reportPrivateUsage]
     else:
-        energy_au = _backend.calculate_energy(ket._cpp, system._cpp)
+        energy_au = _backend.calculate_energy(ket._cpp, system._cpp)  # type: ignore
     return Qty.from_base(energy_au, "energy").to_unit(unit)

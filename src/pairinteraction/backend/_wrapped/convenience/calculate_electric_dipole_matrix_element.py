@@ -1,12 +1,14 @@
-from typing import Optional
+from typing import Optional, TypeVar
 
-import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
+from pairinteraction.backend import _backend
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomDouble, KetAtomFloat
 from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
+
+Ket_t = TypeVar("Ket_t", KetAtomDouble, KetAtomFloat)
 
 
 def calculate_electric_dipole_matrix_element(
-    initial_ket: KetAtomBase, final_ket: KetAtomBase, q: int, system: Optional[SystemAtomBase] = None
+    initial_ket: Ket_t, final_ket: Ket_t, q: int, system: Optional[SystemAtomBase] = None
 ) -> float:
     """Calculate the electric dipole matrix element between two kets.
 
@@ -21,6 +23,6 @@ def calculate_electric_dipole_matrix_element(
         The electric dipole matrix element between the two kets.
     """
     if system is None:
-        return _backend.calculate_electric_dipole_matrix_element(initial_ket._cpp, final_ket._cpp, q)
+        return _backend.calculate_electric_dipole_matrix_element(initial_ket._cpp, final_ket._cpp, q)  # type: ignore
 
-    return _backend.calculate_electric_dipole_matrix_element(initial_ket._cpp, final_ket._cpp, system._cpp, q)
+    return _backend.calculate_electric_dipole_matrix_element(initial_ket._cpp, final_ket._cpp, system._cpp, q)  # type: ignore
