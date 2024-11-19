@@ -10,7 +10,6 @@ import pairinteraction.backend.double as pi
 def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
     """Test calculating energies of ket states."""
     database = pi.Database(download_missing, True, database_dir)
-    diagonalizer = pi.DiagonalizerEigen()
 
     # Energy of unperturbed state
     ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5, database=database)
@@ -21,7 +20,7 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
     # Energy of Stark shifted state
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5), database=database)
 
-    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer)
+    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
 
     energy_perturbed = pi.calculate_energy(ket, system, unit="GHz")
 
@@ -34,7 +33,6 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
 def test_calculate_electric_dipole_matrix_element(database_dir: str, download_missing: bool) -> None:
     """Test calculating dipole matrix elements."""
     database = pi.Database(download_missing, True, database_dir)
-    diagonalizer = pi.DiagonalizerEigen()
 
     # The dipole element between dipole-coupled states should be non-zero
     ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5, database=database)
@@ -52,7 +50,7 @@ def test_calculate_electric_dipole_matrix_element(database_dir: str, download_mi
     # Stark effect induces a permanent dipole moment
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
 
-    system = pi.SystemAtom(basis).set_electric_field([1, 0, 1], unit="V/cm").diagonalize(diagonalizer)
+    system = pi.SystemAtom(basis).set_electric_field([1, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
 
     dipole_zero = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 0, system)
     dipole_plus = pi.calculate_electric_dipole_matrix_element(ket_initial, ket_final, 1, system)

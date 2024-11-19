@@ -46,7 +46,7 @@ class Qty:
     def to_base(self, dimension: Dimension) -> float:
         return self.quantity.to(BaseUnits[dimension], "spectroscopy").magnitude
 
-    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union[float, "PlainQuantity"]:
+    def to_unit(self, unit: Union[str, "PlainUnit"] = "pint") -> Union[float, "PlainQuantity[float]"]:
         if unit == "pint":
             return self.quantity
         return self.quantity.to(unit, "spectroscopy").magnitude

@@ -6,7 +6,7 @@ from pairinteraction.backend._wrapped.SystemAtom import SystemAtomBase
 from pairinteraction.unit_system import Qty
 
 
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None, unit: str = "pint"):
+def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase] = None, unit: str = "pint") -> float:
     """Calculate the energy of a ket state.
 
     Args:

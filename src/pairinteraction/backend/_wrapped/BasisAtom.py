@@ -1,24 +1,30 @@
-from functools import cached_property
 from typing import TYPE_CHECKING, Optional, Union
 
-import scipy.sparse
-
 import pairinteraction.backend._backend as _backend
+from pairinteraction.backend._wrapped.Basis import BasisBase
 from pairinteraction.backend._wrapped.KetAtom import KetAtomDouble, KetAtomFloat
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
+UnionCPPBasisAtom = Union[
+    _backend.BasisAtomFloat, _backend.BasisAtomComplexFloat, _backend.BasisAtomDouble, _backend.BasisAtomComplexDouble
+]
+UnionTypeCPPBasisAtomCreator = Union[
+    type[_backend.BasisAtomCreatorFloat],
+    type[_backend.BasisAtomCreatorComplexFloat],
+    type[_backend.BasisAtomCreatorDouble],
+    type[_backend.BasisAtomCreatorComplexDouble],
+]
+UnionTypeKetAtom = Union[type[KetAtomFloat], type[KetAtomDouble]]
+UnionKetAtom = Union[KetAtomFloat, KetAtomDouble]
 
-class BasisAtomBase:
-    _BasisAtomCreator: Union[
-        type[_backend.BasisAtomCreatorFloat],
-        type[_backend.BasisAtomCreatorComplexFloat],
-        type[_backend.BasisAtomCreatorDouble],
-        type[_backend.BasisAtomCreatorComplexDouble],
-    ]
-    _KetAtom: Union[type[KetAtomFloat], type[KetAtomDouble]]
+
+class BasisAtomBase(BasisBase):
+    _cpp: UnionCPPBasisAtom
+    _cpp_creator: UnionTypeCPPBasisAtomCreator
+    _TypeKet: UnionTypeKetAtom
 
     def __init__(
         self,
@@ -35,7 +41,7 @@ class BasisAtomBase:
         parity: Optional[_backend.Parity] = None,
         database: Optional[_backend.Database] = None,
     ) -> None:
-        creator = self._BasisAtomCreator()
+        creator = self._cpp_creator()
         creator.set_species(species)
         if f is not None:
             creator.restrict_quantum_number_f(*f)
@@ -63,57 +69,26 @@ class BasisAtomBase:
             )  # Use the default database
         self._cpp = creator.create(database)
 
-    @classmethod
-    def _from_cpp_object(
-        cls,
-        cpp_obj: Union[
-            _backend.BasisAtomFloat,
-            _backend.BasisAtomComplexFloat,
-            _backend.BasisAtomDouble,
-            _backend.BasisAtomComplexDouble,
-        ],
-    ):
-        obj = cls.__new__(cls)
-        obj._cpp = cpp_obj
-        return obj
-
-    @cached_property
-    def kets(self) -> list[Union[KetAtomFloat, KetAtomDouble]]:
-        kets = [self._KetAtom._from_cpp_object(ket) for ket in self._cpp.get_kets()]
-        return kets
-
-    @property
-    def number_of_states(self) -> int:
-        return self._cpp.get_number_of_states()
-
-    @property
-    def number_of_kets(self) -> int:
-        return self._cpp.get_number_of_kets()
-
-    @property
-    def coefficients(self) -> scipy.sparse.csr_matrix:
-        return self._cpp.get_coefficients()
-
 
 class BasisAtomFloat(BasisAtomBase):
     _cpp: _backend.BasisAtomFloat
-    _BasisAtomCreator = _backend.BasisAtomCreatorFloat
-    _KetAtom = KetAtomFloat
+    _cpp_creator = _backend.BasisAtomCreatorFloat
+    _TypeKet = KetAtomFloat
 
 
 class BasisAtomComplexFloat(BasisAtomBase):
     _cpp: _backend.BasisAtomComplexFloat
-    _BasisAtomCreator = _backend.BasisAtomCreatorComplexFloat
-    _KetAtom = KetAtomFloat
+    _cpp_creator = _backend.BasisAtomCreatorComplexFloat
+    _TypeKet = KetAtomFloat
 
 
 class BasisAtomDouble(BasisAtomBase):
     _cpp: _backend.BasisAtomDouble
-    _BasisAtomCreator = _backend.BasisAtomCreatorDouble
-    _KetAtom = KetAtomDouble
+    _cpp_creator = _backend.BasisAtomCreatorDouble
+    _TypeKet = KetAtomDouble
 
 
 class BasisAtomComplexDouble(BasisAtomBase):
     _cpp: _backend.BasisAtomComplexDouble
-    _BasisAtomCreator = _backend.BasisAtomCreatorComplexDouble
-    _KetAtom = KetAtomDouble
+    _cpp_creator = _backend.BasisAtomCreatorComplexDouble
+    _TypeKet = KetAtomDouble

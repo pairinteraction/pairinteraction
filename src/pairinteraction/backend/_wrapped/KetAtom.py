@@ -1,14 +1,19 @@
 from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
+from pairinteraction.backend._wrapped.Ket import KetBase
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
+UnionCPPKetAtom = Union[_backend.KetAtomFloat, _backend.KetAtomDouble]
+UnionTypeCPPKetAtomCreator = Union[type[_backend.KetAtomCreatorFloat], type[_backend.KetAtomCreatorDouble]]
 
-class KetAtomBase:
-    _KetAtomCreator: Union[type[_backend.KetAtomCreatorFloat], type[_backend.KetAtomCreatorDouble]]
+
+class KetAtomBase(KetBase):
+    _cpp: UnionCPPKetAtom
+    _KetAtomCreator: UnionTypeCPPKetAtomCreator
 
     def __init__(
         self,
@@ -52,19 +57,9 @@ class KetAtomBase:
             )  # Use the default database
         self._cpp = creator.create(database)
 
-    @classmethod
-    def _from_cpp_object(cls, cpp_obj: Union[_backend.KetAtomFloat, _backend.KetAtomDouble]):
-        obj = cls.__new__(cls)
-        obj._cpp = cpp_obj
-        return obj
-
-    def __str__(self) -> str:
-        return self.label
-
-    # # # Define convenience properties # # #
     @property
-    def label(self) -> str:
-        return self._cpp.get_label()
+    def species(self) -> str:
+        return self._cpp.get_species()
 
     @property
     def n(self) -> int:
@@ -85,23 +80,6 @@ class KetAtomBase:
     @property
     def j(self) -> float:
         return self._cpp.get_quantum_number_j()
-
-    @property
-    def f(self) -> float:
-        return self._cpp.get_quantum_number_f()
-
-    @property
-    def m(self) -> float:
-        return self._cpp.get_quantum_number_m()
-
-    @property
-    def species(self) -> str:
-        return self._cpp.get_species()
-
-    def get_energy(self, unit: str = "pint"):
-        energy_au = self._cpp.get_energy()
-        energy = Qty.from_base(energy_au, "energy")
-        return energy.to_unit(unit)
 
 
 class KetAtomFloat(KetAtomBase):
