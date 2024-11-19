@@ -30,7 +30,7 @@ UnionTypeCPPSystemCombined = Union[
 ]
 
 
-class SystemCombinedBase(SystemBase):
+class SystemCombinedBase(SystemBase[BasisCombinedBase]):
     _cpp: UnionCPPSystemCombined
     _cpp_type: UnionTypeCPPSystemCombined
     _TypeBasis: type[BasisCombinedBase]

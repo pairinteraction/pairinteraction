@@ -30,7 +30,7 @@ UnionTypeCPPSystemAtom = Union[
 ]
 
 
-class SystemAtomBase(SystemBase):
+class SystemAtomBase(SystemBase[BasisAtomBase]):
     _cpp: UnionCPPSystemAtom
     _cpp_type: UnionTypeCPPSystemAtom
     _TypeBasis: type[BasisAtomBase]

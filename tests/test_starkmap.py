@@ -18,7 +18,6 @@ reference_overlaps_file = Path(__file__).parent.parent / "data/reference_stark_m
 def test_starkmap(generate_reference: bool, database_dir: str, download_missing: bool) -> None:
     """Test calculating a Stark map."""
     database = pi.Database(download_missing, True, database_dir)
-    diagonalizer = pi.DiagonalizerEigen()
 
     # Create a basis
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
@@ -30,22 +29,22 @@ def test_starkmap(generate_reference: bool, database_dir: str, download_missing:
     systems = [pi.SystemAtom(basis).set_electric_field([0, 0, e], unit="V/cm") for e in electric_fields]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(systems, diagonalizer)
+    pi.diagonalize(systems, diagonalizer="Eigen")
 
     # Sort by the eigenvalues
     for system in systems:
         system.transform(system._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY]))
 
     # Get the overlap with |ket>
-    overlaps = [system.basis._cpp.get_overlaps(ket._cpp) for system in systems]
+    overlaps = np.array([system.basis.get_overlaps(ket) for system in systems])
 
     # Ensure that the overlaps sum up to one
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(len(electric_fields)))
 
     # Compare to reference data
     kets = [str(ket) for ket in systems[0].basis.kets]
-    eigenvalues = [system.get_eigenvalues(unit="GHz") for system in systems]
-    eigenstates = [system.get_eigenbasis().coefficients.todense().A1 for system in systems]
+    eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in systems])
+    eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in systems])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)

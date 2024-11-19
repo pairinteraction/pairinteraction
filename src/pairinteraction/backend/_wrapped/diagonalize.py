@@ -1,59 +1,40 @@
-from typing import Union
+from collections.abc import Sequence
+from typing import TypeVar, Union
 
 import pairinteraction.backend._backend as _backend
+from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
 from pairinteraction.backend._wrapped.system.SystemAtom import (
     SystemAtomBase,
-    SystemAtomComplexDouble,
-    SystemAtomComplexFloat,
-    SystemAtomDouble,
-    SystemAtomFloat,
 )
 from pairinteraction.backend._wrapped.system.SystemCombined import (
     SystemCombinedBase,
-    SystemCombinedComplexDouble,
-    SystemCombinedComplexFloat,
-    SystemCombinedDouble,
-    SystemCombinedFloat,
 )
+
+System_t = TypeVar("System_t", SystemAtomBase, SystemCombinedBase)
 
 
 def diagonalize(
-    systems: list[Union[SystemAtomBase, SystemCombinedBase]],
-    diagonalizer: Union[_backend.DiagonalizerInterfaceFloat, _backend.DiagonalizerInterfaceDouble, None] = None,
+    systems: Sequence[System_t],
+    diagonalizer: Diagonalizer = "Eigen",
     precision: int = 12,
     eigenvalue_range: Union[_backend.RangeFloat, _backend.RangeDouble, None] = None,
-) -> list[Union[SystemAtomBase, SystemCombinedBase]]:
+) -> list[System_t]:
     cpp_systems = [s._cpp for s in systems]
     diagonalize_fct = get_diagonalize_fct(systems[0])
 
-    if diagonalizer is None:
-        diagonalizer = systems[0]._DefaultDiagonalizer()
+    cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0])
     if eigenvalue_range is None:
-        diagonalize_fct(cpp_systems, diagonalizer, precision)
+        diagonalize_fct(cpp_systems, cpp_diagonalizer, precision)
     else:
-        diagonalize_fct(cpp_systems, diagonalizer, precision, eigenvalue_range)
+        diagonalize_fct(cpp_systems, cpp_diagonalizer, precision, eigenvalue_range)
     for i, system in enumerate(systems):
         system._cpp = cpp_systems[i]
         system.update_basis()
-    return systems
+    return list(systems)
 
 
 def get_diagonalize_fct(system):
-    if isinstance(system, SystemAtomFloat):
-        return _backend.diagonalizeSystemAtomFloat
-    elif isinstance(system, SystemAtomComplexFloat):
-        return _backend.diagonalizeSystemAtomComplexFloat
-    elif isinstance(system, SystemAtomDouble):
-        return _backend.diagonalizeSystemAtomDouble
-    elif isinstance(system, SystemAtomComplexDouble):
-        return _backend.diagonalizeSystemAtomComplexDouble
-    elif isinstance(system, SystemCombinedFloat):
-        return _backend.diagonalizeSystemCombinedFloat
-    elif isinstance(system, SystemCombinedComplexFloat):
-        return _backend.diagonalizeSystemCombinedComplexFloat
-    elif isinstance(system, SystemCombinedDouble):
-        return _backend.diagonalizeSystemCombinedDouble
-    elif isinstance(system, SystemCombinedComplexDouble):
-        return _backend.diagonalizeSystemCombinedComplexDouble
-    else:
-        raise ValueError(f"Unknown system type {type(system)}")
+    try:
+        return getattr(_backend, f"diagonalize{type(system).__name__}")
+    except AttributeError as err:
+        raise ValueError(f"Unknown diagonalize function for {type(system).__name__}") from err

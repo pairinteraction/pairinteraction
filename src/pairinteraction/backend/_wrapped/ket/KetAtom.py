@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
+from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
+from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
@@ -27,8 +29,8 @@ class KetAtomBase(KetBase):
         m: Optional[float] = None,
         energy: Union[float, "PlainQuantity", None] = None,
         energy_unit: str = "pint",
-        parity: Optional[_backend.Parity] = None,
-        database: Optional[_backend.Database] = None,
+        parity: Optional[Parity] = None,
+        database: Optional[Database] = None,
     ) -> None:
         creator = self._cpp_creator()
         creator.set_species(species)
@@ -50,12 +52,10 @@ class KetAtomBase(KetBase):
             energy_au = Qty(energy, energy_unit).to_base("energy")
             creator.set_energy(energy_au)
         if parity is not None:
-            creator.set_parity(parity)
+            creator.set_parity(get_cpp_parity(parity))
         if database is None:
-            database = _backend.Database.get_global_instance(
-                download_missing=False, wigner_in_memory=True, database_dir=""
-            )  # Use the default database
-        self._cpp = creator.create(database)
+            database = Database.get_global_instance()
+        self._cpp = creator.create(database._cpp)
 
     @property
     def species(self) -> str:

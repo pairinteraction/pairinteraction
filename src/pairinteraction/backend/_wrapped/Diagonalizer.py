@@ -13,8 +13,6 @@ UnionCPPDiagonalizer = Union[
 
 
 def get_cpp_diagonalizer(diagonalizer: Diagonalizer, cpp_system: Any) -> UnionCPPDiagonalizer:
-    if isinstance(diagonalizer, UnionCPPDiagonalizer):
-        return diagonalizer
     if diagonalizer.capitalize() not in get_args(Diagonalizer):
         raise ValueError(f"Unknown diagonalizer '{diagonalizer}', should be one of {Diagonalizer}")
     type_ = get_type_of_system(cpp_system)
