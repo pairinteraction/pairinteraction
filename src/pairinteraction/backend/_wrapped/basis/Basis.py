@@ -1,13 +1,12 @@
 from abc import ABC
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
-
-import scipy.sparse
+from typing import TYPE_CHECKING, Any, Generic, TypeVar, Union, overload
 
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
-    pass
+    import scipy.sparse
+    from numpy.typing import ArrayLike
 
 # UnionCPPBasis = Union[
 #     _backend.BasisBasis...,
@@ -54,5 +53,14 @@ class BasisBase(ABC, Generic[Ket_t]):
         return self._cpp.get_number_of_kets()
 
     @property
-    def coefficients(self) -> scipy.sparse.csr_matrix:
+    def coefficients(self) -> "scipy.sparse.csr_matrix":
         return self._cpp.get_coefficients()
+
+    @overload
+    def get_overlaps(self, ket_or_basis: Ket_t) -> "ArrayLike": ...
+
+    @overload
+    def get_overlaps(self, ket_or_basis: "BasisBase") -> "scipy.sparse.csr_matrix": ...
+
+    def get_overlaps(self, ket_or_basis: Union[Ket_t, "BasisBase"]):
+        return self._cpp.get_overlaps(ket_or_basis._cpp)

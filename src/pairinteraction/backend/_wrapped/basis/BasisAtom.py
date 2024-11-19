@@ -2,7 +2,9 @@ from typing import TYPE_CHECKING, Optional, Union
 
 import pairinteraction.backend._backend as _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
+from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
@@ -37,8 +39,8 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
         m: Optional[tuple[float, float]] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity", "PlainQuantity"], None] = None,
         energy_unit: str = "pint",
-        parity: Optional[_backend.Parity] = None,
-        database: Optional[_backend.Database] = None,
+        parity: Optional[Parity] = None,
+        database: Optional[Database] = None,
     ) -> None:
         creator = self._cpp_creator()
         creator.set_species(species)
@@ -47,7 +49,7 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if parity is not None:
-            creator.restrict_parity(parity)
+            creator.restrict_parity(get_cpp_parity(parity))
         if n is not None:
             creator.restrict_quantum_number_n(*n)
         if nu is not None:
@@ -63,10 +65,8 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
             max_energy_au = Qty(energy[1], energy_unit).to_base("energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
-            database = _backend.Database.get_global_instance(
-                download_missing=False, wigner_in_memory=True, database_dir=""
-            )  # Use the default database
-        self._cpp = creator.create(database)
+            database = Database.get_global_instance()
+        self._cpp = creator.create(database._cpp)
 
 
 class BasisAtomFloat(BasisAtomBase):
