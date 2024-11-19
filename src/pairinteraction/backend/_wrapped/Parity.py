@@ -1,6 +1,6 @@
 from typing import Literal, get_args
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 
 Parity = Literal["EVEN", "ODD", "UNKNOWN"]
 

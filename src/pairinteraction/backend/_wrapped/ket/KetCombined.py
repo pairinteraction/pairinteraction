@@ -1,10 +1,7 @@
-from typing import TYPE_CHECKING, Any, Union
+from typing import Any, ClassVar, Union
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
-
-if TYPE_CHECKING:
-    pass
 
 UnionCPPKetCombined = Union[
     _backend.KetCombinedFloat,
@@ -16,25 +13,25 @@ UnionTypeCPPKetCombinedCreator = Any
 
 
 class KetCombinedBase(KetBase):
-    _cpp: UnionCPPKetCombined
-    _cpp_creator: UnionTypeCPPKetCombinedCreator
+    _cpp: UnionCPPKetCombined  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator: ClassVar[UnionTypeCPPKetCombinedCreator]
 
 
 class KetCombinedFloat(KetCombinedBase):
-    _cpp: _backend.KetCombinedFloat
+    _cpp: _backend.KetCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
 class KetCombinedComplexFloat(KetCombinedBase):
-    _cpp: _backend.KetCombinedComplexFloat
+    _cpp: _backend.KetCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
 class KetCombinedDouble(KetCombinedBase):
-    _cpp: _backend.KetCombinedDouble
+    _cpp: _backend.KetCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
 class KetCombinedComplexDouble(KetCombinedBase):
-    _cpp: _backend.KetCombinedComplexDouble
+    _cpp: _backend.KetCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None

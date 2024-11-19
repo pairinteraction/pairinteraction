@@ -1,23 +1,25 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union, get_args, overload
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.unit_system import Qty
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
+    SelfKet_t = TypeVar("SelfKet_t", bound="KetBase")
+
 UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
-UnionTypeCPPKetCreator = Any
+UnionTypeCPPKetCreator = Any  # type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
 
 
 class KetBase(ABC):
     _cpp: UnionCPPKet
-    _cpp_creator: UnionTypeCPPKetCreator
+    _cpp_creator: ClassVar[UnionTypeCPPKetCreator]
 
     @classmethod
-    def _from_cpp_object(cls, cpp_obj: UnionCPPKet):
+    def _from_cpp_object(cls: "type[SelfKet_t]", cpp_obj: UnionCPPKet) -> "SelfKet_t":
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
@@ -40,10 +42,13 @@ class KetBase(ABC):
     @property
     def parity(self) -> Parity:
         parity_cpp = self._cpp.get_parity()
-        return parity_cpp.name
+        parity = parity_cpp.name
+        if parity in get_args(Parity):
+            return parity  # type: ignore [return-value]
+        raise ValueError(f"Unknown parity {parity}")
 
     @property
-    def energy(self) -> "PlainQuantity[float]":
+    def energy(self):
         return self.get_energy()
 
     @overload

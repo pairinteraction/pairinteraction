@@ -1,6 +1,6 @@
-from typing import Optional, Union
+from typing import ClassVar, Optional, Union
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
 UnionCPPKetClassicalLight = Union[_backend.KetClassicalLightFloat, _backend.KetClassicalLightDouble]
@@ -10,8 +10,8 @@ UnionTypeCPPKetClassicalLightCreator = Union[
 
 
 class KetClassicalLightBase(KetBase):
-    _cpp: UnionCPPKetClassicalLight
-    _cpp_creator: UnionTypeCPPKetClassicalLightCreator
+    _cpp: UnionCPPKetClassicalLight  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator: ClassVar[UnionTypeCPPKetClassicalLightCreator]
 
     def __init__(
         self,
@@ -23,7 +23,7 @@ class KetClassicalLightBase(KetBase):
             creator.set_photon_energy(photon_energy)
         if q is not None:
             creator.set_quantum_number_q(q)
-        self._cpp = creator.create()
+        self._cpp = creator.create()  # type: ignore [reportIncompatibleVariableOverride]
 
     @property
     def q(self) -> int:
@@ -35,10 +35,10 @@ class KetClassicalLightBase(KetBase):
 
 
 class KetClassicalLightFloat(KetClassicalLightBase):
-    _cpp: _backend.KetClassicalLightFloat
+    _cpp: _backend.KetClassicalLightFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetClassicalLightCreatorFloat
 
 
 class KetClassicalLightDouble(KetClassicalLightBase):
-    _cpp: _backend.KetClassicalLightDouble
+    _cpp: _backend.KetClassicalLightDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetClassicalLightCreatorDouble

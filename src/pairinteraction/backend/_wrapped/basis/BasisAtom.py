@@ -1,6 +1,6 @@
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, Union
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
@@ -19,13 +19,11 @@ UnionTypeCPPBasisAtomCreator = Union[
     type[_backend.BasisAtomCreatorDouble],
     type[_backend.BasisAtomCreatorComplexDouble],
 ]
-UnionTypeKetAtom = Union[type[KetAtomFloat], type[KetAtomDouble]]
 
 
 class BasisAtomBase(BasisBase[KetAtomBase]):
     _cpp: UnionCPPBasisAtom
-    _cpp_creator: UnionTypeCPPBasisAtomCreator
-    _TypeKet: UnionTypeKetAtom
+    _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
     def __init__(
         self,
@@ -37,7 +35,7 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
         j: Optional[tuple[float, float]] = None,
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
-        energy: Union[tuple[float, float], tuple["PlainQuantity", "PlainQuantity"], None] = None,
+        energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
@@ -66,28 +64,28 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
             database = Database.get_global_instance()
-        self._cpp = creator.create(database._cpp)
+        self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
 
 class BasisAtomFloat(BasisAtomBase):
-    _cpp: _backend.BasisAtomFloat
+    _cpp: _backend.BasisAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorFloat
     _TypeKet = KetAtomFloat
 
 
 class BasisAtomComplexFloat(BasisAtomBase):
-    _cpp: _backend.BasisAtomComplexFloat
+    _cpp: _backend.BasisAtomComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplexFloat
     _TypeKet = KetAtomFloat
 
 
 class BasisAtomDouble(BasisAtomBase):
-    _cpp: _backend.BasisAtomDouble
+    _cpp: _backend.BasisAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorDouble
     _TypeKet = KetAtomDouble
 
 
 class BasisAtomComplexDouble(BasisAtomBase):
-    _cpp: _backend.BasisAtomComplexDouble
+    _cpp: _backend.BasisAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplexDouble
     _TypeKet = KetAtomDouble

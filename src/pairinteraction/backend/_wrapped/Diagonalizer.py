@@ -1,6 +1,6 @@
 from typing import Any, Literal, Union, get_args
 
-import pairinteraction.backend._backend as _backend
+from pairinteraction.backend import _backend
 
 Diagonalizer = Literal["Eigen", "Lapacke", "Feast"]
 

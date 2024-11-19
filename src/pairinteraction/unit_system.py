@@ -1,5 +1,5 @@
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Literal, Union
+from typing import TYPE_CHECKING, Any, Literal, Union
 
 import numpy as np
 from pint import UnitRegistry
@@ -8,6 +8,8 @@ from pint.facets.plain import PlainQuantity
 if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     from pint.facets.plain import PlainUnit
+
+    Array = np.ndarray[Any, Any]
 
 ureg = UnitRegistry(system="atomic")
 
@@ -21,7 +23,7 @@ BaseUnits: dict[Dimension, "PlainUnit"] = {
 
 
 class Qty:
-    def __init__(self, value: Union[float, "PlainQuantity"], unit: Union[str, "PlainUnit"] = "pint"):
+    def __init__(self, value: Union[float, "PlainQuantity[float]"], unit: Union[str, "PlainUnit"] = "pint"):
         if isinstance(value, ureg.Quantity):
             if unit != "pint":
                 raise ValueError("unit must be 'pint' if value is a pairinteraction.ureg.Quantity")
@@ -44,17 +46,19 @@ class Qty:
         return cls(value, BaseUnits[dimension])
 
     def to_base(self, dimension: Dimension) -> float:
-        return self.quantity.to(BaseUnits[dimension], "spectroscopy").magnitude
+        return self.quantity.to(BaseUnits[dimension], "spectroscopy").magnitude  # type: ignore
 
     def to_unit(self, unit: Union[str, "PlainUnit"] = "pint") -> Union[float, "PlainQuantity[float]"]:
         if unit == "pint":
             return self.quantity
-        return self.quantity.to(unit, "spectroscopy").magnitude
+        return self.quantity.to(unit, "spectroscopy").magnitude  # type: ignore
 
 
 class Qties:
     def __init__(
-        self, values: Union["PlainQuantity", Collection[float], "ArrayLike"], unit: Union[str, "PlainUnit"] = "pint"
+        self,
+        values: Union["PlainQuantity[Array]", Collection[float], "ArrayLike"],
+        unit: Union[str, "PlainUnit"] = "pint",
     ):
         if isinstance(values, ureg.Quantity):
             if unit != "pint":
@@ -82,9 +86,9 @@ class Qties:
         return cls(values, BaseUnits[dimension])
 
     def to_base(self, dimension: Dimension) -> "ArrayLike":
-        return self.quantities.to(BaseUnits[dimension], "spectroscopy").magnitude
+        return self.quantities.to(BaseUnits[dimension], "spectroscopy").magnitude  # type: ignore
 
-    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union["ArrayLike", "PlainQuantity"]:
+    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union["ArrayLike", "PlainQuantity[Array]"]:
         if unit == "pint":
             return self.quantities
-        return self.quantities.to(unit, "spectroscopy").magnitude
+        return self.quantities.to(unit, "spectroscopy").magnitude  # type: ignore

@@ -1,8 +1,7 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, Generic, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
-import pairinteraction.backend._backend as _backend
-from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
 from pairinteraction.unit_system import Qties
 
@@ -10,41 +9,42 @@ if TYPE_CHECKING:
     from numpy.typing import ArrayLike
     from pint.facets.plain import PlainQuantity
 
-    Self = TypeVar("Self", bound="SystemBase")
+    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
+    from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombinedBase
+    from pairinteraction.unit_system import Array
 
-# UnionCPPSystem = Union[
-#     _backend.SystemSystem...,
-# ]
+    SelfSystem_t = TypeVar("SelfSystem_t", bound="UnionSystem")
+    # TODO create a proper Union for all the possible SystemBase types
+
+Basis_t = TypeVar("Basis_t", "BasisAtomBase", "BasisCombinedBase")
 UnionCPPSystem = Any
-
-# UnionTypeCPPSystem = Union[
-#     type[_backend.SystemAtomCreatorFloat],
-# ]
+# TransformationBuilderInterface(Float|Double|ComplexFloat|ComplexDouble)
+# System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
-
+# type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
 UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
-
-Basis_t = TypeVar("Basis_t", bound="BasisBase")
+UnionSystem = Union["SystemBase[BasisAtomBase]", "SystemBase[BasisCombinedBase]"]
 
 
 class SystemBase(ABC, Generic[Basis_t]):
     _cpp: UnionCPPSystem
-    _cpp_type: UnionTypeCPPSystem
-    _TypeBasis: type[BasisBase]
+    _cpp_type: ClassVar[UnionTypeCPPSystem]
+    _basis: Basis_t
+    _TypeBasis: type[Basis_t]  # should by ClassVar, but cannot be nested yet
 
     def __init__(self, basis: Basis_t) -> None:
-        self._cpp = self._cpp_type(basis._cpp)
+        self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
         self.update_basis()
 
     @classmethod
-    def _from_cpp_object(cls, cpp_obj: UnionCPPSystem):
+    def _from_cpp_object(cls: "type[SelfSystem_t]", cpp_obj: UnionCPPSystem) -> "SelfSystem_t":
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         obj.update_basis()
         return obj
 
     def update_basis(self) -> None:
-        self._basis: Basis_t = self._TypeBasis._from_cpp_object(self._cpp.get_basis())
+        self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())  # type: ignore
 
     def diagonalize(
         self,
@@ -74,7 +74,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self._cpp.get_matrix()
 
     @overload
-    def get_eigenvalues(self) -> "PlainQuantity[float]": ...
+    def get_eigenvalues(self) -> "PlainQuantity[Array]": ...
 
     @overload
     def get_eigenvalues(self, unit: str) -> "ArrayLike": ...
@@ -86,8 +86,4 @@ class SystemBase(ABC, Generic[Basis_t]):
 
     def get_eigenbasis(self) -> Basis_t:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)
-
-    def transform(self, transformation) -> "Self":
-        self._cpp.transform(transformation)
-        return self
+        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
