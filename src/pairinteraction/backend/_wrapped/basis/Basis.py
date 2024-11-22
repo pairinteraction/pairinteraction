@@ -12,7 +12,6 @@ if TYPE_CHECKING:
 
 Ket_t = TypeVar("Ket_t", bound=KetBase)
 UnionCPPBasis = Any
-# TransformationBuilderInterface(Float|Double|ComplexFloat|ComplexDouble)
 # Basis(|Basis)(Atom|ClassicalLight|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPBasisCreator = Any
 # type[Basis(Atom|ClassicalLight|Combined)Creator(Float|Double|ComplexFloat|ComplexDouble)]
