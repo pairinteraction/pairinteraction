@@ -36,6 +36,7 @@ from pairinteraction.backend._wrapped.ket.KetCombined import (
     KetCombinedDouble,
     KetCombinedFloat,
 )
+from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.backend._wrapped.system.SystemAtom import (
     SystemAtomBase,
@@ -79,6 +80,7 @@ __all__ = [
     "KetCombinedComplexFloat",
     "KetCombinedDouble",
     "KetCombinedFloat",
+    "OperatorType",
     "Parity",
     "SystemAtomBase",
     "SystemAtomComplexDouble",
