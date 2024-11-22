@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
@@ -21,8 +21,9 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
     from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
 
-    KetAtomOrBasisAtom_t = TypeVar("KetAtomOrBasisAtom_t", "KetAtomBase", "BasisAtomBase", covariant=True)
+    KetAtomOrBasisAtom_t = TypeVar("KetAtomOrBasisAtom_t", "KetAtomBase", "BasisAtomBase[Any]", covariant=True)
 
+Ket_t = TypeVar("Ket_t", bound=KetCombinedBase)
 UnionCPPBasisCombined = Union[
     _backend.BasisCombinedFloat,
     _backend.BasisCombinedComplexFloat,
@@ -37,13 +38,13 @@ UnionTypeCPPBasisCombinedCreator = Union[
 ]
 
 
-class BasisCombinedBase(BasisBase[KetCombinedBase]):
+class BasisCombinedBase(BasisBase[Ket_t]):
     _cpp: UnionCPPBasisCombined
     _cpp_creator: ClassVar[UnionTypeCPPBasisCombinedCreator]
 
     def __init__(
         self,
-        systems: Sequence[SystemAtomBase],
+        systems: Sequence[SystemAtomBase[Any]],
         m: Optional[tuple[float, float]] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
@@ -66,7 +67,7 @@ class BasisCombinedBase(BasisBase[KetCombinedBase]):
 
     @overload
     def get_overlaps_from_product(
-        self, ket_or_basis_1: "BasisAtomBase", ket_or_basis_2: "BasisAtomBase"
+        self, ket_or_basis_1: "BasisAtomBase[Any]", ket_or_basis_2: "BasisAtomBase[Any]"
     ) -> "scipy.sparse.csr_matrix": ...
 
     def get_overlaps_from_product(self, ket_or_basis_1: "KetAtomOrBasisAtom_t", ket_or_basis_2: "KetAtomOrBasisAtom_t"):  # type: ignore [reportUnknownParameterType]
@@ -74,25 +75,25 @@ class BasisCombinedBase(BasisBase[KetCombinedBase]):
         return overlaps  # type: ignore [reportUnknownVariableType]
 
 
-class BasisCombinedFloat(BasisCombinedBase):
+class BasisCombinedFloat(BasisCombinedBase[KetCombinedFloat]):
     _cpp: _backend.BasisCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisCombinedCreatorFloat
     _TypeKet = KetCombinedFloat
 
 
-class BasisCombinedComplexFloat(BasisCombinedBase):
+class BasisCombinedComplexFloat(BasisCombinedBase[KetCombinedComplexFloat]):
     _cpp: _backend.BasisCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisCombinedCreatorComplexFloat
     _TypeKet = KetCombinedComplexFloat
 
 
-class BasisCombinedDouble(BasisCombinedBase):
+class BasisCombinedDouble(BasisCombinedBase[KetCombinedDouble]):
     _cpp: _backend.BasisCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisCombinedCreatorDouble
     _TypeKet = KetCombinedDouble
 
 
-class BasisCombinedComplexDouble(BasisCombinedBase):
+class BasisCombinedComplexDouble(BasisCombinedBase[KetCombinedComplexDouble]):
     _cpp: _backend.BasisCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisCombinedCreatorComplexDouble
     _TypeKet = KetCombinedComplexDouble

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     import scipy.sparse
     from numpy.typing import ArrayLike
 
-    SelfBasis_t = TypeVar("SelfBasis_t", bound="BasisBase[KetBase]")  # TODO replace KetBase by UnionAllKet
+    SelfBasis_t = TypeVar("SelfBasis_t", bound="BasisBase[Any]")
 
 Ket_t = TypeVar("Ket_t", bound=KetBase)
 UnionCPPBasis = Any

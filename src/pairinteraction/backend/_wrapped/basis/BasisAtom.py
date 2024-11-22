@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
@@ -10,6 +10,7 @@ from pairinteraction.unit_system import Qty
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
+Ket_t = TypeVar("Ket_t", bound=KetAtomBase)
 UnionCPPBasisAtom = Union[
     _backend.BasisAtomFloat, _backend.BasisAtomComplexFloat, _backend.BasisAtomDouble, _backend.BasisAtomComplexDouble
 ]
@@ -21,7 +22,7 @@ UnionTypeCPPBasisAtomCreator = Union[
 ]
 
 
-class BasisAtomBase(BasisBase[KetAtomBase]):
+class BasisAtomBase(BasisBase[Ket_t]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
@@ -67,25 +68,25 @@ class BasisAtomBase(BasisBase[KetAtomBase]):
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
 
-class BasisAtomFloat(BasisAtomBase):
+class BasisAtomFloat(BasisAtomBase[KetAtomFloat]):
     _cpp: _backend.BasisAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorFloat
     _TypeKet = KetAtomFloat
 
 
-class BasisAtomComplexFloat(BasisAtomBase):
+class BasisAtomComplexFloat(BasisAtomBase[KetAtomFloat]):
     _cpp: _backend.BasisAtomComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplexFloat
     _TypeKet = KetAtomFloat
 
 
-class BasisAtomDouble(BasisAtomBase):
+class BasisAtomDouble(BasisAtomBase[KetAtomDouble]):
     _cpp: _backend.BasisAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorDouble
     _TypeKet = KetAtomDouble
 
 
-class BasisAtomComplexDouble(BasisAtomBase):
+class BasisAtomComplexDouble(BasisAtomBase[KetAtomDouble]):
     _cpp: _backend.BasisAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplexDouble
     _TypeKet = KetAtomDouble
