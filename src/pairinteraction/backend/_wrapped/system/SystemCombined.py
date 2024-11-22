@@ -1,9 +1,8 @@
 from collections.abc import Collection
-from typing import TYPE_CHECKING, ClassVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.BasisCombined import (
-    BasisCombinedBase,
     BasisCombinedComplexDouble,
     BasisCombinedComplexFloat,
     BasisCombinedDouble,
@@ -17,6 +16,11 @@ if TYPE_CHECKING:
 
     from pairinteraction.unit_system import Array
 
+    SelfSystemCombined_t = TypeVar("SelfSystemCombined_t", bound="SystemCombinedBase[Any]")
+
+Basis_t = TypeVar(
+    "Basis_t", "BasisCombinedFloat", "BasisCombinedComplexFloat", "BasisCombinedDouble", "BasisCombinedComplexDouble"
+)
 UnionCPPSystemCombined = Union[
     _backend.SystemCombinedFloat,
     _backend.SystemCombinedComplexFloat,
@@ -31,48 +35,50 @@ UnionTypeCPPSystemCombined = Union[
 ]
 
 
-class SystemCombinedBase(SystemBase[BasisCombinedBase]):
+class SystemCombinedBase(SystemBase[Basis_t]):
     _cpp: UnionCPPSystemCombined
     _cpp_type: ClassVar[UnionTypeCPPSystemCombined]
 
-    def set_order(self, order: int):
+    def set_order(self: "SelfSystemCombined_t", order: int) -> "SelfSystemCombined_t":
         self._cpp.set_order(order)
         return self
 
-    def set_distance(self, distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"):
+    def set_distance(
+        self: "SelfSystemCombined_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
+    ) -> "SelfSystemCombined_t":
         distance_au = Qty(distance, unit).to_base("distance")
         self._cpp.set_distance(distance_au)
         return self
 
     def set_distance_vector(
-        self,
+        self: "SelfSystemCombined_t",
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
-    ):
+    ) -> "SelfSystemCombined_t":
         distance_au = [Qty(v, unit).to_base("distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
 
 
-class SystemCombinedFloat(SystemCombinedBase):
+class SystemCombinedFloat(SystemCombinedBase[BasisCombinedFloat]):
     _cpp: _backend.SystemCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemCombinedFloat
     _TypeBasis = BasisCombinedFloat
 
 
-class SystemCombinedComplexFloat(SystemCombinedBase):
+class SystemCombinedComplexFloat(SystemCombinedBase[BasisCombinedComplexFloat]):
     _cpp: _backend.SystemCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemCombinedComplexFloat
     _TypeBasis = BasisCombinedComplexFloat
 
 
-class SystemCombinedDouble(SystemCombinedBase):
+class SystemCombinedDouble(SystemCombinedBase[BasisCombinedDouble]):
     _cpp: _backend.SystemCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemCombinedDouble
     _TypeBasis = BasisCombinedDouble
 
 
-class SystemCombinedComplexDouble(SystemCombinedBase):
+class SystemCombinedComplexDouble(SystemCombinedBase[BasisCombinedComplexDouble]):
     _cpp: _backend.SystemCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemCombinedComplexDouble
     _TypeBasis = BasisCombinedComplexDouble
