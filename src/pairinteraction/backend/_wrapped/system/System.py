@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 
 Basis_t = TypeVar("Basis_t", bound=Union["BasisAtomBase[Any]", "BasisCombinedBase[Any]"])
 UnionCPPSystem = Any
-# TransformationBuilderInterface(Float|Double|ComplexFloat|ComplexDouble)
 # System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
 # type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
