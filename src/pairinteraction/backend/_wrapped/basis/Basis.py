@@ -54,3 +54,15 @@ class BasisBase(ABC, Generic[Ket_t]):
 
     def get_overlaps(self, ket_or_basis: Union[Ket_t, "BasisBase[Ket_t]"]):
         return self._cpp.get_overlaps(ket_or_basis._cpp)
+
+    def get_corresponding_state(self: "SelfBasis_t", ket_or_index: Union[KetBase, int]) -> "SelfBasis_t":
+        if isinstance(ket_or_index, int):
+            cpp_basis = self._from_cpp_object(self._cpp.get_corresponding_state(ket_or_index))
+        else:
+            cpp_basis = self._cpp.get_corresponding_state(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
+        return type(self)._from_cpp_object(cpp_basis)
+
+    def get_corresponding_state_index(self, ket_or_index: Union[KetBase, int]) -> int:
+        if isinstance(ket_or_index, int):
+            return self._cpp.get_corresponding_state_index(ket_or_index)
+        return self._cpp.get_corresponding_state_index(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
