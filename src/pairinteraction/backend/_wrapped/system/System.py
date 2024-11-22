@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombinedBase
     from pairinteraction.unit_system import Array
 
-    SelfSystem_t = TypeVar("SelfSystem_t", bound="UnionSystem")
+    SelfSystem_t = TypeVar("SelfSystem_t", bound="SystemBase[Any]")
 
 Basis_t = TypeVar("Basis_t", bound=Union["BasisAtomBase[Any]", "BasisCombinedBase[Any]"])
 UnionCPPSystem = Any
@@ -21,7 +21,6 @@ UnionCPPSystem = Any
 UnionTypeCPPSystem = Any
 # type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
 UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
-UnionSystem = Union["SystemBase[BasisAtomBase[Any]]", "SystemBase[BasisCombinedBase[Any]]"]
 
 
 class SystemBase(ABC, Generic[Basis_t]):

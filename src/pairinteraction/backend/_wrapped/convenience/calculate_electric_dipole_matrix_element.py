@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar
+from typing import Any, Optional, TypeVar
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomDouble, KetAtomFloat
@@ -8,7 +8,7 @@ Ket_t = TypeVar("Ket_t", KetAtomDouble, KetAtomFloat)
 
 
 def calculate_electric_dipole_matrix_element(
-    initial_ket: Ket_t, final_ket: Ket_t, q: int, system: Optional[SystemAtomBase] = None
+    initial_ket: Ket_t, final_ket: Ket_t, q: int, system: Optional[SystemAtomBase[Any]] = None
 ) -> float:
     """Calculate the electric dipole matrix element between two kets.
 
