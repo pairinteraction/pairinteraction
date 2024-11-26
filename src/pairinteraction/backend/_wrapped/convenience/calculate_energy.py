@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, Optional, overload
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
 from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -31,4 +31,4 @@ def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = N
         energy_au = _backend.calculate_energy(ket._cpp)  # type: ignore [reportPrivateUsage]
     else:
         energy_au = _backend.calculate_energy(ket._cpp, system._cpp)  # type: ignore
-    return Qty.from_base(energy_au, "energy").to_unit(unit)
+    return QuantityScalar.from_base(energy_au, "energy").to_unit(unit)

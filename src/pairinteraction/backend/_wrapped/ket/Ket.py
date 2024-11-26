@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union, get_args, overl
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Parity import Parity
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -62,5 +62,5 @@ class KetBase(ABC):
 
     def get_energy(self, unit: str = "pint"):
         energy_au = self._cpp.get_energy()
-        energy = Qty.from_base(energy_au, "energy")
+        energy = QuantityScalar.from_base(energy_au, "energy")
         return energy.to_unit(unit)

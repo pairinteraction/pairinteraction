@@ -4,7 +4,7 @@ from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -49,7 +49,7 @@ class KetAtomBase(KetBase):
         if m is not None:
             creator.set_quantum_number_m(m)
         if energy is not None:
-            energy_au = Qty(energy, energy_unit).to_base("energy")
+            energy_au = QuantityScalar(energy, energy_unit).to_base("energy")
             creator.set_energy(energy_au)
         if parity is not None:
             creator.set_parity(get_cpp_parity(parity))

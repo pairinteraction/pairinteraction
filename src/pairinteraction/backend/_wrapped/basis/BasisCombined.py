@@ -11,7 +11,7 @@ from pairinteraction.backend._wrapped.ket.KetCombined import (
     KetCombinedFloat,
 )
 from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     import scipy.sparse
@@ -55,8 +55,8 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if energy is not None:
-            min_energy_au = Qty(energy[0], energy_unit).to_base("energy")
-            max_energy_au = Qty(energy[1], energy_unit).to_base("energy")
+            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("energy")
+            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 

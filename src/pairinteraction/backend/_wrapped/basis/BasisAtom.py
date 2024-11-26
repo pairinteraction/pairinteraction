@@ -5,7 +5,7 @@ from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.Database import Database
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
 from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -61,8 +61,8 @@ class BasisAtomBase(BasisBase[Ket_t]):
         if j is not None:
             creator.restrict_quantum_number_j(*j)
         if energy is not None:
-            min_energy_au = Qty(energy[0], energy_unit).to_base("energy")
-            max_energy_au = Qty(energy[1], energy_unit).to_base("energy")
+            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("energy")
+            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("energy")
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
             database = Database.get_global_instance()
