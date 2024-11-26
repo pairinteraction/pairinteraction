@@ -9,12 +9,12 @@ from pairinteraction.backend._wrapped.basis.BasisCombined import (
     BasisCombinedFloat,
 )
 from pairinteraction.backend._wrapped.system.System import SystemBase
-from pairinteraction.unit_system import Qty
+from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
-    from pairinteraction.unit_system import Array
+    from pairinteraction.units import Array
 
     SelfSystemCombined_t = TypeVar("SelfSystemCombined_t", bound="SystemCombinedBase[Any]")
 
@@ -46,7 +46,7 @@ class SystemCombinedBase(SystemBase[Basis_t]):
     def set_distance(
         self: "SelfSystemCombined_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
     ) -> "SelfSystemCombined_t":
-        distance_au = Qty(distance, unit).to_base("distance")
+        distance_au = QuantityScalar(distance, unit).to_base("distance")
         self._cpp.set_distance(distance_au)
         return self
 
@@ -55,7 +55,7 @@ class SystemCombinedBase(SystemBase[Basis_t]):
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
     ) -> "SelfSystemCombined_t":
-        distance_au = [Qty(v, unit).to_base("distance") for v in distance]
+        distance_au = [QuantityScalar(v, unit).to_base("distance") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
 

@@ -3,17 +3,17 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Uni
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
-from pairinteraction.unit_system import Qties
+from pairinteraction.units import QuantityArray, QuantitySparse
 
 if TYPE_CHECKING:
     import numpy as np
     import numpy.typing as npt
-    import scipy.sparse
     from pint.facets.plain import PlainQuantity
+    from scipy.sparse import csr_matrix
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
     from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombinedBase
-    from pairinteraction.unit_system import Array
+    from pairinteraction.units import Array
 
     SelfSystem_t = TypeVar("SelfSystem_t", bound="SystemBase[Any]")
 
@@ -80,7 +80,7 @@ class SystemBase(ABC, Generic[Basis_t]):
 
     def get_eigenvalues(self, unit: str = "pint"):
         eigenvalues_au = self._cpp.get_eigenvalues()
-        eigenvalues = Qties.from_base(eigenvalues_au, "energy")
+        eigenvalues = QuantityArray.from_base(eigenvalues_au, "energy")
         return eigenvalues.to_unit(unit)
 
     def get_eigenbasis(self) -> Basis_t:
@@ -88,12 +88,12 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
 
     @overload
-    def get_hamiltonian(self) -> "PlainQuantity[scipy.sparse.csr_matrix]": ...
+    def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments, type-var]
 
     @overload
-    def get_hamiltonian(self, unit: str) -> "scipy.sparse.csr_matrix": ...
+    def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
 
     def get_hamiltonian(self, unit: str = "pint"):
         hamiltonian_au = self._cpp.get_matrix()
-        hamiltonian = Qties.from_base(hamiltonian_au, "energy")
+        hamiltonian = QuantitySparse.from_base(hamiltonian_au, "energy")
         return hamiltonian.to_unit(unit)

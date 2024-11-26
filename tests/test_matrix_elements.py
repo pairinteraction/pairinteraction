@@ -20,11 +20,7 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
     # Energy of Stark shifted state
     basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5), database=database)
 
-    system = (
-        pi.SystemAtom(basis)
-        .set_electric_field([0, 0, 1], unit="V/cm")
-        .diagonalize(diagonalizer="Eigen", sort_by_energy=False)
-    )
+    system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
 
     energy_perturbed = pi.calculate_energy(ket, system, unit="GHz")
 
