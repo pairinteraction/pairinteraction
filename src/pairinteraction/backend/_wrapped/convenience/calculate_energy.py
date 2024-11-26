@@ -10,14 +10,22 @@ if TYPE_CHECKING:
 
 
 @overload
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = None) -> "PlainQuantity[float]": ...
+def calculate_energy(ket: KetAtomBase) -> "PlainQuantity[float]": ...
 
 
 @overload
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]], unit: str) -> float: ...
+def calculate_energy(ket: KetAtomBase, system: SystemAtomBase[Any]) -> "PlainQuantity[float]": ...
 
 
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = None, unit: str = "pint"):
+@overload
+def calculate_energy(ket: KetAtomBase, *, unit: str) -> float: ...
+
+
+@overload
+def calculate_energy(ket: KetAtomBase, system: SystemAtomBase[Any], *, unit: str) -> float: ...
+
+
+def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = None, *, unit: str = "pint"):
     """Calculate the energy of a ket state.
 
     Args:
