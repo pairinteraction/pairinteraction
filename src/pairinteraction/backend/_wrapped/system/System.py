@@ -6,7 +6,9 @@ from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_
 from pairinteraction.unit_system import Qties
 
 if TYPE_CHECKING:
-    from numpy.typing import ArrayLike
+    import numpy as np
+    import numpy.typing as npt
+    import scipy.sparse
     from pint.facets.plain import PlainQuantity
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
@@ -74,7 +76,7 @@ class SystemBase(ABC, Generic[Basis_t]):
     def get_eigenvalues(self) -> "PlainQuantity[Array]": ...
 
     @overload
-    def get_eigenvalues(self, unit: str) -> "ArrayLike": ...
+    def get_eigenvalues(self, unit: str) -> "npt.NDArray[np.floating[Any]]": ...
 
     def get_eigenvalues(self, unit: str = "pint"):
         eigenvalues_au = self._cpp.get_eigenvalues()
@@ -84,3 +86,14 @@ class SystemBase(ABC, Generic[Basis_t]):
     def get_eigenbasis(self) -> Basis_t:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
+
+    @overload
+    def get_hamiltonian(self) -> "PlainQuantity[scipy.sparse.csr_matrix]": ...
+
+    @overload
+    def get_hamiltonian(self, unit: str) -> "scipy.sparse.csr_matrix": ...
+
+    def get_hamiltonian(self, unit: str = "pint"):
+        hamiltonian_au = self._cpp.get_matrix()
+        hamiltonian = Qties.from_base(hamiltonian_au, "energy")
+        return hamiltonian.to_unit(unit)

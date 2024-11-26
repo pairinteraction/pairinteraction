@@ -2,6 +2,7 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, Literal, Union
 
 import numpy as np
+import scipy.sparse
 from pint import UnitRegistry
 from pint.facets.plain import PlainQuantity
 
@@ -57,7 +58,7 @@ class Qty:
 class Qties:
     def __init__(
         self,
-        values: Union["PlainQuantity[Array]", Collection[float], "ArrayLike"],
+        values: Union["PlainQuantity[Array]", Collection[float], "ArrayLike", "scipy.sparse.csr_matrix"],
         unit: Union[str, "PlainUnit"] = "pint",
     ):
         if isinstance(values, ureg.Quantity):
@@ -70,11 +71,15 @@ class Qties:
             )
         elif isinstance(values, Collection):
             if not all(np.isscalar(v) for v in values):
-                raise TypeError("values must be a a list of scalars")
+                raise TypeError(
+                    f"values must be a a list of scalars, not {type(values)=}, {[type(v) for v in values]=}"
+                )
             if unit == "pint":
                 raise ValueError(
                     "if values is a list of scalars, unit must be a string specifiying the unit (e.g. unit='GHz')"
                 )
+            self.quantities = ureg.Quantity(values, unit)
+        elif isinstance(values, scipy.sparse.csr_matrix):
             self.quantities = ureg.Quantity(values, unit)
         else:
             raise TypeError(
@@ -85,10 +90,12 @@ class Qties:
     def from_base(cls, values: Union[Collection[float], "ArrayLike"], dimension: Dimension) -> "Qties":
         return cls(values, BaseUnits[dimension])
 
-    def to_base(self, dimension: Dimension) -> "ArrayLike":
+    def to_base(self, dimension: Dimension) -> Union["ArrayLike", "scipy.sparse.csr_matrix"]:
         return self.quantities.to(BaseUnits[dimension], "spectroscopy").magnitude  # type: ignore
 
-    def to_unit(self, unit: Union[str, "PlainUnit"]) -> Union["ArrayLike", "PlainQuantity[Array]"]:
+    def to_unit(
+        self, unit: Union[str, "PlainUnit"]
+    ) -> Union["ArrayLike", "PlainQuantity[Array]", "PlainQuantity[scipy.sparse.csr_matrix]"]:
         if unit == "pint":
             return self.quantities
         return self.quantities.to(unit, "spectroscopy").magnitude  # type: ignore
