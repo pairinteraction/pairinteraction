@@ -40,6 +40,7 @@ class BasisAtomBase(BasisBase[Ket_t]):
         energy_unit: str = "pint",
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
+        additional_kets: Optional[list[Ket_t]] = None,
     ) -> None:
         creator = self._cpp_creator()
         creator.set_species(species)
@@ -65,6 +66,9 @@ class BasisAtomBase(BasisBase[Ket_t]):
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
             database = Database.get_global_instance()
+        if additional_kets is not None:
+            for ket in additional_kets:
+                creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
 
