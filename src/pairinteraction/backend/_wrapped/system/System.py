@@ -19,9 +19,9 @@ if TYPE_CHECKING:
 
 Basis_t = TypeVar("Basis_t", bound=Union["BasisAtomBase[Any]", "BasisCombinedBase[Any]"])
 UnionCPPSystem = Any
-# System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
+# UnionCPPSystem is supposed to be System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
-# type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
+# UnionTypeCPPSystem is supposed to be type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
 UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
 
 

@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     SelfKet_t = TypeVar("SelfKet_t", bound="KetBase")
 
 UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
-UnionTypeCPPKetCreator = Any  # type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
+UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
 
 
 class KetBase(ABC):
