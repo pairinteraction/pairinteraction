@@ -40,7 +40,9 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
     pi.diagonalize(combined_systems, diagonalizer="Eigen", sort_by_energy=True)
 
     # Get the overlap with |ket, ket>
-    overlaps = np.array([system.get_eigenbasis().get_overlaps_from_product(ket, ket) for system in combined_systems])
+    overlaps = np.array(
+        [system.get_eigenbasis().get_overlaps_with_product_state(ket, ket) for system in combined_systems]
+    )
 
     # Ensure that the overlaps sum up to one
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))

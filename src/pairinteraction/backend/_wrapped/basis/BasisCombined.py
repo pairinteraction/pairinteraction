@@ -61,16 +61,18 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         self._cpp = creator.create()
 
     @overload
-    def get_overlaps_from_product(
+    def get_overlaps_with_product_state(
         self, ket_or_basis_1: "KetAtomBase", ket_or_basis_2: "KetAtomBase"
     ) -> "ArrayLike": ...
 
     @overload
-    def get_overlaps_from_product(
+    def get_overlaps_with_product_state(
         self, ket_or_basis_1: "BasisAtomBase[Any]", ket_or_basis_2: "BasisAtomBase[Any]"
     ) -> "scipy.sparse.csr_matrix": ...
 
-    def get_overlaps_from_product(self, ket_or_basis_1: "KetAtomOrBasisAtom_t", ket_or_basis_2: "KetAtomOrBasisAtom_t"):  # type: ignore [reportUnknownParameterType]
+    def get_overlaps_with_product_state(
+        self, ket_or_basis_1: "KetAtomOrBasisAtom_t", ket_or_basis_2: "KetAtomOrBasisAtom_t"
+    ):  # type: ignore [reportUnknownParameterType]
         overlaps = self._cpp.get_overlaps(ket_or_basis_1._cpp, ket_or_basis_2._cpp)  # type: ignore
         return overlaps  # type: ignore [reportUnknownVariableType]
 
