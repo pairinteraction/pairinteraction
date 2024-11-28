@@ -54,12 +54,12 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)
-        np.savetxt(reference_kets_file, kets, fmt="%s", delimiter=",")
+        np.savetxt(reference_kets_file, kets, fmt="%s", delimiter="\t")
         np.savetxt(reference_eigenvalues_file, eigenvalues)
         np.savetxt(reference_overlaps_file, overlaps)
         pytest.skip("Reference data generated, skipping comparison test")
 
-    np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter=","))
+    np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
     np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
     np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-12)
 
