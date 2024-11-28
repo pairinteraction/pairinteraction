@@ -60,6 +60,14 @@ std::string KetAtom<Real>::get_label() const {
                       // or half-integer
     }
 
+    if (this->quantum_number_m == std::rintf(this->quantum_number_m)) {
+        label += fmt::format(", m={:.0f}", this->quantum_number_m);
+    } else if (2 * this->quantum_number_m == std::rintf(2 * this->quantum_number_m)) {
+        label += fmt::format(", m={:.0f}/2", 2 * this->quantum_number_m);
+    } else {
+        label += fmt::format(", m={:.1f}", this->quantum_number_m);
+    }
+
     return label;
 }
 
