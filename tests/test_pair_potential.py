@@ -26,7 +26,7 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
 
     # Create two-atom systems for different interatomic distances
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
-    delta_energy = 3
+    delta_energy = 3  # GHz
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
 
