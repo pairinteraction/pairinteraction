@@ -10,7 +10,7 @@ requires = [  # keep this in sync with .build_requirements.txt
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "pairinteraction"
+name = "pairinteraction-next"
 dynamic = ["version"]
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
