@@ -1,6 +1,8 @@
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
+import numpy as np
+
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.ket.KetCombined import (
@@ -15,7 +17,6 @@ from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     import scipy.sparse
-    from numpy.typing import ArrayLike
     from pint.facets.plain import PlainQuantity
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
@@ -63,7 +64,7 @@ class BasisCombinedBase(BasisBase[Ket_t]):
     @overload
     def get_overlaps_with_product_state(
         self, ket_or_basis_1: "KetAtomBase", ket_or_basis_2: "KetAtomBase"
-    ) -> "ArrayLike": ...
+    ) -> "np.ndarray[Any, Any]": ...
 
     @overload
     def get_overlaps_with_product_state(

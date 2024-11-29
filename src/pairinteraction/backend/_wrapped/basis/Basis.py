@@ -8,7 +8,6 @@ from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
 if TYPE_CHECKING:
     import scipy.sparse
-    from numpy.typing import ArrayLike
 
     SelfBasis_t = TypeVar("SelfBasis_t", bound="BasisBase[Any]")
 
@@ -50,7 +49,7 @@ class BasisBase(ABC, Generic[Ket_t]):
         return self._cpp.get_coefficients()
 
     @overload
-    def get_overlaps(self, ket_or_basis: Ket_t) -> "ArrayLike": ...
+    def get_overlaps(self, ket_or_basis: Ket_t) -> "np.ndarray[Any,Any]": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: "BasisBase[Ket_t]") -> "scipy.sparse.csr_matrix": ...
