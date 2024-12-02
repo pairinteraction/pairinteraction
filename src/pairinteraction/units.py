@@ -1,5 +1,5 @@
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, Generic, Literal, TypeVar, Union
+from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
 import scipy.sparse
@@ -18,9 +18,14 @@ ureg = UnitRegistry(system="atomic")
 Dimension = Literal["electric_field", "magnetic_field", "distance", "energy"]
 BaseUnits: dict[Dimension, "PlainUnit"] = {
     "electric_field": ureg.Quantity(1, "V/cm").to_base_units().units,
-    "magnetic_field": ureg.Quantity(1, "G").to_base_units().units,
+    "magnetic_field": ureg.Quantity(1, "T").to_base_units().units,
     "distance": ureg.Quantity(1, "micrometer").to_base_units().units,
     "energy": ureg.Unit("hartree"),
+}
+Context = Literal["spectroscopy", "Gaussian"]
+BaseContexts: dict[Dimension, Context] = {
+    "magnetic_field": "Gaussian",
+    "energy": "spectroscopy",
 }
 ValueType = TypeVar("ValueType", bound=Union[float, "Array", "csr_matrix"])
 
@@ -47,12 +52,23 @@ class QuantityAbstract(Generic[ValueType]):
         return cls(value, BaseUnits[dimension])
 
     def to_base(self, dimension: Dimension) -> ValueType:
-        return self.to_unit(BaseUnits[dimension])  # type: ignore
+        context = BaseContexts.get(dimension, None)
+        return self.to_unit(BaseUnits[dimension], context)  # type: ignore
 
-    def to_unit(self, unit: Union[str, "PlainUnit"] = "pint") -> Union[ValueType, PlainQuantity[ValueType]]:
+    def to_unit(
+        self, unit: Union[str, "PlainUnit"] = "pint", context: Optional[Context] = None
+    ) -> Union[ValueType, PlainQuantity[ValueType]]:
         if unit == "pint":
             return self.quantity
-        return self.quantity.to(unit, "spectroscopy").magnitude  # type: ignore
+        if context is None:
+            dimension: list[Dimension] = [
+                d for d, u in BaseUnits.items() if u.dimensionality == self.quantity.dimensionality
+            ]
+            if len(dimension) > 0:
+                context = BaseContexts.get(dimension[0], None)
+        if context is None:
+            return self.quantity.to(unit).magnitude
+        return self.quantity.to(unit, context).magnitude
 
 
 class QuantityScalar(QuantityAbstract[float]):
@@ -66,12 +82,14 @@ class QuantityScalar(QuantityAbstract[float]):
         if not np.isscalar(magnitude):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
-    def to_unit(self, unit: Union[str, "PlainUnit"] = "pint") -> Union[float, PlainQuantity[float]]:
+    def to_unit(
+        self, unit: Union[str, "PlainUnit"] = "pint", context: Optional[Context] = None
+    ) -> Union[float, PlainQuantity[float]]:
         if self._is_zero_without_unit:
             if unit == "pint":
                 raise ValueError("value 0 without a unit given cannot be converted to a pint.Quantity")
             return 0
-        return super().to_unit(unit)
+        return super().to_unit(unit, context)
 
 
 class QuantityArray(QuantityAbstract["Array"]):
