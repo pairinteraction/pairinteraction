@@ -65,6 +65,10 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self
 
     @property
+    def is_diagonal(self) -> bool:
+        return self._cpp.is_diagonal()
+
+    @property
     def basis(self) -> Basis_t:
         return self._basis
 
