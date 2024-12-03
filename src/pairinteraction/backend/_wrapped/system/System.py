@@ -11,13 +11,13 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
 
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
-    from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombinedBase
+    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
+    from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombined
     from pairinteraction.units import Array
 
-    SelfSystem_t = TypeVar("SelfSystem_t", bound="SystemBase[Any]")
+    SelfSystem_t = TypeVar("SelfSystem_t", bound="System")
 
-Basis_t = TypeVar("Basis_t", bound=Union["BasisAtomBase[Any]", "BasisCombinedBase[Any]"])
+Basis_t = TypeVar("Basis_t", bound=Union["BasisAtom", "BasisCombined"])
 UnionCPPSystem = Any
 # UnionCPPSystem is supposed to be System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
@@ -88,7 +88,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
 
     @overload
-    def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments, type-var]
+    def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
 
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
@@ -97,3 +97,6 @@ class SystemBase(ABC, Generic[Basis_t]):
         hamiltonian_au = self._cpp.get_matrix()
         hamiltonian = QuantitySparse.from_base(hamiltonian_au, "ENERGY")
         return hamiltonian.to_unit(unit)
+
+
+System = SystemBase[Any]

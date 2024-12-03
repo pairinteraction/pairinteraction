@@ -1,8 +1,8 @@
-from typing import TYPE_CHECKING, Any, Optional, overload
+from typing import TYPE_CHECKING, Optional, overload
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
-from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
+from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtom
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -10,22 +10,22 @@ if TYPE_CHECKING:
 
 
 @overload
-def calculate_energy(ket: KetAtomBase) -> "PlainQuantity[float]": ...
+def calculate_energy(ket: KetAtom) -> "PlainQuantity[float]": ...
 
 
 @overload
-def calculate_energy(ket: KetAtomBase, system: SystemAtomBase[Any]) -> "PlainQuantity[float]": ...
+def calculate_energy(ket: KetAtom, system: SystemAtom) -> "PlainQuantity[float]": ...
 
 
 @overload
-def calculate_energy(ket: KetAtomBase, *, unit: str) -> float: ...
+def calculate_energy(ket: KetAtom, *, unit: str) -> float: ...
 
 
 @overload
-def calculate_energy(ket: KetAtomBase, system: SystemAtomBase[Any], *, unit: str) -> float: ...
+def calculate_energy(ket: KetAtom, system: SystemAtom, *, unit: str) -> float: ...
 
 
-def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = None, *, unit: str = "pint"):
+def calculate_energy(ket: KetAtom, system: Optional[SystemAtom] = None, *, unit: str = "pint"):
     """Calculate the energy of a ket state.
 
     Args:

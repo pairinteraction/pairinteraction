@@ -35,3 +35,6 @@ class KetCombinedDouble(KetCombinedBase):
 class KetCombinedComplexDouble(KetCombinedBase):
     _cpp: _backend.KetCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
+
+
+KetCombined = KetCombinedBase

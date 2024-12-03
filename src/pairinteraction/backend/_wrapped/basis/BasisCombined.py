@@ -6,25 +6,25 @@ import numpy as np
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.ket.KetCombined import (
-    KetCombinedBase,
+    KetCombined,
     KetCombinedComplexDouble,
     KetCombinedComplexFloat,
     KetCombinedDouble,
     KetCombinedFloat,
 )
-from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomBase
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     import scipy.sparse
     from pint.facets.plain import PlainQuantity
 
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
-    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase
+    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
+    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
+    from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtom
 
-    KetAtomOrBasisAtom_t = TypeVar("KetAtomOrBasisAtom_t", "KetAtomBase", "BasisAtomBase[Any]", covariant=True)
+    KetAtomOrBasisAtom = TypeVar("KetAtomOrBasisAtom", KetAtom, BasisAtom, covariant=True)
 
-Ket_t = TypeVar("Ket_t", bound=KetCombinedBase)
+Ket_t = TypeVar("Ket_t", bound=KetCombined)
 UnionCPPBasisCombined = Union[
     _backend.BasisCombinedFloat,
     _backend.BasisCombinedComplexFloat,
@@ -45,7 +45,7 @@ class BasisCombinedBase(BasisBase[Ket_t]):
 
     def __init__(
         self,
-        systems: Sequence[SystemAtomBase[Any]],
+        systems: Sequence["SystemAtom"],
         m: Optional[tuple[float, float]] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
@@ -63,16 +63,16 @@ class BasisCombinedBase(BasisBase[Ket_t]):
 
     @overload
     def get_overlaps_with_product_state(
-        self, ket_or_basis_1: "KetAtomBase", ket_or_basis_2: "KetAtomBase"
+        self, ket_or_basis_1: "KetAtom", ket_or_basis_2: "KetAtom"
     ) -> "np.ndarray[Any, Any]": ...
 
     @overload
     def get_overlaps_with_product_state(
-        self, ket_or_basis_1: "BasisAtomBase[Any]", ket_or_basis_2: "BasisAtomBase[Any]"
+        self, ket_or_basis_1: "BasisAtom", ket_or_basis_2: "BasisAtom"
     ) -> "scipy.sparse.csr_matrix": ...
 
     def get_overlaps_with_product_state(
-        self, ket_or_basis_1: "KetAtomOrBasisAtom_t", ket_or_basis_2: "KetAtomOrBasisAtom_t"
+        self, ket_or_basis_1: "KetAtomOrBasisAtom", ket_or_basis_2: "KetAtomOrBasisAtom"
     ):  # type: ignore [reportUnknownParameterType]
         overlaps = self._cpp.get_overlaps(ket_or_basis_1._cpp, ket_or_basis_2._cpp)  # type: ignore
         return overlaps  # type: ignore [reportUnknownVariableType]
@@ -100,3 +100,6 @@ class BasisCombinedComplexDouble(BasisCombinedBase[KetCombinedComplexDouble]):
     _cpp: _backend.BasisCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisCombinedCreatorComplexDouble
     _TypeKet = KetCombinedComplexDouble
+
+
+BasisCombined = BasisCombinedBase[Any]
