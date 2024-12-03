@@ -46,7 +46,7 @@ class SystemCombinedBase(SystemBase[Basis_t]):
     def set_distance(
         self: "SelfSystemCombined_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
     ) -> "SelfSystemCombined_t":
-        distance_au = QuantityScalar(distance, unit).to_base("distance")
+        distance_au = QuantityScalar(distance, unit).to_base("DISTANCE")
         self._cpp.set_distance(distance_au)
         return self
 
@@ -55,7 +55,7 @@ class SystemCombinedBase(SystemBase[Basis_t]):
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
     ) -> "SelfSystemCombined_t":
-        distance_au = [QuantityScalar(v, unit).to_base("distance") for v in distance]
+        distance_au = [QuantityScalar(v, unit).to_base("DISTANCE") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
 

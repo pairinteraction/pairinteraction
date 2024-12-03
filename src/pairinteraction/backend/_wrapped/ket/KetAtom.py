@@ -49,7 +49,7 @@ class KetAtomBase(KetBase):
         if m is not None:
             creator.set_quantum_number_m(m)
         if energy is not None:
-            energy_au = QuantityScalar(energy, energy_unit).to_base("energy")
+            energy_au = QuantityScalar(energy, energy_unit).to_base("ENERGY")
             creator.set_energy(energy_au)
         if parity is not None:
             creator.set_parity(get_cpp_parity(parity))

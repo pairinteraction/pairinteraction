@@ -61,8 +61,8 @@ class BasisAtomBase(BasisBase[Ket_t]):
         if j is not None:
             creator.restrict_quantum_number_j(*j)
         if energy is not None:
-            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("energy")
-            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("energy")
+            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("ENERGY")
+            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("ENERGY")
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
             database = Database.get_global_instance()

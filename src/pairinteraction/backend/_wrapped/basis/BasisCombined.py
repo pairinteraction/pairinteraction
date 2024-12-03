@@ -56,8 +56,8 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         if m is not None:
             creator.restrict_quantum_number_m(*m)
         if energy is not None:
-            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("energy")
-            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("energy")
+            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("ENERGY")
+            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("ENERGY")
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 

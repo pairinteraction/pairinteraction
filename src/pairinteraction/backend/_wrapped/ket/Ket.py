@@ -62,5 +62,5 @@ class KetBase(ABC):
 
     def get_energy(self, unit: str = "pint"):
         energy_au = self._cpp.get_energy()
-        energy = QuantityScalar.from_base(energy_au, "energy")
+        energy = QuantityScalar.from_base(energy_au, "ENERGY")
         return energy.to_unit(unit)
