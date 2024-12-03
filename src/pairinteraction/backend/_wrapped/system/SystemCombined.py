@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-    SelfSystemCombined_t = TypeVar("SelfSystemCombined_t", bound="SystemCombinedBase[Any]")
+    SelfSystemCombined_t = TypeVar("SelfSystemCombined_t", bound="SystemCombined")
 
 Basis_t = TypeVar(
     "Basis_t", "BasisCombinedFloat", "BasisCombinedComplexFloat", "BasisCombinedDouble", "BasisCombinedComplexDouble"
@@ -82,3 +82,6 @@ class SystemCombinedComplexDouble(SystemCombinedBase[BasisCombinedComplexDouble]
     _cpp: _backend.SystemCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemCombinedComplexDouble
     _TypeBasis = BasisCombinedComplexDouble
+
+
+SystemCombined = SystemCombinedBase[Any]

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Union
+from typing import TYPE_CHECKING, ClassVar, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.OperatorType import OperatorType, get_cpp_operator_type
@@ -6,9 +6,9 @@ from pairinteraction.backend._wrapped.OperatorType import OperatorType, get_cpp_
 if TYPE_CHECKING:
     import os
 
-    import scipy.sparse
+    from scipy.sparse import csr_matrix
 
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomBase
+    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
 
 CPPDatabase = _backend.Database
 
@@ -46,7 +46,7 @@ class Database:
         cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
 
     def get_matrix_elements(
-        self, basis_ket: "BasisAtomBase[Any]", basis_bra: "BasisAtomBase[Any]", operator: OperatorType, q: int
-    ) -> "scipy.sparse.csr_matrix":
+        self, basis_ket: "BasisAtom", basis_bra: "BasisAtom", operator: OperatorType, q: int
+    ) -> "csr_matrix":
         cpp_operator_type = get_cpp_operator_type(operator)
         return self._cpp.get_matrix_elements(basis_ket._cpp, basis_bra._cpp, cpp_operator_type, q)  # type: ignore

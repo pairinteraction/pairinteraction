@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, ClassVar, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
@@ -94,3 +94,6 @@ class BasisAtomComplexDouble(BasisAtomBase[KetAtomDouble]):
     _cpp: _backend.BasisAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.BasisAtomCreatorComplexDouble
     _TypeKet = KetAtomDouble
+
+
+BasisAtom = BasisAtomBase[Any]

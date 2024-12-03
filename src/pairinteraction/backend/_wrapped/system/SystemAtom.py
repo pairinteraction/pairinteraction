@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-    SelfSystemAtom_t = TypeVar("SelfSystemAtom_t", bound="SystemAtomBase[Any]")
+    SelfSystemAtom_t = TypeVar("SelfSystemAtom_t", bound="SystemAtom")
 
 Basis_t = TypeVar("Basis_t", "BasisAtomFloat", "BasisAtomComplexFloat", "BasisAtomDouble", "BasisAtomComplexDouble")
 UnionCPPSystemAtom = Union[
@@ -82,3 +82,6 @@ class SystemAtomComplexDouble(SystemAtomBase[BasisAtomComplexDouble]):
     _cpp: _backend.SystemAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_type = _backend.SystemAtomComplexDouble
     _TypeBasis = BasisAtomComplexDouble
+
+
+SystemAtom = SystemAtomBase[Any]

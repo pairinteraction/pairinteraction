@@ -8,7 +8,7 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
-    SelfKet_t = TypeVar("SelfKet_t", bound="KetBase")
+    SelfKet_t = TypeVar("SelfKet_t", bound="Ket")
 
 UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
 UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
@@ -64,3 +64,6 @@ class KetBase(ABC):
         energy_au = self._cpp.get_energy()
         energy = QuantityScalar.from_base(energy_au, "ENERGY")
         return energy.to_unit(unit)
+
+
+Ket = KetBase

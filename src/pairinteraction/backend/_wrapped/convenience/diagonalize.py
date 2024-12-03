@@ -1,13 +1,15 @@
 from collections.abc import Sequence
-from typing import Any, Union
+from typing import TYPE_CHECKING, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
-from pairinteraction.backend._wrapped.system.System import SystemBase
+
+if TYPE_CHECKING:
+    from pairinteraction.backend._wrapped.system.System import System
 
 
 def diagonalize(
-    systems: Sequence[SystemBase[Any]],
+    systems: Sequence["System"],
     diagonalizer: Diagonalizer = "Eigen",
     precision: int = 12,
     eigenvalue_range: Union[_backend.RangeFloat, _backend.RangeDouble, None] = None,
@@ -29,7 +31,7 @@ def diagonalize(
         system.update_basis()
 
 
-def get_cpp_diagonalize(system: SystemBase[Any]):
+def get_cpp_diagonalize(system: "System"):
     try:
         return getattr(_backend, f"diagonalize{type(system).__name__}")
     except AttributeError as err:

@@ -4,14 +4,14 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union, overlo
 
 import numpy as np
 
-from pairinteraction.backend._wrapped.ket.Ket import KetBase
+from pairinteraction.backend._wrapped.ket.Ket import Ket
 
 if TYPE_CHECKING:
     import scipy.sparse
 
-    SelfBasis_t = TypeVar("SelfBasis_t", bound="BasisBase[Any]")
+    SelfBasis_t = TypeVar("SelfBasis_t", bound="Basis")
 
-Ket_t = TypeVar("Ket_t", bound=KetBase)
+Ket_t = TypeVar("Ket_t", bound=Ket)
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Combined)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPBasisCreator = Any
@@ -80,3 +80,6 @@ class BasisBase(ABC, Generic[Ket_t]):
         if isinstance(state_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_ket_index(state_or_index)
         return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [reportPrivateUsage]
+
+
+Basis = BasisBase[Any]

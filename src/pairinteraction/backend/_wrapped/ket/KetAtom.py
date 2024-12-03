@@ -90,3 +90,6 @@ class KetAtomFloat(KetAtomBase):
 class KetAtomDouble(KetAtomBase):
     _cpp: _backend.KetAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = _backend.KetAtomCreatorDouble
+
+
+KetAtom = KetAtomBase
