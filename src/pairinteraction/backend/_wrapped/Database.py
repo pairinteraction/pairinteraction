@@ -1,11 +1,13 @@
-from typing import TYPE_CHECKING, ClassVar, Union
+from typing import TYPE_CHECKING, ClassVar, Union, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.OperatorType import OperatorType, get_cpp_operator_type
+from pairinteraction.units import QuantitySparse
 
 if TYPE_CHECKING:
     import os
 
+    from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
@@ -45,8 +47,20 @@ class Database:
         # FIXME since CPPDatabase.get_global_instance is currently broken, we use a normal Database as global instance
         cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
 
+    @overload
     def get_matrix_elements(
         self, basis_ket: "BasisAtom", basis_bra: "BasisAtom", operator: OperatorType, q: int
-    ) -> "csr_matrix":
+    ) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
+
+    @overload
+    def get_matrix_elements(
+        self, basis_ket: "BasisAtom", basis_bra: "BasisAtom", operator: OperatorType, q: int, unit: str
+    ) -> "csr_matrix": ...
+
+    def get_matrix_elements(
+        self, basis_ket: "BasisAtom", basis_bra: "BasisAtom", operator: OperatorType, q: int, unit: str = "pint"
+    ):
         cpp_operator_type = get_cpp_operator_type(operator)
-        return self._cpp.get_matrix_elements(basis_ket._cpp, basis_bra._cpp, cpp_operator_type, q)  # type: ignore
+        matrix_elements_au = self._cpp.get_matrix_elements(basis_ket._cpp, basis_bra._cpp, cpp_operator_type, q)  # type: ignore
+        matrix_elements = QuantitySparse.from_base(matrix_elements_au, operator)
+        return matrix_elements.to_unit(unit)
