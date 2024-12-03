@@ -39,4 +39,4 @@ def calculate_energy(ket: KetAtomBase, system: Optional[SystemAtomBase[Any]] = N
         energy_au = _backend.calculate_energy(ket._cpp)  # type: ignore [reportPrivateUsage]
     else:
         energy_au = _backend.calculate_energy(ket._cpp, system._cpp)  # type: ignore
-    return QuantityScalar.from_base(energy_au, "energy").to_unit(unit)
+    return QuantityScalar.from_base(energy_au, "ENERGY").to_unit(unit)

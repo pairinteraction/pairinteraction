@@ -80,7 +80,7 @@ class SystemBase(ABC, Generic[Basis_t]):
 
     def get_eigenvalues(self, unit: str = "pint"):
         eigenvalues_au = self._cpp.get_eigenvalues()
-        eigenvalues = QuantityArray.from_base(eigenvalues_au, "energy")
+        eigenvalues = QuantityArray.from_base(eigenvalues_au, "ENERGY")
         return eigenvalues.to_unit(unit)
 
     def get_eigenbasis(self) -> Basis_t:
@@ -95,5 +95,5 @@ class SystemBase(ABC, Generic[Basis_t]):
 
     def get_hamiltonian(self, unit: str = "pint"):
         hamiltonian_au = self._cpp.get_matrix()
-        hamiltonian = QuantitySparse.from_base(hamiltonian_au, "energy")
+        hamiltonian = QuantitySparse.from_base(hamiltonian_au, "ENERGY")
         return hamiltonian.to_unit(unit)

@@ -15,17 +15,45 @@ if TYPE_CHECKING:
 
 ureg = UnitRegistry(system="atomic")
 
-Dimension = Literal["electric_field", "magnetic_field", "distance", "energy"]
+Dimension = Literal[
+    "ELECTRIC_FIELD",
+    "MAGNETIC_FIELD",
+    "DISTANCE",
+    "ENERGY",
+    "ELECTRIC_DIPOLE",
+    "ELECTRIC_QUADRUPOLE",
+    "ELECTRIC_OCTUPOLE",
+    "MAGNETIC_DIPOLE",
+    "DIAMAGNETIC",
+    "ARBITRARY",
+    "ZERO",
+]
 BaseUnits: dict[Dimension, "PlainUnit"] = {
-    "electric_field": ureg.Quantity(1, "V/cm").to_base_units().units,
-    "magnetic_field": ureg.Quantity(1, "T").to_base_units().units,
-    "distance": ureg.Quantity(1, "micrometer").to_base_units().units,
-    "energy": ureg.Unit("hartree"),
+    # ELECTRIC_FIELD: 1 V/cm = 1.94469038e-10 electron_mass * bohr / atomic_unit_of_time ** 3 / atomic_unit_of_current
+    "ELECTRIC_FIELD": ureg.Quantity(1, "V/cm").to_base_units().units,
+    # MAGNETIC_FIELD: 1 T = 4.25438216e-06 electron_mass / atomic_unit_of_time ** 2 / atomic_unit_of_current
+    "MAGNETIC_FIELD": ureg.Quantity(1, "T").to_base_units().units,
+    # DISTANCE: 1 mum = 18897.2612 bohr
+    "DISTANCE": ureg.Quantity(1, "micrometer").to_base_units().units,
+    # ENERGY: 1 hartree = 1 electron_mass * bohr ** 2 / atomic_unit_of_time ** 2
+    "ENERGY": ureg.Unit("hartree"),
+    # ELECTRIC_DIPOLE: 1 e * a0 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr
+    "ELECTRIC_DIPOLE": ureg.Quantity(1, "e * a0").to_base_units().units,
+    # ELECTRIC_QUADRUPOLE: 1 e * a0^2 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 2
+    "ELECTRIC_QUADRUPOLE": ureg.Quantity(1, "e * a0^2").to_base_units().units,
+    # ELECTRIC_OCTUPOLE: 1 e * a0^3 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 3
+    "ELECTRIC_OCTUPOLE": ureg.Quantity(1, "e * a0^3").to_base_units().units,
+    # MAGNETIC_DIPOLE: 1 hbar e / m_e = 1 bohr ** 2 * atomic_unit_of_current
+    "MAGNETIC_DIPOLE": ureg.Quantity(1, "hbar e / m_e").to_base_units().units,
+    # DIAMAGNETIC: 1 e * a0^2 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 2
+    "DIAMAGNETIC": ureg.Quantity(1, "e * a0^2").to_base_units().units,
+    "ARBITRARY": ureg.Unit(""),
+    "ZERO": ureg.Unit(""),
 }
 Context = Literal["spectroscopy", "Gaussian"]
 BaseContexts: dict[Dimension, Context] = {
-    "magnetic_field": "Gaussian",
-    "energy": "spectroscopy",
+    "MAGNETIC_FIELD": "Gaussian",
+    "ENERGY": "spectroscopy",
 }
 ValueType = TypeVar("ValueType", bound=Union[float, "Array", "csr_matrix"])
 

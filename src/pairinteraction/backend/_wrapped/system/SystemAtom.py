@@ -42,7 +42,7 @@ class SystemAtomBase(SystemBase[Basis_t]):
         electric_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
     ) -> "SelfSystemAtom_t":
-        electric_field_au = [QuantityScalar(v, unit).to_base("electric_field") for v in electric_field]
+        electric_field_au = [QuantityScalar(v, unit).to_base("ELECTRIC_FIELD") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
         return self
 
@@ -51,7 +51,7 @@ class SystemAtomBase(SystemBase[Basis_t]):
         magnetic_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
     ) -> "SelfSystemAtom_t":
-        magnetic_field_au = [QuantityScalar(v, unit).to_base("magnetic_field") for v in magnetic_field]
+        magnetic_field_au = [QuantityScalar(v, unit).to_base("MAGNETIC_FIELD") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
