@@ -129,6 +129,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
             pool.back().set_connection_timeout(1, 0); // seconds
             pool.back().set_read_timeout(60, 0);      // seconds
             pool.back().set_write_timeout(1, 0);      // seconds
+            pool.back().enable_server_certificate_verification(false);
         }
     }
 
