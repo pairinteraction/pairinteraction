@@ -1,9 +1,14 @@
 # SPDX-FileCopyrightText: 2024 Sebastian Weber, Henri Menke, and contributors. All rights reserved.
 # SPDX-License-Identifier: GPL-3.0-or-later OR LGPL-3.0-or-later
 
-# Add bindings object
-add_library(
-  bindings OBJECT
+# nanobind_add_module backend (this internally calls cmake add_library(backend ...))
+nanobind_add_module(
+  backend
+  STABLE_ABI
+  NB_STATIC
+  # cmake-format: off
+  NB_DOMAIN pairinteraction
+  # cmake-format: on
   basis/Basis.py.hpp
   basis/Basis.py.cpp
   convenience/matrix_elements.py.hpp
@@ -32,37 +37,17 @@ add_library(
   run_unit_tests.py.hpp
   run_unit_tests.py.cpp)
 
-target_include_directories(
-  bindings
-  PRIVATE "$<TARGET_PROPERTY:pairinteraction,INCLUDE_DIRECTORIES>;${Python_INCLUDE_DIRS};${Python_NumPy_INCLUDE_DIRS}")
-target_link_libraries(bindings PRIVATE $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov> nanobind-static-pairinteraction)
-target_compile_definitions(bindings PRIVATE NB_DOMAIN=pairinteraction)
-target_compile_options(bindings PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
-
-# Assemble objects into backend library
-add_library(backend SHARED)
-
-target_link_libraries(
-  backend
-  PUBLIC $<$<CXX_COMPILER_ID:MSVC>:${Python_LIBRARIES_GENERALIZED}>
-  PRIVATE pairinteraction bindings)
+target_link_libraries(backend PRIVATE pairinteraction $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>)
 
 set_target_properties(
   backend
   PROPERTIES OUTPUT_NAME _backend
-             PREFIX ""
-             SUFFIX "${NB_SUFFIX_EXT}"
+             CXX_CLANG_TIDY ""
              INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
 
-target_link_options(
-  backend
-  PRIVATE
-  $<$<CXX_COMPILER_ID:AppleClang>:-undefined
-  dynamic_lookup>
-  $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>
-  $<$<CXX_COMPILER_ID:MSVC>:/NODEFAULTLIB:python3${Python_VERSION_MINOR}.lib
-  /DEFAULTLIB:python3.lib
-  /FORCE:UNRESOLVED>)
+target_compile_options(backend PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
+target_link_options(backend PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
+                    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>)
 
 if(WIN32)
   add_custom_command(
