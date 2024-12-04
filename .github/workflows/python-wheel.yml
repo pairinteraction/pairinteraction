@@ -2,6 +2,8 @@ name: Python Wheel
 
 on:
   push:
+    branches: ["*"]
+    tags: ["v*.*.*"]  # and run on tags that describe new versions
   pull_request:
     types: [opened, reopened]
   workflow_call:
@@ -58,12 +60,17 @@ jobs:
     - name: Install Windows dependencies
       if: runner.os == 'Windows'
       uses: ./.github/actions/setup-vcpkg
+    - name: Install Windows uv
+      if: runner.os == 'Windows'
+      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb uv
 
-    - uses: pypa/cibuildwheel@v2.16
+    - uses: pypa/cibuildwheel@v2.22
+      env:
+        CIBW_SKIP: ${{ !startsWith(github.ref, 'refs/tags/') && 'cp3{9,10,11}*' || '' }}
 
     - name: Upload wheels
       uses: actions/upload-artifact@v4

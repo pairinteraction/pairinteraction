@@ -117,19 +117,12 @@ if(NOT MKL_FOUND)
 endif()
 
 # Find nanobind
-if(MSVC)
-  string(REPLACE "python3${Python_VERSION_MINOR}.lib" "python3.lib" Python_LIBRARIES_GENERALIZED ${Python_LIBRARIES})
-  message(STATUS "Unpatched Python libraries: ${Python_LIBRARIES}")
-  message(STATUS "  Patched Python libraries: ${Python_LIBRARIES_GENERALIZED}")
-endif()
 execute_process(
   COMMAND "${Python_EXECUTABLE}" -m nanobind --cmake_dir
   OUTPUT_STRIP_TRAILING_WHITESPACE
   OUTPUT_VARIABLE NB_DIR)
 list(APPEND CMAKE_PREFIX_PATH "${NB_DIR}")
 find_package(nanobind CONFIG REQUIRED)
-nanobind_build_library(nanobind-static-pairinteraction)
-set_target_properties(nanobind-static-pairinteraction PROPERTIES CXX_CLANG_TIDY "")
 
 # Find duckdb
 include(FetchContent)
