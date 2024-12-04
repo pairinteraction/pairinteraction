@@ -76,6 +76,7 @@ Repository = "https://github.com/pairinteraction/pairinteraction"
 start_pairinteraction_gui = "pairinteraction.gui.start_pairinteraction_gui:main"
 
 [tool.scikit-build]
+cmake.build-type = "RelWithDebInfo"
 cmake.verbose = true
 wheel.packages = [
   "src/pairinteraction",
