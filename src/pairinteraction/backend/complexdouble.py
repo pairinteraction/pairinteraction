@@ -13,6 +13,7 @@ from pairinteraction.backend._wrapped import (
     calculate_electric_dipole_matrix_element,
     calculate_energy,
     diagonalize,
+    initialize_global_database,
 )
 
 __all__ = [
@@ -30,4 +31,5 @@ __all__ = [
     "calculate_electric_dipole_matrix_element",
     "calculate_energy",
     "diagonalize",
+    "initialize_global_database",
 ]
