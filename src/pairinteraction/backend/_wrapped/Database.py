@@ -16,7 +16,7 @@ CPPDatabase = _backend.Database
 
 
 class Database:
-    GlobalDatabase: ClassVar["Database"]
+    GlobalDatabase: ClassVar[Optional["Database"]] = None
 
     def __init__(
         self,
@@ -31,21 +31,35 @@ class Database:
 
     @classmethod
     def get_global_instance(cls) -> "Database":
-        if not hasattr(cls, "GlobalDatabase"):
-            cls.create_global_instance()
+        if cls.GlobalDatabase is None:
+            cls.initialize_global_instance()
         return cls.GlobalDatabase
 
     @classmethod
-    def create_global_instance(
+    def initialize_global_instance(
         cls,
         download_missing: bool = False,
         wigner_in_memory: bool = True,
         database_dir: Union[str, "os.PathLike[str]"] = "",
+        allow_overwrite: bool = False,
     ) -> None:
-        if hasattr(cls, "GlobalDatabase"):
-            raise ValueError("Global instance already exists")
-        # FIXME since CPPDatabase.get_global_instance is currently broken, we use a normal Database as global instance
-        cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
+        if cls.GlobalDatabase is None:
+            cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
+        elif (
+            cls.GlobalDatabase.download_missing != download_missing
+            or cls.GlobalDatabase.wigner_in_memory != wigner_in_memory
+            or cls.GlobalDatabase.database_dir != database_dir
+        ):
+            if allow_overwrite:
+                cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
+            else:
+                raise ValueError(
+                    "Global Database instance already exists with different parameters, "
+                    "if you really want to overwrite it, set allow_overwrite=True"
+                )
+        else:
+            # Global instance already exists with the same parameters, so we do nothing
+            pass
 
     @overload
     def get_matrix_elements(
@@ -64,3 +78,12 @@ class Database:
         matrix_elements_au = self._cpp.get_matrix_elements(basis_ket._cpp, basis_bra._cpp, cpp_operator_type, q)  # type: ignore
         matrix_elements = QuantitySparse.from_base(matrix_elements_au, operator)
         return matrix_elements.to_unit(unit)
+
+
+def initialize_global_database(
+    download_missing: bool = False,
+    wigner_in_memory: bool = True,
+    database_dir: Union[str, "os.PathLike[str]"] = "",
+    allow_overwrite: bool = False,
+) -> None:
+    Database.initialize_global_instance(download_missing, wigner_in_memory, database_dir, allow_overwrite)

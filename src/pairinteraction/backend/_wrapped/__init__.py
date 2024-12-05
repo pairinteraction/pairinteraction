@@ -17,7 +17,7 @@ from pairinteraction.backend._wrapped.convenience.calculate_electric_dipole_matr
 )
 from pairinteraction.backend._wrapped.convenience.calculate_energy import calculate_energy
 from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
-from pairinteraction.backend._wrapped.Database import Database
+from pairinteraction.backend._wrapped.Database import Database, initialize_global_database
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
 from pairinteraction.backend._wrapped.ket.KetAtom import (
     KetAtomBase,
@@ -64,10 +64,7 @@ __all__ = [
     "BasisCombinedComplexFloat",
     "BasisCombinedDouble",
     "BasisCombinedFloat",
-    "calculate_electric_dipole_matrix_element",
-    "calculate_energy",
     "Database",
-    "diagonalize",
     "Diagonalizer",
     "KetAtomBase",
     "KetAtomDouble",
@@ -92,4 +89,8 @@ __all__ = [
     "SystemCombinedComplexFloat",
     "SystemCombinedDouble",
     "SystemCombinedFloat",
+    "calculate_electric_dipole_matrix_element",
+    "calculate_energy",
+    "diagonalize",
+    "initialize_global_database",
 ]

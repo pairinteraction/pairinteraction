@@ -90,13 +90,6 @@ static void declare_database(nb::module_ &m) {
              "wigner_in_memory"_a, "database_dir"_a)
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
-        .def_static("get_global_instance", nb::overload_cast<>(&Database::get_global_instance))
-        .def_static("get_global_instance", nb::overload_cast<bool>(&Database::get_global_instance))
-        .def_static("get_global_instance",
-                    nb::overload_cast<std::filesystem::path>(&Database::get_global_instance))
-        .def_static(
-            "get_global_instance",
-            nb::overload_cast<bool, bool, std::filesystem::path>(&Database::get_global_instance))
         .def("get_ket",
              nb::overload_cast<std::string, const AtomDescriptionByParameters<float> &>(
                  &Database::get_ket<float>))
