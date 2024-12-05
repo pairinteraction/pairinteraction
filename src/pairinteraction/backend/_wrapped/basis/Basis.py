@@ -49,6 +49,15 @@ class BasisBase(ABC, Generic[Ket_t]):
         return self._cpp.get_coefficients()
 
     @overload
+    def get_amplitudes(self, ket_or_basis: Ket_t) -> "np.ndarray[Any,Any]": ...
+
+    @overload
+    def get_amplitudes(self, ket_or_basis: "BasisBase[Ket_t]") -> "scipy.sparse.csr_matrix": ...
+
+    def get_amplitudes(self, ket_or_basis: Union[Ket_t, "BasisBase[Ket_t]"]):
+        return self._cpp.get_amplitudes(ket_or_basis._cpp)
+
+    @overload
     def get_overlaps(self, ket_or_basis: Ket_t) -> "np.ndarray[Any,Any]": ...
 
     @overload

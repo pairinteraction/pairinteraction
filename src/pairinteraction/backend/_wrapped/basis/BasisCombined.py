@@ -62,6 +62,22 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         self._cpp = creator.create()
 
     @overload
+    def get_amplitudes_with_product_state(
+        self, ket_or_basis_1: "KetAtom", ket_or_basis_2: "KetAtom"
+    ) -> "np.ndarray[Any, Any]": ...
+
+    @overload
+    def get_amplitudes_with_product_state(
+        self, ket_or_basis_1: "BasisAtom", ket_or_basis_2: "BasisAtom"
+    ) -> "scipy.sparse.csr_matrix": ...
+
+    def get_amplitudes_with_product_state(
+        self, ket_or_basis_1: "KetAtomOrBasisAtom", ket_or_basis_2: "KetAtomOrBasisAtom"
+    ):  # type: ignore [reportUnknownParameterType]
+        overlaps = self._cpp.get_amplitudes(ket_or_basis_1._cpp, ket_or_basis_2._cpp)  # type: ignore
+        return overlaps  # type: ignore [reportUnknownVariableType]
+
+    @overload
     def get_overlaps_with_product_state(
         self, ket_or_basis_1: "KetAtom", ket_or_basis_2: "KetAtom"
     ) -> "np.ndarray[Any, Any]": ...
