@@ -72,7 +72,7 @@ if(MKL_FOUND AND WIN32)
     endif()
   endif()
 
-  # FIXME: are there really no suitable implibs for the MKL DLLs?
+  # Because there are no suitable implibs for the MKL DLLs, we use the one from mkl_core
   get_target_property(MKL_CORE_IMPORTED_IMPLIB MKL::mkl_core IMPORTED_IMPLIB)
 
   foreach(FILE ${MKL_DLLS})
