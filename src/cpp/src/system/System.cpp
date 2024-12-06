@@ -274,6 +274,28 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     }
     eigenvalues.makeCompressed();
 
+    // Fix phase ambiguity
+    std::vector<scalar_t> map_col_to_max(num_cols, 0);
+    for (int row = 0; row < eigenvectors.outerSize(); ++row) {
+        for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(eigenvectors,
+                                                                                       row);
+             it; ++it) {
+            if (std::abs(it.value()) > std::abs(map_col_to_max[it.col()])) {
+                map_col_to_max[it.col()] = it.value();
+            }
+        }
+    }
+
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> phase_matrix;
+    phase_matrix.resize(num_cols, num_cols);
+    phase_matrix.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+    for (int i = 0; i < num_cols; ++i) {
+        phase_matrix.insert(i, i) = std::abs(map_col_to_max[i]) / map_col_to_max[i];
+    }
+    phase_matrix.makeCompressed();
+
+    eigenvectors = eigenvectors * phase_matrix;
+
     // Store the diagonalized hamiltonian
     hamiltonian->get_matrix() = eigenvalues;
     hamiltonian->get_basis() = hamiltonian->get_basis()->transformed(eigenvectors);
