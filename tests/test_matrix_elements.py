@@ -51,7 +51,7 @@ def test_calculate_electric_dipole_matrix_element(database_dir: str, download_mi
     system = (
         pi.SystemAtom(basis)
         .set_electric_field([1, 0, 1], unit="V/cm")
-        .diagonalize(diagonalizer="Eigen", sort_by_energy=False)
+        .diagonalize(diagonalizer="Eigen", sort_by_energy=True)
     )
 
     dipole_zero = database.get_matrix_element(

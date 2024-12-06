@@ -33,7 +33,7 @@ classifiers = [
   "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
   "License :: OSI Approved :: GNU Lesser General Public License v3 or later (LGPLv3+)",
 ]
-requires-python = "==3.9.*"
+requires-python = ">=3.9"
 dependencies = [
   "typing_extensions >= 4.7",
   "numpy >= 1.24",
