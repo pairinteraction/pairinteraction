@@ -31,7 +31,7 @@ jobs:
 
     - uses: actions/upload-artifact@v4
       with:
-        name: sdist
+        name: dist-sdist
         path: dist/*.tar.gz
 
   wheel:
@@ -43,7 +43,7 @@ jobs:
         - os: macos-13
         - os: macos-14
         - os: windows-2019
-    name: Wheel on ${{ matrix.os }}
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     steps:
@@ -75,5 +75,31 @@ jobs:
     - name: Upload wheels
       uses: actions/upload-artifact@v4
       with:
-        name: wheel-${{ matrix.os }}
+        name: dist-wheel-${{ matrix.os }}
         path: wheelhouse/*.whl
+
+  publish-to-testpypi:
+    name: Publish to TestPyPI
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to TestPyPI on tag pushes
+    needs: [sdist, wheel]
+    runs-on: ubuntu-latest
+
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/pairinteraction-next
+
+    permissions:
+      id-token: write
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: dist
+        pattern: dist-*
+        merge-multiple: true
+
+    - name: Publish distribution to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
