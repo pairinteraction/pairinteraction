@@ -112,11 +112,6 @@ bool Basis<Derived>::has_parity() const {
 }
 
 template <typename Derived>
-bool Basis<Derived>::has_ket_index() const {
-    return _has_ket_index;
-}
-
-template <typename Derived>
 const Derived &Basis<Derived>::derived() const {
     return static_cast<const Derived &>(*this);
 }
@@ -248,8 +243,6 @@ std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ke
     restricted->_has_quantum_number_m =
         restricted->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
     restricted->_has_parity = restricted->state_index_to_parity[0] != Parity::UNKNOWN;
-    restricted->_has_ket_index =
-        restricted->state_index_to_ket_index[0] != std::numeric_limits<int>::max();
 
     return restricted;
 }
@@ -322,8 +315,6 @@ Basis<Derived>::get_canonical_state_from_ket(size_t ket_index) const {
     created->_has_quantum_number_m =
         created->state_index_to_quantum_number_m[0] != std::numeric_limits<real_t>::max();
     created->_has_parity = created->state_index_to_parity[0] != Parity::UNKNOWN;
-    created->_has_ket_index =
-        created->state_index_to_ket_index[0] != std::numeric_limits<int>::max();
 
     return created;
 }
@@ -601,7 +592,8 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
             state_index_to_parity[transformation.matrix.indices()[i]];
         transformed->state_index_to_ket_index[i] =
             state_index_to_ket_index[transformation.matrix.indices()[i]];
-        transformed->ket_index_to_state_index[transformation.matrix.indices()[i]] = i;
+        transformed->ket_index_to_state_index
+            [state_index_to_ket_index[transformation.matrix.indices()[i]]] = i;
     }
 
     return transformed;
@@ -707,6 +699,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     {
+        // Map the state index to the ket index
         transformed->state_index_to_ket_index.resize(transformed->coefficients.matrix.cols());
         std::fill(transformed->state_index_to_ket_index.begin(),
                   transformed->state_index_to_ket_index.end(), std::numeric_limits<int>::max());
@@ -723,22 +716,25 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
             }
         }
 
+        // Map the ket index to the state index and, if a row occurs more than once, set the ket
+        // index to std::numeric_limits<int>::max()
         transformed->ket_index_to_state_index.resize(transformed->coefficients.matrix.rows());
         std::fill(transformed->ket_index_to_state_index.begin(),
                   transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
 
         for (size_t i = 0; i < transformed->state_index_to_ket_index.size(); ++i) {
             if (transformed->state_index_to_ket_index[i] != std::numeric_limits<int>::max()) {
-                transformed->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
-            }
-        }
-
-        // Set _has_ket_index to false if any of the ket indices is invalid
-        transformed->_has_ket_index = true;
-        for (auto ket_index : transformed->state_index_to_ket_index) {
-            if (ket_index == std::numeric_limits<int>::max()) {
-                transformed->_has_ket_index = false;
-                break;
+                if (transformed
+                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] ==
+                    std::numeric_limits<int>::max()) {
+                    transformed
+                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
+                } else {
+                    transformed
+                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] =
+                        std::numeric_limits<int>::max();
+                    transformed->state_index_to_ket_index[i] == std::numeric_limits<int>::max();
+                }
             }
         }
     }

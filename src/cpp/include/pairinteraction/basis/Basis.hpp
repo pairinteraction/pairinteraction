@@ -47,7 +47,6 @@ public:
     bool has_quantum_number_f() const;
     bool has_quantum_number_m() const;
     bool has_parity() const;
-    bool has_ket_index() const;
 
     const std::string &get_id_of_kets() const;
     const ketvec_t &get_kets() const;
@@ -128,6 +127,5 @@ private:
     bool _has_quantum_number_f{true};
     bool _has_quantum_number_m{true};
     bool _has_parity{true};
-    bool _has_ket_index{true};
 };
 } // namespace pairinteraction
