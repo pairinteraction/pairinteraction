@@ -1,6 +1,8 @@
 import logging
 from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
 
+import numpy as np
+
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.OperatorType import OperatorType, get_cpp_operator_type
 from pairinteraction.units import QuantityScalar, QuantitySparse
@@ -123,13 +125,16 @@ class Database:
             basis = system.basis
         state_1, state_2 = (basis.get_corresponding_state(ket) for ket in (ket_1, ket_2))
         if system is not None:
-            amplitudes = [state.get_amplitudes(ket)[0] for state, ket in zip((state_1, state_2), (ket_1, ket_2))]
-            if any(a**2 <= 0.5 for a in amplitudes):
+            amplitudes = np.array(
+                [state.get_amplitudes(ket)[0] for state, ket in zip((state_1, state_2), (ket_1, ket_2))]
+            )
+            if np.any(np.abs(amplitudes) ** 2 <= 0.5):
                 raise ValueError("ket_1 or ket_2 does not clearly correspond to an eigenstate of the system.")
-            if any(a < 0 for a in amplitudes):
-                logger.warning(
-                    "The corresponding eigenstate of ket_1 or ket_2 has a negative amplitude, this should not happen!"
-                )  # TODO make this a error, as soon as it is fixed
+            if not np.allclose(np.abs(amplitudes), amplitudes):
+                raise ValueError(
+                    "The corresponding eigenstate of ket_1 or ket_2 has a non-positive amplitude, "
+                    "this should not happen!"
+                )
 
         cpp_operator_type = get_cpp_operator_type(operator)
         matrix_element_au = self._cpp.get_matrix_elements(state_1._cpp, state_2._cpp, cpp_operator_type, q)[0, 0]  # type: ignore
