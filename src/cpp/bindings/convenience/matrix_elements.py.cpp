@@ -25,6 +25,20 @@ static void declare_calculate_energy(nb::module_ &m) {
 }
 
 template <typename T>
+static void declare_calculate_matrix_element(nb::module_ &m) {
+    using ket_ptr_t = std::shared_ptr<const KetAtom<T>>;
+
+    m.def("calculate_matrix_element",
+          nb::overload_cast<ket_ptr_t, ket_ptr_t, const SystemAtom<T> &, OperatorType, int>(
+              &calculate_matrix_element<T>));
+    m.def("calculate_matrix_element",
+          nb::overload_cast<ket_ptr_t, ket_ptr_t, const SystemAtom<std::complex<T>> &, OperatorType,
+                            int>(&calculate_matrix_element<std::complex<T>>));
+    m.def("calculate_matrix_element",
+          nb::overload_cast<ket_ptr_t, ket_ptr_t, OperatorType, int>(&calculate_matrix_element<T>));
+}
+
+template <typename T>
 static void declare_calculate_electric_dipole_matrix_element(nb::module_ &m) {
     using ket_ptr_t = std::shared_ptr<const KetAtom<T>>;
 
@@ -42,6 +56,8 @@ static void declare_calculate_electric_dipole_matrix_element(nb::module_ &m) {
 void bind_matrix_elements(nb::module_ &m) {
     declare_calculate_energy<float>(m);
     declare_calculate_energy<double>(m);
+    declare_calculate_matrix_element<float>(m);
+    declare_calculate_matrix_element<double>(m);
     declare_calculate_electric_dipole_matrix_element<float>(m);
     declare_calculate_electric_dipole_matrix_element<double>(m);
 }
