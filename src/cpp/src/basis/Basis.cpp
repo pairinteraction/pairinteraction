@@ -699,33 +699,66 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     {
-        // Map the state index to the ket index
-        transformed->state_index_to_ket_index.resize(transformed->coefficients.matrix.cols());
-        std::fill(transformed->state_index_to_ket_index.begin(),
-                  transformed->state_index_to_ket_index.end(), std::numeric_limits<int>::max());
+        // In the following, we obtain a bijective map between state index and ket index
 
-        std::vector<real_t> map_idx_to_max(transformed->coefficients.matrix.cols(), 0);
+        // Find the maximum value in each row and column
+        std::vector<real_t> max_in_row(transformed->coefficients.matrix.rows(), 0);
+        std::vector<real_t> max_in_col(transformed->coefficients.matrix.cols(), 0);
         for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
             for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
                      transformed->coefficients.matrix, row);
                  it; ++it) {
-                if (std::abs(it.value()) > map_idx_to_max[it.col()]) {
-                    map_idx_to_max[it.col()] = std::abs(it.value());
-                    transformed->state_index_to_ket_index[it.col()] = row;
-                }
+                real_t val = std::pow(std::abs(it.value()), 2);
+                max_in_row[row] = std::max(max_in_row[row], val);
+                max_in_col[it.col()] = std::max(max_in_col[it.col()], val);
             }
         }
 
-        // Map the ket index to the state index
-        transformed->ket_index_to_state_index.resize(transformed->coefficients.matrix.rows());
+        // Use the maximum values to define a cost for a sub-optimal mapping
+        std::vector<real_t> costs;
+        std::vector<std::pair<int, int>> mappings;
+        costs.reserve(transformed->coefficients.matrix.nonZeros());
+        mappings.reserve(transformed->coefficients.matrix.nonZeros());
+        for (int row = 0; row < transformed->coefficients.matrix.outerSize(); ++row) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                     transformed->coefficients.matrix, row);
+                 it; ++it) {
+                real_t val = std::pow(std::abs(it.value()), 2);
+                real_t cost = max_in_row[row] + max_in_col[it.col()] - 2 * val;
+                costs.push_back(cost);
+                mappings.push_back({row, it.col()});
+            }
+        }
+
+        // Obtain from the costs in which order the mappings should be considered
+        std::vector<size_t> order(costs.size());
+        std::iota(order.begin(), order.end(), 0);
+        std::sort(order.begin(), order.end(),
+                  [&](size_t a, size_t b) { return costs[a] < costs[b]; });
+
+        // Fill ket_index_to_state_index with invalid values as there can be more kets than states
         std::fill(transformed->ket_index_to_state_index.begin(),
                   transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
 
-        for (int i = 0; i < transformed->coefficients.matrix.cols(); ++i) {
-            if (transformed->state_index_to_ket_index[i] != std::numeric_limits<int>::max()) {
-                transformed->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
+        // Generate the bijective map
+        std::vector<bool> row_used(transformed->coefficients.matrix.rows(), false);
+        std::vector<bool> col_used(transformed->coefficients.matrix.cols(), false);
+        int num_used = 0;
+        for (size_t idx : order) {
+            int row = mappings[idx].first;  // corresponds to the ket index
+            int col = mappings[idx].second; // corresponds to the state index
+            if (!row_used[row] && !col_used[col]) {
+                row_used[row] = true;
+                col_used[col] = true;
+                num_used++;
+                transformed->state_index_to_ket_index[col] = row;
+                transformed->ket_index_to_state_index[row] = col;
+            }
+            if (num_used == transformed->coefficients.matrix.cols()) {
+                break;
             }
         }
+        assert(num_used == transformed->coefficients.matrix.cols());
     }
 
     return transformed;
