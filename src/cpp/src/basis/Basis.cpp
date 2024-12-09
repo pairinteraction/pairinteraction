@@ -699,7 +699,7 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
     }
 
     {
-        // In the following, we obtain a bijective map between state index and ket index
+        // In the following, we obtain a bijective map between state index and ket index.
 
         // Find the maximum value in each row and column
         std::vector<real_t> max_in_row(transformed->coefficients.matrix.rows(), 0);
