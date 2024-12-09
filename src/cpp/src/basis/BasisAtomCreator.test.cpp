@@ -6,10 +6,8 @@
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
-#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a basis for strontium 88") {
@@ -21,7 +19,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -34,7 +32,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
                      .create(database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr87_mqdt");
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -48,7 +46,7 @@ DOCTEST_TEST_CASE("create a basis from kets") {
             database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 
@@ -70,8 +68,8 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     auto parity = Parity::ODD;
     auto quantum_number_m = std::numeric_limits<float>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "State {}: Parity = {}, M = {}", i,
-                           static_cast<int>(basis->get_parity(i)), basis->get_quantum_number_m(i));
+        DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_parity(i),
+                        ", M = ", basis->get_quantum_number_m(i));
         DOCTEST_CHECK(basis->get_parity(i) >= parity);
         if (basis->get_parity(i) != parity) {
             parity = basis->get_parity(i);
@@ -90,7 +88,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 
     size_t idx = 0;
     for (const auto &block : blocks) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Block {} starts at {}", idx, block.start);
+        DOCTEST_MESSAGE("Block ", idx, " starts at ", block.start);
         DOCTEST_CHECK(block.start == expected_start[idx]);
         idx++;
     }

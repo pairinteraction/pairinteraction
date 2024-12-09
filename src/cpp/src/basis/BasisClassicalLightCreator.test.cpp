@@ -1,10 +1,8 @@
 #include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
 
 #include "pairinteraction/basis/BasisClassicalLight.hpp"
-#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a classical light basis") {
@@ -16,7 +14,7 @@ DOCTEST_TEST_CASE("create a classical light basis") {
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_photon_energy() == energy);
         DOCTEST_CHECK(ket->get_energy() == ket->get_photon_energy() * ket->get_quantum_number_q());
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+        DOCTEST_MESSAGE("Ket: ", *ket);
     }
 }
 } // namespace pairinteraction

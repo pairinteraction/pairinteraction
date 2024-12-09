@@ -37,7 +37,6 @@ void setup() {
                                                              spdlog::thread_pool(),
                                                              spdlog::async_overflow_policy::block);
         logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e %t] [%^%l%$] [%s:%#] %v");
-        spdlog::register_logger(logger);
         spdlog::set_default_logger(logger);
 
         const char *log_level = std::getenv("SPDLOG_LEVEL");

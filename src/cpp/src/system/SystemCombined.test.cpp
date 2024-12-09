@@ -16,7 +16,6 @@
 #include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
@@ -46,7 +45,7 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
 
     // Print the largest and smallest eigenvalues
     auto eigenvalues = system_combined.get_eigenvalues();
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Lowest energy: {}", eigenvalues.minCoeff());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Highest energy: {}", eigenvalues.maxCoeff());
+    DOCTEST_MESSAGE("Lowest energy: ", eigenvalues.minCoeff());
+    DOCTEST_MESSAGE("Highest energy: ", eigenvalues.maxCoeff());
 }
 } // namespace pairinteraction
