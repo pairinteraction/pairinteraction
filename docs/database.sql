@@ -1,4 +1,4 @@
--- Version 1.0
+-- Version 2.0
 
 -- Unit System: Atomic Units
 --
@@ -20,21 +20,39 @@
 BEGIN TRANSACTION;
 
 -- Create a table of states
--- The energies are defined such that the mean ionization threshold is zero.
+-- The energies are defined as E=E_i-Ry/nu_i^2, where E_i is the channel-dependent ionization threshold and nu_i is the
+-- effective principal quantum number of the channel i (note that by using this definition, the energies of Rydberg
+-- states are positive).
+-- The effective principal quantum number of the state is defined as nu=sqrt(Ry/(I-E)). In the case of a single channel,
+-- "I" is the ionization threshold of that channel and nu=n-delta where delta is the quantum defect. In the case of multiple
+-- channels, "I" is the ionization threshold of the channel that corresponds to the core being in the ionic ground state and
+-- has maximum total angular momentum f_core (this ensures that for stretched states with maximum F that consist only of a
+-- single channel, the energy agrees with the energy obtainable by single-channel quantum defect theory).
+-- The principal quantum number n is, in principle, not well defined for states that consist of multiple channels since
+-- these states comprise superpositions of different radial wave functions. Instead, we state the principal quantum number
+-- of the most dominant channel.
 CREATE TABLE states (
     id INTEGER PRIMARY KEY,
-    energy REAL NOT NULL, -- the energy of the state
+    energy REAL NOT NULL, -- the energy of the state, E=I-Ry/nu^2
     parity INTEGER NOT NULL, -- the parity of the state
-    n INTEGER NOT NULL, -- the principal quantum number of the Rydberg electron (is zero if multi-channel)
-    f REAL NOT NULL, -- the total momentum quantum number (equals exp_j if hyperfine splitting neglected)
-    exp_nu REAL NOT NULL, -- the expectation value of effective principal quantum number of the Rydberg electron
-    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number of the Rydberg electron
-    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number of the Rydberg electron
+    n INTEGER NOT NULL, -- the principal quantum number of the state
+    nu REAL NOT NULL, -- the effective principal quantum number of the state
+    f REAL NOT NULL, -- the total momentum quantum number
+    exp_nui REAL NOT NULL, -- the expectation value of the effective principal quantum numbers of the channels
+    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number of all valence electrons
+    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number all valence electrons
     exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number of all valence electrons
-    std_nu REAL NOT NULL, -- the standard deviation of the effective principal quantum number of the Rydberg electron
-    std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number of the Rydberg electron
-    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number of the Rydberg electron
-    std_s REAL NOT NULL -- the standard deviation of the total spin quantum number of all valence electrons
+    exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number of the Rydberg electron
+    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number the Rydberg electron
+    std_nui REAL NOT NULL, -- the standard deviation of the effective principal quantum numbers of the channels
+    std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number of all valence electrons
+    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number of all valence electrons
+    std_s REAL NOT NULL, -- the standard deviation of the total spin quantum number of all valence electrons
+    std_l_ryd REAL NOT NULL, -- the standard deviation of the orbital quantum number of the Rydberg electron
+    std_j_ryd REAL NOT NULL, -- the standard deviation of the total angular quantum number of the Rydberg electron
+    is_j_total_momentum BIT NOT NULL, -- whether j is the total momentum quantum number, otherwise f is used for printing the state
+    is_calculated_with_mqdt BIT NOT NULL -- whether multi-channel quantum defect theory was used
+    underspecified_channel_contribution REAL NOT NULL, -- the contribution of channels whose quantum numbers are not exactly known
 );
 
 CREATE TRIGGER check_energy
@@ -73,6 +91,15 @@ CREATE TABLE matrix_elements_q (
     PRIMARY KEY (id_initial, id_final)
 );
 
+-- Create a table of matrix elements of the reduced operator e*r^2*sqrt(4*pi)*Y_0, occurring in
+-- the operator of the quadrupole interaction
+CREATE TABLE matrix_elements_q0 (
+    id_initial INTEGER,
+    id_final INTEGER,
+    val REAL NOT NULL,
+    PRIMARY KEY (id_initial, id_final)
+);
+
 -- Create a table of matrix elements of the reduced electric octupole operator e*r^3*sqrt(4*pi/7)*Y_3
 CREATE TABLE matrix_elements_o (
     id_initial INTEGER,
@@ -91,15 +118,6 @@ CREATE TABLE matrix_elements_mu (
     PRIMARY KEY (id_initial, id_final)
 );
 
--- Create a table of matrix elements of the reduced operator e*r^2*sqrt(4*pi)*Y_0, occurring in
--- the operator of the diamagnetic interaction
-CREATE TABLE matrix_elements_dia (
-    id_initial INTEGER,
-    id_final INTEGER,
-    val REAL NOT NULL,
-    PRIMARY KEY (id_initial, id_final)
-);
-
 -- Create indices to speed up queries
 CREATE INDEX idx_states_energy ON states (energy);
 CREATE INDEX idx_wigner_f_initial ON wigner (f_initial);
@@ -108,10 +126,10 @@ CREATE INDEX idx_matrix_elements_d_id_initial ON matrix_elements_d (id_initial);
 CREATE INDEX idx_matrix_elements_d_id_final ON matrix_elements_d (id_final);
 CREATE INDEX idx_matrix_elements_q_id_initial ON matrix_elements_q (id_initial);
 CREATE INDEX idx_matrix_elements_q_id_final ON matrix_elements_q (id_final);
+CREATE INDEX idx_matrix_elements_q0_id_initial ON matrix_elements_q0 (id_initial);
+CREATE INDEX idx_matrix_elements_q0_id_final ON matrix_elements_q0 (id_final);
 CREATE INDEX idx_matrix_elements_o_id_initial ON matrix_elements_o (id_initial);
 CREATE INDEX idx_matrix_elements_o_id_final ON matrix_elements_o (id_final);
-CREATE INDEX idx_matrix_elements_dia_id_initial ON matrix_elements_dia (id_initial);
-CREATE INDEX idx_matrix_elements_dia_id_final ON matrix_elements_dia (id_final);
 CREATE INDEX idx_matrix_elements_mu_id_initial ON matrix_elements_mu (id_initial);
 CREATE INDEX idx_matrix_elements_mu_id_final ON matrix_elements_mu (id_final);
 
