@@ -13,4 +13,4 @@ Writing Tutorials
     Share your knowledge by writing tutorials. If you've published research utilizing pairinteraction, consider contributing a tutorial. This not only aids others in replicating your results but also enhances the visibility of your work. Your tutorial can serve as a practical guide for applying pairinteraction to solve complex problems.
 
 Developing Features or Resolving Bugs
-    Community contributions in the form of new features or bug fixes are immensely appreciated. They not only alleviate the workload on our maintainers but also enrich the software with diverse expertise. Your contributions can make a significant difference, especially in areas outside our maintainers' specialties.
+    Community contributions in the form of new features or bug fixes are immensely appreciated. They not only alleviate the workload on our maintainers but also enrich the software with diverse expertise. Your :ref:`contributions <Repository>` can make a significant difference, especially in areas outside our maintainers' specialties.
