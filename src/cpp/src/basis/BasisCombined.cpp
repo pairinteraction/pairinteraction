@@ -11,12 +11,12 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
+BasisCombined<Scalar>::BasisCombined(Private /*unused*/, ketvec_t &&kets,
                                      map_range_t &&map_range_of_state_index2,
                                      map_indices_t &&state_indices_to_ket_index,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis1,
                                      std::shared_ptr<const BasisAtom<Scalar>> basis2)
-    : Basis<BasisCombined<Scalar>>(std::move(kets), std::move(id_of_kets)),
+    : Basis<BasisCombined<Scalar>>(std::move(kets)),
       map_range_of_state_index2(std::move(map_range_of_state_index2)),
       state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
       basis2(std::move(basis2)) {}

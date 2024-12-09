@@ -46,10 +46,12 @@ public:
     BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets, Database &database);
     Database &get_database() const;
     const std::string &get_species() const;
+    const std::string &get_id_of_kets() const;
 
     int get_ket_index_from_id(size_t ket_id) const;
 
 private:
+    std::string id_of_kets;
     Database &database;
     std::string species;
     std::unordered_map<size_t, size_t> ket_id_to_ket_index;

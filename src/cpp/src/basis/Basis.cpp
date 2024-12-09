@@ -23,11 +23,6 @@ template <typename Scalar>
 class BasisClassicalLight;
 
 template <typename Derived>
-const std::string &Basis<Derived>::get_id_of_kets() const {
-    return id_of_kets;
-}
-
-template <typename Derived>
 void Basis<Derived>::perform_sorter_checks(const std::vector<TransformationType> &labels) const {
     // Check if the labels are valid sorting labels
     for (const auto &label : labels) {
@@ -61,11 +56,10 @@ void Basis<Derived>::perform_blocks_checks(
 }
 
 template <typename Derived>
-Basis<Derived>::Basis(ketvec_t &&kets, std::string &&id_of_kets)
+Basis<Derived>::Basis(ketvec_t &&kets)
     : kets(std::move(kets)), coefficients{{static_cast<Eigen::Index>(this->kets.size()),
                                            static_cast<Eigen::Index>(this->kets.size())},
-                                          {TransformationType::SORT_BY_KET}},
-      id_of_kets(std::move(id_of_kets)) {
+                                          {TransformationType::SORT_BY_KET}} {
     if (this->kets.empty()) {
         throw std::invalid_argument("The basis must contain at least one element.");
     }
@@ -156,9 +150,6 @@ Basis<Derived>::get_amplitudes(std::shared_ptr<const ket_t> ket) const {
 template <typename Derived>
 Eigen::SparseMatrix<typename Basis<Derived>::scalar_t, Eigen::RowMajor>
 Basis<Derived>::get_amplitudes(std::shared_ptr<const Derived> other) const {
-    if (other->get_id_of_kets() != get_id_of_kets()) {
-        throw std::invalid_argument("The other object must be expressed using the same kets.");
-    }
     return other->coefficients.matrix.adjoint() * coefficients.matrix;
 }
 

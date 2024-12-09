@@ -6,7 +6,8 @@ namespace pairinteraction {
 template <typename Scalar>
 BasisAtom<Scalar>::BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
                              Database &database)
-    : Basis<BasisAtom<Scalar>>(std::move(kets), std::move(id_of_kets)), database(database) {
+    : Basis<BasisAtom<Scalar>>(std::move(kets)), id_of_kets(std::move(id_of_kets)),
+      database(database) {
     for (size_t i = 0; i < this->kets.size(); ++i) {
         ket_id_to_ket_index[this->kets[i]->get_id_in_database()] = i;
     }
@@ -28,6 +29,11 @@ int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
         return -1;
     }
     return ket_id_to_ket_index.at(ket_id);
+}
+
+template <typename Scalar>
+const std::string &BasisAtom<Scalar>::get_id_of_kets() const {
+    return id_of_kets;
 }
 
 // Explicit instantiations
