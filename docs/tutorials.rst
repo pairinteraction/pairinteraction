@@ -38,6 +38,10 @@ Here we show the usage of the API. The first tutorial serves as a quick start gu
 .. nbgallery::
 
    examples_python/quick_start
+   examples_python/introduction
+   examples_python/stark_map
+   examples_python/pair_potentials
+   examples_python/overview
 
 .. rubric:: Applications
 
