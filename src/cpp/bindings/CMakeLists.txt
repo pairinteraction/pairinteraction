@@ -28,8 +28,8 @@ add_library(
   operator/Operator.py.cpp
   system/System.py.hpp
   system/System.py.cpp
-  test.py.hpp
   binding.cpp
+  test.py.hpp
   test.py.cpp)
 
 target_include_directories(

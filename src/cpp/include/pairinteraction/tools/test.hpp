@@ -4,5 +4,5 @@
 
 namespace pairinteraction {
 int test(int argc = 0, char **argv = {}, bool download_missing = false,
-         std::filesystem::path database_dir = "");
+         bool wigner_in_memory = true, std::filesystem::path database_dir = "");
 } // namespace pairinteraction

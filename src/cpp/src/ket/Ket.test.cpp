@@ -2,10 +2,9 @@
 
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/hash.hpp"
-#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
+#include <memory>
 #include <sstream>
 
 namespace pairinteraction {
@@ -56,6 +55,6 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
     DOCTEST_CHECK(ss.str() == "my_label");
 
     // Output the label to the doctest log
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+    DOCTEST_MESSAGE("Ket: ", *ket);
 }
 } // namespace pairinteraction

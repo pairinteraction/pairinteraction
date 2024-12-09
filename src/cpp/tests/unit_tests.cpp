@@ -23,6 +23,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    return pairinteraction::test(static_cast<int>(args.size()), args.data(), download_missing,
+    return pairinteraction::test(static_cast<int>(args.size()), args.data(), download_missing, true,
                                  database_dir);
 }

@@ -6,10 +6,8 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("get a KetAtom") {
@@ -22,7 +20,7 @@ DOCTEST_TEST_CASE("get a KetAtom") {
 
     auto ket = database.get_ket<float>("Rb", description);
 
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(*ket));
+    DOCTEST_MESSAGE("KetAtom: ", *ket);
 }
 
 DOCTEST_TEST_CASE("get a BasisAtom") {
@@ -35,7 +33,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
     auto basis = database.get_basis<float>("Rb", description, {});
 
     for (const auto &ket : *basis) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "KetAtom: {}", fmt::streamed(*ket));
+        DOCTEST_MESSAGE("KetAtom: ", *ket);
     }
 }
 
@@ -51,8 +49,7 @@ DOCTEST_TEST_CASE("get an OperatorAtom") {
     auto dipole =
         database.get_matrix_elements<float>(basis, basis, OperatorType::ELECTRIC_DIPOLE, 0);
 
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of basis states: {}",
-                       basis->get_number_of_states());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Number of non-zero entries: {}", dipole.nonZeros());
+    DOCTEST_MESSAGE("Number of basis states: ", basis->get_number_of_states());
+    DOCTEST_MESSAGE("Number of non-zero entries: ", dipole.nonZeros());
 }
 } // namespace pairinteraction

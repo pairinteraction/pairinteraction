@@ -2,10 +2,8 @@
 
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a ket for rubidium") {
@@ -19,7 +17,7 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0.5);
     DOCTEST_CHECK(ket->get_quantum_number_s() == 0.5);
     DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+    DOCTEST_MESSAGE("Ket: ", *ket);
 }
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
@@ -37,6 +35,6 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_quantum_number_f() == 1);
     DOCTEST_CHECK(ket->get_quantum_number_m() == 0);
     DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Ket: {}", fmt::streamed(*ket));
+    DOCTEST_MESSAGE("Ket: ", *ket);
 }
 } // namespace pairinteraction

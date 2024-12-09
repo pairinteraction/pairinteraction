@@ -716,25 +716,14 @@ Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) cons
             }
         }
 
-        // Map the ket index to the state index and, if a row occurs more than once, set the ket
-        // index to std::numeric_limits<int>::max()
+        // Map the ket index to the state index
         transformed->ket_index_to_state_index.resize(transformed->coefficients.matrix.rows());
         std::fill(transformed->ket_index_to_state_index.begin(),
                   transformed->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
 
-        for (size_t i = 0; i < transformed->state_index_to_ket_index.size(); ++i) {
+        for (int i = 0; i < transformed->coefficients.matrix.cols(); ++i) {
             if (transformed->state_index_to_ket_index[i] != std::numeric_limits<int>::max()) {
-                if (transformed
-                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] ==
-                    std::numeric_limits<int>::max()) {
-                    transformed
-                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
-                } else {
-                    transformed
-                        ->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] =
-                        std::numeric_limits<int>::max();
-                    transformed->state_index_to_ket_index[i] == std::numeric_limits<int>::max();
-                }
+                transformed->ket_index_to_state_index[transformed->state_index_to_ket_index[i]] = i;
             }
         }
     }

@@ -13,7 +13,6 @@
 #include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
 #include <fmt/ranges.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
@@ -41,12 +40,12 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
 
     Eigen::MatrixXd tmp = Eigen::MatrixXd(1e5 * system.get_matrix()).array().round() / 1e5;
     std::vector<double> matrix_vector(tmp.data(), tmp.data() + tmp.size());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Constructed: {}", fmt::join(matrix_vector, ", "));
+    DOCTEST_MESSAGE(fmt::format("Constructed: {}", fmt::join(matrix_vector, ", ")));
 
     system.diagonalize(diagonalizer);
     tmp = Eigen::MatrixXd(1e5 * system.get_matrix()).array().round() / 1e5;
     matrix_vector = std::vector<double>(tmp.data(), tmp.data() + tmp.size());
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Diagonalized: {}", fmt::join(matrix_vector, ", "));
+    DOCTEST_MESSAGE(fmt::format("Diagonalized: {}", fmt::join(matrix_vector, ", ")));
 
     Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> eigensolver;
     eigensolver.compute(system.get_matrix());
@@ -107,7 +106,7 @@ DOCTEST_TEST_CASE("construct and diagonalize multiple Hamiltonians in parallel")
         systems.push_back(std::move(system));
     }
 
-    SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Basis size: {}", basis->get_number_of_states());
+    DOCTEST_MESSAGE("Basis size: ", basis->get_number_of_states());
 
     diagonalize<SystemAtom<std::complex<double>>>(systems, diagonalizer);
 }
@@ -131,7 +130,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 #endif
 
     for (int precision : {1, 4, 12}) {
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Precision: {}", precision);
+        DOCTEST_MESSAGE("Precision: ", precision);
 
         for (const auto &diagonalizer : diagonalizers) {
             auto system = SystemAtom<std::complex<double>>(basis);
@@ -195,8 +194,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
         std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());
-        SPDLOG_LOGGER_INFO(spdlog::get("doctest"), "Eigenvalues: {}",
-                           fmt::join(eigenvalues_vector, ", "));
+        DOCTEST_MESSAGE(fmt::format("Eigenvalues: {}", fmt::join(eigenvalues_vector, ", ")));
 
         DOCTEST_CHECK(eigenvalues_eigen.size() == eigenvalues_pairinteraction.size());
         for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {

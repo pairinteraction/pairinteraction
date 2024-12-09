@@ -10,6 +10,7 @@
 #include "./ket/Ket.py.hpp"
 #include "./operator/Operator.py.hpp"
 #include "./system/System.py.hpp"
+#include "./test.py.hpp"
 #include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>
@@ -47,6 +48,9 @@ NB_MODULE(_backend, m) // NOLINT
 
     // system
     bind_system(m);
+
+    // test
+    bind_test(m);
 
     // convenience functions
     bind_matrix_elements(m);
