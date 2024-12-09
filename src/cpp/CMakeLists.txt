@@ -63,6 +63,7 @@ add_library(
   ./src/basis/BasisClassicalLightCreator.test.cpp
   ./src/basis/BasisCombined.cpp
   ./src/basis/BasisCombinedCreator.cpp
+  ./src/basis/BasisCombinedCreator.test.cpp
   ./src/convenience/matrix_elements.cpp
   ./src/convenience/matrix_elements.test.cpp
   ./src/database/Database.cpp

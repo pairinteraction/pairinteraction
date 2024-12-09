@@ -37,6 +37,7 @@ public:
     get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
 
     bool operator==(const KetCombined<Scalar> &other) const;
+    bool operator!=(const KetCombined<Scalar> &other) const;
 
     struct hash {
         std::size_t operator()(const KetCombined<Scalar> &k) const;

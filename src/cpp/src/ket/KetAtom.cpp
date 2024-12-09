@@ -151,6 +151,11 @@ bool KetAtom<Real>::operator==(const KetAtom<Real> &other) const {
 }
 
 template <typename Real>
+bool KetAtom<Real>::operator!=(const KetAtom<Real> &other) const {
+    return !(*this == other);
+}
+
+template <typename Real>
 size_t KetAtom<Real>::hash::operator()(const KetAtom<Real> &k) const {
     size_t seed = typename Ket<Real>::hash()(k);
     utils::hash_combine(seed, k.species);
