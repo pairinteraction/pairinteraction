@@ -360,9 +360,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     if (description.quantum_number_n.has_value()) {
         ensure_quantum_number_n_is_allowed(species + "_states");
     }
-    if (!description.quantum_number_m.has_value() &&
-        description.quantum_number_f.value_or(1) != 0) {
-        throw std::runtime_error("The quantum number m must be specified if f is not zero.");
+    if (!description.quantum_number_m.has_value()) {
+        throw std::runtime_error("The quantum number m must be specified.");
     }
     if (description.quantum_number_f.has_value() &&
         2 * description.quantum_number_f.value() !=
@@ -371,6 +370,14 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     }
     if (description.quantum_number_f.has_value() && description.quantum_number_f.value() < 0) {
         throw std::runtime_error("The quantum number f must be positive.");
+    }
+    if (description.quantum_number_j.has_value() &&
+        2 * description.quantum_number_j.value() !=
+            std::rintf(2 * description.quantum_number_j.value())) {
+        throw std::runtime_error("The quantum number j must be an integer or half-integer.");
+    }
+    if (description.quantum_number_j.has_value() && description.quantum_number_j.value() < 0) {
+        throw std::runtime_error("The quantum number j must be positive.");
     }
     if (description.quantum_number_m.has_value() &&
         2 * description.quantum_number_m.value() !=
@@ -463,8 +470,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     // Ask the database for the described state
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, exp_nu, std_nu, exp_l, std_l, exp_s, std_s,
-        exp_j, std_j FROM '{}' WHERE {} ORDER BY {} ASC LIMIT 1)",
-        tables[species + "_states"].local_path.string(), where, orderby));
+        exp_j, std_j, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
+        orderby, tables[species + "_states"].local_path.string(), where));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -490,10 +497,22 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     //         throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
     //     }
     // }
-    // Construct the state
+
+    // Get the first chunk of the results (the first chunk is sufficient as we need two rows at
+    // most)
     auto chunk = result->Fetch();
 
-    auto result_quantum_number_m = description.quantum_number_m.value_or(0);
+    // Check that the ket is uniquely specified
+    if (chunk->size() > 1) {
+        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[13])[0];
+        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[13])[1];
+        if (order_val_1 - order_val_0 <= order_val_0) {
+            throw std::runtime_error("The ket is not uniquely specified.");
+        }
+    }
+
+    // Construct the state
+    auto result_quantum_number_m = description.quantum_number_m.value();
     auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[0];
     auto result_quantum_number_f = duckdb::FlatVector::GetData<double>(chunk->data[1])[0];
     auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[0];
@@ -508,6 +527,17 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
+
+    if (std::abs(result_quantum_number_m) > result_quantum_number_f) {
+        throw std::runtime_error(
+            "The absolute value of the quantum number m must be less than or equal to f.");
+    }
+
+    if (result_quantum_number_f + result_quantum_number_m !=
+        std::rint(result_quantum_number_f + result_quantum_number_m)) {
+        throw std::runtime_error(
+            "The quantum numbers f and m must be both either integers or half-integers.");
+    }
 
     return std::make_shared<const KetAtom<Real>>(
         typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
