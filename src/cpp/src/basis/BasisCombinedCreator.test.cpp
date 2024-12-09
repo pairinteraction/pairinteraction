@@ -13,7 +13,6 @@
 #include "pairinteraction/utils/streamed.hpp"
 
 #include <doctest/doctest.h>
-#include <spdlog/spdlog.h>
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a combined basis and check equality of kets") {

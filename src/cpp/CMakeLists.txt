@@ -111,6 +111,7 @@ target_link_libraries(
          spdlog::spdlog
          TBB::tbb
          fmt::fmt
+         cpptrace::cpptrace
          $<$<TARGET_EXISTS:MKL::MKL>:MKL::MKL>
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:LAPACKE::LAPACKE>
          $<$<TARGET_EXISTS:OpenSSL::SSL>:OpenSSL::SSL>

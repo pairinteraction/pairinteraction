@@ -6,6 +6,7 @@
             "name": "cpp-httplib",
             "features": [ "openssl" ]
         },
+        "cpptrace",
         "doctest",
         "eigen3",
         "fmt",
