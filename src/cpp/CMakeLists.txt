@@ -51,7 +51,6 @@ add_library(
   ./include/pairinteraction/utils/spherical.hpp
   ./include/pairinteraction/utils/streamed.hpp
   ./include/pairinteraction/utils/traits.hpp
-  ./include/pairinteraction/utils/uid.hpp
   ./include/pairinteraction/utils/wigner.hpp
   ./include/pairinteraction/pairinteraction.hpp
   # Sources

@@ -55,8 +55,7 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    BasisCombined(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets,
-                  map_range_t &&map_range_of_state_index2,
+    BasisCombined(Private /*unused*/, ketvec_t &&kets, map_range_t &&map_range_of_state_index2,
                   map_indices_t &&state_indices_to_ket_index,
                   std::shared_ptr<const BasisAtom<Scalar>> basis1,
                   std::shared_ptr<const BasisAtom<Scalar>> basis2);

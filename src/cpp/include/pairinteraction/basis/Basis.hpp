@@ -48,7 +48,6 @@ public:
     bool has_quantum_number_m() const;
     bool has_parity() const;
 
-    const std::string &get_id_of_kets() const;
     const ketvec_t &get_kets() const;
     size_t get_number_of_states() const;
     size_t get_number_of_kets() const;
@@ -107,7 +106,7 @@ public:
     std::shared_ptr<const Derived> transformed(const Sorting &transformation) const;
 
 protected:
-    Basis(ketvec_t &&kets, std::string &&id_of_kets);
+    Basis(ketvec_t &&kets);
     int get_ket_index_from_ket(std::shared_ptr<const ket_t> ket) const;
     ketvec_t kets;
 
@@ -124,7 +123,6 @@ private:
     };
 
     Transformation<scalar_t> coefficients;
-    std::string id_of_kets;
 
     std::unordered_map<std::shared_ptr<const ket_t>, size_t, hash, equal_to> ket_to_ket_index;
     std::vector<size_t> ket_index_to_state_index;

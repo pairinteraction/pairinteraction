@@ -2,9 +2,8 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisClassicalLight<Scalar>::BasisClassicalLight(Private /*unused*/, ketvec_t &&kets,
-                                                 std::string &&id_of_kets)
-    : Basis<BasisClassicalLight<Scalar>>(std::move(kets), std::move(id_of_kets)) {}
+BasisClassicalLight<Scalar>::BasisClassicalLight(Private /*unused*/, ketvec_t &&kets)
+    : Basis<BasisClassicalLight<Scalar>>(std::move(kets)) {}
 
 // Explicit instantiations
 template class BasisClassicalLight<float>;
