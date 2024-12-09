@@ -121,7 +121,6 @@ Utility Tools
     :hidden:
 
     modules.rst
-    config.rst
 
 .. toctree::
     :maxdepth: 2

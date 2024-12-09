@@ -1,3 +1,4 @@
 # Ignore files resulting from executing a jupyter notebook
 *.ipynb_checkpoints
 cache/
+database/
