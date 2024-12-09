@@ -4,7 +4,6 @@
 #include <Eigen/Dense>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <spdlog/spdlog.h>
 #include <vector>
 
