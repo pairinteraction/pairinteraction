@@ -48,6 +48,11 @@ bool KetClassicalLight<Real>::operator==(const KetClassicalLight<Real> &other) c
 }
 
 template <typename Real>
+bool KetClassicalLight<Real>::operator!=(const KetClassicalLight<Real> &other) const {
+    return !(*this == other);
+}
+
+template <typename Real>
 size_t KetClassicalLight<Real>::hash::operator()(const KetClassicalLight<Real> &k) const {
     size_t seed = typename Ket<Real>::hash()(k);
     utils::hash_combine(seed, k.photon_energy);

@@ -26,6 +26,7 @@ public:
     int get_quantum_number_q() const;
 
     bool operator==(const KetClassicalLight<Real> &other) const;
+    bool operator!=(const KetClassicalLight<Real> &other) const;
 
     struct hash {
         std::size_t operator()(const KetClassicalLight<Real> &k) const;

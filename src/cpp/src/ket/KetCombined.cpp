@@ -84,6 +84,11 @@ bool KetCombined<Scalar>::operator==(const KetCombined<Scalar> &other) const {
 }
 
 template <typename Scalar>
+bool KetCombined<Scalar>::operator!=(const KetCombined<Scalar> &other) const {
+    return !(*this == other);
+}
+
+template <typename Scalar>
 size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const {
     size_t seed = typename Ket<real_t>::hash()(k);
     for (const auto &index : k.atomic_indices) {

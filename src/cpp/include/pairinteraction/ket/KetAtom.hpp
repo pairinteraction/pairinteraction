@@ -46,6 +46,7 @@ public:
     Real get_quantum_number_j_std() const;
 
     bool operator==(const KetAtom<Real> &other) const;
+    bool operator!=(const KetAtom<Real> &other) const;
 
     struct hash {
         std::size_t operator()(const KetAtom<Real> &k) const;

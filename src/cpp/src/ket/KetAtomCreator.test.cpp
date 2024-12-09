@@ -37,4 +37,14 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
     DOCTEST_CHECK(ket->get_parity() == Parity::ODD);
     DOCTEST_MESSAGE("Ket: ", *ket);
 }
+
+DOCTEST_TEST_CASE("test for equality") {
+    Database &database = Database::get_global_instance();
+    auto ket1 = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
+    auto ket2 = KetAtomCreator<float>("Rb", 60, 1, 0.5, 0.5).create(database);
+    auto ket3 = KetAtomCreator<float>("Rb", 60, 1, 1.5, 0.5).create(database);
+    DOCTEST_CHECK(*ket1 == *ket2);
+    DOCTEST_CHECK(*ket1 != *ket3);
+}
+
 } // namespace pairinteraction
