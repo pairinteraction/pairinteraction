@@ -164,6 +164,18 @@ if(WIN32)
 endif()
 add_library(duckdb::duckdb ALIAS duckdb)
 
+# Find Cpptrace
+find_package(cpptrace QUIET)
+if(NOT cpptrace_FOUND)
+  FetchContent_Declare(
+    cpptrace
+    GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
+    GIT_TAG 4354eb21ea3565a73afdf32ec0ba768fd648c425 # v0.7.3
+  )
+  FetchContent_MakeAvailable(cpptrace)
+  set_target_properties(cpptrace-lib PROPERTIES CXX_CLANG_TIDY "")
+endif()
+
 # Add subdirectories for building the project
 add_subdirectory(src/cpp)
 add_subdirectory(src/cpp/bindings)
