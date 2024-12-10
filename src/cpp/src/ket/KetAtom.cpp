@@ -3,12 +3,18 @@
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
+#include <array>
+#include <cctype>
 #include <cmath>
 #include <fmt/core.h>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace pairinteraction {
+
+constexpr std::array<std::string_view, 6> quantum_number_l_labels = {"S", "P", "D", "F", "G", "H"};
+
 template <typename Real>
 KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,

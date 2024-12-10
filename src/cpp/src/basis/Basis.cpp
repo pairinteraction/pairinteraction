@@ -209,11 +209,7 @@ Basis<Derived>::get_corresponding_ket(std::shared_ptr<const Derived> /*state*/) 
 }
 
 template <typename Derived>
-std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ket_index) const {
-    size_t state_index = ket_index_to_state_index.at(ket_index);
-    if (state_index == std::numeric_limits<int>::max()) {
-        throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
-    }
+std::shared_ptr<const Derived> Basis<Derived>::get_state(size_t state_index) const {
     // Create a copy of the current object
     auto restricted = std::make_shared<Derived>(derived());
 
@@ -222,7 +218,7 @@ std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ke
 
     std::fill(restricted->ket_index_to_state_index.begin(),
               restricted->ket_index_to_state_index.end(), std::numeric_limits<int>::max());
-    restricted->ket_index_to_state_index[ket_index] = 0;
+    restricted->ket_index_to_state_index[state_index_to_ket_index[state_index]] = 0;
 
     restricted->state_index_to_quantum_number_f = {state_index_to_quantum_number_f[state_index]};
     restricted->state_index_to_quantum_number_m = {state_index_to_quantum_number_m[state_index]};
@@ -236,6 +232,21 @@ std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ke
     restricted->_has_parity = restricted->state_index_to_parity[0] != Parity::UNKNOWN;
 
     return restricted;
+}
+
+template <typename Derived>
+std::shared_ptr<const typename Basis<Derived>::ket_t>
+Basis<Derived>::get_ket(size_t ket_index) const {
+    return kets[ket_index];
+}
+
+template <typename Derived>
+std::shared_ptr<const Derived> Basis<Derived>::get_corresponding_state(size_t ket_index) const {
+    size_t state_index = ket_index_to_state_index.at(ket_index);
+    if (state_index == std::numeric_limits<int>::max()) {
+        throw std::runtime_error("The ket does not belong to a state in a well-defined way.");
+    }
+    return get_state(state_index);
 }
 
 template <typename Derived>

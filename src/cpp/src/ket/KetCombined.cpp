@@ -46,6 +46,40 @@ KetCombined<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum
 }
 
 template <typename Scalar>
+std::vector<std::shared_ptr<const BasisAtom<Scalar>>>
+KetCombined<Scalar>::get_atomic_states() const {
+    std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
+    atomic_states.reserve(atomic_indices.size());
+    for (size_t state_index : atomic_indices) {
+        atomic_states.push_back(atomic_bases[state_index]);
+    }
+    return atomic_states;
+}
+
+template <typename Scalar>
+bool KetCombined<Scalar>::operator==(const KetCombined<Scalar> &other) const {
+    return Ket<real_t>::operator==(other) && atomic_indices == other.atomic_indices &&
+        atomic_bases == other.atomic_bases;
+}
+
+template <typename Scalar>
+bool KetCombined<Scalar>::operator!=(const KetCombined<Scalar> &other) const {
+    return !(*this == other);
+}
+
+template <typename Scalar>
+size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const {
+    size_t seed = typename Ket<real_t>::hash()(k);
+    for (const auto &index : k.atomic_indices) {
+        utils::hash_combine(seed, index);
+    }
+    for (const auto &basis : k.atomic_bases) {
+        utils::hash_combine(seed, reinterpret_cast<std::uintptr_t>(basis.get()));
+    }
+    return seed;
+}
+
+template <typename Scalar>
 typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_number_f(
     const std::vector<size_t> & /*indices*/,
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
@@ -75,29 +109,6 @@ Parity KetCombined<Scalar>::calculate_parity(
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
     // Because this ket state is not symmetrized, the parity is not well-defined.
     return Parity::UNKNOWN;
-}
-
-template <typename Scalar>
-bool KetCombined<Scalar>::operator==(const KetCombined<Scalar> &other) const {
-    return Ket<real_t>::operator==(other) && atomic_indices == other.atomic_indices &&
-        atomic_bases == other.atomic_bases;
-}
-
-template <typename Scalar>
-bool KetCombined<Scalar>::operator!=(const KetCombined<Scalar> &other) const {
-    return !(*this == other);
-}
-
-template <typename Scalar>
-size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const {
-    size_t seed = typename Ket<real_t>::hash()(k);
-    for (const auto &index : k.atomic_indices) {
-        utils::hash_combine(seed, index);
-    }
-    for (const auto &basis : k.atomic_bases) {
-        utils::hash_combine(seed, reinterpret_cast<std::uintptr_t>(basis.get()));
-    }
-    return seed;
 }
 
 // Explicit instantiations

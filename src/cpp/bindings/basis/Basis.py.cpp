@@ -30,6 +30,8 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
     using scalar_t = typename Basis<T>::scalar_t;
     nb::class_<Basis<T>, TransformationBuilderInterface<scalar_t>> pyclass(m, pyclass_name.c_str());
     pyclass.def("get_kets", &Basis<T>::get_kets)
+        .def("get_ket", &Basis<T>::get_ket)
+        .def("get_state", &Basis<T>::get_state)
         .def("get_number_of_states", &Basis<T>::get_number_of_states)
         .def("get_number_of_kets", &Basis<T>::get_number_of_kets)
         .def("get_quantum_number_f", &Basis<T>::get_quantum_number_f)
