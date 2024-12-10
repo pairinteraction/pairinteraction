@@ -1,6 +1,6 @@
 #define DOCTEST_CONFIG_IMPLEMENT
 
-#include "pairinteraction/tools/test.hpp"
+#include "pairinteraction/tools/run_unit_tests.hpp"
 
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/utils/paths.hpp"
@@ -249,8 +249,8 @@ REGISTER_REPORTER("logging", 1, doctest::LoggingReporter);
 } // namespace doctest
 
 namespace pairinteraction {
-int test(int argc, char **argv, bool download_missing, bool wigner_in_memory,
-         std::filesystem::path database_dir) {
+int run_unit_tests(int argc, char **argv, bool download_missing, bool wigner_in_memory,
+                   std::filesystem::path database_dir) {
 
     // Configure a logger for the tests
     std::filesystem::path logdir = paths::get_pairinteraction_cache_directory() / "logs";

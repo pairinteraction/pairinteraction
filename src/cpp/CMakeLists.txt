@@ -37,7 +37,7 @@ add_library(
   ./include/pairinteraction/system/SystemAtom.hpp
   ./include/pairinteraction/system/SystemClassicalLight.hpp
   ./include/pairinteraction/system/SystemCombined.hpp
-  ./include/pairinteraction/tools/test.hpp
+  ./include/pairinteraction/tools/run_unit_tests.hpp
   ./include/pairinteraction/tools/setup.hpp
   ./include/pairinteraction/utils/args.hpp
   ./include/pairinteraction/utils/eigen_assertion.hpp
@@ -93,7 +93,7 @@ add_library(
   ./src/system/SystemCombined.cpp
   ./src/system/SystemCombined.test.cpp
   ./src/tools/setup.cpp
-  ./src/tools/test.cpp
+  ./src/tools/run_unit_tests.cpp
   ./src/utils/euler.test.cpp
   ./src/utils/spherical.cpp
   ./src/utils/spherical.test.cpp

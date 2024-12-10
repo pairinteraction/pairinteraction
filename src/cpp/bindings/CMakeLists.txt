@@ -29,8 +29,8 @@ add_library(
   system/System.py.hpp
   system/System.py.cpp
   binding.cpp
-  test.py.hpp
-  test.py.cpp)
+  run_unit_tests.py.hpp
+  run_unit_tests.py.cpp)
 
 target_include_directories(
   bindings
