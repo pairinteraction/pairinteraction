@@ -45,10 +45,10 @@ set_target_properties(
              CXX_CLANG_TIDY ""
              INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
 
-target_compile_options(backend PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj /MP>)
 target_link_options(backend PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
                     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>)
 
+# Windows-specific post-build command to copy runtime DLLs
 if(WIN32)
   add_custom_command(
     TARGET backend
@@ -60,9 +60,6 @@ endif()
 install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction/backend)
 install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction/backend)
 install(TARGETS backend DESTINATION pairinteraction/backend)
-if(WIN32)
-  install(FILES $<TARGET_RUNTIME_DLLS:backend> DESTINATION pairinteraction/backend)
-endif()
 
 # cmake-format: off
 nanobind_add_stub(
