@@ -13,7 +13,7 @@ COPY --from=build /usr/src/packages/RPMS/x86_64/cpp-httplib-devel-0.12.5-0.x86_6
 RUN zypper -n --gpg-auto-import-keys refresh \
   && zypper -n --gpg-auto-import-keys install --no-recommends \
     gcc12-c++ \
-    cmake curl tar gzip \
+    cmake curl tar gzip git \
     doctest-devel spdlog-devel eigen3-devel fmt-devel openblas-devel \
     nlohmann_json-devel \
     python39 python39-devel \

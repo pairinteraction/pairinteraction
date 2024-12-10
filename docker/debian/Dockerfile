@@ -3,7 +3,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && apt-get install --no-install-recommends -y \
-    cmake build-essential \
+    cmake build-essential git \
     doctest-dev libspdlog-dev libeigen3-dev libfmt-dev \
     libcpp-httplib-dev nlohmann-json3-dev \
     python3 python3-dev \
