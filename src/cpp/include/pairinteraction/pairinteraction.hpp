@@ -19,5 +19,5 @@
 #include "pairinteraction/operator/OperatorAtom.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/tools/run_unit_tests.hpp"
 #include "pairinteraction/tools/setup.hpp"
-#include "pairinteraction/tools/test.hpp"

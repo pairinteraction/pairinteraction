@@ -1,5 +1,5 @@
+#include "pairinteraction/tools/run_unit_tests.hpp"
 #include "pairinteraction/tools/setup.hpp"
-#include "pairinteraction/tools/test.hpp"
 #include "pairinteraction/utils/args.hpp"
 
 #include <filesystem>
@@ -23,6 +23,6 @@ int main(int argc, char **argv) {
         }
     }
 
-    return pairinteraction::test(static_cast<int>(args.size()), args.data(), download_missing, true,
-                                 database_dir);
+    return pairinteraction::run_unit_tests(static_cast<int>(args.size()), args.data(),
+                                           download_missing, true, database_dir);
 }
