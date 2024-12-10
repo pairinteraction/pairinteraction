@@ -22,7 +22,7 @@ template <typename Real>
 std::string KetClassicalLight<Real>::get_label() const {
     std::string label;
     label += fmt::format("{:d}", quantum_number_q);
-    label += fmt::format("_{{{:g} GHz}}", photon_energy);
+    label += fmt::format(",{:g}GHz", photon_energy);
     return label;
 }
 

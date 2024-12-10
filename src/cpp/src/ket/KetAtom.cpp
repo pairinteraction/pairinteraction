@@ -38,47 +38,57 @@ size_t KetAtom<Real>::get_id_in_database() const {
 
 template <typename Real>
 std::string KetAtom<Real>::get_label() const {
-    std::string label;
+    // For the moment, the use of multiple channels is indicated by a negative value of n. When we
+    // have updated the database, we must adapt this.
+    bool is_single_channel = quantum_number_n > 0;
 
-    if (quantum_number_n > 0) {
-        label += fmt::format("{:d} ", quantum_number_n);
-    } else {
-        label += fmt::format("{:.1f} ", quantum_number_nu_exp);
-    }
+    size_t pos = species.find('_');
+    std::string label = (pos != std::string::npos) ? species.substr(0, pos) : species;
+    label[0] = static_cast<char>(std::toupper(label[0]));
 
-    if (quantum_number_s_exp != 0.5) {
-        if (2 * quantum_number_s_exp == std::rintf(2 * quantum_number_s_exp)) {
-            label += fmt::format("^{{{:.0f}}}", 2 * quantum_number_s_exp + 1);
-        } else {
-            label += fmt::format("^{{{:.1f}}}", 2 * quantum_number_s_exp + 1);
+    if (is_single_channel) {
+        if (quantum_number_s_exp == 0) {
+            label += "_singlet";
+        } else if (quantum_number_s_exp == 1) {
+            label += "_triplet";
+        } else if (quantum_number_s_exp != 0.5) {
+            throw std::runtime_error(
+                "Invalid value for quantum number s in the single-channel description.");
         }
     }
 
-    std::vector<std::string> quantum_number_l_labels = {"S", "P", "D", "F", "G", "H"};
-    if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
-        quantum_number_l_exp < quantum_number_l_labels.size()) {
-        label += quantum_number_l_labels[static_cast<size_t>(quantum_number_l_exp)];
-    } else if (quantum_number_l_exp == std::rintf(quantum_number_l_exp)) {
-        label += fmt::format("{:.0f}", quantum_number_l_exp);
+    label += ":";
+
+    if (is_single_channel) {
+        label += fmt::format("{:d},", quantum_number_n);
+        if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
+            quantum_number_l_exp < quantum_number_l_labels.size()) {
+            label += quantum_number_l_labels.at(static_cast<size_t>(quantum_number_l_exp));
+        } else {
+            label += fmt::format("{:.0f}", quantum_number_l_exp);
+        }
+        label += "_";
     } else {
-        label += fmt::format("{:.1f}", quantum_number_l_exp);
+        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},F=", quantum_number_s_exp,
+                             quantum_number_nu_exp, quantum_number_l_exp);
     }
 
     if (this->quantum_number_f == std::rintf(this->quantum_number_f)) {
-        label += fmt::format("_{{{:.0f}}}", this->quantum_number_f);
+        label += fmt::format("{:.0f}", this->quantum_number_f);
     } else if (2 * this->quantum_number_f == std::rintf(2 * this->quantum_number_f)) {
-        label += fmt::format("_{{{:.0f}/2}}", 2 * this->quantum_number_f);
+        label += fmt::format("{:.0f}/2", 2 * this->quantum_number_f);
     } else {
         std::abort(); // can't happen because the quantum number f is validated to be an integer
                       // or half-integer
     }
 
     if (this->quantum_number_m == std::rintf(this->quantum_number_m)) {
-        label += fmt::format(", m={:.0f}", this->quantum_number_m);
+        label += fmt::format(",{:.0f}", this->quantum_number_m);
     } else if (2 * this->quantum_number_m == std::rintf(2 * this->quantum_number_m)) {
-        label += fmt::format(", m={:.0f}/2", 2 * this->quantum_number_m);
+        label += fmt::format(",{:.0f}/2", 2 * this->quantum_number_m);
     } else {
-        label += fmt::format(", m={:.1f}", this->quantum_number_m);
+        std::abort(); // can't happen because the quantum number m is validated to be an integer
+                      // or half-integer
     }
 
     return label;
