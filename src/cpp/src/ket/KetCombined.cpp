@@ -2,6 +2,7 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/enums/Parity.hpp"
+#include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/utils/hash.hpp"
 
 #include <limits>
@@ -11,16 +12,14 @@ namespace pairinteraction {
 template <typename Scalar>
 KetCombined<Scalar>::KetCombined(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
-    std::initializer_list<std::string> atomic_labels,
     std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
     : Ket<real_t>(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
                   calculate_quantum_number_m(atomic_indices, atomic_bases),
                   calculate_parity(atomic_indices, atomic_bases)),
-      atomic_indices(atomic_indices), atomic_labels(atomic_labels), atomic_bases(atomic_bases) {
-    if (atomic_indices.size() != atomic_labels.size() ||
-        atomic_indices.size() != atomic_bases.size()) {
+      atomic_indices(atomic_indices), atomic_bases(atomic_bases) {
+    if (atomic_indices.size() != atomic_bases.size()) {
         throw std::invalid_argument(
-            "The number of atomic indices, atomic labels, and atomic bases must be the same.");
+            "The number of atomic indices, and atomic bases must be the same.");
     }
 }
 
@@ -28,8 +27,11 @@ template <typename Scalar>
 std::string KetCombined<Scalar>::get_label() const {
     std::string label;
     std::string separator;
-    for (const auto &atomic_label : atomic_labels) {
-        label += separator + atomic_label;
+    for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
+        label += separator +
+            atomic_bases[atom_index]
+                ->get_corresponding_ket(atomic_indices[atom_index])
+                ->get_label();
         separator = "; ";
     }
     return label;

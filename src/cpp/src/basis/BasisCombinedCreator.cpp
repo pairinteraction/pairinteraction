@@ -92,14 +92,9 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             assert(!range_energy.is_finite() ||
                    (energy >= range_energy.min() && energy <= range_energy.max()));
 
-            // Get labels for the kets with largest overlap
-            auto label1 = basis1->get_corresponding_ket(idx1)->get_label();
-            auto label2 = basis2->get_corresponding_ket(idx2)->get_label();
-
             // Create a combined state
             auto ket = std::make_shared<ket_t>(
                 typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
-                std::initializer_list<std::string>{label1, label2},
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
                 energy);
 

@@ -28,7 +28,6 @@ class KetCombined : public Ket<typename traits::NumTraits<Scalar>::real_t> {
 
 public:
     KetCombined(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
-                std::initializer_list<std::string> atomic_labels,
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
                 real_t energy);
 
@@ -46,7 +45,6 @@ public:
 
 private:
     std::vector<size_t> atomic_indices;
-    std::vector<std::string> atomic_labels;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases;
     static real_t
     calculate_quantum_number_f(const std::vector<size_t> &indices,
