@@ -13,4 +13,4 @@ RUN apt-get update -qq \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
 
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.cargo/bin/:$PATH"
+ENV PATH="/root/.local/bin/:$PATH"
