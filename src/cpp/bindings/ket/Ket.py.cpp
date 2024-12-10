@@ -1,5 +1,6 @@
 #include "./Ket.py.hpp"
 
+#include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/Ket.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -13,6 +14,7 @@
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/string.h>
+#include <nanobind/stl/vector.h>
 #include <sstream>
 
 namespace nb = nanobind;
@@ -89,6 +91,7 @@ static void declare_ket_combined(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetCombined" + type_name;
     using real_t = typename traits::NumTraits<T>::real_t;
     nb::class_<KetCombined<T>, Ket<real_t>> pyclass(m, pyclass_name.c_str());
+    pyclass.def("get_atomic_states", &KetCombined<T>::get_atomic_states);
 }
 
 void bind_ket(nb::module_ &m) {
