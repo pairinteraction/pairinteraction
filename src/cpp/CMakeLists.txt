@@ -140,6 +140,5 @@ endif()
 
 target_compile_options(
   pairinteraction PUBLIC $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall
-                         -Wextra -Wpedantic> $<$<CXX_COMPILER_ID:MSVC>:/W4>)
-
+                         -Wextra -Wpedantic> $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>)
 target_compile_features(pairinteraction PUBLIC cxx_std_17)
