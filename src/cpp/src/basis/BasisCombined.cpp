@@ -71,7 +71,7 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients2 =
         basis2->get_coefficients().adjoint() * other2->get_coefficients();
 
-    std::vector<Eigen::Triplet<Scalar>> triplets;
+    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 
     // Loop over the rows of the first coefficient matrix
     oneapi::tbb::parallel_for(
@@ -120,7 +120,7 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
         });
 
     // Construct the combined matrix from the triplets
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(this->get_number_of_states(),
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(this->get_number_of_kets(),
                                                         other1->get_number_of_states() *
                                                             other2->get_number_of_states());
     matrix.setFromTriplets(triplets.begin(), triplets.end());

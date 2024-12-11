@@ -4,6 +4,7 @@
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisCombined.hpp"
 #include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
@@ -15,7 +16,7 @@
 #include <doctest/doctest.h>
 
 namespace pairinteraction {
-DOCTEST_TEST_CASE("create a combined basis and check equality of kets") {
+DOCTEST_TEST_CASE("create a combined bases") {
     // Create single-atom system
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<double>()
@@ -24,6 +25,10 @@ DOCTEST_TEST_CASE("create a combined basis and check equality of kets") {
                      .restrict_quantum_number_l(0, 2)
                      .create(database);
     SystemAtom<double> system(basis);
+    system.set_electric_field({0, 0, 1 * 1.9446903811524456e-10});
+
+    DiagonalizerEigen<double> diagonalizer;
+    system.diagonalize(diagonalizer);
 
     // Get energy window for a two-atom basis
     auto ket = KetAtomCreator<double>()
@@ -49,18 +54,34 @@ DOCTEST_TEST_CASE("create a combined basis and check equality of kets") {
                                 .restrict_quantum_number_m(1, 1)
                                 .create();
 
-    // Obtain kets from the two-atom bases and check for equality
-    auto ket1a = combined_basis_a->get_kets()[0];
-    auto ket1b = combined_basis_b->get_kets()[0];
-    auto ket2a = combined_basis_a->get_kets()[1];
-    auto ket2b = combined_basis_b->get_kets()[1];
-    DOCTEST_CHECK(*ket1a == *ket1a);
-    DOCTEST_CHECK(*ket2a == *ket2a);
-    DOCTEST_CHECK(*ket1a != *ket2b);
-    DOCTEST_CHECK(*ket2a != *ket1b);
+    DOCTEST_SUBCASE("check equality of kets") {
+        // Obtain kets from the two-atom bases and check for equality
+        auto ket1a = combined_basis_a->get_kets()[0];
+        auto ket1b = combined_basis_b->get_kets()[0];
+        auto ket2a = combined_basis_a->get_kets()[1];
+        auto ket2b = combined_basis_b->get_kets()[1];
+        DOCTEST_CHECK(*ket1a == *ket1a);
+        DOCTEST_CHECK(*ket2a == *ket2a);
+        DOCTEST_CHECK(*ket1a != *ket2b);
+        DOCTEST_CHECK(*ket2a != *ket1b);
 
-    // Currently, kets from different combined bases are never equal
-    DOCTEST_CHECK(*ket1a != *ket1b);
-    DOCTEST_CHECK(*ket2a != *ket2b);
+        // Currently, kets from different combined bases are never equal
+        DOCTEST_CHECK(*ket1a != *ket1b);
+        DOCTEST_CHECK(*ket2a != *ket2b);
+    }
+
+    DOCTEST_SUBCASE("check overlap") {
+        auto overlaps = combined_basis_a->get_overlaps(ket, ket);
+
+        // The total overlap is less than 1 because of the restricted energy window
+        DOCTEST_CHECK(overlaps.sum() == doctest::Approx(0.9107819201));
+    }
+
+    DOCTEST_SUBCASE("get the atomic states constituting a ket of the combined basis") {
+        auto atomic_states = combined_basis_a->get_kets()[0]->get_atomic_states();
+        DOCTEST_CHECK(atomic_states.size() == 2);
+        DOCTEST_CHECK(atomic_states[0]->get_number_of_states() == 1);
+        DOCTEST_CHECK(atomic_states[0]->get_number_of_kets() == basis->get_number_of_kets());
+    }
 }
 } // namespace pairinteraction
