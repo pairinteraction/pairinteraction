@@ -45,9 +45,6 @@ set_target_properties(
              CXX_CLANG_TIDY ""
              INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
 
-target_link_options(backend PRIVATE $<$<CXX_COMPILER_ID:AppleClang>:-undefined dynamic_lookup>
-                    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wl,--unresolved-symbols=ignore-all>)
-
 # Windows-specific post-build command to copy runtime DLLs
 if(WIN32)
   add_custom_command(
