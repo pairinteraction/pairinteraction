@@ -52,8 +52,8 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>>
 KetCombined<Scalar>::get_atomic_states() const {
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
     atomic_states.reserve(atomic_indices.size());
-    for (size_t state_index : atomic_indices) {
-        atomic_states.push_back(atomic_bases[state_index]);
+    for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
+        atomic_states.push_back(atomic_bases[atom_index]->get_state(atomic_indices[atom_index]));
     }
     return atomic_states;
 }
