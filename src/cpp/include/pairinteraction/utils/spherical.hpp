@@ -21,7 +21,7 @@ template <typename Scalar>
 inline std::array<Scalar, 3>
 convert_to_spherical_basis(const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &field) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     std::array<Scalar, 3> field_spherical{};
     if constexpr (traits::NumTraits<Scalar>::is_complex_v) {

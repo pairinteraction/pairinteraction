@@ -64,7 +64,7 @@ BasisCombined<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> o
         throw std::invalid_argument("The other objects must be expressed using the same kets.");
     }
 
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> coefficients1 =
         basis1->get_coefficients().adjoint() * other1->get_coefficients();

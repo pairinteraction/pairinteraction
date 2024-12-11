@@ -448,7 +448,7 @@ Basis<Derived>::get_indices_of_blocks(const std::vector<TransformationType> &lab
 template <typename Derived>
 void Basis<Derived>::get_sorter_without_checks(const std::vector<TransformationType> &labels,
                                                Sorting &transformation) const {
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     int *perm_begin = transformation.matrix.indices().data();
     int *perm_end = perm_begin + coefficients.matrix.cols();
@@ -530,7 +530,7 @@ template <typename Derived>
 void Basis<Derived>::get_indices_of_blocks_without_checks(
     const std::set<TransformationType> &unique_labels,
     IndicesOfBlocksCreator &blocks_creator) const {
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     auto last_quantum_number_f = state_index_to_quantum_number_f[0];
     auto last_quantum_number_m = state_index_to_quantum_number_m[0];
@@ -605,7 +605,7 @@ template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
     real_t numerical_precision =
-        10 * std::sqrt(coefficients.matrix.rows()) * std::numeric_limits<real_t>::epsilon();
+        100 * std::sqrt(coefficients.matrix.rows()) * std::numeric_limits<real_t>::epsilon();
 
     // If the transformation is a rotation, it should be a rotation and nothing else
     bool is_rotation = false;
