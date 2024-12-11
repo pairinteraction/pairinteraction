@@ -16,6 +16,7 @@
 #include <complex>
 #include <limits>
 #include <memory>
+#include <numeric>
 #include <oneapi/tbb.h>
 #include <spdlog/spdlog.h>
 
