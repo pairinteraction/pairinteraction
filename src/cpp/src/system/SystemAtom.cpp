@@ -40,7 +40,7 @@ template <typename Scalar>
 void SystemAtom<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
 
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     // Construct the unperturbed Hamiltonian
     this->hamiltonian = std::make_unique<OperatorAtom<Scalar>>(basis, OperatorType::ENERGY);

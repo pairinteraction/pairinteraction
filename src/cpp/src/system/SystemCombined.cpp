@@ -55,7 +55,7 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
 
     this->hamiltonian_requires_construction = true;
 
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     if (!traits::NumTraits<Scalar>::is_complex_v && std::abs(vector[1]) > numerical_precision) {
         throw std::invalid_argument(
@@ -398,7 +398,7 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
     const std::shared_ptr<const basis_t> &basis,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
 

@@ -44,7 +44,7 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             "Two SystemAtom must be added before creating the combined basis.");
     }
 
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     // Sort the states, which are eigenstates, by their energy
     auto system1 = systems_atom[0].get();

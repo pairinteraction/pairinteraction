@@ -43,7 +43,7 @@ Scalar calculate_matrix_element(
     std::shared_ptr<const KetAtom<typename traits::NumTraits<Scalar>::real_t>> final_ket,
     const SystemAtom<Scalar> &system, OperatorType type, int q) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    real_t numerical_precision = 10 * std::numeric_limits<real_t>::epsilon();
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
     if (!system.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized.");
