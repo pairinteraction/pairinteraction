@@ -9,7 +9,5 @@ on:
   - cron: '0 0 * * 1' # Every Monday at 00:00
 
 jobs:
-  cpp-backend:
-    uses: ./.github/workflows/cpp-backend.yml
   python-wheel:
     uses: ./.github/workflows/python-wheel.yml
