@@ -92,8 +92,6 @@ Contributor Guide
 References
     :doc:`API Reference <modules>` - Documentation of classes and functions of pairinteraction's Python library.
 
-    :doc:`Config Reference <config>` - Documentation of the configuration file for describing Rydberg systems.
-
 Utility Tools
     :doc:`mqdt` - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 

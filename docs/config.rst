@@ -1,2 +1,0 @@
-The Config File Format
-======================

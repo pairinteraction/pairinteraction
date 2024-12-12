@@ -26,7 +26,6 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.extlinks",
     "nbsphinx",
-    "sphinxcontrib.autodoc_pydantic",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
     "sphinx_autodoc_typehints",
@@ -79,16 +78,6 @@ autodoc_default_options = {
     "imported-members": False,
 }
 autosummary_imported_members = False
-
-
-# -- Options for sphinxcontrib.autodoc_pydantic -------------------------------------------
-autodoc_pydantic_model_show_config_summary = False
-autodoc_pydantic_model_show_validator_summary = False
-autodoc_pydantic_model_show_validator_members = True
-autodoc_pydantic_field_list_validators = True
-autodoc_pydantic_model_summary_list_order = "bysource"
-autodoc_pydantic_model_member_order = "bysource"
-autodoc_pydantic_model_erdantic_figure = True
 
 
 # -- Options for extlinks -------------------------------------------------
