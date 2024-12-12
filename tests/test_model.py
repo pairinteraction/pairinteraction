@@ -4,7 +4,10 @@ import unittest
 from copy import deepcopy
 from pathlib import Path
 
-from pairinteraction.model import ModelSimulation
+try:
+    from pairinteraction.model import ModelSimulation
+except ModuleNotFoundError as err:
+    raise unittest.SkipTest("Skip simulation tests") from err
 
 directory = Path(__file__).parent
 models_directory = directory / "data" / "models"

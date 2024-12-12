@@ -50,7 +50,6 @@ dependencies = [
   "typing_extensions >= 4.7",
   "numpy >= 1.24",
   "scipy >= 1.10",
-  "pydantic  >=  2.3",
   "pint >= 0.21.1",
 ]
 
@@ -65,7 +64,6 @@ doc = [
   "nbsphinx >= 0.9",
   "nbconvert >= 7.8",
   "jupyter >= 1.1",
-  "autodoc_pydantic[erdantic] >= 2.0",
   "sphinx_autodoc_typehints >= 1.24",
   "sphinx-autobuild >= 2021.3",
 ]

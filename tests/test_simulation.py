@@ -4,8 +4,11 @@ from pathlib import Path
 
 import numpy as np
 
-from pairinteraction.model import ModelSimulation
-from pairinteraction.simulation import Simulation
+try:
+    from pairinteraction.model import ModelSimulation
+    from pairinteraction.simulation import Simulation
+except ModuleNotFoundError as err:
+    raise unittest.SkipTest("Skip simulation tests") from err
 
 directory = Path(__file__).parent
 models_directory = directory / "data" / "models"
