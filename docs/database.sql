@@ -33,23 +33,23 @@ BEGIN TRANSACTION;
 -- of the most dominant channel.
 CREATE TABLE states (
     id INTEGER PRIMARY KEY,
-    energy REAL NOT NULL, -- the energy of the state, E=I-Ry/nu^2
+    energy REAL NOT NULL, -- the energy of the state: E=I-Ry/nu^2
     parity INTEGER NOT NULL, -- the parity of the state
-    n INTEGER NOT NULL, -- the principal quantum number of the state
-    nu REAL NOT NULL, -- the effective principal quantum number of the state
-    f REAL NOT NULL, -- the total momentum quantum number
-    exp_nui REAL NOT NULL, -- the expectation value of the effective principal quantum numbers of the channels
-    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number of all valence electrons
-    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number all valence electrons
-    exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number of all valence electrons
-    exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number of the Rydberg electron
-    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number the Rydberg electron
-    std_nui REAL NOT NULL, -- the standard deviation of the effective principal quantum numbers of the channels
-    std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number of all valence electrons
-    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number of all valence electrons
-    std_s REAL NOT NULL, -- the standard deviation of the total spin quantum number of all valence electrons
-    std_l_ryd REAL NOT NULL, -- the standard deviation of the orbital quantum number of the Rydberg electron
-    std_j_ryd REAL NOT NULL, -- the standard deviation of the total angular quantum number of the Rydberg electron
+    n INTEGER NOT NULL, -- the principal quantum number n
+    nu REAL NOT NULL, -- the effective principal quantum number nu
+    f REAL NOT NULL, -- the total momentum quantum number f (int or half-int)
+    exp_nui REAL NOT NULL, -- the expectation value of the effective principal quantum numbers nu_i of the channels
+    exp_l REAL NOT NULL, -- the expectation value of the orbital quantum number l of all valence electrons
+    exp_j REAL NOT NULL, -- the expectation value of the total angular quantum number j of all valence electrons
+    exp_s REAL NOT NULL, -- the expectation value of the total spin quantum number s of all valence electrons
+    exp_l_ryd REAL NOT NULL, -- the expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron
+    exp_j_ryd REAL NOT NULL, -- the expectation value of the total angular quantum number j_{Ryd} the Rydberg electron
+    std_nui REAL NOT NULL, -- the standard deviation of the effective principal quantum numbers nu_i of the channels
+    std_l REAL NOT NULL, -- the standard deviation of the orbital quantum number l of all valence electrons
+    std_j REAL NOT NULL, -- the standard deviation of the total angular quantum number j of all valence electrons
+    std_s REAL NOT NULL, -- the standard deviation of the total spin quantum number s of all valence electrons
+    std_l_ryd REAL NOT NULL, -- the standard deviation of the orbital quantum number l_{Ryd} of the Rydberg electron
+    std_j_ryd REAL NOT NULL, -- the standard deviation of the total angular quantum number j_{Ryd} of the Rydberg electron
     is_j_total_momentum BOOLEAN NOT NULL, -- whether j is the total momentum quantum number, otherwise f is used for printing the state
     is_calculated_with_mqdt BOOLEAN NOT NULL, -- whether multi-channel quantum defect theory was used
     underspecified_channel_contribution REAL NOT NULL -- the contribution of channels whose quantum numbers are not exactly known

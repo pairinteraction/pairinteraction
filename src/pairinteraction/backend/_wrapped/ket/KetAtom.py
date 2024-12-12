@@ -35,6 +35,46 @@ class KetAtomBase(KetBase):
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
     ) -> None:
+        """A single atomic canonical basis state defined by its species and quantum numbers.
+
+        Each KetAtom object uniquely represents a single atomic basis state.
+        When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
+        which uniquely define a single atomic basis state (this always includes providing a magnetic quantum number m).
+
+        SQDT (Single Channel Quantum Defect Theory) for one valence electron (alkali atoms):
+            The quantum numbers n (int), l (int), j (half-int) and m (half-int)
+            should be used to define the desired atomic basis state.
+            All other quantum numbers are trivially derived from these:
+            s = 1/2, f = j (we neglect hyperfine interaction for SQDT),
+            nu = n - delta, l_ryd = l, j_ryd = j.
+
+        SQDT (Single Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+            The quantum numbers n (int), l_ryd (int), j (int) and m (int)
+            should be used to define the desired atomic basis state.
+            The spin quantum number s is taken from the species label,
+            which must end either with "_singlet" (s=0) or "_triplet" (s=1).
+            Again we neglect hyperfine interaction, thus f = j. And nu = n - delta.
+            All other quantum numbers are not necessarily eigenvalues anymore and are given as expectation values.
+
+        MQDT (Multi Channel Quantum Defect Theory) for two valence electrons (earth-alkaline atoms):
+            The quantum numbers nu (float), f (int or half-int) and m (int or half-int) are still good quantum numbers.
+            All other quantum numbers (like l, s, j, l_ryd, j_ryd) are not necessarily eigenvalues anymore.
+            You can still provide them to specify the atomic basis state,
+            whose expectation value is closest to the provided value.
+
+        Examples:
+            >>> import pairinteraction.backend.float as pi
+            >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
+            ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
+            >>> ket_sqdt.label
+            'Rb:60,S_1/2,1/2'
+            >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
+            >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
+            ('Yb174_mqdt', 60.049, 1.0, 1.0)
+            >>> ket_mqdt.label
+            'Yb174:S=0.4,nu=60.0,L=1.0,J=1,1'
+        """
         creator = self._cpp_creator()
         creator.set_species(species)
         if energy is not None:
@@ -68,38 +108,47 @@ class KetAtomBase(KetBase):
 
     @property
     def species(self) -> str:
+        """The atomic species."""
         return self._cpp.get_species()
 
     @property
     def n(self) -> int:
+        """The principal quantum number n."""
         return self._cpp.get_quantum_number_n()
 
     @property
     def nu(self) -> float:
+        """The effective principal quantum number nu."""
         return self._cpp.get_quantum_number_nu()
 
     @property
     def nui(self) -> float:
+        """The expectation value of the effective principal quantum numbers nu_i of the channels."""
         return self._cpp.get_quantum_number_nui()
 
     @property
     def l(self) -> float:  # noqa: E743
+        """The expectation value of the orbital quantum number l of all valence electrons."""
         return self._cpp.get_quantum_number_l()
 
     @property
     def s(self) -> float:
+        """The expectation value of the total spin quantum number s of all valence electrons."""
         return self._cpp.get_quantum_number_s()
 
     @property
     def j(self) -> float:
+        """The expectation value of the total angular quantum number j of all valence electrons."""
         return self._cpp.get_quantum_number_j()
 
     @property
     def l_ryd(self) -> float:  # noqa: E743
+        """The expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron."""
         return self._cpp.get_quantum_number_l_ryd()
 
     @property
     def j_ryd(self) -> float:
+        """The expectation value of the total angular quantum number j_{Ryd} the Rydberg electron."""
         return self._cpp.get_quantum_number_j_ryd()
 
 

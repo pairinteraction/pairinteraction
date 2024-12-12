@@ -15,6 +15,19 @@ UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)C
 
 
 class KetBase(ABC):
+    """Base class for all ket objects.
+
+    The ket objects are meant to represent mathematically the canonical basis states, with respect to which
+    the coefficient matrix of the basis objects are defined.
+    For single atoms we simply choose the atomic states defined by their quantum numbers.
+    For pair systems, we choose the product states of the single atom eigenstates, thus for different pair systems
+    the KetPair objects are not necessarily orthogonal anymore.
+
+    All ket objects share a few common attributes and methods, that are defined in this base class.
+    E.g. each ket has a total momentum quantum number f, a magnetic quantum number m, a parity, an energy,
+    as well as a label that represents the ket.
+    """
+
     _cpp: UnionCPPKet
     _cpp_creator: ClassVar[UnionTypeCPPKetCreator]
 
@@ -32,18 +45,22 @@ class KetBase(ABC):
 
     @property
     def label(self) -> str:
+        """Label representing the ket."""
         return self._cpp.get_label()
 
     @property
     def m(self) -> float:
+        """The magnetic quantum number m (int or half-int)."""
         return self._cpp.get_quantum_number_m()
 
     @property
     def f(self) -> float:
+        """The total momentum quantum number f (int or half-int)."""
         return self._cpp.get_quantum_number_f()
 
     @property
     def parity(self) -> Parity:
+        """The parity of the ket."""
         parity_cpp = self._cpp.get_parity()
         parity = parity_cpp.name
         if parity in get_args(Parity):
@@ -52,6 +69,7 @@ class KetBase(ABC):
 
     @property
     def energy(self):
+        """The energy of the ket: E=I-Ry/nu^2"""
         return self.get_energy()
 
     @overload
