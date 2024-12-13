@@ -1,10 +1,8 @@
 {{ name | escape | underline }}
+Full {{ objtype }} path: {{ fullname | escape }}
 
 .. inheritance-diagram:: {{ fullname }}
     :parts: 1
-
-- full name: {{ fullname | escape }}
-- type: {{ objtype }}
 
 .. currentmodule:: {{ module }}
 
@@ -31,4 +29,5 @@
    :members:
    :member-order: bysource
    :inherited-members:
-   :show-inheritance:
+   :undoc-members:
+   :class-doc-from: init

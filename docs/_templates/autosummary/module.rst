@@ -1,4 +1,5 @@
 {{ name | escape | underline }}
+Full {{ objtype }} path: {{ fullname | escape }}
 
 {% set pydantic_models = [] %}
 {% for item in members %}
@@ -15,9 +16,6 @@
    {% endif %}
 {%- endfor %}
 {% set classes = filtered_classes %}
-
-- full name: {{ fullname | escape }}
-- type: {{ objtype }}
 
 .. currentmodule:: {{ fullname }}
 
@@ -90,4 +88,3 @@
 .. rubric:: Module description
 
 .. automodule:: {{ fullname }}
-   :show-inheritance:
