@@ -70,13 +70,8 @@ nbsphinx_prolog = """
 
 
 # -- Options for autodoc and autosummary -------------------------------------------
-autoclass_content = "init"
-autodoc_default_options = {
-    "private-members": False,
-    "inherited-members": False,
-    "imported-members": False,
-}
-autosummary_imported_members = False
+autoclass_content = "both"
+autosummary_ignore_module_all = False
 
 
 # -- Options for extlinks -------------------------------------------------

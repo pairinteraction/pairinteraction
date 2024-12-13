@@ -43,8 +43,8 @@
 {% if classes %}
 .. rubric:: {{ _('Classes') }}
 
-.. inheritance-diagram:: {{ fullname }}
-    :parts: 1
+.. .. inheritance-diagram:: {{ fullname }}
+..     :parts: 1
 
 .. autosummary::
    :toctree: .
