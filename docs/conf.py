@@ -16,8 +16,6 @@ language = "en"
 
 
 # -- General configuration ---------------------------------------------------
-# needs_sphinx = '1.0'
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
@@ -69,9 +67,14 @@ nbsphinx_prolog = """
 """
 
 
-# -- Options for autodoc and autosummary -------------------------------------------
-autoclass_content = "both"
+# -- Options forautosummary -------------------------------------------
 autosummary_ignore_module_all = False
+
+
+# -- Options for autodoc -------------------------------------------
+autodoc_class_signature = "mixed"  # combine class and __init__ doc
+autodoc_typehints = "both"
+autodoc_type_aliases = {}  # make type aliases nicer
 
 
 # -- Options for extlinks -------------------------------------------------
