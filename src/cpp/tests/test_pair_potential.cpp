@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    thread_local pairinteraction::Database database(download_missing, true, database_dir);
+    pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create and diagonalize systems for two atoms
     auto basis = pairinteraction::BasisAtomCreator<double>()

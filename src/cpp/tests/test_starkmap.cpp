@@ -26,7 +26,7 @@ int main(int argc, char **argv) {
         }
     }
 
-    thread_local pairinteraction::Database database(download_missing, true, database_dir);
+    pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
     auto ket = pairinteraction::KetAtomCreator<double>()
