@@ -71,6 +71,7 @@ doc = [
 ]
 test = [
   "pytest >= 8.0",
+  "pytest-env >= 1.1.5",
   "pytest-qt >= 4.2",
   "nbmake >= 1.3",
   "pairinteraction-next[gui]",
@@ -79,6 +80,9 @@ test = [
 mkl = [
   "mkl == 2025.0",
 ]
+
+[tool.uv]
+dev-dependencies = ["pairinteraction-next[doc,test]"]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
@@ -109,7 +113,6 @@ build = [  # for python >= 3.12 only one stable abi wheel is built, which is the
 ]
 build-frontend = "build[uv]"
 build-verbosity = 1
-environment = {QT_QPA_PLATFORM="offscreen"}
 test-extras = ["test"]
 test-command = [
   "pytest -v {project}/tests {project}/docs/examples_python",  # keep this up to date with tool.pytest.ini_options.testpaths
@@ -146,6 +149,9 @@ testpaths = [  # keep this up to date with tool.cibuildwheel.test-command
 addopts = [
     "--import-mode=importlib",
     "--nbmake",
+]
+env = [
+    "QT_QPA_PLATFORM=offscreen",
 ]
 
 [tool.sonar]
