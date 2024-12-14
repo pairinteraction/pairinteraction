@@ -18,6 +18,7 @@
 #include <future>
 #include <httplib.h>
 #include <nlohmann/json.hpp>
+#include <oneapi/tbb.h>
 #include <regex>
 #include <spdlog/spdlog.h>
 #include <system_error>
@@ -1071,9 +1072,10 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
 }
 
 template <typename Real>
-std::unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
+oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
 Database::get_matrix_elements_cache() {
-    thread_local static std::unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>>
+    static oneapi::tbb::concurrent_unordered_map<std::string,
+                                                 Eigen::SparseMatrix<Real, Eigen::RowMajor>>
         matrix_elements_cache;
     return matrix_elements_cache;
 }
@@ -1195,8 +1197,7 @@ Database &Database::get_global_instance(bool download_missing, bool wigner_in_me
 
 Database &Database::get_global_instance_without_checks(bool download_missing, bool wigner_in_memory,
                                                        std::filesystem::path database_dir) {
-    thread_local static Database database(download_missing, wigner_in_memory,
-                                          std::move(database_dir));
+    static Database database(download_missing, wigner_in_memory, std::move(database_dir));
     return database;
 }
 

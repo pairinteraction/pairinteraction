@@ -129,7 +129,8 @@ target_compile_definitions(
          $<$<AND:$<TARGET_EXISTS:LAPACKE::LAPACKE>,$<NOT:$<TARGET_EXISTS:MKL::MKL>>>:WITH_LAPACKE
          EIGEN_USE_BLAS
          EIGEN_USE_LAPACKE>
-         SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+         SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG
+         $<$<PLATFORM_ID:Windows>:WIN32_LEAN_AND_MEAN>)
 
 if(TARGET MKL::MKL)
   target_compile_definitions(pairinteraction PUBLIC MKL_Complex8=std::complex<float> MKL_Complex16=std::complex<double>)

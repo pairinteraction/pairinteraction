@@ -7,6 +7,7 @@
 #include <complex>
 #include <filesystem>
 #include <memory>
+#include <oneapi/tbb.h>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -104,7 +105,7 @@ private:
     static const std::filesystem::path default_database_dir;
 
     template <typename Real>
-    std::unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
+    oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
     get_matrix_elements_cache();
 
     static Database &get_global_instance_without_checks(bool download_missing,
