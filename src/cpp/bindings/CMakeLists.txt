@@ -33,9 +33,11 @@ nanobind_add_module(
   operator/Operator.py.cpp
   system/System.py.hpp
   system/System.py.cpp
+  tools/run_unit_tests.py.hpp
+  tools/run_unit_tests.py.cpp
   binding.cpp
-  run_unit_tests.py.hpp
-  run_unit_tests.py.cpp)
+  version.py.hpp
+  version.py.cpp)
 
 target_link_libraries(backend PRIVATE pairinteraction $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>)
 
