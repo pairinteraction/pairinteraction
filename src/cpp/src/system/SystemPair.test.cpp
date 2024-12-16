@@ -18,7 +18,7 @@
 #include <fmt/ranges.h>
 
 namespace pairinteraction {
-DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
+DOCTEST_TEST_CASE("construct a pair Hamiltonian") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
 
@@ -36,15 +36,15 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
     system2.set_electric_field({0, 0, 0.00000002});
     diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
-    // Construct and diagonalize the combined system
-    auto basis_combined = BasisPairCreator<double>().add(system1).add(system2).create();
+    // Construct and diagonalize the system_pair
+    auto basis_pair = BasisPairCreator<double>().add(system1).add(system2).create();
 
-    auto system_combined = SystemPair<double>(basis_combined);
-    system_combined.set_distance(0.00000001);
-    system_combined.diagonalize(diagonalizer);
+    auto system_pair = SystemPair<double>(basis_pair);
+    system_pair.set_distance(0.00000001);
+    system_pair.diagonalize(diagonalizer);
 
     // Print the largest and smallest eigenvalues
-    auto eigenvalues = system_combined.get_eigenvalues();
+    auto eigenvalues = system_pair.get_eigenvalues();
     DOCTEST_MESSAGE("Lowest energy: ", eigenvalues.minCoeff());
     DOCTEST_MESSAGE("Highest energy: ", eigenvalues.maxCoeff());
 }

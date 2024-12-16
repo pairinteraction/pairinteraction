@@ -49,15 +49,15 @@ def test_electric_dipole(database_dir: str, download_missing: bool) -> None:
     distance = ureg.Quantity(10, "micrometer")
     basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c], database=database)
     system = pi.SystemAtom(basis)
-    basis_combined = pi.BasisPair([system, system])
-    system_combined = pi.SystemPair(basis_combined)
-    system_combined.set_order(3)
-    system_combined.set_distance(distance)
+    basis_pair = pi.BasisPair([system, system])
+    system_pair = pi.SystemPair(basis_pair)
+    system_pair.set_order(3)
+    system_pair.set_distance(distance)
     system.get_hamiltonian()
 
-    ket_ab_idx = np.argmax(basis_combined.get_overlaps_with_product_state(ket_a, ket_b))
-    ket_cc_idx = np.argmax(basis_combined.get_overlaps_with_product_state(ket_c, ket_c))
-    H = system_combined.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
+    ket_ab_idx = np.argmax(basis_pair.get_overlaps_with_product_state(ket_a, ket_b))
+    ket_cc_idx = np.argmax(basis_pair.get_overlaps_with_product_state(ket_c, ket_c))
+    H = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
 
     assert np.isclose(-2 * C3.magnitude, H[ket_ab_idx, ket_cc_idx])
     assert np.isclose(-2 * C3.magnitude, 5.73507543166919)

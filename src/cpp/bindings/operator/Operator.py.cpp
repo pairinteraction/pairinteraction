@@ -52,7 +52,7 @@ static void declare_operator_atom(nb::module_ &m, std::string const &type_name) 
 }
 
 template <typename T>
-static void declare_operator_combined(nb::module_ &m, std::string const &type_name) {
+static void declare_operator_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "OperatorPair" + type_name;
     using basis_t = typename OperatorPair<T>::basis_t;
     nb::class_<OperatorPair<T>, Operator<OperatorPair<T>>> pyclass(m, pyclass_name.c_str());
@@ -74,8 +74,8 @@ void bind_operator(nb::module_ &m) {
     declare_operator<OperatorPair<double>>(m, "OperatorPairDouble");
     declare_operator<OperatorPair<std::complex<float>>>(m, "OperatorPairComplexFloat");
     declare_operator<OperatorPair<std::complex<double>>>(m, "OperatorPairComplexDouble");
-    declare_operator_combined<float>(m, "Float");
-    declare_operator_combined<double>(m, "Double");
-    declare_operator_combined<std::complex<float>>(m, "ComplexFloat");
-    declare_operator_combined<std::complex<double>>(m, "ComplexDouble");
+    declare_operator_pair<float>(m, "Float");
+    declare_operator_pair<double>(m, "Double");
+    declare_operator_pair<std::complex<float>>(m, "ComplexFloat");
+    declare_operator_pair<std::complex<double>>(m, "ComplexDouble");
 }

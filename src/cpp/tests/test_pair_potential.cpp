@@ -48,57 +48,55 @@ int main(int argc, char **argv) {
     double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
     double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
 
-    auto combined_basis = pairinteraction::BasisPairCreator<double>()
-                              .add(system)
-                              .add(system)
-                              .restrict_energy(min_energy, max_energy)
-                              .restrict_quantum_number_m(1, 1)
-                              .create();
-    SPDLOG_INFO("Number of two-atom basis states: {}", combined_basis->get_number_of_states());
+    auto basis_pair = pairinteraction::BasisPairCreator<double>()
+                          .add(system)
+                          .add(system)
+                          .restrict_energy(min_energy, max_energy)
+                          .restrict_quantum_number_m(1, 1)
+                          .create();
+    SPDLOG_INFO("Number of two-atom basis states: {}", basis_pair->get_number_of_states());
 
-    std::vector<pairinteraction::SystemPair<double>> combined_systems;
-    combined_systems.reserve(5);
+    std::vector<pairinteraction::SystemPair<double>> system_pairs;
+    system_pairs.reserve(5);
     for (int i = 1; i < 6; ++i) {
-        pairinteraction::SystemPair<double> system(combined_basis);
+        pairinteraction::SystemPair<double> system(basis_pair);
         system.set_distance(i * 1e-6 / 5.29177210544e-11);
-        combined_systems.push_back(std::move(system));
+        system_pairs.push_back(std::move(system));
     }
 
     // Diagonalize the systems in parallel
     pairinteraction::DiagonalizerEigen<double> diagonalizer;
-    pairinteraction::diagonalize(combined_systems, diagonalizer);
+    pairinteraction::diagonalize(system_pairs, diagonalizer);
 
     // Sort by the eigenvalues
-    for (auto &system : combined_systems) {
+    for (auto &system : system_pairs) {
         auto sorter = system.get_sorter({pairinteraction::TransformationType::SORT_BY_ENERGY});
         system.transform(sorter);
     }
 
     // Extract results
     std::vector<std::string> kets;
-    Eigen::MatrixX<double> eigenvalues(combined_systems.size(),
-                                       combined_basis->get_number_of_states());
-    Eigen::MatrixX<double> eigenstates(combined_systems.size(),
-                                       combined_basis->get_number_of_states() *
-                                           combined_basis->get_number_of_states());
-    Eigen::MatrixX<double> overlaps(combined_systems.size(),
-                                    combined_basis->get_number_of_states());
+    Eigen::MatrixX<double> eigenvalues(system_pairs.size(), basis_pair->get_number_of_states());
+    Eigen::MatrixX<double> eigenstates(system_pairs.size(),
+                                       basis_pair->get_number_of_states() *
+                                           basis_pair->get_number_of_states());
+    Eigen::MatrixX<double> overlaps(system_pairs.size(), basis_pair->get_number_of_states());
 
     kets.reserve(basis->get_number_of_states());
-    for (const auto &ket : *combined_basis) {
+    for (const auto &ket : *basis_pair) {
         std::stringstream ss;
         ss << *ket;
         kets.push_back(ss.str());
     }
 
-    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(combined_systems.size()); ++i) {
-        eigenvalues.row(i) = combined_systems[i].get_eigenvalues() * 6579683.920501762;
+    for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
+        eigenvalues.row(i) = system_pairs[i].get_eigenvalues() * 6579683.920501762;
 
         Eigen::MatrixX<double> tmp =
-            combined_systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
+            system_pairs[i].get_eigenbasis()->get_coefficients().toDense().transpose();
         eigenstates.row(i) = Eigen::Map<Eigen::VectorXd>(tmp.data(), tmp.size());
 
-        overlaps.row(i) = combined_systems[i].get_eigenbasis()->get_overlaps(ket, ket);
+        overlaps.row(i) = system_pairs[i].get_eigenbasis()->get_overlaps(ket, ket);
     }
 
     // Compare with reference data
@@ -116,7 +114,7 @@ int main(int argc, char **argv) {
         SPDLOG_ERROR("Could not open reference kets file");
         success = false;
     } else {
-        reference_kets.reserve(combined_basis->get_number_of_states());
+        reference_kets.reserve(basis_pair->get_number_of_states());
         while (std::getline(stream, line)) {
             reference_kets.push_back(line);
         }
@@ -139,16 +137,15 @@ int main(int argc, char **argv) {
         data_dir / "reference_pair_potential/eigenvalues.txt";
     SPDLOG_INFO("Reference eigenvalues: {}", reference_eigenvalues_file.string());
 
-    Eigen::MatrixXd reference_eigenvalues(combined_systems.size(),
-                                          combined_basis->get_number_of_states());
+    Eigen::MatrixXd reference_eigenvalues(system_pairs.size(), basis_pair->get_number_of_states());
     stream = std::ifstream(reference_eigenvalues_file);
     if (!stream) {
         SPDLOG_ERROR("Could not open reference eigenvalues file");
         success = false;
     } else {
-        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(combined_systems.size()); ++i) {
+        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
             for (Eigen::Index j = 0;
-                 j < static_cast<Eigen::Index>(combined_basis->get_number_of_states()); ++j) {
+                 j < static_cast<Eigen::Index>(basis_pair->get_number_of_states()); ++j) {
                 stream >> reference_eigenvalues(i, j);
             }
         }
@@ -169,16 +166,15 @@ int main(int argc, char **argv) {
         data_dir / "reference_pair_potential/overlaps.txt";
     SPDLOG_INFO("Reference overlaps: {}", reference_overlaps_file.string());
 
-    Eigen::MatrixXd reference_overlaps(combined_systems.size(),
-                                       combined_basis->get_number_of_states());
+    Eigen::MatrixXd reference_overlaps(system_pairs.size(), basis_pair->get_number_of_states());
     stream = std::ifstream(reference_overlaps_file);
     if (!stream) {
         SPDLOG_ERROR("Could not open reference overlap file");
         success = false;
     } else {
-        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(combined_systems.size()); ++i) {
+        for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
             for (Eigen::Index j = 0;
-                 j < static_cast<Eigen::Index>(combined_basis->get_number_of_states()); ++j) {
+                 j < static_cast<Eigen::Index>(basis_pair->get_number_of_states()); ++j) {
                 stream >> reference_overlaps(i, j);
             }
         }

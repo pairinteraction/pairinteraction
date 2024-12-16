@@ -20,25 +20,25 @@ def test_energy_range(database_dir: str, download_missing: bool) -> None:
     system = pi.SystemAtom(basis)
 
     # Create two-atom basis
-    combined_basis = pi.BasisPair(
+    basis_pair = pi.BasisPair(
         [system, system], energy=(pair_energy - 10, pair_energy + 10), energy_unit="GHz", m=(1, 1)
     )
 
     # Diagonalize the systems for different distances in parallel and get all eigenvalues
-    combined_systems = [pi.SystemPair(combined_basis).set_distance(d, unit="micrometer") for d in distances]
-    pi.diagonalize(combined_systems, diagonalizer="Eigen", sort_by_energy=True)
-    eigenvalues_all = [system.get_eigenvalues(unit="GHz") for system in combined_systems]
+    system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
+    pi.diagonalize(system_pairs, diagonalizer="Eigen", sort_by_energy=True)
+    eigenvalues_all = [system.get_eigenvalues(unit="GHz") for system in system_pairs]
 
     # Diagonalize the systems for different distances in parallel and get only the eigenvalues in an energy range
-    combined_systems = [pi.SystemPair(combined_basis).set_distance(d, unit="micrometer") for d in distances]
+    system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
     pi.diagonalize(
-        combined_systems,
+        system_pairs,
         diagonalizer="Eigen",
         sort_by_energy=True,
         energy_range=(pair_energy - 5, pair_energy + 5),
         energy_unit="GHz",
     )
-    eigenvalues_restricted = [system.get_eigenvalues(unit="GHz") for system in combined_systems]
+    eigenvalues_restricted = [system.get_eigenvalues(unit="GHz") for system in system_pairs]
 
     # Check the result
     eigenvalues_all_restricted = [

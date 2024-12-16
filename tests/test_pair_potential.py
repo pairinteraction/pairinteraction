@@ -30,27 +30,25 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
 
-    combined_basis = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
-    print(f"Number of two-atom basis states: {combined_basis.number_of_states}")
+    basis_pair = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    print(f"Number of two-atom basis states: {basis_pair.number_of_states}")
 
     distances = np.linspace(1, 5, 5)
-    combined_systems = [pi.SystemPair(combined_basis).set_distance(d, unit="micrometer") for d in distances]
+    system_pairs = [pi.SystemPair(basis_pair).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
-    pi.diagonalize(combined_systems, diagonalizer="Eigen", sort_by_energy=True)
+    pi.diagonalize(system_pairs, diagonalizer="Eigen", sort_by_energy=True)
 
     # Get the overlap with |ket, ket>
-    overlaps = np.array(
-        [system.get_eigenbasis().get_overlaps_with_product_state(ket, ket) for system in combined_systems]
-    )
+    overlaps = np.array([system.get_eigenbasis().get_overlaps_with_product_state(ket, ket) for system in system_pairs])
 
     # Ensure that the overlaps sum up to one
     np.testing.assert_allclose(np.sum(overlaps, axis=1), np.ones(5))
 
     # Compare to reference data
-    kets = [str(ket) for ket in combined_basis.kets]
-    eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in combined_systems])
-    eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in combined_systems])
+    kets = [str(ket) for ket in basis_pair.kets]
+    eigenvalues = np.array([system.get_eigenvalues(unit="GHz") for system in system_pairs])
+    eigenstates = np.array([system.get_eigenbasis().coefficients.todense().A1 for system in system_pairs])
 
     if generate_reference:
         reference_kets_file.parent.mkdir(parents=True, exist_ok=True)

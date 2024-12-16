@@ -124,7 +124,7 @@ static void declare_basis_classical_light_creator(nb::module_ &m, std::string co
 }
 
 template <typename T>
-static void declare_basis_combined(nb::module_ &m, std::string const &type_name) {
+static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPair" + type_name;
     nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass
@@ -147,7 +147,7 @@ static void declare_basis_combined(nb::module_ &m, std::string const &type_name)
 }
 
 template <typename T>
-static void declare_basis_combined_creator(nb::module_ &m, std::string const &type_name) {
+static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "BasisPairCreator" + type_name;
     nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
@@ -189,12 +189,12 @@ void bind_basis(nb::module_ &m) {
     declare_basis<BasisPair<double>>(m, "BasisPairDouble");
     declare_basis<BasisPair<std::complex<float>>>(m, "BasisPairComplexFloat");
     declare_basis<BasisPair<std::complex<double>>>(m, "BasisPairComplexDouble");
-    declare_basis_combined<float>(m, "Float");
-    declare_basis_combined<double>(m, "Double");
-    declare_basis_combined<std::complex<float>>(m, "ComplexFloat");
-    declare_basis_combined<std::complex<double>>(m, "ComplexDouble");
-    declare_basis_combined_creator<float>(m, "Float");
-    declare_basis_combined_creator<double>(m, "Double");
-    declare_basis_combined_creator<std::complex<float>>(m, "ComplexFloat");
-    declare_basis_combined_creator<std::complex<double>>(m, "ComplexDouble");
+    declare_basis_pair<float>(m, "Float");
+    declare_basis_pair<double>(m, "Double");
+    declare_basis_pair<std::complex<float>>(m, "ComplexFloat");
+    declare_basis_pair<std::complex<double>>(m, "ComplexDouble");
+    declare_basis_pair_creator<float>(m, "Float");
+    declare_basis_pair_creator<double>(m, "Double");
+    declare_basis_pair_creator<std::complex<float>>(m, "ComplexFloat");
+    declare_basis_pair_creator<std::complex<double>>(m, "ComplexDouble");
 }

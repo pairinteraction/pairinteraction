@@ -87,7 +87,7 @@ static void declare_ket_classical_light_creator(nb::module_ &m, std::string cons
 }
 
 template <typename T>
-static void declare_ket_combined(nb::module_ &m, std::string const &type_name) {
+static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "KetPair" + type_name;
     using real_t = typename traits::NumTraits<T>::real_t;
     nb::class_<KetPair<T>, Ket<real_t>> pyclass(m, pyclass_name.c_str());
@@ -105,8 +105,8 @@ void bind_ket(nb::module_ &m) {
     declare_ket_classical_light<double>(m, "Double");
     declare_ket_classical_light_creator<float>(m, "Float");
     declare_ket_classical_light_creator<double>(m, "Double");
-    declare_ket_combined<float>(m, "Float");
-    declare_ket_combined<double>(m, "Double");
-    declare_ket_combined<std::complex<float>>(m, "ComplexFloat");
-    declare_ket_combined<std::complex<double>>(m, "ComplexDouble");
+    declare_ket_pair<float>(m, "Float");
+    declare_ket_pair<double>(m, "Double");
+    declare_ket_pair<std::complex<float>>(m, "ComplexFloat");
+    declare_ket_pair<std::complex<double>>(m, "ComplexDouble");
 }

@@ -47,8 +47,7 @@ BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_product_of_parities
 template <typename Scalar>
 std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     if (systems_atom.size() != 2) {
-        throw std::invalid_argument(
-            "Two SystemAtom must be added before creating the combined basis.");
+        throw std::invalid_argument("Two SystemAtom must be added before creating the BasisPair.");
     }
 
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
@@ -59,7 +58,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
     system1.transform(system1.get_sorter({TransformationType::SORT_BY_ENERGY}));
     system2.transform(system2.get_sorter({TransformationType::SORT_BY_ENERGY}));
 
-    // Construct the canonical basis that contains all combined states with allowed energies and
+    // Construct the canonical basis that contains all KetPair objects with allowed energies and
     // quantum numbers
     auto basis1 = system1.get_basis();
     auto basis2 = system2.get_basis();
@@ -108,7 +107,7 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                 }
             }
 
-            // Create a combined state
+            // Create a KetPair object
             auto ket = std::make_shared<ket_t>(
                 typename ket_t::Private(), std::initializer_list<size_t>{idx1, idx2},
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>>{basis1, basis2},
@@ -128,10 +127,10 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
                     "The quantum number m must not be restricted because it is not well-defined.");
             }
 
-            // Store the combined state as a ket
+            // Store the KetPair object as a ket
             kets.emplace_back(std::move(ket));
 
-            // Store the ket index of the combined state
+            // Store the ket index
             state_indices_to_ket_index.emplace(std::vector<size_t>{idx1, idx2}, ket_index++);
         }
     }
