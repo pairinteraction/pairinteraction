@@ -5,7 +5,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/sparse.h>
@@ -93,8 +93,8 @@ void bind_diagonalizer(nb::module_ &m) {
     declare_diagonalize<SystemAtom<std::complex<float>>>(m, "SystemAtomComplexFloat");
     declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplexDouble");
 
-    declare_diagonalize<SystemCombined<float>>(m, "SystemCombinedFloat");
-    declare_diagonalize<SystemCombined<double>>(m, "SystemCombinedDouble");
-    declare_diagonalize<SystemCombined<std::complex<float>>>(m, "SystemCombinedComplexFloat");
-    declare_diagonalize<SystemCombined<std::complex<double>>>(m, "SystemCombinedComplexDouble");
+    declare_diagonalize<SystemPair<float>>(m, "SystemPairFloat");
+    declare_diagonalize<SystemPair<double>>(m, "SystemPairDouble");
+    declare_diagonalize<SystemPair<std::complex<float>>>(m, "SystemPairComplexFloat");
+    declare_diagonalize<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
 }

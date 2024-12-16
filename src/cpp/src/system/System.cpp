@@ -1,13 +1,13 @@
 #include "pairinteraction/system/System.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/operator/OperatorCombined.hpp"
+#include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
@@ -328,8 +328,8 @@ template class System<SystemAtom<float>>;
 template class System<SystemAtom<double>>;
 template class System<SystemAtom<std::complex<float>>>;
 template class System<SystemAtom<std::complex<double>>>;
-template class System<SystemCombined<float>>;
-template class System<SystemCombined<double>>;
-template class System<SystemCombined<std::complex<float>>>;
-template class System<SystemCombined<std::complex<double>>>;
+template class System<SystemPair<float>>;
+template class System<SystemPair<double>>;
+template class System<SystemPair<std::complex<float>>>;
+template class System<SystemPair<std::complex<double>>>;
 } // namespace pairinteraction

@@ -1,15 +1,15 @@
-#include "pairinteraction/basis/BasisCombinedCreator.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 
@@ -41,13 +41,13 @@ DOCTEST_TEST_CASE("create a combined bases") {
     double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
 
     // Create two-atom bases
-    auto combined_basis_a = pairinteraction::BasisCombinedCreator<double>()
+    auto combined_basis_a = pairinteraction::BasisPairCreator<double>()
                                 .add(system)
                                 .add(system)
                                 .restrict_energy(min_energy, max_energy)
                                 .restrict_quantum_number_m(1, 1)
                                 .create();
-    auto combined_basis_b = pairinteraction::BasisCombinedCreator<double>()
+    auto combined_basis_b = pairinteraction::BasisPairCreator<double>()
                                 .add(system)
                                 .add(system)
                                 .restrict_energy(min_energy, max_energy)

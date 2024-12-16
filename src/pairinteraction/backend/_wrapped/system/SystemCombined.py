@@ -2,11 +2,11 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.BasisCombined import (
-    BasisCombinedComplexDouble,
-    BasisCombinedComplexFloat,
-    BasisCombinedDouble,
-    BasisCombinedFloat,
+from pairinteraction.backend._wrapped.basis.BasisPair import (
+    BasisPairComplexDouble,
+    BasisPairComplexFloat,
+    BasisPairDouble,
+    BasisPairFloat,
 )
 from pairinteraction.backend._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
@@ -16,72 +16,72 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-    SelfSystemCombined_t = TypeVar("SelfSystemCombined_t", bound="SystemCombined")
+    SelfSystemPair_t = TypeVar("SelfSystemPair_t", bound="SystemPair")
 
 Basis_t = TypeVar(
-    "Basis_t", "BasisCombinedFloat", "BasisCombinedComplexFloat", "BasisCombinedDouble", "BasisCombinedComplexDouble"
+    "Basis_t", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble"
 )
-UnionCPPSystemCombined = Union[
-    _backend.SystemCombinedFloat,
-    _backend.SystemCombinedComplexFloat,
-    _backend.SystemCombinedDouble,
-    _backend.SystemCombinedComplexDouble,
+UnionCPPSystemPair = Union[
+    _backend.SystemPairFloat,
+    _backend.SystemPairComplexFloat,
+    _backend.SystemPairDouble,
+    _backend.SystemPairComplexDouble,
 ]
-UnionTypeCPPSystemCombined = Union[
-    type[_backend.SystemCombinedFloat],
-    type[_backend.SystemCombinedComplexFloat],
-    type[_backend.SystemCombinedDouble],
-    type[_backend.SystemCombinedComplexDouble],
+UnionTypeCPPSystemPair = Union[
+    type[_backend.SystemPairFloat],
+    type[_backend.SystemPairComplexFloat],
+    type[_backend.SystemPairDouble],
+    type[_backend.SystemPairComplexDouble],
 ]
 
 
-class SystemCombinedBase(SystemBase[Basis_t]):
-    _cpp: UnionCPPSystemCombined
-    _cpp_type: ClassVar[UnionTypeCPPSystemCombined]
+class SystemPairBase(SystemBase[Basis_t]):
+    _cpp: UnionCPPSystemPair
+    _cpp_type: ClassVar[UnionTypeCPPSystemPair]
 
-    def set_order(self: "SelfSystemCombined_t", order: int) -> "SelfSystemCombined_t":
+    def set_order(self: "SelfSystemPair_t", order: int) -> "SelfSystemPair_t":
         self._cpp.set_order(order)
         return self
 
     def set_distance(
-        self: "SelfSystemCombined_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
-    ) -> "SelfSystemCombined_t":
+        self: "SelfSystemPair_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
+    ) -> "SelfSystemPair_t":
         distance_au = QuantityScalar(distance, unit).to_base("DISTANCE")
         self._cpp.set_distance(distance_au)
         return self
 
     def set_distance_vector(
-        self: "SelfSystemCombined_t",
+        self: "SelfSystemPair_t",
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
-    ) -> "SelfSystemCombined_t":
+    ) -> "SelfSystemPair_t":
         distance_au = [QuantityScalar(v, unit).to_base("DISTANCE") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
 
 
-class SystemCombinedFloat(SystemCombinedBase[BasisCombinedFloat]):
-    _cpp: _backend.SystemCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemCombinedFloat
-    _TypeBasis = BasisCombinedFloat
+class SystemPairFloat(SystemPairBase[BasisPairFloat]):
+    _cpp: _backend.SystemPairFloat  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairFloat
+    _TypeBasis = BasisPairFloat
 
 
-class SystemCombinedComplexFloat(SystemCombinedBase[BasisCombinedComplexFloat]):
-    _cpp: _backend.SystemCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemCombinedComplexFloat
-    _TypeBasis = BasisCombinedComplexFloat
+class SystemPairComplexFloat(SystemPairBase[BasisPairComplexFloat]):
+    _cpp: _backend.SystemPairComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairComplexFloat
+    _TypeBasis = BasisPairComplexFloat
 
 
-class SystemCombinedDouble(SystemCombinedBase[BasisCombinedDouble]):
-    _cpp: _backend.SystemCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemCombinedDouble
-    _TypeBasis = BasisCombinedDouble
+class SystemPairDouble(SystemPairBase[BasisPairDouble]):
+    _cpp: _backend.SystemPairDouble  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairDouble
+    _TypeBasis = BasisPairDouble
 
 
-class SystemCombinedComplexDouble(SystemCombinedBase[BasisCombinedComplexDouble]):
-    _cpp: _backend.SystemCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemCombinedComplexDouble
-    _TypeBasis = BasisCombinedComplexDouble
+class SystemPairComplexDouble(SystemPairBase[BasisPairComplexDouble]):
+    _cpp: _backend.SystemPairComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairComplexDouble
+    _TypeBasis = BasisPairComplexDouble
 
 
-SystemCombined = SystemCombinedBase[Any]
+SystemPair = SystemPairBase[Any]

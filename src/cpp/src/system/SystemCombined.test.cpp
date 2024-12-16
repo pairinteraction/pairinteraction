@@ -1,9 +1,9 @@
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
-#include "pairinteraction/basis/BasisCombinedCreator.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
@@ -37,9 +37,9 @@ DOCTEST_TEST_CASE("construct a combined Hamiltonian") {
     diagonalize<SystemAtom<double>>({system1, system2}, diagonalizer);
 
     // Construct and diagonalize the combined system
-    auto basis_combined = BasisCombinedCreator<double>().add(system1).add(system2).create();
+    auto basis_combined = BasisPairCreator<double>().add(system1).add(system2).create();
 
-    auto system_combined = SystemCombined<double>(basis_combined);
+    auto system_combined = SystemPair<double>(basis_combined);
     system_combined.set_distance(0.00000001);
     system_combined.diagonalize(diagonalizer);
 

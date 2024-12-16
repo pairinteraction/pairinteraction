@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 
 Ket_t = TypeVar("Ket_t", bound=Ket)
 UnionCPPBasis = Any
-# UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Combined)(Float|Double|ComplexFloat|ComplexDouble)
+# UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Pair)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPBasisCreator = Any
 # UnionTypeCPPBasisCreator is supposed to be
-# type[Basis(Atom|ClassicalLight|Combined)Creator(Float|Double|ComplexFloat|ComplexDouble)]
+# type[Basis(Atom|ClassicalLight|Pair)Creator(Float|Double|ComplexFloat|ComplexDouble)]
 
 
 class BasisBase(ABC, Generic[Ket_t]):

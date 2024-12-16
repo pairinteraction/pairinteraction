@@ -9,16 +9,16 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class OperatorCombined;
+class OperatorPair;
 
 template <typename Scalar>
-class BasisCombined;
+class BasisPair;
 
 template <typename Real>
-class KetCombined;
+class KetPair;
 
 template <typename T>
-class SystemCombined;
+class SystemPair;
 
 template <typename Scalar>
 class SystemAtom;
@@ -27,27 +27,27 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-struct traits::CrtpTraits<SystemCombined<Scalar>> {
+struct traits::CrtpTraits<SystemPair<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetCombined<Scalar>;
+    using ket_t = KetPair<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
-    using basis_t = BasisCombined<scalar_t>;
-    using operator_t = OperatorCombined<scalar_t>;
+    using basis_t = BasisPair<scalar_t>;
+    using operator_t = OperatorPair<scalar_t>;
 };
 
 template <typename Scalar>
-class SystemCombined : public System<SystemCombined<Scalar>> {
+class SystemPair : public System<SystemPair<Scalar>> {
 public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
-    using Type = SystemCombined<Scalar>;
+    using Type = SystemPair<Scalar>;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
     using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
-    SystemCombined(std::shared_ptr<const basis_t> basis);
+    SystemPair(std::shared_ptr<const basis_t> basis);
 
     Type &set_order(int value);
     Type &set_distance(real_t value);
@@ -67,8 +67,8 @@ private:
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_quadrupole{6, 6};
 };
 
-extern template class SystemCombined<float>;
-extern template class SystemCombined<double>;
-extern template class SystemCombined<std::complex<float>>;
-extern template class SystemCombined<std::complex<double>>;
+extern template class SystemPair<float>;
+extern template class SystemPair<double>;
+extern template class SystemPair<std::complex<float>>;
+extern template class SystemPair<std::complex<double>>;
 } // namespace pairinteraction

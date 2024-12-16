@@ -12,35 +12,35 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class BasisCombinedCreator;
+class BasisPairCreator;
 
 template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-class KetCombined : public Ket<typename traits::NumTraits<Scalar>::real_t> {
+class KetPair : public Ket<typename traits::NumTraits<Scalar>::real_t> {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
-    friend class BasisCombinedCreator<Scalar>;
+    friend class BasisPairCreator<Scalar>;
     struct Private {};
 
 public:
-    KetCombined(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
+    KetPair(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
                 std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
                 real_t energy);
 
     std::string get_label() const override;
-    std::shared_ptr<KetCombined<Scalar>>
+    std::shared_ptr<KetPair<Scalar>>
     get_ket_for_different_quantum_number_m(real_t new_quantum_number_m) const;
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> get_atomic_states() const;
 
-    bool operator==(const KetCombined<Scalar> &other) const;
-    bool operator!=(const KetCombined<Scalar> &other) const;
+    bool operator==(const KetPair<Scalar> &other) const;
+    bool operator!=(const KetPair<Scalar> &other) const;
 
     struct hash {
-        std::size_t operator()(const KetCombined<Scalar> &k) const;
+        std::size_t operator()(const KetPair<Scalar> &k) const;
     };
 
 private:
@@ -57,8 +57,8 @@ private:
                      const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
 };
 
-extern template class KetCombined<float>;
-extern template class KetCombined<double>;
-extern template class KetCombined<std::complex<float>>;
-extern template class KetCombined<std::complex<double>>;
+extern template class KetPair<float>;
+extern template class KetPair<double>;
+extern template class KetPair<std::complex<float>>;
+extern template class KetPair<std::complex<double>>;
 } // namespace pairinteraction

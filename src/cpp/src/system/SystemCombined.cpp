@@ -1,14 +1,14 @@
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/operator/OperatorCombined.hpp"
+#include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
@@ -28,11 +28,11 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-SystemCombined<Scalar>::SystemCombined(std::shared_ptr<const basis_t> basis)
-    : System<SystemCombined<Scalar>>(std::move(basis)) {}
+SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
+    : System<SystemPair<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
-SystemCombined<Scalar> &SystemCombined<Scalar>::set_order(int value) {
+SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
     this->hamiltonian_requires_construction = true;
     if (value < 3 || value > 5) {
         throw std::invalid_argument("The order must be 3, 4, or 5.");
@@ -42,13 +42,13 @@ SystemCombined<Scalar> &SystemCombined<Scalar>::set_order(int value) {
 }
 
 template <typename Scalar>
-SystemCombined<Scalar> &SystemCombined<Scalar>::set_distance(real_t value) {
+SystemPair<Scalar> &SystemPair<Scalar>::set_distance(real_t value) {
     return set_distance_vector({0, 0, value});
 }
 
 template <typename Scalar>
-SystemCombined<Scalar> &
-SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
+SystemPair<Scalar> &
+SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     // https://doi.org/10.1103/PhysRevA.96.062509
     // https://doi.org/10.1103/PhysRevA.82.010901
     // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
@@ -240,13 +240,13 @@ SystemCombined<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector)
 }
 
 template <typename Scalar>
-void SystemCombined<Scalar>::construct_hamiltonian() const {
+void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
     // Construct the unperturbed Hamiltonian
-    this->hamiltonian = std::make_unique<OperatorCombined<Scalar>>(basis, OperatorType::ENERGY);
+    this->hamiltonian = std::make_unique<OperatorPair<Scalar>>(basis, OperatorType::ENERGY);
     this->hamiltonian_is_diagonal = true;
     bool sort_by_quantum_number_f = basis->has_quantum_number_f();
     bool sort_by_quantum_number_m = basis->has_quantum_number_m();
@@ -386,7 +386,7 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_tensor_product(
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemPair<Scalar>::calculate_tensor_product(
     const std::shared_ptr<const basis_t> &basis,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
     const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
@@ -471,8 +471,8 @@ Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemCombined<Scalar>::calculate_t
 }
 
 // Explicit instantiations
-template class SystemCombined<float>;
-template class SystemCombined<double>;
-template class SystemCombined<std::complex<float>>;
-template class SystemCombined<std::complex<double>>;
+template class SystemPair<float>;
+template class SystemPair<double>;
+template class SystemPair<std::complex<float>>;
+template class SystemPair<std::complex<double>>;
 } // namespace pairinteraction

@@ -3,38 +3,38 @@ from typing import Any, ClassVar, Union
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 
-UnionCPPKetCombined = Union[
-    _backend.KetCombinedFloat,
-    _backend.KetCombinedComplexFloat,
-    _backend.KetCombinedDouble,
-    _backend.KetCombinedComplexDouble,
+UnionCPPKetPair = Union[
+    _backend.KetPairFloat,
+    _backend.KetPairComplexFloat,
+    _backend.KetPairDouble,
+    _backend.KetPairComplexDouble,
 ]
-UnionTypeCPPKetCombinedCreator = Any
+UnionTypeCPPKetPairCreator = Any
 
 
-class KetCombinedBase(KetBase):
-    _cpp: UnionCPPKetCombined  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator: ClassVar[UnionTypeCPPKetCombinedCreator]
+class KetPairBase(KetBase):
+    _cpp: UnionCPPKetPair  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator: ClassVar[UnionTypeCPPKetPairCreator]
 
 
-class KetCombinedFloat(KetCombinedBase):
-    _cpp: _backend.KetCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
+class KetPairFloat(KetPairBase):
+    _cpp: _backend.KetPairFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
-class KetCombinedComplexFloat(KetCombinedBase):
-    _cpp: _backend.KetCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
+class KetPairComplexFloat(KetPairBase):
+    _cpp: _backend.KetPairComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
-class KetCombinedDouble(KetCombinedBase):
-    _cpp: _backend.KetCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
+class KetPairDouble(KetPairBase):
+    _cpp: _backend.KetPairDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
-class KetCombinedComplexDouble(KetCombinedBase):
-    _cpp: _backend.KetCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
+class KetPairComplexDouble(KetPairBase):
+    _cpp: _backend.KetPairComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator = None
 
 
-KetCombined = KetCombinedBase
+KetPair = KetPairBase
