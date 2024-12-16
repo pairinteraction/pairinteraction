@@ -47,8 +47,7 @@ SystemPair<Scalar> &SystemPair<Scalar>::set_distance(real_t value) {
 }
 
 template <typename Scalar>
-SystemPair<Scalar> &
-SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
+SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
     // https://doi.org/10.1103/PhysRevA.96.062509
     // https://doi.org/10.1103/PhysRevA.82.010901
     // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics

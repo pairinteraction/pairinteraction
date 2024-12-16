@@ -28,8 +28,8 @@ class KetPair : public Ket<typename traits::NumTraits<Scalar>::real_t> {
 
 public:
     KetPair(Private /*unused*/, std::initializer_list<size_t> atomic_indices,
-                std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
-                real_t energy);
+            std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases,
+            real_t energy);
 
     std::string get_label() const override;
     std::shared_ptr<KetPair<Scalar>>

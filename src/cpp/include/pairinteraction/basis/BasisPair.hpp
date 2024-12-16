@@ -56,9 +56,9 @@ public:
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
     BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&map_range_of_state_index2,
-                  map_indices_t &&state_indices_to_ket_index,
-                  std::shared_ptr<const BasisAtom<Scalar>> basis1,
-                  std::shared_ptr<const BasisAtom<Scalar>> basis2);
+              map_indices_t &&state_indices_to_ket_index,
+              std::shared_ptr<const BasisAtom<Scalar>> basis1,
+              std::shared_ptr<const BasisAtom<Scalar>> basis2);
     const range_t &get_index_range(size_t state_index1) const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis1() const;
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
