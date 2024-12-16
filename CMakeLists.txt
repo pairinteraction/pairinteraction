@@ -165,6 +165,11 @@ if(NOT cpptrace_FOUND)
     GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
     GIT_TAG 4354eb21ea3565a73afdf32ec0ba768fd648c425 # v0.7.3
   )
+  FetchContent_GetProperties(cpptrace)
+  if(NOT cpptrace_POPULATED)
+    FetchContent_Populate(cpptrace)
+    add_subdirectory(${cpptrace_SOURCE_DIR} ${cpptrace_BINARY_DIR} EXCLUDE_FROM_ALL)
+  endif()
   FetchContent_MakeAvailable(cpptrace)
   set_target_properties(cpptrace-lib PROPERTIES CXX_CLANG_TIDY "")
 endif()
