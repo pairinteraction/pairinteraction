@@ -58,7 +58,7 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
 }
 
 template <typename T>
-static void declare_system_combined(nb::module_ &m, std::string const &type_name) {
+static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "SystemPair" + type_name;
     using basis_t = typename SystemPair<T>::basis_t;
     nb::class_<SystemPair<T>, System<SystemPair<T>>> pyclass(m, pyclass_name.c_str());
@@ -82,8 +82,8 @@ void bind_system(nb::module_ &m) {
     declare_system<SystemPair<double>>(m, "SystemPairDouble");
     declare_system<SystemPair<std::complex<float>>>(m, "SystemPairComplexFloat");
     declare_system<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
-    declare_system_combined<float>(m, "Float");
-    declare_system_combined<double>(m, "Double");
-    declare_system_combined<std::complex<float>>(m, "ComplexFloat");
-    declare_system_combined<std::complex<double>>(m, "ComplexDouble");
+    declare_system_pair<float>(m, "Float");
+    declare_system_pair<double>(m, "Double");
+    declare_system_pair<std::complex<float>>(m, "ComplexFloat");
+    declare_system_pair<std::complex<double>>(m, "ComplexDouble");
 }
