@@ -17,8 +17,7 @@ template <typename Scalar>
 BasisPairCreator<Scalar>::BasisPairCreator() : product_of_parities(Parity::UNKNOWN) {}
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &
-BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
     if (!system_atom.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized before it can be added.");
     }
@@ -27,22 +26,20 @@ BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min,
-                                                                            real_t max) {
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min, real_t max) {
     range_energy = {min, max};
     return *this;
 }
 
 template <typename Scalar>
 BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_quantum_number_m(real_t min,
-                                                                                      real_t max) {
+                                                                              real_t max) {
     range_quantum_number_m = {min, max};
     return *this;
 }
 
 template <typename Scalar>
-BasisPairCreator<Scalar> &
-BasisPairCreator<Scalar>::restrict_product_of_parities(Parity value) {
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_product_of_parities(Parity value) {
     product_of_parities = value;
     return *this;
 }

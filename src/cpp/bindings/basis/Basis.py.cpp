@@ -134,8 +134,8 @@ static void declare_basis_combined(nb::module_ &m, std::string const &type_name)
                  &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
-                               std::shared_ptr<const BasisAtom<T>>>(
-                 &BasisPair<T>::get_amplitudes, nb::const_))
+                               std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_amplitudes,
+                                                                    nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
                                std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>>(

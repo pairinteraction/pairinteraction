@@ -12,10 +12,10 @@
 namespace pairinteraction {
 template <typename Scalar>
 BasisPair<Scalar>::BasisPair(Private /*unused*/, ketvec_t &&kets,
-                                     map_range_t &&map_range_of_state_index2,
-                                     map_indices_t &&state_indices_to_ket_index,
-                                     std::shared_ptr<const BasisAtom<Scalar>> basis1,
-                                     std::shared_ptr<const BasisAtom<Scalar>> basis2)
+                             map_range_t &&map_range_of_state_index2,
+                             map_indices_t &&state_indices_to_ket_index,
+                             std::shared_ptr<const BasisAtom<Scalar>> basis1,
+                             std::shared_ptr<const BasisAtom<Scalar>> basis2)
     : Basis<BasisPair<Scalar>>(std::move(kets)),
       map_range_of_state_index2(std::move(map_range_of_state_index2)),
       state_indices_to_ket_index(std::move(state_indices_to_ket_index)), basis1(std::move(basis1)),
@@ -38,8 +38,7 @@ std::shared_ptr<const BasisAtom<Scalar>> BasisPair<Scalar>::get_basis2() const {
 }
 
 template <typename Scalar>
-int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1,
-                                                    size_t state_index2) const {
+int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const {
     if (state_indices_to_ket_index.count({state_index1, state_index2}) == 0) {
         return -1;
     }
@@ -49,7 +48,7 @@ int BasisPair<Scalar>::get_ket_index_from_tuple(size_t state_index1,
 template <typename Scalar>
 Eigen::VectorX<Scalar>
 BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
-                                      std::shared_ptr<const KetAtom<real_t>> ket2) const {
+                                  std::shared_ptr<const KetAtom<real_t>> ket2) const {
     return get_amplitudes(basis1->get_canonical_state_from_ket(ket1),
                           basis2->get_canonical_state_from_ket(ket2))
         .transpose();
@@ -58,7 +57,7 @@ BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other1,
-                                      std::shared_ptr<const BasisAtom<Scalar>> other2) const {
+                                  std::shared_ptr<const BasisAtom<Scalar>> other2) const {
     if (other1->get_id_of_kets() != basis1->get_id_of_kets() ||
         other2->get_id_of_kets() != basis2->get_id_of_kets()) {
         throw std::invalid_argument("The other objects must be expressed using the same kets.");
@@ -132,14 +131,14 @@ BasisPair<Scalar>::get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other
 template <typename Scalar>
 Eigen::VectorX<typename BasisPair<Scalar>::real_t>
 BasisPair<Scalar>::get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
-                                    std::shared_ptr<const KetAtom<real_t>> ket2) const {
+                                std::shared_ptr<const KetAtom<real_t>> ket2) const {
     return get_amplitudes(ket1, ket2).cwiseAbs2();
 }
 
 template <typename Scalar>
 Eigen::SparseMatrix<typename BasisPair<Scalar>::real_t, Eigen::RowMajor>
 BasisPair<Scalar>::get_overlaps(std::shared_ptr<const BasisAtom<Scalar>> other1,
-                                    std::shared_ptr<const BasisAtom<Scalar>> other2) const {
+                                std::shared_ptr<const BasisAtom<Scalar>> other2) const {
     return get_amplitudes(other1, other2).cwiseAbs2();
 }
 

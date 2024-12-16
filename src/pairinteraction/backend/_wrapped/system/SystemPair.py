@@ -18,9 +18,7 @@ if TYPE_CHECKING:
 
     SelfSystemPair_t = TypeVar("SelfSystemPair_t", bound="SystemPair")
 
-Basis_t = TypeVar(
-    "Basis_t", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble"
-)
+Basis_t = TypeVar("Basis_t", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble")
 UnionCPPSystemPair = Union[
     _backend.SystemPairFloat,
     _backend.SystemPairComplexFloat,

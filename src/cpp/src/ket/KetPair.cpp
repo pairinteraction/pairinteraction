@@ -48,8 +48,7 @@ KetPair<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum_num
 }
 
 template <typename Scalar>
-std::vector<std::shared_ptr<const BasisAtom<Scalar>>>
-KetPair<Scalar>::get_atomic_states() const {
+std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomic_states() const {
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
     atomic_states.reserve(atomic_indices.size());
     for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
