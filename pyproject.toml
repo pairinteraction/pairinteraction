@@ -102,7 +102,13 @@ sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
 
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
-input = "src/pairinteraction/__init__.py"
+input = "src/cpp/include/pairinteraction/version.hpp"
+regex = '''(?sx)
+VERSION_MAJOR \s* =? \s* (?P<major>\d+) .*?
+VERSION_MINOR \s* =? \s* (?P<minor>\d+) .*?
+VERSION_PATCH \s* =? \s* (?P<patch>\d+)
+'''
+result = "{major}.{minor}.{patch}"
 
 [tool.cibuildwheel]
 build = [  # for python >= 3.12 only one stable abi wheel is built, which is then tested against all specified python versions

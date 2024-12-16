@@ -53,6 +53,7 @@ add_library(
   ./include/pairinteraction/utils/traits.hpp
   ./include/pairinteraction/utils/wigner.hpp
   ./include/pairinteraction/pairinteraction.hpp
+  ./include/pairinteraction/version.hpp
   # Sources
   ./src/basis/Basis.cpp
   ./src/basis/BasisAtom.cpp

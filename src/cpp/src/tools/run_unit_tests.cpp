@@ -5,6 +5,7 @@
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/utils/paths.hpp"
 #include "pairinteraction/utils/streamed.hpp"
+#include "pairinteraction/version.hpp"
 
 #include <cstdlib>
 #include <doctest/doctest.h>
@@ -248,6 +249,17 @@ struct LoggingReporter : public ConsoleReporter {
 REGISTER_REPORTER("logging", 1, doctest::LoggingReporter);
 } // namespace doctest
 
+constexpr std::string_view OS_NAME =
+#if defined(_WIN32)
+    "Windows";
+#elif defined(__APPLE__)
+    "macOS";
+#elif defined(__linux__)
+    "Linux";
+#else
+    "Unknown";
+#endif
+
 namespace pairinteraction {
 int run_unit_tests(int argc, char **argv, bool download_missing, bool wigner_in_memory,
                    std::filesystem::path database_dir) {
@@ -290,6 +302,11 @@ int run_unit_tests(int argc, char **argv, bool download_missing, bool wigner_in_
     // Set the doctest logger as the default logger
     auto original_logger = spdlog::default_logger();
     spdlog::set_default_logger(doctest_logger);
+
+    // Log the version and system information
+    spdlog::info("Version of pairinteraction: {}.{}.{}", VERSION_MAJOR, VERSION_MINOR,
+                 VERSION_PATCH);
+    spdlog::info("Operating system: {}", OS_NAME);
 
     // Create a global database instance and run the tests
     Database::get_global_instance(download_missing, wigner_in_memory, std::move(database_dir));

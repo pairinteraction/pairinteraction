@@ -9,8 +9,9 @@
 #include "./interfaces/TransformationBuilderInterface.py.hpp"
 #include "./ket/Ket.py.hpp"
 #include "./operator/Operator.py.hpp"
-#include "./run_unit_tests.py.hpp"
 #include "./system/System.py.hpp"
+#include "./tools/run_unit_tests.py.hpp"
+#include "./version.py.hpp"
 #include "pairinteraction/tools/setup.hpp"
 
 #include <nanobind/nanobind.h>
@@ -49,9 +50,12 @@ NB_MODULE(_backend, m) // NOLINT
     // system
     bind_system(m);
 
-    // test
+    // tools
     bind_run_unit_tests(m);
 
     // convenience functions
     bind_matrix_elements(m);
+
+    // version
+    bind_version(m);
 }
