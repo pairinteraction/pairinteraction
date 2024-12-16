@@ -5,12 +5,12 @@ import numpy as np
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
-from pairinteraction.backend._wrapped.ket.KetCombined import (
-    KetCombined,
-    KetCombinedComplexDouble,
-    KetCombinedComplexFloat,
-    KetCombinedDouble,
-    KetCombinedFloat,
+from pairinteraction.backend._wrapped.ket.KetPair import (
+    KetPair,
+    KetPairComplexDouble,
+    KetPairComplexFloat,
+    KetPairDouble,
+    KetPairFloat,
 )
 from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
 from pairinteraction.units import QuantityScalar
@@ -25,24 +25,24 @@ if TYPE_CHECKING:
 
     KetAtomOrBasisAtom = TypeVar("KetAtomOrBasisAtom", KetAtom, BasisAtom, covariant=True)
 
-Ket_t = TypeVar("Ket_t", bound=KetCombined)
-UnionCPPBasisCombined = Union[
-    _backend.BasisCombinedFloat,
-    _backend.BasisCombinedComplexFloat,
-    _backend.BasisCombinedDouble,
-    _backend.BasisCombinedComplexDouble,
+Ket_t = TypeVar("Ket_t", bound=KetPair)
+UnionCPPBasisPair = Union[
+    _backend.BasisPairFloat,
+    _backend.BasisPairComplexFloat,
+    _backend.BasisPairDouble,
+    _backend.BasisPairComplexDouble,
 ]
-UnionTypeCPPBasisCombinedCreator = Union[
-    type[_backend.BasisCombinedCreatorFloat],
-    type[_backend.BasisCombinedCreatorComplexFloat],
-    type[_backend.BasisCombinedCreatorDouble],
-    type[_backend.BasisCombinedCreatorComplexDouble],
+UnionTypeCPPBasisPairCreator = Union[
+    type[_backend.BasisPairCreatorFloat],
+    type[_backend.BasisPairCreatorComplexFloat],
+    type[_backend.BasisPairCreatorDouble],
+    type[_backend.BasisPairCreatorComplexDouble],
 ]
 
 
-class BasisCombinedBase(BasisBase[Ket_t]):
-    _cpp: UnionCPPBasisCombined
-    _cpp_creator: ClassVar[UnionTypeCPPBasisCombinedCreator]
+class BasisPairBase(BasisBase[Ket_t]):
+    _cpp: UnionCPPBasisPair
+    _cpp_creator: ClassVar[UnionTypeCPPBasisPairCreator]
 
     def __init__(
         self,
@@ -98,28 +98,28 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         return overlaps  # type: ignore [reportUnknownVariableType]
 
 
-class BasisCombinedFloat(BasisCombinedBase[KetCombinedFloat]):
-    _cpp: _backend.BasisCombinedFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisCombinedCreatorFloat
-    _TypeKet = KetCombinedFloat
+class BasisPairFloat(BasisPairBase[KetPairFloat]):
+    _cpp: _backend.BasisPairFloat  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorFloat
+    _TypeKet = KetPairFloat
 
 
-class BasisCombinedComplexFloat(BasisCombinedBase[KetCombinedComplexFloat]):
-    _cpp: _backend.BasisCombinedComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisCombinedCreatorComplexFloat
-    _TypeKet = KetCombinedComplexFloat
+class BasisPairComplexFloat(BasisPairBase[KetPairComplexFloat]):
+    _cpp: _backend.BasisPairComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorComplexFloat
+    _TypeKet = KetPairComplexFloat
 
 
-class BasisCombinedDouble(BasisCombinedBase[KetCombinedDouble]):
-    _cpp: _backend.BasisCombinedDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisCombinedCreatorDouble
-    _TypeKet = KetCombinedDouble
+class BasisPairDouble(BasisPairBase[KetPairDouble]):
+    _cpp: _backend.BasisPairDouble  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorDouble
+    _TypeKet = KetPairDouble
 
 
-class BasisCombinedComplexDouble(BasisCombinedBase[KetCombinedComplexDouble]):
-    _cpp: _backend.BasisCombinedComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisCombinedCreatorComplexDouble
-    _TypeKet = KetCombinedComplexDouble
+class BasisPairComplexDouble(BasisPairBase[KetPairComplexDouble]):
+    _cpp: _backend.BasisPairComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorComplexDouble
+    _TypeKet = KetPairComplexDouble
 
 
-BasisCombined = BasisCombinedBase[Any]
+BasisPair = BasisPairBase[Any]

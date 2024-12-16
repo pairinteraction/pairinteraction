@@ -1,13 +1,13 @@
 #include "pairinteraction/operator/Operator.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/operator/OperatorCombined.hpp"
+#include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 
 #include <Eigen/SparseCore>
@@ -267,7 +267,7 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
                                     const Operator<TYPE<SCALAR>> &rhs);
 #define INSTANTIATE_OPERATOR(SCALAR)                                                               \
     INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorAtom)                                              \
-    INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorCombined)
+    INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorPair)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_OPERATOR(float)

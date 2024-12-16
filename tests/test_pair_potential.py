@@ -30,11 +30,11 @@ def test_pair_potential(generate_reference: bool, database_dir: str, download_mi
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy
 
-    combined_basis = pi.BasisCombined([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
+    combined_basis = pi.BasisPair([system, system], energy=(min_energy, max_energy), energy_unit="GHz", m=(1, 1))
     print(f"Number of two-atom basis states: {combined_basis.number_of_states}")
 
     distances = np.linspace(1, 5, 5)
-    combined_systems = [pi.SystemCombined(combined_basis).set_distance(d, unit="micrometer") for d in distances]
+    combined_systems = [pi.SystemPair(combined_basis).set_distance(d, unit="micrometer") for d in distances]
 
     # Diagonalize the systems in parallel
     pi.diagonalize(combined_systems, diagonalizer="Eigen", sort_by_energy=True)

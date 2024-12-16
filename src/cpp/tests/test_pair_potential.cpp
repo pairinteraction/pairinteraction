@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
     double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
     double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
 
-    auto combined_basis = pairinteraction::BasisCombinedCreator<double>()
+    auto combined_basis = pairinteraction::BasisPairCreator<double>()
                               .add(system)
                               .add(system)
                               .restrict_energy(min_energy, max_energy)
@@ -56,10 +56,10 @@ int main(int argc, char **argv) {
                               .create();
     SPDLOG_INFO("Number of two-atom basis states: {}", combined_basis->get_number_of_states());
 
-    std::vector<pairinteraction::SystemCombined<double>> combined_systems;
+    std::vector<pairinteraction::SystemPair<double>> combined_systems;
     combined_systems.reserve(5);
     for (int i = 1; i < 6; ++i) {
-        pairinteraction::SystemCombined<double> system(combined_basis);
+        pairinteraction::SystemPair<double> system(combined_basis);
         system.set_distance(i * 1e-6 / 5.29177210544e-11);
         combined_systems.push_back(std::move(system));
     }

@@ -5,12 +5,12 @@
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisClassicalLight.hpp"
 #include "pairinteraction/basis/BasisClassicalLightCreator.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
-#include "pairinteraction/basis/BasisCombinedCreator.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/interfaces/TransformationBuilderInterface.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 
 #include <nanobind/eigen/sparse.h>
@@ -125,37 +125,37 @@ static void declare_basis_classical_light_creator(nb::module_ &m, std::string co
 
 template <typename T>
 static void declare_basis_combined(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "BasisCombined" + type_name;
-    nb::class_<BasisCombined<T>, Basis<BasisCombined<T>>> pyclass(m, pyclass_name.c_str());
+    std::string pyclass_name = "BasisPair" + type_name;
+    nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass
         .def("get_amplitudes",
-             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>,
-                               std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>>(
-                 &BasisCombined<T>::get_amplitudes, nb::const_))
+             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
+                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>>(
+                 &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
                                std::shared_ptr<const BasisAtom<T>>>(
-                 &BasisCombined<T>::get_amplitudes, nb::const_))
+                 &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_overlaps",
-             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>,
-                               std::shared_ptr<const KetAtom<typename BasisCombined<T>::real_t>>>(
-                 &BasisCombined<T>::get_overlaps, nb::const_))
+             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
+                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>>(
+                 &BasisPair<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
-                               std::shared_ptr<const BasisAtom<T>>>(&BasisCombined<T>::get_overlaps,
+                               std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_overlaps,
                                                                     nb::const_));
 }
 
 template <typename T>
 static void declare_basis_combined_creator(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "BasisCombinedCreator" + type_name;
-    nb::class_<BasisCombinedCreator<T>> pyclass(m, pyclass_name.c_str());
+    std::string pyclass_name = "BasisPairCreator" + type_name;
+    nb::class_<BasisPairCreator<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
-        .def("add", &BasisCombinedCreator<T>::add)
-        .def("restrict_energy", &BasisCombinedCreator<T>::restrict_energy)
-        .def("restrict_quantum_number_m", &BasisCombinedCreator<T>::restrict_quantum_number_m)
-        .def("restrict_product_of_parities", &BasisCombinedCreator<T>::restrict_product_of_parities)
-        .def("create", &BasisCombinedCreator<T>::create);
+        .def("add", &BasisPairCreator<T>::add)
+        .def("restrict_energy", &BasisPairCreator<T>::restrict_energy)
+        .def("restrict_quantum_number_m", &BasisPairCreator<T>::restrict_quantum_number_m)
+        .def("restrict_product_of_parities", &BasisPairCreator<T>::restrict_product_of_parities)
+        .def("create", &BasisPairCreator<T>::create);
 }
 
 void bind_basis(nb::module_ &m) {
@@ -185,10 +185,10 @@ void bind_basis(nb::module_ &m) {
     declare_basis_classical_light_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_classical_light_creator<std::complex<double>>(m, "ComplexDouble");
 
-    declare_basis<BasisCombined<float>>(m, "BasisCombinedFloat");
-    declare_basis<BasisCombined<double>>(m, "BasisCombinedDouble");
-    declare_basis<BasisCombined<std::complex<float>>>(m, "BasisCombinedComplexFloat");
-    declare_basis<BasisCombined<std::complex<double>>>(m, "BasisCombinedComplexDouble");
+    declare_basis<BasisPair<float>>(m, "BasisPairFloat");
+    declare_basis<BasisPair<double>>(m, "BasisPairDouble");
+    declare_basis<BasisPair<std::complex<float>>>(m, "BasisPairComplexFloat");
+    declare_basis<BasisPair<std::complex<double>>>(m, "BasisPairComplexDouble");
     declare_basis_combined<float>(m, "Float");
     declare_basis_combined<double>(m, "Double");
     declare_basis_combined<std::complex<float>>(m, "ComplexFloat");

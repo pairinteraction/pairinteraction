@@ -1,12 +1,12 @@
 #include "./System.py.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/system/System.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemClassicalLight.hpp"
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/dense.h>
@@ -59,13 +59,13 @@ static void declare_system_atom(nb::module_ &m, std::string const &type_name) {
 
 template <typename T>
 static void declare_system_combined(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "SystemCombined" + type_name;
-    using basis_t = typename SystemCombined<T>::basis_t;
-    nb::class_<SystemCombined<T>, System<SystemCombined<T>>> pyclass(m, pyclass_name.c_str());
+    std::string pyclass_name = "SystemPair" + type_name;
+    using basis_t = typename SystemPair<T>::basis_t;
+    nb::class_<SystemPair<T>, System<SystemPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<std::shared_ptr<const basis_t>>())
-        .def("set_order", &SystemCombined<T>::set_order)
-        .def("set_distance", &SystemCombined<T>::set_distance)
-        .def("set_distance_vector", &SystemCombined<T>::set_distance_vector);
+        .def("set_order", &SystemPair<T>::set_order)
+        .def("set_distance", &SystemPair<T>::set_distance)
+        .def("set_distance_vector", &SystemPair<T>::set_distance_vector);
 }
 
 void bind_system(nb::module_ &m) {
@@ -78,10 +78,10 @@ void bind_system(nb::module_ &m) {
     declare_system_atom<std::complex<float>>(m, "ComplexFloat");
     declare_system_atom<std::complex<double>>(m, "ComplexDouble");
 
-    declare_system<SystemCombined<float>>(m, "SystemCombinedFloat");
-    declare_system<SystemCombined<double>>(m, "SystemCombinedDouble");
-    declare_system<SystemCombined<std::complex<float>>>(m, "SystemCombinedComplexFloat");
-    declare_system<SystemCombined<std::complex<double>>>(m, "SystemCombinedComplexDouble");
+    declare_system<SystemPair<float>>(m, "SystemPairFloat");
+    declare_system<SystemPair<double>>(m, "SystemPairDouble");
+    declare_system<SystemPair<std::complex<float>>>(m, "SystemPairComplexFloat");
+    declare_system<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
     declare_system_combined<float>(m, "Float");
     declare_system_combined<double>(m, "Double");
     declare_system_combined<std::complex<float>>(m, "ComplexFloat");

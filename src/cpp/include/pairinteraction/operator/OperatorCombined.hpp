@@ -10,37 +10,37 @@ namespace pairinteraction {
 enum class OperatorType;
 
 template <typename Scalar>
-class BasisCombined;
+class BasisPair;
 
 template <typename Real>
-class KetCombined;
+class KetPair;
 
 template <typename T>
-class OperatorCombined;
+class OperatorPair;
 
 template <typename Scalar>
-struct traits::CrtpTraits<OperatorCombined<Scalar>> {
+struct traits::CrtpTraits<OperatorPair<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetCombined<Scalar>;
+    using ket_t = KetPair<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
-    using basis_t = BasisCombined<scalar_t>;
+    using basis_t = BasisPair<scalar_t>;
 };
 
 template <typename Scalar>
-class OperatorCombined : public Operator<OperatorCombined<Scalar>> {
+class OperatorPair : public Operator<OperatorPair<Scalar>> {
 public:
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
-    using Type = OperatorCombined<Scalar>;
+    using Type = OperatorPair<Scalar>;
     using basis_t = typename traits::CrtpTraits<Type>::basis_t;
 
-    OperatorCombined(std::shared_ptr<const basis_t> basis);
-    OperatorCombined(std::shared_ptr<const basis_t> basis, OperatorType type);
+    OperatorPair(std::shared_ptr<const basis_t> basis);
+    OperatorPair(std::shared_ptr<const basis_t> basis, OperatorType type);
 };
 
-extern template class OperatorCombined<float>;
-extern template class OperatorCombined<double>;
-extern template class OperatorCombined<std::complex<float>>;
-extern template class OperatorCombined<std::complex<double>>;
+extern template class OperatorPair<float>;
+extern template class OperatorPair<double>;
+extern template class OperatorPair<std::complex<float>>;
+extern template class OperatorPair<std::complex<double>>;
 } // namespace pairinteraction

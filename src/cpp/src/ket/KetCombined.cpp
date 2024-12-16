@@ -1,4 +1,4 @@
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/enums/Parity.hpp"
@@ -10,7 +10,7 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-KetCombined<Scalar>::KetCombined(
+KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
     std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
     : Ket<real_t>(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
@@ -24,7 +24,7 @@ KetCombined<Scalar>::KetCombined(
 }
 
 template <typename Scalar>
-std::string KetCombined<Scalar>::get_label() const {
+std::string KetPair<Scalar>::get_label() const {
     std::string label;
     std::string separator;
     for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
@@ -38,8 +38,8 @@ std::string KetCombined<Scalar>::get_label() const {
 }
 
 template <typename Scalar>
-std::shared_ptr<KetCombined<Scalar>>
-KetCombined<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum_number_m*/) const {
+std::shared_ptr<KetPair<Scalar>>
+KetPair<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum_number_m*/) const {
     // If we use symmetrized states so that the quantum_number_f is the total
     // angular quantum number, the quantum_number_m is the magnetic quantum number
     // corresponding to the total angular quantum number and we can implement this
@@ -49,7 +49,7 @@ KetCombined<Scalar>::get_ket_for_different_quantum_number_m(real_t /*new_quantum
 
 template <typename Scalar>
 std::vector<std::shared_ptr<const BasisAtom<Scalar>>>
-KetCombined<Scalar>::get_atomic_states() const {
+KetPair<Scalar>::get_atomic_states() const {
     std::vector<std::shared_ptr<const BasisAtom<Scalar>>> atomic_states;
     atomic_states.reserve(atomic_indices.size());
     for (size_t atom_index = 0; atom_index < atomic_indices.size(); ++atom_index) {
@@ -59,18 +59,18 @@ KetCombined<Scalar>::get_atomic_states() const {
 }
 
 template <typename Scalar>
-bool KetCombined<Scalar>::operator==(const KetCombined<Scalar> &other) const {
+bool KetPair<Scalar>::operator==(const KetPair<Scalar> &other) const {
     return Ket<real_t>::operator==(other) && atomic_indices == other.atomic_indices &&
         atomic_bases == other.atomic_bases;
 }
 
 template <typename Scalar>
-bool KetCombined<Scalar>::operator!=(const KetCombined<Scalar> &other) const {
+bool KetPair<Scalar>::operator!=(const KetPair<Scalar> &other) const {
     return !(*this == other);
 }
 
 template <typename Scalar>
-size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const {
+size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
     size_t seed = typename Ket<real_t>::hash()(k);
     for (const auto &index : k.atomic_indices) {
         utils::hash_combine(seed, index);
@@ -82,7 +82,7 @@ size_t KetCombined<Scalar>::hash::operator()(const KetCombined<Scalar> &k) const
 }
 
 template <typename Scalar>
-typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_number_f(
+typename KetPair<Scalar>::real_t KetPair<Scalar>::calculate_quantum_number_f(
     const std::vector<size_t> & /*indices*/,
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
     // Because this ket state is not symmetrized, the quantum_number_f is not well-defined.
@@ -90,7 +90,7 @@ typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_numb
 }
 
 template <typename Scalar>
-typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_number_m(
+typename KetPair<Scalar>::real_t KetPair<Scalar>::calculate_quantum_number_m(
     const std::vector<size_t> &indices,
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases) {
     for (const auto &basis : bases) {
@@ -106,7 +106,7 @@ typename KetCombined<Scalar>::real_t KetCombined<Scalar>::calculate_quantum_numb
 }
 
 template <typename Scalar>
-Parity KetCombined<Scalar>::calculate_parity(
+Parity KetPair<Scalar>::calculate_parity(
     const std::vector<size_t> & /*indices*/,
     const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> & /*bases*/) {
     // Because this ket state is not symmetrized, the parity is not well-defined.
@@ -114,8 +114,8 @@ Parity KetCombined<Scalar>::calculate_parity(
 }
 
 // Explicit instantiations
-template class KetCombined<float>;
-template class KetCombined<double>;
-template class KetCombined<std::complex<float>>;
-template class KetCombined<std::complex<double>>;
+template class KetPair<float>;
+template class KetPair<double>;
+template class KetPair<std::complex<float>>;
+template class KetPair<std::complex<double>>;
 } // namespace pairinteraction

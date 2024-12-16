@@ -16,13 +16,13 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-class BasisCombinedCreator;
+class BasisPairCreator;
 
 template <typename Real>
-class KetCombined;
+class KetPair;
 
 template <typename Scalar>
-class BasisCombined;
+class BasisPair;
 
 template <typename Scalar>
 class BasisAtom;
@@ -31,22 +31,22 @@ template <typename Real>
 class KetAtom;
 
 template <typename Scalar>
-struct traits::CrtpTraits<BasisCombined<Scalar>> {
+struct traits::CrtpTraits<BasisPair<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetCombined<Scalar>;
+    using ket_t = KetPair<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
 
 template <typename Scalar>
-class BasisCombined : public Basis<BasisCombined<Scalar>> {
+class BasisPair : public Basis<BasisPair<Scalar>> {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
-    friend class BasisCombinedCreator<Scalar>;
+    friend class BasisPairCreator<Scalar>;
     struct Private {};
 
 public:
-    using Type = BasisCombined<Scalar>;
+    using Type = BasisPair<Scalar>;
     using real_t = typename traits::CrtpTraits<Type>::real_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
     using range_t = Range<size_t>;
@@ -55,7 +55,7 @@ public:
     using map_indices_t =
         std::unordered_map<std::vector<size_t>, size_t, utils::hash<std::vector<size_t>>>;
 
-    BasisCombined(Private /*unused*/, ketvec_t &&kets, map_range_t &&map_range_of_state_index2,
+    BasisPair(Private /*unused*/, ketvec_t &&kets, map_range_t &&map_range_of_state_index2,
                   map_indices_t &&state_indices_to_ket_index,
                   std::shared_ptr<const BasisAtom<Scalar>> basis1,
                   std::shared_ptr<const BasisAtom<Scalar>> basis2);
@@ -82,8 +82,8 @@ private:
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };
 
-extern template class BasisCombined<float>;
-extern template class BasisCombined<double>;
-extern template class BasisCombined<std::complex<float>>;
-extern template class BasisCombined<std::complex<double>>;
+extern template class BasisPair<float>;
+extern template class BasisPair<double>;
+extern template class BasisPair<std::complex<float>>;
+extern template class BasisPair<std::complex<double>>;
 } // namespace pairinteraction

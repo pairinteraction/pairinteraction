@@ -1,11 +1,11 @@
-#include "pairinteraction/basis/BasisCombinedCreator.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
-#include "pairinteraction/ket/KetCombined.hpp"
+#include "pairinteraction/ket/KetPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 
 #include <algorithm>
@@ -14,11 +14,11 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-BasisCombinedCreator<Scalar>::BasisCombinedCreator() : product_of_parities(Parity::UNKNOWN) {}
+BasisPairCreator<Scalar>::BasisPairCreator() : product_of_parities(Parity::UNKNOWN) {}
 
 template <typename Scalar>
-BasisCombinedCreator<Scalar> &
-BasisCombinedCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
+BasisPairCreator<Scalar> &
+BasisPairCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
     if (!system_atom.is_diagonal()) {
         throw std::invalid_argument("The system must be diagonalized before it can be added.");
     }
@@ -27,28 +27,28 @@ BasisCombinedCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
 }
 
 template <typename Scalar>
-BasisCombinedCreator<Scalar> &BasisCombinedCreator<Scalar>::restrict_energy(real_t min,
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_energy(real_t min,
                                                                             real_t max) {
     range_energy = {min, max};
     return *this;
 }
 
 template <typename Scalar>
-BasisCombinedCreator<Scalar> &BasisCombinedCreator<Scalar>::restrict_quantum_number_m(real_t min,
+BasisPairCreator<Scalar> &BasisPairCreator<Scalar>::restrict_quantum_number_m(real_t min,
                                                                                       real_t max) {
     range_quantum_number_m = {min, max};
     return *this;
 }
 
 template <typename Scalar>
-BasisCombinedCreator<Scalar> &
-BasisCombinedCreator<Scalar>::restrict_product_of_parities(Parity value) {
+BasisPairCreator<Scalar> &
+BasisPairCreator<Scalar>::restrict_product_of_parities(Parity value) {
     product_of_parities = value;
     return *this;
 }
 
 template <typename Scalar>
-std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::create() const {
+std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() const {
     if (systems_atom.size() != 2) {
         throw std::invalid_argument(
             "Two SystemAtom must be added before creating the combined basis.");
@@ -147,8 +147,8 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
 }
 
 // Explicit instantiations
-template class BasisCombinedCreator<float>;
-template class BasisCombinedCreator<double>;
-template class BasisCombinedCreator<std::complex<float>>;
-template class BasisCombinedCreator<std::complex<double>>;
+template class BasisPairCreator<float>;
+template class BasisPairCreator<double>;
+template class BasisPairCreator<std::complex<float>>;
+template class BasisPairCreator<std::complex<double>>;
 } // namespace pairinteraction

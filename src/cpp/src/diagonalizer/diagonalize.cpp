@@ -1,7 +1,7 @@
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 
 #include "pairinteraction/system/SystemAtom.hpp"
-#include "pairinteraction/system/SystemCombined.hpp"
+#include "pairinteraction/system/SystemPair.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
 #include <complex>
@@ -59,7 +59,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
                               int precision, const Range<TYPE<SCALAR>::real_t> &eigenvalue_range);
 #define INSTANTIATE_DIAGONALIZE(SCALAR)                                                            \
     INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemAtom)                                             \
-    INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemCombined)
+    INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemPair)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
 INSTANTIATE_DIAGONALIZE(float)

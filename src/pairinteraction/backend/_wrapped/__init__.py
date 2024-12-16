@@ -5,12 +5,12 @@ from pairinteraction.backend._wrapped.basis.BasisAtom import (
     BasisAtomDouble,
     BasisAtomFloat,
 )
-from pairinteraction.backend._wrapped.basis.BasisCombined import (
-    BasisCombinedBase,
-    BasisCombinedComplexDouble,
-    BasisCombinedComplexFloat,
-    BasisCombinedDouble,
-    BasisCombinedFloat,
+from pairinteraction.backend._wrapped.basis.BasisPair import (
+    BasisPairBase,
+    BasisPairComplexDouble,
+    BasisPairComplexFloat,
+    BasisPairDouble,
+    BasisPairFloat,
 )
 from pairinteraction.backend._wrapped.convenience.calculate_energy import calculate_energy
 from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
@@ -26,12 +26,12 @@ from pairinteraction.backend._wrapped.ket.KetClassicalLight import (
     KetClassicalLightDouble,
     KetClassicalLightFloat,
 )
-from pairinteraction.backend._wrapped.ket.KetCombined import (
-    KetCombinedBase,
-    KetCombinedComplexDouble,
-    KetCombinedComplexFloat,
-    KetCombinedDouble,
-    KetCombinedFloat,
+from pairinteraction.backend._wrapped.ket.KetPair import (
+    KetPairBase,
+    KetPairComplexDouble,
+    KetPairComplexFloat,
+    KetPairDouble,
+    KetPairFloat,
 )
 from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -42,12 +42,12 @@ from pairinteraction.backend._wrapped.system.SystemAtom import (
     SystemAtomDouble,
     SystemAtomFloat,
 )
-from pairinteraction.backend._wrapped.system.SystemCombined import (
-    SystemCombinedBase,
-    SystemCombinedComplexDouble,
-    SystemCombinedComplexFloat,
-    SystemCombinedDouble,
-    SystemCombinedFloat,
+from pairinteraction.backend._wrapped.system.SystemPair import (
+    SystemPairBase,
+    SystemPairComplexDouble,
+    SystemPairComplexFloat,
+    SystemPairDouble,
+    SystemPairFloat,
 )
 
 __all__ = [
@@ -56,11 +56,11 @@ __all__ = [
     "BasisAtomComplexFloat",
     "BasisAtomDouble",
     "BasisAtomFloat",
-    "BasisCombinedBase",
-    "BasisCombinedComplexDouble",
-    "BasisCombinedComplexFloat",
-    "BasisCombinedDouble",
-    "BasisCombinedFloat",
+    "BasisPairBase",
+    "BasisPairComplexDouble",
+    "BasisPairComplexFloat",
+    "BasisPairDouble",
+    "BasisPairFloat",
     "Database",
     "Diagonalizer",
     "KetAtomBase",
@@ -69,11 +69,11 @@ __all__ = [
     "KetClassicalLightBase",
     "KetClassicalLightDouble",
     "KetClassicalLightFloat",
-    "KetCombinedBase",
-    "KetCombinedComplexDouble",
-    "KetCombinedComplexFloat",
-    "KetCombinedDouble",
-    "KetCombinedFloat",
+    "KetPairBase",
+    "KetPairComplexDouble",
+    "KetPairComplexFloat",
+    "KetPairDouble",
+    "KetPairFloat",
     "OperatorType",
     "Parity",
     "SystemAtomBase",
@@ -81,11 +81,11 @@ __all__ = [
     "SystemAtomComplexFloat",
     "SystemAtomDouble",
     "SystemAtomFloat",
-    "SystemCombinedBase",
-    "SystemCombinedComplexDouble",
-    "SystemCombinedComplexFloat",
-    "SystemCombinedDouble",
-    "SystemCombinedFloat",
+    "SystemPairBase",
+    "SystemPairComplexDouble",
+    "SystemPairComplexFloat",
+    "SystemPairDouble",
+    "SystemPairFloat",
     "calculate_energy",
     "diagonalize",
     "initialize_global_database",

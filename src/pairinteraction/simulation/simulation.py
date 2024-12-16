@@ -10,7 +10,7 @@ from typing import Union
 #     System,
 #     SystemAtom,
 #     SystemClassicalLight,
-#     SystemCombined,
+#     SystemPair,
 #     SystemWithInteractions,
 # )
 from pairinteraction.model.constituents.atom import BaseModelAtom
@@ -21,7 +21,7 @@ from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.simulation import ModelSimulation
 
 BasisAtom = BasisAtomCreator = BasisClassicalLight = ProductBasis = System = SystemAtom = SystemClassicalLight = (
-    SystemCombined
+    SystemPair
 ) = SystemWithInteractions = object  # mock to create the documentation
 
 
@@ -148,8 +148,8 @@ class Simulation(BaseSimulation):
         basis.set_conserved_parity_under_permutation(model.conserved_parity_under_permutation)
         basis.add_additional_states(model.additionally_included_states)  # TODO is this also wanted for combined?
 
-        # TODO is it clever to split SystemCombined creation and adding diagonal energy from the constituents?
-        system = SystemCombined(basis)
+        # TODO is it clever to split SystemPair creation and adding diagonal energy from the constituents?
+        system = SystemPair(basis)
         for k, constit in self.constituents.items():
             system.add_constituent_energy(k, constit)
 

@@ -12,16 +12,16 @@ if TYPE_CHECKING:
     from scipy.sparse import csr_matrix
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction.backend._wrapped.basis.BasisCombined import BasisCombined
+    from pairinteraction.backend._wrapped.basis.BasisPair import BasisPair
     from pairinteraction.units import Array
 
     SelfSystem_t = TypeVar("SelfSystem_t", bound="System")
 
-Basis_t = TypeVar("Basis_t", bound=Union["BasisAtom", "BasisCombined"])
+Basis_t = TypeVar("Basis_t", bound=Union["BasisAtom", "BasisPair"])
 UnionCPPSystem = Any
-# UnionCPPSystem is supposed to be System(|System)(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)
+# UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
-# UnionTypeCPPSystem is supposed to be type[System(Atom|Combined)(Float|Double|ComplexFloat|ComplexDouble)]
+# UnionTypeCPPSystem is supposed to be type[System(Atom|Pair)(Float|Double|ComplexFloat|ComplexDouble)]
 UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
 
 

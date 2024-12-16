@@ -1,17 +1,17 @@
-#include "pairinteraction/operator/OperatorCombined.hpp"
+#include "pairinteraction/operator/OperatorPair.hpp"
 
-#include "pairinteraction/basis/BasisCombined.hpp"
+#include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/enums/OperatorType.hpp"
 
 namespace pairinteraction {
 
 template <typename Scalar>
-OperatorCombined<Scalar>::OperatorCombined(std::shared_ptr<const basis_t> basis)
-    : Operator<OperatorCombined<Scalar>>(std::move(basis)) {}
+OperatorPair<Scalar>::OperatorPair(std::shared_ptr<const basis_t> basis)
+    : Operator<OperatorPair<Scalar>>(std::move(basis)) {}
 
 template <typename Scalar>
-OperatorCombined<Scalar>::OperatorCombined(std::shared_ptr<const basis_t> basis, OperatorType type)
-    : Operator<OperatorCombined<Scalar>>(std::move(basis)) {
+OperatorPair<Scalar>::OperatorPair(std::shared_ptr<const basis_t> basis, OperatorType type)
+    : Operator<OperatorPair<Scalar>>(std::move(basis)) {
     if (type == OperatorType::ENERGY) {
         this->initialize_as_energy_operator();
     } else {
@@ -20,8 +20,8 @@ OperatorCombined<Scalar>::OperatorCombined(std::shared_ptr<const basis_t> basis,
 }
 
 // Explicit instantiations
-template class OperatorCombined<float>;
-template class OperatorCombined<double>;
-template class OperatorCombined<std::complex<float>>;
-template class OperatorCombined<std::complex<double>>;
+template class OperatorPair<float>;
+template class OperatorPair<double>;
+template class OperatorPair<std::complex<float>>;
+template class OperatorPair<std::complex<double>>;
 } // namespace pairinteraction
