@@ -1,9 +1,9 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union, overload
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer
-from pairinteraction.units import QuantityArray, QuantitySparse
+from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer, get_cpp_range
+from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     import numpy as np
@@ -49,14 +49,19 @@ class SystemBase(ABC, Generic[Basis_t]):
         self,
         diagonalizer: Diagonalizer = "Eigen",
         precision: int = 12,
-        eigenvalue_range: Optional[UnionCPPRange] = None,
         sort_by_energy: bool = True,
+        energy_range: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
+        energy_unit: str = "pint",
     ):
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
-        if eigenvalue_range is None:
+        if energy_range is None:
             self._cpp.diagonalize(cpp_diagonalizer, precision)
         else:
-            self._cpp.diagonalize(cpp_diagonalizer, precision, eigenvalue_range)
+            min_energy_au = QuantityScalar(energy_range[0], energy_unit).to_base("ENERGY")
+            max_energy_au = QuantityScalar(energy_range[1], energy_unit).to_base("ENERGY")
+            cpp_range_class = get_cpp_range(self._cpp)
+            cpp_range = cpp_range_class(min_energy_au, max_energy_au)
+            self._cpp.diagonalize(cpp_diagonalizer, precision, cpp_range)
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             self._cpp.transform(sorter)
