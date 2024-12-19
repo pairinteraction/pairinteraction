@@ -413,7 +413,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     }
     if (description.quantum_number_nu.has_value()) {
         where += separator +
-            fmt::format("exp_nu BETWEEN {} AND {}", description.quantum_number_nu.value() - 0.5,
+            fmt::format("nu BETWEEN {} AND {}", description.quantum_number_nu.value() - 0.5,
                         description.quantum_number_nu.value() + 0.5);
         separator = " AND ";
     }
@@ -448,8 +448,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         separator = " + ";
     }
     if (description.quantum_number_nu.has_value()) {
-        orderby +=
-            separator + fmt::format("(exp_nu - {})^2", description.quantum_number_nu.value());
+        orderby += separator + fmt::format("(nu - {})^2", description.quantum_number_nu.value());
         separator = " + ";
     }
     if (description.quantum_number_l.has_value()) {
@@ -470,8 +469,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     // Ask the database for the described state
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, parity, id, n, exp_nu, std_nu, exp_l, std_l, exp_s, std_s,
-        exp_j, std_j, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
+        R"(SELECT energy, f, parity, id, n, nu, std_nui, exp_l, std_l, exp_s, std_s,
+        exp_j, std_j, is_calculated_with_mqdt, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
         orderby, tables[species + "_states"].local_path.string(), where));
 
     if (result->HasError()) {
@@ -486,15 +485,17 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     const auto &types = result->types;
     const auto &labels = result->names;
     const std::vector<duckdb::LogicalType> ref_types = {
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BIGINT,
-        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE};
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::BIGINT,
+        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::DOUBLE};
 
     for (size_t i = 0; i < types.size(); i++) {
         if (types[i] != ref_types[i]) {
-            throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
+            throw std::runtime_error("Wrong type for '" + labels[i] + "'. Got " +
+                                     types[i].ToString() + " but expected " +
+                                     ref_types[i].ToString());
         }
     }
 
@@ -504,8 +505,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     // Check that the ket is uniquely specified
     if (chunk->size() > 1) {
-        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[13])[0];
-        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[13])[1];
+        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[14])[0];
+        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[14])[1];
         if (order_val_1 - order_val_0 <= order_val_0) {
             throw std::runtime_error("The ket is not uniquely specified.");
         }
@@ -527,6 +528,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
     auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
     auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
+    auto result_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[13])[0];
 
     if (std::abs(result_quantum_number_m) > result_quantum_number_f) {
         throw std::runtime_error(
@@ -545,7 +547,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         result_quantum_number_n, result_quantum_number_nu_exp, result_quantum_number_nu_std,
         result_quantum_number_l_exp, result_quantum_number_l_std, result_quantum_number_s_exp,
         result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std,
-        *this, result_id);
+        result_is_calculated_with_mqdt, *this, result_id);
 }
 
 template <typename Scalar>
@@ -595,8 +597,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
     if (description.range_quantum_number_nu.is_finite()) {
         where += separator +
-            fmt::format("exp_nu BETWEEN {}-2*std_nu AND {}+2*std_nu",
-                        description.range_quantum_number_nu.min(),
+            fmt::format("nu BETWEEN {} AND {}", description.range_quantum_number_nu.min(),
                         description.range_quantum_number_nu.max());
         separator = " AND ";
     }
@@ -676,7 +677,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             separator = ", ";
         }
         if (description.range_quantum_number_nu.is_finite()) {
-            select += separator + "MIN(exp_nu) AS min_nu, MAX(exp_nu) AS max_nu";
+            select += separator + "MIN(nu) AS min_nu, MAX(nu) AS max_nu";
             separator = ", ";
         }
         if (description.range_quantum_number_l.is_finite()) {
@@ -827,8 +828,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 
     // Ask the table for the described states
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, m, parity, ketid, n, exp_nu, std_nu, exp_l, std_l,
-        exp_s, std_s, exp_j, std_j FROM '{}' ORDER BY ketid ASC)",
+        R"(SELECT energy, f, m, parity, ketid, n, nu, std_nui, exp_l, std_l,
+        exp_s, std_s, exp_j, std_j, is_calculated_with_mqdt FROM '{}' ORDER BY ketid ASC)",
         id_of_kets));
 
     if (result->HasError()) {
@@ -847,11 +848,13 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,
         duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
         duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE};
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN};
 
     for (size_t i = 0; i < types.size(); i++) {
         if (types[i] != ref_types[i]) {
-            throw std::runtime_error("Wrong type for '" + labels[i] + "'.");
+            throw std::runtime_error("Wrong type for '" + labels[i] + "'. Got " +
+                                     types[i].ToString() + " but expected " +
+                                     ref_types[i].ToString());
         }
     }
 
@@ -876,6 +879,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         auto *chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11]);
         auto *chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12]);
         auto *chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13]);
+        auto *chunk_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[14]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
 
@@ -893,7 +897,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                 chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
                 chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
                 chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
-                chunk_quantum_number_j_std[i], *this, chunk_id[i]));
+                chunk_quantum_number_j_std[i], chunk_is_calculated_with_mqdt[i], *this,
+                chunk_id[i]));
         }
     }
 

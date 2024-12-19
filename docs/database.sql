@@ -50,8 +50,8 @@ CREATE TABLE states (
     std_s REAL NOT NULL, -- the standard deviation of the total spin quantum number of all valence electrons
     std_l_ryd REAL NOT NULL, -- the standard deviation of the orbital quantum number of the Rydberg electron
     std_j_ryd REAL NOT NULL, -- the standard deviation of the total angular quantum number of the Rydberg electron
-    is_j_total_momentum BIT NOT NULL, -- whether j is the total momentum quantum number, otherwise f is used for printing the state
-    is_calculated_with_mqdt BIT NOT NULL, -- whether multi-channel quantum defect theory was used
+    is_j_total_momentum BOOLEAN NOT NULL, -- whether j is the total momentum quantum number, otherwise f is used for printing the state
+    is_calculated_with_mqdt BOOLEAN NOT NULL, -- whether multi-channel quantum defect theory was used
     underspecified_channel_contribution REAL NOT NULL -- the contribution of channels whose quantum numbers are not exactly known
 );
 

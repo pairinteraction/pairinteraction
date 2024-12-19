@@ -106,7 +106,14 @@ int main(int argc, char **argv) {
             reference_kets.push_back(line);
         }
         stream.close();
-        if (kets != reference_kets) {
+        if (kets.size() != reference_kets.size()) {
+            SPDLOG_ERROR("Number of kets does not match reference data");
+            success = false;
+        } else if (kets != reference_kets) {
+            for (size_t i = 0; i < kets.size(); ++i) {
+                SPDLOG_DEBUG("Ket: {} vs {}, match: {}", kets[i], reference_kets[i],
+                             kets[i] == reference_kets[i]);
+            }
             SPDLOG_ERROR("Kets do not match reference data");
             success = false;
         }
