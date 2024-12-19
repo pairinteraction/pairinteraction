@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", ha
 
 
 @dataclass
-class ParquetFile:
+class TableFile:
     name: str
     version: int
     path: Path
@@ -33,28 +33,28 @@ def get_source_directory() -> Path:
     return source_dir
 
 
-def load_parquet_files(path_source: Path) -> dict[str, ParquetFile]:
+def load_parquet_and_csv_files(path_source: Path) -> dict[str, TableFile]:
     """Load the latest parquet files from the source directory."""
-    parquet_files = {}
-    for path in path_source.glob("*.parquet"):
+    parquet_and_csv_files = {}
+    for path in list(path_source.glob("*.parquet")) + list(path_source.glob("*.csv")):
         name, version_str = path.stem.rsplit("_v", 1)
         version = int(version_str)
-        if name not in parquet_files or version > parquet_files[name].version:
-            parquet_files[name] = ParquetFile(name, version, path)
-            logging.debug(f"Loaded parquet file: {parquet_files[name]}")
-    return parquet_files
+        if name not in parquet_and_csv_files or version > parquet_and_csv_files[name].version:
+            parquet_and_csv_files[name] = TableFile(name, version, path)
+            logging.debug(f"Loaded parquet file: {parquet_and_csv_files[name]}")
+    return parquet_and_csv_files
 
 
-def delete_old_parquet_files(path_target: Path, parquet_files: dict[str, ParquetFile]) -> None:
+def delete_old_parquet_and_csv_files(path_target: Path, parquet_and_csv_files: dict[str, TableFile]) -> None:
     """Delete old parquet files from the target directory."""
-    for path in path_target.glob("*.parquet"):
+    for path in list(path_target.glob("*.parquet")) + list(path_target.glob("*.csv")):
         name, version_str = path.stem.rsplit("_v", 1)
         version = int(version_str)
-        if name in parquet_files:
-            if version < parquet_files[name].version:
+        if name in parquet_and_csv_files:
+            if version < parquet_and_csv_files[name].version or path != parquet_and_csv_files[name].path:
                 path.unlink()
                 logging.info(f"Deleted old parquet file: {path.name}")
-            elif version > parquet_files[name].version:
+            elif version > parquet_and_csv_files[name].version:
                 raise ValueError(
                     f"Version of the table '{name}' in target directory is higher than in source directory."
                 )
@@ -62,12 +62,12 @@ def delete_old_parquet_files(path_target: Path, parquet_files: dict[str, Parquet
 
 def write_parquet_files(
     connection: duckdb.DuckDBPyConnection,
-    parquet_files: dict[str, ParquetFile],
+    parquet_and_csv_files: dict[str, TableFile],
     path_target: Path,
     options: dict[str, str],
 ) -> None:
     """Write parquet files to the target directory. This also updates the path attribute of the parquet files."""
-    for parquet_file in parquet_files.values():
+    for parquet_file in parquet_and_csv_files.values():
         parquet_file.path = path_target / f"{parquet_file.name}_v{parquet_file.version}.parquet"
         copy_cmd = (
             f"COPY {parquet_file.name} TO '{parquet_file.path}' "
@@ -77,7 +77,7 @@ def write_parquet_files(
         logging.debug(f"Wrote parquet file: {parquet_file.path}")
 
 
-def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[str, ParquetFile]) -> None:
+def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[str, TableFile]) -> None:
     """Print metadata for the given parquet files as a table."""
     headers = ["Name", "Compression", "Rows", "Groups", "Rows/Group", "Size"]
 
@@ -85,6 +85,9 @@ def print_metadata(connection: duckdb.DuckDBPyConnection, parquet_files: dict[st
     table_data = []
     total_size_on_disk = 0
     for parquet_file in parquet_files.values():
+        if parquet_file.path.suffix == ".csv":
+            continue
+
         metadata = connection.execute(
             f"SELECT compression, row_group_num_rows FROM parquet_metadata('{parquet_file.path}')"
         ).fetchone()
@@ -154,32 +157,32 @@ def optimize() -> None:
     compression = args.compression
 
     path_source = get_source_directory()
-    parquet_files = load_parquet_files(path_source)
+    parquet_and_csv_files = load_parquet_and_csv_files(path_source)
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
         logging.info("Metadata of the original parquet files")
         logging.info("")
-        print_metadata(connection, parquet_files)
+        print_metadata(connection, parquet_and_csv_files)
         logging.info("")
 
         # Read parquet files into DuckDB
-        for parquet_file in parquet_files.values():
-            connection.execute(f"CREATE TEMP TABLE {parquet_file.name} AS SELECT * FROM '{parquet_file.path}'")
-            logging.debug(f"Loaded table into DuckDB: {parquet_file.name}")
+        for table_file in parquet_and_csv_files.values():
+            connection.execute(f"CREATE TEMP TABLE {table_file.name} AS SELECT * FROM '{table_file.path}'")
+            logging.debug(f"Loaded table into DuckDB: {table_file.name}")
 
         # Delete old parquet files from the target directory to keep it clean
-        delete_old_parquet_files(path_target, parquet_files)
+        delete_old_parquet_and_csv_files(path_target, parquet_and_csv_files)
 
         # Write optimized parquet files
         write_parquet_files(
-            connection, parquet_files, path_target, {"COMPRESSION": compression, "ROW_GROUP_SIZE": "100_000"}
+            connection, parquet_and_csv_files, path_target, {"COMPRESSION": compression, "ROW_GROUP_SIZE": "100_000"}
         )
 
         # Print metadata of the new parquet files
         logging.info("Metadata of the newly created parquet files")
         logging.info("")
-        print_metadata(connection, parquet_files)
+        print_metadata(connection, parquet_and_csv_files)
         logging.info("")
 
 
@@ -214,7 +217,7 @@ def shrink() -> None:
     max_f = args.max_f
 
     path_source = get_source_directory()
-    parquet_files = load_parquet_files(path_source)
+    parquet_files = load_parquet_and_csv_files(path_source)
 
     with duckdb.connect(":memory:") as connection:
         # Print metadata of the original parquet files
@@ -263,7 +266,7 @@ def shrink() -> None:
                     logging.debug(f"Shrunk table '{parquet_file.name}' based on '{state_db_name}'")
 
         # Delete old parquet files from the target directory to keep it clean
-        delete_old_parquet_files(path_target, parquet_files)
+        delete_old_parquet_and_csv_files(path_target, parquet_files)
 
         # Write shrunk parquet files with compression
         write_parquet_files(
