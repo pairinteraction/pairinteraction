@@ -24,7 +24,6 @@ using namespace pairinteraction;
 template <typename T>
 static void declare_system(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "System" + type_name;
-    using basis_t = typename System<T>::basis_t;
     using real_t = typename System<T>::real_t;
     using scalar_t = typename System<T>::scalar_t;
     nb::class_<System<T>, TransformationBuilderInterface<scalar_t>> pyclass(m,

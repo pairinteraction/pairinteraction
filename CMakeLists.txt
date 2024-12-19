@@ -162,14 +162,19 @@ find_package(cpptrace QUIET)
 if(NOT cpptrace_FOUND)
   FetchContent_Declare(
     cpptrace
+    SYSTEM
     GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
     GIT_TAG 4354eb21ea3565a73afdf32ec0ba768fd648c425 # v0.7.3
   )
+
+  # Add the EXCLUDE_FROM_ALL option to avoid adding files of cpptrace to the wheel. In the future, with cmake 3.28, we
+  # can add this argument directly to FetchContent_Declare.
   FetchContent_GetProperties(cpptrace)
   if(NOT cpptrace_POPULATED)
     FetchContent_Populate(cpptrace)
     add_subdirectory(${cpptrace_SOURCE_DIR} ${cpptrace_BINARY_DIR} EXCLUDE_FROM_ALL)
   endif()
+
   FetchContent_MakeAvailable(cpptrace)
   set_target_properties(cpptrace-lib PROPERTIES CXX_CLANG_TIDY "")
 endif()

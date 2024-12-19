@@ -41,6 +41,9 @@ nanobind_add_module(
 
 target_link_libraries(backend PRIVATE pairinteraction $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>)
 
+target_compile_options(
+  backend PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra>)
+
 set_target_properties(
   backend
   PROPERTIES OUTPUT_NAME _backend
