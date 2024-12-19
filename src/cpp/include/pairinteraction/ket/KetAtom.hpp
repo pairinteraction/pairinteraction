@@ -27,7 +27,8 @@ class KetAtom : public Ket<Real> {
 public:
     KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p, std::string species, int n,
             Real nu_exp, Real nu_std, Real l_exp, Real l_std, Real s_exp, Real s_std, Real j_exp,
-            Real j_std, bool is_calculated_with_mqdt, Database &database, size_t id_in_database);
+            Real j_std, bool is_j_total_momentum, bool is_calculated_with_mqdt, Database &database,
+            size_t id_in_database);
 
     Database &get_database() const;
     size_t get_id_in_database() const;
@@ -63,6 +64,7 @@ private:
     Real quantum_number_s_std;
     Real quantum_number_j_exp;
     Real quantum_number_j_std;
+    bool is_j_total_momentum;
     bool is_calculated_with_mqdt;
     Database &database;
     size_t id_in_database;
