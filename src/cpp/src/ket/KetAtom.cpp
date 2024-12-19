@@ -18,12 +18,13 @@ constexpr std::array<std::string_view, 6> quantum_number_l_labels = {"S", "P", "
 template <typename Real>
 KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
-                       Real s_exp, Real s_std, Real j_exp, Real j_std, Database &database,
-                       size_t id_in_database)
+                       Real s_exp, Real s_std, Real j_exp, Real j_std, bool is_calculated_with_mqdt,
+                       Database &database, size_t id_in_database)
     : Ket<Real>(energy, f, m, p), species(std::move(species)), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
-      quantum_number_j_exp(j_exp), quantum_number_j_std(j_std), database(database),
+      quantum_number_j_exp(j_exp), quantum_number_j_std(j_std),
+      is_calculated_with_mqdt(is_calculated_with_mqdt), database(database),
       id_in_database(id_in_database) {}
 
 template <typename Real>
@@ -38,15 +39,11 @@ size_t KetAtom<Real>::get_id_in_database() const {
 
 template <typename Real>
 std::string KetAtom<Real>::get_label() const {
-    // For the moment, the use of multiple channels is indicated by a negative value of n. When we
-    // have updated the database, we must adapt this.
-    bool is_single_channel = quantum_number_n > 0;
-
     size_t pos = species.find('_');
     std::string label = (pos != std::string::npos) ? species.substr(0, pos) : species;
     label[0] = static_cast<char>(std::toupper(label[0]));
 
-    if (is_single_channel) {
+    if (!is_calculated_with_mqdt) {
         if (quantum_number_s_exp == 0) {
             label += "_singlet";
         } else if (quantum_number_s_exp == 1) {
@@ -59,7 +56,10 @@ std::string KetAtom<Real>::get_label() const {
 
     label += ":";
 
-    if (is_single_channel) {
+    if (is_calculated_with_mqdt) {
+        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},F=", quantum_number_s_exp,
+                             quantum_number_nu_exp, quantum_number_l_exp);
+    } else {
         label += fmt::format("{:d},", quantum_number_n);
         if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
             quantum_number_l_exp < quantum_number_l_labels.size()) {
@@ -68,9 +68,6 @@ std::string KetAtom<Real>::get_label() const {
             label += fmt::format("{:.0f}", quantum_number_l_exp);
         }
         label += "_";
-    } else {
-        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},F=", quantum_number_s_exp,
-                             quantum_number_nu_exp, quantum_number_l_exp);
     }
 
     if (this->quantum_number_f == std::rintf(this->quantum_number_f)) {

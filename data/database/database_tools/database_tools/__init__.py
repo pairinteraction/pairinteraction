@@ -245,11 +245,9 @@ def shrink() -> None:
                 connection.execute(
                     f"CREATE TEMP TABLE {parquet_file.name} "
                     f"AS SELECT * FROM '{parquet_file.path}' "
-                    f"WHERE exp_nu BETWEEN {min_n} AND {max_n} AND f BETWEEN 0 AND {max_f}"
+                    f"WHERE nu BETWEEN {min_n} AND {max_n} AND f BETWEEN 0 AND {max_f}"
                 )
-                logging.debug(
-                    f"Filtered '{parquet_file.name}' with exp_nu between {min_n} and {max_n} and f <= {max_f}"
-                )
+                logging.debug(f"Filtered '{parquet_file.name}' with nu between {min_n} and {max_n} and f <= {max_f}")
 
         for parquet_file in parquet_files.values():
             if not parquet_file.name.endswith("_states") and parquet_file.name != "wigner":
