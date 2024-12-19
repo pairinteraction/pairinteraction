@@ -18,14 +18,14 @@ constexpr std::array<std::string_view, 6> quantum_number_l_labels = {"S", "P", "
 template <typename Real>
 KetAtom<Real>::KetAtom(Private /*unused*/, Real energy, Real f, Real m, Parity p,
                        std::string species, int n, Real nu_exp, Real nu_std, Real l_exp, Real l_std,
-                       Real s_exp, Real s_std, Real j_exp, Real j_std, bool is_calculated_with_mqdt,
-                       Database &database, size_t id_in_database)
+                       Real s_exp, Real s_std, Real j_exp, Real j_std, bool is_j_total_momentum,
+                       bool is_calculated_with_mqdt, Database &database, size_t id_in_database)
     : Ket<Real>(energy, f, m, p), species(std::move(species)), quantum_number_n(n),
       quantum_number_nu_exp(nu_exp), quantum_number_nu_std(nu_std), quantum_number_l_exp(l_exp),
       quantum_number_l_std(l_std), quantum_number_s_exp(s_exp), quantum_number_s_std(s_std),
       quantum_number_j_exp(j_exp), quantum_number_j_std(j_std),
-      is_calculated_with_mqdt(is_calculated_with_mqdt), database(database),
-      id_in_database(id_in_database) {}
+      is_j_total_momentum(is_j_total_momentum), is_calculated_with_mqdt(is_calculated_with_mqdt),
+      database(database), id_in_database(id_in_database) {}
 
 template <typename Real>
 Database &KetAtom<Real>::get_database() const {
@@ -57,8 +57,9 @@ std::string KetAtom<Real>::get_label() const {
     label += ":";
 
     if (is_calculated_with_mqdt) {
-        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},F=", quantum_number_s_exp,
+        label += fmt::format("S={:.1f},nu={:.1f},L={:.1f},", quantum_number_s_exp,
                              quantum_number_nu_exp, quantum_number_l_exp);
+        label += this->is_j_total_momentum ? "J=" : "F=";
     } else {
         label += fmt::format("{:d},", quantum_number_n);
         if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
@@ -70,12 +71,14 @@ std::string KetAtom<Real>::get_label() const {
         label += "_";
     }
 
-    if (this->quantum_number_f == std::rintf(this->quantum_number_f)) {
-        label += fmt::format("{:.0f}", this->quantum_number_f);
-    } else if (2 * this->quantum_number_f == std::rintf(2 * this->quantum_number_f)) {
-        label += fmt::format("{:.0f}/2", 2 * this->quantum_number_f);
+    Real total_momentum =
+        this->is_j_total_momentum ? this->quantum_number_j_exp : this->quantum_number_f;
+    if (total_momentum == std::rintf(total_momentum)) {
+        label += fmt::format("{:.0f}", total_momentum);
+    } else if (2 * total_momentum == std::rintf(2 * total_momentum)) {
+        label += fmt::format("{:.0f}/2", 2 * total_momentum);
     } else {
-        std::abort(); // can't happen because the quantum number f is validated to be an integer
+        std::abort(); // can't happen because the total momentum is validated to be an integer
                       // or half-integer
     }
 
