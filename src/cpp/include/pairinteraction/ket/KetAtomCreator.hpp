@@ -34,9 +34,12 @@ public:
     KetAtomCreator<Real> &set_parity(Parity value);
     KetAtomCreator<Real> &set_quantum_number_n(int value);
     KetAtomCreator<Real> &set_quantum_number_nu(Real value);
+    KetAtomCreator<Real> &set_quantum_number_nui(Real value);
     KetAtomCreator<Real> &set_quantum_number_l(Real value);
     KetAtomCreator<Real> &set_quantum_number_s(Real value);
     KetAtomCreator<Real> &set_quantum_number_j(Real value);
+    KetAtomCreator<Real> &set_quantum_number_l_ryd(Real value);
+    KetAtomCreator<Real> &set_quantum_number_j_ryd(Real value);
     std::shared_ptr<const KetAtom<Real>> create(Database &database) const;
 
 private:
@@ -47,9 +50,12 @@ private:
     std::optional<Real> quantum_number_m;
     std::optional<int> quantum_number_n;
     std::optional<Real> quantum_number_nu;
+    std::optional<Real> quantum_number_nui;
     std::optional<Real> quantum_number_l;
     std::optional<Real> quantum_number_s;
     std::optional<Real> quantum_number_j;
+    std::optional<Real> quantum_number_l_ryd;
+    std::optional<Real> quantum_number_j_ryd;
 };
 
 extern template class KetAtomCreator<float>;

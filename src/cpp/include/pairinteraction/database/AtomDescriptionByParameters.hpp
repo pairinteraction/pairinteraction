@@ -17,8 +17,11 @@ struct AtomDescriptionByParameters {
     std::optional<Real> quantum_number_m;
     std::optional<int> quantum_number_n;
     std::optional<Real> quantum_number_nu;
+    std::optional<Real> quantum_number_nui;
     std::optional<Real> quantum_number_l;
     std::optional<Real> quantum_number_s;
     std::optional<Real> quantum_number_j;
+    std::optional<Real> quantum_number_l_ryd;
+    std::optional<Real> quantum_number_j_ryd;
 };
 } // namespace pairinteraction

@@ -18,8 +18,11 @@ struct AtomDescriptionByRanges {
     Range<Real> range_quantum_number_m;
     Range<int> range_quantum_number_n;
     Range<Real> range_quantum_number_nu;
+    Range<Real> range_quantum_number_nui;
     Range<Real> range_quantum_number_l;
     Range<Real> range_quantum_number_s;
     Range<Real> range_quantum_number_j;
+    Range<Real> range_quantum_number_l_ryd;
+    Range<Real> range_quantum_number_j_ryd;
 };
 } // namespace pairinteraction

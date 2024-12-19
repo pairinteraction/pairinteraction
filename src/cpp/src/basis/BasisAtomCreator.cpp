@@ -58,6 +58,13 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_nu(r
 }
 
 template <typename Scalar>
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_nui(real_t min,
+                                                                                real_t max) {
+    range_quantum_number_nui = {min, max};
+    return *this;
+}
+
+template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_l(real_t min,
                                                                               real_t max) {
     range_quantum_number_l = {min, max};
@@ -75,6 +82,20 @@ template <typename Scalar>
 BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j(real_t min,
                                                                               real_t max) {
     range_quantum_number_j = {min, max};
+    return *this;
+}
+
+template <typename Scalar>
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_l_ryd(real_t min,
+                                                                                  real_t max) {
+    range_quantum_number_l_ryd = {min, max};
+    return *this;
+}
+
+template <typename Scalar>
+BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j_ryd(real_t min,
+                                                                                  real_t max) {
+    range_quantum_number_j_ryd = {min, max};
     return *this;
 }
 
@@ -113,9 +134,12 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
                                                 range_quantum_number_m,
                                                 range_quantum_number_n,
                                                 range_quantum_number_nu,
+                                                range_quantum_number_nui,
                                                 range_quantum_number_l,
                                                 range_quantum_number_s,
-                                                range_quantum_number_j};
+                                                range_quantum_number_j,
+                                                range_quantum_number_l_ryd,
+                                                range_quantum_number_j_ryd};
 
     return database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);
 }

@@ -417,6 +417,12 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
                         description.quantum_number_nu.value() + 0.5);
         separator = " AND ";
     }
+    if (description.quantum_number_nui.has_value()) {
+        where += separator +
+            fmt::format("exp_nui BETWEEN {} AND {}", description.quantum_number_nui.value() - 0.5,
+                        description.quantum_number_nui.value() + 0.5);
+        separator = " AND ";
+    }
     if (description.quantum_number_l.has_value()) {
         where += separator +
             fmt::format("exp_l BETWEEN {} AND {}", description.quantum_number_l.value() - 0.5,
@@ -435,6 +441,20 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
                         description.quantum_number_j.value() + 0.5);
         separator = " AND ";
     }
+    if (description.quantum_number_l_ryd.has_value()) {
+        where += separator +
+            fmt::format("exp_l_ryd BETWEEN {} AND {}",
+                        description.quantum_number_l_ryd.value() - 0.5,
+                        description.quantum_number_l_ryd.value() + 0.5);
+        separator = " AND ";
+    }
+    if (description.quantum_number_j_ryd.has_value()) {
+        where += separator +
+            fmt::format("exp_j_ryd BETWEEN {} AND {}",
+                        description.quantum_number_j_ryd.value() - 0.5,
+                        description.quantum_number_j_ryd.value() + 0.5);
+        separator = " AND ";
+    }
     if (separator.empty()) {
         where += "FALSE";
     }
@@ -451,6 +471,11 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         orderby += separator + fmt::format("(nu - {})^2", description.quantum_number_nu.value());
         separator = " + ";
     }
+    if (description.quantum_number_nui.has_value()) {
+        orderby +=
+            separator + fmt::format("(exp_nui - {})^2", description.quantum_number_nui.value());
+        separator = " + ";
+    }
     if (description.quantum_number_l.has_value()) {
         orderby += separator + fmt::format("(exp_l - {})^2", description.quantum_number_l.value());
         separator = " + ";
@@ -463,14 +488,24 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         orderby += separator + fmt::format("(exp_j - {})^2", description.quantum_number_j.value());
         separator = " + ";
     }
+    if (description.quantum_number_l_ryd.has_value()) {
+        orderby +=
+            separator + fmt::format("(exp_l_ryd - {})^2", description.quantum_number_l_ryd.value());
+        separator = " + ";
+    }
+    if (description.quantum_number_j_ryd.has_value()) {
+        orderby +=
+            separator + fmt::format("(exp_j_ryd - {})^2", description.quantum_number_j_ryd.value());
+        separator = " + ";
+    }
     if (separator.empty()) {
         orderby += "id";
     }
 
     // Ask the database for the described state
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, parity, id, n, nu, std_nui, exp_l, std_l, exp_s, std_s,
-        exp_j, std_j, is_j_total_momentum, is_calculated_with_mqdt, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
+        R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
+        exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
         orderby, tables[species + "_states"].local_path.string(), where));
 
     if (result->HasError()) {
@@ -485,12 +520,13 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     const auto &types = result->types;
     const auto &labels = result->names;
     const std::vector<duckdb::LogicalType> ref_types = {
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::BIGINT,
-        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::BOOLEAN,
-        duckdb::LogicalType::DOUBLE};
+        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::BIGINT,
+        duckdb::LogicalType::BIGINT,  duckdb::LogicalType::BIGINT,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::DOUBLE};
 
     for (size_t i = 0; i < types.size(); i++) {
         if (types[i] != ref_types[i]) {
@@ -506,10 +542,70 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     // Check that the ket is uniquely specified
     if (chunk->size() > 1) {
-        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[15])[0];
-        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[15])[1];
+        auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[20])[0];
+        auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[20])[1];
         if (order_val_1 - order_val_0 <= order_val_0) {
-            throw std::runtime_error("The ket is not uniquely specified.");
+            // Get a list of possible kets
+            std::vector<KetAtom<Real>> kets;
+            kets.reserve(2);
+            for (size_t i = 0; i < 2; ++i) {
+                auto result_quantum_number_m = description.quantum_number_m.value();
+                auto result_energy = duckdb::FlatVector::GetData<double>(chunk->data[0])[i];
+                auto result_quantum_number_f =
+                    duckdb::FlatVector::GetData<double>(chunk->data[1])[i];
+                auto result_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[2])[i];
+                auto result_id = utils::get_linearized_id_in_database(
+                    duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[i],
+                    result_quantum_number_m);
+                auto result_quantum_number_n =
+                    duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[i];
+                auto result_quantum_number_nu =
+                    duckdb::FlatVector::GetData<double>(chunk->data[5])[i];
+                auto result_quantum_number_nui_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[6])[i];
+                auto result_quantum_number_nui_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[7])[i];
+                auto result_quantum_number_l_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[8])[i];
+                auto result_quantum_number_l_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[9])[i];
+                auto result_quantum_number_s_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[10])[i];
+                auto result_quantum_number_s_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[11])[i];
+                auto result_quantum_number_j_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[12])[i];
+                auto result_quantum_number_j_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[13])[i];
+                auto result_quantum_number_l_ryd_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[14])[i];
+                auto result_quantum_number_l_ryd_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[15])[i];
+                auto result_quantum_number_j_ryd_exp =
+                    duckdb::FlatVector::GetData<double>(chunk->data[16])[i];
+                auto result_quantum_number_j_ryd_std =
+                    duckdb::FlatVector::GetData<double>(chunk->data[17])[i];
+                auto result_is_j_total_momentum =
+                    duckdb::FlatVector::GetData<bool>(chunk->data[18])[i];
+                auto result_is_calculated_with_mqdt =
+                    duckdb::FlatVector::GetData<bool>(chunk->data[19])[i];
+                kets.emplace_back(
+                    typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
+                    result_quantum_number_m, static_cast<Parity>(result_parity), species,
+                    result_quantum_number_n, result_quantum_number_nu,
+                    result_quantum_number_nui_exp, result_quantum_number_nui_std,
+                    result_quantum_number_l_exp, result_quantum_number_l_std,
+                    result_quantum_number_s_exp, result_quantum_number_s_std,
+                    result_quantum_number_j_exp, result_quantum_number_j_std,
+                    result_quantum_number_l_ryd_exp, result_quantum_number_l_ryd_std,
+                    result_quantum_number_j_ryd_exp, result_quantum_number_j_ryd_std,
+                    result_is_j_total_momentum, result_is_calculated_with_mqdt, *this, result_id);
+            }
+
+            // Throw an error with the possible kets
+            throw std::runtime_error(
+                fmt::format("The ket is not uniquely specified. Possible kets are:\n{}\n{}",
+                            fmt::streamed(kets[0]), fmt::streamed(kets[1])));
         }
     }
 
@@ -521,16 +617,21 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result_id = utils::get_linearized_id_in_database(
         duckdb::FlatVector::GetData<int64_t>(chunk->data[3])[0], result_quantum_number_m);
     auto result_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[4])[0];
-    auto result_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[5])[0];
-    auto result_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[6])[0];
-    auto result_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[7])[0];
-    auto result_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[8])[0];
-    auto result_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[9])[0];
-    auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
-    auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
-    auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
-    auto result_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[13])[0];
-    auto result_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[14])[0];
+    auto result_quantum_number_nu = duckdb::FlatVector::GetData<double>(chunk->data[5])[0];
+    auto result_quantum_number_nui_exp = duckdb::FlatVector::GetData<double>(chunk->data[6])[0];
+    auto result_quantum_number_nui_std = duckdb::FlatVector::GetData<double>(chunk->data[7])[0];
+    auto result_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8])[0];
+    auto result_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9])[0];
+    auto result_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10])[0];
+    auto result_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11])[0];
+    auto result_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12])[0];
+    auto result_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13])[0];
+    auto result_quantum_number_l_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[14])[0];
+    auto result_quantum_number_l_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[15])[0];
+    auto result_quantum_number_j_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[16])[0];
+    auto result_quantum_number_j_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[17])[0];
+    auto result_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[18])[0];
+    auto result_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[19])[0];
 
     // Check the quantum number m
     if (std::abs(result_quantum_number_m) > result_quantum_number_f) {
@@ -553,10 +654,13 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     return std::make_shared<const KetAtom<Real>>(
         typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
         result_quantum_number_m, static_cast<Parity>(result_parity), species,
-        result_quantum_number_n, result_quantum_number_nu_exp, result_quantum_number_nu_std,
-        result_quantum_number_l_exp, result_quantum_number_l_std, result_quantum_number_s_exp,
-        result_quantum_number_s_std, result_quantum_number_j_exp, result_quantum_number_j_std,
-        result_is_j_total_momentum, result_is_calculated_with_mqdt, *this, result_id);
+        result_quantum_number_n, result_quantum_number_nu, result_quantum_number_nui_exp,
+        result_quantum_number_nui_std, result_quantum_number_l_exp, result_quantum_number_l_std,
+        result_quantum_number_s_exp, result_quantum_number_s_std, result_quantum_number_j_exp,
+        result_quantum_number_j_std, result_quantum_number_l_ryd_exp,
+        result_quantum_number_l_ryd_std, result_quantum_number_j_ryd_exp,
+        result_quantum_number_j_ryd_std, result_is_j_total_momentum, result_is_calculated_with_mqdt,
+        *this, result_id);
 }
 
 template <typename Scalar>
@@ -610,6 +714,13 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                         description.range_quantum_number_nu.max());
         separator = " AND ";
     }
+    if (description.range_quantum_number_nui.is_finite()) {
+        where += separator +
+            fmt::format("exp_nui BETWEEN {}-2*std_nui AND {}+2*std_nui",
+                        description.range_quantum_number_nui.min(),
+                        description.range_quantum_number_nui.max());
+        separator = " AND ";
+    }
     if (description.range_quantum_number_l.is_finite()) {
         where += separator +
             fmt::format("exp_l BETWEEN {}-2*std_l AND {}+2*std_l",
@@ -629,6 +740,20 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             fmt::format("exp_j BETWEEN {}-2*std_j AND {}+2*std_j",
                         description.range_quantum_number_j.min(),
                         description.range_quantum_number_j.max());
+        separator = " AND ";
+    }
+    if (description.range_quantum_number_l_ryd.is_finite()) {
+        where += separator +
+            fmt::format("exp_l_ryd BETWEEN {}-2*std_l_ryd AND {}+2*std_l_ryd",
+                        description.range_quantum_number_l_ryd.min(),
+                        description.range_quantum_number_l_ryd.max());
+        separator = " AND ";
+    }
+    if (description.range_quantum_number_j_ryd.is_finite()) {
+        where += separator +
+            fmt::format("exp_j_ryd BETWEEN {}-2*std_j_ryd AND {}+2*std_j_ryd",
+                        description.range_quantum_number_j_ryd.min(),
+                        description.range_quantum_number_j_ryd.max());
         separator = " AND ";
     }
     if (separator.empty()) {
@@ -689,6 +814,10 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             select += separator + "MIN(nu) AS min_nu, MAX(nu) AS max_nu";
             separator = ", ";
         }
+        if (description.range_quantum_number_nui.is_finite()) {
+            select += separator + "MIN(exp_nui) AS min_nui, MAX(exp_nui) AS max_nui";
+            separator = ", ";
+        }
         if (description.range_quantum_number_l.is_finite()) {
             select += separator + "MIN(exp_l) AS min_l, MAX(exp_l) AS max_l";
             separator = ", ";
@@ -699,6 +828,14 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         }
         if (description.range_quantum_number_j.is_finite()) {
             select += separator + "MIN(exp_j) AS min_j, MAX(exp_j) AS max_j";
+            separator = ", ";
+        }
+        if (description.range_quantum_number_l_ryd.is_finite()) {
+            select += separator + "MIN(exp_l_ryd) AS min_l_ryd, MAX(exp_l_ryd) AS max_l_ryd";
+            separator = ", ";
+        }
+        if (description.range_quantum_number_j_ryd.is_finite()) {
+            select += separator + "MIN(exp_j_ryd) AS min_j_ryd, MAX(exp_j_ryd) AS max_j_ryd";
             separator = ", ";
         }
 
@@ -790,6 +927,20 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                                 description.range_quantum_number_nu.max(), max_nu);
                 }
             }
+            if (description.range_quantum_number_nui.is_finite()) {
+                auto min_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (min_nui - 1 > description.range_quantum_number_nui.min()) {
+                    SPDLOG_WARN("No state found with the requested minimum quantum number nui. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_nui.min(), min_nui);
+                }
+                auto max_nui = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (max_nui + 1 < description.range_quantum_number_nui.max()) {
+                    SPDLOG_WARN("No state found with the requested maximum quantum number nui. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_nui.max(), max_nui);
+                }
+            }
             if (description.range_quantum_number_l.is_finite()) {
                 auto min_l = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
                 if (min_l - 1 > description.range_quantum_number_l.min()) {
@@ -832,13 +983,41 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                                 description.range_quantum_number_j.max(), max_j);
                 }
             }
+            if (description.range_quantum_number_l_ryd.is_finite()) {
+                auto min_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (min_l_ryd - 1 > description.range_quantum_number_l_ryd.min()) {
+                    SPDLOG_WARN("No state found with the requested minimum quantum number l_ryd. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_l_ryd.min(), min_l_ryd);
+                }
+                auto max_l_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (max_l_ryd + 1 < description.range_quantum_number_l_ryd.max()) {
+                    SPDLOG_WARN("No state found with the requested maximum quantum number l_ryd. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_l_ryd.max(), max_l_ryd);
+                }
+            }
+            if (description.range_quantum_number_j_ryd.is_finite()) {
+                auto min_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (min_j_ryd - 1 > description.range_quantum_number_j_ryd.min()) {
+                    SPDLOG_WARN("No state found with the requested minimum quantum number j_ryd. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_j_ryd.min(), min_j_ryd);
+                }
+                auto max_j_ryd = duckdb::FlatVector::GetData<double>(chunk->data[idx++])[0];
+                if (max_j_ryd + 1 < description.range_quantum_number_j_ryd.max()) {
+                    SPDLOG_WARN("No state found with the requested maximum quantum number j_ryd. "
+                                "Requested: {}, found: {}.",
+                                description.range_quantum_number_j_ryd.max(), max_j_ryd);
+                }
+            }
         }
     }
 
     // Ask the table for the described states
     auto result = con->Query(fmt::format(
-        R"(SELECT energy, f, m, parity, ketid, n, nu, std_nui, exp_l, std_l,
-        exp_s, std_s, exp_j, std_j, is_j_total_momentum, is_calculated_with_mqdt FROM '{}' ORDER BY ketid ASC)",
+        R"(SELECT energy, f, m, parity, ketid, n, nu, exp_nui, std_nui, exp_l, std_l,
+        exp_s, std_s, exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt FROM '{}' ORDER BY ketid ASC)",
         id_of_kets));
 
     if (result->HasError()) {
@@ -853,12 +1032,13 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     const auto &types = result->types;
     const auto &labels = result->names;
     const std::vector<duckdb::LogicalType> ref_types = {
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,
-        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN,
-        duckdb::LogicalType::BOOLEAN};
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::BIGINT, duckdb::LogicalType::BIGINT,  duckdb::LogicalType::BIGINT,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::DOUBLE,  duckdb::LogicalType::DOUBLE,
+        duckdb::LogicalType::DOUBLE, duckdb::LogicalType::BOOLEAN, duckdb::LogicalType::BOOLEAN};
 
     for (size_t i = 0; i < types.size(); i++) {
         if (types[i] != ref_types[i]) {
@@ -883,16 +1063,21 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         auto *chunk_parity = duckdb::FlatVector::GetData<int64_t>(chunk->data[3]);
         auto *chunk_id = duckdb::FlatVector::GetData<int64_t>(chunk->data[4]);
         auto *chunk_quantum_number_n = duckdb::FlatVector::GetData<int64_t>(chunk->data[5]);
-        auto *chunk_quantum_number_nu_exp = duckdb::FlatVector::GetData<double>(chunk->data[6]);
-        auto *chunk_quantum_number_nu_std = duckdb::FlatVector::GetData<double>(chunk->data[7]);
-        auto *chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[8]);
-        auto *chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[9]);
-        auto *chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[10]);
-        auto *chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[11]);
-        auto *chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[12]);
-        auto *chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[13]);
-        auto *chunk_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[14]);
-        auto *chunk_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[15]);
+        auto *chunk_quantum_number_nu = duckdb::FlatVector::GetData<double>(chunk->data[6]);
+        auto *chunk_quantum_number_nui_exp = duckdb::FlatVector::GetData<double>(chunk->data[7]);
+        auto *chunk_quantum_number_nui_std = duckdb::FlatVector::GetData<double>(chunk->data[8]);
+        auto *chunk_quantum_number_l_exp = duckdb::FlatVector::GetData<double>(chunk->data[9]);
+        auto *chunk_quantum_number_l_std = duckdb::FlatVector::GetData<double>(chunk->data[10]);
+        auto *chunk_quantum_number_s_exp = duckdb::FlatVector::GetData<double>(chunk->data[11]);
+        auto *chunk_quantum_number_s_std = duckdb::FlatVector::GetData<double>(chunk->data[12]);
+        auto *chunk_quantum_number_j_exp = duckdb::FlatVector::GetData<double>(chunk->data[13]);
+        auto *chunk_quantum_number_j_std = duckdb::FlatVector::GetData<double>(chunk->data[14]);
+        auto *chunk_quantum_number_l_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[15]);
+        auto *chunk_quantum_number_l_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[16]);
+        auto *chunk_quantum_number_j_ryd_exp = duckdb::FlatVector::GetData<double>(chunk->data[17]);
+        auto *chunk_quantum_number_j_ryd_std = duckdb::FlatVector::GetData<double>(chunk->data[18]);
+        auto *chunk_is_j_total_momentum = duckdb::FlatVector::GetData<bool>(chunk->data[19]);
+        auto *chunk_is_calculated_with_mqdt = duckdb::FlatVector::GetData<bool>(chunk->data[20]);
 
         for (size_t i = 0; i < chunk->size(); i++) {
 
@@ -912,12 +1097,15 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             kets.push_back(std::make_shared<const KetAtom<real_t>>(
                 typename KetAtom<real_t>::Private(), chunk_energy[i], chunk_quantum_number_f[i],
                 chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), species,
-                chunk_quantum_number_n[i], chunk_quantum_number_nu_exp[i],
-                chunk_quantum_number_nu_std[i], chunk_quantum_number_l_exp[i],
-                chunk_quantum_number_l_std[i], chunk_quantum_number_s_exp[i],
-                chunk_quantum_number_s_std[i], chunk_quantum_number_j_exp[i],
-                chunk_quantum_number_j_std[i], chunk_is_j_total_momentum[i],
-                chunk_is_calculated_with_mqdt[i], *this, chunk_id[i]));
+                chunk_quantum_number_n[i], chunk_quantum_number_nu[i],
+                chunk_quantum_number_nui_exp[i], chunk_quantum_number_nui_std[i],
+                chunk_quantum_number_l_exp[i], chunk_quantum_number_l_std[i],
+                chunk_quantum_number_s_exp[i], chunk_quantum_number_s_std[i],
+                chunk_quantum_number_j_exp[i], chunk_quantum_number_j_std[i],
+                chunk_quantum_number_l_ryd_exp[i], chunk_quantum_number_l_ryd_std[i],
+                chunk_quantum_number_j_ryd_exp[i], chunk_quantum_number_j_ryd_std[i],
+                chunk_is_j_total_momentum[i], chunk_is_calculated_with_mqdt[i], *this,
+                chunk_id[i]));
         }
     }
 
