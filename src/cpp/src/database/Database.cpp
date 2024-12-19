@@ -544,6 +544,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     if (chunk->size() > 1) {
         auto order_val_0 = duckdb::FlatVector::GetData<double>(chunk->data[20])[0];
         auto order_val_1 = duckdb::FlatVector::GetData<double>(chunk->data[20])[1];
+
         if (order_val_1 - order_val_0 <= order_val_0) {
             // Get a list of possible kets
             std::vector<KetAtom<Real>> kets;
