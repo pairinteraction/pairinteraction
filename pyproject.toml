@@ -164,6 +164,7 @@ addopts = [
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",
+    "QT_DEBUG_PLUGINS=1",
 ]
 
 [tool.sonar]

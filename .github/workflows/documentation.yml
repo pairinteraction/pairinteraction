@@ -94,9 +94,6 @@ jobs:
       run: uv pip install --system --break-system-packages --no-cache-dir -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
     - name: Run pytest
       run: pytest
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Generate Code Coverage
       run: |
         lcov --directory . --capture --output-file coverage.info;
@@ -120,9 +117,6 @@ jobs:
       run: uv pip install --system --break-system-packages --no-cache-dir .[doc,test]
     - name: Run pytest with coverage
       run: coverage run -m pytest
-      env:
-        QT_QPA_PLATFORM: "offscreen"
-        QT_DEBUG_PLUGINS: 1
     - name: Generate Code Coverage
       run: |
         coverage lcov -o coverage.info
