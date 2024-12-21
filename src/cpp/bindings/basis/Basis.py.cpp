@@ -154,6 +154,7 @@ static void declare_basis_combined_creator(nb::module_ &m, std::string const &ty
         .def("add", &BasisCombinedCreator<T>::add)
         .def("restrict_energy", &BasisCombinedCreator<T>::restrict_energy)
         .def("restrict_quantum_number_m", &BasisCombinedCreator<T>::restrict_quantum_number_m)
+        .def("restrict_product_of_parities", &BasisCombinedCreator<T>::restrict_product_of_parities)
         .def("create", &BasisCombinedCreator<T>::create);
 }
 

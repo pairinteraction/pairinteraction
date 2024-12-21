@@ -8,6 +8,8 @@
 #include <vector>
 
 namespace pairinteraction {
+enum class Parity : int;
+
 template <typename Scalar>
 class BasisCombined;
 
@@ -27,16 +29,18 @@ public:
     using ket_t = KetCombined<Scalar>;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 
-    BasisCombinedCreator() = default;
+    BasisCombinedCreator();
     BasisCombinedCreator<Scalar> &add(const SystemAtom<Scalar> &system_atom);
     BasisCombinedCreator<Scalar> &restrict_energy(real_t min, real_t max);
     BasisCombinedCreator<Scalar> &restrict_quantum_number_m(real_t min, real_t max);
+    BasisCombinedCreator<Scalar> &restrict_product_of_parities(Parity value);
     std::shared_ptr<const BasisCombined<Scalar>> create() const;
 
 private:
     std::vector<std::reference_wrapper<const SystemAtom<Scalar>>> systems_atom;
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_m;
+    Parity product_of_parities;
 };
 
 extern template class BasisCombinedCreator<float>;

@@ -12,6 +12,7 @@ from pairinteraction.backend._wrapped.ket.KetCombined import (
     KetCombinedDouble,
     KetCombinedFloat,
 )
+from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -47,6 +48,7 @@ class BasisCombinedBase(BasisBase[Ket_t]):
         self,
         systems: Sequence["SystemAtom"],
         m: Optional[tuple[float, float]] = None,
+        product_of_parities: Optional[Parity] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
     ) -> None:
@@ -55,6 +57,8 @@ class BasisCombinedBase(BasisBase[Ket_t]):
             creator.add(system._cpp)  # type: ignore [reportPrivateUsage, arg-type]
         if m is not None:
             creator.restrict_quantum_number_m(*m)
+        if product_of_parities is not None:
+            creator.restrict_product_of_parities(get_cpp_parity(product_of_parities))
         if energy is not None:
             min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("ENERGY")
             max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("ENERGY")
