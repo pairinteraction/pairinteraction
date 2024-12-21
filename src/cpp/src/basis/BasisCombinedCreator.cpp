@@ -14,6 +14,9 @@
 
 namespace pairinteraction {
 template <typename Scalar>
+BasisCombinedCreator<Scalar>::BasisCombinedCreator() : product_of_parities(Parity::UNKNOWN) {}
+
+template <typename Scalar>
 BasisCombinedCreator<Scalar> &
 BasisCombinedCreator<Scalar>::add(const SystemAtom<Scalar> &system_atom) {
     if (!system_atom.is_diagonal()) {
@@ -34,6 +37,13 @@ template <typename Scalar>
 BasisCombinedCreator<Scalar> &BasisCombinedCreator<Scalar>::restrict_quantum_number_m(real_t min,
                                                                                       real_t max) {
     range_quantum_number_m = {min, max};
+    return *this;
+}
+
+template <typename Scalar>
+BasisCombinedCreator<Scalar> &
+BasisCombinedCreator<Scalar>::restrict_product_of_parities(Parity value) {
+    product_of_parities = value;
     return *this;
 }
 
@@ -91,6 +101,15 @@ std::shared_ptr<const BasisCombined<Scalar>> BasisCombinedCreator<Scalar>::creat
             const real_t energy = eigenvalues1[idx1] + eigenvalues2[idx2];
             assert(!range_energy.is_finite() ||
                    (energy >= range_energy.min() && energy <= range_energy.max()));
+
+            // Check the parity of the sum of the parities
+            if (product_of_parities != Parity::UNKNOWN) {
+                if (static_cast<int>(basis1->get_parity(idx1)) *
+                        static_cast<int>(basis2->get_parity(idx2)) !=
+                    static_cast<int>(product_of_parities)) {
+                    continue;
+                }
+            }
 
             // Create a combined state
             auto ket = std::make_shared<ket_t>(
