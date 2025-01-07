@@ -30,10 +30,10 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
+      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         CXXFLAGS: "-fno-omit-frame-pointer -fsanitize=address"
         LDFLAGS: "-fsanitize=address"
@@ -55,10 +55,10 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
+      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         CXXFLAGS: "-fsanitize=undefined"
         LDFLAGS: "-fsanitize=undefined"
@@ -88,10 +88,10 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
+      run: uv run cmake -S . -B build/ -DBUILD_TESTING=On -DCMAKE_BUILD_TYPE=Debug
       env:
         # For now only lightweight assertions until DuckDB is also compiled with _GLIBCXX_DEBUG
         CXXFLAGS: "-D_GLIBCXX_ASSERTIONS"

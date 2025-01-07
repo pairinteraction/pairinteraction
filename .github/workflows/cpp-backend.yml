@@ -70,24 +70,17 @@ jobs:
 
     - name: Install MacOS dependencies
       if: ${{ matrix.distro == 'macos' }}
-      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb uv graphviz
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb graphviz
 
     - name: Install Windows dependencies
       if: ${{ matrix.distro == 'windows' }}
       uses: ./.github/actions/setup-vcpkg
-    - name: Install Windows uv
-      if: ${{ matrix.distro == 'windows' }}
-      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.9'
-
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
 
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On ${{ matrix.EXTRA_CMAKE_ARGS }}
+      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On ${{ matrix.EXTRA_CMAKE_ARGS }}
 
     - name: Build
       run: cmake --build build/ ${{ matrix.BUILD_ARGS }}

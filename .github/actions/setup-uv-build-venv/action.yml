@@ -1,0 +1,18 @@
+name: 'setup-uv-build-venv'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: "0.5.15"
+        enable-cache: true
+        cache-dependency-glob: |
+          ./.build_requirements.txt
+
+    - name: Install Python build requirements into a virtual environment
+      shell: bash
+      run: |
+        uv venv .venv --python 3.9
+        uv pip install -r .build_requirements.txt

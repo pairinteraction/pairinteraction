@@ -60,13 +60,13 @@ jobs:
     - name: Install Windows dependencies
       if: runner.os == 'Windows'
       uses: ./.github/actions/setup-vcpkg
-    - name: Install Windows uv
-      if: runner.os == 'Windows'
-      run: powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
 
     - name: Install macOS dependencies
       if: runner.os == 'macOS'
-      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb uv
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
 
     - uses: pypa/cibuildwheel@v2.22
       env:
