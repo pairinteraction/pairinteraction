@@ -22,9 +22,9 @@ Dimension = Literal[
     "ENERGY",
     "ELECTRIC_DIPOLE",
     "ELECTRIC_QUADRUPOLE",
+    "ELECTRIC_QUADRUPOLE_ZERO",
     "ELECTRIC_OCTUPOLE",
     "MAGNETIC_DIPOLE",
-    "DIAMAGNETIC",
     "ARBITRARY",
     "ZERO",
 ]
@@ -41,12 +41,12 @@ BaseUnits: dict[Dimension, "PlainUnit"] = {
     "ELECTRIC_DIPOLE": ureg.Quantity(1, "e * a0").to_base_units().units,
     # ELECTRIC_QUADRUPOLE: 1 e * a0^2 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 2
     "ELECTRIC_QUADRUPOLE": ureg.Quantity(1, "e * a0^2").to_base_units().units,
+    # ELECTRIC_QUADRUPOLE_ZERO: 1 e * a0^2 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 2
+    "ELECTRIC_QUADRUPOLE_ZERO": ureg.Quantity(1, "e * a0^2").to_base_units().units,
     # ELECTRIC_OCTUPOLE: 1 e * a0^3 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 3
     "ELECTRIC_OCTUPOLE": ureg.Quantity(1, "e * a0^3").to_base_units().units,
     # MAGNETIC_DIPOLE: 1 hbar e / m_e = 1 bohr ** 2 * atomic_unit_of_current
     "MAGNETIC_DIPOLE": ureg.Quantity(1, "hbar e / m_e").to_base_units().units,
-    # DIAMAGNETIC: 1 e * a0^2 = 1 atomic_unit_of_current * atomic_unit_of_time * bohr ** 2
-    "DIAMAGNETIC": ureg.Quantity(1, "e * a0^2").to_base_units().units,
     "ARBITRARY": ureg.Unit(""),
     "ZERO": ureg.Unit(""),
 }

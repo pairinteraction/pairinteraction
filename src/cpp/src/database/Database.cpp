@@ -1132,6 +1132,10 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         specifier = "matrix_elements_q";
         kappa = 2;
         break;
+    case OperatorType::ELECTRIC_QUADRUPOLE_ZERO:
+        specifier = "matrix_elements_q0";
+        kappa = 0;
+        break;
     case OperatorType::ELECTRIC_OCTUPOLE:
         specifier = "matrix_elements_o";
         kappa = 3;
@@ -1139,10 +1143,6 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
     case OperatorType::MAGNETIC_DIPOLE:
         specifier = "matrix_elements_mu";
         kappa = 1;
-        break;
-    case OperatorType::DIAMAGNETIC:
-        specifier = "matrix_elements_dia";
-        kappa = 0;
         break;
     case OperatorType::ENERGY:
         specifier = "energy";

@@ -52,7 +52,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     // Add external fields (see https://arxiv.org/abs/1612.08053 for details)
 
     // Stark effect: - \vec{d} \vec{E} = - d_{1,0} E_{0} + d_{1,1} E_{-} + d_{1,-1} E_{+}
-    // with the electric dipole operater: d_{1,q} = - e r sqrt{4 pi / 3} Y_{1,q}(\theta, \phi)
+    // with the electric dipole operator: d_{1,q} = - e r sqrt{4 pi / 3} Y_{1,q}(\theta, \phi)
     // where electric_field_spherical=[E_{-}, E_{0}, E_{+}]
     if (std::abs(electric_field_spherical[1]) > numerical_precision) {
         *this->hamiltonian -= electric_field_spherical[1] *
@@ -79,7 +79,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     }
 
     // Zeeman effect: - \vec{\mu} \vec{B} = - \mu_{1,0} B_{0} + \mu_{1,1} B_{-} + \mu_{1,-1} B_{+}
-    // with the magnetic dipole operater: \vec{\mu} = - \mu_B / \hbar (g_l \vec{l} + g_s \vec{s})
+    // with the magnetic dipole operator: \vec{\mu} = - \mu_B / \hbar (g_l \vec{l} + g_s \vec{s})
     // where magnetic_field_spherical=[B_{-}, B_{0}, B_{+}]
     if (std::abs(magnetic_field_spherical[1]) > numerical_precision) {
         *this->hamiltonian -= magnetic_field_spherical[1] *
@@ -103,16 +103,16 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
     }
 
     // Diamagnetism: 1 / (8 m_e) abs(\vec{d} \times \vec{B})^2
-    // = (1/12) \left[ B_0^2 (dia - d_{2,0}) +  B_+ B_- (-2 dia - d_{2,0})
+    // = (1/12) \left[ B_0^2 (q0 - d_{2,0}) +  B_+ B_- (-2 q0 - d_{2,0})
     // + B_0 B_- (\sqrt{3} d_{2,1}) + B_0 B_+ (\sqrt{3} d_{2,-1})
     // - B_-^2 d_{2,2} - B_+^2 d_{2,-2} \right]
-    // with the diamagnetic operater: dia = e^2 r^2 sqrt{4 pi} Y_{0,0} = e^2 r^2
-    // and the electric quadrupole operater: d_{2,q} = e^2 r^2 sqrt{4 pi / 5} Y_{2,q}(\theta, \phi)
+    // with the operator: q0 = e^2 r^2 sqrt{4 pi} Y_{0,0} = e^2 r^2
+    // and the electric quadrupole operator: d_{2,q} = e^2 r^2 sqrt{4 pi / 5} Y_{2,q}(\theta, \phi)
     if (diamagnetism_enabled) {
         if (std::abs(magnetic_field_spherical[1]) > numerical_precision) {
             *this->hamiltonian += static_cast<real_t>(1 / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
-                OperatorAtom<Scalar>(basis, OperatorType::DIAMAGNETIC, 0);
+                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
             *this->hamiltonian -= static_cast<real_t>(1 / 12.) *
                 static_cast<Scalar>(std::pow(magnetic_field_spherical[1], 2)) *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
@@ -123,7 +123,7 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
             std::abs(magnetic_field_spherical[0]) > numerical_precision) {
             *this->hamiltonian -= static_cast<real_t>(2 / 12.) * magnetic_field_spherical[2] *
                 magnetic_field_spherical[0] *
-                OperatorAtom<Scalar>(basis, OperatorType::DIAMAGNETIC, 0);
+                OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0);
             *this->hamiltonian -= static_cast<real_t>(1 / 12.) * magnetic_field_spherical[2] *
                 magnetic_field_spherical[0] *
                 OperatorAtom<Scalar>(basis, OperatorType::ELECTRIC_QUADRUPOLE, 0);
