@@ -70,10 +70,12 @@ public:
         <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
     friend Derived operator/
         <>(const Operator<Derived> &lhs, const typename Operator<Derived>::scalar_t &rhs);
+    // clang-format off
     friend Derived &operator+=<>(Operator<Derived> &lhs, const Operator<Derived> &rhs);
     friend Derived &operator-=<>(Operator<Derived> &lhs, const Operator<Derived> &rhs);
     friend Derived operator+<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
     friend Derived operator-<>(const Operator<Derived> &lhs, const Operator<Derived> &rhs);
+    // clang-format on
 
 protected:
     void initialize_as_energy_operator();
