@@ -122,8 +122,9 @@ build-verbosity = 1
 test-extras = ["test"]
 test-requires = ["check-wheel-contents>=0.6"]
 test-command = [
-  "cd {project} && pytest",
-  "cd {project} && check-wheel-contents {wheel}",
+  "cd {project}",
+  "pytest",
+  "check-wheel-contents {wheel}",
 ]
 
 [[tool.cibuildwheel.overrides]]  # linux overrides
@@ -148,6 +149,10 @@ before-all = "pip install delvewheel" # build-system.requires is unavailable in 
 repair-wheel-command = "delvewheel repair --ignore-in-wheel -w {dest_dir} {wheel}"
 inherit.environment = "append"
 environment.CXXFLAGS = "/Ox /arch:AVX2"
+inherit.test-command = "prepend"
+test-command = [
+  "cd /d {project}",  # /d is required for windows to change the drive, the second cd then does effectively nothing
+]
 
 [tool.check-wheel-contents]
 ignore = [
