@@ -156,8 +156,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 }
 
 DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restrictions") {
-    double min_energy = -1.45e-4;
-    double max_energy = -1.35e-4;
+    double min_energy = 0.15335;
+    double max_energy = 0.15336;
 
     auto &database = Database::get_global_instance();
 
@@ -192,14 +192,49 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
 
         system.diagonalize(*diagonalizer, 12, Range(min_energy, max_energy));
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
         std::vector<double> eigenvalues_vector(tmp.data(), tmp.data() + tmp.size());
         DOCTEST_MESSAGE(fmt::format("Eigenvalues: {}", fmt::join(eigenvalues_vector, ", ")));
 
-        DOCTEST_CHECK(eigenvalues_eigen.size() == eigenvalues_pairinteraction.size());
+        DOCTEST_CHECK(eigenvalues_eigen.size() == 4);
+        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 4);
         for (size_t i = 0; i < eigenvalues_eigen.size(); ++i) {
             DOCTEST_CHECK(std::abs(eigenvalues_eigen[i] - eigenvalues_pairinteraction[i]) < 1e-11);
         }
     }
 }
+
+DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy restrictions") {
+    double min_energy = -1;
+    double max_energy = -1;
+
+    auto &database = Database::get_global_instance();
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(58, 62)
+                     .restrict_quantum_number_l(0, 1)
+                     .create(database);
+
+    std::vector<std::unique_ptr<DiagonalizerInterface<double>>> diagonalizers;
+    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<double>>());
+#ifdef WITH_LAPACKE
+    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>());
+#endif
+#ifdef WITH_MKL
+    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(5));
+#endif
+
+    for (const auto &diagonalizer : diagonalizers) {
+        auto system = SystemAtom<double>(basis);
+        system.set_electric_field({0.0001, 0, 0.0001});
+
+        system.diagonalize(*diagonalizer, 12, Range(min_energy, max_energy));
+        auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+
+        DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 0);
+    }
+}
+
 } // namespace pairinteraction
