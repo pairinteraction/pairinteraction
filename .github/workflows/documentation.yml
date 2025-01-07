@@ -24,11 +24,13 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install pairinteraction
-      run: uv pip install --system --break-system-packages --no-cache-dir .[doc]
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install .[doc]
     - name: Build documentation
       working-directory: docs/
-      run: make html
+      run: uv run make html
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -42,10 +44,10 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: cmake -S . -B build/
+      run: uv run --no-project cmake -S . -B build/
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Doxygen Documentation
@@ -63,10 +65,10 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install Python dependencies for cmake
-      run: uv pip install --system --break-system-packages --no-cache-dir -r .build_requirements.txt
+    - name: Setup uv build virtual environment
+      uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
+      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -90,14 +92,16 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install pairinteraction
-      run: uv pip install --system --break-system-packages --no-cache-dir -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
     - name: Run pytest
-      run: pytest
+      run: uv run pytest
     - name: Generate Code Coverage
       run: |
         lcov --directory . --capture --output-file coverage.info;
-        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' --output-file coverage.info;
+        lcov --remove coverage.info '/usr/*' '/opt/*' '/tmp/*' '*/_deps/*' '*/.cache/uv/*' '*/setup-uv-cache/*' --output-file coverage.info;
         genhtml coverage.info --output-directory docs/coverage/
       working-directory: build/
     - name: Upload artifacts
@@ -113,13 +117,15 @@ jobs:
       image: ghcr.io/atom-pairinteraction/pairinteraction-debian:docker
     steps:
     - uses: actions/checkout@v4
-    - name: Install pairinteraction
-      run: uv pip install --system --break-system-packages --no-cache-dir .[doc,test]
+    - name: Setup uv project virtual environment
+      uses: ./.github/actions/setup-uv-all-deps
+    - name: Install pairinteraction into virtual environment
+      run: uv pip install .[test]
     - name: Run pytest with coverage
-      run: coverage run -m pytest
+      run: uv run coverage run -m pytest
     - name: Generate Code Coverage
       run: |
-        coverage lcov -o coverage.info
+        uv run coverage lcov -o coverage.info
         genhtml coverage.info --output-directory docs/coverage/
     - name: Upload artifacts
       uses: actions/upload-artifact@v4

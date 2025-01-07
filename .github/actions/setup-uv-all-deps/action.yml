@@ -1,0 +1,16 @@
+name: 'setup-uv-all-deps'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        version: "0.5.15"
+        enable-cache: true
+        cache-dependency-glob: |
+          pyproject.toml
+
+    - name: Install all Python dependencies into a virtual environment
+      shell: bash
+      run: uv sync --no-install-project --all-extras  # always install all dependencies, this simplifies caching
