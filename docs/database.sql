@@ -92,7 +92,7 @@ CREATE TABLE matrix_elements_q (
 );
 
 -- Create a table of matrix elements of the reduced operator e*r^2*sqrt(4*pi)*Y_0, occurring in
--- the operator of the quadrupole interaction
+-- the diamagnetic interaction and electric quadrupole interaction near surfaces
 CREATE TABLE matrix_elements_q0 (
     id_initial INTEGER,
     id_final INTEGER,

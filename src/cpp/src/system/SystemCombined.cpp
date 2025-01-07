@@ -284,6 +284,8 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             -OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, -1).get_matrix());
         q1.push_back(
             OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE, -2).get_matrix());
+        q1.push_back(
+            OperatorAtom<Scalar>(basis1, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0).get_matrix());
     }
 
     if (green_function_quadrupole_quadrupole.nonZeros() > 0 ||
@@ -298,6 +300,8 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, 1).get_matrix());
         q2.push_back(
             OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE, 2).get_matrix());
+        q2.push_back(
+            OperatorAtom<Scalar>(basis2, OperatorType::ELECTRIC_QUADRUPOLE_ZERO, 0).get_matrix());
     }
 
     // Dipole-dipole interaction
@@ -323,10 +327,6 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_function_dipole_quadrupole, row);
                  it; ++it) {
-                if (it.col() > 4) {
-                    throw std::runtime_error(
-                        "p_00 is needed but not yet contained in the database.");
-                }
                 this->hamiltonian->get_matrix() +=
                     it.value() * calculate_tensor_product(basis, d1[it.row()], q2[it.col()]);
                 if (it.row() != it.col() - 1) {
@@ -344,10 +344,6 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_function_quadrupole_dipole, row);
                  it; ++it) {
-                if (it.row() > 4) {
-                    throw std::runtime_error(
-                        "p_00 is needed but not yet contained in the database.");
-                }
                 this->hamiltonian->get_matrix() +=
                     it.value() * calculate_tensor_product(basis, q1[it.row()], d2[it.col()]);
                 if (it.row() - 1 != it.col()) {
@@ -365,10 +361,6 @@ void SystemCombined<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_function_quadrupole_quadrupole, row);
                  it; ++it) {
-                if (it.row() > 4 || it.col() > 4) {
-                    throw std::runtime_error(
-                        "p_00 is needed but not yet contained in the database.");
-                }
                 this->hamiltonian->get_matrix() +=
                     it.value() * calculate_tensor_product(basis, q1[it.row()], q2[it.col()]);
                 if (it.row() != it.col()) {
