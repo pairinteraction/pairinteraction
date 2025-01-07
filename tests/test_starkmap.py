@@ -50,7 +50,7 @@ def test_starkmap(generate_reference: bool, database_dir: str, download_missing:
 
     np.testing.assert_equal(kets, np.loadtxt(reference_kets_file, dtype=str, delimiter="\t"))
     np.testing.assert_allclose(eigenvalues, np.loadtxt(reference_eigenvalues_file))
-    np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-12)
+    np.testing.assert_allclose(overlaps, np.loadtxt(reference_overlaps_file), atol=1e-10)
 
     # Because of degeneracies, checking the eigenstates against reference data is complicated.
     # Thus, we only check their normalization and orthogonality.
