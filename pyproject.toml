@@ -150,7 +150,11 @@ inherit.environment = "append"
 environment.CXXFLAGS = "/Ox /arch:AVX2"
 
 [tool.check-wheel-contents]
-ignore = ["W004"]  # check-wheel-contents does not like some .so files inside pairinteraction_next.libs
+ignore = [
+  "W004",  # check-wheel-contents does not like some .so files inside pairinteraction_next.libs
+  "W201",  # for macos there is no pairinteraction_next.libs folder
+  "W010",  # for windows the pairinteraction_next.libs folder might not contain a python module
+]
 toplevel = ["pairinteraction", "pairinteraction_next.libs"]
 
 [tool.pytest.ini_options]
