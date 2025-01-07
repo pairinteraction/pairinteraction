@@ -241,61 +241,69 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
         num_cols += matrix.cols();
     }
 
-    // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
-    // square)
+    assert(static_cast<size_t>(num_rows) == hamiltonian->get_basis()->get_number_of_kets());
+    assert(static_cast<size_t>(num_cols) <= hamiltonian->get_basis()->get_number_of_states());
+
     eigenvectors.resize(num_rows, num_cols);
-    eigenvectors.reserve(non_zeros_per_inner_index);
-    Eigen::Index offset_rows = 0;
-    Eigen::Index offset_cols = 0;
-    for (const auto &matrix : eigenvectors_blocks) {
-        for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
-            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(matrix,
-                                                                                           i);
-                 it; ++it) {
-                eigenvectors.insert(it.row() + offset_rows, it.col() + offset_cols) = it.value();
-            }
-        }
-        offset_rows += matrix.rows();
-        offset_cols += matrix.cols();
-    }
-    eigenvectors.makeCompressed();
-
-    assert(eigenvectors.nonZeros() ==
-           std::accumulate(non_zeros_per_inner_index.begin(), non_zeros_per_inner_index.end(), 0));
-
-    // Get the combined eigenvalue matrix
     eigenvalues.resize(num_cols, num_cols);
-    eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
-    Eigen::Index offset = 0;
-    for (const auto &matrix : eigenvalues_blocks) {
-        for (int i = 0; i < matrix.size(); ++i) {
-            eigenvalues.insert(i + offset, i + offset) = matrix(i);
-        }
-        offset += matrix.size();
-    }
-    eigenvalues.makeCompressed();
 
-    // Fix phase ambiguity
-    std::vector<scalar_t> map_col_to_max(num_cols, 0);
-    for (int row = 0; row < eigenvectors.outerSize(); ++row) {
-        for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(eigenvectors,
-                                                                                       row);
-             it; ++it) {
-            if (std::abs(it.value()) > std::abs(map_col_to_max[it.col()])) {
-                map_col_to_max[it.col()] = it.value();
+    if (num_cols > 0) {
+        // Get the combined eigenvector matrix (in case of an restricted energy range, it is not
+        // square)
+        eigenvectors.reserve(non_zeros_per_inner_index);
+        Eigen::Index offset_rows = 0;
+        Eigen::Index offset_cols = 0;
+        for (const auto &matrix : eigenvectors_blocks) {
+            for (Eigen::Index i = 0; i < matrix.outerSize(); ++i) {
+                for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                         matrix, i);
+                     it; ++it) {
+                    eigenvectors.insert(it.row() + offset_rows, it.col() + offset_cols) =
+                        it.value();
+                }
+            }
+            offset_rows += matrix.rows();
+            offset_cols += matrix.cols();
+        }
+        eigenvectors.makeCompressed();
+
+        assert(
+            eigenvectors.nonZeros() ==
+            std::accumulate(non_zeros_per_inner_index.begin(), non_zeros_per_inner_index.end(), 0));
+
+        // Get the combined eigenvalue matrix
+        eigenvalues.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+        Eigen::Index offset = 0;
+        for (const auto &matrix : eigenvalues_blocks) {
+            for (int i = 0; i < matrix.size(); ++i) {
+                eigenvalues.insert(i + offset, i + offset) = matrix(i);
+            }
+            offset += matrix.size();
+        }
+        eigenvalues.makeCompressed();
+
+        // Fix phase ambiguity
+        std::vector<scalar_t> map_col_to_max(num_cols, 0);
+        for (int row = 0; row < eigenvectors.outerSize(); ++row) {
+            for (typename Eigen::SparseMatrix<scalar_t, Eigen::RowMajor>::InnerIterator it(
+                     eigenvectors, row);
+                 it; ++it) {
+                if (std::abs(it.value()) > std::abs(map_col_to_max[it.col()])) {
+                    map_col_to_max[it.col()] = it.value();
+                }
             }
         }
-    }
 
-    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> phase_matrix;
-    phase_matrix.resize(num_cols, num_cols);
-    phase_matrix.reserve(Eigen::VectorXi::Constant(num_cols, 1));
-    for (int i = 0; i < num_cols; ++i) {
-        phase_matrix.insert(i, i) = std::abs(map_col_to_max[i]) / map_col_to_max[i];
-    }
-    phase_matrix.makeCompressed();
+        Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> phase_matrix;
+        phase_matrix.resize(num_cols, num_cols);
+        phase_matrix.reserve(Eigen::VectorXi::Constant(num_cols, 1));
+        for (int i = 0; i < num_cols; ++i) {
+            phase_matrix.insert(i, i) = std::abs(map_col_to_max[i]) / map_col_to_max[i];
+        }
+        phase_matrix.makeCompressed();
 
-    eigenvectors = eigenvectors * phase_matrix;
+        eigenvectors = eigenvectors * phase_matrix;
+    }
 
     // Store the diagonalized hamiltonian
     hamiltonian->get_matrix() = eigenvalues;
