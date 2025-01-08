@@ -40,7 +40,7 @@ private:
     std::vector<std::reference_wrapper<const SystemAtom<Scalar>>> systems_atom;
     Range<real_t> range_energy;
     Range<real_t> range_quantum_number_m;
-    Parity product_of_parities;
+    Parity product_of_parities; // NOLINT
 };
 
 extern template class BasisCombinedCreator<float>;

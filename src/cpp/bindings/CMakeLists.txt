@@ -41,14 +41,23 @@ nanobind_add_module(
 
 target_link_libraries(backend PRIVATE pairinteraction $<$<BOOL:${WITH_COVERAGE}>:coverage::gcov>)
 
-target_compile_options(
-  backend PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra>)
-
 set_target_properties(
   backend
   PROPERTIES OUTPUT_NAME _backend
-             CXX_CLANG_TIDY ""
              INSTALL_RPATH $<$<BOOL:${SKBUILD}>:$<$<PLATFORM_ID:Linux>:$ORIGIN>$<$<PLATFORM_ID:Darwin>:@loader_path>>)
+
+# We mark nanobind's include directory as system include directory to suppress warnings and avoid clang-tidy checks
+target_include_directories(backend SYSTEM PRIVATE ${NB_DIR}/include)
+
+# HACK: Under some circumstances, the previous line does not seem to avoid clang-tidy checks. We therefore disable
+# clang-tidy manually for the nanobind-static target that is built within nanobind_add_module.
+if((Python_VERSION VERSION_LESS 3.12)
+   OR (NOT Python_INTERPRETER_ID STREQUAL "Python")
+   OR (NOT TARGET Python::SABIModule))
+  set_target_properties(nanobind-static PROPERTIES CXX_CLANG_TIDY "")
+else()
+  set_target_properties(nanobind-static-abi3 PROPERTIES CXX_CLANG_TIDY "")
+endif()
 
 # Windows-specific post-build command to copy runtime DLLs
 if(WIN32)
