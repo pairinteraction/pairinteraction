@@ -140,11 +140,9 @@ elseif(TARGET LAPACKE::LAPACKE)
                                                     lapack_complex_double=std::complex<double>)
 endif()
 
-# We enable the warning levels as private to avoid that they are propagated to building the bindings. This is necessary
-# to avoid warnings from the nanobind library.
 target_compile_options(
   pairinteraction
   PUBLIC $<$<CXX_COMPILER_ID:MSVC>:/W4 /bigobj /MP>
-  PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra
-          -Wpedantic>)
+         $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall -Wextra
+         -Wpedantic>)
 target_compile_features(pairinteraction PUBLIC cxx_std_17)

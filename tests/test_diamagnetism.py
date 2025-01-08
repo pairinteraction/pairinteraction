@@ -7,7 +7,7 @@ import numpy as np
 import pairinteraction.backend.double as pi
 
 
-def test_starkmap(database_dir: str, download_missing: bool) -> None:
+def test_diamagnetism(database_dir: str, download_missing: bool) -> None:
     """Test calculating diamagnetic interactions."""
     database = pi.Database(download_missing, True, database_dir)
 

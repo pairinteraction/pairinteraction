@@ -6,9 +6,6 @@ function(add_test_executable TARGET_NAME SOURCE_FILE NPROC)
   # Create the test executable
   add_executable(${TARGET_NAME} ${SOURCE_FILE})
   target_link_libraries(${TARGET_NAME} PRIVATE pairinteraction)
-  target_compile_options(
-    ${TARGET_NAME} PRIVATE $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>,$<CXX_COMPILER_ID:GNU>>:-Wall
-                           -Wextra -Wpedantic>)
 
   # Windows-specific post-build command to copy runtime DLLs
   if(WIN32)
