@@ -104,8 +104,8 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
 
     // Diamagnetism: 1 / (8 m_e) abs(\vec{d} \times \vec{B})^2
     // = (1/12) \left[ B_0^2 (q0 - d_{2,0}) +  B_+ B_- (-2 q0 - d_{2,0})
-    // + B_0 B_- (\sqrt{3} d_{2,1}) + B_0 B_+ (\sqrt{3} d_{2,-1})
-    // - B_-^2 d_{2,2} - B_+^2 d_{2,-2} \right]
+    // + \sqrt{3} B_0 B_- d_{2,1} + \sqrt{3} B_0 B_+ d_{2,-1}
+    // - \sqrt{3/2} B_-^2 d_{2,2} - \sqrt{3/2} B_+^2 d_{2,-2} \right]
     // with the operator: q0 = e^2 r^2 sqrt{4 pi} Y_{0,0} = e^2 r^2
     // and the electric quadrupole operator: d_{2,q} = e^2 r^2 sqrt{4 pi / 5} Y_{2,q}(\theta, \phi)
     if (diamagnetism_enabled) {
