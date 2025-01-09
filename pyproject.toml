@@ -79,8 +79,8 @@ mkl = [
   "mkl == 2025.0",
 ]
 
-[tool.uv]
-dev-dependencies = ["pairinteraction-next[doc,test]"]
+[dependency-groups]
+dev = ["pairinteraction-next[doc,test]"]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
