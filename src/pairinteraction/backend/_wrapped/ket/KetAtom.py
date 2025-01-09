@@ -22,9 +22,12 @@ class KetAtomBase(KetBase):
         species: str,
         n: Optional[int] = None,
         nu: Optional[float] = None,
-        l: Optional[int] = None,
+        nui: Optional[float] = None,
+        l: Optional[float] = None,
         s: Optional[float] = None,
         j: Optional[float] = None,
+        l_ryd: Optional[float] = None,
+        j_ryd: Optional[float] = None,
         f: Optional[float] = None,
         m: Optional[float] = None,
         energy: Union[float, "PlainQuantity[float]", None] = None,
@@ -34,25 +37,31 @@ class KetAtomBase(KetBase):
     ) -> None:
         creator = self._cpp_creator()
         creator.set_species(species)
+        if energy is not None:
+            energy_au = QuantityScalar(energy, energy_unit).to_base("ENERGY")
+            creator.set_energy(energy_au)
+        if f is not None:
+            creator.set_quantum_number_f(f)
+        if m is not None:
+            creator.set_quantum_number_m(m)
+        if parity is not None:
+            creator.set_parity(get_cpp_parity(parity))
         if n is not None:
             creator.set_quantum_number_n(n)
         if nu is not None:
             creator.set_quantum_number_nu(nu)
+        if nui is not None:
+            creator.set_quantum_number_nui(nui)
         if l is not None:
             creator.set_quantum_number_l(l)
         if s is not None:
             creator.set_quantum_number_s(s)
         if j is not None:
             creator.set_quantum_number_j(j)
-        if f is not None:
-            creator.set_quantum_number_f(f)
-        if m is not None:
-            creator.set_quantum_number_m(m)
-        if energy is not None:
-            energy_au = QuantityScalar(energy, energy_unit).to_base("ENERGY")
-            creator.set_energy(energy_au)
-        if parity is not None:
-            creator.set_parity(get_cpp_parity(parity))
+        if l_ryd is not None:
+            creator.set_quantum_number_l_ryd(l_ryd)
+        if j_ryd is not None:
+            creator.set_quantum_number_j_ryd(j_ryd)
         if database is None:
             database = Database.get_global_instance()
         self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
@@ -70,6 +79,10 @@ class KetAtomBase(KetBase):
         return self._cpp.get_quantum_number_nu()
 
     @property
+    def nui(self) -> float:
+        return self._cpp.get_quantum_number_nui()
+
+    @property
     def l(self) -> float:  # noqa: E743
         return self._cpp.get_quantum_number_l()
 
@@ -80,6 +93,14 @@ class KetAtomBase(KetBase):
     @property
     def j(self) -> float:
         return self._cpp.get_quantum_number_j()
+
+    @property
+    def l_ryd(self) -> float:  # noqa: E743
+        return self._cpp.get_quantum_number_l_ryd()
+
+    @property
+    def j_ryd(self) -> float:
+        return self._cpp.get_quantum_number_j_ryd()
 
 
 class KetAtomFloat(KetAtomBase):

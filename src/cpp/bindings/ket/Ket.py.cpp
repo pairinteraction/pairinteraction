@@ -43,9 +43,12 @@ static void declare_ket_atom(nb::module_ &m, std::string const &type_name) {
     pyclass.def("get_species", &KetAtom<T>::get_species)
         .def("get_quantum_number_n", &KetAtom<T>::get_quantum_number_n)
         .def("get_quantum_number_nu", &KetAtom<T>::get_quantum_number_nu)
+        .def("get_quantum_number_nui", &KetAtom<T>::get_quantum_number_nui)
         .def("get_quantum_number_l", &KetAtom<T>::get_quantum_number_l)
         .def("get_quantum_number_s", &KetAtom<T>::get_quantum_number_s)
-        .def("get_quantum_number_j", &KetAtom<T>::get_quantum_number_j);
+        .def("get_quantum_number_j", &KetAtom<T>::get_quantum_number_j)
+        .def("get_quantum_number_l_ryd", &KetAtom<T>::get_quantum_number_l_ryd)
+        .def("get_quantum_number_j_ryd", &KetAtom<T>::get_quantum_number_j_ryd);
 }
 
 template <typename T>
@@ -61,9 +64,12 @@ static void declare_ket_atom_creator(nb::module_ &m, std::string const &type_nam
         .def("set_parity", &KetAtomCreator<T>::set_parity)
         .def("set_quantum_number_n", &KetAtomCreator<T>::set_quantum_number_n)
         .def("set_quantum_number_nu", &KetAtomCreator<T>::set_quantum_number_nu)
+        .def("set_quantum_number_nui", &KetAtomCreator<T>::set_quantum_number_nui)
         .def("set_quantum_number_l", &KetAtomCreator<T>::set_quantum_number_l)
         .def("set_quantum_number_s", &KetAtomCreator<T>::set_quantum_number_s)
         .def("set_quantum_number_j", &KetAtomCreator<T>::set_quantum_number_j)
+        .def("set_quantum_number_l_ryd", &KetAtomCreator<T>::set_quantum_number_l_ryd)
+        .def("set_quantum_number_j_ryd", &KetAtomCreator<T>::set_quantum_number_j_ryd)
         .def("create", &KetAtomCreator<T>::create);
 }
 
