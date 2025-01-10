@@ -57,7 +57,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         sort_by_energy: bool = True,
         energy_range: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
-    ):
+    ) -> "Self":
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
         if energy_range is None:
             self._cpp.diagonalize(cpp_diagonalizer, precision)
@@ -83,7 +83,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self._basis
 
     @property
-    def matrix(self):
+    def matrix(self) -> "csr_matrix":
         return self._cpp.get_matrix()
 
     @overload

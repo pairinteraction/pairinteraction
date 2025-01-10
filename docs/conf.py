@@ -1,6 +1,8 @@
 # Configuration file for the Sphinx documentation builder.
 import os
 
+from sphinx.application import Sphinx
+
 import pairinteraction
 
 # -- Project information -----------------------------------------------------
@@ -77,7 +79,7 @@ autodoc_typehints = "both"
 autodoc_type_aliases = {}  # make type aliases nicer
 
 
-def setup(app):
+def setup(app: Sphinx) -> None:
     # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.float
     # instead of just saying 'alias of ...'
     all_pi_types = [

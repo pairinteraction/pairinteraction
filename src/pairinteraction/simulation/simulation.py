@@ -33,7 +33,7 @@ class BaseSimulation:
     the results.
     """
 
-    def __init__(self, model: Union[ModelSimulation, dict]):
+    def __init__(self, model: Union[ModelSimulation, dict]) -> None:
         """Initialize the simulation object
 
         Args:
@@ -52,7 +52,7 @@ class Simulation(BaseSimulation):
     the results.
     """
 
-    def run(self):
+    def run(self) -> None:
         for key, model in self.model.constituents.items():
             self.finish_model_constituent(model)
             system = self.create_constituent(key, model)
@@ -159,12 +159,12 @@ class Simulation(BaseSimulation):
         self.set_system_numerics(system, self.model.numerics)
         return system
 
-    def set_system_numerics(self, system: System, numerics: ModelNumerics):
+    def set_system_numerics(self, system: System, numerics: ModelNumerics) -> None:
         system.set_quantization_axis(numerics.quantization_axis)
         system.set_use_diamagnetism(numerics.use_diamagnetism)
         # TODO etc
 
-    def diagonalize_system(self, system: System, model):
+    def diagonalize_system(self, system: System) -> System:
         """Diagonalize the system."""
         # TODO diagonalize options? method, size, min/max energy after, ....
         system.diagonalize()

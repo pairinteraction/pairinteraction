@@ -7,7 +7,7 @@ import pyqtgraph as pg
 
 
 class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
-    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0, 0, 0)):
+    def __init__(self, x=None, y=None, size=1, alpha=80, color=(0, 0, 0)) -> None:
         pg.Qt.QtWidgets.QGraphicsItem.__init__(self)
         self.size = size
         self.alpha = alpha
@@ -18,7 +18,7 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
         # self.ItemIgnoresTransformations = True
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
 
-    def setData(self, x, y):
+    def setData(self, x, y) -> None:
         if x is None:
             x = np.array([])
             y = np.array([])
@@ -39,7 +39,7 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
     def boundingRect(self):
         return self.bounds
 
-    def paint(self, p, *args):
+    def paint(self, p, *args) -> None:
         p.setPen(self.pen)
         p.drawPoints(self.qpoints)
 
@@ -49,7 +49,7 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
 
 
 class MultiLine(pg.Qt.QtWidgets.QGraphicsPathItem):
-    def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)):
+    def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)) -> None:
         """x and y are 2D arrays of shape (Nplots, Nsamples)"""
         connections = np.ones(x.shape, dtype=bool)
         connections[:, -1] = 0  # don't draw the segment between each trace

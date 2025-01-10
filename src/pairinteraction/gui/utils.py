@@ -9,15 +9,15 @@ import numpy as np
 
 
 class Wignerd:
-    def __init__(self, cachedir):
+    def __init__(self, cachedir) -> None:
         self.cachedir = cachedir
         self.wignerdict = {}
         self.cachupdatedict = {}
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.save()
 
-    def save(self):
+    def save(self) -> None:
         for k, v in self.wignerdict.items():
             if not self.cachupdatedict[k]:
                 continue
@@ -142,7 +142,7 @@ class Wignerd:
 # see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 
 
-def csr_vappend(a, b):
+def csr_vappend(a, b) -> None:
     """Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
     Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
     the first matrix instead of copying it. The data, indices, and indptr still get copied."""
@@ -159,7 +159,7 @@ def csr_vappend(a, b):
 # see http://stackoverflow.com/questions/4695337/expanding-adding-a-row-or-column-a-scipy-sparse-matrix
 
 
-def csc_happend(a, b):
+def csc_happend(a, b) -> None:
     """Takes in 2 csc_matrices and appends the second one to the right of the first one."""
     if a.shape[0] != b.shape[0]:
         raise ValueError("Dimension mismatch in csc_happend")
@@ -174,7 +174,7 @@ def csc_happend(a, b):
 # see http://stackoverflow.com/questions/15992857/efficient-way-to-get-the-max-of-each-row-for-large-sparse-matrix
 
 
-def csr_keepmax(a):
+def csr_keepmax(a) -> None:
     boolarr = np.diff(a.indptr) > 0
     ret = np.maximum.reduceat(a.data, a.indptr[:-1][boolarr])
     a.data[a.data != np.repeat(ret, np.diff(a.indptr)[boolarr])] = 0

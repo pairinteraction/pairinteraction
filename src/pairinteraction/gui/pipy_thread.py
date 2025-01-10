@@ -5,6 +5,7 @@ import json
 import multiprocessing
 import os
 import time
+from typing import NoReturn
 
 import numpy as np
 from PyQt5.QtCore import QThread
@@ -16,7 +17,7 @@ class PipyThread(QThread):
     SEQUENTIAL = "SEQUENTIAL"
     STOP = "STOP"
 
-    def __init__(self, all_queues, context="default", pass_atom="direct&delete", parent=None):
+    def __init__(self, all_queues, context="default", pass_atom="direct&delete", parent=None) -> None:
         super().__init__(parent)
         self.all_queues = all_queues
 
@@ -50,7 +51,7 @@ class PipyThread(QThread):
             self._pool = multiprocessing.get_context(self.context).Pool(self.num_pr)
         return self._pool
 
-    def killPool(self):
+    def killPool(self) -> None:
         if self._pool == self.SEQUENTIAL:
             pass
         elif self._pool is not None:
@@ -58,13 +59,13 @@ class PipyThread(QThread):
             self._pool.join()
             self._pool = None
 
-    def setNumProcesses(self, num_pr):
+    def setNumProcesses(self, num_pr) -> None:
         num_pr = None if num_pr == 0 else num_pr
         if self.num_pr != num_pr:
             self.killPool()
             self.num_pr = num_pr
 
-    def setParams(self, params):
+    def setParams(self, params) -> None:
         self.params = params
 
     @property
@@ -72,10 +73,10 @@ class PipyThread(QThread):
         self._kwargs = {"pool": self.pool, "printFunction": self.all_queues.processOneLine, "params": self.params}
         return self._kwargs
 
-    def run(self):
+    def run(self) -> None:
         self.start_simulation(self.kwargs)
 
-    def terminate(self):
+    def terminate(self) -> None:
         # FIXME this is not the cleanest way, maybe using multiprocessing.manager/event/value would be better
         # but also might be slower and introduces bugs, where the gui does not close, althoug the terminal terminated
         print("Terminate PipyThread")
@@ -103,7 +104,7 @@ class PipyThread(QThread):
         if atom is not None:
             atom.delete()
 
-    def start_simulation(self, kwargs):
+    def start_simulation(self, kwargs) -> None:
         # convert params to settings and save as settings.json
         params = kwargs["params"]
         settings = params_to_settings(params)
@@ -127,7 +128,7 @@ class PipyThread(QThread):
         info("all Hamiltonian processed", kwargs)
         output(f"{'>>END':5}", kwargs)
 
-    def run_simulations(self, settings, kwargs):
+    def run_simulations(self, settings, kwargs) -> NoReturn:
         raise NotImplementedError("TODO implement new simulation call")
         # Probably also rename from pipy to simulation and get rid of old very old pairinteraction cpp calls in app.py
 
@@ -150,7 +151,7 @@ class PipyThread(QThread):
         return param_list
 
     @staticmethod
-    def print_completed(settings, result, kwargs):
+    def print_completed(settings, result, kwargs) -> None:
         output(f"{'>>DIM':5}{result['dimension']:7}", kwargs)
         numBlocks = settings["scriptoptions"]["numBlocks"]
         totalstep = 1 + result["ip"] * numBlocks + settings["blocknumber"]
@@ -282,12 +283,12 @@ def params_to_settings(params):
     return settings
 
 
-def output(msg, kwargs):
+def output(msg, kwargs) -> None:
     printFunction = kwargs["printFunction"]
     printFunction(msg + "\n")
 
 
-def info(msg, kwargs):
+def info(msg, kwargs) -> None:
     printFunction = kwargs["printFunction"]
     atom = kwargs.get("atom", None)
     if atom is not None:

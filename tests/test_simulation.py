@@ -17,12 +17,12 @@ names = ["simulation_1", "simulation_2", "simulation_3"]
 
 
 class SimulationTests(unittest.TestCase):
-    def test_simulations(self):
+    def test_simulations(self) -> None:
         for name in names:
             self.one_test_simulation(name)
 
     @unittest.skip("TODO implement new simulation call")
-    def one_test_simulation(self, name):
+    def one_test_simulation(self, name) -> None:
         self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         simulation = Simulation(self.model)
         results_list = simulation.run()
@@ -41,7 +41,7 @@ class SimulationTests(unittest.TestCase):
 
         self.remove_cache()
 
-    def save_energies_list(self, name, energies_list):
+    def save_energies_list(self, name, energies_list) -> None:
         with open(name, "w", encoding="utf-8") as f:
             for sublist in energies_list:
                 f.write(" ".join(map(str, sublist)) + "\n")
@@ -50,7 +50,7 @@ class SimulationTests(unittest.TestCase):
         with open(name, encoding="utf-8") as f:
             return [list(map(float, line.split())) for line in f]
 
-    def remove_cache(self):
+    def remove_cache(self) -> None:
         if self.model.numerics.path_cache is not None:
             shutil.rmtree(self.model.numerics.path_cache, ignore_errors=True)
         self.model = None

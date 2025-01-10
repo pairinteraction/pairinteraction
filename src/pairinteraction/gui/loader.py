@@ -7,7 +7,7 @@ from scipy import sparse
 
 
 class BinaryLoader:
-    def __init__(self):
+    def __init__(self) -> None:
         # types
         self.typeIds = {
             1008: "int8",
@@ -55,7 +55,7 @@ class BinaryLoader:
 
 
 class Eigensystem(BinaryLoader):
-    def __init__(self, filename):
+    def __init__(self, filename) -> None:
         super().__init__()
 
         self._filename = filename

@@ -3,11 +3,13 @@ import json
 import logging
 import platform
 import sys
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import dataclass
 from hashlib import sha256
 from pathlib import Path
 from time import perf_counter_ns
+from typing import Callable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -34,13 +36,13 @@ class BenchmarkResult:
 
 
 @contextmanager
-def timer():
+def timer() -> Generator[Callable[[], float], None, None]:
     """Timer context manager."""
     start = perf_counter_ns()
     yield lambda: (perf_counter_ns() - start) / 1e9
 
 
-def benchmark_pairinteraction(pi: callable, name: str, settings: dict) -> list[BenchmarkResult]:
+def benchmark_pairinteraction(pi: Callable, name: str, settings: dict) -> list[BenchmarkResult]:
     """Benchmark pairinteraction."""
     species = settings["species"]
     n = settings["n"]

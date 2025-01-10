@@ -12,7 +12,7 @@ from pairinteraction.gui.unitmanagement import Quantity
 
 
 class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
-    def __init__(self, ui):
+    def __init__(self, ui) -> None:
         self.store = {}
         self._setup(self.store, ui)
 
@@ -48,7 +48,7 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
         return Quantity(value, unit)
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value) -> None:
         if not isinstance(value, Quantity):
             raise Exception("value has to be of type quantity")
 
@@ -79,13 +79,13 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
         elif isinstance(widget, QtWidgets.QGroupBox):
             widget.setChecked(value)
 
-    def __delitem__(self, key):
+    def __delitem__(self, key) -> None:
         del self.store[key]
 
     def __iter__(self):
         return iter(self.store)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self.store)
 
 
@@ -93,7 +93,7 @@ class GuiDict(collections.abc.MutableMapping, metaclass=ABCMeta):
 
 
 class DoublenoneValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def validate(self, s, pos):
@@ -109,12 +109,12 @@ class DoublenoneValidator(QtGui.QDoubleValidator):
 
         return (QtGui.QValidator.Intermediate, s, pos)
 
-    def fixup(self, s):
+    def fixup(self, s) -> str:
         return "None"
 
 
 class DoublepositiveValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def validate(self, s, pos):
@@ -128,12 +128,12 @@ class DoublepositiveValidator(QtGui.QDoubleValidator):
 
         return status
 
-    def fixup(self, s):
+    def fixup(self, s) -> str:
         return "0"
 
 
 class DoubledeltaValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def validate(self, s, pos):
@@ -144,18 +144,18 @@ class DoubledeltaValidator(QtGui.QDoubleValidator):
 
         return status
 
-    def fixup(self, s):
+    def fixup(self, s) -> str:
         if locale.atof(s) < 0:
             return "-1"
         return "0"
 
 
 class DoubleValidator(QtGui.QDoubleValidator):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
     def validate(self, s, pos):
         return super().validate(s, pos)
 
-    def fixup(self, s):
+    def fixup(self, s) -> str:
         return "0"

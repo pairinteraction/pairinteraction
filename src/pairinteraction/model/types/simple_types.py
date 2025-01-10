@@ -22,7 +22,7 @@ Symmetry = Literal[None, 1, -1]
 class HalfInt(float):
     """Class for defining half integer."""
 
-    def __init__(self, value):
+    def __init__(self, value: float) -> None:
         """Check that value is a half integer (i.e. value % 1 == 0.5)."""
         if value % 1 != 0.5:
             raise ValueError(f"{value} is not a half integer")

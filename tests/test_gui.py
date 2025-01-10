@@ -15,7 +15,7 @@ from pairinteraction.gui.app import MainWindow
 reference_directory = Path(__file__).parent.parent / "data/reference_gui"
 
 
-def setup_window(qtbot, tmp_path):
+def setup_window(qtbot, tmp_path) -> MainWindow:
     window = MainWindow()
     qtbot.addWidget(window)
     window.path_cache = tmp_path / "cache"
@@ -24,7 +24,7 @@ def setup_window(qtbot, tmp_path):
     return window
 
 
-def calc_and_compare_energies(generate_reference, window, tmp_path, ref_data, use_python_api, dE, dE_tol=1e-3):
+def calc_and_compare_energies(generate_reference, window, tmp_path, ref_data, use_python_api, dE, dE_tol=1e-3) -> None:
     window.ui.checkbox_use_python_api.setChecked(use_python_api)
     window.autosetSymmetrization()
 
@@ -96,7 +96,7 @@ def calc_and_compare_energies(generate_reference, window, tmp_path, ref_data, us
 
 
 @pytest.mark.parametrize("use_python_api", [False, True])
-def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api):
+def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api) -> None:
     """Testing simulation single atom with all E and B fields on"""
     window = setup_window(qtbot, tmp_path)
     window.loadSettingsSystem(reference_directory / "field" / "settings.sconf")
@@ -106,7 +106,7 @@ def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api):
 
 
 @pytest.mark.parametrize("use_python_api", [False, True])
-def test_potential_calc_button(generate_reference, qtbot, tmp_path, use_python_api):
+def test_potential_calc_button(generate_reference, qtbot, tmp_path, use_python_api) -> None:
     """Testing simulation for pairpotential"""
     window = setup_window(qtbot, tmp_path)
     window.loadSettingsSystem(reference_directory / "potential" / "settings.sconf")
