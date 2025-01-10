@@ -142,7 +142,7 @@ class KetAtomBase(KetBase):
         return self._cpp.get_quantum_number_j()
 
     @property
-    def l_ryd(self) -> float:  # noqa: E743
+    def l_ryd(self) -> float:
         """The expectation value of the orbital quantum number l_{Ryd} of the Rydberg electron."""
         return self._cpp.get_quantum_number_l_ryd()
 

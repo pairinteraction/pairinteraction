@@ -13,7 +13,7 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
         self.alpha = alpha
         # self.pen = pg.mkPen((0,0,0,self.alpha),width=self.size,style=QtCore.Qt.CustomDashLine)
         # self.pen.setDashPattern([1, 20, 5, 4])
-        self.pen = pg.mkPen(color + (self.alpha,), width=self.size, cosmetic=True)
+        self.pen = pg.mkPen((*color, self.alpha), width=self.size, cosmetic=True)
         self.setData(x, y)
         # self.ItemIgnoresTransformations = True
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIgnoresTransformations, True)
@@ -56,7 +56,7 @@ class MultiLine(pg.Qt.QtWidgets.QGraphicsPathItem):
 
         self.path = pg.arrayToQPath(x.flatten(), y.flatten(), connections.flatten())
         pg.Qt.QtWidgets.QGraphicsPathItem.__init__(self, self.path)
-        pen = pg.mkPen(color + (alpha,), width=size, cosmetic=True)
+        pen = pg.mkPen((*color, alpha), width=size, cosmetic=True)
         self.setPen(pen)
 
     # Override because QGraphicsPathItem.shape is too expensive.
