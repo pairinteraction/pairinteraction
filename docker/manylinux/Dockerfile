@@ -29,5 +29,3 @@ RUN yum install -y epel-release \
     cpp-httplib-devel \
     libglvnd \
     && yum clean all
-
-ENV PATH=/opt/python/cp39-cp39/bin/:$PATH
