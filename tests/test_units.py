@@ -1,6 +1,4 @@
-"""
-Test the unit conversion from BaseUnits (=atomic units) used in the backend and the units input and output to the user.
-"""
+"""Test the conversion from BaseUnits (=atomic units) used in the backend and the units input and output to the user."""
 
 import numpy as np
 

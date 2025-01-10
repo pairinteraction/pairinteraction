@@ -50,7 +50,7 @@ class PointsItem(pg.Qt.QtWidgets.QGraphicsItem):
 
 class MultiLine(pg.Qt.QtWidgets.QGraphicsPathItem):
     def __init__(self, x, y, size=1, alpha=80, color=(0, 0, 0)) -> None:
-        """x and y are 2D arrays of shape (Nplots, Nsamples)"""
+        """X and y are 2D arrays of shape (Nplots, Nsamples)."""
         connections = np.ones(x.shape, dtype=bool)
         connections[:, -1] = 0  # don't draw the segment between each trace
 

@@ -36,7 +36,9 @@ class ModelNumerics(BaseModel):
     @field_validator("quantization_axis", mode="before")
     @classmethod
     def validate_quantization_axis(cls, axis: Union[QuantizationAxisString, Vector]) -> Vector:
-        """Validate the quantization axis, i.e. if it is given as string (referencing some direction)
+        """Validate the quantization axis.
+
+        If the quantization axis is given as string (referencing some direction)
         convert it to a list, representing the direction.
         """
         if isinstance(axis, list):

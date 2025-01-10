@@ -1,6 +1,4 @@
-"""
-Tests for atomic unit conversions using pint.
-"""
+"""Tests for atomic unit conversions using pint."""
 
 import pytest
 from pint import UnitRegistry

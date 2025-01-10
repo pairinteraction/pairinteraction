@@ -1,6 +1,4 @@
-"""
-Test multipole interaction.
-"""
+"""Test multipole interaction."""
 
 import numpy as np
 import pytest

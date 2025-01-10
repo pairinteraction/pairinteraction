@@ -1,6 +1,4 @@
-"""
-Test receiving matrix elements from the databases.
-"""
+"""Test receiving matrix elements from the databases."""
 
 from pathlib import Path
 
@@ -62,7 +60,6 @@ def database(database_dir: str, download_missing: bool) -> pi.Database:
 @pytest.mark.parametrize("swap_states", [False, True])
 def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConnection, swap_states: bool) -> None:
     """Test receiving matrix elements from the databases."""
-
     bfield_in_gauss = 1500
 
     # Define initial and final quantum states
@@ -168,7 +165,6 @@ def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConne
 @pytest.mark.parametrize("species", SUPPORTED_SPECIES)
 def test_obtaining_kets(database: pi.Database, species: str) -> None:
     """Test obtaining kets from the database."""
-
     is_mqdt = species.endswith("_mqdt")
     is_single_valence_electron = species in ["Rb"]
     is_triplet = species in ["Sr88_triplet"]

@@ -1,6 +1,4 @@
-"""
-Test energy range restriction in the diagonalization.
-"""
+"""Test energy range restriction in the diagonalization."""
 
 import numpy as np
 

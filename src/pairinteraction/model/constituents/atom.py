@@ -47,7 +47,7 @@ class BaseModelAtom(BaseModelConstituent, ABC):
 
     @property
     def is_real(self) -> bool:
-        """Return True if the atom can be described with a real Hamiltonian (i.e. no efield or bfield in y direction)"""
+        """Return True if the atom can be described with a real Hamiltonian (i.e. no fields in y direction)."""
         return (self.efield_y.get_min() == self.efield_y.get_max() == 0) and (
             self.bfield_y.get_min() == self.bfield_y.get_max() == 0
         )
@@ -100,8 +100,9 @@ class ModelAtomSQDT(BaseModelAtom, Generic[SpinType]):
 
 
 class ModelAtomMQDT(BaseModelAtom, Generic[FType]):
-    """Model representing a MQDT atom with either a integer or half integer total momentum f
-    (i.e. FType is int or HalfInt).
+    """Model representing a MQDT atom with either a integer or half integer total momentum f.
+
+    This means FType is int or HalfInt.
     """
 
     min_n: Optional[Positive[float]] = None

@@ -29,8 +29,10 @@ class BaseModelStateAtom(BaseModelState, ABC):
 
 
 class ModelStateAtomSQDT(BaseModelStateAtom, Generic[SpinType]):
-    """Model representing a state of a SQDT atom with either a integer or half integer spin
-    (i.e. SpinType is int or HalfInt)."""
+    """Model representing a state of a SQDT atom with either a integer or half integer spin.
+
+    This means SpinType is int or HalfInt.
+    """
 
     species: SpeciesStringSQDT
 
@@ -63,8 +65,9 @@ class ModelStateAtomSQDT(BaseModelStateAtom, Generic[SpinType]):
 
 
 class ModelStateAtomMQDT(BaseModelStateAtom, Generic[FType]):
-    """Model representing a state of a MQDT atom with either a integer or half integer total momentum f
-    (i.e. FType is int or HalfInt).
+    """Model representing a state of a MQDT atom with either a integer or half integer total momentum f.
+
+    This means FType is int or HalfInt.
     """
 
     species: SpeciesStringMQDT

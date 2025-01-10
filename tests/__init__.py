@@ -1,2 +1,4 @@
-"""This file seems to be required to make 'import tests.constants'
-work within the test cases with all versions of Python and pytest."""
+"""Note: This file seems to be required to make 'import tests.constants' work.
+
+For some versions of Python and pytest it otherwise fails.
+"""
