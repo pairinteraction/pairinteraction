@@ -68,7 +68,7 @@ class KetBase(ABC):
 
     @property
     def energy(self) -> "PlainQuantity[float]":
-        """The energy of the ket: E=I-Ry/nu^2"""
+        """The energy of the ket: E=I-Ry/nu^2."""
         return self.get_energy()
 
     @overload

@@ -115,10 +115,10 @@ class PipyThread(QThread):
         config = settings["config"]
         scriptoptions = settings["scriptoptions"]
         output(f"{'>>TYP':5}{settings['button_id']:7}", kwargs)
-        output(f"{'>>TOT':5}{scriptoptions['numBlocks']*scriptoptions['listoptions']['steps']:7}", kwargs)
+        output(f"{'>>TOT':5}{scriptoptions['numBlocks'] * scriptoptions['listoptions']['steps']:7}", kwargs)
         if config["nAtoms"] == 2:
             for bn, syms in enumerate(scriptoptions["symmetries_list"]):
-                print(f"Starting symmetry block {bn+1}/{scriptoptions['numBlocks']} with {syms}")
+                print(f"Starting symmetry block {bn + 1}/{scriptoptions['numBlocks']} with {syms}")
                 config.update(syms)
                 settings["blocknumber"] = bn
                 self.run_simulations(settings, kwargs)
@@ -156,8 +156,7 @@ class PipyThread(QThread):
         numBlocks = settings["scriptoptions"]["numBlocks"]
         totalstep = 1 + result["ip"] * numBlocks + settings["blocknumber"]
         output(
-            f"{'>>OUT':5}{totalstep:7}{result['ip']:7}{numBlocks:7}"
-            f"{settings['blocknumber']:7} {result['filename']} ",
+            f"{'>>OUT':5}{totalstep:7}{result['ip']:7}{numBlocks:7}{settings['blocknumber']:7} {result['filename']} ",
             kwargs,
         )
 

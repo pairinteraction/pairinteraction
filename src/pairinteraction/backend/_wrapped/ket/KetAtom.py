@@ -35,7 +35,7 @@ class KetAtomBase(KetBase):
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
     ) -> None:
-        """A single atomic canonical basis state defined by its species and quantum numbers.
+        """Create a single atomic canonical basis state, which is defined by its species and quantum numbers.
 
         Each KetAtom object uniquely represents a single atomic basis state.
         When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
@@ -74,6 +74,7 @@ class KetAtomBase(KetBase):
             ('Yb174_mqdt', 60.049, 1.0, 1.0)
             >>> ket_mqdt.label
             'Yb174:S=0.4,nu=60.0,L=1.0,J=1,1'
+
         """
         creator = self._cpp_creator()
         creator.set_species(species)

@@ -1,6 +1,4 @@
-"""
-Test the pair potential calculation.
-"""
+"""Test the pair potential calculation."""
 
 from pathlib import Path
 

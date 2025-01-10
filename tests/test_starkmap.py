@@ -1,6 +1,4 @@
-"""
-Test the Stark map calculation.
-"""
+"""Test the Stark map calculation."""
 
 from pathlib import Path
 

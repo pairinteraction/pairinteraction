@@ -143,9 +143,11 @@ class Wignerd:
 
 
 def csr_vappend(a, b) -> None:
-    """Takes in 2 csr_matrices and appends the second one to the bottom of the first one.
+    """Take in 2 csr_matrices and append the second one to the bottom of the first one.
+
     Much faster than scipy.sparse.vstack but assumes the type to be csr and overwrites
-    the first matrix instead of copying it. The data, indices, and indptr still get copied."""
+    the first matrix instead of copying it. The data, indices, and indptr still get copied.
+    """
     if a.shape[1] != b.shape[1]:
         raise ValueError("Dimension mismatch in csr_vappend")
 
@@ -160,7 +162,7 @@ def csr_vappend(a, b) -> None:
 
 
 def csc_happend(a, b) -> None:
-    """Takes in 2 csc_matrices and appends the second one to the right of the first one."""
+    """Take in 2 csc_matrices and append the second one to the right of the first one."""
     if a.shape[0] != b.shape[0]:
         raise ValueError("Dimension mismatch in csc_happend")
 

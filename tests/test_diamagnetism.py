@@ -1,6 +1,4 @@
-"""
-Test diamagnetic interactions.
-"""
+"""Test diamagnetic interactions."""
 
 import numpy as np
 

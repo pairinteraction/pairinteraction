@@ -31,9 +31,11 @@ def calculate_energy(ket: KetAtom, system: Optional[SystemAtom] = None, *, unit:
     Args:
         ket: The ket state.
         system (optional): The system to calculate the energy in. If no system is provided, simply return ket.get_energy
+        unit (optional): The unit, in which to return the energy in. If not provided (or "pint"), return a pint.Quantity
 
     Returns:
         The energy of the ket state.
+
     """
     if system is None:
         energy_au = _backend.calculate_energy(ket._cpp)  # type: ignore [reportPrivateUsage]

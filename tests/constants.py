@@ -1,6 +1,4 @@
-"""
-Constants used in the tests.
-"""
+"""Constants used in the tests."""
 
 SUPPORTED_SPECIES = [
     "Rb",

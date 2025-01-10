@@ -1,6 +1,4 @@
-"""
-Test the mapping between kets and states
-"""
+"""Test the mapping between kets and states."""
 
 import numpy as np
 from scipy.optimize import linear_sum_assignment

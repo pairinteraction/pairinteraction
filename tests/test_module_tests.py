@@ -1,6 +1,4 @@
-"""
-Execute the module tests.
-"""
+"""Execute the module tests."""
 
 from pairinteraction import run_module_tests
 

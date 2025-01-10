@@ -97,7 +97,7 @@ def calc_and_compare_energies(generate_reference, window, tmp_path, ref_data, us
 
 @pytest.mark.parametrize("use_python_api", [False, True])
 def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api) -> None:
-    """Testing simulation single atom with all E and B fields on"""
+    """Testing simulation single atom with all E and B fields on."""
     window = setup_window(qtbot, tmp_path)
     window.loadSettingsSystem(reference_directory / "field" / "settings.sconf")
     window.loadSettingsPlotter(reference_directory / "field" / "settings.pconf")
@@ -107,7 +107,7 @@ def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api) 
 
 @pytest.mark.parametrize("use_python_api", [False, True])
 def test_potential_calc_button(generate_reference, qtbot, tmp_path, use_python_api) -> None:
-    """Testing simulation for pairpotential"""
+    """Testing simulation for pairpotential."""
     window = setup_window(qtbot, tmp_path)
     window.loadSettingsSystem(reference_directory / "potential" / "settings.sconf")
     window.loadSettingsPlotter(reference_directory / "potential" / "settings.pconf")

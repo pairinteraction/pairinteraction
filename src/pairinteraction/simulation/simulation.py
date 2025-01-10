@@ -1,4 +1,4 @@
-"""Defining the simulation class for pairinteraction"""
+"""Defining the simulation class for pairinteraction."""
 
 from typing import Union
 
@@ -26,7 +26,7 @@ BasisAtom = BasisAtomCreator = BasisClassicalLight = ProductBasis = System = Sys
 
 
 class BaseSimulation:
-    """BaseSimulation class for pairinteraction
+    """BaseSimulation class for pairinteraction.
 
     This class is used to define a simulation object for pairinteraction.
     It contains the necessary methods to run a simulation and to extract
@@ -34,10 +34,11 @@ class BaseSimulation:
     """
 
     def __init__(self, model: Union[ModelSimulation, dict]) -> None:
-        """Initialize the simulation object
+        """Initialize the simulation object.
 
         Args:
             model: ModelSimulation or dict: Model describing the simulation
+
         """
         self.model: ModelSimulation = ModelSimulation.model_validate(model)
         self.bases = {}
@@ -45,7 +46,7 @@ class BaseSimulation:
 
 
 class Simulation(BaseSimulation):
-    """Simulation class for pairinteraction
+    """Simulation class for pairinteraction.
 
     This class is used to define a simulation object for pairinteraction.
     It contains the necessary methods to run a simulation and to extract
@@ -82,6 +83,7 @@ class Simulation(BaseSimulation):
 
         Returns:
             System: The created system
+
         """
         if key in ["atom1", "atom2"]:
             basis = self.create_atom_basis(model)

@@ -90,7 +90,9 @@ class ModelSimulation(BaseModel):
 
     @model_validator(mode="after")
     def validate_constituents_references(self) -> "Self":
-        """Validate the constituents, i.e. replace constituents given as reference
+        """Validate the constituents.
+
+        This means replace constituents given as reference
         to another constituent via a string as reference to the same object.
 
         To keep track of which constituents are pointing to the same object
@@ -108,8 +110,9 @@ class ModelSimulation(BaseModel):
 
     @model_validator(mode="after")
     def validate_submodel_combined_states(self) -> "Self":
-        """Validate combined_states of the submodel 'interactions' and 'overlaps',
-        i.e. replace states, that are given as reference
+        """Validate combined_states of the submodel 'interactions' and 'overlaps'.
+
+        This means replace states, that are given as reference
         to a state of a constituent.state_of_interest (via an index) with the actual state.
         """
         for submodel_name in ["interactions", "overlaps"]:
@@ -166,7 +169,9 @@ class ModelSimulation(BaseModel):
         nxt: SerializerFunctionWrapHandler,
         info: FieldSerializationInfo,
     ) -> Optional[Union[dict, ConstituentString]]:
-        """Serialize the constituents, i.e. if the constituent is a reference to another constituent,
+        """Serialize the constituents.
+
+        If the constituent is a reference to another constituent
         return the name of the other constituent (this is done using self._constituent_mapping).
         """
         name = info.field_name
