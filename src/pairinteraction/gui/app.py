@@ -1989,10 +1989,10 @@ class MainWindow(QtWidgets.QMainWindow):
                     # add outer points if at the end or start
                     # end
                     if self.colormap_buffer_minIdx_field[idx] == self.steps - 1:
-                        positions = positions + [2 * positions[1] - positions[0]]
+                        positions = [*positions, 2 * positions[1] - positions[0]]
                     # start
                     elif self.colormap_buffer_minIdx_field[idx] == 0:
-                        positions = [2 * positions[0] - positions[1]] + positions
+                        positions = [2 * positions[0] - positions[1], *positions]
 
                     # determine limits of the color map part
                     posLeft = (positions[0] + positions[1]) / 2
@@ -3111,7 +3111,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.pipy_thread.start()
             else:
                 self.run_with_pipy = False
-                # OMP_NUM_THREADS – Specifies the number of threads to
+                # OMP_NUM_THREADS - Specifies the number of threads to
                 # use in parallel regions.  The value of this variable
                 # shall be a comma-separated list of positive
                 # integers; the value specified the number of threads
