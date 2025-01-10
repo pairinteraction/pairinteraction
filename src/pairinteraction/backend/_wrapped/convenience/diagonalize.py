@@ -1,4 +1,4 @@
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from typing import TYPE_CHECKING, Union
 
 from pairinteraction.backend import _backend
@@ -39,7 +39,7 @@ def diagonalize(
         system.update_basis()
 
 
-def get_cpp_diagonalize(system: "System"):
+def get_cpp_diagonalize(system: "System") -> Callable:
     try:
         return getattr(_backend, f"diagonalize{type(system).__name__}")
     except AttributeError as err:

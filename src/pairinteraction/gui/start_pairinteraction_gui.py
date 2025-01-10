@@ -4,7 +4,7 @@
 import runpy
 
 
-def main():
+def main() -> None:
     runpy.run_module("pairinteraction.gui.app", {}, "__main__")
 
 

@@ -39,7 +39,7 @@ if __name__ == "__main__":
 
 
 class SplashScreen(QtWidgets.QSplashScreen):
-    def __init__(self, app):
+    def __init__(self, app) -> None:
         super(QtWidgets.QSplashScreen, self).__init__()
         self.app = app
         self.setWindowTitle("Start pairinteraction GUI")
@@ -66,7 +66,7 @@ class SplashScreen(QtWidgets.QSplashScreen):
         self.progressBar.setMaximum(100)
         self.progressBar.setGeometry(0, splash_pix.height() - 20, splash_pix.width(), 20)
 
-    def progress(self, text, value):
+    def progress(self, text, value) -> None:
         print(f"{text:<20s} {value:>3d} %", flush=True)
         self.labelDescription.setText(text)
         self.progressBar.setValue(value)
@@ -158,7 +158,7 @@ NO_BN = -1
 
 
 class PlotDict(GuiDict):
-    def _setup(self, store, ui):
+    def _setup(self, store, ui) -> None:
         store["minE_field1"] = {"widget": ui.lineedit_field1_minE, "unit": Units.energy}
         store["maxE_field1"] = {"widget": ui.lineedit_field1_maxE, "unit": Units.energy}
         store["minE_field2"] = {"widget": ui.lineedit_field2_minE, "unit": Units.energy}
@@ -201,7 +201,7 @@ class PlotDict(GuiDict):
 
 
 class SystemDict(GuiDict):
-    def _setup(self, store, ui):
+    def _setup(self, store, ui) -> None:
         store["minE_storage"] = {"widget": ui.lineedit_storage_minE, "unit": Units.energy}
         store["maxE_storage"] = {"widget": ui.lineedit_storage_maxE, "unit": Units.energy}
         store["species1"] = {"widget": ui.combobox_system_species1, "unit": None}
@@ -426,7 +426,7 @@ class SystemDict(GuiDict):
 
 
 class AboutDialog(QtWidgets.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None) -> None:
         super().__init__(parent)
 
         self.setWindowTitle("About")
@@ -452,11 +452,11 @@ class AboutDialog(QtWidgets.QDialog):
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self, parent=None, splash=None):
+    def __init__(self, parent=None, splash=None) -> None:
         if splash is None:
 
             class SplashScreenMocked:
-                def progress(self, text, value):
+                def progress(self, text, value) -> None:
                     print(f"{text:<20s} {value:>3d} %", flush=True)
 
             self.splash = SplashScreenMocked()
@@ -1038,14 +1038,14 @@ class MainWindow(QtWidgets.QMainWindow):
             self.saveSettingsPlotter(filelike)
             self.storage_configuration[idx][1] = filelike.getvalue()
 
-    def loadSettingsSystem(self, path):
+    def loadSettingsSystem(self, path) -> None:
         with open(path) as f:
             params = json.load(f)
             prio_keys = ["species1", "species2"]  # first set species, to adapt the allowed j and m values
             for k in prio_keys + list(params.keys()):
                 self.systemdict[k] = Quantity(params[k][0], params[k][1])
 
-    def loadSettingsPlotter(self, path):
+    def loadSettingsPlotter(self, path) -> None:
         with open(path) as f:
             params = json.load(f)
             self.ui.gradientwidget_plot_gradient.restoreState(params["gradientwidget"])
@@ -1053,7 +1053,7 @@ class MainWindow(QtWidgets.QMainWindow):
             for k, v in params.items():
                 self.plotdict[k] = Quantity(v[0], v[1])
 
-    def loadSettingsView(self, path):
+    def loadSettingsView(self, path) -> None:
         with open(path) as f:
             params = json.load(f)
             self.ui.tabwidget_config.setCurrentIndex(params["config"])
@@ -1062,8 +1062,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if "filepath" in params.keys():
                 self.filepath = params["filepath"]
 
-    def saveSettingsSystem(self, path):
-        def save(f):
+    def saveSettingsSystem(self, path) -> None:
+        def save(f) -> None:
             params = {}
             for k, v in self.systemdict.items():
                 params[k] = [v.magnitude, v.units]
@@ -1075,8 +1075,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             save(path)
 
-    def saveSettingsPlotter(self, path):
-        def save(f):
+    def saveSettingsPlotter(self, path) -> None:
+        def save(f) -> None:
             params = {}
             for k, v in self.plotdict.items():
                 params[k] = [v.magnitude, v.units]
@@ -1089,8 +1089,8 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             save(path)
 
-    def saveSettingsView(self, path):
-        def save(f):
+    def saveSettingsView(self, path) -> None:
+        def save(f) -> None:
             params = {}
             params["config"] = self.ui.tabwidget_config.currentIndex()
             params["plotter"] = self.ui.tabwidget_plotter.currentIndex()
@@ -1135,7 +1135,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # def getSameSpecies(self):
     #    return self.systemdict['species1'] == self.systemdict['species2']
 
-    def abortCalculation(self):
+    def abortCalculation(self) -> None:
         # kill all processes
         if self.proc is not None:
             self.proc.terminate()
@@ -1151,7 +1151,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.pipy_thread = None
         self.all_queues.clear()
 
-    def cleanupProcesses(self):
+    def cleanupProcesses(self) -> None:
         """Cleanup after calculation is finished or stopped."""
         if self.proc is not None:
             self.proc.wait()
@@ -1161,7 +1161,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.pipy_thread.wait()
         self.all_queues.clear()
 
-    def checkForData(self):
+    def checkForData(self) -> None:
         # === print status ===
         elapsedtime = f"{timedelta(seconds=int(time() - self.starttime))}"
         if self.all_queues.message != "":
@@ -2281,7 +2281,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # --- update the graphics view ---
         graphicsview_plot[idx].repaint()
 
-    def threadFinished(self):
+    def threadFinished(self) -> None:
         # Delete buffers
         self.buffer_basis = {}
         self.buffer_energies = {}
@@ -2335,7 +2335,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Reset status bar
         self.ui.statusbar.showMessage("")
 
-    def createThread(self):
+    def createThread(self) -> None:
         if self.ui.checkbox_use_python_api.isChecked():
             if self.pipy_thread is None:
                 self.pipy_thread = PipyThread(self.all_queues)
@@ -2348,7 +2348,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.proc = None
 
     @QtCore.pyqtSlot()
-    def fitC3C6(self):
+    def fitC3C6(self) -> None:
         C6notC3 = self.ui.combobox_potential_fct.currentIndex()  # TODO rename variable
         idx = 2
         arrk = list(self.linesX[idx].keys())
@@ -2457,7 +2457,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.graphicviews_plot[idx].setAntialiasing(True)
 
     # @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
-    def detectManualRangeX(self):
+    def detectManualRangeX(self) -> None:
         sender = self.sender()
 
         idx = -1
@@ -2472,7 +2472,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.manualRangeX[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][0]
 
     # @QtCore.pyqtSlot(bool) # TODO !!!!!!!!!!
-    def detectManualRangeY(self):
+    def detectManualRangeY(self) -> None:
         sender = self.sender()
 
         idx = -1
@@ -2487,7 +2487,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.manualRangeY[idx] = not self.graphicviews_plot[idx].getViewBox().getState()["autoRange"][1]
 
     @QtCore.pyqtSlot(int)
-    def adjustPairlimits(self, value):
+    def adjustPairlimits(self, value) -> None:
         sender = self.sender()
 
         if value == NO_RESTRICTIONS:
@@ -2511,7 +2511,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.spinbox_system_deltaMPair.setMinimum(minimum)
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def toggleAntialiasing(self):
+    def toggleAntialiasing(self) -> None:
         checked = self.ui.checkbox_plot_antialiasing.isChecked()
         for plotarea in [
             self.ui.graphicsview_field1_plot,
@@ -2522,18 +2522,18 @@ class MainWindow(QtWidgets.QMainWindow):
         pg.setConfigOptions(antialias=checked)  # TODO
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def togglePairbasis(self):
+    def togglePairbasis(self) -> None:
         checked = self.ui.radiobutton_system_pairbasisDefined.isChecked()
         self.ui.widget_system_pair.setEnabled(checked)
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def toggleOverlapstate(self):
+    def toggleOverlapstate(self) -> None:
         checked = self.ui.radiobutton_plot_overlapDefined.isChecked()
         self.ui.widget_plot_qn.setEnabled(checked)
         self.validateAllQuantumnumbers()
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def toggleSymmetrization(self):
+    def toggleSymmetrization(self) -> None:
         checked = self.ui.radiobutton_symManual.isChecked()
         self.ui.checkbox_system_invE.setEnabled(checked)
         self.ui.checkbox_system_invO.setEnabled(checked)
@@ -2544,7 +2544,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.checkbox_system_conserveM.setEnabled(checked)
         self.autosetSymmetrization()
 
-    def setSpeciesElements(self):
+    def setSpeciesElements(self) -> None:
         checked = self.ui.checkbox_use_python_api.isChecked()
         species_list = self.all_elements if checked else self.cpp_elements
         for combobox in [self.ui.combobox_system_species1, self.ui.combobox_system_species2]:
@@ -2555,7 +2555,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if e_old in species_list:
                 combobox.setCurrentIndex(species_list.index(e_old))
 
-    def autosetSymmetrization(self):
+    def autosetSymmetrization(self) -> None:
         if self.ui.radiobutton_symManual.isChecked():
             return
 
@@ -2602,7 +2602,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.checkbox_system_conserveM.setChecked(sym_rotation)
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def toggleSamebasis(self):
+    def toggleSamebasis(self) -> None:
         checked = self.ui.checkbox_system_samebasis.isChecked()
         if checked and self.ui.tabwidget_plotter.count() == 3:
             self.ui.tabwidget_plotter.removeTab(1)
@@ -2612,7 +2612,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.tabwidget_plotter.setTabText(0, "Field map of atom 1")
 
     @QtCore.pyqtSlot(bool)  # TODO
-    def toggleYScale(self):
+    def toggleYScale(self) -> None:
         log = self.ui.radiobutton_plot_log.isChecked()
         if log:
             self.ui.label_plot_1st.setText("< 0.01")  # TODO
@@ -2624,7 +2624,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.logscale = False
 
     @QtCore.pyqtSlot(str)  # TODO
-    def forbidSamebasis(self):
+    def forbidSamebasis(self) -> None:
         if self.ui.combobox_system_species1.currentIndex() != self.ui.combobox_system_species2.currentIndex():
             if self.ui.checkbox_system_samebasis.isEnabled():
                 self.ui.checkbox_system_samebasis.setEnabled(False)
@@ -2636,7 +2636,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.checkbox_system_samebasis.setCheckState(self.samebasis_state)
 
     @QtCore.pyqtSlot()
-    def defaultQuantumnumbers(self):
+    def defaultQuantumnumbers(self) -> None:
         sender = self.sender()
         number = int(sender.objectName()[-1])
         species = getattr(self.ui, f"combobox_system_species{number}").currentText()
@@ -2653,19 +2653,19 @@ class MainWindow(QtWidgets.QMainWindow):
                 spinbox.setValue(np.floor(value) + (s % 1))
 
     @QtCore.pyqtSlot()
-    def validateCores(self):
+    def validateCores(self) -> None:
         sender = self.sender()
         if sender.value() != -1 and sender.value() < 2:
             sender.setValue(2)
 
-    def validateAllQuantumnumbers(self):
+    def validateAllQuantumnumbers(self) -> None:
         self.invalidQuantumnumbers = {}
         check_systems = ["system", "plot"] if self.ui.radiobutton_plot_overlapDefined.isChecked() else ["system"]
         for system in check_systems:
             for number in [1, 2]:
                 self.validateOneQuantumnumbers(system, number)
 
-    def validateOneQuantumnumbers(self, system=None, number=None):
+    def validateOneQuantumnumbers(self, system=None, number=None) -> None:
         if system is None or number is None:
             sender_name = self.sender().objectName()
             system = "plot" if "plot" in sender_name else "system"
@@ -2699,7 +2699,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.statusbar.showMessage(msg)
         self.invalidQuantumnumbersMessage = msg
 
-    def _validateQnGeneral(self, _type="integer", orPlotAll=False):
+    def _validateQnGeneral(self, _type="integer", orPlotAll=False) -> None:
         assert _type in ["integer", "integerpositive", "spinlike", "spinlikepositive"]
         sender = self.sender()
         number = int(sender.objectName()[-1])
@@ -2715,27 +2715,27 @@ class MainWindow(QtWidgets.QMainWindow):
             sender.setValue(np.floor(value) + (s % 1))
 
     @QtCore.pyqtSlot()
-    def validateSpinLike(self):
+    def validateSpinLike(self) -> None:
         self._validateQnGeneral(_type="spinlike")
 
     @QtCore.pyqtSlot()
-    def validateSpinLikePositiveOrPlotAll(self):
+    def validateSpinLikePositiveOrPlotAll(self) -> None:
         self._validateQnGeneral(_type="spinlikepositive", orPlotAll=True)
 
     @QtCore.pyqtSlot()
-    def validateSpinLikeOrPlotAll(self):
+    def validateSpinLikeOrPlotAll(self) -> None:
         self._validateQnGeneral(_type="spinlike", orPlotAll=True)
 
     @QtCore.pyqtSlot()
-    def validateIntegerPositiveOrPlotAll(self):
+    def validateIntegerPositiveOrPlotAll(self) -> None:
         self._validateQnGeneral(_type="integer", orPlotAll=True)
 
     @QtCore.pyqtSlot(str)
-    def showCriticalMessage(self, msg):
+    def showCriticalMessage(self, msg) -> None:
         QtWidgets.QMessageBox.critical(self, "Message", msg)
 
     @QtCore.pyqtSlot()
-    def startCalc(self):
+    def startCalc(self) -> None:
         if self.timer.isActive():
             self.abortCalculation()
             return
@@ -3135,7 +3135,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.starttime = time()
 
     @QtCore.pyqtSlot()
-    def saveResult(self):
+    def saveResult(self) -> None:
         senderbutton = self.sender()
         if senderbutton == self.ui.pushbutton_field1_save:
             idx = 0
@@ -3165,7 +3165,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.saveToZipfile(filename, idx)
 
-    def saveToZipfile(self, filename, idx):
+    def saveToZipfile(self, filename, idx) -> None:
         # open zip file
         ziparchive = zipfile.ZipFile(filename, "w", compression=zipfile.ZIP_STORED)  # zipfile.ZIP_DEFLATED
 
@@ -3494,7 +3494,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     print(params)"""
 
     @QtCore.pyqtSlot()
-    def saveSystemConf(self):
+    def saveSystemConf(self) -> None:
         path = self.systemfile if self.systemfile is not None else self.filepath
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save system configuration", path, "sconf (*.sconf)")
 
@@ -3504,7 +3504,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.filepath = os.path.dirname(filename)
 
     @QtCore.pyqtSlot()
-    def savePlotConf(self):
+    def savePlotConf(self) -> None:
         path = self.plotfile if self.plotfile is not None else self.filepath
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save plot configuration", path, "pconf (*.pconf)")
 
@@ -3514,11 +3514,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.filepath = os.path.dirname(filename)
 
     @QtCore.pyqtSlot()
-    def spawnAboutDialog(self):
+    def spawnAboutDialog(self) -> None:
         self.AboutDialog.exec_()
 
     @QtCore.pyqtSlot()
-    def changeCacheDirectory(self):
+    def changeCacheDirectory(self) -> None:
         text, ok = QtWidgets.QInputDialog.getText(
             self,
             "Input Dialog",
@@ -3537,7 +3537,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 json.dump({"cachedir": self.path_cache}, f, indent=4, sort_keys=True)
 
     @QtCore.pyqtSlot()
-    def clearCache(self):
+    def clearCache(self) -> None:
         self.abortCalculation()
         for name in os.listdir(self.path_cache):
             path = os.path.join(self.path_cache, name)
@@ -3553,7 +3553,7 @@ class MainWindow(QtWidgets.QMainWindow):
         os.makedirs(self.path_cache_wignerd)
 
     @QtCore.pyqtSlot()
-    def openSystemConf(self):
+    def openSystemConf(self) -> None:
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open system configuration", self.filepath, "sconf (*.sconf)"
         )
@@ -3564,7 +3564,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.filepath = os.path.dirname(filename)
 
     @QtCore.pyqtSlot()
-    def openPlotConf(self):
+    def openPlotConf(self) -> None:
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             self, "Open plot configuration", self.filepath, "pconf (*.pconf)"
         )
@@ -3575,7 +3575,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.filepath = os.path.dirname(filename)
 
     @QtCore.pyqtSlot()
-    def resetSConf(self):
+    def resetSConf(self) -> None:
         conf_used = self.path_system_last
         conf_original = os.path.join(self.path_configurationdir, "example.sconf")
 
@@ -3585,7 +3585,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.loadSettingsSystem(conf_used)
 
     @QtCore.pyqtSlot()
-    def resetPConf(self):
+    def resetPConf(self) -> None:
         conf_used = self.path_plot_last
         conf_original = os.path.join(self.path_configurationdir, "example.pconf")
 
@@ -3595,7 +3595,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.loadSettingsPlotter(conf_used)
 
     @QtCore.pyqtSlot()
-    def print(self):
+    def print(self) -> None:
         idx = self.ui.tabwidget_plotter.currentIndex()
         if idx == 1 and self.ui.tabwidget_plotter.count() == 2:
             idx = 2
@@ -4203,7 +4203,7 @@ class MainWindow(QtWidgets.QMainWindow):
         printLabel.render(painter)
         painter.end()"""
 
-    def closeEvent(self, event):
+    def closeEvent(self, event) -> None:
         self.abortCalculation()
 
         # Save last settings

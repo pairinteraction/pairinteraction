@@ -59,7 +59,9 @@ ValueType = TypeVar("ValueType", bound=Union[float, "Array", "csr_matrix"])
 
 
 class QuantityAbstract(Generic[ValueType]):
-    def __init__(self, value: Union[ValueType, PlainQuantity[ValueType]], unit: Union[str, "PlainUnit"] = "pint"):
+    def __init__(
+        self, value: Union[ValueType, PlainQuantity[ValueType]], unit: Union[str, "PlainUnit"] = "pint"
+    ) -> None:
         if isinstance(value, ureg.Quantity):
             if unit != "pint":
                 raise ValueError("unit must be 'pint' if value is a pairinteraction.ureg.Quantity")
@@ -98,7 +100,7 @@ class QuantityAbstract(Generic[ValueType]):
 
 
 class QuantityScalar(QuantityAbstract[float]):
-    def __init__(self, value: Union[float, PlainQuantity[float]], unit: Union[str, "PlainUnit"] = "pint"):
+    def __init__(self, value: Union[float, PlainQuantity[float]], unit: Union[str, "PlainUnit"] = "pint") -> None:
         self._is_zero_without_unit = False
         if unit == "pint" and np.isscalar(value) and value == 0:
             value = ureg.Quantity(0)
@@ -119,7 +121,7 @@ class QuantityScalar(QuantityAbstract[float]):
 
 
 class QuantityArray(QuantityAbstract["Array"]):
-    def __init__(self, value: Union["Array", PlainQuantity["Array"]], unit: Union[str, "PlainUnit"] = "pint"):
+    def __init__(self, value: Union["Array", PlainQuantity["Array"]], unit: Union[str, "PlainUnit"] = "pint") -> None:
         super().__init__(value, unit)
         magnitude = self.quantity.magnitude
         if not isinstance(magnitude, Collection):
@@ -131,7 +133,9 @@ class QuantityArray(QuantityAbstract["Array"]):
 
 
 class QuantitySparse(QuantityAbstract["csr_matrix"]):
-    def __init__(self, value: Union["csr_matrix", PlainQuantity["csr_matrix"]], unit: Union[str, "PlainUnit"] = "pint"):
+    def __init__(
+        self, value: Union["csr_matrix", PlainQuantity["csr_matrix"]], unit: Union[str, "PlainUnit"] = "pint"
+    ) -> None:
         super().__init__(value, unit)
         magnitude = self.quantity.magnitude
         if not isinstance(magnitude, scipy.sparse.csr_matrix):

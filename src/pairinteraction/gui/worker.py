@@ -14,21 +14,21 @@ from PyQt5.QtCore import QThread, pyqtSignal
 class Worker(QThread):
     criticalsignal = pyqtSignal(str)
 
-    def __init__(self, all_queues, parent=None):
+    def __init__(self, all_queues, parent=None) -> None:
         super().__init__(parent)
         self.all_queues = all_queues
         self.exiting = False
 
-    def __del__(self):
+    def __del__(self) -> None:
         self.exiting = True
         if not sip.isdeleted(self):
             self.wait()
 
-    def execute(self, stdout):
+    def execute(self, stdout) -> None:
         self.stdout = stdout
         self.start()
 
-    def run(self):
+    def run(self) -> None:
         self.exiting = False
 
         for line in iter(self.stdout.readline, b""):
@@ -44,11 +44,11 @@ class Worker(QThread):
 
 
 class AllQueues:
-    def __init__(self):
+    def __init__(self) -> None:
         self.dataqueues = [Queue(), Queue(), Queue()]  # field1, field2, potential
         self.clear()
 
-    def clear(self):
+    def clear(self) -> None:
         self.basisfiles = [[], [], []]  # field1, field2, potential
         self.dataqueues = [Queue(), Queue(), Queue()]  # field1, field2, potential
 
@@ -64,7 +64,7 @@ class AllQueues:
 
         self.finishedgracefully = False
 
-    def processOneLine(self, line):
+    def processOneLine(self, line) -> None:
         if isinstance(line, bytes):
             line = line.decode("utf-8")
 

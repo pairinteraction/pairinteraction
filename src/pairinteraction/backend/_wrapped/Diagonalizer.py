@@ -43,7 +43,7 @@ def get_real_type_of_system(cpp_system: Any) -> Literal["Float", "Double"]:
     raise ValueError("Unreachable code")
 
 
-def get_cpp_range(cpp_system: Any):
+def get_cpp_range(cpp_system: Any) -> type:
     type_ = get_real_type_of_system(cpp_system)
     try:
         return getattr(_backend, f"Range{type_}")

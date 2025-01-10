@@ -18,7 +18,7 @@ RawType = TypeVar("RawType")
 class BaseParameter(ABC, Generic[ParamType, RawType]):
     """BaseParameter class."""
 
-    def __init__(self, raw: RawType):
+    def __init__(self, raw: RawType) -> None:
         self.raw = raw
 
     def __repr__(self) -> str:
@@ -96,7 +96,7 @@ class BaseParameterIterable(BaseParameter[ParamType, RawType]):
 
     _list = None
 
-    def __init__(self, raw: RawType):
+    def __init__(self, raw: RawType) -> None:
         assert getattr(self, "_list", None) is not None, "BaseParameterIterable needs to have a _list attribute"
         super().__init__(raw)
 
@@ -123,7 +123,7 @@ class ParameterConstant(BaseParameter[ParamType, ParamType]):
     def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         return cls._get_pydantic_parameter_schema(source)
 
-    def __init__(self, value: ParamType):
+    def __init__(self, value: ParamType) -> None:
         self.value = value
         super().__init__(value)
 
@@ -150,7 +150,7 @@ class ParameterList(BaseParameterIterable[ParamType, list[ParamType]]):
     def _get_pydantic_raw_schema(cls, source: type[Any]) -> core_schema.CoreSchema:
         return core_schema.list_schema(cls._get_pydantic_parameter_schema(source), min_length=1)
 
-    def __init__(self, values: Union[list[ParamType], tuple[ParamType]]):
+    def __init__(self, values: Union[list[ParamType], tuple[ParamType]]) -> None:
         self._list = values
         super().__init__(values)
 
@@ -163,7 +163,7 @@ class ParameterRange(BaseParameterIterable[ParamType, dict[str, Union[ParamType,
         # TODO enforce check that start and stop are of type ParamType
         return core_schema.dict_schema(keys_schema=core_schema.str_schema(), min_length=3, max_length=3)
 
-    def __init__(self, start: ParamType, stop: ParamType, steps: int):
+    def __init__(self, start: ParamType, stop: ParamType, steps: int) -> None:
         self._list = list(np.linspace(start, stop, steps))
         self.raw = {"start": start, "stop": stop, "steps": steps}
 

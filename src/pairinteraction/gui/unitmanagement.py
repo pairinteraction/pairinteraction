@@ -62,7 +62,7 @@ class Quantity:
     converter_uu[str(U(Units.bfield).dimensionality)] = Units.bfield
     converter_uu[str(U(Units.angle).dimensionality)] = Units.angle
 
-    def __init__(self, magnitude, units=None):
+    def __init__(self, magnitude, units=None) -> None:
         self._magnitude = magnitude
         if units is None:
             self._units = units

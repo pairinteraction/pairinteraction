@@ -16,11 +16,11 @@ all_json_files = [f.stem for f in models_directory.glob("*.json")]
 
 
 class SimulationTests(unittest.TestCase):
-    def test_all_models(self):
+    def test_all_models(self) -> None:
         for name in all_json_files:
             self.one_test_model(name)
 
-    def one_test_model(self, name):
+    def one_test_model(self, name) -> None:
         self.model = ModelSimulation.model_validate_json_file(models_directory / f"{name}.json")
         output = self.model.model_dump(exclude_unset=True)
 
@@ -31,7 +31,7 @@ class SimulationTests(unittest.TestCase):
         with open(reference_path, encoding="utf-8") as f:
             reference = json.load(f)
 
-        def assert_dict_equal(d1, d2):
+        def assert_dict_equal(d1, d2) -> None:
             assert len(d1) == len(d2)
             for k, v in d1.items():
                 if isinstance(v, dict):
@@ -42,7 +42,7 @@ class SimulationTests(unittest.TestCase):
         assert_dict_equal(reference, output)
         self.remove_cache()
 
-    def test_atom_errors(self):
+    def test_atom_errors(self) -> None:
         with open(models_directory / "atom1.json", encoding="utf-8") as f:
             original_model_dict = json.load(f)
 
@@ -73,7 +73,7 @@ class SimulationTests(unittest.TestCase):
         model = ModelSimulation.model_validate(model)
         assert model.atom1.is_real
 
-    def remove_cache(self):
+    def remove_cache(self) -> None:
         if self.model.numerics.path_cache is not None:
             shutil.rmtree(self.model.numerics.path_cache, ignore_errors=True)
         self.model = None
