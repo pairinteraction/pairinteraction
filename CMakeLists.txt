@@ -127,14 +127,17 @@ find_package(nanobind CONFIG REQUIRED)
 # Find duckdb
 include(FetchContent)
 if(WIN32)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.0.0/libduckdb-windows-amd64.zip)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-windows-amd64.zip)
   set(DUCKDB_LIBNAME duckdb.dll)
-  set(DUCKDB_MD5 86585ecd2429a9c47cb7fcb9d4b3a168)
+  set(DUCKDB_MD5 422a6317ad652f995930828d457a715a)
 elseif(APPLE)
-  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.0.0/libduckdb-osx-universal.zip)
+  set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v1.1.3/libduckdb-osx-universal.zip)
   set(DUCKDB_LIBNAME libduckdb.dylib)
-  set(DUCKDB_MD5 70cd2d330ef721c5854cdad51fceb8bc)
+  set(DUCKDB_MD5 1430f9f3427a245f2d6d89ccd1a5196c)
 elseif(UNIX)
+  # Note that the latest version of DuckDB under Linux does not use the CXX11 ABI. This is why we use v0.8.1 here. We
+  # recommend to manually compile a more recent version of DuckDB and use it by calling CMake with
+  # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-linux-amd64.zip)
   set(DUCKDB_LIBNAME libduckdb.so)
   set(DUCKDB_MD5 249fad0221153fb99af58d4a150d5fb0)
@@ -164,7 +167,7 @@ if(NOT cpptrace_FOUND)
     cpptrace
     SYSTEM
     GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
-    GIT_TAG 4354eb21ea3565a73afdf32ec0ba768fd648c425 # v0.7.3
+    GIT_TAG 6689d14c203eed390ae7bb64f56a983cfd7dff9c # v0.7.5
   )
 
   # Add the EXCLUDE_FROM_ALL option to avoid adding files of cpptrace to the wheel. In the future, with cmake 3.28, we

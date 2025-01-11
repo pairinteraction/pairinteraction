@@ -5,11 +5,13 @@ Tests for atomic unit conversions using pint.
 import pytest
 from pint import UnitRegistry
 
-HARTREE_IN_JOULES = 4.3597447222060e-18
-HARTREE_IN_THZ = 6579.683920502
-HARTREE_IN_INVERSE_CM = 219474.63136320
-VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9
-GAUSS_IN_ATOMIC_UNITS = 1 / 2.35051757077e9
+from tests.constants import (
+    GAUSS_IN_ATOMIC_UNITS,
+    HARTREE_IN_GHZ,
+    HARTREE_IN_INVERSE_CM,
+    HARTREE_IN_JOULES,
+    VOLT_PER_CM_IN_ATOMIC_UNITS,
+)
 
 
 def test_hartree_to_joules(ureg: UnitRegistry) -> None:
@@ -29,8 +31,8 @@ def test_joules_to_hartree(ureg: UnitRegistry) -> None:
 def test_hartree_to_thz(ureg: UnitRegistry) -> None:
     """Test conversion from Hartree to THz."""
     one_hartree = 1 * ureg.hartree
-    one_hartree_in_thz = one_hartree.to("terahertz", "spectroscopy")
-    assert pytest.approx(one_hartree_in_thz.magnitude, rel=1e-12) == HARTREE_IN_THZ
+    one_hartree_in_ghz = one_hartree.to("gigahertz", "spectroscopy")
+    assert pytest.approx(one_hartree_in_ghz.magnitude, rel=1e-12) == HARTREE_IN_GHZ
 
 
 def test_hartree_to_inverse_cm(ureg: UnitRegistry) -> None:

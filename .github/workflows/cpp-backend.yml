@@ -32,13 +32,16 @@ jobs:
         TEST_TARGET: ["test"]
         BUILD_ARGS: ["-- --keep-going"]
         include:
-          - distro: static-analysis
-            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
+          - distro: debian
+            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+          - distro: ubuntu
+            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+          - distro: manylinux
+            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
           - distro: opensuse
-            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12"
-            CXXFLAGS: "-march=x86-64-v3"
-            TEST_TARGET: "test"
-            BUILD_ARGS: "-- --keep-going"
+            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12" -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+          - distro: static-analysis
+            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
           - os: macos-13
             distro: macos
             name: macos-x86_64

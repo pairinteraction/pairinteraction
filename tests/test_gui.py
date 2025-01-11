@@ -1,37 +1,18 @@
 # https://pytest-qt.readthedocs.io/en/latest/tutorial.html
 import io
 import json
-import unittest
 import zipfile
 from pathlib import Path
 
 import numpy as np
+import pytest
 from PyQt5.QtCore import Qt
 from PyQt5.QtTest import QTest
 from scipy.io import loadmat
 
 from pairinteraction.gui.app import MainWindow
 
-DATA_DIRECTORY = Path(__file__).parent / "data"
-SKIP_CALC = True
-
-
-def test_field_calc_button(qtbot, tmp_path):
-    """Testing simulation single atom with all E and B fields on"""
-    window = setup_window(qtbot, tmp_path)
-    window.loadSettingsSystem(DATA_DIRECTORY / "field" / "settings.sconf")
-    window.loadSettingsPlotter(DATA_DIRECTORY / "field" / "settings.pconf")
-    calc_and_compare_energies(window, tmp_path, "field", dE=3)
-    window.cleanupProcesses()
-
-
-def test_potential_calc_button(qtbot, tmp_path):
-    """Testing simulation for pairpotential"""
-    window = setup_window(qtbot, tmp_path)
-    window.loadSettingsSystem(DATA_DIRECTORY / "potential" / "settings.sconf")
-    window.loadSettingsPlotter(DATA_DIRECTORY / "potential" / "settings.pconf")
-    calc_and_compare_energies(window, tmp_path, "potential", dE=0.3)
-    window.cleanupProcesses()
+reference_directory = Path(__file__).parent.parent / "data/reference_gui"
 
 
 def setup_window(qtbot, tmp_path):
@@ -43,11 +24,7 @@ def setup_window(qtbot, tmp_path):
     return window
 
 
-def calc_and_compare_energies(window, tmp_path, ref_data, dE, dE_tol=1e-3, use_python_api="default"):
-    if use_python_api == "default":
-        for use_python_api in [False, True]:
-            calc_and_compare_energies(window, tmp_path, ref_data, dE, use_python_api=use_python_api)
-        return
+def calc_and_compare_energies(generate_reference, window, tmp_path, ref_data, use_python_api, dE, dE_tol=1e-3):
     window.ui.checkbox_use_python_api.setChecked(use_python_api)
     window.autosetSymmetrization()
 
@@ -58,9 +35,13 @@ def calc_and_compare_energies(window, tmp_path, ref_data, dE, dE_tol=1e-3, use_p
         widget_calc = window.ui.pushbutton_potential_calc
         widget_save = window.ui.pushbutton_potential_save
 
+    reference_data_file = reference_directory / ref_data / "data.mat"
+    reference_settings_file = reference_directory / ref_data / "settings.sconf"
+
+    pytest.skip("Calculations using the GUI are not yet supported.")
+
     # Run simulation
-    if not SKIP_CALC:
-        QTest.mouseClick(widget_calc, Qt.LeftButton)
+    QTest.mouseClick(widget_calc, Qt.LeftButton)
     while window.timer.isActive():
         window.checkForData()
 
@@ -72,9 +53,20 @@ def calc_and_compare_energies(window, tmp_path, ref_data, dE, dE_tol=1e-3, use_p
     window.forceFilename = forceFilename
     QTest.mouseClick(widget_save, Qt.LeftButton)
 
+    if generate_reference:
+        with zipfile.ZipFile(forceFilename, "r") as zip_file:
+            with zip_file.open("data.mat") as f:
+                with open(reference_data_file, "wb") as f_ref:
+                    f_ref.write(f.read())
+            with zip_file.open("settings.sconf") as f:
+                with open(reference_settings_file, "w") as f_ref:
+                    f_ref.write(f.read())
+        pytest.skip("Reference data generated, skipping comparison test")
+
+    # Load current and reference data
     data = {}
     sconfig = {}
-    # Load current data
+
     with zipfile.ZipFile(forceFilename, "r") as zip_file:
         with zip_file.open("data.mat") as f:
             f_io = io.BytesIO(f.read())
@@ -82,14 +74,10 @@ def calc_and_compare_energies(window, tmp_path, ref_data, dE, dE_tol=1e-3, use_p
         with zip_file.open("settings.sconf") as f:
             sconfig["current"] = json.load(f)
 
-    # Load reference data
-    with open(DATA_DIRECTORY / ref_data / "data.mat", "rb") as f:
+    with open(reference_data_file, "rb") as f:
         data["ref"] = loadmat(f)
-    with open(DATA_DIRECTORY / ref_data / "settings.sconf") as f:
+    with open(reference_settings_file) as f:
         sconfig["ref"] = json.load(f)
-
-    if SKIP_CALC:
-        return
 
     # Check if configs match # unecessary since we load the same config
     for k, v in sconfig["ref"].items():
@@ -107,5 +95,21 @@ def calc_and_compare_energies(window, tmp_path, ref_data, dE, dE_tol=1e-3, use_p
         assert np.all(diff_rel <= dE_tol)
 
 
-if __name__ == "__main__":
-    unittest.main()
+@pytest.mark.parametrize("use_python_api", [False, True])
+def test_field_calc_button(generate_reference, qtbot, tmp_path, use_python_api):
+    """Testing simulation single atom with all E and B fields on"""
+    window = setup_window(qtbot, tmp_path)
+    window.loadSettingsSystem(reference_directory / "field" / "settings.sconf")
+    window.loadSettingsPlotter(reference_directory / "field" / "settings.pconf")
+    calc_and_compare_energies(generate_reference, window, tmp_path, "field", use_python_api, dE=3)
+    window.cleanupProcesses()
+
+
+@pytest.mark.parametrize("use_python_api", [False, True])
+def test_potential_calc_button(generate_reference, qtbot, tmp_path, use_python_api):
+    """Testing simulation for pairpotential"""
+    window = setup_window(qtbot, tmp_path)
+    window.loadSettingsSystem(reference_directory / "potential" / "settings.sconf")
+    window.loadSettingsPlotter(reference_directory / "potential" / "settings.pconf")
+    calc_and_compare_energies(generate_reference, window, tmp_path, "potential", use_python_api, dE=0.3)
+    window.cleanupProcesses()

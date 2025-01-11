@@ -10,9 +10,9 @@ try:
 except ModuleNotFoundError as err:
     raise unittest.SkipTest("Skip simulation tests") from err
 
-directory = Path(__file__).parent
-models_directory = directory / "data" / "models"
-reference_directory = directory / "data" / "reference"
+directory = Path(__file__).parent.parent
+models_directory = directory / "data" / "reference_models" / "input"
+reference_directory = directory / "data" / "reference_models" / "output"
 names = ["simulation_1", "simulation_2", "simulation_3"]
 
 
