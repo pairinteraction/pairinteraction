@@ -74,6 +74,8 @@ test = [
   "nbmake >= 1.3",
   "pairinteraction-next[gui]",
   "coverage >= 7.2",
+  "duckdb >= 1.1.3",
+  "sympy >= 1.13.3",
 ]
 mkl = [
   "mkl == 2025.0",
@@ -128,6 +130,7 @@ test-command = [
 [[tool.cibuildwheel.overrides]]  # linux overrides
 select = "*-????linux_*"
 manylinux-x86_64-image = "ghcr.io/atom-pairinteraction/pairinteraction-manylinux:docker"
+config-settings."cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB" = "/opt/duckdb"
 inherit.environment = "append"
 environment.CXXFLAGS = "-march=x86-64-v3"
 
