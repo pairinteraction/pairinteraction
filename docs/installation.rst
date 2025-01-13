@@ -168,12 +168,15 @@ Advanced options for developers when building the package:
 
 .. code-block:: bash
 
-    uv pip install --no-build-isolation -Cbuild-dir=build_pip -v -e .
+    uv pip install --no-build-isolation --config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb -Cbuild-dir=build_pip -v -e .
 
 | ``--no-build-isolation``: Avoid re-creations of virtual environments for building the package (to use this you first have to install all build dependencies, which are stored inside ``.build_requirements.txt`` so you can install them via ``uv pip install -r .build_requirements.txt``).
-| ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
+| ``--config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb``: Assuming that you have compiled `DuckDB`_ manually and have the library ``libduckdb.so`` and amalgamation header file `duckdb.hpp` in the directory ``/opt/duckdb``, you can pass this option. Under GNU/Linux, this allows to use a more recent version of DuckDB than the one that is installed during the build process.
+  ``-Cbuild-dir=build``: Specify a build directory and reuse it for faster future builds.
 | ``-v``: Make the output more verbose.
 | ``-e``: Install the package in editable mode (i.e. changes to the python files inside pairinteraction/ are immediately effective).
+
+.. _DuckDB: https://github.com/duckdb/duckdb
 
 To install all dependencies without building the package, you can run:
 
@@ -210,6 +213,8 @@ For **GNU/Linux and OS X**, you can then build the software with standard CMake 
     cd build
     cmake ..
     cmake --build .
+
+Optionally, you can pass ``-DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckd`` to the ``cmake`` command to use a more recent version of DuckDB than the one that is installed during the build process. This assumes that you have compiled `DuckDB`_ manually and have the library ``libduckdb.so`` and amalgamation header file `duckdb.hpp` in the directory ``/opt/duckdb``.
 
 For **Windows**, you must specify a visual studio generator, provide a path to the VCPKG toolchain file, and define the build type manually. For example, if you are using Visual Studio 2022, you can build the software with the following commands:
 

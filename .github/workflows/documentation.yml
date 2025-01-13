@@ -27,7 +27,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install --config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb .[doc]
+      run: uv pip install .[doc]
     - name: Build documentation
       working-directory: docs/
       run: uv run make html
@@ -47,7 +47,7 @@ jobs:
     - name: Setup uv build virtual environment
       uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: uv run --no-project cmake -S . -B build/ -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+      run: uv run --no-project cmake -S . -B build/
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Doxygen Documentation
@@ -68,7 +68,7 @@ jobs:
     - name: Setup uv build virtual environment
       uses: ./.github/actions/setup-uv-build-venv
     - name: Configure
-      run: uv run --no-project cmake -S . -B build/ -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb -DBUILD_TESTING=On -DWITH_COVERAGE=On
+      run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
     - name: Build
       run: cmake --build build/ -- --keep-going
     - name: Test
@@ -95,7 +95,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON --config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb .[test]
+      run: uv pip install -Cbuild-dir=build --config-settings=cmake.define.WITH_COVERAGE=ON .[test]
     - name: Run pytest
       run: uv run pytest
     - name: Generate Code Coverage
@@ -120,7 +120,7 @@ jobs:
     - name: Setup uv project virtual environment
       uses: ./.github/actions/setup-uv-all-deps
     - name: Install pairinteraction into virtual environment
-      run: uv pip install --config-settings=cmake.define.FETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb .[test]
+      run: uv pip install .[test]
     - name: Run pytest with coverage
       run: uv run coverage run -m pytest
     - name: Generate Code Coverage
