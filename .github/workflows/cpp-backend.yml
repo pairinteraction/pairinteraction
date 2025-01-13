@@ -32,16 +32,10 @@ jobs:
         TEST_TARGET: ["test"]
         BUILD_ARGS: ["-- --keep-going"]
         include:
-          - distro: debian
-            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
-          - distro: ubuntu
-            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
-          - distro: manylinux
-            EXTRA_CMAKE_ARGS: -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
           - distro: opensuse
-            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12" -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="g++-12"
           - distro: static-analysis
-            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy" -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb
+            EXTRA_CMAKE_ARGS: -DCMAKE_CXX_COMPILER="clang++" -DCMAKE_CXX_CLANG_TIDY="clang-tidy"
           - os: macos-13
             distro: macos
             name: macos-x86_64
@@ -73,7 +67,7 @@ jobs:
 
     - name: Install MacOS dependencies
       if: ${{ matrix.distro == 'macos' }}
-      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb graphviz
+      run: brew install --force-bottle doctest spdlog eigen fmt lapack nlohmann-json cpp-httplib tbb
 
     - name: Install Windows dependencies
       if: ${{ matrix.distro == 'windows' }}

@@ -32,7 +32,7 @@ jobs:
       - name: Setup uv build virtual environment
         uses: ./.github/actions/setup-uv-build-venv
       - name: Configure
-        run: uv run --no-project cmake -S . -B build/ -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/opt/duckdb -DBUILD_TESTING=On -DWITH_COVERAGE=On
+        run: uv run --no-project cmake -S . -B build/ -DBUILD_TESTING=On -DWITH_COVERAGE=On
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ -- --keep-going

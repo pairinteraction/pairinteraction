@@ -135,9 +135,11 @@ elseif(APPLE)
   set(DUCKDB_LIBNAME libduckdb.dylib)
   set(DUCKDB_MD5 1430f9f3427a245f2d6d89ccd1a5196c)
 elseif(UNIX)
-  # Note that the latest version of DuckDB under Linux does not use the CXX11 ABI. This is why we use v0.8.1 here. We
-  # recommend to manually compile a more recent version of DuckDB and use it by calling CMake with
-  # -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
+  # Note that the latest binary release of DuckDB does not use the CXX11 ABI because it still uses gcc4 (see also
+  # https://stackoverflow.com/questions/77938452/duckdb-c-linking-error-undefined-reference and
+  # https://github.com/duckdb/duckdb/blob/51529635f58039f0caadce9bd3304ed53c6b0b5d/.github/workflows/LinuxRelease.yml).
+  # This is why we use v0.8.1 here. We recommend to manually compile a more recent version of DuckDB and use it by
+  # calling CMake with -DFETCHCONTENT_SOURCE_DIR_DUCKDB=/path/to/folder/containing/libduckdb.so/and/duckdb.hpp.
   set(DUCKDB_URL https://github.com/duckdb/duckdb/releases/download/v0.8.1/libduckdb-linux-amd64.zip)
   set(DUCKDB_LIBNAME libduckdb.so)
   set(DUCKDB_MD5 249fad0221153fb99af58d4a150d5fb0)
