@@ -10,7 +10,7 @@ The *pairinteraction* software calculates properties of Rydberg systems.
 For using pairinteraction as a Python 3 library, we recommend the installation via pip by calling
 
 ```bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction-next
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ pairinteraction
 ```
 
 ## Please cite

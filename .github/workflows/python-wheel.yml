@@ -86,7 +86,7 @@ jobs:
 
     environment:
       name: testpypi
-      url: https://test.pypi.org/p/pairinteraction-next
+      url: https://test.pypi.org/p/pairinteraction
 
     permissions:
       id-token: write
