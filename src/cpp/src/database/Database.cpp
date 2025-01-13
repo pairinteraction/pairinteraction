@@ -122,18 +122,6 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         file << doc.dump(4);
     }
 
-    // Create a pool of clients
-    if (_download_missing) {
-        for (size_t i = 0; i < database_repo_paths.size(); i++) {
-            pool.emplace_back(database_repo_host);
-            pool.back().set_follow_location(true);
-            pool.back().set_connection_timeout(1, 0); // seconds
-            pool.back().set_read_timeout(60, 0);      // seconds
-            pool.back().set_write_timeout(1, 0);      // seconds
-            pool.back().enable_server_certificate_verification(false);
-        }
-    }
-
     // Get a dictionary of locally available tables
     for (const auto &entry : std::filesystem::directory_iterator(_database_dir)) {
         if (entry.is_regular_file()) {
@@ -153,6 +141,16 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         }
     }
 
+    // Create a client
+    if (_download_missing) {
+        httpclient = std::make_unique<httplib::Client>(database_repo_host);
+        httpclient->set_follow_location(true);
+        httpclient->set_connection_timeout(1, 0); // seconds
+        httpclient->set_read_timeout(60, 0);      // seconds
+        httpclient->set_write_timeout(1, 0);      // seconds
+        httpclient->enable_server_certificate_verification(false);
+    }
+
     // Get a dictionary of remotely available tables
     if (_download_missing) {
 // Call the different endpoints asynchronously
@@ -167,12 +165,12 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         std::vector<std::future<httplib::Result>> futures;
         std::vector<std::filesystem::path> filenames;
 
-        for (size_t i = 0; i < database_repo_paths.size(); i++) {
+        for (const auto &database_repo_path : database_repo_paths) {
             // Get the last modified date of the last JSON response
             std::string lastmodified;
             filenames.push_back(_database_dir /
                                 ("latest_" +
-                                 std::to_string(std::hash<std::string>{}(database_repo_paths[i])) +
+                                 std::to_string(std::hash<std::string>{}(database_repo_path)) +
                                  ".json"));
             if (std::filesystem::exists(filenames.back())) {
                 std::ifstream file(filenames.back());
@@ -188,12 +186,22 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 headers = {{"X-GitHub-Api-Version", "2022-11-28"},
                            {"Accept", "application/vnd.github+json"}};
             } else {
-                headers = {{"X-GitHub-Api-Version", "2022-11-28"},
-                           {"Accept", "application/vnd.github+json"},
-                           {"if-modified-since", lastmodified}};
+                // We have to add some "Authorization" header to avoid an increase in rate limits
+                // used even if a 304 is returned, see also
+                // https://stackoverflow.com/questions/60885496/github-304-responses-seem-to-count-against-rate-limit.
+                // To try it out manually, you can run "curl
+                // https://api.github.com/repos/pairinteraction/database-sqdt/releases/latest
+                // --include --header 'if-modified-since: Wed, 08 Jan 2025 22:04:41 GMT'
+                // --header 'Authorization:
+                // avoids-an-increase-in-ratelimits-used-if-304-is-returned'".
+                headers = {
+                    {"X-GitHub-Api-Version", "2022-11-28"},
+                    {"Accept", "application/vnd.github+json"},
+                    {"Authorization", "avoids-an-increase-in-ratelimits-used-if-304-is-returned"},
+                    {"if-modified-since", lastmodified}};
             }
-            futures.push_back(std::async(std::launch::async, gf, &pool[i],
-                                         database_repo_paths[i].c_str(), headers));
+            futures.push_back(std::async(std::launch::async, gf, httpclient.get(),
+                                         database_repo_path.c_str(), headers));
         }
 
         // Process the results
@@ -203,6 +211,10 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
 
             // Check if the request was successful
             if (!res) {
+                // If github returns a 304 status code without returning a body,
+                // it is "!res && res.error() != httplib::Error::Unknown"
+                // because httplib thinks that github's http response is not
+                // correct, see also https://github.com/yhirose/cpp-httplib/issues/1477.
                 if (res.error() != httplib::Error::Unknown ||
                     !std::filesystem::exists(filenames[i])) {
                     SPDLOG_ERROR("Access error: {}", fmt::streamed(res.error()));
@@ -1306,7 +1318,7 @@ void Database::ensure_presence_of_table(const std::string &name) {
     if (_download_missing && tables[name].local_version < tables[name].remote_version) {
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
-        auto res = pool.front().Get(
+        auto res = httpclient->Get(
             tables[name].remote_path.string().c_str(),
             {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
         if (!res || res->status != 200) {
