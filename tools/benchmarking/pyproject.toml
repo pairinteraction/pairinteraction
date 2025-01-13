@@ -1,0 +1,21 @@
+[project]
+name = "benchmarking"
+version = "0.1.0"
+description = "Tools for running benchmarks"
+requires-python = ">=3.9"
+dependencies = [
+    "pairinteraction-next>=1.0.2",
+    "pandas>=2.2.3",
+    "py-cpuinfo>=9.0.0",
+    "seaborn>=0.13.2",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv.sources]
+pairinteraction-next = { path = "../../" }
+
+[project.scripts]
+benchmark = "benchmarking:run"
