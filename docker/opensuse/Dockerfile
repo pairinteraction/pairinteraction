@@ -31,8 +31,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     cmake tar gzip git \
     doctest-devel spdlog-devel eigen3-devel fmt-devel openblas-devel \
     nlohmann_json-devel \
-    python39 python39-devel \
-    doxygen graphviz-devel pandoc \
+    doxygen pandoc \
     pkg-config \
     libglvnd \
   && zypper -n --gpg-auto-import-keys install --no-recommends --allow-unsigned-rpm \

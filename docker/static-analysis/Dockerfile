@@ -25,9 +25,8 @@ RUN apt-get update -qq \
     cmake build-essential git \
     doctest-dev libspdlog-dev libeigen3-dev libfmt-dev liblapacke-dev libopenblas-dev \
     libcpp-httplib-dev nlohmann-json3-dev \
-    python3 python3-dev \
     locales \
-    doxygen libgraphviz-dev pandoc \
+    doxygen pandoc \
     clang clang-tidy clang-format \
     ca-certificates \
     libgl1 \
