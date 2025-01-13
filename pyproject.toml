@@ -10,7 +10,7 @@ requires = [  # keep this in sync with .build_requirements.txt
 build-backend = "scikit_build_core.build"
 
 [project]
-name = "pairinteraction-next"
+name = "pairinteraction"
 dynamic = ["version"]
 description = "A Rydberg Interaction Calculator"
 readme = "README.md"
@@ -72,7 +72,7 @@ test = [
   "pytest-env >= 1.1.5",
   "pytest-qt >= 4.2",
   "nbmake >= 1.3",
-  "pairinteraction-next[gui]",
+  "pairinteraction[gui]",
   "coverage >= 7.2",
   "duckdb >= 1.1.3",
   "sympy >= 1.13.3",
@@ -82,7 +82,7 @@ mkl = [
 ]
 
 [dependency-groups]
-dev = ["pairinteraction-next[doc,test]"]
+dev = ["pairinteraction[doc,test]"]
 
 [project.urls]
 Homepage = "https://www.pairinteraction.org"
@@ -157,11 +157,11 @@ test-command = [
 
 [tool.check-wheel-contents]
 ignore = [
-  "W004",  # check-wheel-contents does not like some .so files inside pairinteraction_next.libs
-  "W201",  # for macos there is no pairinteraction_next.libs folder
-  "W010",  # for windows the pairinteraction_next.libs folder might not contain a python module
+  "W004",  # check-wheel-contents does not like some .so files inside pairinteraction.libs
+  "W201",  # for macos there is no pairinteraction.libs folder
+  "W010",  # for windows the pairinteraction.libs folder might not contain a python module
 ]
-toplevel = ["pairinteraction", "pairinteraction_next.libs"]
+toplevel = ["pairinteraction", "pairinteraction.libs"]
 
 [tool.pytest.ini_options]
 testpaths = [
