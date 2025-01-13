@@ -1,3 +1,4 @@
+import logging
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -15,6 +16,8 @@ import pairinteraction.backend.complexfloat as pi_complexfloat
 import pairinteraction.backend.double as pi_double
 import pairinteraction.backend.float as pi_float
 
+logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", handlers=[logging.StreamHandler()])
+
 
 @dataclass
 class BenchmarkResult:
@@ -27,15 +30,6 @@ class BenchmarkResult:
 def timer():
     start = perf_counter_ns()
     yield lambda: (perf_counter_ns() - start) / 1e9
-
-
-class DurationMeasurement:
-    def __enter__(self):
-        self.start = perf_counter_ns()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.duration = (perf_counter_ns() - self.start) / 1e9
 
 
 def benchmark_pairinteraction(
@@ -73,7 +67,7 @@ def benchmark_pairinteraction(
         _ = pair_systems[0].get_hamiltonian()
     results.append(BenchmarkResult("Construction", software_name, get_duration()))
 
-    print(f"Number of kets: {pair_systems[0].basis.number_of_states}")
+    logging.info(f"Number of kets: {pair_systems[0].basis.number_of_states}")
 
     with timer() as get_duration:
         pi.diagonalize(
@@ -84,7 +78,7 @@ def benchmark_pairinteraction(
             energy_unit="GHz",
         )
 
-    print(f"Number of states: {pair_systems[0].basis.number_of_states}")
+    logging.info(f"Number of states: {pair_systems[0].basis.number_of_states}")
 
     results.append(BenchmarkResult("Diagonalization", software_name, get_duration()))
 
@@ -123,7 +117,7 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     plt.close()
 
 
-def run(download_missing=True) -> None:
+def run(download_missing=False) -> None:
     n, l, j, m = 60, 0, 0.5, 0.5
     delta_n = 3
     delta_l = 3
