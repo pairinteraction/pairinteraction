@@ -27,5 +27,5 @@ RUN apt-get update -qq \
     libcpp-httplib-dev nlohmann-json3-dev \
     doxygen pandoc \
     ca-certificates \
-    libgl1 \
+    libgl1 libglib2.0-0 \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*

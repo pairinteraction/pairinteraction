@@ -29,6 +29,6 @@ RUN apt-get update -qq \
     doxygen pandoc \
     clang clang-tidy clang-format \
     ca-certificates \
-    libgl1 \
+    libgl1 libglib2.0-0 \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
