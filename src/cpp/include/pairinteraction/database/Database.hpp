@@ -97,7 +97,7 @@ private:
     std::filesystem::path _database_dir;
     std::unique_ptr<duckdb::DuckDB> db;
     std::unique_ptr<duckdb::Connection> con;
-    std::vector<httplib::Client> pool;
+    std::unique_ptr<httplib::Client> httpclient;
     std::unordered_map<std::string, Table> tables;
 
     static constexpr bool default_download_missing{false};
