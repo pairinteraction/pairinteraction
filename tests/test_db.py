@@ -13,7 +13,7 @@ from sympy.physics.wigner import wigner_3j
 import pairinteraction.backend.double as pi
 from tests.constants import GAUSS_IN_ATOMIC_UNITS, HARTREE_IN_GHZ
 
-expected_operator = np.array([[3.585881168022752, 1.664202126528398], [1.664202126528398, 2.664860530057922]])
+expected_operator = np.array([[3.58588117, 1.66420213], [1.66420213, 4.16645123]])
 
 
 def fetch_id(n: int, l: float, f: float, s: float, connection: duckdb.duckdb.DuckDBPyConnection, table: str) -> int:
@@ -97,11 +97,13 @@ def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConne
 
     # Get the latest parquet files from the database directory
     parquet_files = {}
+    parquet_versions = {}
     for path in list(Path(database.database_dir).glob("*.parquet")):
         name, version_str = path.stem.rsplit("_v", 1)
         version = Version(version_str)
-        if name not in parquet_files or version > parquet_files[name].version:
+        if name not in parquet_files or version > parquet_versions[name]:
             parquet_files[name] = path
+            parquet_versions[name] = version
     assert "wigner" in parquet_files.keys()
     assert "Yb174_mqdt_states" in parquet_files.keys()
     assert "Yb174_mqdt_matrix_elements_mu" in parquet_files.keys()
@@ -110,10 +112,10 @@ def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConne
 
     # Obtain the ids of the initial and final states
     id_initial = fetch_id(n_initial, l_initial, f_initial, s_initial, connection, parquet_files["Yb174_mqdt_states"])
-    assert id_initial == 310 if swap_states else 311
+    assert id_initial == 362 if swap_states else 363
 
     id_final = fetch_id(n_final, l_final, f_final, s_final, connection, parquet_files["Yb174_mqdt_states"])
-    assert id_final == 311 if swap_states else 310
+    assert id_final == 363 if swap_states else 362
 
     # Obtain a matrix element of the magnetic dipole operator (for the chosen kets, it is non-zero iff initial != final)
     kappa, q = 1, 0
