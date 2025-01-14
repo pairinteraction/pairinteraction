@@ -9,7 +9,7 @@ runs:
         version: "0.5.15"
         enable-cache: true
         cache-dependency-glob: |
-          pyproject.toml
+          ./pyproject.toml
 
     - name: Install all Python dependencies into a virtual environment
       shell: bash
