@@ -1,3 +1,4 @@
+import argparse
 import json
 import logging
 import platform
@@ -25,6 +26,8 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", ha
 
 @dataclass
 class BenchmarkResult:
+    """Dataclass for storing benchmark results."""
+
     operation: str
     software: str
     duration_in_sec: float
@@ -32,11 +35,13 @@ class BenchmarkResult:
 
 @contextmanager
 def timer():
+    """Timer context manager."""
     start = perf_counter_ns()
     yield lambda: (perf_counter_ns() - start) / 1e9
 
 
 def benchmark_pairinteraction(pi: callable, name: str, settings: dict) -> list[BenchmarkResult]:
+    """Benchmark pairinteraction."""
     species = settings["species"]
     n = settings["n"]
     l = settings["l"]
@@ -91,6 +96,7 @@ def benchmark_pairinteraction(pi: callable, name: str, settings: dict) -> list[B
 
 
 def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
+    """Plot the benchmark results."""
     df = pd.DataFrame(all_results)
 
     sns.set_theme(style="ticks", rc={"axes.spines.right": False, "axes.spines.top": False})
@@ -125,7 +131,25 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     plt.close()
 
 
-def run(repetitions: int = 1) -> None:
+def run() -> None:
+    """Run the benchmarking."""
+    parser = argparse.ArgumentParser(
+        description="Run benchmarks for the pairinteraction software.",
+    )
+    parser.add_argument(
+        "--reps",
+        type=int,
+        help="Number of repetitions for each benchmark.",
+        default=1,
+    )
+    parser.add_argument(
+        "--download-missing",
+        action="store_true",
+        help="Download missing database files.",
+        default=False,
+    )
+    args = parser.parse_args()
+
     settings = {
         "species": "Rb",
         "n": 60,
@@ -138,7 +162,7 @@ def run(repetitions: int = 1) -> None:
         "energy_range_in_GHz": 2.5,
         "distances_in_um": np.linspace(1, 10, 100).tolist(),
         "order": 3,
-        "download_missing": False,
+        "download_missing": args.download_missing,
         "diagonalizer": "Lapacke",
     }
 
@@ -153,7 +177,7 @@ def run(repetitions: int = 1) -> None:
     }
     for name, module in backends.items():
         logging.info(f"Benchmarking 'pairinteraction, {name}'")
-        for _ in range(repetitions):
+        for _ in range(args.reps):
             all_results += benchmark_pairinteraction(module, name, settings)
 
     # Generate meaningful output filenames
@@ -164,7 +188,7 @@ def run(repetitions: int = 1) -> None:
     cpuname = "-".join(get_cpu_info().get("brand_raw", "unknown").lower().split())
 
     outdir = Path(__file__).parent.parent.parent.parent.parent / "data" / "benchmarking_results"
-    plot_path = outdir / f"{hashed.hexdigest()[:10]}_{identifier}_{cpuname}_reps{repetitions}.png"
+    plot_path = outdir / f"{hashed.hexdigest()[:10]}_{identifier}_{cpuname}_reps{args.reps}.png"
     settings_path = outdir / f"{hashed.hexdigest()[:10]}.json"
 
     # Save plot

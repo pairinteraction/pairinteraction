@@ -12,6 +12,8 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", ha
 
 @dataclass
 class TableFile:
+    """Dataclass for storing the name, version, and path to a table of states or matrix elements."""
+
     name: str
     version: int
     path: Path
