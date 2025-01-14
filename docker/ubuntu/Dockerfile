@@ -28,4 +28,5 @@ RUN apt-get update -qq \
     doxygen pandoc \
     ca-certificates \
     libgl1 \
+    libgraphviz-dev \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*

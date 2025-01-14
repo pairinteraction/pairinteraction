@@ -34,6 +34,7 @@ RUN zypper -n --gpg-auto-import-keys refresh \
     doxygen pandoc \
     pkg-config \
     libglvnd \
+    graphviz-devel \
   && zypper -n --gpg-auto-import-keys install --no-recommends --allow-unsigned-rpm \
     ./cpp-httlib.rpm ./cpp-httlib-devel.rpm \
   && rm ./cpp-httlib.rpm ./cpp-httlib-devel.rpm \

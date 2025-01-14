@@ -28,4 +28,5 @@ RUN yum install -y epel-release \
     spdlog-devel \
     cpp-httplib-devel \
     libglvnd \
+    graphviz-devel \
     && yum clean all
