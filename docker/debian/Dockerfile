@@ -30,5 +30,6 @@ RUN apt-get update \
     doxygen pandoc \
     ca-certificates \
     libgl1 libglib2.0-0 \
+    libgraphviz-dev \
   && echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
   && apt-get clean -qq && rm -rf /var/lib/apt/lists/*
