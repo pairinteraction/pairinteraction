@@ -1,6 +1,10 @@
+import json
 import logging
+import platform
+import sys
 from contextlib import contextmanager
 from dataclasses import dataclass
+from hashlib import sha256
 from pathlib import Path
 from time import perf_counter_ns
 
@@ -23,7 +27,7 @@ logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", ha
 class BenchmarkResult:
     operation: str
     software: str
-    duration: float  # s
+    duration_in_sec: float
 
 
 @contextmanager
@@ -32,32 +36,33 @@ def timer():
     yield lambda: (perf_counter_ns() - start) / 1e9
 
 
-def benchmark_pairinteraction(
-    pi: callable,
-    name: str,
-    n: int,
-    l: int,
-    j: float,
-    m: float,
-    delta_n: int,
-    delta_l: int,
-    delta_energy: float,
-    distances: np.ndarray,
-    order: int,
-    download_missing: bool,
-) -> list[BenchmarkResult]:
+def benchmark_pairinteraction(pi: callable, name: str, settings: dict) -> list[BenchmarkResult]:
+    species = settings["species"]
+    n = settings["n"]
+    l = settings["l"]
+    j = settings["j"]
+    m = settings["m"]
+    delta_n = settings["delta_n"]
+    delta_l = settings["delta_l"]
+    delta_energy = settings["delta_energy_in_GHz"]
+    energy_range = settings["energy_range_in_GHz"]
+    distances = settings["distances_in_um"]
+    order = settings["order"]
+    download_missing = settings["download_missing"]
+    diagonalizer = settings["diagonalizer"]
+
     results = []
     software_name = f"pairinteraction, {name}"
 
     with timer() as get_duration:
         db = pi.Database(download_missing=download_missing)
-        ket = pi.KetAtom("Rb", n=n, l=l, j=j, m=m, database=db)
+        ket = pi.KetAtom(species, n=n, l=l, j=j, m=m, database=db)
         pair_energy = 2 * ket.get_energy(unit="GHz")
-        basis = pi.BasisAtom("Rb", n=(n - delta_n, n + delta_n), l=(l - delta_l, l + delta_l), database=db)
+        basis = pi.BasisAtom(species, n=(n - delta_n, n + delta_n), l=(l - delta_l, l + delta_l), database=db)
         system = pi.SystemAtom(basis)
         pair_basis = pi.BasisPair(
             [system, system],
-            energy=(pair_energy - delta_energy / 1e9, pair_energy + delta_energy / 1e9),
+            energy=(pair_energy - delta_energy, pair_energy + delta_energy),
             energy_unit="GHz",
             m=(2 * m, 2 * m),
         )
@@ -72,9 +77,9 @@ def benchmark_pairinteraction(
     with timer() as get_duration:
         pi.diagonalize(
             pair_systems,
-            diagonalizer="Lapacke",
+            diagonalizer=diagonalizer,
             sort_by_energy=False,
-            energy_range=(pair_energy - 2.5, pair_energy + 2.5),
+            energy_range=(pair_energy - energy_range, pair_energy + energy_range),
             energy_unit="GHz",
         )
 
@@ -93,7 +98,9 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     unique_softwares = df["software"].unique()
     palette = dict(zip(unique_softwares, sns.color_palette("viridis", len(unique_softwares))))
 
-    ax = sns.barplot(x="operation", y="duration", hue="software", data=df, palette=palette, errorbar="sd", capsize=0.1)
+    ax = sns.barplot(
+        x="operation", y="duration_in_sec", hue="software", data=df, palette=palette, errorbar="sd", capsize=0.1
+    )
     ax.minorticks_off()
 
     ax.set_xlabel("")
@@ -118,13 +125,22 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     plt.close()
 
 
-def run(download_missing=False, repetitions=4) -> None:
-    n, l, j, m = 60, 0, 0.5, 0.5
-    delta_n = 3
-    delta_l = 3
-    delta_energy = 25e9  # Hz
-    distances = np.linspace(1, 10, 100)  # um
-    order = 3
+def run(repetitions: int = 1) -> None:
+    settings = {
+        "species": "Rb",
+        "n": 60,
+        "l": 0,
+        "j": 0.5,
+        "m": 0.5,
+        "delta_n": 3,
+        "delta_l": 3,
+        "delta_energy_in_GHz": 25,
+        "energy_range_in_GHz": 2.5,
+        "distances_in_um": np.linspace(1, 10, 100).tolist(),
+        "order": 3,
+        "download_missing": False,
+        "diagonalizer": "Lapacke",
+    }
 
     all_results: list[BenchmarkResult] = []
 
@@ -136,17 +152,24 @@ def run(download_missing=False, repetitions=4) -> None:
         "float": pi_float,
     }
     for name, module in backends.items():
+        logging.info(f"Benchmarking 'pairinteraction, {name}'")
         for _ in range(repetitions):
-            all_results += benchmark_pairinteraction(
-                module, name, n, l, j, m, delta_n, delta_l, delta_energy, distances, order, download_missing
-            )
+            all_results += benchmark_pairinteraction(module, name, settings)
 
-    # Create a meaningful output filename
+    # Generate meaningful output filenames
+    hashed = sha256()
+    hashed.update(json.dumps(settings, sort_keys=True).encode())
+    system = {"Linux": "linux", "Windows": "win", "Darwin": "macosx"}.get(platform.system(), "unknown")
+    identifier = f"{pairinteraction.__version__}-cp{sys.version_info.major}{sys.version_info.minor}-{system}"
     cpuname = "-".join(get_cpu_info().get("brand_raw", "unknown").lower().split())
-    output = (
-        Path(__file__).parent.parent.parent.parent.parent
-        / f"data/benchmarking_results/comparison_{cpuname}_v{pairinteraction.__version__}.png"
-    )
 
-    # Plot the results
-    plot_results(all_results, output)
+    outdir = Path(__file__).parent.parent.parent.parent.parent / "data" / "benchmarking_results"
+    plot_path = outdir / f"{hashed.hexdigest()[:10]}_{identifier}_{cpuname}_reps{repetitions}.png"
+    settings_path = outdir / f"{hashed.hexdigest()[:10]}.json"
+
+    # Save plot
+    plot_results(all_results, plot_path)
+
+    # Save settings
+    with settings_path.open("w", encoding="utf-8") as f:
+        json.dump(settings, f, indent=4)
