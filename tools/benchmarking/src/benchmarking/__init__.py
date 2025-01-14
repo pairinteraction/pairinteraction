@@ -93,31 +93,32 @@ def plot_results(all_results: list[BenchmarkResult], output: str) -> None:
     unique_softwares = df["software"].unique()
     palette = dict(zip(unique_softwares, sns.color_palette("viridis", len(unique_softwares))))
 
-    ax = sns.barplot(x="operation", y="duration", hue="software", data=df, palette=palette)
+    ax = sns.barplot(x="operation", y="duration", hue="software", data=df, palette=palette, errorbar="sd", capsize=0.1)
     ax.minorticks_off()
 
     ax.set_xlabel("")
     ax.set_ylabel("Duration (s)")
     ax.legend(title="", ncols=1, loc="upper left")
 
-    for p in ax.patches[: len(all_results)]:
+    for p in ax.patches:
         height = p.get_height()
-        ax.annotate(
-            f"{height:.2f}",
-            xy=(p.get_x() + p.get_width() / 2, height),
-            xytext=(0, 3),
-            textcoords="offset points",
-            ha="center",
-            va="bottom",
-            fontsize=9,
-        )
+        if height > 0:
+            ax.annotate(
+                f"{height:.2f}",
+                xy=(p.get_x() + p.get_width() / 2, height),
+                xytext=(0, 3),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=9,
+            )
 
     plt.tight_layout()
     plt.savefig(output)
     plt.close()
 
 
-def run(download_missing=False) -> None:
+def run(download_missing=False, repetitions=4) -> None:
     n, l, j, m = 60, 0, 0.5, 0.5
     delta_n = 3
     delta_l = 3
@@ -135,9 +136,10 @@ def run(download_missing=False) -> None:
         "float": pi_float,
     }
     for name, module in backends.items():
-        all_results += benchmark_pairinteraction(
-            module, name, n, l, j, m, delta_n, delta_l, delta_energy, distances, order, download_missing
-        )
+        for _ in range(repetitions):
+            all_results += benchmark_pairinteraction(
+                module, name, n, l, j, m, delta_n, delta_l, delta_energy, distances, order, download_missing
+            )
 
     # Create a meaningful output filename
     cpuname = "-".join(get_cpu_info().get("brand_raw", "unknown").lower().split())
