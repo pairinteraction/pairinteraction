@@ -150,7 +150,7 @@ def optimize() -> None:
         "--compression",
         type=str,
         choices=["UNCOMPRESSED", "SNAPPY", "ZSTD"],
-        default="UNCOMPRESSED",
+        default="ZSTD",
         help="The algorithm for compressing the parquet files.",
     )
     args = parser.parse_args()
@@ -197,7 +197,7 @@ def shrink() -> None:
     parser.add_argument(
         "--out",
         type=Path,
-        default=Path(__file__).parent.parent.parent,
+        default=Path(__file__).parent.parent.parent.parent.parent / "data" / "database",
         help="The output directory for the shrunk parquet files.",
     )
     parser.add_argument(
