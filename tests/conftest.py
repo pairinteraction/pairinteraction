@@ -14,7 +14,7 @@ def pytest_addoption(parser: "Parser") -> None:
     parser.addoption(
         "--database-dir",
         action="store",
-        default=str(Path(__file__).parent.parent / "data/database"),
+        default=str(Path(__file__).parent.parent / "data" / "database"),
         help="Path to the database directory",
     )
     parser.addoption("--download-missing", action="store_true", default=False, help="Download missing database files")

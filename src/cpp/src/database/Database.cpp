@@ -44,15 +44,12 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     const std::regex parquet_regex(R"(^(\w+)_v(\d+)\.parquet$)");
 
     // Ensure the database directory exists
+    _database_dir = std::filesystem::canonical(_database_dir);
     if (!std::filesystem::exists(_database_dir)) {
         std::filesystem::create_directories(_database_dir);
-    } else {
-        _database_dir = std::filesystem::canonical(_database_dir);
-        if (!std::filesystem::is_directory(_database_dir)) {
-            throw std::filesystem::filesystem_error(
-                "Cannot access database", _database_dir.string(),
-                std::make_error_code(std::errc::not_a_directory));
-        }
+    } else if (!std::filesystem::is_directory(_database_dir)) {
+        throw std::filesystem::filesystem_error("Cannot access database", _database_dir.string(),
+                                                std::make_error_code(std::errc::not_a_directory));
     }
 
     // Ensure that the config directory exists
@@ -234,7 +231,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
                              "is disabled. You should not retry until after {} seconds.",
                              waittime);
-                _download_missing = false;
+                // TODO implement a mechanism to not retry until after the waittime
                 continue;
 
             } else if (res->status != 200) {
@@ -1337,7 +1334,7 @@ void Database::ensure_presence_of_table(const std::string &name) {
             SPDLOG_ERROR("Error accessing database repositories, rate limit exceeded. Auto update "
                          "is disabled. You should not retry until after {} seconds.",
                          waittime);
-            _download_missing = false;
+            // TODO implement a mechanism to not retry until after the waittime
         } else {
             if (tables[name].local_version != -1) {
                 std::filesystem::remove(tables[name].local_path);
@@ -1396,6 +1393,7 @@ Database &Database::get_global_instance(std::filesystem::path database_dir) {
     if (database_dir.empty()) {
         database_dir = default_database_dir;
     }
+    database_dir = std::filesystem::canonical(database_dir);
     Database &database = get_global_instance_without_checks(default_download_missing,
                                                             default_wigner_in_memory, database_dir);
     if (database_dir != database._database_dir) {
@@ -1410,12 +1408,14 @@ Database &Database::get_global_instance(bool download_missing, bool wigner_in_me
     if (database_dir.empty()) {
         database_dir = default_database_dir;
     }
+    database_dir = std::filesystem::canonical(database_dir);
     Database &database =
         get_global_instance_without_checks(download_missing, wigner_in_memory, database_dir);
     if (download_missing != database._download_missing ||
         wigner_in_memory != database._wigner_in_memory || database_dir != database._database_dir) {
-        throw std::invalid_argument("The 'download_missing' and 'database_dir' arguments must not "
-                                    "change between calls to the method.");
+        throw std::invalid_argument(
+            "The 'download_missing', 'wigner_in_memory' and 'database_dir' arguments must not "
+            "change between calls to the method.");
     }
     return database;
 }
