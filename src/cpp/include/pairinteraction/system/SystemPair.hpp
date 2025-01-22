@@ -4,6 +4,7 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <array>
+#include <limits>
 #include <memory>
 #include <vector>
 
@@ -54,6 +55,26 @@ public:
     Type &set_distance_vector(const std::array<real_t, 3> &vector);
 
 private:
+    struct GreenFunctions {
+        Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_dipole{3, 3};
+        Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_quadrupole{3, 6};
+        Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_dipole{6, 3};
+        Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_quadrupole{6, 6};
+    };
+
+    struct OperatorMatrices {
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d1;
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d2;
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q1;
+        std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q2;
+    };
+
+    GreenFunctions construct_green_functions(const std::array<real_t, 3> &distance_vector,
+                                             int order) const;
+    OperatorMatrices
+    construct_operator_matrices(const GreenFunctions &green_functions,
+                                const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
+                                const std::shared_ptr<const BasisAtom<Scalar>> &basis2) const;
     void construct_hamiltonian() const override;
     static Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     calculate_tensor_product(const std::shared_ptr<const basis_t> &basis,
@@ -61,10 +82,7 @@ private:
                              const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2);
 
     int order{3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_dipole{3, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_dipole_quadrupole{3, 6};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_dipole{6, 3};
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> green_function_quadrupole_quadrupole{6, 6};
+    std::array<real_t, 3> distance_vector{0, 0, std::numeric_limits<real_t>::infinity()};
 };
 
 extern template class SystemPair<float>;
