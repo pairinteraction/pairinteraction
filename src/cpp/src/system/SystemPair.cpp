@@ -15,6 +15,7 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 #include "pairinteraction/utils/streamed.hpp"
+#include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
 #include <algorithm>
@@ -28,42 +29,32 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
-    : System<SystemPair<Scalar>>(std::move(basis)) {}
+struct GreenFunctions {
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_dipole{3, 3};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> dipole_quadrupole{3, 6};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_dipole{6, 3};
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> quadrupole_quadrupole{6, 6};
+};
 
 template <typename Scalar>
-SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
-    this->hamiltonian_requires_construction = true;
-    if (value < 3 || value > 5) {
-        throw std::invalid_argument("The order must be 3, 4, or 5.");
-    }
-    order = value;
-    return *this;
-}
+struct OperatorMatrices {
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d1;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> d2;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q1;
+    std::vector<Eigen::SparseMatrix<Scalar, Eigen::RowMajor>> q2;
+};
 
 template <typename Scalar>
-SystemPair<Scalar> &SystemPair<Scalar>::set_distance(real_t value) {
-    return set_distance_vector({0, 0, value});
-}
-
-template <typename Scalar>
-SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
-    this->hamiltonian_requires_construction = true;
-    distance_vector = vector;
-    return *this;
-}
-
-template <typename Scalar>
-typename SystemPair<Scalar>::GreenFunctions
-SystemPair<Scalar>::construct_green_functions(const std::array<real_t, 3> &distance_vector,
-                                              int order) const {
+GreenFunctions<Scalar> construct_green_functions(
+    const std::array<typename traits::NumTraits<Scalar>::real_t, 3> &distance_vector, int order) {
     // https://doi.org/10.1103/PhysRevA.96.062509
     // https://doi.org/10.1103/PhysRevA.82.010901
     // https://en.wikipedia.org/wiki/Table_of_spherical_harmonics
 
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
     constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
 
-    GreenFunctions green_functions;
+    GreenFunctions<Scalar> green_functions;
 
     // Normalize the distance vector, return zero green functions if the distance is zero
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(distance_vector.data(),
@@ -257,10 +248,11 @@ SystemPair<Scalar>::construct_green_functions(const std::array<real_t, 3> &dista
 }
 
 template <typename Scalar>
-typename SystemPair<Scalar>::OperatorMatrices SystemPair<Scalar>::construct_operator_matrices(
-    const GreenFunctions &green_functions, const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
-    const std::shared_ptr<const BasisAtom<Scalar>> &basis2) const {
-    OperatorMatrices op;
+OperatorMatrices<Scalar>
+construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
+                            const std::shared_ptr<const BasisAtom<Scalar>> &basis1,
+                            const std::shared_ptr<const BasisAtom<Scalar>> &basis2) {
+    OperatorMatrices<Scalar> op;
 
     if (green_functions.dipole_dipole.nonZeros() > 0 ||
         green_functions.dipole_quadrupole.nonZeros() > 0) {
@@ -318,12 +310,124 @@ typename SystemPair<Scalar>::OperatorMatrices SystemPair<Scalar>::construct_oper
 }
 
 template <typename Scalar>
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
+                         const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
+                         const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
+    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
+
+    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
+
+    // Loop over the rows of the first matrix in parallel (outer index == row)
+    oneapi::tbb::parallel_for(
+        oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
+            for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
+
+                const auto &range_row2 = basis->get_index_range(row1);
+
+                // Loop over the rows of the second matrix that are energetically allowed
+                for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
+                     row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
+
+                    Eigen::Index row = basis->get_ket_index_from_tuple(row1, row2);
+                    if (row < 0) {
+                        continue;
+                    }
+
+                    // Loop over the non-zero column elements of the first matrix
+                    for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
+                             matrix1, row1);
+                         it1; ++it1) {
+
+                        Eigen::Index col1 = it1.col();
+                        Scalar value1 = it1.value();
+
+                        // Calculate the minimum and maximum values of the index pointer of the
+                        // second matrix
+                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[row2];
+                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[row2 + 1];
+
+                        // The minimum value is chosen such that we start with an energetically
+                        // allowed column
+                        const auto &range_col2 = basis->get_index_range(it1.index());
+                        begin_idxptr2 +=
+                            std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
+                                          std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
+                                                           matrix2.innerIndexPtr() + end_idxptr2,
+                                                           range_col2.min()));
+
+                        // Loop over the non-zero column elements of the second matrix that are
+                        // energetically allowed (we break the loop if the index pointer corresponds
+                        // to a column that is not energetically allowed)
+                        for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2;
+                             ++idxptr2) {
+
+                            Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
+                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
+                                break;
+                            }
+
+                            Eigen::Index col = basis->get_ket_index_from_tuple(col1, col2);
+                            if (col < 0) {
+                                continue;
+                            }
+
+                            Scalar value2 = matrix2.valuePtr()[idxptr2];
+
+                            // Store the entry
+                            Scalar value = value1 * value2;
+                            if (std::abs(value) > numerical_precision) {
+                                triplets.emplace_back(row, col, value);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    // Construct the combined matrix from the triplets
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis->get_number_of_states(),
+                                                        basis->get_number_of_states());
+    matrix.setFromTriplets(triplets.begin(), triplets.end());
+    matrix.makeCompressed();
+
+    return matrix;
+}
+
+template <typename Scalar>
+SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
+    : System<SystemPair<Scalar>>(std::move(basis)) {}
+
+template <typename Scalar>
+SystemPair<Scalar> &SystemPair<Scalar>::set_order(int value) {
+    this->hamiltonian_requires_construction = true;
+    if (value < 3 || value > 5) {
+        throw std::invalid_argument("The order must be 3, 4, or 5.");
+    }
+    order = value;
+    return *this;
+}
+
+template <typename Scalar>
+SystemPair<Scalar> &SystemPair<Scalar>::set_distance(real_t value) {
+    return set_distance_vector({0, 0, value});
+}
+
+template <typename Scalar>
+SystemPair<Scalar> &SystemPair<Scalar>::set_distance_vector(const std::array<real_t, 3> &vector) {
+    this->hamiltonian_requires_construction = true;
+    distance_vector = vector;
+    return *this;
+}
+
+template <typename Scalar>
 void SystemPair<Scalar>::construct_hamiltonian() const {
     auto basis = this->hamiltonian->get_basis();
     auto basis1 = basis->get_basis1();
     auto basis2 = basis->get_basis2();
 
-    auto green_functions = construct_green_functions(distance_vector, order);
+    auto green_functions = construct_green_functions<Scalar>(distance_vector, order);
     auto op = construct_operator_matrices(green_functions, basis1, basis2);
 
     // Construct the unperturbed Hamiltonian
@@ -412,91 +516,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
     if (sort_by_parity) {
         this->blockdiagonalizing_labels.push_back(TransformationType::SORT_BY_PARITY);
     }
-}
-
-template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor> SystemPair<Scalar>::calculate_tensor_product(
-    const std::shared_ptr<const basis_t> &basis,
-    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
-    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
-
-    // Loop over the rows of the first matrix in parallel (outer index == row)
-    oneapi::tbb::parallel_for(
-        oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
-            for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
-
-                const auto &range_row2 = basis->get_index_range(row1);
-
-                // Loop over the rows of the second matrix that are energetically allowed
-                for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
-                     row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
-
-                    Eigen::Index row = basis->get_ket_index_from_tuple(row1, row2);
-                    if (row < 0) {
-                        continue;
-                    }
-
-                    // Loop over the non-zero column elements of the first matrix
-                    for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
-                             matrix1, row1);
-                         it1; ++it1) {
-
-                        Eigen::Index col1 = it1.col();
-                        Scalar value1 = it1.value();
-
-                        // Calculate the minimum and maximum values of the index pointer of the
-                        // second matrix
-                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[row2];
-                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[row2 + 1];
-
-                        // The minimum value is chosen such that we start with an energetically
-                        // allowed column
-                        const auto &range_col2 = basis->get_index_range(it1.index());
-                        begin_idxptr2 +=
-                            std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
-                                          std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
-                                                           matrix2.innerIndexPtr() + end_idxptr2,
-                                                           range_col2.min()));
-
-                        // Loop over the non-zero column elements of the second matrix that are
-                        // energetically allowed (we break the loop if the index pointer corresponds
-                        // to a column that is not energetically allowed)
-                        for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2;
-                             ++idxptr2) {
-
-                            Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
-                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
-                                break;
-                            }
-
-                            Eigen::Index col = basis->get_ket_index_from_tuple(col1, col2);
-                            if (col < 0) {
-                                continue;
-                            }
-
-                            Scalar value2 = matrix2.valuePtr()[idxptr2];
-
-                            // Store the entry
-                            Scalar value = value1 * value2;
-                            if (std::abs(value) > numerical_precision) {
-                                triplets.emplace_back(row, col, value);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-    // Construct the combined matrix from the triplets
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis->get_number_of_states(),
-                                                        basis->get_number_of_states());
-    matrix.setFromTriplets(triplets.begin(), triplets.end());
-    matrix.makeCompressed();
-
-    return matrix;
 }
 
 // Explicit instantiations
