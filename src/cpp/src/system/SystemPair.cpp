@@ -56,7 +56,7 @@ GreenFunctions<Scalar> construct_green_functions(
 
     GreenFunctions<Scalar> green_functions;
 
-    // Normalize the distance vector, return zero green functions if the distance is zero
+    // Normalize the distance vector, return zero green functions if the distance is infinity
     Eigen::Map<const Eigen::Vector3<real_t>> vector_map(distance_vector.data(),
                                                         distance_vector.size());
     real_t distance = vector_map.norm();
