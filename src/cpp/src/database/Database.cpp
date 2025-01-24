@@ -11,6 +11,7 @@
 #include "pairinteraction/utils/paths.hpp"
 #include "pairinteraction/utils/streamed.hpp"
 
+#include <cpptrace/cpptrace.hpp>
 #include <duckdb.hpp>
 #include <fmt/core.h>
 #include <fmt/ranges.h>
@@ -279,7 +280,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     {
         auto result = con->Query("PRAGMA max_memory = '8GB';");
         if (result->HasError()) {
-            throw std::runtime_error("Error setting the memory limit: " + result->GetError());
+            throw cpptrace::runtime_error("Error setting the memory limit: " + result->GetError());
         }
     }
 
@@ -290,7 +291,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                                              tables.at("wigner").local_path.string()));
 
         if (result->HasError()) {
-            throw std::runtime_error("Error creating table: " + result->GetError());
+            throw cpptrace::runtime_error("Error creating table: " + result->GetError());
         }
 
         tables.at("wigner").local_path = "wigner";
@@ -368,32 +369,29 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     ensure_presence_of_table(species + "_states");
 
     // Check that the specifications are valid
-    if (description.quantum_number_n.has_value()) {
-        ensure_quantum_number_n_is_allowed(species + "_states");
-    }
     if (!description.quantum_number_m.has_value()) {
-        throw std::runtime_error("The quantum number m must be specified.");
+        throw std::invalid_argument("The quantum number m must be specified.");
     }
     if (description.quantum_number_f.has_value() &&
         2 * description.quantum_number_f.value() !=
             std::rintf(2 * description.quantum_number_f.value())) {
-        throw std::runtime_error("The quantum number f must be an integer or half-integer.");
+        throw std::invalid_argument("The quantum number f must be an integer or half-integer.");
     }
     if (description.quantum_number_f.has_value() && description.quantum_number_f.value() < 0) {
-        throw std::runtime_error("The quantum number f must be positive.");
+        throw std::invalid_argument("The quantum number f must be positive.");
     }
     if (description.quantum_number_j.has_value() &&
         2 * description.quantum_number_j.value() !=
             std::rintf(2 * description.quantum_number_j.value())) {
-        throw std::runtime_error("The quantum number j must be an integer or half-integer.");
+        throw std::invalid_argument("The quantum number j must be an integer or half-integer.");
     }
     if (description.quantum_number_j.has_value() && description.quantum_number_j.value() < 0) {
-        throw std::runtime_error("The quantum number j must be positive.");
+        throw std::invalid_argument("The quantum number j must be positive.");
     }
     if (description.quantum_number_m.has_value() &&
         2 * description.quantum_number_m.value() !=
             std::rintf(2 * description.quantum_number_m.value())) {
-        throw std::runtime_error("The quantum number m must be an integer or half-integer.");
+        throw std::invalid_argument("The quantum number m must be an integer or half-integer.");
     }
 
     // Describe the state
@@ -519,11 +517,11 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
         orderby, tables.at(species + "_states").local_path.string(), where));
 
     if (result->HasError()) {
-        throw std::runtime_error("Error querying the database: " + result->GetError());
+        throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
     }
 
     if (result->RowCount() == 0) {
-        throw std::runtime_error("No state found.");
+        throw std::invalid_argument("No state found.");
     }
 
     // Check the types of the columns
@@ -614,7 +612,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
             }
 
             // Throw an error with the possible kets
-            throw std::runtime_error(
+            throw std::invalid_argument(
                 fmt::format("The ket is not uniquely specified. Possible kets are:\n{}\n{}",
                             fmt::streamed(kets[0]), fmt::streamed(kets[1])));
         }
@@ -646,12 +644,12 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
     // Check the quantum number m
     if (std::abs(result_quantum_number_m) > result_quantum_number_f) {
-        throw std::runtime_error(
+        throw std::invalid_argument(
             "The absolute value of the quantum number m must be less than or equal to f.");
     }
     if (result_quantum_number_f + result_quantum_number_m !=
         std::rint(result_quantum_number_f + result_quantum_number_m)) {
-        throw std::runtime_error(
+        throw std::invalid_argument(
             "The quantum numbers f and m must be both either integers or half-integers.");
     }
 
@@ -682,11 +680,6 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
     ensure_presence_of_table(species + "_states");
-
-    // Check that the specifications are valid
-    if (description.range_quantum_number_n.is_finite()) {
-        ensure_quantum_number_n_is_allowed(species + "_states");
-    }
 
     // Describe the states
     std::string where = "(";
@@ -781,7 +774,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     {
         auto result = con->Query(R"(SELECT UUID()::varchar)");
         if (result->HasError()) {
-            throw std::runtime_error("Error selecting id_of_kets: " + result->GetError());
+            throw cpptrace::runtime_error("Error selecting id_of_kets: " + result->GetError());
         }
         id_of_kets =
             duckdb::FlatVector::GetData<duckdb::string_t>(result->Fetch()->data[0])[0].GetString();
@@ -797,7 +790,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             tables.at(species + "_states").local_path.string(), where));
 
         if (result->HasError()) {
-            throw std::runtime_error("Error creating table: " + result->GetError());
+            throw cpptrace::runtime_error("Error creating table: " + result->GetError());
         }
     }
 
@@ -854,14 +847,14 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
             auto result = con->Query(fmt::format(R"(SELECT {} FROM '{}')", select, id_of_kets));
 
             if (result->HasError()) {
-                throw std::runtime_error("Error querying the database: " + result->GetError());
+                throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
             }
 
             auto chunk = result->Fetch();
 
             for (size_t i = 0; i < chunk->ColumnCount(); i++) {
                 if (duckdb::FlatVector::IsNull(chunk->data[i], 0)) {
-                    throw std::runtime_error("No state found.");
+                    throw std::invalid_argument("No state found.");
                 }
             }
 
@@ -1032,11 +1025,11 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
         id_of_kets));
 
     if (result->HasError()) {
-        throw std::runtime_error("Error querying the database: " + result->GetError());
+        throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
     }
 
     if (result->RowCount() == 0) {
-        throw std::runtime_error("No state found.");
+        throw std::invalid_argument("No state found.");
     }
 
     // Check the types of the columns
@@ -1159,11 +1152,11 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         kappa = 0;
         break;
     default:
-        throw std::runtime_error("Unknown operator type.");
+        throw std::invalid_argument("Unknown operator type.");
     }
 
     if (initial_basis->get_id_of_kets() != final_basis->get_id_of_kets()) {
-        throw std::runtime_error(
+        throw std::invalid_argument(
             "The initial and final basis must be expressed using the same kets.");
     }
     std::string id_of_kets = initial_basis->get_id_of_kets();
@@ -1181,7 +1174,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
 
         // Check that the specifications are valid
         if (std::abs(q) > kappa) {
-            throw std::runtime_error("Invalid q.");
+            throw std::invalid_argument("Invalid q.");
         }
 
         // Ask the database for the operator
@@ -1230,7 +1223,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
         }
 
         if (result->HasError()) {
-            throw std::runtime_error("Error querying the database: " + result->GetError());
+            throw cpptrace::runtime_error("Error querying the database: " + result->GetError());
         }
 
         // Check the types of the columns
@@ -1351,31 +1344,6 @@ void Database::ensure_presence_of_table(const std::string &name) {
 
     if (tables[name].local_version == -1) {
         throw std::runtime_error("Failed to obtain the table `" + name + "`.");
-    }
-}
-
-void Database::ensure_quantum_number_n_is_allowed(const std::string &name) {
-    auto result = con->Query(
-        fmt::format(R"(SELECT n FROM '{}' LIMIT 1)", tables.at(name).local_path.string()));
-
-    if (result->HasError()) {
-        throw std::runtime_error("Error querying the database: " + result->GetError());
-    }
-
-    if (result->RowCount() == 0) {
-        throw std::runtime_error("No state found.");
-    }
-
-    auto chunk = result->Fetch();
-
-    if (chunk->data[0].GetType() != duckdb::LogicalType::BIGINT) {
-        throw std::runtime_error("Wrong type for 'n'.");
-    }
-
-    if (duckdb::FlatVector::GetData<int64_t>(chunk->data[0])[0] <= 0) {
-        throw std::runtime_error(
-            "The specified species does not have a well-defined principal quantum number n. "
-            "Use the effective principal quantum number nu instead.");
     }
 }
 
