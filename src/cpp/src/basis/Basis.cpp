@@ -604,8 +604,9 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
 template <typename Derived>
 std::shared_ptr<const Derived>
 Basis<Derived>::transformed(const Transformation<scalar_t> &transformation) const {
-    real_t numerical_precision =
-        100 * std::sqrt(coefficients.matrix.rows()) * std::numeric_limits<real_t>::epsilon();
+    // TODO why is "numerical_precision = 100 * std::sqrt(coefficients.matrix.rows()) *
+    // std::numeric_limits<real_t>::epsilon()" too small for figuring out whether m is conserved?
+    real_t numerical_precision = 0.001;
 
     // If the transformation is a rotation, it should be a rotation and nothing else
     bool is_rotation = false;
