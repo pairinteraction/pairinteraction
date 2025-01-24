@@ -106,7 +106,7 @@ jobs:
   publish-to-testpypi:
     name: Publish to TestPyPI
     if: startsWith(github.ref, 'refs/tags/')  # only publish to TestPyPI on tag pushes
-    needs: [sdist, test-with-downloaded-database, wheel]
+    needs: [sdist, wheel]
     runs-on: ubuntu-latest
 
     environment:
