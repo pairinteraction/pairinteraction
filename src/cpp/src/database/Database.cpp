@@ -130,7 +130,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 std::string version_str = parquet_match[2].str();
                 if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
                     int version = std::stoi(version_str);
-                    if (version > tables[name].local_version) {
+                    if (tables.count(name) == 0 || version > tables[name].local_version) {
                         tables[name].local_version = version;
                         tables[name].local_path = entry.path();
                     }
@@ -265,7 +265,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                     std::string version_str = parquet_match[2].str();
                     if (std::all_of(version_str.begin(), version_str.end(), ::isdigit)) {
                         int version = std::stoi(version_str);
-                        if (version > tables[name].remote_version) {
+                        if (tables.count(name) == 0 || version > tables[name].remote_version) {
                             tables[name].remote_version = version;
                             tables[name].remote_path = asset["url"].get<std::string>().erase(0, 22);
                         }
@@ -287,13 +287,13 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
     if (_wigner_in_memory) {
         ensure_presence_of_table("wigner");
         auto result = con->Query(fmt::format(R"(CREATE TEMP TABLE 'wigner' AS SELECT * FROM '{}')",
-                                             tables["wigner"].local_path.string()));
+                                             tables.at("wigner").local_path.string()));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
         }
 
-        tables["wigner"].local_path = "wigner";
+        tables.at("wigner").local_path = "wigner";
     }
 
     // Print availability of tables
@@ -335,7 +335,7 @@ std::vector<Database::AvailabilitySpecies> Database::get_availability_of_species
                                                      "matrix_elements_q",
                                                      "matrix_elements_o",
                                                      "matrix_elements_mu",
-                                                     "matrix_elements_dia"};
+                                                     "matrix_elements_q0"};
     for (auto &a : availability) {
         for (const auto &identifier : identifier_of_tables) {
             std::string name = a.name + "_" + identifier;
@@ -516,7 +516,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     auto result = con->Query(fmt::format(
         R"(SELECT energy, f, parity, id, n, nu, exp_nui, std_nui, exp_l, std_l, exp_s, std_s,
         exp_j, std_j, exp_l_ryd, std_l_ryd, exp_j_ryd, std_j_ryd, is_j_total_momentum, is_calculated_with_mqdt, {} AS order_val FROM '{}' WHERE {} ORDER BY order_val ASC LIMIT 2)",
-        orderby, tables[species + "_states"].local_path.string(), where));
+        orderby, tables.at(species + "_states").local_path.string(), where));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
@@ -794,7 +794,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
                 x -> x::double-f)) AS m FROM '{}'
             ) WHERE {})",
             id_of_kets, utils::SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE,
-            tables[species + "_states"].local_path.string(), where));
+            tables.at(species + "_states").local_path.string(), where));
 
         if (result->HasError()) {
             throw std::runtime_error("Error creating table: " + result->GetError());
@@ -1221,8 +1221,8 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
                 w.f_initial = s1.f AND w.m_initial = s1.m AND
                 w.f_final = s2.f AND w.m_final = s2.m
                 ORDER BY row ASC, col ASC)",
-                id_of_kets, tables["wigner"].local_path.string(), kappa, q,
-                tables[species + "_" + specifier].local_path.string()));
+                id_of_kets, tables.at("wigner").local_path.string(), kappa, q,
+                tables.at(species + "_" + specifier).local_path.string()));
         } else {
             result = con->Query(fmt::format(
                 R"(SELECT ketid as row, ketid as col, energy as val FROM '{}' ORDER BY row ASC)",
@@ -1348,11 +1348,15 @@ void Database::ensure_presence_of_table(const std::string &name) {
             out.close();
         }
     }
+
+    if (tables[name].local_version == -1) {
+        throw std::runtime_error("Failed to obtain the table `" + name + "`.");
+    }
 }
 
 void Database::ensure_quantum_number_n_is_allowed(const std::string &name) {
-    auto result =
-        con->Query(fmt::format(R"(SELECT n FROM '{}' LIMIT 1)", tables[name].local_path.string()));
+    auto result = con->Query(
+        fmt::format(R"(SELECT n FROM '{}' LIMIT 1)", tables.at(name).local_path.string()));
 
     if (result->HasError()) {
         throw std::runtime_error("Error querying the database: " + result->GetError());
