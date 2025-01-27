@@ -30,6 +30,7 @@ vcpkg_installed/
 .venv/
 *.egg-info/
 wheelhouse/
+dist/
 .pytest_cache/
 .coverage
 coverage.lcov

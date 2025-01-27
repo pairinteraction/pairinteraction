@@ -98,7 +98,18 @@ wheel.packages = [
   "src/pairinteraction",
 ]
 wheel.license-files = ["LICENSE-*.txt"]
-sdist.exclude = ["*.cpp", "*.hpp", "CMakeLists.txt", "*.cmake"]
+sdist.exclude = [
+  "/tools/",
+  "/tests/",
+  "/docs/",
+  "/data/",
+  "/extra/",
+  ".git*",
+  ".clang*",
+  ".pre-commit-config.yaml",
+  ".cmake-format.json",
+  ".build_requirements.txt",
+]
 
 [tool.scikit-build.metadata.version]
 provider = "scikit_build_core.metadata.regex"
