@@ -22,9 +22,7 @@ inline bool parse_database_dir(int &i, int argc, char **const argv,
         }
         database_dir = argv[i];
         if (!std::filesystem::exists(database_dir)) {
-            throw std::filesystem::filesystem_error(
-                "Cannot access database", database_dir.string(),
-                std::make_error_code(std::errc::no_such_file_or_directory));
+            return true;
         }
         database_dir = std::filesystem::canonical(database_dir);
         if (!std::filesystem::is_directory(database_dir)) {
@@ -44,9 +42,7 @@ inline bool parse_data_dir(int &i, int argc, char **const argv, std::filesystem:
         }
         data_dir = argv[i];
         if (!std::filesystem::exists(data_dir)) {
-            throw std::filesystem::filesystem_error(
-                "Cannot access data directory", data_dir.string(),
-                std::make_error_code(std::errc::no_such_file_or_directory));
+            return true;
         }
         data_dir = std::filesystem::canonical(data_dir);
         if (!std::filesystem::is_directory(data_dir)) {

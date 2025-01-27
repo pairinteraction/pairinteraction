@@ -114,11 +114,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install --find-links=dist pairinteraction
 
-    - name: Test that importing pairinteraction works
-      run: python -c "import pairinteraction"
-
     - name: Execute a test that downloads the database and runs checks
-      if: github.ref == 'refs/heads/master' # run this test only on master because of strict rate limits for downloading the database
       run: python -c "import sys; from pairinteraction import run_module_tests; sys.exit(run_module_tests(download_missing=True))"
 
   test-install-from-sdist:

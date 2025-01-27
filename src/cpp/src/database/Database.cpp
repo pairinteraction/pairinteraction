@@ -53,6 +53,7 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
         throw std::filesystem::filesystem_error("Cannot access database", _database_dir.string(),
                                                 std::make_error_code(std::errc::not_a_directory));
     }
+    SPDLOG_INFO("Using database directory: {}", _database_dir.string());
 
     // Ensure that the config directory exists
     std::filesystem::path configdir = paths::get_pairinteraction_config_directory();
@@ -216,29 +217,31 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 // correct, see also https://github.com/yhirose/cpp-httplib/issues/1477.
                 if (res.error() != httplib::Error::Unknown ||
                     !std::filesystem::exists(filenames[i])) {
-                    SPDLOG_ERROR("Access error: {}", fmt::streamed(res.error()));
-                    continue;
+                    throw std::runtime_error(
+                        fmt::format("Access error, status {}.", fmt::streamed(res.error())));
+                }
+            } else {
+                if ((res->status == 403 || res->status == 429) &&
+                    res->has_header("x-ratelimit-remaining") &&
+                    res->get_header_value("x-ratelimit-remaining") == "0") {
+                    int waittime = -1;
+                    if (res->has_header("retry-after")) {
+                        waittime = std::stoi(res->get_header_value("retry-after"));
+                    } else if (res->has_header("x-ratelimit-reset")) {
+                        waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
+                            static_cast<int>(time(nullptr));
+                    }
+                    throw std::runtime_error(
+                        fmt::format("Access error downloading overview of available tables, rate "
+                                    "limit exceeded. "
+                                    "You should not retry until after {} seconds.",
+                                    waittime));
+                    // TODO implement a mechanism to not retry until after the waittime
                 }
 
-            } else if ((res->status == 403 || res->status == 429) &&
-                       res->has_header("x-ratelimit-remaining") &&
-                       res->get_header_value("x-ratelimit-remaining") == "0") {
-                int waittime = -1;
-                if (res->has_header("retry-after")) {
-                    waittime = std::stoi(res->get_header_value("retry-after"));
-                } else if (res->has_header("x-ratelimit-reset")) {
-                    waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
-                        static_cast<int>(time(nullptr));
+                if (res->status != 200) {
+                    throw std::runtime_error(fmt::format("Access error, status {}.", res->status));
                 }
-                SPDLOG_ERROR("Access error, rate limit exceeded. Auto update "
-                             "is disabled. You should not retry until after {} seconds.",
-                             waittime);
-                // TODO implement a mechanism to not retry until after the waittime
-                continue;
-
-            } else if (res->status != 200) {
-                SPDLOG_ERROR("Access error, status {}.", res->status);
-                continue;
             }
 
             // Parse and store the JSON response together with the last-modified date
@@ -248,6 +251,9 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 std::ifstream file(filenames[i]);
                 doc = nlohmann::json::parse(file);
             } else {
+                std::string remaining = res->has_header("x-ratelimit-remaining")
+                    ? res->get_header_value("x-ratelimit-remaining")
+                    : "?";
                 SPDLOG_INFO("Using downloaded overview of available tables.");
                 doc = nlohmann::json::parse(res->body);
                 if (res->has_header("last-modified")) {
@@ -274,6 +280,15 @@ Database::Database(bool download_missing, bool wigner_in_memory, std::filesystem
                 }
             }
         }
+
+        // Get the remaining rate limit
+        auto res = httpclient->Get(
+            "/rate_limit",
+            {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/vnd.github+json"}});
+        std::string remaining = res && res->has_header("x-ratelimit-remaining")
+            ? res->get_header_value("x-ratelimit-remaining")
+            : "?";
+        SPDLOG_INFO("In this hour, you can still request {} database tables.", remaining);
     }
 
     // Limit the memory usage of duckdb's buffer manager
@@ -1297,27 +1312,59 @@ Database::get_matrix_elements_cache() {
 }
 
 void Database::ensure_presence_of_table(const std::string &name) {
-    if (tables.count(name) == 0 && _download_missing) {
+
+    // Check that the table is present if download_missing is false
+    if (!_download_missing) {
+        if (tables.count(name) == 0) {
+            throw std::runtime_error("No database `" + name +
+                                     "` found. Try setting download_missing to true.");
+        }
+        if (tables[name].local_version == -1) {
+            throw std::runtime_error("Database `" + name +
+                                     "` is not downloaded. Try setting download_missing to true.");
+        }
+        return;
+    }
+
+    // Check that the table was in the overview of tables
+    if (tables.count(name) == 0) {
         throw std::runtime_error("No database `" + name + "` found.");
     }
 
-    if (tables.count(name) == 0 && !_download_missing) {
-        throw std::runtime_error("No database `" + name +
-                                 "` found. Try setting download_missing to true.");
+    // Check if the table is up to date
+    {
+        std::shared_lock<std::shared_mutex> lock(mtx_tables);
+        if (tables[name].local_version >= tables[name].remote_version) {
+            return;
+        }
     }
 
-    if (_download_missing && tables[name].local_version < tables[name].remote_version) {
+    // Else acquire a unique lock for updating the table
+    std::unique_lock<std::shared_mutex> lock(mtx_tables);
+
+    // Re-check if the table is up to date because another thread might have updated it
+    if (tables[name].local_version >= tables[name].remote_version) {
+        return;
+    }
+
+    {
+        // Request the table
         SPDLOG_INFO("Updating database `{}` from version {} to version {}.", name,
                     tables[name].local_version, tables[name].remote_version);
         auto res = httpclient->Get(
             tables[name].remote_path.string().c_str(),
             {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/octet-stream"}});
+
+        // Check the response
         if (!res || res->status != 200) {
-            SPDLOG_ERROR("Error accessing `{}`: {}", tables[name].remote_path.string(),
-                         fmt::streamed(res.error()));
-        } else if ((res->status == 403 || res->status == 429) &&
-                   res->has_header("x-ratelimit-remaining") &&
-                   res->get_header_value("x-ratelimit-remaining") == "0") {
+            throw std::runtime_error(fmt::format("Error accessing `{}`: {}",
+                                                 tables[name].remote_path.string(),
+                                                 fmt::streamed(res.error())));
+        }
+
+        if ((res->status == 403 || res->status == 429) &&
+            res->has_header("x-ratelimit-remaining") &&
+            res->get_header_value("x-ratelimit-remaining") == "0") {
             int waittime = -1;
             if (res->has_header("retry-after")) {
                 waittime = std::stoi(res->get_header_value("retry-after"));
@@ -1325,26 +1372,35 @@ void Database::ensure_presence_of_table(const std::string &name) {
                 waittime = std::stoi(res->get_header_value("x-ratelimit-reset")) -
                     static_cast<int>(time(nullptr));
             }
-            SPDLOG_ERROR("Error accessing database repositories, rate limit exceeded. Auto update "
-                         "is disabled. You should not retry until after {} seconds.",
-                         waittime);
+            throw std::runtime_error(
+                fmt::format("Access error downloading table, rate limit exceeded. "
+                            "You should not retry until after {} seconds.",
+                            waittime));
             // TODO implement a mechanism to not retry until after the waittime
-        } else {
-            if (tables[name].local_version != -1) {
-                std::filesystem::remove(tables[name].local_path);
-            }
-            tables[name].local_version = tables[name].remote_version;
-            tables[name].local_path = _database_dir /
-                (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
-            std::ofstream out(tables[name].local_path, std::ios::binary);
-            out << res->body;
-            out.close();
         }
+
+        // Save the table
+        if (tables[name].local_version != -1) {
+            std::filesystem::remove(tables[name].local_path);
+        }
+        tables[name].local_version = tables[name].remote_version;
+        tables[name].local_path = _database_dir /
+            (name + "_v" + std::to_string(tables[name].remote_version) + ".parquet");
+        std::ofstream out(tables[name].local_path, std::ios::binary);
+        out << res->body;
+        out.close();
+
+        assert(tables[name].local_version != -1);
     }
 
-    if (tables[name].local_version == -1) {
-        throw std::runtime_error("Failed to obtain the table `" + name + "`.");
-    }
+    // Get the remaining rate limit
+    auto res = httpclient->Get(
+        "/rate_limit",
+        {{"X-GitHub-Api-Version", "2022-11-28"}, {"Accept", "application/vnd.github+json"}});
+    std::string remaining = res && res->has_header("x-ratelimit-remaining")
+        ? res->get_header_value("x-ratelimit-remaining")
+        : "?";
+    SPDLOG_INFO("In this hour, you can still request {} database tables.", remaining);
 }
 
 Database &Database::get_global_instance() {
