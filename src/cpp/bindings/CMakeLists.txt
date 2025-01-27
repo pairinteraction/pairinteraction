@@ -72,15 +72,17 @@ install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction/backend)
 install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction/backend)
 install(TARGETS backend DESTINATION pairinteraction/backend)
 
-# cmake-format: off
-nanobind_add_stub(
-  backend_stub
-  MODULE _backend
-  OUTPUT _backend.pyi
-  PYTHON_PATH $<TARGET_FILE_DIR:backend>
-  DEPENDS backend
-)
-# cmake-format: on
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION pairinteraction/backend)
-# install the .pyi file also to the python src dir to make static type checking possible with pip editable installs
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION ${CMAKE_SOURCE_DIR}/src/pairinteraction/backend)
+if(NOT CMAKE_CROSSCOMPILING AND NOT APPLE)
+  # cmake-format: off
+  nanobind_add_stub(
+    backend_stub
+    MODULE _backend
+    OUTPUT _backend.pyi
+    PYTHON_PATH $<TARGET_FILE_DIR:backend>
+    DEPENDS backend
+  )
+  # cmake-format: on
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION pairinteraction/backend)
+  # install the .pyi file also to the python src dir to make static type checking possible with pip editable installs
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/_backend.pyi DESTINATION ${CMAKE_SOURCE_DIR}/src/pairinteraction/backend)
+endif()
