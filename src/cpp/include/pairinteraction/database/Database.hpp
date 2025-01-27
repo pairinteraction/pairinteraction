@@ -8,6 +8,7 @@
 #include <filesystem>
 #include <memory>
 #include <oneapi/tbb.h>
+#include <shared_mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -99,6 +100,7 @@ private:
     std::unique_ptr<duckdb::Connection> con;
     std::unique_ptr<httplib::Client> httpclient;
     std::unordered_map<std::string, Table> tables;
+    std::shared_mutex mtx_tables;
 
     static constexpr bool default_download_missing{false};
     static constexpr bool default_wigner_in_memory{true};
