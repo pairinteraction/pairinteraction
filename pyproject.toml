@@ -103,7 +103,6 @@ sdist.exclude = [
   "/tests/",
   "/docs/",
   "/data/",
-  "/extra/",
   ".git*",
   ".clang*",
   ".pre-commit-config.yaml",

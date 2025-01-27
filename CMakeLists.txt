@@ -51,7 +51,6 @@ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 
 # Mac OS X specific build instructions
 set(CMAKE_MACOSX_RPATH TRUE)
-set(CMAKE_MACOSX_GOODIES_PATH "${CMAKE_SOURCE_DIR}/extra/apple")
 
 # General build instructions
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -192,11 +191,6 @@ add_subdirectory(src/cpp/docs)
 include(CTest)
 if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME AND BUILD_TESTING)
   add_subdirectory(src/cpp/tests)
-endif()
-
-# Add flatpak specific instructions
-if(DEFINED ENV{FLATPAK_ID})
-  add_subdirectory(extra/flatpak)
 endif()
 
 # Print found packages
