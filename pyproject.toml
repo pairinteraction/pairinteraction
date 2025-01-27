@@ -145,14 +145,9 @@ inherit.environment = "append"
 environment.CXXFLAGS = "-march=x86-64-v3"
 
 [[tool.cibuildwheel.overrides]]  # macosx overrides
-select = "*-macosx_x86_64"
+select = "*-macosx_*"
 inherit.environment = "append"
 environment.MACOSX_DEPLOYMENT_TARGET = "13.0"
-
-[[tool.cibuildwheel.overrides]]  # arm64 macosx overrides
-select = "*-macosx_arm64"
-inherit.environment = "append"
-environment.MACOSX_DEPLOYMENT_TARGET = "14.0"
 
 [[tool.cibuildwheel.overrides]]  # windows overrides
 select = "*-win_*"
