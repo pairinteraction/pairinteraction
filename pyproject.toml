@@ -51,6 +51,7 @@ dependencies = [
   "numpy >= 1.24",
   "scipy >= 1.10",
   "pint >= 0.21.1",
+  "scipy-stubs >= 1.15; python_version >= '3.10'",
 ]
 
 [project.optional-dependencies]
