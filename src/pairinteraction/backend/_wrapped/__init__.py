@@ -14,7 +14,7 @@ from pairinteraction.backend._wrapped.basis.BasisPair import (
 )
 from pairinteraction.backend._wrapped.convenience.calculate_energy import calculate_energy
 from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
-from pairinteraction.backend._wrapped.Database import Database
+from pairinteraction.backend._wrapped.database.Database import Database
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
 from pairinteraction.backend._wrapped.ket.KetAtom import (
     KetAtomBase,
