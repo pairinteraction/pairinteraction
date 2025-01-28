@@ -13,10 +13,9 @@ from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
+    from typing_extensions import Self
 
     from pairinteraction.units import Array
-
-    SelfSystemAtom_t = TypeVar("SelfSystemAtom_t", bound="SystemAtom")
 
 Basis_t = TypeVar("Basis_t", "BasisAtomFloat", "BasisAtomComplexFloat", "BasisAtomDouble", "BasisAtomComplexDouble")
 UnionCPPSystemAtom = Union[
@@ -38,24 +37,24 @@ class SystemAtomBase(SystemBase[Basis_t]):
     _cpp_type: ClassVar[UnionTypeCPPSystemAtom]
 
     def set_electric_field(
-        self: "SelfSystemAtom_t",
+        self: "Self",
         electric_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
-    ) -> "SelfSystemAtom_t":
+    ) -> "Self":
         electric_field_au = [QuantityScalar(v, unit).to_base("ELECTRIC_FIELD") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
         return self
 
     def set_magnetic_field(
-        self: "SelfSystemAtom_t",
+        self: "Self",
         magnetic_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
-    ) -> "SelfSystemAtom_t":
+    ) -> "Self":
         magnetic_field_au = [QuantityScalar(v, unit).to_base("MAGNETIC_FIELD") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
         return self
 
-    def enable_diamagnetism(self: "SelfSystemAtom_t", enable: bool = True) -> "SelfSystemAtom_t":
+    def enable_diamagnetism(self: "Self", enable: bool = True) -> "Self":
         self._cpp.enable_diamagnetism(enable)
         return self
 

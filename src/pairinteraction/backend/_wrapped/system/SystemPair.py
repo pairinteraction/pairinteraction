@@ -13,10 +13,9 @@ from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
+    from typing_extensions import Self
 
     from pairinteraction.units import Array
-
-    SelfSystemPair_t = TypeVar("SelfSystemPair_t", bound="SystemPair")
 
 Basis_t = TypeVar("Basis_t", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble")
 UnionCPPSystemPair = Union[
@@ -37,22 +36,20 @@ class SystemPairBase(SystemBase[Basis_t]):
     _cpp: UnionCPPSystemPair
     _cpp_type: ClassVar[UnionTypeCPPSystemPair]
 
-    def set_order(self: "SelfSystemPair_t", order: int) -> "SelfSystemPair_t":
+    def set_order(self: "Self", order: int) -> "Self":
         self._cpp.set_order(order)
         return self
 
-    def set_distance(
-        self: "SelfSystemPair_t", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint"
-    ) -> "SelfSystemPair_t":
+    def set_distance(self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint") -> "Self":
         distance_au = QuantityScalar(distance, unit).to_base("DISTANCE")
         self._cpp.set_distance(distance_au)
         return self
 
     def set_distance_vector(
-        self: "SelfSystemPair_t",
+        self: "Self",
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: str = "pint",
-    ) -> "SelfSystemPair_t":
+    ) -> "Self":
         distance_au = [QuantityScalar(v, unit).to_base("DISTANCE") for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
