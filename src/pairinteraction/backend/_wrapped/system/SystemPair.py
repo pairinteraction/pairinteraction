@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-Basis_t = TypeVar("Basis_t", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble")
+BasisType = TypeVar("BasisType", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble")
 UnionCPPSystemPair = Union[
     _backend.SystemPairFloat,
     _backend.SystemPairComplexFloat,
@@ -32,11 +32,11 @@ UnionTypeCPPSystemPair = Union[
 ]
 
 
-class SystemPairBase(SystemBase[Basis_t]):
+class SystemPairBase(SystemBase[BasisType]):
     _cpp: UnionCPPSystemPair
     _cpp_type: ClassVar[UnionTypeCPPSystemPair]
 
-    def __init__(self, basis: Basis_t) -> None:
+    def __init__(self, basis: BasisType) -> None:
         """Create a system object for a pair of atoms.
 
         Use the given BasisPair object to create the system object.
