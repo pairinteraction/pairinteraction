@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     import scipy.sparse
     from typing_extensions import Self
 
-Ket_t = TypeVar("Ket_t", bound=Ket)
+KetType = TypeVar("KetType", bound=Ket)
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Pair)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPBasisCreator = Any
@@ -18,7 +18,7 @@ UnionTypeCPPBasisCreator = Any
 # type[Basis(Atom|ClassicalLight|Pair)Creator(Float|Double|ComplexFloat|ComplexDouble)]
 
 
-class BasisBase(ABC, Generic[Ket_t]):
+class BasisBase(ABC, Generic[KetType]):
     """Base class for all Basis objects.
 
     The basis objects are meant to represent a set of kets, that span a Hilbert space
@@ -33,7 +33,7 @@ class BasisBase(ABC, Generic[Ket_t]):
 
     _cpp: UnionCPPBasis
     _cpp_creator: ClassVar[UnionTypeCPPBasisCreator]
-    _TypeKet: type[Ket_t]  # should by ClassVar, but cannot be nested yet
+    _TypeKet: type[KetType]  # should by ClassVar, but cannot be nested yet
 
     @classmethod
     def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPBasis) -> "Self":
@@ -48,7 +48,7 @@ class BasisBase(ABC, Generic[Ket_t]):
         return f"{type(self).__name__} object with {self.number_of_states} states and {self.number_of_kets} kets"
 
     @cached_property
-    def kets(self) -> list[Ket_t]:
+    def kets(self) -> list[KetType]:
         """Return a list containing the kets of the basis."""
         kets = [self._TypeKet._from_cpp_object(ket) for ket in self._cpp.get_kets()]  # type: ignore [reportPrivateUsage]
         return kets
@@ -66,36 +66,36 @@ class BasisBase(ABC, Generic[Ket_t]):
         return self._cpp.get_coefficients()
 
     @overload
-    def get_amplitudes(self, ket_or_basis: Ket_t) -> "np.ndarray[Any,Any]": ...
+    def get_amplitudes(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
 
     @overload
-    def get_amplitudes(self, ket_or_basis: "BasisBase[Ket_t]") -> "scipy.sparse.csr_matrix": ...
+    def get_amplitudes(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
 
-    def get_amplitudes(self, ket_or_basis: Union[Ket_t, "BasisBase[Ket_t]"]):
+    def get_amplitudes(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
         return self._cpp.get_amplitudes(ket_or_basis._cpp)
 
     @overload
-    def get_overlaps(self, ket_or_basis: Ket_t) -> "np.ndarray[Any,Any]": ...
+    def get_overlaps(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
 
     @overload
-    def get_overlaps(self, ket_or_basis: "BasisBase[Ket_t]") -> "scipy.sparse.csr_matrix": ...
+    def get_overlaps(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
 
-    def get_overlaps(self, ket_or_basis: Union[Ket_t, "BasisBase[Ket_t]"]):
+    def get_overlaps(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
         return self._cpp.get_overlaps(ket_or_basis._cpp)
 
-    def get_corresponding_state(self: "Self", ket_or_index: Union[Ket_t, int]) -> "Self":
+    def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
         if isinstance(ket_or_index, (int, np.integer)):
             cpp_basis = self._cpp.get_corresponding_state(ket_or_index)
         else:
             cpp_basis = self._cpp.get_corresponding_state(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
         return type(self)._from_cpp_object(cpp_basis)
 
-    def get_corresponding_state_index(self, ket_or_index: Union[Ket_t, int]) -> int:
+    def get_corresponding_state_index(self, ket_or_index: Union[KetType, int]) -> int:
         if isinstance(ket_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_state_index(ket_or_index)
         return self._cpp.get_corresponding_state_index(ket_or_index._cpp)  # type: ignore [reportPrivateUsage]
 
-    def get_corresponding_ket(self: "Self", state_or_index: Union["Self", int]) -> Ket_t:
+    def get_corresponding_ket(self: "Self", state_or_index: Union["Self", int]) -> KetType:
         if isinstance(state_or_index, (int, np.integer)):
             cpp_ket = self._cpp.get_corresponding_ket(state_or_index)
         else:

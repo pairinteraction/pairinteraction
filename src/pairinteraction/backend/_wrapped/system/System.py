@@ -16,7 +16,8 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.basis.BasisPair import BasisPair
     from pairinteraction.units import Array
 
-Basis_t = TypeVar("Basis_t", bound=Union["BasisAtom", "BasisPair"])
+
+BasisType = TypeVar("BasisType", bound=Union["BasisAtom", "BasisPair"])
 UnionCPPSystem = Any
 # UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPSystem = Any
@@ -24,7 +25,7 @@ UnionTypeCPPSystem = Any
 UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
 
 
-class SystemBase(ABC, Generic[Basis_t]):
+class SystemBase(ABC, Generic[BasisType]):
     """Base class for all System objects.
 
     The system objects are meant to represent the full physical system, including the basis
@@ -41,10 +42,10 @@ class SystemBase(ABC, Generic[Basis_t]):
 
     _cpp: UnionCPPSystem
     _cpp_type: ClassVar[UnionTypeCPPSystem]
-    _basis: Basis_t
-    _TypeBasis: type[Basis_t]  # should by ClassVar, but cannot be nested yet
+    _basis: BasisType
+    _TypeBasis: type[BasisType]  # should by ClassVar, but cannot be nested yet
 
-    def __init__(self, basis: Basis_t) -> None:
+    def __init__(self, basis: BasisType) -> None:
         self._cpp = self._cpp_type(basis._cpp)  # type: ignore [reportPrivateUsage]
         self.update_basis()
 
@@ -93,7 +94,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         return self._cpp.is_diagonal()
 
     @property
-    def basis(self) -> Basis_t:
+    def basis(self) -> BasisType:
         return self._basis
 
     @property
@@ -111,7 +112,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         eigenvalues = QuantityArray.from_base(eigenvalues_au, "ENERGY")
         return eigenvalues.to_unit(unit)
 
-    def get_eigenbasis(self) -> Basis_t:
+    def get_eigenbasis(self) -> BasisType:
         cpp_eigenbasis = self._cpp.get_eigenbasis()
         return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
 

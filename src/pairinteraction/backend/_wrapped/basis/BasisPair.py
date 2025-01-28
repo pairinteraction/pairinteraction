@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
     KetAtomOrBasisAtom = TypeVar("KetAtomOrBasisAtom", KetAtom, BasisAtom, covariant=True)
 
-Ket_t = TypeVar("Ket_t", bound=KetPair)
+KetPairType = TypeVar("KetPairType", bound=KetPair)
 UnionCPPBasisPair = Union[
     _backend.BasisPairFloat,
     _backend.BasisPairComplexFloat,
@@ -40,7 +40,7 @@ UnionTypeCPPBasisPairCreator = Union[
 ]
 
 
-class BasisPairBase(BasisBase[Ket_t]):
+class BasisPairBase(BasisBase[KetPairType]):
     _cpp: UnionCPPBasisPair
     _cpp_creator: ClassVar[UnionTypeCPPBasisPairCreator]
 

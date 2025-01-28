@@ -10,7 +10,7 @@ from pairinteraction.units import QuantityScalar
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
 
-Ket_t = TypeVar("Ket_t", bound=KetAtomBase)
+KetAtomType = TypeVar("KetAtomType", bound=KetAtomBase)
 UnionCPPBasisAtom = Union[
     _backend.BasisAtomFloat, _backend.BasisAtomComplexFloat, _backend.BasisAtomDouble, _backend.BasisAtomComplexDouble
 ]
@@ -22,7 +22,7 @@ UnionTypeCPPBasisAtomCreator = Union[
 ]
 
 
-class BasisAtomBase(BasisBase[Ket_t]):
+class BasisAtomBase(BasisBase[KetAtomType]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
@@ -40,7 +40,7 @@ class BasisAtomBase(BasisBase[Ket_t]):
         energy_unit: str = "pint",
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
-        additional_kets: Optional[list[Ket_t]] = None,
+        additional_kets: Optional[list[KetAtomType]] = None,
     ) -> None:
         """Create a basis for a single atom.
 
