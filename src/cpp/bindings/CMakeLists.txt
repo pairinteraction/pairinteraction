@@ -72,7 +72,9 @@ install(IMPORTED_RUNTIME_ARTIFACTS duckdb DESTINATION pairinteraction/backend)
 install(IMPORTED_RUNTIME_ARTIFACTS TBB::tbb DESTINATION pairinteraction/backend)
 install(TARGETS backend DESTINATION pairinteraction/backend)
 
-if(NOT CMAKE_CROSSCOMPILING AND NOT APPLE)
+# FIXME: Under Apple, we cross-compile for arm64. The resulting python package cannot be imported and a stub file cannot
+# be generated on x86_64. Can we obtain a stub file differently?
+if(NOT APPLE)
   # cmake-format: off
   nanobind_add_stub(
     backend_stub
