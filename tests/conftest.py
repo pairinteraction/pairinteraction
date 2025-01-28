@@ -37,4 +37,4 @@ def pytest_sessionstart(session: pytest.Session) -> None:
     """Initialize everything before the tests are run."""
     download_missing = session.config.getoption("--download-missing")
     database_dir = session.config.getoption("--database-dir")
-    Database.initialize_global_instance(download_missing, True, database_dir)
+    Database.initialize_global_database(download_missing, True, database_dir)

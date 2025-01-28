@@ -23,7 +23,7 @@ CPPDatabase = _backend.Database
 
 
 class Database:
-    GlobalDatabase: ClassVar[Optional["Database"]] = None
+    _global_database: ClassVar[Optional["Database"]] = None
 
     def __init__(
         self,
@@ -31,42 +31,50 @@ class Database:
         wigner_in_memory: bool = True,
         database_dir: Union[str, "os.PathLike[str]"] = "",
     ) -> None:
+        """Create a new database instance with the given parameters.
+
+        Args:
+            download_missing: Whether to download missing databases if needed. Default False.
+            wigner_in_memory: Whether to load the Wigner 3j symbols table into memory. Default True.
+            database_dir: The directory where the databases are stored.
+                Default "", i.e. use the default directory (the user's cache directory).
+
+        """
         self._cpp = CPPDatabase(download_missing, wigner_in_memory, database_dir)
         self.download_missing = download_missing
         self.wigner_in_memory = wigner_in_memory
         self.database_dir = database_dir
 
     @classmethod
-    def get_global_instance(cls) -> "Database":
-        if cls.GlobalDatabase is None:
-            cls.initialize_global_instance()
-        return cls.GlobalDatabase
+    def get_global_database(cls) -> Optional["Database"]:
+        """Return the global database instance if it was initialized, otherwise None."""
+        return cls._global_database
 
     @classmethod
-    def initialize_global_instance(
+    def initialize_global_database(
         cls,
         download_missing: bool = False,
         wigner_in_memory: bool = True,
         database_dir: Union[str, "os.PathLike[str]"] = "",
-        allow_overwrite: bool = False,
     ) -> None:
-        if cls.GlobalDatabase is None:
-            cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
+        """Initialize the global database with the given parameters.
+
+        The arguments are the same as for the constructor of this class.
+        """
+        if cls._global_database is None:
+            cls._global_database = cls(download_missing, wigner_in_memory, database_dir)
         elif (
-            cls.GlobalDatabase.download_missing != download_missing
-            or cls.GlobalDatabase.wigner_in_memory != wigner_in_memory
-            or cls.GlobalDatabase.database_dir != database_dir
+            cls._global_database.download_missing == download_missing
+            and cls._global_database.wigner_in_memory == wigner_in_memory
+            and cls._global_database.database_dir == database_dir
         ):
-            if allow_overwrite:
-                cls.GlobalDatabase = cls(download_missing, wigner_in_memory, database_dir)
-            else:
-                raise ValueError(
-                    "Global Database instance already exists with different parameters, "
-                    "if you really want to overwrite it, set allow_overwrite=True"
-                )
+            pass  # already initialized with the same parameters
         else:
-            # Global instance already exists with the same parameters, so we do nothing
-            pass
+            raise ValueError(
+                "Global database was already initialized with different parameters. "
+                "The global database is automatically initialized when needed. "
+                "If you explicitly want to initialize the global database, do this at the beginning of your script."
+            )
 
     @overload
     def get_matrix_elements(
@@ -150,12 +158,3 @@ def get_basis_atom_class_from_ket(ket: "KetAtom") -> "type[BasisAtom]":
         return getattr(BasisAtomModule, f"BasisAtom{type_}")
     except AttributeError as err:
         raise ValueError(f"Unknown KetAtom {type(ket)}, cant find corresponding BasisAtom class") from err
-
-
-def initialize_global_database(
-    download_missing: bool = False,
-    wigner_in_memory: bool = True,
-    database_dir: Union[str, "os.PathLike[str]"] = "",
-    allow_overwrite: bool = False,
-) -> None:
-    Database.initialize_global_instance(download_missing, wigner_in_memory, database_dir, allow_overwrite)
