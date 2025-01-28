@@ -9,9 +9,9 @@ from pint.facets.plain import PlainQuantity
 if TYPE_CHECKING:
     from pint.facets.plain import PlainUnit
     from scipy.sparse import csr_matrix
+    from typing_extensions import Self
 
     Array = np.ndarray[Any, Any]
-    SelfQuantity_t = TypeVar("SelfQuantity_t", bound="QuantityAbstract[Any]")
 
 ureg = UnitRegistry(system="atomic")
 
@@ -74,9 +74,7 @@ class QuantityAbstract(Generic[ValueType]):
             raise ValueError("unit must be a string specifiying the unit of the value if value is not a pint.Quantity")
 
     @classmethod
-    def from_base(
-        cls: "type[SelfQuantity_t]", value: Union[ValueType, PlainQuantity[ValueType]], dimension: Dimension
-    ) -> "SelfQuantity_t":
+    def from_base(cls: "type[Self]", value: Union[ValueType, PlainQuantity[ValueType]], dimension: Dimension) -> "Self":
         return cls(value, BaseUnits[dimension])
 
     def to_base(self, dimension: Dimension) -> ValueType:

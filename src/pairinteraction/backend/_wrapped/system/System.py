@@ -10,12 +10,11 @@ if TYPE_CHECKING:
     import numpy.typing as npt
     from pint.facets.plain import PlainQuantity
     from scipy.sparse import csr_matrix
+    from typing_extensions import Self
 
     from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
     from pairinteraction.backend._wrapped.basis.BasisPair import BasisPair
     from pairinteraction.units import Array
-
-    SelfSystem_t = TypeVar("SelfSystem_t", bound="System")
 
 Basis_t = TypeVar("Basis_t", bound=Union["BasisAtom", "BasisPair"])
 UnionCPPSystem = Any
@@ -36,7 +35,7 @@ class SystemBase(ABC, Generic[Basis_t]):
         self.update_basis()
 
     @classmethod
-    def _from_cpp_object(cls: "type[SelfSystem_t]", cpp_obj: UnionCPPSystem) -> "SelfSystem_t":
+    def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPSystem) -> "Self":
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         obj.update_basis()

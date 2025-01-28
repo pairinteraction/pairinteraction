@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union, get_args, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Union, get_args, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -7,8 +7,7 @@ from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
-
-    SelfKet_t = TypeVar("SelfKet_t", bound="Ket")
+    from typing_extensions import Self
 
 UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
 UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
@@ -32,7 +31,7 @@ class KetBase(ABC):
     _cpp_creator: ClassVar[UnionTypeCPPKetCreator]
 
     @classmethod
-    def _from_cpp_object(cls: "type[SelfKet_t]", cpp_obj: UnionCPPKet) -> "SelfKet_t":
+    def _from_cpp_object(cls: "type[Self]", cpp_obj: UnionCPPKet) -> "Self":
         obj = cls.__new__(cls)
         obj._cpp = cpp_obj
         return obj
