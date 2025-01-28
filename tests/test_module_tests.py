@@ -1,8 +1,10 @@
 """Execute the module tests."""
 
+import pairinteraction.backend.float as pi
 from pairinteraction import run_module_tests
 
 
-def test_module_tests(download_missing: bool, database_dir: str) -> None:
+def test_module_tests() -> None:
     """Execute the module tests."""
-    assert run_module_tests(download_missing, database_dir) == 0
+    database = pi.Database.get_global_instance()
+    assert run_module_tests(database.download_missing, database.database_dir) == 0

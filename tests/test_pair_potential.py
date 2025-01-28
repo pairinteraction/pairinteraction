@@ -12,18 +12,16 @@ reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair
 reference_overlaps_file = Path(__file__).parent.parent / "data/reference_pair_potential/overlaps.txt"
 
 
-def test_pair_potential(generate_reference: bool, database_dir: str, download_missing: bool) -> None:
+def test_pair_potential(generate_reference: bool) -> None:
     """Test calculating a pair potential."""
-    database = pi.Database(download_missing, True, database_dir)
-
     # Create a single-atom system
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     print(f"Number of single-atom basis states: {basis.number_of_states}")
 
     system = pi.SystemAtom(basis)
 
     # Create two-atom systems for different interatomic distances
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
+    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
     delta_energy = 3  # GHz
     min_energy = 2 * ket.get_energy(unit="GHz") - delta_energy
     max_energy = 2 * ket.get_energy(unit="GHz") + delta_energy

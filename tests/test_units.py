@@ -6,11 +6,11 @@ import pairinteraction.backend.float as pi
 from pairinteraction.units import BaseUnits, QuantityScalar, ureg
 
 
-def test_magnetic(database_dir: str, download_missing: bool) -> None:
+def test_magnetic() -> None:
     """Test magnetic units."""
-    database = pi.Database(download_missing, True, database_dir)
+    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
 
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
+    database = pi.Database.get_global_instance()
     mu = database.get_matrix_element(ket, ket, "MAGNETIC_DIPOLE", q=0)
     mu = mu.to("bohr_magneton")
     lande_factor = 2.002319304363
@@ -26,14 +26,13 @@ def test_magnetic(database_dir: str, download_missing: bool) -> None:
     assert zeeman_energy.dimensionality == BaseUnits["ENERGY"].dimensionality
 
 
-def test_electric_dipole(database_dir: str, download_missing: bool) -> None:
+def test_electric_dipole() -> None:
     """Test electric dipole units."""
-    database = pi.Database(download_missing, True, database_dir)
+    ket_a = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+    ket_b = pi.KetAtom("Rb", n=61, l=0, m=0.5)
+    ket_c = pi.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
 
-    ket_a = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
-    ket_b = pi.KetAtom("Rb", n=61, l=0, m=0.5, database=database)
-    ket_c = pi.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5, database=database)
-
+    database = pi.Database.get_global_instance()
     dipole_a_c = database.get_matrix_element(ket_a, ket_c, "ELECTRIC_DIPOLE", q=0)
     dipole_b_c = database.get_matrix_element(ket_b, ket_c, "ELECTRIC_DIPOLE", q=0)
 
@@ -45,7 +44,7 @@ def test_electric_dipole(database_dir: str, download_missing: bool) -> None:
     C3 = C3.to("GHz micrometer^3")
 
     distance = ureg.Quantity(10, "micrometer")
-    basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c], database=database)
+    basis = pi.BasisAtom("Rb", additional_kets=[ket_a, ket_b, ket_c])
     system = pi.SystemAtom(basis)
     basis_pair = pi.BasisPair([system, system])
     system_pair = pi.SystemPair(basis_pair)

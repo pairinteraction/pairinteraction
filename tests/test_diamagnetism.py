@@ -5,13 +5,11 @@ import numpy as np
 import pairinteraction.backend.double as pi
 
 
-def test_diamagnetism(database_dir: str, download_missing: bool) -> None:
+def test_diamagnetism() -> None:
     """Test calculating diamagnetic interactions."""
-    database = pi.Database(download_missing, True, database_dir)
-
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
+    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     print(f"Number of basis states: {basis.number_of_states}")
 
     # Create system for a magnetic field of 1000 G

@@ -5,18 +5,16 @@ import numpy as np
 import pairinteraction.backend.double as pi
 
 
-def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
+def test_calculate_energy() -> None:
     """Test calculating energies of ket states."""
-    database = pi.Database(download_missing, True, database_dir)
-
     # Energy of unperturbed state
-    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5, database=database)
+    ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     energy_unperturbed = pi.calculate_energy(ket, unit="GHz")
 
     assert np.isclose(energy_unperturbed, ket.get_energy("GHz"))
 
     # Energy of Stark shifted state
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5), database=database)
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), m=(0.5, 0.5))
 
     system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
 
@@ -28,14 +26,13 @@ def test_calculate_energy(database_dir: str, download_missing: bool) -> None:
     assert shift < 0
 
 
-def test_calculate_electric_dipole_matrix_element(database_dir: str, download_missing: bool) -> None:
+def test_calculate_electric_dipole_matrix_element() -> None:
     """Test calculating dipole matrix elements."""
-    database = pi.Database(download_missing, True, database_dir)
-
     # The dipole element between dipole-coupled states should be non-zero
-    ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5, database=database)
-    ket_final = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5, database=database)
+    ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
+    ket_final = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
+    database = pi.Database.get_global_instance()
     dipole = database.get_matrix_element(ket_initial, ket_final, "ELECTRIC_DIPOLE", 0, unit="e a0")
     assert dipole > 0
 
@@ -44,7 +41,7 @@ def test_calculate_electric_dipole_matrix_element(database_dir: str, download_mi
     assert np.isclose(dipole, 0)
 
     # Stark effect induces a permanent dipole moment
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
 
     system = (
         pi.SystemAtom(basis)
