@@ -42,6 +42,12 @@ class SystemBase(ABC, Generic[Basis_t]):
         obj.update_basis()
         return obj
 
+    def __str__(self) -> str:
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({repr(self.basis)}, is_diagonal={self.is_diagonal})"
+
     def update_basis(self) -> None:
         self._basis = self._TypeBasis._from_cpp_object(self._cpp.get_basis())  # type: ignore
 
