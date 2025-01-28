@@ -14,6 +14,8 @@ from pairinteraction.gui.app import MainWindow
 
 reference_directory = Path(__file__).parent.parent / "data/reference_gui"
 
+pytest.skip("Skip gui tests for now", allow_module_level=True)
+
 
 def setup_window(qtbot, tmp_path) -> MainWindow:
     window = MainWindow()

@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 import pytest
 from pint import UnitRegistry
 
+from pairinteraction.backend._wrapped import Database
+
 if TYPE_CHECKING:
     from _pytest.config import Config
     from _pytest.config.argparsing import Parser
@@ -26,16 +28,13 @@ def generate_reference(pytestconfig: "Config") -> bool:
 
 
 @pytest.fixture(scope="session")
-def database_dir(pytestconfig: "Config") -> str:
-    return pytestconfig.getoption("--database-dir")
-
-
-@pytest.fixture(scope="session")
-def download_missing(pytestconfig: "Config") -> bool:
-    return pytestconfig.getoption("--download-missing")
-
-
-@pytest.fixture(scope="session")
 def ureg() -> UnitRegistry:
     """Create and return a UnitRegistry with atomic units."""
     return UnitRegistry(system="atomic")
+
+
+def pytest_sessionstart(session: pytest.Session) -> None:
+    """Initialize everything before the tests are run."""
+    download_missing = session.config.getoption("--download-missing")
+    database_dir = session.config.getoption("--database-dir")
+    Database.initialize_global_instance(download_missing, True, database_dir)

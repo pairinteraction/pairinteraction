@@ -12,13 +12,11 @@ reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_star
 reference_overlaps_file = Path(__file__).parent.parent / "data/reference_stark_map/overlaps.txt"
 
 
-def test_starkmap(generate_reference: bool, database_dir: str, download_missing: bool) -> None:
+def test_starkmap(generate_reference: bool) -> None:
     """Test calculating a Stark map."""
-    database = pi.Database(download_missing, True, database_dir)
-
     # Create a basis
-    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5, database=database)
-    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2), database=database)
+    ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+    basis = pi.BasisAtom("Rb", n=(58, 62), l=(0, 2))
     print(f"Number of basis states: {basis.number_of_states}")
 
     electric_fields = np.linspace(0, 10, 11)

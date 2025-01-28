@@ -6,18 +6,13 @@ import pytest
 import pairinteraction.backend.float as pi
 
 
-@pytest.fixture(scope="module")
-def database(database_dir: str, download_missing: bool) -> pi.Database:
-    return pi.Database(download_missing, True, database_dir)
-
-
 @pytest.mark.parametrize("species", ["Yb171_mqdt", "Rb"])
-def test_pair_potential(database: pi.Database, species: str) -> None:
+def test_pair_potential(species: str) -> None:
     """Test multipole interaction."""
-    ket = pi.KetAtom(species, nu=55.7, l=0, m=0.5, database=database)
+    ket = pi.KetAtom(species, nu=55.7, l=0, m=0.5)
 
     # Create a single-atom system
-    basis = pi.BasisAtom(ket.species, nu=(ket.nu - 2, ket.nu + 2), l=(0, 3), database=database)
+    basis = pi.BasisAtom(ket.species, nu=(ket.nu - 2, ket.nu + 2), l=(0, 3))
     print(f"Number of single-atom basis states: {basis.number_of_states}")
 
     system = pi.SystemAtom(basis)

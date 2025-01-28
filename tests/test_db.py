@@ -52,14 +52,10 @@ def connection() -> duckdb.duckdb.DuckDBPyConnection:
         yield connection
 
 
-@pytest.fixture(scope="module")
-def database(database_dir: str, download_missing: bool) -> pi.Database:
-    return pi.Database(download_missing, True, database_dir)
-
-
 @pytest.mark.parametrize("swap_states", [False, True])
-def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConnection, swap_states: bool) -> None:
+def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: bool) -> None:
     """Test receiving matrix elements from the databases."""
+    database = pi.Database.get_global_instance()
     bfield_in_gauss = 1500
 
     # Define initial and final quantum states
@@ -78,11 +74,9 @@ def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConne
         s_initial, s_final = s_final, s_initial
 
     # Get the Zeeman interaction operator from the database using pairinteraction
-    ket_initial = pi.KetAtom(
-        "Yb174_mqdt", n=n_initial, l=l_initial, f=f_initial, m=m_initial, s=s_initial, database=database
-    )
-    ket_final = pi.KetAtom("Yb174_mqdt", n=n_final, l=l_final, f=f_final, m=m_final, s=s_final, database=database)
-    basis = pi.BasisAtom("Yb174_mqdt", additional_kets=[ket_initial, ket_final], database=database)
+    ket_initial = pi.KetAtom("Yb174_mqdt", n=n_initial, l=l_initial, f=f_initial, m=m_initial, s=s_initial)
+    ket_final = pi.KetAtom("Yb174_mqdt", n=n_final, l=l_final, f=f_final, m=m_final, s=s_final)
+    basis = pi.BasisAtom("Yb174_mqdt", additional_kets=[ket_initial, ket_final])
     operator = (
         pi.SystemAtom(basis)
         .set_magnetic_field([0, 0, bfield_in_gauss], unit="G")
@@ -163,7 +157,7 @@ def test_database(database: pi.Database, connection: duckdb.duckdb.DuckDBPyConne
 
 
 @pytest.mark.parametrize("species", SUPPORTED_SPECIES)
-def test_obtaining_kets(database: pi.Database, species: str) -> None:
+def test_obtaining_kets(species: str) -> None:
     """Test obtaining kets from the database."""
     is_mqdt = species.endswith("_mqdt")
     is_single_valence_electron = species in ["Rb"]
@@ -175,7 +169,7 @@ def test_obtaining_kets(database: pi.Database, species: str) -> None:
     quantum_number_m = quantum_number_i + quantum_number_s
 
     # Obtain a ket from the database
-    ket = pi.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s, database=database)
+    ket = pi.KetAtom(species, n=60, l=0, f=quantum_number_f, m=quantum_number_m, s=quantum_number_s)
 
     print(f"|{ket}>")
 

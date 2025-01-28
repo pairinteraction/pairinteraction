@@ -5,10 +5,8 @@ import numpy as np
 import pairinteraction.backend.double as pi
 
 
-def test_energy_range(database_dir: str, download_missing: bool) -> None:
+def test_energy_range() -> None:
     """Test restricting the energy range in the diagonalization."""
-    pi.initialize_global_database(download_missing, True, database_dir)
-
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
     pair_energy = 2 * ket.get_energy(unit="GHz")
     distances = np.linspace(1, 4, 10)
