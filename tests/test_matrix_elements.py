@@ -32,7 +32,7 @@ def test_calculate_electric_dipole_matrix_element() -> None:
     ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket_final = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
-    database = pi.Database.get_global_instance()
+    database = pi.Database.get_global_database()
     dipole = database.get_matrix_element(ket_initial, ket_final, "ELECTRIC_DIPOLE", 0, unit="e a0")
     assert dipole > 0
 

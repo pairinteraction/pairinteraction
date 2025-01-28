@@ -55,7 +55,7 @@ def connection() -> duckdb.duckdb.DuckDBPyConnection:
 @pytest.mark.parametrize("swap_states", [False, True])
 def test_database(connection: duckdb.duckdb.DuckDBPyConnection, swap_states: bool) -> None:
     """Test receiving matrix elements from the databases."""
-    database = pi.Database.get_global_instance()
+    database = pi.Database.get_global_database()
     bfield_in_gauss = 1500
 
     # Define initial and final quantum states

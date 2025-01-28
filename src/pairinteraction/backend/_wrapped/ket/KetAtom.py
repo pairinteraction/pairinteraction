@@ -123,7 +123,9 @@ class KetAtomBase(KetBase):
         if j_ryd is not None:
             creator.set_quantum_number_j_ryd(j_ryd)
         if database is None:
-            database = Database.get_global_instance()
+            if Database.get_global_database() is None:
+                Database.initialize_global_database()
+            database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
 
     @property

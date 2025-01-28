@@ -12,7 +12,6 @@ from pairinteraction.backend._wrapped import (
     SystemPairFloat as SystemPair,
     calculate_energy,
     diagonalize,
-    initialize_global_database,
 )
 
 __all__ = [
@@ -29,5 +28,4 @@ __all__ = [
     "SystemPair",
     "calculate_energy",
     "diagonalize",
-    "initialize_global_database",
 ]

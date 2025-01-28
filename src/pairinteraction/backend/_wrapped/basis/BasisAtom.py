@@ -97,7 +97,9 @@ class BasisAtomBase(BasisBase[Ket_t]):
             max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("ENERGY")
             creator.restrict_energy(min_energy_au, max_energy_au)
         if database is None:
-            database = Database.get_global_instance()
+            if Database.get_global_database() is None:
+                Database.initialize_global_database()
+            database = Database.get_global_database()
         if additional_kets is not None:
             for ket in additional_kets:
                 creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]

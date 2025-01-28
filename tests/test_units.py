@@ -10,7 +10,7 @@ def test_magnetic() -> None:
     """Test magnetic units."""
     ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
 
-    database = pi.Database.get_global_instance()
+    database = pi.Database.get_global_database()
     mu = database.get_matrix_element(ket, ket, "MAGNETIC_DIPOLE", q=0)
     mu = mu.to("bohr_magneton")
     lande_factor = 2.002319304363
@@ -32,7 +32,7 @@ def test_electric_dipole() -> None:
     ket_b = pi.KetAtom("Rb", n=61, l=0, m=0.5)
     ket_c = pi.KetAtom("Rb", n=60, l=1, j=3 / 2, m=0.5)
 
-    database = pi.Database.get_global_instance()
+    database = pi.Database.get_global_database()
     dipole_a_c = database.get_matrix_element(ket_a, ket_c, "ELECTRIC_DIPOLE", q=0)
     dipole_b_c = database.get_matrix_element(ket_b, ket_c, "ELECTRIC_DIPOLE", q=0)
 
