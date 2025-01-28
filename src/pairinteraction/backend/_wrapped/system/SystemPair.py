@@ -36,6 +36,37 @@ class SystemPairBase(SystemBase[Basis_t]):
     _cpp: UnionCPPSystemPair
     _cpp_type: ClassVar[UnionTypeCPPSystemPair]
 
+    def __init__(self, basis: Basis_t) -> None:
+        """Create a system object for a pair of atoms.
+
+        Use the given BasisPair object to create the system object.
+        You can set the distance (vector) between the atoms afterwards via the corresponding methods.
+
+        Examples:
+            >>> import pairinteraction.backend.double as pi
+            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
+            >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
+            >>> pair_energy = 2 * pi.calculate_energy(ket, system, unit="GHz")
+            >>> pair_basis = pi.BasisPair(
+            ...     [system, system],
+            ...     energy=(pair_energy - 3, pair_energy + 3),
+            ...     energy_unit="GHz",
+            ... )
+            >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_order(3)
+            >>> print(pair_system)
+            SystemPairDouble(BasisPairDouble object with 140 states and 140 kets, is_diagonal=False)
+            >>> pair_system = pair_system.diagonalize()
+            >>> eigenvalues = pair_system.get_eigenvalues(unit="GHz")
+            >>> print(f"{eigenvalues[0] - pair_energy:.5f}")
+            -2.19974
+
+        Args:
+            basis: The :class:`pairinteraction.backend.double.BasisPair` object that describes the basis of the system.
+
+        """
+        super().__init__(basis)
+
     def set_order(self: "Self", order: int) -> "Self":
         self._cpp.set_order(order)
         return self

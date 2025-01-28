@@ -14,13 +14,14 @@ UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)C
 
 
 class KetBase(ABC):
-    """Base class for all ket objects.
+    """Base class for all Ket objects.
 
     The ket objects are meant to represent mathematically the canonical basis states, with respect to which
     the coefficient matrix of the basis objects are defined.
-    For single atoms we simply choose the atomic states defined by their quantum numbers.
-    For pair systems, we choose the product states of the single atom eigenstates, thus for different pair systems
-    the KetPair objects are not necessarily orthogonal anymore.
+    For single atoms we simply choose the atomic states defined by their quantum numbers,
+    therefore all KetAtom objects are orthogonal to each other.
+    For pair systems, we choose the product states of the single atom eigenstates, which depends on the system
+    and the applied fields. Thus for different pair systems the KetPair objects are not necessarily orthogonal anymore.
 
     All ket objects share a few common attributes and methods, that are defined in this base class.
     E.g. each ket has a total momentum quantum number f, a magnetic quantum number m, a parity, an energy,

@@ -37,7 +37,8 @@ class KetAtomBase(KetBase):
     ) -> None:
         """Create a single atomic canonical basis state, which is defined by its species and quantum numbers.
 
-        Each KetAtom object uniquely represents a single atomic basis state.
+        Each KetAtom object uniquely represents a single atomic basis state
+        (and therefore all KetAtom objects are orthogonal).
         When initializing a KetAtom you have to provide the species of the atom and a combination of quantum numbers,
         which uniquely define a single atomic basis state (this always includes providing a magnetic quantum number m).
 
@@ -63,17 +64,35 @@ class KetAtomBase(KetBase):
             whose expectation value is closest to the provided value.
 
         Examples:
-            >>> import pairinteraction.backend.float as pi
+            >>> import pairinteraction.backend.double as pi
             >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
             ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
-            >>> ket_sqdt.label
-            'Rb:60,S_1/2,1/2'
+            >>> print(ket_sqdt)
+            Rb:60,S_1/2,1/2
             >>> ket_mqdt = pi.KetAtom("Yb174_mqdt", nu=60, l=1, f=1, m=1)
             >>> (ket_mqdt.species, round(ket_mqdt.nu, 3), ket_mqdt.f, ket_mqdt.m)
             ('Yb174_mqdt', 60.049, 1.0, 1.0)
-            >>> ket_mqdt.label
-            'Yb174:S=0.4,nu=60.0,L=1.0,J=1,1'
+            >>> print(ket_mqdt)
+            Yb174:S=0.4,nu=60.0,L=1.0,J=1,1
+
+        Args:
+            species: See attribute.
+            n: See attribute. Default None, i.e. load from the database.
+            nu: See attribute. Default None, i.e. load from the database.
+            nui: See attribute. Default None, i.e. load from the database.
+            l: See attribute. Default None, i.e. load from the database.
+            s: See attribute. Default None, i.e. load from the database.
+            j: See attribute. Default None, i.e. load from the database.
+            l_ryd: See attribute. Default None, i.e. load from the database.
+            j_ryd: See attribute. Default None, i.e. load from the database.
+            f: See attribute. Default None, i.e. load from the database.
+            m: See attribute. This should always be provided.
+            energy: See attribute. Default None, i.e. load from the database.
+            energy_unit: In which unit the energy is given, e.g. "GHz".
+                Default "pint", i.e. energy is provided as pint object.
+            parity: See attribute. Default None, i.e. load from the database.
+            database: Which database to use. Default None, i.e. use the global database instance.
 
         """
         creator = self._cpp_creator()

@@ -52,6 +52,43 @@ class BasisPairBase(BasisBase[Ket_t]):
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
         energy_unit: str = "pint",
     ) -> None:
+        """Create a basis for a pair of atoms.
+
+        Add all product states of the eigenstates of two given SystemAtom objects to the basis,
+        which pair energy is within the given energy range.
+        You can also specify which total magnetic quantum number m the pair should have (if it is conserved)
+        and the product of the parities of the two atoms.
+        Due to the possible restrictions of the basis states, the BasisPair coefficients matrix will in general
+        not be square but (n x d),
+        where n is the number of all involved kets (typically basis1.number_of_kets * basis2.number_of_kets)
+        and d is the number of basis states (after applying the restrictions).
+
+        Examples:
+            >>> import pairinteraction.backend.double as pi
+            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
+            >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
+            >>> pair_energy = 2 * pi.calculate_energy(ket, system, unit="GHz")
+            >>> pair_basis = pi.BasisPair(
+            ...     [system, system],
+            ...     energy=(pair_energy - 3, pair_energy + 3),
+            ...     energy_unit="GHz",
+            ... )
+            >>> print(pair_basis)
+            BasisPairDouble object with 140 states and 140 kets
+
+        Args:
+            systems: tuple of two SystemAtom objects, which define the two atoms, from which the BasisPair is build.
+                Both systems have to be diagonalized before creating the BasisPair.
+            m: tuple of (min, max) values for the total magnetic quantum number m of the pair state.
+                Default None, i.e. no restriction.
+            product_of_parities: The product parity of the states to consider.
+                Default None, i.e. add all available states.
+            energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.
+            energy_unit: In which unit the energy values are given, e.g. "GHz".
+                Default "pint", i.e. energy is provided as pint object.
+
+        """
         creator = self._cpp_creator()
         for system in systems:
             creator.add(system._cpp)  # type: ignore [reportPrivateUsage, arg-type]
