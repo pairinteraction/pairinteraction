@@ -30,6 +30,12 @@ class BasisBase(ABC, Generic[Ket_t]):
         obj._cpp = cpp_obj
         return obj
 
+    def __str__(self) -> str:
+        return self.__repr__()
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__} object with {self.number_of_states} states and {self.number_of_kets} kets"
+
     @cached_property
     def kets(self) -> list[Ket_t]:
         """Return a list containing the kets of the basis."""

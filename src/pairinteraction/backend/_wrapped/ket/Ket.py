@@ -37,10 +37,10 @@ class KetBase(ABC):
         obj._cpp = cpp_obj
         return obj
 
-    def __repr__(self) -> str:
+    def __str__(self) -> str:
         return self.label
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return self.label
 
     @property
