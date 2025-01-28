@@ -42,6 +42,38 @@ class BasisAtomBase(BasisBase[Ket_t]):
         database: Optional[Database] = None,
         additional_kets: Optional[list[Ket_t]] = None,
     ) -> None:
+        """Create a basis for a single atom.
+
+        Add all KetAtom objects that match the given quantum numbers to the basis.
+        The initial coefficients matrix is a unit matrix, i.e. the first basis state is the first ket, etc.
+        The BasisAtom coefficients matrix will always be square,
+        i.e. the number of kets is equal to the number of states.
+
+        Examples:
+            >>> import pairinteraction.backend.double as pi
+            >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
+            >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
+            >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
+            >>> print(basis)
+            BasisAtomDouble object with 140 states and 140 kets
+
+        Args:
+            species: The species of the atom.
+            n: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            nu: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            l: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            s: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            j: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            f: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            m: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
+            energy: tuple of (min, max) value for the energy. Default None, i.e. add all available states.
+            energy_unit: In which unit the energy values are given, e.g. "GHz".
+                Default "pint", i.e. energy is provided as pint object.
+            parity: The parity of the states to consider. Default None, i.e. add all available states.
+            database: Which database to use. Default None, i.e. use the global database instance.
+            additional_kets: List of additional kets to add to the basis. Default None.
+
+        """
         creator = self._cpp_creator()
         creator.set_species(species)
         if f is not None:

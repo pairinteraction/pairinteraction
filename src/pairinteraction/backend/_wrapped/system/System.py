@@ -25,6 +25,20 @@ UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
 
 
 class SystemBase(ABC, Generic[Basis_t]):
+    """Base class for all System objects.
+
+    The system objects are meant to represent the full physical system, including the basis
+    as well as possible fields and interactions which form the Hamiltonian.
+
+    Typically, the system objects are simply constructed from a basis object.
+    The fields and interactions can then be set afterwards.
+
+    All system objects share a few common attributes and methods, that are defined in this base class, e.g.:
+    - the basis of the system,
+    - the matrix stored as scipy sparse matrix, which represents the Hamiltonian,
+    - ...
+    """
+
     _cpp: UnionCPPSystem
     _cpp_type: ClassVar[UnionTypeCPPSystem]
     _basis: Basis_t

@@ -80,7 +80,7 @@ autodoc_type_aliases = {}  # make type aliases nicer
 
 
 def setup(app: Sphinx) -> None:
-    # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.float
+    # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.double
     # instead of just saying 'alias of ...'
     all_pi_types = [
         pairinteraction.backend.float,
