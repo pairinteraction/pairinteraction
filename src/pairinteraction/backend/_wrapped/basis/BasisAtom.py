@@ -26,7 +26,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         species: str,
         n: Optional[tuple[int, int]] = None,

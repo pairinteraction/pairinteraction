@@ -198,14 +198,18 @@ sources = ["src"]
 line-length = 120
 target-version = "py39"
 extend-include = ["*.ipynb"]
-lint.select = ["F", "E", "B", "C", "W", "I", "UP", "TID25", "RUF", "ANN", "D"]
-lint.extend-ignore = ["E741", "C901", "B905", "RUF012", "ANN003", "ANN401", "D1"]  # TODO: remove "D1" once more docstrings are added
-lint.flake8-tidy-imports.ban-relative-imports = "all"
+
+[tool.ruff.lint]
+select = ["F", "E", "B", "C", "W", "I", "UP", "TID25", "RUF", "ANN", "D", "N", "S"]
+extend-ignore = ["E741", "RUF012", "ANN003", "ANN401", "D1", "N806", "N803", "S101", "S608"]  # TODO: remove "D1" once more docstrings are added
+flake8-tidy-imports.ban-relative-imports = "all"
+mccabe.max-complexity = 10
 
 [tool.ruff.lint.per-file-ignores]
 "src/pairinteraction/gui/app.py" = ["E402"]
-"src/pairinteraction/gui/*.py" = ["ANN"]
+"src/pairinteraction/gui/*.py" = ["ANN", "N802", "S301", "C901"]
 "tests/*.py" = ["ANN"]
+"src/pairinteraction/backend/_wrapped/*.py" = ["N999"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true

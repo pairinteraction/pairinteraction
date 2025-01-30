@@ -3120,7 +3120,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 omp_before = os.environ.pop("OMP_NUM_THREADS", 1)
                 omp_threads = {} if self.numprocessors == 0 else {"OMP_NUM_THREADS": str(self.numprocessors)}
                 other_threads = {"OPENBLAS_NUM_THREADS": "1", "MKL_NUM_THREADS": "1"}
-                self.proc = subprocess.Popen(
+                self.proc = subprocess.Popen(  # noqa: S603
                     [self.path_cpp, "-c", self.path_conf, "-o", self.path_cache, "-t", arg_type],
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
