@@ -17,14 +17,12 @@ class PipyThread(QThread):
     SEQUENTIAL = "SEQUENTIAL"
     STOP = "STOP"
 
-    def __init__(self, all_queues, context="default", pass_atom="direct&delete", parent=None) -> None:
+    def __init__(self, all_queues, context="default", parent=None) -> None:
         super().__init__(parent)
         self.all_queues = all_queues
 
         assert context in ["default", "fork", "spawn", "forkserver"]
-        assert pass_atom in ["direct", "path", "direct&delete", "path&delete", "config"]
         self.context = context
-        self.pass_atom = pass_atom
 
         self.terminating = False
         self.params = None

@@ -17,7 +17,7 @@ class KetAtomBase(KetBase):
     _cpp: UnionCPPKetAtom  # type: ignore [reportIncompatibleVariableOverride]
     _cpp_creator: ClassVar[UnionTypeCPPKetAtomCreator]
 
-    def __init__(
+    def __init__(  # noqa: C901
         self,
         species: str,
         n: Optional[int] = None,
