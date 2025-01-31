@@ -49,6 +49,7 @@ add_library(
   ./include/pairinteraction/utils/Range.hpp
   ./include/pairinteraction/utils/spherical.hpp
   ./include/pairinteraction/utils/streamed.hpp
+  ./include/pairinteraction/utils/tensor.hpp
   ./include/pairinteraction/utils/traits.hpp
   ./include/pairinteraction/utils/wigner.hpp
   ./include/pairinteraction/pairinteraction.hpp
@@ -96,6 +97,7 @@ add_library(
   ./src/utils/euler.test.cpp
   ./src/utils/spherical.cpp
   ./src/utils/spherical.test.cpp
+  ./src/utils/tensor.cpp
   ./src/utils/wigner.test.cpp)
 
 target_link_libraries(
