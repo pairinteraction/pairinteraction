@@ -2,7 +2,11 @@ from abc import ABC
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union, overload
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer, get_cpp_range
+from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
+from pairinteraction.backend._wrapped.get_functions import (
+    get_cpp_diagonalizer,
+    get_cpp_range,
+)
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:

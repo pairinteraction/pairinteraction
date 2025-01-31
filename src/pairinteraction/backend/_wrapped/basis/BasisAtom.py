@@ -3,8 +3,9 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.database.Database import Database
+from pairinteraction.backend._wrapped.get_functions import get_cpp_parity
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
-from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
+from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
