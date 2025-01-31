@@ -1,15 +1,22 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+
+import numpy as np
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.get_functions import get_cpp_parity
+from pairinteraction.backend._wrapped.get_functions import get_cpp_operator_type, get_cpp_parity
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
+from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
+    from scipy.sparse import csr_matrix
+    from typing_extensions import Self
+
+    from pairinteraction.units import Array
 
 KetAtomType = TypeVar("KetAtomType", bound=KetAtomBase)
 UnionCPPBasisAtom = Union[
@@ -105,6 +112,34 @@ class BasisAtomBase(BasisBase[KetAtomType]):
             for ket in additional_kets:
                 creator.append_ket(ket._cpp)  # type: ignore [reportPrivateUsage]
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
+
+    @overload
+    def get_matrix_elements(
+        self, ket_or_basis: KetAtomType, operator: OperatorType, q: int
+    ) -> "PlainQuantity[Array]": ...
+
+    @overload
+    def get_matrix_elements(self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, unit: str) -> "Array": ...
+
+    @overload
+    def get_matrix_elements(
+        self, ket_or_basis: "Self", operator: OperatorType, q: int
+    ) -> "PlainQuantity[csr_matrix]": ...
+
+    @overload
+    def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
+
+    def get_matrix_elements(
+        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, unit: str = "pint"
+    ):
+        cpp_operator_type = get_cpp_operator_type(operator)
+        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_operator_type, q)
+        matrix_elements: QuantityAbstract
+        if isinstance(matrix_elements_au, np.ndarray):
+            matrix_elements = QuantityArray.from_base(matrix_elements_au, operator)
+        else:  # csr_matrix
+            matrix_elements = QuantitySparse.from_base(matrix_elements_au, operator)
+        return matrix_elements.to_unit(unit)
 
 
 class BasisAtomFloat(BasisAtomBase[KetAtomFloat]):
