@@ -65,24 +65,6 @@ class BasisBase(ABC, Generic[KetType]):
     def coefficients(self) -> "scipy.sparse.csr_matrix":
         return self._cpp.get_coefficients()
 
-    @overload
-    def get_amplitudes(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
-
-    @overload
-    def get_amplitudes(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
-
-    def get_amplitudes(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
-        return self._cpp.get_amplitudes(ket_or_basis._cpp)
-
-    @overload
-    def get_overlaps(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
-
-    @overload
-    def get_overlaps(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
-
-    def get_overlaps(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
-        return self._cpp.get_overlaps(ket_or_basis._cpp)
-
     def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
         if isinstance(ket_or_index, (int, np.integer)):
             cpp_basis = self._cpp.get_corresponding_state(ket_or_index)
@@ -106,6 +88,24 @@ class BasisBase(ABC, Generic[KetType]):
         if isinstance(state_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_ket_index(state_or_index)
         return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [reportPrivateUsage]
+
+    @overload
+    def get_amplitudes(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
+
+    @overload
+    def get_amplitudes(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
+
+    def get_amplitudes(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
+        return self._cpp.get_amplitudes(ket_or_basis._cpp)
+
+    @overload
+    def get_overlaps(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
+
+    @overload
+    def get_overlaps(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
+
+    def get_overlaps(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
+        return self._cpp.get_overlaps(ket_or_basis._cpp)
 
 
 Basis = BasisBase[Any]
