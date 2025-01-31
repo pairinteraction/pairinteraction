@@ -2,10 +2,13 @@
 
 #include "pairinteraction/basis/BasisAtom.hpp"
 #include "pairinteraction/database/Database.hpp"
+#include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
+#include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/enums/Parity.hpp"
 #include "pairinteraction/enums/TransformationType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 
 #include <doctest/doctest.h>
 
@@ -102,4 +105,83 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     auto transformation = transformed->get_transformation();
     DOCTEST_CHECK(transformation.transformation_type.back() == TransformationType::ARBITRARY);
 }
+
+DOCTEST_TEST_CASE("calculation of matrix elements") {
+    auto &database = Database::get_global_instance();
+
+    auto ket_s = KetAtomCreator<double>()
+                     .set_species("Rb")
+                     .set_quantum_number_n(60)
+                     .set_quantum_number_l(0)
+                     .set_quantum_number_j(0.5)
+                     .set_quantum_number_m(0.5)
+                     .create(database);
+
+    auto ket_p = KetAtomCreator<double>()
+                     .set_species("Rb")
+                     .set_quantum_number_n(60)
+                     .set_quantum_number_l(1)
+                     .set_quantum_number_j(0.5)
+                     .set_quantum_number_m(0.5)
+                     .create(database);
+
+    auto basis = BasisAtomCreator<double>()
+                     .set_species("Rb")
+                     .restrict_quantum_number_n(59, 61)
+                     .restrict_quantum_number_l(0, 1)
+                     .restrict_quantum_number_m(0.5, 0.5)
+                     .create(database);
+
+    SystemAtom<double> system(basis);
+
+    DOCTEST_SUBCASE("calculate energy") {
+        auto m1 = basis->get_canonical_state_from_ket(ket_s)->get_matrix_elements(
+            ket_s, OperatorType::ENERGY, 0);
+        DOCTEST_CHECK(m1.size() == 1);
+        double energy1 = m1[0];
+
+        auto m2 = basis->get_matrix_elements(ket_s, OperatorType::ENERGY, 0);
+        DOCTEST_CHECK(m2.size() == basis->get_number_of_states());
+        double energy2 = m2[basis->get_corresponding_state_index(ket_s)];
+
+        double reference = ket_s->get_energy();
+        DOCTEST_CHECK(std::abs(energy1 - reference) < 1e-11);
+        DOCTEST_CHECK(std::abs(energy2 - reference) < 1e-11);
+    }
+
+    DOCTEST_SUBCASE("calculate electric dipole matrix element") {
+        auto m = basis->get_matrix_elements(ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
+        DOCTEST_CHECK(m.size() == basis->get_number_of_states());
+        double dipole = m[basis->get_corresponding_state_index(ket_s)];
+
+        DOCTEST_CHECK(std::abs(dipole - 1247.5955234484584) < 1e-6);
+    }
+
+    DOCTEST_SUBCASE("calculate electric dipole matrix element with an induced dipole") {
+        {
+            auto state = basis->get_corresponding_state(ket_s);
+
+            auto m = state->get_matrix_elements(state, OperatorType::ELECTRIC_DIPOLE, 0);
+            DOCTEST_CHECK(m.rows() == 1);
+            DOCTEST_CHECK(m.cols() == 1);
+            double dipole = m.coeff(0, 0);
+
+            DOCTEST_CHECK(std::abs(dipole - 0) < 1e-6);
+        }
+
+        {
+            system.set_electric_field({0, 0, 1.9446903811524456e-10});
+            system.diagonalize(DiagonalizerEigen<double>());
+            auto state = system.get_eigenbasis()->get_corresponding_state(ket_s);
+
+            auto m = state->get_matrix_elements(state, OperatorType::ELECTRIC_DIPOLE, 0);
+            DOCTEST_CHECK(m.rows() == 1);
+            DOCTEST_CHECK(m.cols() == 1);
+            double dipole = m.coeff(0, 0);
+
+            DOCTEST_CHECK(std::abs(dipole - 135.0169870551207) < 1e-6);
+        }
+    }
+}
+
 } // namespace pairinteraction

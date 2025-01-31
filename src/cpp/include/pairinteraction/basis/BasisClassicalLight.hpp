@@ -37,9 +37,16 @@ class BasisClassicalLight : public Basis<BasisClassicalLight<Scalar>> {
 
 public:
     using Type = BasisClassicalLight<Scalar>;
+    using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
 
     BasisClassicalLight(Private /*unused*/, ketvec_t &&kets);
+
+    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
+                                               OperatorType /*type*/, int /*q*/) const override;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_matrix_elements(std::shared_ptr<const Type> /*other*/, OperatorType /*type*/,
+                        int /*q*/) const override;
 };
 
 extern template class BasisClassicalLight<float>;
