@@ -46,7 +46,7 @@ class Database:
         self.database_dir = database_dir
 
     @classmethod
-    def get_global_database(cls) -> Optional["Database"]:
+    def get_global_database(cls) -> "Database":
         """Return the global database instance if it was initialized, otherwise None."""
         return cls._global_database
 
