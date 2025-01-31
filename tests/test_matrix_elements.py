@@ -32,12 +32,11 @@ def test_calculate_electric_dipole_matrix_element() -> None:
     ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
     ket_final = pi.KetAtom("Rb", n=60, l=1, j=0.5, m=0.5)
 
-    database = pi.Database.get_global_database()
-    dipole = database.get_matrix_element(ket_initial, ket_final, "ELECTRIC_DIPOLE", 0, unit="e a0")
+    dipole = ket_initial.get_matrix_element(ket_final, "ELECTRIC_DIPOLE", 0, unit="e a0")
     assert dipole > 0
 
     # The dipole element between the same, unperturbed state should be zero
-    dipole = database.get_matrix_element(ket_initial, ket_initial, "ELECTRIC_DIPOLE", 0, unit="e a0")
+    dipole = ket_initial.get_matrix_element(ket_initial, "ELECTRIC_DIPOLE", 0, unit="e a0")
     assert np.isclose(dipole, 0)
 
     # Stark effect induces a permanent dipole moment
@@ -49,15 +48,11 @@ def test_calculate_electric_dipole_matrix_element() -> None:
         .diagonalize(diagonalizer="Eigen", sort_by_energy=True)
     )
 
-    dipole_zero = database.get_matrix_element(
-        ket_initial, ket_initial, "ELECTRIC_DIPOLE", 0, system=system, unit="e a0"
-    )
-    dipole_plus = database.get_matrix_element(
-        ket_initial, ket_initial, "ELECTRIC_DIPOLE", 1, system=system, unit="e a0"
-    )
-    dipole_minus = database.get_matrix_element(
-        ket_initial, ket_initial, "ELECTRIC_DIPOLE", -1, system=system, unit="e a0"
-    )
+    state = system.basis.get_corresponding_state(ket_initial)
+
+    dipole_zero = state.get_matrix_elements(state, "ELECTRIC_DIPOLE", 0, unit="e a0").todense()[0, 0]
+    dipole_plus = state.get_matrix_elements(state, "ELECTRIC_DIPOLE", 1, unit="e a0").todense()[0, 0]
+    dipole_minus = state.get_matrix_elements(state, "ELECTRIC_DIPOLE", -1, unit="e a0").todense()[0, 0]
 
     dipole_z = dipole_zero
     dipole_x = (dipole_minus - dipole_plus) / np.sqrt(2)
