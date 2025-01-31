@@ -1,14 +1,20 @@
-from typing import TYPE_CHECKING, ClassVar, Optional, Union
+from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.get_functions import get_cpp_parity
+from pairinteraction.backend._wrapped.get_functions import (
+    get_basis_atom_class_from_ket,
+    get_cpp_parity,
+)
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
+from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
+    from typing_extensions import Self
+
 
 UnionCPPKetAtom = Union[_backend.KetAtomFloat, _backend.KetAtomDouble]
 UnionTypeCPPKetAtomCreator = Union[type[_backend.KetAtomCreatorFloat], type[_backend.KetAtomCreatorDouble]]
@@ -128,6 +134,12 @@ class KetAtomBase(KetBase):
                 Database.initialize_global_database()
             database = Database.get_global_database()
         self._cpp = creator.create(database._cpp)  # type: ignore [reportIncompatibleVariableOverride, reportPrivateUsage]
+        self._database = database
+
+    @property
+    def database(self) -> Database:
+        """The database used for this object."""
+        return self._database
 
     @property
     def species(self) -> str:
@@ -173,6 +185,27 @@ class KetAtomBase(KetBase):
     def j_ryd(self) -> float:
         """The expectation value of the total angular quantum number j_{Ryd} the Rydberg electron."""
         return self._cpp.get_quantum_number_j_ryd()
+
+    @overload
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int) -> "PlainQuantity[float]": ...
+
+    @overload
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, *, unit: str) -> "float": ...
+
+    def get_matrix_element(
+        self,
+        ket: "Self",
+        operator: OperatorType,
+        q: int,
+        *,
+        unit: str = "pint",
+    ):
+        BasisAtomClass = get_basis_atom_class_from_ket(self)
+        basis = BasisAtomClass(self.species, additional_kets=[self, ket], database=self.database)
+        state_1 = basis.get_corresponding_state(self)
+
+        matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
+        return matrixelements[0]
 
 
 class KetAtomFloat(KetAtomBase):
