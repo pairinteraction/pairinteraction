@@ -4,6 +4,7 @@
 #include "pairinteraction/utils/traits.hpp"
 
 #include <complex>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -33,7 +34,8 @@ struct traits::CrtpTraits<BasisAtom<Scalar>> {
  * @tparam Scalar Complex number type.
  */
 template <typename Scalar>
-class BasisAtom : public Basis<BasisAtom<Scalar>> {
+class BasisAtom : public Basis<BasisAtom<Scalar>>,
+                  public std::enable_shared_from_this<BasisAtom<Scalar>> {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     friend class Database;
@@ -41,7 +43,9 @@ class BasisAtom : public Basis<BasisAtom<Scalar>> {
 
 public:
     using Type = BasisAtom<Scalar>;
+    using ket_t = typename traits::CrtpTraits<Type>::ket_t;
     using ketvec_t = typename traits::CrtpTraits<Type>::ketvec_t;
+    using real_t = typename traits::CrtpTraits<Type>::real_t;
 
     BasisAtom(Private /*unused*/, ketvec_t &&kets, std::string &&id_of_kets, Database &database);
     Database &get_database() const;
@@ -49,6 +53,11 @@ public:
     const std::string &get_id_of_kets() const;
 
     int get_ket_index_from_id(size_t ket_id) const;
+
+    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type,
+                                               int q) const override;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type, int q) const override;
 
 private:
     std::string id_of_kets;

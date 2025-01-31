@@ -1,5 +1,6 @@
 #include "pairinteraction/basis/BasisAtom.hpp"
 
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 
 namespace pairinteraction {
@@ -34,6 +35,32 @@ int BasisAtom<Scalar>::get_ket_index_from_id(size_t ket_id) const {
 template <typename Scalar>
 const std::string &BasisAtom<Scalar>::get_id_of_kets() const {
     return id_of_kets;
+}
+
+template <typename Scalar>
+Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket,
+                                                              OperatorType type, int q) const {
+    auto final = this->get_canonical_state_from_ket(ket);
+    auto matrix_element =
+        this->get_database().get_matrix_elements(this->shared_from_this(), final, type, q);
+
+    assert(matrix_element.rows() == 1);
+    assert(matrix_element.cols() == this->get_number_of_states());
+
+    return matrix_element.row(0);
+}
+
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type,
+                                       int q) const {
+    auto matrix_element =
+        this->get_database().get_matrix_elements(this->shared_from_this(), other, type, q);
+
+    assert(matrix_element.rows() == other->get_number_of_states());
+    assert(matrix_element.cols() == this->get_number_of_states());
+
+    return matrix_element;
 }
 
 // Explicit instantiations

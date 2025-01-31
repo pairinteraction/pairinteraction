@@ -15,6 +15,7 @@
 namespace pairinteraction {
 enum class Parity : int;
 enum class TransformationType : unsigned char;
+enum class OperatorType;
 
 /**
  * @class Basis
@@ -75,6 +76,10 @@ public:
     Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const ket_t> ket) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
     get_overlaps(std::shared_ptr<const Derived> other) const;
+    virtual Eigen::VectorX<scalar_t> get_matrix_elements(std::shared_ptr<const ket_t> ket,
+                                                         OperatorType type, int q) const = 0;
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> virtual get_matrix_elements(
+        std::shared_ptr<const Derived> other, OperatorType type, int q) const = 0;
 
     class Iterator {
     public:

@@ -1,5 +1,4 @@
 #include "./basis/Basis.py.hpp"
-#include "./convenience/matrix_elements.py.hpp"
 #include "./database/Database.py.hpp"
 #include "./diagonalizer/Diagonalizer.py.hpp"
 #include "./enums/OperatorType.py.hpp"
@@ -52,9 +51,6 @@ NB_MODULE(_backend, m) // NOLINT
 
     // tools
     bind_run_unit_tests(m);
-
-    // convenience functions
-    bind_matrix_elements(m);
 
     // version
     bind_version(m);

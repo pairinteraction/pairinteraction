@@ -4,7 +4,6 @@
 #include "pairinteraction/basis/BasisAtomCreator.hpp"
 #include "pairinteraction/basis/BasisPair.hpp"
 #include "pairinteraction/basis/BasisPairCreator.hpp"
-#include "pairinteraction/convenience/matrix_elements.hpp"
 #include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"

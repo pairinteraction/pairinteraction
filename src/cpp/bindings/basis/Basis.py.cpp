@@ -59,6 +59,12 @@ static void declare_basis(nb::module_ &m, std::string const &type_name) {
                  &Basis<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const T>>(&Basis<T>::get_overlaps, nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const typename Basis<T>::ket_t>, OperatorType, int>(
+                 &Basis<T>::get_matrix_elements, nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const T>, OperatorType, int>(
+                 &Basis<T>::get_matrix_elements, nb::const_))
         .def("get_corresponding_state",
              nb::overload_cast<size_t>(&Basis<T>::get_corresponding_state, nb::const_))
         .def("get_corresponding_state",
