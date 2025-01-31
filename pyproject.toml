@@ -98,6 +98,7 @@ wheel.packages = [
   "src/pairinteraction",
 ]
 wheel.license-files = ["LICENSE-*.txt"]
+sdist.include = ["*.pyi"]  # HACK: Include stub files (needed for macos cross compilation)
 sdist.exclude = [
   "/tools/",
   "/tests/",
