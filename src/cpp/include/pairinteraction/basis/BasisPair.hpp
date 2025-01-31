@@ -39,7 +39,8 @@ struct traits::CrtpTraits<BasisPair<Scalar>> {
 };
 
 template <typename Scalar>
-class BasisPair : public Basis<BasisPair<Scalar>> {
+class BasisPair : public Basis<BasisPair<Scalar>>,
+                  public std::enable_shared_from_this<BasisPair<Scalar>> {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     friend class BasisPairCreator<Scalar>;
@@ -79,18 +80,21 @@ public:
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
                                                OperatorType /*type*/, int /*q*/) const override;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> /*other*/, OperatorType /*type*/,
+    get_matrix_elements(std::shared_ptr<const Type> /*final*/, OperatorType /*type*/,
                         int /*q*/) const override;
-    // TODO Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket,
-    //                                            OperatorType type1, OperatorType type2, int q1,
-    //                                            int q2) const;
-    // TODO Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const Type> other,
-    //                                            OperatorType type1, OperatorType type2, int q1,
-    //                                            int q2) const;
-    // TODO Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom<real_t>> ket1,
-    //                                            std::shared_ptr<const KetAtom<real_t>> ket2,
-    //                                            OperatorType type1, OperatorType type2, int q1,
-    //                                            int q2) const;
+    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
+                                               OperatorType type2, int q1, int q2) const;
+    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom<real_t>> ket1,
+                                               std::shared_ptr<const KetAtom<real_t>> ket2,
+                                               OperatorType type1, OperatorType type2, int q1,
+                                               int q2) const;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_matrix_elements(std::shared_ptr<const Type> final, OperatorType type1, OperatorType type2,
+                        int q1, int q2) const;
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+    get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> final1,
+                        std::shared_ptr<const BasisAtom<Scalar>> final2, OperatorType type1,
+                        OperatorType type2, int q1, int q2) const;
 
 private:
     map_range_t map_range_of_state_index2;

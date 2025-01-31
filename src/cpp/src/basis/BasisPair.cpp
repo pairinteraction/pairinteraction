@@ -1,9 +1,13 @@
 #include "pairinteraction/basis/BasisPair.hpp"
 
 #include "pairinteraction/basis/BasisAtom.hpp"
+#include "pairinteraction/basis/BasisPairCreator.hpp"
+#include "pairinteraction/database/Database.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/ket/KetPair.hpp"
+#include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/utils/Range.hpp"
+#include "pairinteraction/utils/tensor.hpp"
 
 #include <memory>
 #include <oneapi/tbb.h>
@@ -151,9 +155,75 @@ Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<co
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*other*/, OperatorType /*type*/,
+BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*final*/, OperatorType /*type*/,
                                        int /*q*/) const {
     throw std::invalid_argument("It is required to specify an operator for both atoms.");
+}
+
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> final, OperatorType type1,
+                                       OperatorType type2, int q1, int q2) const {
+    auto initial1 = this->get_basis1();
+    auto initial2 = this->get_basis2();
+    auto final1 = final->get_basis1();
+    auto final2 = final->get_basis2();
+
+    auto matrix_elements1 =
+        initial1->get_database().get_matrix_elements(initial1, final1, type1, q1);
+    auto matrix_elements2 =
+        initial2->get_database().get_matrix_elements(initial2, final2, type2, q2);
+    auto matrix_elements = utils::calculate_tensor_product(this->shared_from_this(), final,
+                                                           matrix_elements1, matrix_elements2);
+    assert(static_cast<size_t>(matrix_elements.rows()) == final->get_number_of_kets());
+    assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_kets());
+
+    return final->get_coefficients().adjoint() * matrix_elements * this->get_coefficients();
+}
+
+template <typename Scalar>
+Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
+BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> final1,
+                                       std::shared_ptr<const BasisAtom<Scalar>> final2,
+                                       OperatorType type1, OperatorType type2, int q1,
+                                       int q2) const {
+    // Construct a pair basis with the two single-atom bases
+    auto system1 = SystemAtom<Scalar>(final1);
+    auto system2 = SystemAtom<Scalar>(final2);
+    auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
+    assert(final->get_number_of_states() ==
+           final1->get_number_of_states() * final2->get_number_of_states());
+    assert(final->get_number_of_kets() ==
+           final1->get_number_of_states() * final2->get_number_of_states());
+
+    return this->get_matrix_elements(final, type1, type2, q1, q2);
+}
+
+template <typename Scalar>
+Eigen::VectorX<Scalar>
+BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
+                                       OperatorType type2, int q1, int q2) const {
+    // Construct a pair basis containing only the pair ket
+    auto final = this->get_canonical_state_from_ket(ket);
+    assert(final->get_number_of_states() == 1);
+
+    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
+}
+
+template <typename Scalar>
+Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(
+    std::shared_ptr<const KetAtom<real_t>> ket1, std::shared_ptr<const KetAtom<real_t>> ket2,
+    OperatorType type1, OperatorType type2, int q1, int q2) const {
+    // Construct a pair basis with the two single-atom kets
+    auto final1 = this->get_basis1()->get_canonical_state_from_ket(ket1);
+    auto final2 = this->get_basis2()->get_canonical_state_from_ket(ket2);
+    auto system1 = SystemAtom<Scalar>(final1);
+    auto system2 = SystemAtom<Scalar>(final2);
+    auto final = BasisPairCreator<Scalar>().add(system1).add(system2).create();
+    assert(final->get_number_of_states() == 1);
+    assert(final->get_number_of_kets() == 1);
+
+    return this->get_matrix_elements(final, type1, type2, q1, q2).row(0);
 }
 
 // Explicit instantiations

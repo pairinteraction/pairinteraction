@@ -84,4 +84,7 @@ DOCTEST_TEST_CASE("create a BasisPair") {
         DOCTEST_CHECK(atomic_states[0]->get_number_of_kets() == basis->get_number_of_kets());
     }
 }
+
+// TODO test obtaining operator matrix elements, for example, for "d+ x 1"
+
 } // namespace pairinteraction
