@@ -357,7 +357,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                      green_functions.dipole_dipole, row);
                  it; ++it) {
                 this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, op.d1[it.row()], op.d2[it.col()]);
+                    utils::calculate_tensor_product(basis, basis, op.d1[it.row()], op.d2[it.col()]);
                 if (it.row() != it.col()) {
                     sort_by_quantum_number_m = false;
                 }
@@ -374,7 +374,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                      green_functions.dipole_quadrupole, row);
                  it; ++it) {
                 this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, op.d1[it.row()], op.q2[it.col()]);
+                    utils::calculate_tensor_product(basis, basis, op.d1[it.row()], op.q2[it.col()]);
                 if (it.row() != it.col() - 1) {
                     sort_by_quantum_number_m = false;
                 }
@@ -391,7 +391,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                      green_functions.quadrupole_dipole, row);
                  it; ++it) {
                 this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, op.q1[it.row()], op.d2[it.col()]);
+                    utils::calculate_tensor_product(basis, basis, op.q1[it.row()], op.d2[it.col()]);
                 if (it.row() - 1 != it.col()) {
                     sort_by_quantum_number_m = false;
                 }
@@ -408,7 +408,7 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
                      green_functions.quadrupole_quadrupole, row);
                  it; ++it) {
                 this->hamiltonian->get_matrix() += it.value() *
-                    utils::calculate_tensor_product(basis, op.q1[it.row()], op.q2[it.col()]);
+                    utils::calculate_tensor_product(basis, basis, op.q1[it.row()], op.q2[it.col()]);
                 if (it.row() != it.col()) {
                     sort_by_quantum_number_m = false;
                 }

@@ -14,7 +14,8 @@ namespace pairinteraction::utils {
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
+calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis_initial,
+                         const std::shared_ptr<const BasisPair<Scalar>> &basis_final,
                          const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
                          const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
@@ -27,13 +28,13 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
         oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
             for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
 
-                const auto &range_row2 = basis->get_index_range(row1);
+                const auto &range_row2 = basis_final->get_index_range(row1);
 
                 // Loop over the rows of the second matrix that are energetically allowed
                 for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
                      row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
 
-                    Eigen::Index row = basis->get_ket_index_from_tuple(row1, row2);
+                    Eigen::Index row = basis_final->get_ket_index_from_tuple(row1, row2);
                     if (row < 0) {
                         continue;
                     }
@@ -53,7 +54,7 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
 
                         // The minimum value is chosen such that we start with an energetically
                         // allowed column
-                        const auto &range_col2 = basis->get_index_range(it1.index());
+                        const auto &range_col2 = basis_initial->get_index_range(it1.index());
                         begin_idxptr2 +=
                             std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
                                           std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
@@ -71,7 +72,7 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
                                 break;
                             }
 
-                            Eigen::Index col = basis->get_ket_index_from_tuple(col1, col2);
+                            Eigen::Index col = basis_initial->get_ket_index_from_tuple(col1, col2);
                             if (col < 0) {
                                 continue;
                             }
@@ -90,8 +91,8 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
         });
 
     // Construct the combined matrix from the triplets
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis->get_number_of_states(),
-                                                        basis->get_number_of_states());
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis_final->get_number_of_kets(),
+                                                        basis_initial->get_number_of_kets());
     matrix.setFromTriplets(triplets.begin(), triplets.end());
     matrix.makeCompressed();
 
@@ -101,18 +102,22 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
 // Explicit instantiations
 template Eigen::SparseMatrix<float, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<float>> &,
+                         const std::shared_ptr<const BasisPair<float>> &,
                          const Eigen::SparseMatrix<float, Eigen::RowMajor> &,
                          const Eigen::SparseMatrix<float, Eigen::RowMajor> &);
 template Eigen::SparseMatrix<double, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<double>> &,
+                         const std::shared_ptr<const BasisPair<double>> &,
                          const Eigen::SparseMatrix<double, Eigen::RowMajor> &,
                          const Eigen::SparseMatrix<double, Eigen::RowMajor> &);
 template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<std::complex<float>>> &,
+                         const std::shared_ptr<const BasisPair<std::complex<float>>> &,
                          const Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor> &,
                          const Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor> &);
 template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<std::complex<double>>> &,
+                         const std::shared_ptr<const BasisPair<std::complex<double>>> &,
                          const Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor> &,
                          const Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor> &);
 
