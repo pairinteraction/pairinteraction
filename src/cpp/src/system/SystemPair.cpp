@@ -15,15 +15,14 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/spherical.hpp"
 #include "pairinteraction/utils/streamed.hpp"
+#include "pairinteraction/utils/tensor.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
 #include <Eigen/SparseCore>
-#include <algorithm>
 #include <array>
 #include <complex>
 #include <limits>
 #include <memory>
-#include <oneapi/tbb.h>
 #include <spdlog/spdlog.h>
 #include <vector>
 
@@ -310,92 +309,6 @@ construct_operator_matrices(const GreenFunctions<Scalar> &green_functions,
 }
 
 template <typename Scalar>
-Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis,
-                         const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix1,
-                         const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix2) {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-    constexpr real_t numerical_precision = 100 * std::numeric_limits<real_t>::epsilon();
-
-    oneapi::tbb::concurrent_vector<Eigen::Triplet<Scalar>> triplets;
-
-    // Loop over the rows of the first matrix in parallel (outer index == row)
-    oneapi::tbb::parallel_for(
-        oneapi::tbb::blocked_range<Eigen::Index>(0, matrix1.outerSize()), [&](const auto &range) {
-            for (Eigen::Index row1 = range.begin(); row1 != range.end(); ++row1) {
-
-                const auto &range_row2 = basis->get_index_range(row1);
-
-                // Loop over the rows of the second matrix that are energetically allowed
-                for (auto row2 = static_cast<Eigen::Index>(range_row2.min());
-                     row2 < static_cast<Eigen::Index>(range_row2.max()); ++row2) {
-
-                    Eigen::Index row = basis->get_ket_index_from_tuple(row1, row2);
-                    if (row < 0) {
-                        continue;
-                    }
-
-                    // Loop over the non-zero column elements of the first matrix
-                    for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it1(
-                             matrix1, row1);
-                         it1; ++it1) {
-
-                        Eigen::Index col1 = it1.col();
-                        Scalar value1 = it1.value();
-
-                        // Calculate the minimum and maximum values of the index pointer of the
-                        // second matrix
-                        Eigen::Index begin_idxptr2 = matrix2.outerIndexPtr()[row2];
-                        Eigen::Index end_idxptr2 = matrix2.outerIndexPtr()[row2 + 1];
-
-                        // The minimum value is chosen such that we start with an energetically
-                        // allowed column
-                        const auto &range_col2 = basis->get_index_range(it1.index());
-                        begin_idxptr2 +=
-                            std::distance(matrix2.innerIndexPtr() + begin_idxptr2,
-                                          std::lower_bound(matrix2.innerIndexPtr() + begin_idxptr2,
-                                                           matrix2.innerIndexPtr() + end_idxptr2,
-                                                           range_col2.min()));
-
-                        // Loop over the non-zero column elements of the second matrix that are
-                        // energetically allowed (we break the loop if the index pointer corresponds
-                        // to a column that is not energetically allowed)
-                        for (Eigen::Index idxptr2 = begin_idxptr2; idxptr2 < end_idxptr2;
-                             ++idxptr2) {
-
-                            Eigen::Index col2 = matrix2.innerIndexPtr()[idxptr2];
-                            if (col2 >= static_cast<Eigen::Index>(range_col2.max())) {
-                                break;
-                            }
-
-                            Eigen::Index col = basis->get_ket_index_from_tuple(col1, col2);
-                            if (col < 0) {
-                                continue;
-                            }
-
-                            Scalar value2 = matrix2.valuePtr()[idxptr2];
-
-                            // Store the entry
-                            Scalar value = value1 * value2;
-                            if (std::abs(value) > numerical_precision) {
-                                triplets.emplace_back(row, col, value);
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-    // Construct the combined matrix from the triplets
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> matrix(basis->get_number_of_states(),
-                                                        basis->get_number_of_states());
-    matrix.setFromTriplets(triplets.begin(), triplets.end());
-    matrix.makeCompressed();
-
-    return matrix;
-}
-
-template <typename Scalar>
 SystemPair<Scalar>::SystemPair(std::shared_ptr<const basis_t> basis)
     : System<SystemPair<Scalar>>(std::move(basis)) {}
 
@@ -443,8 +356,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_functions.dipole_dipole, row);
                  it; ++it) {
-                this->hamiltonian->get_matrix() +=
-                    it.value() * calculate_tensor_product(basis, op.d1[it.row()], op.d2[it.col()]);
+                this->hamiltonian->get_matrix() += it.value() *
+                    utils::calculate_tensor_product(basis, op.d1[it.row()], op.d2[it.col()]);
                 if (it.row() != it.col()) {
                     sort_by_quantum_number_m = false;
                 }
@@ -460,8 +373,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_functions.dipole_quadrupole, row);
                  it; ++it) {
-                this->hamiltonian->get_matrix() +=
-                    it.value() * calculate_tensor_product(basis, op.d1[it.row()], op.q2[it.col()]);
+                this->hamiltonian->get_matrix() += it.value() *
+                    utils::calculate_tensor_product(basis, op.d1[it.row()], op.q2[it.col()]);
                 if (it.row() != it.col() - 1) {
                     sort_by_quantum_number_m = false;
                 }
@@ -477,8 +390,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_functions.quadrupole_dipole, row);
                  it; ++it) {
-                this->hamiltonian->get_matrix() +=
-                    it.value() * calculate_tensor_product(basis, op.q1[it.row()], op.d2[it.col()]);
+                this->hamiltonian->get_matrix() += it.value() *
+                    utils::calculate_tensor_product(basis, op.q1[it.row()], op.d2[it.col()]);
                 if (it.row() - 1 != it.col()) {
                     sort_by_quantum_number_m = false;
                 }
@@ -494,8 +407,8 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
             for (typename Eigen::SparseMatrix<Scalar, Eigen::RowMajor>::InnerIterator it(
                      green_functions.quadrupole_quadrupole, row);
                  it; ++it) {
-                this->hamiltonian->get_matrix() +=
-                    it.value() * calculate_tensor_product(basis, op.q1[it.row()], op.q2[it.col()]);
+                this->hamiltonian->get_matrix() += it.value() *
+                    utils::calculate_tensor_product(basis, op.q1[it.row()], op.q2[it.col()]);
                 if (it.row() != it.col()) {
                     sort_by_quantum_number_m = false;
                 }
