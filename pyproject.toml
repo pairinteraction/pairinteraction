@@ -186,6 +186,7 @@ addopts = [
 ]
 env = [
     "QT_QPA_PLATFORM=offscreen",
+    "PAIRINTERACTION_TEST_MODE=1",
 ]
 
 [tool.sonar]
