@@ -1,8 +1,9 @@
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Union
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer, get_cpp_diagonalizer, get_cpp_range
+from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
+from pairinteraction.backend._wrapped.get_functions import get_cpp_diagonalize, get_cpp_diagonalizer, get_cpp_range
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -37,10 +38,3 @@ def diagonalize(
             cpp_system.transform(sorter)
         system._cpp = cpp_system  # type: ignore [reportPrivateUsage]
         system.update_basis()
-
-
-def get_cpp_diagonalize(system: "System") -> Callable:
-    try:
-        return getattr(_backend, f"diagonalize{type(system).__name__}")
-    except AttributeError as err:
-        raise ValueError(f"Unknown diagonalize function for {type(system).__name__}") from err

@@ -5,6 +5,7 @@ import numpy as np
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
+from pairinteraction.backend._wrapped.get_functions import get_cpp_parity
 from pairinteraction.backend._wrapped.ket.KetPair import (
     KetPair,
     KetPairComplexDouble,
@@ -12,7 +13,7 @@ from pairinteraction.backend._wrapped.ket.KetPair import (
     KetPairDouble,
     KetPairFloat,
 )
-from pairinteraction.backend._wrapped.Parity import Parity, get_cpp_parity
+from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:

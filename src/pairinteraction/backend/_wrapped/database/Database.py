@@ -4,7 +4,8 @@ from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
 import numpy as np
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.OperatorType import OperatorType, get_cpp_operator_type
+from pairinteraction.backend._wrapped.get_functions import get_basis_atom_class_from_ket, get_cpp_operator_type
+from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.units import QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -148,13 +149,3 @@ class Database:
         matrix_element_au = self._cpp.get_matrix_elements(state_1._cpp, state_2._cpp, cpp_operator_type, q)[0, 0]  # type: ignore
         matrix_element = QuantityScalar.from_base(matrix_element_au, operator)
         return matrix_element.to_unit(unit)
-
-
-def get_basis_atom_class_from_ket(ket: "KetAtom") -> "type[BasisAtom]":
-    import pairinteraction.backend._wrapped.basis.BasisAtom as BasisAtomModule
-
-    type_ = type(ket._cpp).__name__.replace("KetAtom", "")
-    try:
-        return getattr(BasisAtomModule, f"BasisAtom{type_}")
-    except AttributeError as err:
-        raise ValueError(f"Unknown KetAtom {type(ket)}, cant find corresponding BasisAtom class") from err
