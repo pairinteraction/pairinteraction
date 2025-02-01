@@ -19,7 +19,8 @@ language = "en"
 
 def write_labels(app: Sphinx, event: str) -> None:
     labels = app.env.domaindata["std"]["labels"]
-    with open("labels.txt", "w") as f:
+    os.makedirs("_build", exist_ok=True)
+    with open("_build/labels.txt", "w") as f:
         for label, node in labels.items():
             f.write(f"{label}: {node[1]}\n")
 

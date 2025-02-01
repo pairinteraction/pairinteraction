@@ -1,4 +1,4 @@
-.. _Installation:
+.. _installation:
 
 Installation
 ============
@@ -11,12 +11,10 @@ This guide provides installation instructions for the `pairinteraction` software
 All methods install the graphical user interface of pairinteraction. It allows for calculating pair potentials taking into account electric and magnetic fields, as well as Stark and Zeeman maps. In addition, all methods except for the binary installers, provide a Python library which can be used to write your own code and have more fine-grained control over what pairinteraction does. For usage examples visit the :ref:`tutorials <Tutorials>` section of the documentation.
 
 .. toctree::
-   :maxdepth: 1
-   :hidden:
+    :hidden:
 
-   installation/manual_build/system_setup/system_setup
-   installation/manual_build/python_setup/python_setup
-
+    basic/basic.rst
+    advanced/advanced.rst
 
 
 .. _git: https://git-scm.com/download/

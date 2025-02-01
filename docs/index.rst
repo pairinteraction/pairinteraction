@@ -78,24 +78,24 @@ Documentation
 User Guide
     :doc:`overview` - Discover what the software is and its core features.
 
-    :doc:`installation` - Whether you prefer binary installers or compiling from source, we've got all the information you need.
+    :doc:`installation/installation` - Whether you prefer binary installers or compiling from source, we've got all the information you need.
 
-    :doc:`tutorials` - Covering both the graphical user interface and the Python library,
+    :doc:`tutorials/tutorials` - Covering both the graphical user interface and the Python library,
     these tutorials enable you to leverage pairinteraction for your projects.
 
 Contributor Guide
-    :doc:`ways` - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
+    :doc:`contribute/ways` - Discover the many ways you can help improve pairinteraction, from contributing to the repository to providing quantum defects.
 
-    :doc:`repo` - Ready to dive into development? Here's how to set up your environment for pairinteraction development,
+    :doc:`contribute/repo` - Ready to dive into development? Here's how to set up your environment for pairinteraction development,
     ensuring you have all the tools you need.
 
 References
     :doc:`API Reference <modules>` - Documentation of classes and functions of pairinteraction's Python library.
 
 Utility Tools
-    :doc:`mqdt` - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
+    :doc:`utility/mqdt` - Learn how to calculate states and matrix elements using multi-channel quantum defect theory with our tool written in Julia.
 
-    :doc:`databases` - Find out how to make states and matrix elements available to pairinteraction.
+    :doc:`utility/databases` - Find out how to make states and matrix elements available to pairinteraction.
 
 .. toctree::
     :maxdepth: 2
@@ -103,17 +103,17 @@ Utility Tools
     :hidden:
 
     overview.rst
-    installation.rst
-    tutorials.rst
-    references.rst
+    installation/installation.rst
+    tutorials/tutorials.rst
+    references/references.rst
 
 .. toctree::
     :maxdepth: 2
     :caption: Contributor Guide
     :hidden:
 
-    ways.rst
-    repo.rst
+    contribute/ways.rst
+    contribute/repo.rst
 
 .. toctree::
     :maxdepth: 2
@@ -127,8 +127,8 @@ Utility Tools
     :caption: Utility Tools
     :hidden:
 
-    mqdt.rst
-    databases.rst
+    utility/mqdt.rst
+    utility/databases.rst
 
 Credits
 =======
