@@ -55,9 +55,10 @@ public:
     int get_ket_index_from_id(size_t ket_id) const;
 
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type,
-                                               int q) const override;
+                                               int q = 0) const override;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
-    get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type, int q) const override;
+    get_matrix_elements(std::shared_ptr<const Type> other, OperatorType type,
+                        int q = 0) const override;
 
 private:
     std::string id_of_kets;
