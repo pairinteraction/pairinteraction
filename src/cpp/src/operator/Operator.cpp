@@ -22,13 +22,18 @@ Operator<Derived>::Operator(std::shared_ptr<const basis_t> basis) : basis(std::m
 
 template <typename Derived>
 void Operator<Derived>::initialize_as_energy_operator() {
-    this->matrix.reserve(Eigen::VectorXi::Constant(this->basis->get_number_of_states(), 1));
+    Eigen::SparseMatrix<scalar_t, Eigen::RowMajor> tmp(this->basis->get_number_of_kets(),
+                                                       this->basis->get_number_of_kets());
+    tmp.reserve(Eigen::VectorXi::Constant(this->basis->get_number_of_kets(), 1));
     size_t idx = 0;
     for (const auto &ket : this->basis->get_kets()) {
-        this->matrix.insert(idx, idx) = ket->get_energy();
+        tmp.insert(idx, idx) = ket->get_energy();
         ++idx;
     }
-    this->matrix.makeCompressed();
+    tmp.makeCompressed();
+
+    this->matrix =
+        this->basis->get_coefficients().adjoint() * tmp * this->basis->get_coefficients();
 }
 
 template <typename Derived>
