@@ -149,7 +149,23 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
                                std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_overlaps,
-                                                                    nb::const_));
+                                                                    nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisPair<T>>, OperatorType, OperatorType, int,
+                               int>(&BasisPair<T>::get_matrix_elements, nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
+                               std::shared_ptr<const BasisAtom<T>>, OperatorType, OperatorType, int,
+                               int>(&BasisPair<T>::get_matrix_elements, nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const typename BasisPair<T>::ket_t>, OperatorType,
+                               OperatorType, int, int>(&BasisPair<T>::get_matrix_elements,
+                                                       nb::const_))
+        .def("get_matrix_elements",
+             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
+                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
+                               OperatorType, OperatorType, int, int>(
+                 &BasisPair<T>::get_matrix_elements, nb::const_));
 }
 
 template <typename T>
