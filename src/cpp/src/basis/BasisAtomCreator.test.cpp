@@ -142,7 +142,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
 
         auto m2 = basis->get_matrix_elements(ket_s, OperatorType::ENERGY, 0);
         DOCTEST_CHECK(m2.size() == basis->get_number_of_states());
-        double energy2 = m2[basis->get_corresponding_state_index(ket_s)];
+        size_t idx = basis->get_corresponding_state_index(ket_s);
+        double energy2 = m2[idx];
 
         double reference = ket_s->get_energy();
         DOCTEST_CHECK(std::abs(energy1 - reference) < 1e-11);
@@ -152,7 +153,8 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
     DOCTEST_SUBCASE("calculate electric dipole matrix element") {
         auto m = basis->get_matrix_elements(ket_p, OperatorType::ELECTRIC_DIPOLE, 0);
         DOCTEST_CHECK(m.size() == basis->get_number_of_states());
-        double dipole = m[basis->get_corresponding_state_index(ket_s)];
+        size_t idx = basis->get_corresponding_state_index(ket_s);
+        double dipole = m[idx];
 
         DOCTEST_CHECK(std::abs(dipole - 1247.5955234484584) < 1e-6);
     }
