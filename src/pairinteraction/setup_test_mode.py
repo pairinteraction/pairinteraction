@@ -15,6 +15,7 @@ def setup_test_mode(download_missing: bool = False, database_dir: Union[str, "os
             CWD / "data" / "database",  # normal pytest mode
             CWD.parent / "data" / "database",  # for pytest jupyter notebooks
             CWD.parent.parent / "data" / "database",  # for pytest jupyter notebooks
+            CWD.parent.parent.parent / "data" / "database",  # for pytest jupyter notebooks
         ]
 
         for database_dir in possible_dirs:

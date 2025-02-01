@@ -174,7 +174,7 @@ toplevel = ["pairinteraction", "pairinteraction.libs"]
 [tool.pytest.ini_options]
 testpaths = [
   "tests",
-  "docs/examples_python",
+  "docs/tutorials/examples_python",
   "src/pairinteraction/",
 ]
 addopts = [

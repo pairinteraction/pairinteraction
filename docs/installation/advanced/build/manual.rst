@@ -20,7 +20,7 @@ You can then build the software with standard CMake commands:
     cmake ..
     cmake --build .
 
-Make sure that on a :ref:`Windows platform </installation/advanced/setup/system/system.rst#Windows>`, you have set the correct environmental variables.
+Make sure that on a :ref:`Windows platform <system_setup>`, you have set the correct environmental variables.
 If you are using a multi-configuration generator for CMake, you must also specify a configuration at the build command.
 
 

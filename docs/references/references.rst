@@ -26,12 +26,12 @@ Please consider citing relevant publications for your atomic species alongside p
 
 .. toctree::
 
-    references/Cs.rst
-    references/K.rst
-    references/Li.rst
-    references/Na.rst
-    references/Rb.rst
-    references/Sr87_mqdt.rst
-    references/Sr88_mqdt.rst
-    references/Sr88_singlet.rst
-    references/Sr88_triplet.rst
+    Cs.rst
+    K.rst
+    Li.rst
+    Na.rst
+    Rb.rst
+    Sr87_mqdt.rst
+    Sr88_mqdt.rst
+    Sr88_singlet.rst
+    Sr88_triplet.rst

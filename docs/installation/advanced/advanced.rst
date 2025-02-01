@@ -27,14 +27,14 @@ Building from source allows also to build only the documentation. This is especi
 You can also find detailed information about :ref:`building the documentation <Documentation>` on the respective subpage.
 
 .. toctree::
-   :maxdepth: 2
-   :hidden:
+    :maxdepth: 2
+    :hidden:
 
-   setup/documentation/documentation
-   setup/python/python
-   setup/system/system
-   build/manual/manual
-   build/automatic/automatic
+    setup/python.rst
+    setup/system.rst
+    build/automatic.rst
+    build/manual.rst
+    build/documentation.rst
 
 
 .. _git: https://git-scm.com/downloads/
