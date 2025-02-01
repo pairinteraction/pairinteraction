@@ -1,9 +1,10 @@
+import warnings
 from typing import TYPE_CHECKING, Optional, overload
 
-from pairinteraction.backend import _backend
+import numpy as np
+
 from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtom
-from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -38,7 +39,13 @@ def calculate_energy(ket: KetAtom, system: Optional[SystemAtom] = None, *, unit:
 
     """
     if system is None:
-        energy_au = _backend.calculate_energy(ket._cpp)  # type: ignore [reportPrivateUsage]
-    else:
-        energy_au = _backend.calculate_energy(ket._cpp, system._cpp)  # type: ignore
-    return QuantityScalar.from_base(energy_au, "ENERGY").to_unit(unit)
+        return ket.get_energy(unit=unit)
+
+    overlaps = system.get_eigenbasis().get_overlaps(ket)
+    idx = np.argmax(overlaps)
+    if overlaps[idx] < 0.5:
+        warnings.warn(
+            "The provided ket states does not correspond to an eigenstate of the system in a unique way.", stacklevel=2
+        )
+
+    return system.get_eigenvalues(unit=unit)[idx]
