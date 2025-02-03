@@ -13,6 +13,9 @@
 #include <doctest/doctest.h>
 
 namespace pairinteraction {
+
+constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
+
 DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
     auto basis = BasisAtomCreator<float>()
@@ -159,7 +162,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         DOCTEST_CHECK(std::abs(dipole - 1247.5955234484584) < 1e-6);
     }
 
-    DOCTEST_SUBCASE("calculate electric dipole matrix element with an induced dipole") {
+    DOCTEST_SUBCASE("calculate electric dipole matrix element with and without an induced dipole") {
         {
             auto state = basis->get_corresponding_state(ket_s);
 
@@ -172,7 +175,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
         }
 
         {
-            system.set_electric_field({0, 0, 1.9446903811524456e-10});
+            system.set_electric_field({0, 0, VOLT_PER_CM_IN_ATOMIC_UNITS});
             system.diagonalize(DiagonalizerEigen<double>());
             auto state = system.get_eigenbasis()->get_corresponding_state(ket_s);
 

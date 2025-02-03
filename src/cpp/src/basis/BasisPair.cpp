@@ -150,14 +150,14 @@ template <typename Scalar>
 Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const ket_t> /*ket*/,
                                                               OperatorType /*type*/,
                                                               int /*q*/) const {
-    throw std::invalid_argument("It is required to specify an operator for both atoms.");
+    throw std::invalid_argument("It is required to specify one operator for each atom.");
 }
 
 template <typename Scalar>
 Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
 BasisPair<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*final*/, OperatorType /*type*/,
                                        int /*q*/) const {
-    throw std::invalid_argument("It is required to specify an operator for both atoms.");
+    throw std::invalid_argument("It is required to specify one operator for each atom.");
 }
 
 template <typename Scalar>
