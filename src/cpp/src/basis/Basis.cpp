@@ -583,7 +583,6 @@ std::shared_ptr<const Derived> Basis<Derived>::transformed(const Sorting &transf
     transformed->state_index_to_quantum_number_m.resize(transformation.matrix.size());
     transformed->state_index_to_parity.resize(transformation.matrix.size());
     transformed->state_index_to_ket_index.resize(transformation.matrix.size());
-    transformed->ket_index_to_state_index.resize(transformation.matrix.size());
 
     for (int i = 0; i < transformation.matrix.size(); ++i) {
         transformed->state_index_to_quantum_number_f[i] =
