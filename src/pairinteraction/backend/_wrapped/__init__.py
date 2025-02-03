@@ -12,7 +12,6 @@ from pairinteraction.backend._wrapped.basis.BasisPair import (
     BasisPairDouble,
     BasisPairFloat,
 )
-from pairinteraction.backend._wrapped.convenience.calculate_energy import calculate_energy
 from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
 from pairinteraction.backend._wrapped.database.Database import Database
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
@@ -86,6 +85,5 @@ __all__ = [
     "SystemPairComplexFloat",
     "SystemPairDouble",
     "SystemPairFloat",
-    "calculate_energy",
     "diagonalize",
 ]

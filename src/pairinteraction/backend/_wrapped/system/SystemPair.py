@@ -47,7 +47,7 @@ class SystemPairBase(SystemBase[BasisType]):
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
-            >>> pair_energy = 2 * pi.calculate_energy(ket, system, unit="GHz")
+            >>> pair_energy = 2 * system.get_corresponding_energy(ket, unit="GHz")
             >>> pair_basis = pi.BasisPair(
             ...     [system, system],
             ...     energy=(pair_energy - 3, pair_energy + 3),

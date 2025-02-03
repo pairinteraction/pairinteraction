@@ -1,5 +1,8 @@
+import logging
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union, overload
+
+import numpy as np
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.BasisAtom import (
@@ -15,6 +18,7 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
+    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
     from pairinteraction.units import Array
 
 BasisType = TypeVar("BasisType", "BasisAtomFloat", "BasisAtomComplexFloat", "BasisAtomDouble", "BasisAtomComplexDouble")
@@ -30,6 +34,8 @@ UnionTypeCPPSystemAtom = Union[
     type[_backend.SystemAtomDouble],
     type[_backend.SystemAtomComplexDouble],
 ]
+
+logger = logging.getLogger(__name__)
 
 
 class SystemAtomBase(SystemBase[BasisType]):
@@ -84,6 +90,21 @@ class SystemAtomBase(SystemBase[BasisType]):
     def enable_diamagnetism(self: "Self", enable: bool = True) -> "Self":
         self._cpp.enable_diamagnetism(enable)
         return self
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket: "KetAtom") -> "PlainQuantity[float]": ...
+
+    @overload
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", *, unit: str) -> float: ...
+
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", *, unit: str = "pint"):
+        overlaps = self.get_eigenbasis().get_overlaps(ket)
+        idx = np.argmax(overlaps)
+        if overlaps[idx] <= 0.5:
+            logger.warning(
+                "The provided ket states does not correspond to an eigenstate of the system in a unique way."
+            )
+        return self.get_eigenvalues(unit=unit)[idx]
 
 
 class SystemAtomFloat(SystemAtomBase[BasisAtomFloat]):

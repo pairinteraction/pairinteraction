@@ -5,11 +5,11 @@ import numpy as np
 import pairinteraction.backend.double as pi
 
 
-def test_calculate_energy() -> None:
+def test_energy() -> None:
     """Test calculating energies of ket states."""
     # Energy of unperturbed state
     ket = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
-    energy_unperturbed = pi.calculate_energy(ket, unit="GHz")
+    energy_unperturbed = ket.get_energy(unit="GHz")
 
     assert np.isclose(energy_unperturbed, ket.get_energy("GHz"))
 
@@ -18,7 +18,7 @@ def test_calculate_energy() -> None:
 
     system = pi.SystemAtom(basis).set_electric_field([0, 0, 1], unit="V/cm").diagonalize(diagonalizer="Eigen")
 
-    energy_perturbed = pi.calculate_energy(ket, system, unit="GHz")
+    energy_perturbed = system.get_corresponding_energy(ket, unit="GHz")
 
     shift = energy_perturbed - energy_unperturbed
     print(f"Energy shift: {shift} GHz")
@@ -26,7 +26,7 @@ def test_calculate_energy() -> None:
     assert shift < 0
 
 
-def test_calculate_electric_dipole_matrix_element() -> None:
+def test_electric_dipole_matrix_element() -> None:
     """Test calculating dipole matrix elements."""
     # The dipole element between dipole-coupled states should be non-zero
     ket_initial = pi.KetAtom("Rb", n=60, l=0, j=0.5, m=0.5)
