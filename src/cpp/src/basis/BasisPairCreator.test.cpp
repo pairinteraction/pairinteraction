@@ -191,7 +191,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
         }
 
         // compare to reference
-        auto ref = system_pair.get_matrix();
+        const auto &ref = system_pair.get_matrix();
         DOCTEST_CHECK(ref.isApprox(hamiltonian, 1e-11));
     }
 }

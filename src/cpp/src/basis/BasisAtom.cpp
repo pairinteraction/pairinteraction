@@ -44,8 +44,8 @@ Eigen::VectorX<Scalar> BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<co
     auto matrix_elements =
         this->get_database().get_matrix_elements(this->shared_from_this(), final, type, q);
 
-    assert(matrix_elements.rows() == 1);
-    assert(matrix_elements.cols() == this->get_number_of_states());
+    assert(static_cast<size_t>(matrix_elements.rows()) == 1);
+    assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_states());
 
     return matrix_elements.row(0);
 }
@@ -57,8 +57,8 @@ BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const Type> other, Operat
     auto matrix_elements =
         this->get_database().get_matrix_elements(this->shared_from_this(), other, type, q);
 
-    assert(matrix_elements.rows() == other->get_number_of_states());
-    assert(matrix_elements.cols() == this->get_number_of_states());
+    assert(static_cast<size_t>(matrix_elements.rows()) == other->get_number_of_states());
+    assert(static_cast<size_t>(matrix_elements.cols()) == this->get_number_of_states());
 
     return matrix_elements;
 }
