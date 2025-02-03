@@ -1,4 +1,4 @@
-from collections.abc import Collection
+from collections.abc import Collection, Iterable
 from typing import TYPE_CHECKING, Any, Generic, Literal, Optional, TypeVar, Union
 
 import numpy as np
@@ -76,8 +76,18 @@ class QuantityAbstract(Generic[ValueType]):
             raise ValueError("unit must be a string specifiying the unit of the value if value is not a pint.Quantity")
 
     @classmethod
-    def from_base(cls: "type[Self]", value: Union[ValueType, PlainQuantity[ValueType]], dimension: Dimension) -> "Self":
-        return cls(value, BaseUnits[dimension])
+    def from_base(
+        cls: "type[Self]",
+        value: Union[ValueType, PlainQuantity[ValueType]],
+        dimension: Union[Dimension, Iterable[Dimension]],
+    ) -> "Self":
+        if isinstance(dimension, str):
+            unit = BaseUnits[dimension]
+        else:
+            unit = ureg.Unit("")
+            for d in dimension:
+                unit *= BaseUnits[d]
+        return cls(value, unit)
 
     def to_base(self, dimension: Dimension) -> ValueType:
         context = BaseContexts.get(dimension, None)

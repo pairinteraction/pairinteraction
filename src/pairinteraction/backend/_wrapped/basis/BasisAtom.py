@@ -114,12 +114,32 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
     @overload
+    def get_amplitudes(self, ket_or_basis: KetAtomBase) -> "np.ndarray[Any,Any]": ...
+
+    @overload
+    def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
+
+    def get_amplitudes(self, ket_or_basis: Union[KetAtomBase, "Self"]):
+        return self._cpp.get_amplitudes(ket_or_basis._cpp)
+
+    @overload
+    def get_overlaps(self, ket_or_basis: KetAtomBase) -> "np.ndarray[Any,Any]": ...
+
+    @overload
+    def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
+
+    def get_overlaps(self, ket_or_basis: Union[KetAtomBase, "Self"]):
+        return self._cpp.get_overlaps(ket_or_basis._cpp)
+
+    @overload
     def get_matrix_elements(
         self, ket_or_basis: KetAtomType, operator: OperatorType, q: int
     ) -> "PlainQuantity[Array]": ...
 
     @overload
-    def get_matrix_elements(self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, unit: str) -> "Array": ...
+    def get_matrix_elements(
+        self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, *, unit: str
+    ) -> "Array": ...
 
     @overload
     def get_matrix_elements(
@@ -127,13 +147,14 @@ class BasisAtomBase(BasisBase[KetAtomType]):
     ) -> "PlainQuantity[csr_matrix]": ...
 
     @overload
-    def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
+    def get_matrix_elements(
+        self, ket_or_basis: "Self", operator: OperatorType, q: int, *, unit: str
+    ) -> "csr_matrix": ...
 
     def get_matrix_elements(
-        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, unit: str = "pint"
+        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, *, unit: str = "pint"
     ):
-        cpp_operator_type = get_cpp_operator_type(operator)
-        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, cpp_operator_type, q)
+        matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, get_cpp_operator_type(operator), q)
         matrix_elements: QuantityAbstract
         if isinstance(matrix_elements_au, np.ndarray):
             matrix_elements = QuantityArray.from_base(matrix_elements_au, operator)
