@@ -50,8 +50,8 @@ def test_electric_dipole() -> None:
     system_pair.set_distance(distance)
     system.get_hamiltonian()
 
-    ket_ab_idx = np.argmax(basis_pair.get_overlaps_with_product_state(ket_a, ket_b))
-    ket_cc_idx = np.argmax(basis_pair.get_overlaps_with_product_state(ket_c, ket_c))
+    ket_ab_idx = np.argmax(basis_pair.get_overlaps([ket_a, ket_b]))
+    ket_cc_idx = np.argmax(basis_pair.get_overlaps([ket_c, ket_c]))
     H = system_pair.get_hamiltonian("GHz") * distance.to("micrometer").magnitude ** 3  # GHz * micrometer^3
 
     assert np.isclose(-2 * C3.magnitude, H[ket_ab_idx, ket_cc_idx])

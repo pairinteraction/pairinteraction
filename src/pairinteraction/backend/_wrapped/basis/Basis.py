@@ -1,16 +1,19 @@
 from abc import ABC
+from collections.abc import Iterable
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
 import numpy as np
 
 from pairinteraction.backend._wrapped.ket.Ket import Ket
 
 if TYPE_CHECKING:
-    import scipy.sparse
+    from scipy.sparse import csr_matrix
     from typing_extensions import Self
 
 KetType = TypeVar("KetType", bound=Ket)
+KetLike = Union[Ket, Iterable[Ket]]
+BasisLike = Union["Basis", Iterable["Basis"]]
 UnionCPPBasis = Any
 # UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Pair)(Float|Double|ComplexFloat|ComplexDouble)
 UnionTypeCPPBasisCreator = Any
@@ -62,7 +65,7 @@ class BasisBase(ABC, Generic[KetType]):
         return self._cpp.get_number_of_kets()
 
     @property
-    def coefficients(self) -> "scipy.sparse.csr_matrix":
+    def coefficients(self) -> "csr_matrix":
         return self._cpp.get_coefficients()
 
     def get_corresponding_state(self: "Self", ket_or_index: Union[KetType, int]) -> "Self":
@@ -88,24 +91,6 @@ class BasisBase(ABC, Generic[KetType]):
         if isinstance(state_or_index, (int, np.integer)):
             return self._cpp.get_corresponding_ket_index(state_or_index)
         return self._cpp.get_corresponding_ket_index(state_or_index._cpp)  # type: ignore [reportPrivateUsage]
-
-    @overload
-    def get_amplitudes(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
-
-    @overload
-    def get_amplitudes(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
-
-    def get_amplitudes(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
-        return self._cpp.get_amplitudes(ket_or_basis._cpp)
-
-    @overload
-    def get_overlaps(self, ket_or_basis: KetType) -> "np.ndarray[Any,Any]": ...
-
-    @overload
-    def get_overlaps(self, ket_or_basis: "BasisBase[KetType]") -> "scipy.sparse.csr_matrix": ...
-
-    def get_overlaps(self, ket_or_basis: Union[KetType, "BasisBase[KetType]"]):
-        return self._cpp.get_overlaps(ket_or_basis._cpp)
 
 
 Basis = BasisBase[Any]
