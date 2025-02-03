@@ -10,7 +10,6 @@ from pairinteraction.backend._wrapped import (
     Parity,
     SystemAtomDouble as SystemAtom,
     SystemPairDouble as SystemPair,
-    calculate_energy,
     diagonalize,
 )
 
@@ -26,6 +25,5 @@ __all__ = [
     "Parity",
     "SystemAtom",
     "SystemPair",
-    "calculate_energy",
     "diagonalize",
 ]
