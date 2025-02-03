@@ -38,7 +38,7 @@ class KetAtomBase(KetBase):
         f: Optional[float] = None,
         m: Optional[float] = None,
         energy: Union[float, "PlainQuantity[float]", None] = None,
-        energy_unit: str = "pint",
+        energy_unit: Optional[str] = None,
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
     ) -> None:
@@ -97,7 +97,7 @@ class KetAtomBase(KetBase):
             m: See attribute. This should always be provided.
             energy: See attribute. Default None, i.e. load from the database.
             energy_unit: In which unit the energy is given, e.g. "GHz".
-                Default "pint", i.e. energy is provided as pint object.
+                Default None, i.e. energy is provided as pint object.
             parity: See attribute. Default None, i.e. load from the database.
             database: Which database to use. Default None, i.e. use the global database instance.
 
@@ -190,15 +190,14 @@ class KetAtomBase(KetBase):
     def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int) -> "PlainQuantity[float]": ...
 
     @overload
-    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, *, unit: str) -> "float": ...
+    def get_matrix_element(self, ket: "Self", operator: OperatorType, q: int, unit: str) -> "float": ...
 
     def get_matrix_element(
         self,
         ket: "Self",
         operator: OperatorType,
         q: int,
-        *,
-        unit: str = "pint",
+        unit: Optional[str] = None,
     ):
         BasisAtomClass = get_basis_atom_class_from_ket(self)
         basis = BasisAtomClass(self.species, additional_kets=[self, ket], database=self.database)

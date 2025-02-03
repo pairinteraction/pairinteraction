@@ -45,7 +45,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         f: Optional[tuple[float, float]] = None,
         m: Optional[tuple[float, float]] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
-        energy_unit: str = "pint",
+        energy_unit: Optional[str] = None,
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
         additional_kets: Optional[list[KetAtomType]] = None,
@@ -76,7 +76,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
             m: tuple of (min, max) values for this quantum number. Default None, i.e. add all available states.
             energy: tuple of (min, max) value for the energy. Default None, i.e. add all available states.
             energy_unit: In which unit the energy values are given, e.g. "GHz".
-                Default "pint", i.e. energy is provided as pint object.
+                Default None, i.e. energy is provided as pint object.
             parity: The parity of the states to consider. Default None, i.e. add all available states.
             database: Which database to use. Default None, i.e. use the global database instance.
             additional_kets: List of additional kets to add to the basis. Default None.
@@ -137,9 +137,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
     ) -> "PlainQuantity[Array]": ...
 
     @overload
-    def get_matrix_elements(
-        self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, *, unit: str
-    ) -> "Array": ...
+    def get_matrix_elements(self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, unit: str) -> "Array": ...
 
     @overload
     def get_matrix_elements(
@@ -147,12 +145,10 @@ class BasisAtomBase(BasisBase[KetAtomType]):
     ) -> "PlainQuantity[csr_matrix]": ...
 
     @overload
-    def get_matrix_elements(
-        self, ket_or_basis: "Self", operator: OperatorType, q: int, *, unit: str
-    ) -> "csr_matrix": ...
+    def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
 
     def get_matrix_elements(
-        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, *, unit: str = "pint"
+        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
     ):
         matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, get_cpp_operator_type(operator), q)
         matrix_elements: QuantityAbstract

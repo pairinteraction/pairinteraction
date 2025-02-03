@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Union, get_args, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, get_args, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -78,7 +78,7 @@ class KetBase(ABC):
     @overload
     def get_energy(self, unit: str) -> float: ...
 
-    def get_energy(self, unit: str = "pint"):
+    def get_energy(self, unit: Optional[str] = None):
         energy_au = self._cpp.get_energy()
         energy = QuantityScalar.from_base(energy_au, "ENERGY")
         return energy.to_unit(unit)

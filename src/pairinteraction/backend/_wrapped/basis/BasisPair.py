@@ -55,7 +55,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         m: Optional[tuple[float, float]] = None,
         product_of_parities: Optional[Parity] = None,
         energy: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
-        energy_unit: str = "pint",
+        energy_unit: Optional[str] = None,
     ) -> None:
         """Create a basis for a pair of atoms.
 
@@ -91,7 +91,7 @@ class BasisPairBase(BasisBase[KetPairType]):
                 Default None, i.e. add all available states.
             energy: tuple of (min, max) value for the pair energy. Default None, i.e. add all available states.
             energy_unit: In which unit the energy values are given, e.g. "GHz".
-                Default "pint", i.e. energy is provided as pint object.
+                Default None, i.e. energy is provided as pint object.
 
         """
         creator = self._cpp_creator()
@@ -142,7 +142,7 @@ class BasisPairBase(BasisBase[KetPairType]):
 
     @overload
     def get_matrix_elements(
-        self, ket_or_basis: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], *, unit: str
+        self, ket_or_basis: KetPairLike, operators: tuple[OperatorType, OperatorType], qs: tuple[int, int], unit: str
     ) -> "Array": ...
 
     @overload
@@ -156,7 +156,6 @@ class BasisPairBase(BasisBase[KetPairType]):
         ket_or_basis: BasisPairLike,
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
-        *,
         unit: str,
     ) -> "csr_matrix": ...
 
@@ -165,8 +164,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         ket_or_basis: Union[KetPairLike, BasisPairLike],
         operators: tuple[OperatorType, OperatorType],
         qs: tuple[int, int],
-        *,
-        unit: str = "pint",
+        unit: Optional[str] = None,
     ):
         operators_cpp = [get_cpp_operator_type(operator) for operator in operators]
         ket_or_basis_cpp: list[Any]

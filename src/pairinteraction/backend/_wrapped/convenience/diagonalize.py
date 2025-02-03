@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Optional, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
@@ -18,7 +18,7 @@ def diagonalize(
     precision: int = 12,
     sort_by_energy: bool = True,
     energy_range: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
-    energy_unit: str = "pint",
+    energy_unit: Optional[str] = None,
 ) -> None:
     cpp_systems = [s._cpp for s in systems]  # type: ignore [reportPrivateUsage]
     cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
