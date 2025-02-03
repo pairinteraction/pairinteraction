@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
 
 import numpy as np
 
@@ -72,7 +72,7 @@ class SystemAtomBase(SystemBase[BasisType]):
     def set_electric_field(
         self: "Self",
         electric_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
-        unit: str = "pint",
+        unit: Optional[str] = None,
     ) -> "Self":
         electric_field_au = [QuantityScalar(v, unit).to_base("ELECTRIC_FIELD") for v in electric_field]
         self._cpp.set_electric_field(electric_field_au)
@@ -81,7 +81,7 @@ class SystemAtomBase(SystemBase[BasisType]):
     def set_magnetic_field(
         self: "Self",
         magnetic_field: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
-        unit: str = "pint",
+        unit: Optional[str] = None,
     ) -> "Self":
         magnetic_field_au = [QuantityScalar(v, unit).to_base("MAGNETIC_FIELD") for v in magnetic_field]
         self._cpp.set_magnetic_field(magnetic_field_au)
@@ -95,16 +95,16 @@ class SystemAtomBase(SystemBase[BasisType]):
     def get_corresponding_energy(self: "Self", ket: "KetAtom") -> "PlainQuantity[float]": ...
 
     @overload
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", *, unit: str) -> float: ...
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: str) -> float: ...
 
-    def get_corresponding_energy(self: "Self", ket: "KetAtom", *, unit: str = "pint"):
+    def get_corresponding_energy(self: "Self", ket: "KetAtom", unit: Optional[str] = None):
         overlaps = self.get_eigenbasis().get_overlaps(ket)
         idx = np.argmax(overlaps)
         if overlaps[idx] <= 0.5:
             logger.warning(
                 "The provided ket states does not correspond to an eigenstate of the system in a unique way."
             )
-        return self.get_eigenvalues(unit=unit)[idx]
+        return self.get_eigenvalues(unit)[idx]
 
 
 class SystemAtomFloat(SystemAtomBase[BasisAtomFloat]):

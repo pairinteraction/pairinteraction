@@ -60,19 +60,19 @@ ValueType = TypeVar("ValueType", bound=Union[float, "Array", "csr_matrix"])
 
 class QuantityAbstract(Generic[ValueType]):
     def __init__(
-        self, value: Union[ValueType, PlainQuantity[ValueType]], unit: Union[str, "PlainUnit"] = "pint"
+        self, value: Union[ValueType, PlainQuantity[ValueType]], unit: Union[str, "PlainUnit", None] = None
     ) -> None:
         if isinstance(value, ureg.Quantity):
-            if unit != "pint":
+            if unit is not None:
                 raise ValueError("unit must be 'pint' if value is a pairinteraction.ureg.Quantity")
             self.quantity = value
         elif isinstance(value, PlainQuantity):
             raise TypeError(
                 "Only use pint quantities genereated by pairinteraction.ureg and not by a different pint.UnitRegistry."
             )
-        elif unit != "pint":
+        elif unit is not None:
             self.quantity = ureg.Quantity(value, unit)
-        else:  # value is not a pint.Quantity and unit is "pint"
+        else:  # value is not a pint.Quantity and unit is None
             raise ValueError("unit must be a string specifiying the unit of the value if value is not a pint.Quantity")
 
     @classmethod
@@ -94,9 +94,9 @@ class QuantityAbstract(Generic[ValueType]):
         return self.to_unit(BaseUnits[dimension], context)  # type: ignore
 
     def to_unit(
-        self, unit: Union[str, "PlainUnit"] = "pint", context: Optional[Context] = None
+        self, unit: Union[str, "PlainUnit", None] = None, context: Optional[Context] = None
     ) -> Union[ValueType, PlainQuantity[ValueType]]:
-        if unit == "pint":
+        if unit is None:
             return self.quantity
         if context is None:
             dimension: list[Dimension] = [
@@ -110,9 +110,9 @@ class QuantityAbstract(Generic[ValueType]):
 
 
 class QuantityScalar(QuantityAbstract[float]):
-    def __init__(self, value: Union[float, PlainQuantity[float]], unit: Union[str, "PlainUnit"] = "pint") -> None:
+    def __init__(self, value: Union[float, PlainQuantity[float]], unit: Union[str, "PlainUnit", None] = None) -> None:
         self._is_zero_without_unit = False
-        if unit == "pint" and np.isscalar(value) and value == 0:
+        if unit is None and np.isscalar(value) and value == 0:
             value = ureg.Quantity(0)
             self._is_zero_without_unit = True
         super().__init__(value, unit)
@@ -121,17 +121,19 @@ class QuantityScalar(QuantityAbstract[float]):
             raise TypeError(f"value must be a scalar, not {type(magnitude)}")
 
     def to_unit(
-        self, unit: Union[str, "PlainUnit"] = "pint", context: Optional[Context] = None
+        self, unit: Union[str, "PlainUnit", None] = None, context: Optional[Context] = None
     ) -> Union[float, PlainQuantity[float]]:
         if self._is_zero_without_unit:
-            if unit == "pint":
+            if unit is None:
                 raise ValueError("value 0 without a unit given cannot be converted to a pint.Quantity")
             return 0
         return super().to_unit(unit, context)
 
 
 class QuantityArray(QuantityAbstract["Array"]):
-    def __init__(self, value: Union["Array", PlainQuantity["Array"]], unit: Union[str, "PlainUnit"] = "pint") -> None:
+    def __init__(
+        self, value: Union["Array", PlainQuantity["Array"]], unit: Union[str, "PlainUnit", None] = None
+    ) -> None:
         super().__init__(value, unit)
         magnitude = self.quantity.magnitude
         if not isinstance(magnitude, Collection):
@@ -144,7 +146,7 @@ class QuantityArray(QuantityAbstract["Array"]):
 
 class QuantitySparse(QuantityAbstract["csr_matrix"]):
     def __init__(
-        self, value: Union["csr_matrix", PlainQuantity["csr_matrix"]], unit: Union[str, "PlainUnit"] = "pint"
+        self, value: Union["csr_matrix", PlainQuantity["csr_matrix"]], unit: Union[str, "PlainUnit", None] = None
     ) -> None:
         super().__init__(value, unit)
         magnitude = self.quantity.magnitude

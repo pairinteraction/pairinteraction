@@ -1,5 +1,5 @@
 from collections.abc import Collection
-from typing import TYPE_CHECKING, Any, ClassVar, TypeVar, Union
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.BasisPair import (
@@ -71,7 +71,9 @@ class SystemPairBase(SystemBase[BasisType]):
         self._cpp.set_order(order)
         return self
 
-    def set_distance(self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: str = "pint") -> "Self":
+    def set_distance(
+        self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
+    ) -> "Self":
         distance_au = QuantityScalar(distance, unit).to_base("DISTANCE")
         self._cpp.set_distance(distance_au)
         return self
@@ -79,7 +81,7 @@ class SystemPairBase(SystemBase[BasisType]):
     def set_distance_vector(
         self: "Self",
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
-        unit: str = "pint",
+        unit: Optional[str] = None,
     ) -> "Self":
         distance_au = [QuantityScalar(v, unit).to_base("DISTANCE") for v in distance]
         self._cpp.set_distance_vector(distance_au)

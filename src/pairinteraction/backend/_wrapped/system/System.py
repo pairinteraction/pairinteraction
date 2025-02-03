@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Union, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
@@ -75,7 +75,7 @@ class SystemBase(ABC, Generic[BasisType]):
         precision: int = 12,
         sort_by_energy: bool = True,
         energy_range: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
-        energy_unit: str = "pint",
+        energy_unit: Optional[str] = None,
     ) -> "Self":
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
         if energy_range is None:
@@ -105,20 +105,20 @@ class SystemBase(ABC, Generic[BasisType]):
     def matrix(self) -> "csr_matrix":
         return self._cpp.get_matrix()
 
+    def get_eigenbasis(self) -> BasisType:
+        cpp_eigenbasis = self._cpp.get_eigenbasis()
+        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
+
     @overload
     def get_eigenvalues(self) -> "PlainQuantity[Array]": ...
 
     @overload
     def get_eigenvalues(self, unit: str) -> "npt.NDArray[np.floating[Any]]": ...
 
-    def get_eigenvalues(self, unit: str = "pint"):
+    def get_eigenvalues(self, unit: Optional[str] = None):
         eigenvalues_au = self._cpp.get_eigenvalues()
         eigenvalues = QuantityArray.from_base(eigenvalues_au, "ENERGY")
         return eigenvalues.to_unit(unit)
-
-    def get_eigenbasis(self) -> BasisType:
-        cpp_eigenbasis = self._cpp.get_eigenbasis()
-        return self._TypeBasis._from_cpp_object(cpp_eigenbasis)  # type: ignore
 
     @overload
     def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
@@ -126,7 +126,7 @@ class SystemBase(ABC, Generic[BasisType]):
     @overload
     def get_hamiltonian(self, unit: str) -> "csr_matrix": ...
 
-    def get_hamiltonian(self, unit: str = "pint"):
+    def get_hamiltonian(self, unit: Optional[str] = None):
         hamiltonian_au = self._cpp.get_matrix()
         hamiltonian = QuantitySparse.from_base(hamiltonian_au, "ENERGY")
         return hamiltonian.to_unit(unit)
