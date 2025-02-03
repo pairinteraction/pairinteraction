@@ -18,6 +18,11 @@
 #include <doctest/doctest.h>
 
 namespace pairinteraction {
+
+constexpr double HARTREE_IN_GHZ = 6579683.920501762;
+constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
+constexpr double UM_IN_ATOMIC_UNITS = 1 / 5.29177210544e-5;
+
 DOCTEST_TEST_CASE("create a BasisPair") {
     // Create single-atom system
     Database &database = Database::get_global_instance();
@@ -27,7 +32,7 @@ DOCTEST_TEST_CASE("create a BasisPair") {
                      .restrict_quantum_number_l(0, 2)
                      .create(database);
     SystemAtom<double> system(basis);
-    system.set_electric_field({0, 0, 1 * 1.9446903811524456e-10});
+    system.set_electric_field({0, 0, 1 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
     DiagonalizerEigen<double> diagonalizer;
     system.diagonalize(diagonalizer);
@@ -39,8 +44,8 @@ DOCTEST_TEST_CASE("create a BasisPair") {
                    .set_quantum_number_l(0)
                    .set_quantum_number_m(0.5)
                    .create(database);
-    double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
-    double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
+    double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
+    double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     // Create two-atom bases
     auto basis_pair_a = pairinteraction::BasisPairCreator<double>()
@@ -98,7 +103,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                      .restrict_quantum_number_l(0, 2)
                      .create(database);
     SystemAtom<double> system(basis);
-    system.set_electric_field({0, 0, 10 * 1.9446903811524456e-10});
+    system.set_electric_field({0, 0, 10 * VOLT_PER_CM_IN_ATOMIC_UNITS});
     system.diagonalize(diagonalizer);
 
     // Get energy window for a two-atom basis
@@ -108,8 +113,8 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                    .set_quantum_number_l(0)
                    .set_quantum_number_m(0.5)
                    .create(database);
-    double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
-    double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
+    double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
+    double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     // Create two-atom system
     auto basis_pair_unperturbed = pairinteraction::BasisPairCreator<double>()
@@ -119,7 +124,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                                       .restrict_quantum_number_m(1, 1)
                                       .create();
     auto system_pair =
-        SystemPair<double>(basis_pair_unperturbed).set_distance(1e-6 / 5.29177210544e-11);
+        SystemPair<double>(basis_pair_unperturbed).set_distance(1 * UM_IN_ATOMIC_UNITS);
     system_pair.diagonalize(diagonalizer);
 
     auto basis_pair = system_pair.get_eigenbasis();
@@ -170,7 +175,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                 basis_pair, OperatorType::ELECTRIC_DIPOLE, OperatorType::IDENTITY, 0, 0);
             tmp += -basis_pair->get_matrix_elements(basis_pair, OperatorType::IDENTITY,
                                                     OperatorType::ELECTRIC_DIPOLE, 0, 0);
-            hamiltonian += 10 * 1.9446903811524456e-10 * tmp;
+            hamiltonian += 10 * VOLT_PER_CM_IN_ATOMIC_UNITS * tmp;
         }
 
         // dipole-dipole interaction
@@ -182,7 +187,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
                                                     OperatorType::ELECTRIC_DIPOLE, 1, -1);
             tmp += -basis_pair->get_matrix_elements(basis_pair, OperatorType::ELECTRIC_DIPOLE,
                                                     OperatorType::ELECTRIC_DIPOLE, -1, 1);
-            hamiltonian += std::pow(1e-6 / 5.29177210544e-11, -3) * tmp;
+            hamiltonian += std::pow(UM_IN_ATOMIC_UNITS, -3) * tmp;
         }
 
         // compare to reference

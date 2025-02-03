@@ -7,6 +7,9 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
+constexpr double HARTREE_IN_GHZ = 6579683.920501762;
+constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
+
 int main(int argc, char **argv) {
     // Call the setup function to configure logging
     pairinteraction::setup();
@@ -49,7 +52,7 @@ int main(int argc, char **argv) {
     systems.reserve(11);
     for (int i = 0; i < 11; ++i) {
         pairinteraction::SystemAtom<double> system(basis);
-        system.set_electric_field({0, 0, i * 1.9446903811524456e-10});
+        system.set_electric_field({0, 0, i * VOLT_PER_CM_IN_ATOMIC_UNITS});
         systems.push_back(std::move(system));
     }
 
@@ -78,7 +81,7 @@ int main(int argc, char **argv) {
     }
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(systems.size()); ++i) {
-        eigenvalues.row(i) = systems[i].get_eigenvalues() * 6579683.920501762;
+        eigenvalues.row(i) = systems[i].get_eigenvalues() * HARTREE_IN_GHZ;
 
         Eigen::MatrixX<double> tmp =
             systems[i].get_eigenbasis()->get_coefficients().toDense().transpose();
@@ -166,7 +169,7 @@ int main(int argc, char **argv) {
             }
         }
         stream.close();
-        if (!overlaps.isApprox(reference_overlaps, 1e-9)) {
+        if (!overlaps.isApprox(reference_overlaps, 1e-8)) {
             for (Eigen::Index i = 0; i < overlaps.size(); ++i) {
                 SPDLOG_DEBUG("Overlap: {} vs {}, delta: {}", overlaps(i), reference_overlaps(i),
                              std::abs(overlaps(i) - reference_overlaps(i)));

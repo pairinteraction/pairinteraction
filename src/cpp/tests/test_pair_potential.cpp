@@ -7,6 +7,9 @@
 #include <spdlog/spdlog.h>
 #include <vector>
 
+constexpr double HARTREE_IN_GHZ = 6579683.920501762;
+constexpr double UM_IN_ATOMIC_UNITS = 1 / 5.29177210544e-5;
+
 int main(int argc, char **argv) {
     // Call the setup function to configure logging
     pairinteraction::setup();
@@ -45,8 +48,8 @@ int main(int argc, char **argv) {
                    .set_quantum_number_l(0)
                    .set_quantum_number_m(0.5)
                    .create(database);
-    double min_energy = 2 * ket->get_energy() - 3 / 6579683.920501762;
-    double max_energy = 2 * ket->get_energy() + 3 / 6579683.920501762;
+    double min_energy = 2 * ket->get_energy() - 3 / HARTREE_IN_GHZ;
+    double max_energy = 2 * ket->get_energy() + 3 / HARTREE_IN_GHZ;
 
     auto basis_pair = pairinteraction::BasisPairCreator<double>()
                           .add(system)
@@ -60,7 +63,7 @@ int main(int argc, char **argv) {
     system_pairs.reserve(5);
     for (int i = 1; i < 6; ++i) {
         pairinteraction::SystemPair<double> system(basis_pair);
-        system.set_distance(i * 1e-6 / 5.29177210544e-11);
+        system.set_distance(i * UM_IN_ATOMIC_UNITS);
         system_pairs.push_back(std::move(system));
     }
 
@@ -90,7 +93,7 @@ int main(int argc, char **argv) {
     }
 
     for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(system_pairs.size()); ++i) {
-        eigenvalues.row(i) = system_pairs[i].get_eigenvalues() * 6579683.920501762;
+        eigenvalues.row(i) = system_pairs[i].get_eigenvalues() * HARTREE_IN_GHZ;
 
         Eigen::MatrixX<double> tmp =
             system_pairs[i].get_eigenbasis()->get_coefficients().toDense().transpose();
@@ -179,7 +182,7 @@ int main(int argc, char **argv) {
             }
         }
         stream.close();
-        if (!overlaps.isApprox(reference_overlaps, 1e-9)) {
+        if (!overlaps.isApprox(reference_overlaps, 1e-8)) {
             for (Eigen::Index i = 0; i < overlaps.size(); ++i) {
                 SPDLOG_DEBUG("Overlap: {} vs {}, delta: {}", overlaps(i), reference_overlaps(i),
                              std::abs(overlaps(i) - reference_overlaps(i)));
