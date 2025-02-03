@@ -174,7 +174,7 @@ toplevel = ["pairinteraction", "pairinteraction.libs"]
 [tool.pytest.ini_options]
 testpaths = [
   "tests",
-  "docs/tutorials/examples_python",
+# "docs/tutorials/examples_python", # TODO reactivate once nbmake has no problem with overview.ipynb under python 3.13
   "src/pairinteraction/",
 ]
 addopts = [
