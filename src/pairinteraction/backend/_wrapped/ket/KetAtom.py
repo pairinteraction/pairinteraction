@@ -1,10 +1,13 @@
-from typing import TYPE_CHECKING, Optional, Union, overload
+from typing import TYPE_CHECKING, Literal, Optional, Union, overload
+
+import numpy as np
+from scipy.special import exprel
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.cpp_types import OperatorType, Parity, get_cpp_parity
 from pairinteraction.backend._wrapped.database.Database import Database
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
-from pairinteraction.units import QuantityScalar
+from pairinteraction.units import QuantityArray, QuantityScalar, ureg
 
 if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
@@ -197,3 +200,203 @@ class KetAtom(KetBase):
 
         matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
         return matrixelements[0]
+
+    @overload
+    def get_spontaneous_transition_rates(
+        self,
+    ) -> tuple[list["KetAtom"], "PlainQuantity[np.ndarray]"]: ...
+
+    @overload
+    def get_spontaneous_transition_rates(
+        self,
+        unit: str,
+    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+
+    def get_spontaneous_transition_rates(
+        self,
+        unit: Optional[str] = None,
+    ):
+        """Calculate the spontaneous transition rates for the KetAtom.
+
+        The spontaneous transition rates are given by the Einstein A coefficients.
+
+        Args:
+            unit: The unit to which to convert the result.
+                Default None will return a pint quantity.
+
+        Returns:
+            The relevant states and the transition rates.
+
+        """
+        relevant_kets, transition_rates_au = self._get_transition_rates("spontaneous")
+        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "TRANSITION_RATE").to_pint_or_unit(unit)
+        return relevant_kets, transition_rates
+
+    @overload
+    def get_black_body_transition_rates(
+        self,
+        temperature: Union[float, "PlainQuantity[float]"],
+        temperature_unit: Optional[str] = None,
+    ) -> tuple[list["KetAtom"], "PlainQuantity[np.ndarray]"]: ...
+
+    @overload
+    def get_black_body_transition_rates(
+        self,
+        temperature: "PlainQuantity[float]",
+        *,
+        unit: str,
+    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+
+    @overload
+    def get_black_body_transition_rates(
+        self,
+        temperature: float,
+        temperature_unit: str,
+        unit: str,
+    ) -> tuple[list["KetAtom"], np.ndarray]: ...
+
+    def get_black_body_transition_rates(
+        self,
+        temperature: Union[float, "PlainQuantity[float]"],
+        temperature_unit: Optional[str] = None,
+        unit: Optional[str] = None,
+    ):
+        """Calculate the black body transition rates of the KetAtom.
+
+        The black body transitions rates are given by the Einstein B coefficients,
+        with a weight factor given by Planck's law.
+
+        Args:
+            temperature: The temperature, for which to calculate the black body transition rates.
+            temperature_unit: The unit of the temperature.
+                Default None will assume the temperature is given as pint quantity.
+            unit: The unit to which to convert the result.
+                Default None will return a pint quantity.
+
+        Returns:
+            The relevant states and the transition rates.
+
+        """
+        temperature_au = QuantityScalar.from_pint_or_unit(temperature, temperature_unit, "TEMPERATURE").to_base_unit()
+        relevant_kets, transition_rates_au = self._get_transition_rates("black_body", temperature_au)
+        transition_rates = QuantityArray.from_base_unit(transition_rates_au, "TRANSITION_RATE").to_pint_or_unit(unit)
+        return relevant_kets, transition_rates
+
+    @overload
+    def get_lifetime(
+        self,
+        temperature: Union[float, "PlainQuantity[float]", None] = None,
+        temperature_unit: Optional[str] = None,
+    ) -> "PlainQuantity[float]": ...
+
+    @overload
+    def get_lifetime(
+        self,
+        *,
+        unit: str,
+    ) -> float: ...
+
+    @overload
+    def get_lifetime(
+        self,
+        temperature: "PlainQuantity[float]",
+        *,
+        unit: str,
+    ) -> float: ...
+
+    @overload
+    def get_lifetime(
+        self,
+        temperature: float,
+        temperature_unit: str,
+        unit: str,
+    ) -> float: ...
+
+    def get_lifetime(
+        self,
+        temperature: Union[float, "PlainQuantity[float]", None] = None,
+        temperature_unit: Optional[str] = None,
+        unit: Optional[str] = None,
+    ):
+        """Calculate the lifetime of the KetAtom.
+
+        The lifetime is the inverse of the sum of all transition rates.
+
+        Args:
+            temperature: The temperature, for which to calculate the black body transition rates.
+                Default None will not include black body transitions.
+            temperature_unit: The unit of the temperature.
+                Default None will assume the temperature is given as pint quantity.
+            unit: The unit to which to convert the result.
+                Default None will return a pint quantity.
+
+        Returns:
+            The lifetime of the state.
+
+        """
+        _, transition_rates = self.get_spontaneous_transition_rates()
+        transition_rates_au = transition_rates.to_base_units().magnitude
+        if temperature is not None:
+            _, black_body_transition_rates = self.get_black_body_transition_rates(temperature, temperature_unit)
+            transition_rates_au = np.append(transition_rates_au, black_body_transition_rates.to_base_units().magnitude)
+
+        lifetime_au = 1 / np.sum(transition_rates_au)
+
+        return QuantityScalar.from_base_unit(lifetime_au, "TIME").to_pint_or_unit(unit)
+
+    def _get_transition_rates(
+        self,
+        which_transitions: Literal["spontaneous", "black_body"],
+        temperature_au: Union[float, None] = None,
+    ) -> tuple[list["KetAtom"], np.ndarray]:
+        from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomReal
+        from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtomReal
+
+        assert which_transitions in ["spontaneous", "black_body"]
+
+        is_spontaneous = which_transitions == "spontaneous"
+        n_max = self.n + 30
+
+        energy_range = None
+        if is_spontaneous:
+            energy_range = (ureg.Quantity(-1, "hartree"), self.energy)
+
+        basis = BasisAtomReal(
+            self.species,
+            n=(1, n_max),
+            l=(self.l - 1, self.l + 1),
+            m=(self.m - 1, self.m + 1),
+            energy=energy_range,
+            additional_kets=[self],  # needed to make get_matrix_elements(self, ...) work
+            database=self.database,
+        )
+        system = SystemAtomReal(basis)
+
+        relevant_kets = basis.kets
+        energy_differences_au = self.get_energy("hartree") - system.get_eigenvalues("hartree")
+        electric_dipole_moments_au = np.zeros(len(basis.kets))
+        for q in [-1, 0, 1]:
+            # the different entries are only at most once nonzero -> we can just add the arrays
+            el_di_m = basis.get_matrix_elements(self, "ELECTRIC_DIPOLE", q)
+            electric_dipole_moments_au += el_di_m.to_base_units().magnitude
+
+        transition_rates_au = (
+            (4 / 3)
+            * np.abs(electric_dipole_moments_au) ** 2
+            * energy_differences_au**2
+            / ureg.Quantity(1, "speed_of_light").to_base_units().magnitude ** 3
+        )
+
+        if is_spontaneous:
+            transition_rates_au *= energy_differences_au
+        else:
+            assert temperature_au is not None, "Temperature must be given for black body transitions."
+            if temperature_au == 0:
+                transition_rates_au *= 0
+            else:  # for numerical stability we use 1 / exprel(x) = x / (exp(x) - 1)
+                transition_rates_au *= temperature_au / exprel(energy_differences_au / temperature_au)
+
+        mask = transition_rates_au != 0
+        relevant_kets = [ket for ket, is_relevant in zip(relevant_kets, mask) if is_relevant]
+        transition_rates_au = transition_rates_au[mask]
+        return relevant_kets, transition_rates_au
