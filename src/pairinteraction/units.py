@@ -23,6 +23,7 @@ Dimension = Literal[
     "VELOCITY",
     "TEMPERATURE",
     "TIME",
+    "TRANSITION_RATE",
     "ELECTRIC_DIPOLE",
     "ELECTRIC_QUADRUPOLE",
     "ELECTRIC_QUADRUPOLE_ZERO",
@@ -43,6 +44,7 @@ _CommonUnits: dict[Dimension, str] = {
     "VELOCITY": "speed_of_light",  # 1 c = 137.03599908356244 bohr / au_time
     "TEMPERATURE": "K",  # 1 K = 3.1668115634555572e-06 atomic_unit_of_temperature
     "TIME": "s",  # 1 s = 4.134137333518244e+16 au_time
+    "TRANSITION_RATE": "1/s",  # 1 / s = 2.4188843265856806e-17 * 1 / au_time
     "ELECTRIC_DIPOLE": "e * a0",  # 1 e * a0 = 1 au_current * au_time * bohr
     "ELECTRIC_QUADRUPOLE": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
     "ELECTRIC_QUADRUPOLE_ZERO": "e * a0^2",  # 1 e * a0^2 = 1 au_current * au_time * bohr ** 2
@@ -159,7 +161,7 @@ class QuantityAbstract(Generic[ValueType]):
         """Return the value of the quantity in the base unit."""
         return self.to_pint().magnitude
 
-    def to_pint_or_unit(self, unit: Optional[str]) -> ValueType:
+    def to_pint_or_unit(self, unit: Optional[str]) -> Union[ValueType, PlainQuantity[ValueType]]:
         if unit is None:
             return self.to_pint()
         return self.to_unit(unit)
