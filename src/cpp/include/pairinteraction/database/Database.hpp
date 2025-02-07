@@ -61,11 +61,11 @@ public:
     static Database &get_global_instance(bool download_missing, bool wigner_in_memory,
                                          std::filesystem::path database_dir);
 
-    std::shared_ptr<const KetAtom> get_ket(std::string species,
+    std::shared_ptr<const KetAtom> get_ket(const std::string &species,
                                            const AtomDescriptionByParameters &description);
 
     template <typename Scalar>
-    std::shared_ptr<const BasisAtom<Scalar>> get_basis(std::string species,
+    std::shared_ptr<const BasisAtom<Scalar>> get_basis(const std::string &species,
                                                        const AtomDescriptionByRanges &description,
                                                        std::vector<size_t> additional_ket_ids);
 
@@ -101,8 +101,9 @@ private:
     static constexpr bool default_wigner_in_memory{true};
     static const std::filesystem::path default_database_dir;
 
-    oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>>
-        &get_matrix_elements_cache();
+    static oneapi::tbb::concurrent_unordered_map<std::string,
+                                                 Eigen::SparseMatrix<double, Eigen::RowMajor>> &
+    get_matrix_elements_cache();
 
     static Database &get_global_instance_without_checks(bool download_missing,
                                                         bool wigner_in_memory,
@@ -116,7 +117,7 @@ private:
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define EXTERN_GETTERS(SCALAR)                                                                     \
     extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(          \
-        std::string species, const AtomDescriptionByRanges &description,                           \
+        const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
     extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
     Database::get_matrix_elements<SCALAR>(std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,  \

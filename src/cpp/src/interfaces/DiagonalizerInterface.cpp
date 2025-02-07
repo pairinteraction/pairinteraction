@@ -1,11 +1,15 @@
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 
+#include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
 
 namespace pairinteraction {
+template <typename Scalar>
+DiagonalizerInterface<Scalar>::DiagonalizerInterface(FPP fpp) : fpp(fpp) {}
+
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,

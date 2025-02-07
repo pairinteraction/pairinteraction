@@ -7,6 +7,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
+#include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 #include "pairinteraction/utils/Range.hpp"
 
@@ -15,6 +16,9 @@
 #include <fmt/ranges.h>
 
 namespace pairinteraction {
+
+constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
+
 DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
@@ -120,6 +124,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
+    // Double precision
     std::vector<std::unique_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
     diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
@@ -129,12 +134,14 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
 
-    for (int precision : {1, 4, 12}) {
+    for (int precision : {1, 6, 15}) {
         DOCTEST_MESSAGE("Precision: ", precision);
 
         for (const auto &diagonalizer : diagonalizers) {
             auto system = SystemAtom<std::complex<double>>(basis);
-            system.set_electric_field({0.0001, 0.0002, 0.0003});
+            system.set_electric_field({1 * VOLT_PER_CM_IN_ATOMIC_UNITS,
+                                       2 * VOLT_PER_CM_IN_ATOMIC_UNITS,
+                                       3 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
             Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
             eigensolver.compute(system.get_matrix());
@@ -143,9 +150,49 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // We specify a search interval because this is required if the FEAST routine is used.
             // To avoid overflows, the interval ranges from half the smallest possible value to half
             // the largest possible value.
-            system.diagonalize(*diagonalizer, 12,
+            system.diagonalize(*diagonalizer, precision,
                                {std::numeric_limits<double>::lowest() / 2,
                                 std::numeric_limits<double>::max() / 2});
+            auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
+            for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
+                DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
+                              10 * std::pow(10, -precision));
+            }
+        }
+    }
+
+    // Single precision
+    diagonalizers.clear();
+    diagonalizers.push_back(
+        std::make_unique<DiagonalizerEigen<std::complex<double>>>(FPP::FLOAT32));
+#ifdef WITH_LAPACKE
+    diagonalizers.push_back(
+        std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FPP::FLOAT32));
+#endif
+#ifdef WITH_MKL
+    diagonalizers.push_back(
+        std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
+#endif
+
+    for (int precision : {1, 6, 12}) {
+        DOCTEST_MESSAGE("Precision: ", precision);
+
+        for (const auto &diagonalizer : diagonalizers) {
+            auto system = SystemAtom<std::complex<double>>(basis);
+            system.set_electric_field({1 * VOLT_PER_CM_IN_ATOMIC_UNITS,
+                                       2 * VOLT_PER_CM_IN_ATOMIC_UNITS,
+                                       3 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+
+            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
+            eigensolver.compute(system.get_matrix());
+            auto eigenvalues_eigen = eigensolver.eigenvalues();
+
+            // We specify a search interval because this is required if the FEAST routine is used.
+            // To avoid overflows, the interval ranges from half the smallest possible value to half
+            // the largest possible value.
+            system.diagonalize(
+                *diagonalizer, precision,
+                {std::numeric_limits<float>::lowest() / 2, std::numeric_limits<float>::max() / 2});
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <

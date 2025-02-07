@@ -22,7 +22,7 @@ KetAtomCreator &KetAtomCreator::set_energy(double value) {
 }
 
 KetAtomCreator &KetAtomCreator::set_quantum_number_f(double value) {
-    if (2 * value != std::rintf(2 * value)) {
+    if (2 * value != std::rint(2 * value)) {
         throw std::invalid_argument("Quantum number f must be an integer or half-integer.");
     }
     quantum_number_f.emplace(value);
@@ -30,7 +30,7 @@ KetAtomCreator &KetAtomCreator::set_quantum_number_f(double value) {
 }
 
 KetAtomCreator &KetAtomCreator::set_quantum_number_m(double value) {
-    if (2 * value != std::rintf(2 * value)) {
+    if (2 * value != std::rint(2 * value)) {
         throw std::invalid_argument("Quantum number m must be an integer or half-integer.");
     }
     quantum_number_m.emplace(value);

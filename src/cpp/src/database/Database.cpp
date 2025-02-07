@@ -377,7 +377,7 @@ Database::AvailabilityWigner Database::get_availability_of_wigner_table() {
             tables[name].local_version >= tables[name].remote_version};
 }
 
-std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
+std::shared_ptr<const KetAtom> Database::get_ket(const std::string &species,
                                                  const AtomDescriptionByParameters &description) {
 
     ensure_presence_of_table(species + "_states");
@@ -388,7 +388,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
     }
     if (description.quantum_number_f.has_value() &&
         2 * description.quantum_number_f.value() !=
-            std::rintf(2 * description.quantum_number_f.value())) {
+            std::rint(2 * description.quantum_number_f.value())) {
         throw std::invalid_argument("The quantum number f must be an integer or half-integer.");
     }
     if (description.quantum_number_f.has_value() && description.quantum_number_f.value() < 0) {
@@ -396,7 +396,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
     }
     if (description.quantum_number_j.has_value() &&
         2 * description.quantum_number_j.value() !=
-            std::rintf(2 * description.quantum_number_j.value())) {
+            std::rint(2 * description.quantum_number_j.value())) {
         throw std::invalid_argument("The quantum number j must be an integer or half-integer.");
     }
     if (description.quantum_number_j.has_value() && description.quantum_number_j.value() < 0) {
@@ -404,7 +404,7 @@ std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
     }
     if (description.quantum_number_m.has_value() &&
         2 * description.quantum_number_m.value() !=
-            std::rintf(2 * description.quantum_number_m.value())) {
+            std::rint(2 * description.quantum_number_m.value())) {
         throw std::invalid_argument("The quantum number m must be an integer or half-integer.");
     }
 
@@ -688,10 +688,8 @@ std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
 
 template <typename Scalar>
 std::shared_ptr<const BasisAtom<Scalar>>
-Database::get_basis(std::string species, const AtomDescriptionByRanges &description,
+Database::get_basis(const std::string &species, const AtomDescriptionByRanges &description,
                     std::vector<size_t> additional_ket_ids) {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-
     ensure_presence_of_table(species + "_states");
 
     // Describe the states
@@ -1486,7 +1484,7 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 #define INSTANTIATE_GETTERS(SCALAR)                                                                \
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
-        std::string species, const AtomDescriptionByRanges &description,                           \
+        const std::string &species, const AtomDescriptionByRanges &description,                    \
         std::vector<size_t> additional_ket_ids);                                                   \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor> Database::get_matrix_elements<SCALAR>(   \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
