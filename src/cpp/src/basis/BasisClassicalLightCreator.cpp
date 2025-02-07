@@ -36,7 +36,7 @@ BasisClassicalLightCreator<Scalar>::create() const {
     std::vector<std::shared_ptr<const ket_t>> kets;
     kets.reserve(range_quantum_number_q.max() - range_quantum_number_q.min() + 1);
 
-    auto ket_creator = KetClassicalLightCreator<real_t>().set_photon_energy(photon_energy);
+    auto ket_creator = KetClassicalLightCreator().set_photon_energy(photon_energy);
 
     for (int q = range_quantum_number_q.min(); q <= range_quantum_number_q.max(); q++) {
         kets.push_back(ket_creator.set_quantum_number_q(q).create());

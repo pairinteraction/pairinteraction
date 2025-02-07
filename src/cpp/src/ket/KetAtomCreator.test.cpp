@@ -8,7 +8,7 @@
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a ket for rubidium") {
     Database &database = Database::get_global_instance();
-    auto ket = KetAtomCreator<double>("Rb", 60, 1, 0.5, 0.5).create(database);
+    auto ket = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);
     DOCTEST_CHECK(ket->get_species() == "Rb");
     DOCTEST_CHECK(ket->get_quantum_number_n() == 60);
     DOCTEST_CHECK(ket->get_quantum_number_l() == 1);
@@ -22,7 +22,7 @@ DOCTEST_TEST_CASE("create a ket for rubidium") {
 
 DOCTEST_TEST_CASE("create a ket for strontium") {
     Database &database = Database::get_global_instance();
-    auto ket = KetAtomCreator<double>()
+    auto ket = KetAtomCreator()
                    .set_species("Sr88_singlet")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(1)
@@ -40,9 +40,9 @@ DOCTEST_TEST_CASE("create a ket for strontium") {
 
 DOCTEST_TEST_CASE("test for equality") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator<double>("Rb", 60, 1, 0.5, 0.5).create(database);
-    auto ket2 = KetAtomCreator<double>("Rb", 60, 1, 0.5, 0.5).create(database);
-    auto ket3 = KetAtomCreator<double>("Rb", 60, 1, 1.5, 0.5).create(database);
+    auto ket1 = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);
+    auto ket2 = KetAtomCreator("Rb", 60, 1, 0.5, 0.5).create(database);
+    auto ket3 = KetAtomCreator("Rb", 60, 1, 1.5, 0.5).create(database);
     DOCTEST_CHECK(*ket1 == *ket2);
     DOCTEST_CHECK(*ket1 != *ket3);
 }

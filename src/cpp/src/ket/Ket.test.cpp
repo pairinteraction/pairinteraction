@@ -11,12 +11,12 @@ namespace pairinteraction {
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator;
 
-    class KetDerived : public Ket<double> {
+    class KetDerived : public Ket {
         friend class KetDerivedCreator;
         struct Private {};
 
     public:
-        KetDerived(Private /*unused*/, double f, double m, Parity p) : Ket<double>(0, f, m, p) {}
+        KetDerived(Private /*unused*/, double f, double m, Parity p) : Ket(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
         std::shared_ptr<KetDerived>
         get_ket_for_different_quantum_number_m(double new_quantum_number_m) const {

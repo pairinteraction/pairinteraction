@@ -13,9 +13,9 @@ template <typename Scalar>
 KetPair<Scalar>::KetPair(
     Private /*unused*/, std::initializer_list<size_t> atomic_indices,
     std::initializer_list<std::shared_ptr<const BasisAtom<Scalar>>> atomic_bases, real_t energy)
-    : Ket<real_t>(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
-                  calculate_quantum_number_m(atomic_indices, atomic_bases),
-                  calculate_parity(atomic_indices, atomic_bases)),
+    : Ket(energy, calculate_quantum_number_f(atomic_indices, atomic_bases),
+          calculate_quantum_number_m(atomic_indices, atomic_bases),
+          calculate_parity(atomic_indices, atomic_bases)),
       atomic_indices(atomic_indices), atomic_bases(atomic_bases) {
     if (atomic_indices.size() != atomic_bases.size()) {
         throw std::invalid_argument(
@@ -59,7 +59,7 @@ std::vector<std::shared_ptr<const BasisAtom<Scalar>>> KetPair<Scalar>::get_atomi
 
 template <typename Scalar>
 bool KetPair<Scalar>::operator==(const KetPair<Scalar> &other) const {
-    return Ket<real_t>::operator==(other) && atomic_indices == other.atomic_indices &&
+    return Ket::operator==(other) && atomic_indices == other.atomic_indices &&
         atomic_bases == other.atomic_bases;
 }
 
@@ -70,7 +70,7 @@ bool KetPair<Scalar>::operator!=(const KetPair<Scalar> &other) const {
 
 template <typename Scalar>
 size_t KetPair<Scalar>::hash::operator()(const KetPair<Scalar> &k) const {
-    size_t seed = typename Ket<real_t>::hash()(k);
+    size_t seed = typename Ket::hash()(k);
     for (const auto &index : k.atomic_indices) {
         utils::hash_combine(seed, index);
     }

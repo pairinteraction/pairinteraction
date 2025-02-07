@@ -14,7 +14,6 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisAtom;
 
-template <typename Real>
 class KetAtom;
 
 class Database;
@@ -32,7 +31,7 @@ class BasisAtomCreator {
 
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetAtom<real_t>;
+    using ket_t = KetAtom;
     BasisAtomCreator() = default;
     BasisAtomCreator<Scalar> &set_species(const std::string &value);
     BasisAtomCreator<Scalar> &restrict_energy(real_t min, real_t max);

@@ -135,16 +135,14 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
     nb::class_<BasisPair<T>, Basis<BasisPair<T>>> pyclass(m, pyclass_name.c_str());
     pyclass
         .def("get_amplitudes",
-             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
-                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>>(
+             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
                  &BasisPair<T>::get_amplitudes, nb::const_))
         .def("get_amplitudes",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
                                std::shared_ptr<const BasisAtom<T>>>(&BasisPair<T>::get_amplitudes,
                                                                     nb::const_))
         .def("get_overlaps",
-             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
-                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>>(
+             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>>(
                  &BasisPair<T>::get_overlaps, nb::const_))
         .def("get_overlaps",
              nb::overload_cast<std::shared_ptr<const BasisAtom<T>>,
@@ -162,8 +160,7 @@ static void declare_basis_pair(nb::module_ &m, std::string const &type_name) {
                                OperatorType, int, int>(&BasisPair<T>::get_matrix_elements,
                                                        nb::const_))
         .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
-                               std::shared_ptr<const KetAtom<typename BasisPair<T>::real_t>>,
+             nb::overload_cast<std::shared_ptr<const KetAtom>, std::shared_ptr<const KetAtom>,
                                OperatorType, OperatorType, int, int>(
                  &BasisPair<T>::get_matrix_elements, nb::const_));
 }

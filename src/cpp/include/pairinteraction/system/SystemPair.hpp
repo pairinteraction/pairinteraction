@@ -15,7 +15,7 @@ class OperatorPair;
 template <typename Scalar>
 class BasisPair;
 
-template <typename Real>
+template <typename Scalar>
 class KetPair;
 
 template <typename T>

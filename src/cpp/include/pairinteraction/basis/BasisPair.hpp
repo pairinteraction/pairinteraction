@@ -18,7 +18,7 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisPairCreator;
 
-template <typename Real>
+template <typename Scalar>
 class KetPair;
 
 template <typename Scalar>
@@ -27,7 +27,6 @@ class BasisPair;
 template <typename Scalar>
 class BasisAtom;
 
-template <typename Real>
 class KetAtom;
 
 template <typename Scalar>
@@ -66,13 +65,13 @@ public:
     std::shared_ptr<const BasisAtom<Scalar>> get_basis2() const;
     int get_ket_index_from_tuple(size_t state_index1, size_t state_index2) const;
 
-    Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom<real_t>> ket1,
-                                          std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::VectorX<Scalar> get_amplitudes(std::shared_ptr<const KetAtom> ket1,
+                                          std::shared_ptr<const KetAtom> ket2) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
     get_amplitudes(std::shared_ptr<const BasisAtom<Scalar>> other1,
                    std::shared_ptr<const BasisAtom<Scalar>> other2) const;
-    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const KetAtom<real_t>> ket1,
-                                        std::shared_ptr<const KetAtom<real_t>> ket2) const;
+    Eigen::VectorX<real_t> get_overlaps(std::shared_ptr<const KetAtom> ket1,
+                                        std::shared_ptr<const KetAtom> ket2) const;
     Eigen::SparseMatrix<real_t, Eigen::RowMajor>
     get_overlaps(std::shared_ptr<const BasisAtom<Scalar>> other1,
                  std::shared_ptr<const BasisAtom<Scalar>> other2) const;
@@ -84,8 +83,8 @@ public:
                         int /*q*/) const override;
     Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const ket_t> ket, OperatorType type1,
                                                OperatorType type2, int q1 = 0, int q2 = 0) const;
-    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom<real_t>> ket1,
-                                               std::shared_ptr<const KetAtom<real_t>> ket2,
+    Eigen::VectorX<Scalar> get_matrix_elements(std::shared_ptr<const KetAtom> ket1,
+                                               std::shared_ptr<const KetAtom> ket2,
                                                OperatorType type1, OperatorType type2, int q1 = 0,
                                                int q2 = 0) const;
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>

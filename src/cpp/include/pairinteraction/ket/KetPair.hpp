@@ -18,7 +18,7 @@ template <typename Scalar>
 class BasisAtom;
 
 template <typename Scalar>
-class KetPair : public Ket<typename traits::NumTraits<Scalar>::real_t> {
+class KetPair : public Ket {
     static_assert(traits::NumTraits<Scalar>::from_floating_point_v);
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;

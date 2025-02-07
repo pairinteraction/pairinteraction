@@ -44,9 +44,9 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
 
 DOCTEST_TEST_CASE("create a basis from kets") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator<double>("Sr88_singlet", 59, 0, 0, 0).create(database);
-    auto ket2 = KetAtomCreator<double>("Sr88_singlet", 60, 0, 0, 0).create(database);
-    auto ket3 = KetAtomCreator<double>("Sr88_singlet", 61, 0, 0, 0).create(database);
+    auto ket1 = KetAtomCreator("Sr88_singlet", 59, 0, 0, 0).create(database);
+    auto ket2 = KetAtomCreator("Sr88_singlet", 60, 0, 0, 0).create(database);
+    auto ket3 = KetAtomCreator("Sr88_singlet", 61, 0, 0, 0).create(database);
     auto basis =
         BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(
             database);
@@ -112,7 +112,7 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 DOCTEST_TEST_CASE("calculation of matrix elements") {
     auto &database = Database::get_global_instance();
 
-    auto ket_s = KetAtomCreator<double>()
+    auto ket_s = KetAtomCreator()
                      .set_species("Rb")
                      .set_quantum_number_n(60)
                      .set_quantum_number_l(0)
@@ -120,7 +120,7 @@ DOCTEST_TEST_CASE("calculation of matrix elements") {
                      .set_quantum_number_m(0.5)
                      .create(database);
 
-    auto ket_p = KetAtomCreator<double>()
+    auto ket_p = KetAtomCreator()
                      .set_species("Rb")
                      .set_quantum_number_n(60)
                      .set_quantum_number_l(1)

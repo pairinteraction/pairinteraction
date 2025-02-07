@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     bool success = true;
 
     // Create a dipole operator coupling two specific states
-    auto ket1 = pairinteraction::KetAtomCreator<double>()
+    auto ket1 = pairinteraction::KetAtomCreator()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(0)
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
                     .set_quantum_number_m(0.5)
                     .create(database);
 
-    auto ket2 = pairinteraction::KetAtomCreator<double>()
+    auto ket2 = pairinteraction::KetAtomCreator()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(1)

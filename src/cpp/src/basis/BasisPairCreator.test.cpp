@@ -38,7 +38,7 @@ DOCTEST_TEST_CASE("create a BasisPair") {
     system.diagonalize(diagonalizer);
 
     // Get energy window for a two-atom basis
-    auto ket = KetAtomCreator<double>()
+    auto ket = KetAtomCreator()
                    .set_species("Rb")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(0)
@@ -107,7 +107,7 @@ DOCTEST_TEST_CASE("get matrix elements in the pair basis") {
     system.diagonalize(diagonalizer);
 
     // Get energy window for a two-atom basis
-    auto ket = KetAtomCreator<double>()
+    auto ket = KetAtomCreator()
                    .set_species("Rb")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(0)

@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
     pairinteraction::SystemAtom<double> system(basis);
 
     // Create two-atom systems for different interatomic distances
-    auto ket = pairinteraction::KetAtomCreator<double>()
+    auto ket = pairinteraction::KetAtomCreator()
                    .set_species("Rb")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(0)

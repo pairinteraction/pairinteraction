@@ -128,18 +128,18 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
         throw std::runtime_error("Species not set.");
     }
 
-    AtomDescriptionByRanges<real_t> description{parity,
-                                                range_energy,
-                                                range_quantum_number_f,
-                                                range_quantum_number_m,
-                                                range_quantum_number_n,
-                                                range_quantum_number_nu,
-                                                range_quantum_number_nui,
-                                                range_quantum_number_l,
-                                                range_quantum_number_s,
-                                                range_quantum_number_j,
-                                                range_quantum_number_l_ryd,
-                                                range_quantum_number_j_ryd};
+    AtomDescriptionByRanges description{parity,
+                                        range_energy,
+                                        range_quantum_number_f,
+                                        range_quantum_number_m,
+                                        range_quantum_number_n,
+                                        range_quantum_number_nu,
+                                        range_quantum_number_nui,
+                                        range_quantum_number_l,
+                                        range_quantum_number_s,
+                                        range_quantum_number_j,
+                                        range_quantum_number_l_ryd,
+                                        range_quantum_number_j_ryd};
 
     return database.get_basis<Scalar>(extracted_species, description, additional_ket_ids);
 }
