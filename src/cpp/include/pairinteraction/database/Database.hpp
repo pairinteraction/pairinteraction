@@ -25,13 +25,10 @@ class Client;
 namespace pairinteraction {
 enum class OperatorType;
 
-template <typename Scalar>
 struct AtomDescriptionByParameters;
 
-template <typename Scalar>
 struct AtomDescriptionByRanges;
 
-template <typename Real>
 class KetAtom;
 
 template <typename Scalar>
@@ -64,15 +61,13 @@ public:
     static Database &get_global_instance(bool download_missing, bool wigner_in_memory,
                                          std::filesystem::path database_dir);
 
-    template <typename Real>
-    std::shared_ptr<const KetAtom<Real>>
-    get_ket(std::string species, const AtomDescriptionByParameters<Real> &description);
+    std::shared_ptr<const KetAtom> get_ket(std::string species,
+                                           const AtomDescriptionByParameters &description);
 
     template <typename Scalar>
-    std::shared_ptr<const BasisAtom<Scalar>> get_basis(
-        std::string species,
-        const AtomDescriptionByRanges<typename traits::NumTraits<Scalar>::real_t> &description,
-        std::vector<size_t> additional_ket_ids);
+    std::shared_ptr<const BasisAtom<Scalar>> get_basis(std::string species,
+                                                       const AtomDescriptionByRanges &description,
+                                                       std::vector<size_t> additional_ket_ids);
 
     template <typename Scalar>
     Eigen::SparseMatrix<Scalar, Eigen::RowMajor>
@@ -106,9 +101,8 @@ private:
     static constexpr bool default_wigner_in_memory{true};
     static const std::filesystem::path default_database_dir;
 
-    template <typename Real>
-    oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
-    get_matrix_elements_cache();
+    oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>>
+        &get_matrix_elements_cache();
 
     static Database &get_global_instance_without_checks(bool download_missing,
                                                         bool wigner_in_memory,
@@ -120,13 +114,9 @@ private:
 
 // Extern template declarations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
-#define EXTERN_GETTERS_REAL(REAL)                                                                  \
-    extern template std::shared_ptr<const KetAtom<REAL>> Database::get_ket<REAL>(                  \
-        std::string species, const AtomDescriptionByParameters<REAL> &description);
-
-#define EXTERN_GETTERS(SCALAR, REAL)                                                               \
+#define EXTERN_GETTERS(SCALAR)                                                                     \
     extern template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(          \
-        std::string species, const AtomDescriptionByRanges<REAL> &description,                     \
+        std::string species, const AtomDescriptionByRanges &description,                           \
         std::vector<size_t> additional_ket_ids);                                                   \
     extern template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor>                                   \
     Database::get_matrix_elements<SCALAR>(std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,  \
@@ -134,11 +124,8 @@ private:
                                           OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-EXTERN_GETTERS_REAL(double)
+EXTERN_GETTERS(double)
+EXTERN_GETTERS(std::complex<double>)
 
-EXTERN_GETTERS(double, double)
-EXTERN_GETTERS(std::complex<double>, double)
-
-#undef EXTERN_GETTERS_REAL
 #undef EXTERN_GETTERS
 } // namespace pairinteraction

@@ -17,7 +17,7 @@ template <typename Scalar>
 struct traits::CrtpTraits<BasisClassicalLight<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetClassicalLight<real_t>;
+    using ket_t = KetClassicalLight;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
 

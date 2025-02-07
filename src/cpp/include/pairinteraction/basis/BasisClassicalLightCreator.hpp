@@ -10,7 +10,6 @@ namespace pairinteraction {
 template <typename Scalar>
 class BasisClassicalLight;
 
-template <typename Real>
 class KetClassicalLight;
 
 template <typename Scalar>
@@ -19,7 +18,7 @@ class BasisClassicalLightCreator {
 
 public:
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetClassicalLight<real_t>;
+    using ket_t = KetClassicalLight;
     BasisClassicalLightCreator() = default;
     BasisClassicalLightCreator<Scalar> &set_photon_energy(real_t value);
     BasisClassicalLightCreator<Scalar> &restrict_quantum_number_q(int min, int max);

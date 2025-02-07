@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     pairinteraction::Database database(download_missing, true, database_dir);
 
     // Create a basis
-    auto ket = pairinteraction::KetAtomCreator<double>()
+    auto ket = pairinteraction::KetAtomCreator()
                    .set_species("Rb")
                    .set_quantum_number_n(60)
                    .set_quantum_number_l(0)

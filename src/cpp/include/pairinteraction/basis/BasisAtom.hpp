@@ -12,7 +12,6 @@
 namespace pairinteraction {
 class Database;
 
-template <typename Real>
 class KetAtom;
 
 template <typename Scalar>
@@ -22,7 +21,7 @@ template <typename Scalar>
 struct traits::CrtpTraits<BasisAtom<Scalar>> {
     using scalar_t = Scalar;
     using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using ket_t = KetAtom<real_t>;
+    using ket_t = KetAtom;
     using ketvec_t = std::vector<std::shared_ptr<const ket_t>>;
 };
 

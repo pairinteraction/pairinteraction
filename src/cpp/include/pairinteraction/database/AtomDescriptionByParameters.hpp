@@ -7,21 +7,18 @@
 #include <type_traits>
 
 namespace pairinteraction {
-template <typename Real>
 struct AtomDescriptionByParameters {
-    static_assert(std::is_floating_point_v<Real>);
-
     Parity parity{Parity::UNKNOWN};
-    std::optional<Real> energy;
-    std::optional<Real> quantum_number_f;
-    std::optional<Real> quantum_number_m;
+    std::optional<double> energy;
+    std::optional<double> quantum_number_f;
+    std::optional<double> quantum_number_m;
     std::optional<int> quantum_number_n;
-    std::optional<Real> quantum_number_nu;
-    std::optional<Real> quantum_number_nui;
-    std::optional<Real> quantum_number_l;
-    std::optional<Real> quantum_number_s;
-    std::optional<Real> quantum_number_j;
-    std::optional<Real> quantum_number_l_ryd;
-    std::optional<Real> quantum_number_j_ryd;
+    std::optional<double> quantum_number_nu;
+    std::optional<double> quantum_number_nui;
+    std::optional<double> quantum_number_l;
+    std::optional<double> quantum_number_s;
+    std::optional<double> quantum_number_j;
+    std::optional<double> quantum_number_l_ryd;
+    std::optional<double> quantum_number_j_ryd;
 };
 } // namespace pairinteraction

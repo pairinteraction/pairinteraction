@@ -12,10 +12,7 @@ constexpr size_t OFFSET = 500;
 constexpr std::string_view SQL_TERM_FOR_LINEARIZED_ID_IN_DATABASE = "id*1000+(2*m+500)::bigint";
 
 // Method for calculating the linearized index
-template <typename Real>
-inline size_t get_linearized_id_in_database(size_t id, Real quantum_number_m) {
-    static_assert(std::is_arithmetic_v<Real>);
-
+inline size_t get_linearized_id_in_database(size_t id, double quantum_number_m) {
     return id * 2 * OFFSET + static_cast<size_t>(2 * quantum_number_m + OFFSET);
 }
 } // namespace pairinteraction::utils

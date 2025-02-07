@@ -377,9 +377,8 @@ Database::AvailabilityWigner Database::get_availability_of_wigner_table() {
             tables[name].local_version >= tables[name].remote_version};
 }
 
-template <typename Real>
-std::shared_ptr<const KetAtom<Real>>
-Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &description) {
+std::shared_ptr<const KetAtom> Database::get_ket(std::string species,
+                                                 const AtomDescriptionByParameters &description) {
 
     ensure_presence_of_table(species + "_states");
 
@@ -570,7 +569,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 
         if (order_val_1 - order_val_0 <= order_val_0) {
             // Get a list of possible kets
-            std::vector<KetAtom<Real>> kets;
+            std::vector<KetAtom> kets;
             kets.reserve(2);
             for (size_t i = 0; i < 2; ++i) {
                 auto result_quantum_number_m = description.quantum_number_m.value();
@@ -614,7 +613,7 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
                 auto result_is_calculated_with_mqdt =
                     duckdb::FlatVector::GetData<bool>(chunk->data[19])[i];
                 kets.emplace_back(
-                    typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
+                    typename KetAtom::Private(), result_energy, result_quantum_number_f,
                     result_quantum_number_m, static_cast<Parity>(result_parity), species,
                     result_quantum_number_n, result_quantum_number_nu,
                     result_quantum_number_nui_exp, result_quantum_number_nui_std,
@@ -675,8 +674,8 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
     }
 #endif
 
-    return std::make_shared<const KetAtom<Real>>(
-        typename KetAtom<Real>::Private(), result_energy, result_quantum_number_f,
+    return std::make_shared<const KetAtom>(
+        typename KetAtom::Private(), result_energy, result_quantum_number_f,
         result_quantum_number_m, static_cast<Parity>(result_parity), species,
         result_quantum_number_n, result_quantum_number_nu, result_quantum_number_nui_exp,
         result_quantum_number_nui_std, result_quantum_number_l_exp, result_quantum_number_l_std,
@@ -688,10 +687,9 @@ Database::get_ket(std::string species, const AtomDescriptionByParameters<Real> &
 }
 
 template <typename Scalar>
-std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
-    std::string species,
-    const AtomDescriptionByRanges<typename traits::NumTraits<Scalar>::real_t> &description,
-    std::vector<size_t> additional_ket_ids) {
+std::shared_ptr<const BasisAtom<Scalar>>
+Database::get_basis(std::string species, const AtomDescriptionByRanges &description,
+                    std::vector<size_t> additional_ket_ids) {
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
     ensure_presence_of_table(species + "_states");
@@ -1068,7 +1066,7 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
     }
 
     // Construct the states
-    std::vector<std::shared_ptr<const KetAtom<real_t>>> kets;
+    std::vector<std::shared_ptr<const KetAtom>> kets;
     kets.reserve(result->RowCount());
 #ifndef NDEBUG
     double last_energy = std::numeric_limits<double>::lowest();
@@ -1113,8 +1111,8 @@ std::shared_ptr<const BasisAtom<Scalar>> Database::get_basis(
 #endif
 
             // Append a new state
-            kets.push_back(std::make_shared<const KetAtom<real_t>>(
-                typename KetAtom<real_t>::Private(), chunk_energy[i], chunk_quantum_number_f[i],
+            kets.push_back(std::make_shared<const KetAtom>(
+                typename KetAtom::Private(), chunk_energy[i], chunk_quantum_number_f[i],
                 chunk_quantum_number_m[i], static_cast<Parity>(chunk_parity[i]), species,
                 chunk_quantum_number_n[i], chunk_quantum_number_nu[i],
                 chunk_quantum_number_nui_exp[i], chunk_quantum_number_nui_std[i],
@@ -1181,7 +1179,7 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
     std::string id_of_kets = initial_basis->get_id_of_kets();
     std::string cache_key = fmt::format("{}_{}_{}", specifier, q, id_of_kets);
 
-    if (get_matrix_elements_cache<real_t>().count(cache_key) == 0) {
+    if (get_matrix_elements_cache().count(cache_key) == 0) {
         Eigen::Index dim = initial_basis->get_number_of_kets();
 
         std::vector<int> outerIndexPtr;
@@ -1312,20 +1310,19 @@ Database::get_matrix_elements(std::shared_ptr<const BasisAtom<Scalar>> initial_b
             dim, dim, values.size(), outerIndexPtr.data(), innerIndices.data(), values.data());
 
         // Cache the matrix
-        get_matrix_elements_cache<real_t>()[cache_key] = matrix_map;
+        get_matrix_elements_cache()[cache_key] = matrix_map;
     }
 
     // Construct the operator and return it
     return final_basis->get_coefficients().adjoint() *
-        get_matrix_elements_cache<real_t>()[cache_key].template cast<Scalar>() *
+        get_matrix_elements_cache()[cache_key].template cast<Scalar>() *
         initial_basis->get_coefficients();
 }
 
-template <typename Real>
-oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<Real, Eigen::RowMajor>> &
+oneapi::tbb::concurrent_unordered_map<std::string, Eigen::SparseMatrix<double, Eigen::RowMajor>> &
 Database::get_matrix_elements_cache() {
     static oneapi::tbb::concurrent_unordered_map<std::string,
-                                                 Eigen::SparseMatrix<Real, Eigen::RowMajor>>
+                                                 Eigen::SparseMatrix<double, Eigen::RowMajor>>
         matrix_elements_cache;
     return matrix_elements_cache;
 }
@@ -1487,24 +1484,17 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
 
 // Explicit instantiations
 // NOLINTBEGIN(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
-#define INSTANTIATE_GETTERS_REAL(REAL)                                                             \
-    template std::shared_ptr<const KetAtom<REAL>> Database::get_ket<REAL>(                         \
-        std::string species, const AtomDescriptionByParameters<REAL> &description);
-
-#define INSTANTIATE_GETTERS(SCALAR, REAL)                                                          \
+#define INSTANTIATE_GETTERS(SCALAR)                                                                \
     template std::shared_ptr<const BasisAtom<SCALAR>> Database::get_basis<SCALAR>(                 \
-        std::string species, const AtomDescriptionByRanges<REAL> &description,                     \
+        std::string species, const AtomDescriptionByRanges &description,                           \
         std::vector<size_t> additional_ket_ids);                                                   \
     template Eigen::SparseMatrix<SCALAR, Eigen::RowMajor> Database::get_matrix_elements<SCALAR>(   \
         std::shared_ptr<const BasisAtom<SCALAR>> initial_basis,                                    \
         std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_GETTERS_REAL(double)
+INSTANTIATE_GETTERS(double)
+INSTANTIATE_GETTERS(std::complex<double>)
 
-INSTANTIATE_GETTERS(double, double)
-INSTANTIATE_GETTERS(std::complex<double>, double)
-
-#undef INSTANTIATE_GETTERS_REAL
 #undef INSTANTIATE_GETTERS
 } // namespace pairinteraction

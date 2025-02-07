@@ -6,53 +6,33 @@
 #include <limits>
 
 namespace pairinteraction {
-template <typename Real>
-Ket<Real>::Ket(Real energy, Real f, Real m, Parity p)
+Ket::Ket(double energy, double f, double m, Parity p)
     : energy(energy), quantum_number_f(f), quantum_number_m(m), parity(p) {}
 
-template <typename Real>
-bool Ket<Real>::has_quantum_number_f() const {
-    return quantum_number_f != std::numeric_limits<Real>::max();
+bool Ket::has_quantum_number_f() const {
+    return quantum_number_f != std::numeric_limits<double>::max();
 }
 
-template <typename Real>
-bool Ket<Real>::has_quantum_number_m() const {
-    return quantum_number_m != std::numeric_limits<Real>::max();
+bool Ket::has_quantum_number_m() const {
+    return quantum_number_m != std::numeric_limits<double>::max();
 }
 
-template <typename Real>
-bool Ket<Real>::has_parity() const {
-    return parity != Parity::UNKNOWN;
-}
+bool Ket::has_parity() const { return parity != Parity::UNKNOWN; }
 
-template <typename Real>
-Real Ket<Real>::get_energy() const {
-    return energy;
-}
+double Ket::get_energy() const { return energy; }
 
-template <typename Real>
-Real Ket<Real>::get_quantum_number_f() const {
-    return quantum_number_f;
-}
+double Ket::get_quantum_number_f() const { return quantum_number_f; }
 
-template <typename Real>
-Real Ket<Real>::get_quantum_number_m() const {
-    return quantum_number_m;
-}
+double Ket::get_quantum_number_m() const { return quantum_number_m; }
 
-template <typename Real>
-Parity Ket<Real>::get_parity() const {
-    return parity;
-}
+Parity Ket::get_parity() const { return parity; }
 
-template <typename Real>
-bool Ket<Real>::operator==(const Ket<Real> &other) const {
+bool Ket::operator==(const Ket &other) const {
     return energy == other.energy && quantum_number_f == other.quantum_number_f &&
         quantum_number_m == other.quantum_number_m && parity == other.parity;
 }
 
-template <typename Real>
-size_t Ket<Real>::hash::operator()(const Ket<Real> &k) const {
+size_t Ket::hash::operator()(const Ket &k) const {
     size_t seed = 0;
     utils::hash_combine(seed, k.energy);
     utils::hash_combine(seed, k.quantum_number_f);
@@ -60,7 +40,4 @@ size_t Ket<Real>::hash::operator()(const Ket<Real> &k) const {
     utils::hash_combine(seed, static_cast<int>(k.parity));
     return seed;
 }
-
-// Explicit instantiations
-template class Ket<double>;
 } // namespace pairinteraction

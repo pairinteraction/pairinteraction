@@ -17,14 +17,9 @@ enum class Parity : int;
  * constructor is protected to indicate that derived classes should not allow direct instantiation.
  * Instead, a factory class should be provided that is a friend of the derived class and can create
  * instances of it.
- *
- * @tparam Real Real number type.
  */
 
-template <typename Real>
 class Ket {
-    static_assert(std::is_floating_point_v<Real>);
-
 public:
     Ket() = delete;
     virtual ~Ket() = default;
@@ -33,31 +28,29 @@ public:
     bool has_quantum_number_m() const;
     bool has_parity() const;
 
-    Real get_energy() const;
-    Real get_quantum_number_f() const;
-    Real get_quantum_number_m() const;
+    double get_energy() const;
+    double get_quantum_number_f() const;
+    double get_quantum_number_m() const;
     Parity get_parity() const;
 
     virtual std::string get_label() const = 0;
 
-    friend std::ostream &operator<<(std::ostream &os, const Ket<Real> &ket) {
+    friend std::ostream &operator<<(std::ostream &os, const Ket &ket) {
         return os << ket.get_label();
     }
 
 protected:
-    Ket(Real energy, Real f, Real m, Parity p);
+    Ket(double energy, double f, double m, Parity p);
 
-    bool operator==(const Ket<Real> &other) const;
+    bool operator==(const Ket &other) const;
 
     struct hash {
-        std::size_t operator()(const Ket<Real> &k) const;
+        std::size_t operator()(const Ket &k) const;
     };
 
-    Real energy;
-    Real quantum_number_f;
-    Real quantum_number_m;
+    double energy;
+    double quantum_number_f;
+    double quantum_number_m;
     Parity parity;
 };
-
-extern template class Ket<double>;
 } // namespace pairinteraction

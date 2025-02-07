@@ -19,14 +19,14 @@ DOCTEST_TEST_CASE("construct and diagonalize a small Hamiltonian") {
     auto &database = Database::get_global_instance();
     auto diagonalizer = DiagonalizerEigen<double>();
 
-    auto ket1 = KetAtomCreator<double>()
+    auto ket1 = KetAtomCreator()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(0)
                     .set_quantum_number_j(0.5)
                     .set_quantum_number_m(0.5)
                     .create(database);
-    auto ket2 = KetAtomCreator<double>()
+    auto ket2 = KetAtomCreator()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(1)

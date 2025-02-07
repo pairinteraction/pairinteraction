@@ -13,12 +13,12 @@ namespace pairinteraction {
 DOCTEST_TEST_CASE("get a KetAtom") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByParameters<double> description;
+    AtomDescriptionByParameters description;
     description.quantum_number_n = 60;
     description.quantum_number_l = 0;
     description.quantum_number_m = 0.5;
 
-    auto ket = database.get_ket<double>("Rb", description);
+    auto ket = database.get_ket("Rb", description);
 
     DOCTEST_MESSAGE("KetAtom: ", *ket);
 }
@@ -26,41 +26,41 @@ DOCTEST_TEST_CASE("get a KetAtom") {
 DOCTEST_TEST_CASE("too large quantum number m") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByParameters<double> description;
+    AtomDescriptionByParameters description;
     description.quantum_number_n = 60;
     description.quantum_number_l = 0;
     description.quantum_number_m = 1.5;
 
-    DOCTEST_CHECK_THROWS(database.get_ket<double>("Rb", description));
+    DOCTEST_CHECK_THROWS(database.get_ket("Rb", description));
 }
 
 DOCTEST_TEST_CASE("not uniquely specified ket") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByParameters<double> description;
+    AtomDescriptionByParameters description;
     description.quantum_number_n = 60;
     description.quantum_number_l = 0.9;
     description.quantum_number_m = 0.5;
 
-    DOCTEST_CHECK_THROWS(database.get_ket<double>("Rb", description));
+    DOCTEST_CHECK_THROWS(database.get_ket("Rb", description));
 }
 
 DOCTEST_TEST_CASE("uniquely specified ket") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByParameters<double> description;
+    AtomDescriptionByParameters description;
     description.quantum_number_n = 60;
     description.quantum_number_l = 0.9;
     description.quantum_number_j = 0.5;
     description.quantum_number_m = 0.5;
 
-    DOCTEST_CHECK_NOTHROW(database.get_ket<double>("Rb", description));
+    DOCTEST_CHECK_NOTHROW(database.get_ket("Rb", description));
 }
 
 DOCTEST_TEST_CASE("get a BasisAtom") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByRanges<double> description;
+    AtomDescriptionByRanges description;
     description.range_quantum_number_n = {60, 60};
     description.range_quantum_number_l = {0, 1};
 
@@ -74,7 +74,7 @@ DOCTEST_TEST_CASE("get a BasisAtom") {
 DOCTEST_TEST_CASE("get an OperatorAtom") {
     Database &database = Database::get_global_instance();
 
-    AtomDescriptionByRanges<double> description;
+    AtomDescriptionByRanges description;
     description.range_quantum_number_n = {60, 60};
     description.range_quantum_number_l = {0, 1};
 

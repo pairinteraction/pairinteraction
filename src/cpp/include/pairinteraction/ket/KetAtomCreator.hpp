@@ -10,53 +10,46 @@
 namespace pairinteraction {
 class Database;
 
-template <typename Real>
 class KetAtom;
 
 /**
  * @class KetAtomCreator
  *
  * @brief Builder class for creating KetAtom objects.
- *
- * @tparam Real Real number type.
  */
-template <typename Real>
 class KetAtomCreator {
-    static_assert(std::is_floating_point_v<Real>);
-
 public:
     KetAtomCreator() = default;
-    KetAtomCreator(std::string species, int n, Real l, Real j, Real m);
-    KetAtomCreator<Real> &set_species(const std::string &value);
-    KetAtomCreator<Real> &set_energy(Real value);
-    KetAtomCreator<Real> &set_quantum_number_f(Real value);
-    KetAtomCreator<Real> &set_quantum_number_m(Real value);
-    KetAtomCreator<Real> &set_parity(Parity value);
-    KetAtomCreator<Real> &set_quantum_number_n(int value);
-    KetAtomCreator<Real> &set_quantum_number_nu(Real value);
-    KetAtomCreator<Real> &set_quantum_number_nui(Real value);
-    KetAtomCreator<Real> &set_quantum_number_l(Real value);
-    KetAtomCreator<Real> &set_quantum_number_s(Real value);
-    KetAtomCreator<Real> &set_quantum_number_j(Real value);
-    KetAtomCreator<Real> &set_quantum_number_l_ryd(Real value);
-    KetAtomCreator<Real> &set_quantum_number_j_ryd(Real value);
-    std::shared_ptr<const KetAtom<Real>> create(Database &database) const;
+    KetAtomCreator(std::string species, int n, double l, double j, double m);
+    KetAtomCreator &set_species(const std::string &value);
+    KetAtomCreator &set_energy(double value);
+    KetAtomCreator &set_quantum_number_f(double value);
+    KetAtomCreator &set_quantum_number_m(double value);
+    KetAtomCreator &set_parity(Parity value);
+    KetAtomCreator &set_quantum_number_n(int value);
+    KetAtomCreator &set_quantum_number_nu(double value);
+    KetAtomCreator &set_quantum_number_nui(double value);
+    KetAtomCreator &set_quantum_number_l(double value);
+    KetAtomCreator &set_quantum_number_s(double value);
+    KetAtomCreator &set_quantum_number_j(double value);
+    KetAtomCreator &set_quantum_number_l_ryd(double value);
+    KetAtomCreator &set_quantum_number_j_ryd(double value);
+    std::shared_ptr<const KetAtom> create(Database &database) const;
 
 private:
     std::optional<std::string> species;
     Parity parity{Parity::UNKNOWN};
-    std::optional<Real> energy;
-    std::optional<Real> quantum_number_f;
-    std::optional<Real> quantum_number_m;
+    std::optional<double> energy;
+    std::optional<double> quantum_number_f;
+    std::optional<double> quantum_number_m;
     std::optional<int> quantum_number_n;
-    std::optional<Real> quantum_number_nu;
-    std::optional<Real> quantum_number_nui;
-    std::optional<Real> quantum_number_l;
-    std::optional<Real> quantum_number_s;
-    std::optional<Real> quantum_number_j;
-    std::optional<Real> quantum_number_l_ryd;
-    std::optional<Real> quantum_number_j_ryd;
+    std::optional<double> quantum_number_nu;
+    std::optional<double> quantum_number_nui;
+    std::optional<double> quantum_number_l;
+    std::optional<double> quantum_number_s;
+    std::optional<double> quantum_number_j;
+    std::optional<double> quantum_number_l_ryd;
+    std::optional<double> quantum_number_j_ryd;
 };
 
-extern template class KetAtomCreator<double>;
 } // namespace pairinteraction

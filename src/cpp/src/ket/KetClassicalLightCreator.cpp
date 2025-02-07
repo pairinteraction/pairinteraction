@@ -5,30 +5,23 @@
 #include <limits>
 
 namespace pairinteraction {
-template <typename Real>
-KetClassicalLightCreator<Real>::KetClassicalLightCreator(Real photon_energy, int q)
+KetClassicalLightCreator::KetClassicalLightCreator(double photon_energy, int q)
     : photon_energy(photon_energy), quantum_number_q(q) {}
 
-template <typename Real>
-KetClassicalLightCreator<Real> &KetClassicalLightCreator<Real>::set_photon_energy(Real value) {
+KetClassicalLightCreator &KetClassicalLightCreator::set_photon_energy(double value) {
     photon_energy.emplace(value);
     return *this;
 }
 
-template <typename Real>
-KetClassicalLightCreator<Real> &KetClassicalLightCreator<Real>::set_quantum_number_q(int value) {
+KetClassicalLightCreator &KetClassicalLightCreator::set_quantum_number_q(int value) {
     quantum_number_q.emplace(value);
     return *this;
 }
 
-template <typename Real>
-std::shared_ptr<const KetClassicalLight<Real>> KetClassicalLightCreator<Real>::create() const {
-    return std::make_shared<KetClassicalLight<Real>>(
-        typename KetClassicalLight<Real>::Private(),
-        photon_energy.value_or(std::numeric_limits<Real>::quiet_NaN()),
+std::shared_ptr<const KetClassicalLight> KetClassicalLightCreator::create() const {
+    return std::make_shared<KetClassicalLight>(
+        typename KetClassicalLight::Private(),
+        photon_energy.value_or(std::numeric_limits<double>::quiet_NaN()),
         quantum_number_q.value_or(std::numeric_limits<int>::max()));
 }
-
-// Explicit instantiations
-template class KetClassicalLightCreator<double>;
 } // namespace pairinteraction
