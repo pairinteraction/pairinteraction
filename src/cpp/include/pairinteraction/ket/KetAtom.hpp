@@ -81,6 +81,5 @@ private:
     size_t id_in_database;
 };
 
-extern template class KetAtom<float>;
 extern template class KetAtom<double>;
 } // namespace pairinteraction

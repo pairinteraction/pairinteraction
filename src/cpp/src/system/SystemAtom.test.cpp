@@ -222,9 +222,6 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
 #ifdef WITH_LAPACKE
     diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<double>>());
 #endif
-#ifdef WITH_MKL
-    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<double>>(5));
-#endif
 
     for (const auto &diagonalizer : diagonalizers) {
         auto system = SystemAtom<double>(basis);

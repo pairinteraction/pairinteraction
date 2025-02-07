@@ -101,18 +101,12 @@ static void declare_ket_pair(nb::module_ &m, std::string const &type_name) {
 }
 
 void bind_ket(nb::module_ &m) {
-    declare_ket<float>(m, "Float");
     declare_ket<double>(m, "Double");
-    declare_ket_atom<float>(m, "Float");
     declare_ket_atom<double>(m, "Double");
-    declare_ket_atom_creator<float>(m, "Float");
     declare_ket_atom_creator<double>(m, "Double");
-    declare_ket_classical_light<float>(m, "Float");
     declare_ket_classical_light<double>(m, "Double");
-    declare_ket_classical_light_creator<float>(m, "Float");
     declare_ket_classical_light_creator<double>(m, "Double");
-    declare_ket_pair<float>(m, "Float");
     declare_ket_pair<double>(m, "Double");
-    declare_ket_pair<std::complex<float>>(m, "ComplexFloat");
     declare_ket_pair<std::complex<double>>(m, "ComplexDouble");
 }
+// TODO do not template ket

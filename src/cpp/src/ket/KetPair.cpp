@@ -113,8 +113,6 @@ Parity KetPair<Scalar>::calculate_parity(
 }
 
 // Explicit instantiations
-template class KetPair<float>;
 template class KetPair<double>;
-template class KetPair<std::complex<float>>;
 template class KetPair<std::complex<double>>;
 } // namespace pairinteraction

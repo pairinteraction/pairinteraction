@@ -69,21 +69,13 @@ static void declare_system_pair(nb::module_ &m, std::string const &type_name) {
 }
 
 void bind_system(nb::module_ &m) {
-    declare_system<SystemAtom<float>>(m, "SystemAtomFloat");
     declare_system<SystemAtom<double>>(m, "SystemAtomDouble");
-    declare_system<SystemAtom<std::complex<float>>>(m, "SystemAtomComplexFloat");
     declare_system<SystemAtom<std::complex<double>>>(m, "SystemAtomComplexDouble");
-    declare_system_atom<float>(m, "Float");
     declare_system_atom<double>(m, "Double");
-    declare_system_atom<std::complex<float>>(m, "ComplexFloat");
     declare_system_atom<std::complex<double>>(m, "ComplexDouble");
 
-    declare_system<SystemPair<float>>(m, "SystemPairFloat");
     declare_system<SystemPair<double>>(m, "SystemPairDouble");
-    declare_system<SystemPair<std::complex<float>>>(m, "SystemPairComplexFloat");
     declare_system<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
-    declare_system_pair<float>(m, "Float");
     declare_system_pair<double>(m, "Double");
-    declare_system_pair<std::complex<float>>(m, "ComplexFloat");
     declare_system_pair<std::complex<double>>(m, "ComplexDouble");
 }

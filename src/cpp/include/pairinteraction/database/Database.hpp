@@ -134,12 +134,9 @@ private:
                                           OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-EXTERN_GETTERS_REAL(float)
 EXTERN_GETTERS_REAL(double)
 
-EXTERN_GETTERS(float, float)
 EXTERN_GETTERS(double, double)
-EXTERN_GETTERS(std::complex<float>, float)
 EXTERN_GETTERS(std::complex<double>, double)
 
 #undef EXTERN_GETTERS_REAL

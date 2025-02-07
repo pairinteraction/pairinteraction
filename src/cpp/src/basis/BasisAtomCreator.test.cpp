@@ -18,7 +18,7 @@ constexpr double VOLT_PER_CM_IN_ATOMIC_UNITS = 1 / 5.14220675112e9;
 
 DOCTEST_TEST_CASE("create a basis for strontium 88") {
     Database &database = Database::get_global_instance();
-    auto basis = BasisAtomCreator<float>()
+    auto basis = BasisAtomCreator<double>()
                      .set_species("Sr88_singlet")
                      .restrict_quantum_number_n(60, 60)
                      .restrict_quantum_number_l(0, 2)
@@ -31,7 +31,7 @@ DOCTEST_TEST_CASE("create a basis for strontium 88") {
 
 DOCTEST_TEST_CASE("create a basis for strontium 87") {
     Database &database = Database::get_global_instance();
-    auto basis = BasisAtomCreator<float>()
+    auto basis = BasisAtomCreator<double>()
                      .set_species("Sr87_mqdt")
                      .restrict_quantum_number_nu(59, 61)
                      .restrict_quantum_number_l(0, 0)
@@ -44,11 +44,11 @@ DOCTEST_TEST_CASE("create a basis for strontium 87") {
 
 DOCTEST_TEST_CASE("create a basis from kets") {
     Database &database = Database::get_global_instance();
-    auto ket1 = KetAtomCreator<float>("Sr88_singlet", 59, 0, 0, 0).create(database);
-    auto ket2 = KetAtomCreator<float>("Sr88_singlet", 60, 0, 0, 0).create(database);
-    auto ket3 = KetAtomCreator<float>("Sr88_singlet", 61, 0, 0, 0).create(database);
+    auto ket1 = KetAtomCreator<double>("Sr88_singlet", 59, 0, 0, 0).create(database);
+    auto ket2 = KetAtomCreator<double>("Sr88_singlet", 60, 0, 0, 0).create(database);
+    auto ket3 = KetAtomCreator<double>("Sr88_singlet", 61, 0, 0, 0).create(database);
     auto basis =
-        BasisAtomCreator<float>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(
+        BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).append_ket(ket3).create(
             database);
     for (const auto &ket : *basis) {
         DOCTEST_CHECK(ket->get_species() == "Sr88_singlet");
@@ -58,7 +58,7 @@ DOCTEST_TEST_CASE("create a basis from kets") {
 
 DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
     Database &database = Database::get_global_instance();
-    auto basis_unsorted = BasisAtomCreator<float>()
+    auto basis_unsorted = BasisAtomCreator<double>()
                               .set_species("Rb")
                               .restrict_quantum_number_n(60, 60)
                               .restrict_quantum_number_l(0, 3)
@@ -72,14 +72,14 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 
     // Check if the basis is properly sorted
     auto parity = Parity::ODD;
-    auto quantum_number_m = std::numeric_limits<float>::lowest();
+    auto quantum_number_m = std::numeric_limits<double>::lowest();
     for (size_t i = 0; i < basis->get_number_of_states(); ++i) {
         DOCTEST_MESSAGE("State ", i, ": Parity = ", basis->get_parity(i),
                         ", M = ", basis->get_quantum_number_m(i));
         DOCTEST_CHECK(basis->get_parity(i) >= parity);
         if (basis->get_parity(i) != parity) {
             parity = basis->get_parity(i);
-            quantum_number_m = std::numeric_limits<float>::lowest();
+            quantum_number_m = std::numeric_limits<double>::lowest();
         }
         DOCTEST_CHECK(basis->get_quantum_number_m(i) >= quantum_number_m);
         quantum_number_m = basis->get_quantum_number_m(i);
@@ -101,8 +101,8 @@ DOCTEST_TEST_CASE("create a basis and sort it according to parity and m") {
 
     // Test implicit conversion of an eigen matrix to a transformator
     size_t dim = basis->get_number_of_states();
-    Eigen::SparseMatrix<float, Eigen::RowMajor> matrix(static_cast<long>(dim),
-                                                       static_cast<long>(dim));
+    Eigen::SparseMatrix<double, Eigen::RowMajor> matrix(static_cast<long>(dim),
+                                                        static_cast<long>(dim));
     matrix.setIdentity();
     auto transformed = basis->transformed(matrix);
     auto transformation = transformed->get_transformation();

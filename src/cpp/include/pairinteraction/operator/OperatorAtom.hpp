@@ -47,8 +47,6 @@ private:
                  Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &&matrix);
 };
 
-extern template class OperatorAtom<float>;
 extern template class OperatorAtom<double>;
-extern template class OperatorAtom<std::complex<float>>;
 extern template class OperatorAtom<std::complex<double>>;
 } // namespace pairinteraction

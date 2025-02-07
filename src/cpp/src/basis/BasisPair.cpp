@@ -227,8 +227,6 @@ Eigen::VectorX<Scalar> BasisPair<Scalar>::get_matrix_elements(
 }
 
 // Explicit instantiations
-template class BasisPair<float>;
 template class BasisPair<double>;
-template class BasisPair<std::complex<float>>;
 template class BasisPair<std::complex<double>>;
 } // namespace pairinteraction

@@ -32,8 +32,6 @@ DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::Row
 }
 
 // Explicit instantiations
-template class DiagonalizerInterface<float>;
 template class DiagonalizerInterface<double>;
-template class DiagonalizerInterface<std::complex<float>>;
 template class DiagonalizerInterface<std::complex<double>>;
 } // namespace pairinteraction

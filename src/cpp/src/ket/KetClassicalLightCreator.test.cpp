@@ -6,9 +6,9 @@
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a classical light ket") {
-    float photon_energy{0.02};
+    double photon_energy{0.02};
     int q{1};
-    auto lightket = KetClassicalLightCreator<float>(photon_energy, q).create();
+    auto lightket = KetClassicalLightCreator<double>(photon_energy, q).create();
 
     DOCTEST_CHECK(lightket->get_quantum_number_q() == q);
     DOCTEST_CHECK(lightket->get_photon_energy() == photon_energy);
@@ -17,9 +17,9 @@ DOCTEST_TEST_CASE("create a classical light ket") {
 }
 
 DOCTEST_TEST_CASE("test for equality") {
-    auto ket1 = KetClassicalLightCreator<float>(0.02, 1).create();
-    auto ket2 = KetClassicalLightCreator<float>(0.02, 1).create();
-    auto ket3 = KetClassicalLightCreator<float>(0.03, 1).create();
+    auto ket1 = KetClassicalLightCreator<double>(0.02, 1).create();
+    auto ket2 = KetClassicalLightCreator<double>(0.02, 1).create();
+    auto ket3 = KetClassicalLightCreator<double>(0.03, 1).create();
     DOCTEST_CHECK(*ket1 == *ket2);
     DOCTEST_CHECK(*ket1 != *ket3);
 }

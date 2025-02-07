@@ -75,26 +75,16 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
 }
 
 void bind_diagonalizer(nb::module_ &m) {
-    declare_diagonalizer_eigen<float>(m, "Float");
     declare_diagonalizer_eigen<double>(m, "Double");
-    declare_diagonalizer_eigen<std::complex<float>>(m, "ComplexFloat");
     declare_diagonalizer_eigen<std::complex<double>>(m, "ComplexDouble");
-    declare_diagonalizer_feast<float>(m, "Float");
     declare_diagonalizer_feast<double>(m, "Double");
-    declare_diagonalizer_feast<std::complex<float>>(m, "ComplexFloat");
     declare_diagonalizer_feast<std::complex<double>>(m, "ComplexDouble");
-    declare_diagonalizer_lapacke<float>(m, "Float");
     declare_diagonalizer_lapacke<double>(m, "Double");
-    declare_diagonalizer_lapacke<std::complex<float>>(m, "ComplexFloat");
     declare_diagonalizer_lapacke<std::complex<double>>(m, "ComplexDouble");
 
-    declare_diagonalize<SystemAtom<float>>(m, "SystemAtomFloat");
     declare_diagonalize<SystemAtom<double>>(m, "SystemAtomDouble");
-    declare_diagonalize<SystemAtom<std::complex<float>>>(m, "SystemAtomComplexFloat");
     declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplexDouble");
 
-    declare_diagonalize<SystemPair<float>>(m, "SystemPairFloat");
     declare_diagonalize<SystemPair<double>>(m, "SystemPairDouble");
-    declare_diagonalize<SystemPair<std::complex<float>>>(m, "SystemPairComplexFloat");
     declare_diagonalize<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
 }

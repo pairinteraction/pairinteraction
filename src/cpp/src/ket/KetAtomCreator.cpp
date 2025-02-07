@@ -120,6 +120,5 @@ std::shared_ptr<const KetAtom<Real>> KetAtomCreator<Real>::create(Database &data
 }
 
 // Explicit instantiations
-template class KetAtomCreator<float>;
 template class KetAtomCreator<double>;
 } // namespace pairinteraction

@@ -67,8 +67,6 @@ private:
     std::unordered_map<size_t, size_t> ket_id_to_ket_index;
 };
 
-extern template class BasisAtom<float>;
 extern template class BasisAtom<double>;
-extern template class BasisAtom<std::complex<float>>;
 extern template class BasisAtom<std::complex<double>>;
 } // namespace pairinteraction

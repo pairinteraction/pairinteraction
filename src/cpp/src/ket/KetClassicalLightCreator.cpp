@@ -30,6 +30,5 @@ std::shared_ptr<const KetClassicalLight<Real>> KetClassicalLightCreator<Real>::c
 }
 
 // Explicit instantiations
-template class KetClassicalLightCreator<float>;
 template class KetClassicalLightCreator<double>;
 } // namespace pairinteraction

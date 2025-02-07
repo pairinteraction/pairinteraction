@@ -64,8 +64,6 @@ BasisAtom<Scalar>::get_matrix_elements(std::shared_ptr<const Type> other, Operat
 }
 
 // Explicit instantiations
-template class BasisAtom<float>;
 template class BasisAtom<double>;
-template class BasisAtom<std::complex<float>>;
 template class BasisAtom<std::complex<double>>;
 } // namespace pairinteraction

@@ -23,8 +23,6 @@ private:
     int m0;
 };
 
-extern template class DiagonalizerFeast<float>;
 extern template class DiagonalizerFeast<double>;
-extern template class DiagonalizerFeast<std::complex<float>>;
 extern template class DiagonalizerFeast<std::complex<double>>;
 } // namespace pairinteraction

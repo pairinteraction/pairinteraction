@@ -68,8 +68,6 @@ private:
     std::optional<std::string> additional_ket_species;
 };
 
-extern template class BasisAtomCreator<float>;
 extern template class BasisAtomCreator<double>;
-extern template class BasisAtomCreator<std::complex<float>>;
 extern template class BasisAtomCreator<std::complex<double>>;
 } // namespace pairinteraction

@@ -66,9 +66,7 @@ TransformationBuilderInterface<Scalar>::get_rotator(const std::array<real_t, 3> 
     template class TransformationBuilderInterface<SCALAR>;
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_TRANSFORMATION(float)
 INSTANTIATE_TRANSFORMATION(double)
-INSTANTIATE_TRANSFORMATION(std::complex<float>)
 INSTANTIATE_TRANSFORMATION(std::complex<double>)
 
 #undef INSTANTIATE_TRANSFORMATION

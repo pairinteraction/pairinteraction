@@ -145,8 +145,6 @@ BasisAtomCreator<Scalar>::create(Database &database) const {
 }
 
 // Explicit instantiations
-template class BasisAtomCreator<float>;
 template class BasisAtomCreator<double>;
-template class BasisAtomCreator<std::complex<float>>;
 template class BasisAtomCreator<std::complex<double>>;
 } // namespace pairinteraction

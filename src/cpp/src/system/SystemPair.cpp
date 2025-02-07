@@ -432,8 +432,6 @@ void SystemPair<Scalar>::construct_hamiltonian() const {
 }
 
 // Explicit instantiations
-template class SystemPair<float>;
 template class SystemPair<double>;
-template class SystemPair<std::complex<float>>;
 template class SystemPair<std::complex<double>>;
 } // namespace pairinteraction

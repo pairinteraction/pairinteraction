@@ -39,8 +39,6 @@ public:
     OperatorPair(std::shared_ptr<const basis_t> basis, OperatorType type);
 };
 
-extern template class OperatorPair<float>;
 extern template class OperatorPair<double>;
-extern template class OperatorPair<std::complex<float>>;
 extern template class OperatorPair<std::complex<double>>;
 } // namespace pairinteraction

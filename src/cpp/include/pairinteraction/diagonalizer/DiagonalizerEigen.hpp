@@ -16,8 +16,6 @@ public:
                               int precision) const override;
 };
 
-extern template class DiagonalizerEigen<float>;
 extern template class DiagonalizerEigen<double>;
-extern template class DiagonalizerEigen<std::complex<float>>;
 extern template class DiagonalizerEigen<std::complex<double>>;
 } // namespace pairinteraction

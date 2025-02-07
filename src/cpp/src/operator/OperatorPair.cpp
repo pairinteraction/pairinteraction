@@ -20,8 +20,6 @@ OperatorPair<Scalar>::OperatorPair(std::shared_ptr<const basis_t> basis, Operato
 }
 
 // Explicit instantiations
-template class OperatorPair<float>;
 template class OperatorPair<double>;
-template class OperatorPair<std::complex<float>>;
 template class OperatorPair<std::complex<double>>;
 } // namespace pairinteraction

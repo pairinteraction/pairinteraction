@@ -59,6 +59,5 @@ protected:
     Parity parity;
 };
 
-extern template class Ket<float>;
 extern template class Ket<double>;
 } // namespace pairinteraction
