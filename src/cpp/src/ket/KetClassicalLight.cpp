@@ -61,6 +61,5 @@ size_t KetClassicalLight<Real>::hash::operator()(const KetClassicalLight<Real> &
 }
 
 // Explicit instantiations
-template class KetClassicalLight<float>;
 template class KetClassicalLight<double>;
 } // namespace pairinteraction

@@ -91,35 +91,18 @@ static void declare_database(nb::module_ &m) {
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
         .def("get_ket",
-             nb::overload_cast<std::string, const AtomDescriptionByParameters<float> &>(
-                 &Database::get_ket<float>))
-        .def("get_ket",
              nb::overload_cast<std::string, const AtomDescriptionByParameters<double> &>(
                  &Database::get_ket<double>))
-        .def("get_basis",
-             nb::overload_cast<std::string, const AtomDescriptionByRanges<float> &,
-                               std::vector<size_t>>(&Database::get_basis<float>))
         .def("get_basis",
              nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &,
                                std::vector<size_t>>(&Database::get_basis<double>))
         .def("get_basis",
-             nb::overload_cast<std::string, const AtomDescriptionByRanges<float> &,
-                               std::vector<size_t>>(&Database::get_basis<std::complex<float>>))
-        .def("get_basis",
              nb::overload_cast<std::string, const AtomDescriptionByRanges<double> &,
                                std::vector<size_t>>(&Database::get_basis<std::complex<double>>))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<float>>,
-                               std::shared_ptr<const BasisAtom<float>>, OperatorType, int>(
-                 &Database::get_matrix_elements<float>))
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const BasisAtom<double>>,
                                std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(
                  &Database::get_matrix_elements<double>))
-        .def("get_matrix_elements",
-             nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<float>>>,
-                               std::shared_ptr<const BasisAtom<std::complex<float>>>, OperatorType,
-                               int>(&Database::get_matrix_elements<std::complex<float>>))
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const BasisAtom<std::complex<double>>>,
                                std::shared_ptr<const BasisAtom<std::complex<double>>>, OperatorType,
@@ -128,11 +111,8 @@ static void declare_database(nb::module_ &m) {
 
 void bind_database(nb::module_ &m) {
     declare_range<int>(m, "Int");
-    declare_range<float>(m, "Float");
     declare_range<double>(m, "Double");
-    declare_atom_description_by_parameters<float>(m, "Float");
     declare_atom_description_by_parameters<double>(m, "Double");
-    declare_atom_description_by_ranges<float>(m, "Float");
     declare_atom_description_by_ranges<double>(m, "Double");
     declare_availability_species(m);
     declare_availability_wigner(m);

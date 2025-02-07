@@ -218,6 +218,5 @@ size_t KetAtom<Real>::hash::operator()(const KetAtom<Real> &k) const {
 }
 
 // Explicit instantiations
-template class KetAtom<float>;
 template class KetAtom<double>;
 } // namespace pairinteraction

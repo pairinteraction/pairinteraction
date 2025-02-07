@@ -30,8 +30,6 @@ OperatorAtom<Scalar>::OperatorAtom(std::shared_ptr<const basis_t> basis,
 }
 
 // Explicit instantiations
-template class OperatorAtom<float>;
 template class OperatorAtom<double>;
-template class OperatorAtom<std::complex<float>>;
 template class OperatorAtom<std::complex<double>>;
 } // namespace pairinteraction

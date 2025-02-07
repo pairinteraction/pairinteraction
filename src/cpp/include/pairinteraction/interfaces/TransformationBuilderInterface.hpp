@@ -68,13 +68,9 @@ public:
                                        const std::array<real_t, 3> &to_y_axis) const;
 };
 
-extern template struct Transformation<float>;
 extern template struct Transformation<double>;
-extern template struct Transformation<std::complex<float>>;
 extern template struct Transformation<std::complex<double>>;
 
-extern template class TransformationBuilderInterface<float>;
 extern template class TransformationBuilderInterface<double>;
-extern template class TransformationBuilderInterface<std::complex<float>>;
 extern template class TransformationBuilderInterface<std::complex<double>>;
 } // namespace pairinteraction

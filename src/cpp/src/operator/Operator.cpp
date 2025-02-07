@@ -275,9 +275,7 @@ Derived operator-(const Operator<Derived> &lhs, const Operator<Derived> &rhs) {
     INSTANTIATE_OPERATOR_HELPER(SCALAR, OperatorPair)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_OPERATOR(float)
 INSTANTIATE_OPERATOR(double)
-INSTANTIATE_OPERATOR(std::complex<float>)
 INSTANTIATE_OPERATOR(std::complex<double>)
 
 #undef INSTANTIATE_OPERATOR_HELPER

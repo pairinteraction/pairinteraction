@@ -31,8 +31,6 @@ private:
     Range<int> range_quantum_number_q{0, 0};
 };
 
-extern template class BasisClassicalLightCreator<float>;
 extern template class BasisClassicalLightCreator<double>;
-extern template class BasisClassicalLightCreator<std::complex<float>>;
 extern template class BasisClassicalLightCreator<std::complex<double>>;
 } // namespace pairinteraction

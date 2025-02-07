@@ -58,6 +58,5 @@ private:
     std::optional<Real> quantum_number_j_ryd;
 };
 
-extern template class KetAtomCreator<float>;
 extern template class KetAtomCreator<double>;
 } // namespace pairinteraction

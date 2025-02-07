@@ -47,8 +47,6 @@ BasisClassicalLightCreator<Scalar>::create() const {
 }
 
 // Explicit instantiations
-template class BasisClassicalLightCreator<float>;
 template class BasisClassicalLightCreator<double>;
-template class BasisClassicalLightCreator<std::complex<float>>;
 template class BasisClassicalLightCreator<std::complex<double>>;
 } // namespace pairinteraction

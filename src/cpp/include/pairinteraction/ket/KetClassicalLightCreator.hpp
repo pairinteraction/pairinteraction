@@ -31,6 +31,5 @@ private:
     std::optional<int> quantum_number_q;
 };
 
-extern template class KetClassicalLightCreator<float>;
 extern template class KetClassicalLightCreator<double>;
 } // namespace pairinteraction

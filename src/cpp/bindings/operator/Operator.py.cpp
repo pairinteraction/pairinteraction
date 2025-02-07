@@ -61,21 +61,13 @@ static void declare_operator_pair(nb::module_ &m, std::string const &type_name) 
 }
 
 void bind_operator(nb::module_ &m) {
-    declare_operator<OperatorAtom<float>>(m, "OperatorAtomFloat");
     declare_operator<OperatorAtom<double>>(m, "OperatorAtomDouble");
-    declare_operator<OperatorAtom<std::complex<float>>>(m, "OperatorAtomComplexFloat");
     declare_operator<OperatorAtom<std::complex<double>>>(m, "OperatorAtomComplexDouble");
-    declare_operator_atom<float>(m, "Float");
     declare_operator_atom<double>(m, "Double");
-    declare_operator_atom<std::complex<float>>(m, "ComplexFloat");
     declare_operator_atom<std::complex<double>>(m, "ComplexDouble");
 
-    declare_operator<OperatorPair<float>>(m, "OperatorPairFloat");
     declare_operator<OperatorPair<double>>(m, "OperatorPairDouble");
-    declare_operator<OperatorPair<std::complex<float>>>(m, "OperatorPairComplexFloat");
     declare_operator<OperatorPair<std::complex<double>>>(m, "OperatorPairComplexDouble");
-    declare_operator_pair<float>(m, "Float");
     declare_operator_pair<double>(m, "Double");
-    declare_operator_pair<std::complex<float>>(m, "ComplexFloat");
     declare_operator_pair<std::complex<double>>(m, "ComplexDouble");
 }

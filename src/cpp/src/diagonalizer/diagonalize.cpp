@@ -62,9 +62,7 @@ void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
     INSTANTIATE_DIAGONALIZE_HELPER(SCALAR, SystemPair)
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_DIAGONALIZE(float)
 INSTANTIATE_DIAGONALIZE(double)
-INSTANTIATE_DIAGONALIZE(std::complex<float>)
 INSTANTIATE_DIAGONALIZE(std::complex<double>)
 
 #undef INSTANTIATE_DIAGONALIZE_HELPER

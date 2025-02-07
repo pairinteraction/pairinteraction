@@ -37,6 +37,5 @@ private:
     int quantum_number_q;
 };
 
-extern template class KetClassicalLight<float>;
 extern template class KetClassicalLight<double>;
 } // namespace pairinteraction

@@ -49,8 +49,6 @@ public:
                         int /*q*/) const override;
 };
 
-extern template class BasisClassicalLight<float>;
 extern template class BasisClassicalLight<double>;
-extern template class BasisClassicalLight<std::complex<float>>;
 extern template class BasisClassicalLight<std::complex<double>>;
 } // namespace pairinteraction

@@ -11,15 +11,15 @@ namespace pairinteraction {
 DOCTEST_TEST_CASE("constructing a class derived from ket") {
     class KetDerivedCreator;
 
-    class KetDerived : public Ket<float> {
+    class KetDerived : public Ket<double> {
         friend class KetDerivedCreator;
         struct Private {};
 
     public:
-        KetDerived(Private /*unused*/, float f, float m, Parity p) : Ket<float>(0, f, m, p) {}
+        KetDerived(Private /*unused*/, double f, double m, Parity p) : Ket<double>(0, f, m, p) {}
         std::string get_label() const override { return "my_label"; }
         std::shared_ptr<KetDerived>
-        get_ket_for_different_quantum_number_m(float new_quantum_number_m) const {
+        get_ket_for_different_quantum_number_m(double new_quantum_number_m) const {
             auto ket = *this;
             ket.quantum_number_m = new_quantum_number_m;
             return std::make_shared<KetDerived>(ket);
@@ -28,14 +28,14 @@ DOCTEST_TEST_CASE("constructing a class derived from ket") {
 
     class KetDerivedCreator {
     public:
-        KetDerivedCreator(float f, float m, Parity p) : f(f), m(m), p(p) {}
+        KetDerivedCreator(double f, double m, Parity p) : f(f), m(m), p(p) {}
         std::shared_ptr<const KetDerived> create() const {
             return std::make_shared<const KetDerived>(KetDerived::Private(), f, m, p);
         }
 
     private:
-        float f;
-        float m;
+        double f;
+        double m;
         Parity p;
     };
 

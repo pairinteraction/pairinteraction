@@ -180,8 +180,6 @@ void SystemAtom<Scalar>::construct_hamiltonian() const {
 }
 
 // Explicit instantiations
-template class SystemAtom<float>;
 template class SystemAtom<double>;
-template class SystemAtom<std::complex<float>>;
 template class SystemAtom<std::complex<double>>;
 } // namespace pairinteraction

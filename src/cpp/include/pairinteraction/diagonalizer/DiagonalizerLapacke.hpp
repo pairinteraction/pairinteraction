@@ -17,8 +17,6 @@ public:
                               int precision) const override;
 };
 
-extern template class DiagonalizerLapacke<float>;
 extern template class DiagonalizerLapacke<double>;
-extern template class DiagonalizerLapacke<std::complex<float>>;
 extern template class DiagonalizerLapacke<std::complex<double>>;
 } // namespace pairinteraction

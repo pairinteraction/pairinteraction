@@ -51,15 +51,11 @@ static void declare_transformation_builder_interface(nb::module_ &m, std::string
 }
 
 void bind_transformation_builder_interface(nb::module_ &m) {
-    declare_transformation<float>(m, "Float");
     declare_transformation<double>(m, "Double");
-    declare_transformation<std::complex<float>>(m, "ComplexFloat");
     declare_transformation<std::complex<double>>(m, "ComplexDouble");
     declare_sorting(m);
     declare_indices_of_blocks(m);
     declare_indices_of_blocks_creator(m);
-    declare_transformation_builder_interface<float>(m, "Float");
     declare_transformation_builder_interface<double>(m, "Double");
-    declare_transformation_builder_interface<std::complex<float>>(m, "ComplexFloat");
     declare_transformation_builder_interface<std::complex<double>>(m, "ComplexDouble");
 }

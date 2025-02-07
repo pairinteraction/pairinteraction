@@ -19,8 +19,6 @@ DiagonalizerEigen<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
 }
 
 // Explicit instantiations
-template class DiagonalizerEigen<float>;
 template class DiagonalizerEigen<double>;
-template class DiagonalizerEigen<std::complex<float>>;
 template class DiagonalizerEigen<std::complex<double>>;
 } // namespace pairinteraction

@@ -181,42 +181,24 @@ static void declare_basis_pair_creator(nb::module_ &m, std::string const &type_n
 }
 
 void bind_basis(nb::module_ &m) {
-    declare_basis<BasisAtom<float>>(m, "BasisAtomFloat");
     declare_basis<BasisAtom<double>>(m, "BasisAtomDouble");
-    declare_basis<BasisAtom<std::complex<float>>>(m, "BasisAtomComplexFloat");
     declare_basis<BasisAtom<std::complex<double>>>(m, "BasisAtomComplexDouble");
-    declare_basis_atom<float>(m, "Float");
     declare_basis_atom<double>(m, "Double");
-    declare_basis_atom<std::complex<float>>(m, "ComplexFloat");
     declare_basis_atom<std::complex<double>>(m, "ComplexDouble");
-    declare_basis_atom_creator<float>(m, "Float");
     declare_basis_atom_creator<double>(m, "Double");
-    declare_basis_atom_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_atom_creator<std::complex<double>>(m, "ComplexDouble");
 
-    declare_basis<BasisClassicalLight<float>>(m, "BasisClassicalLightFloat");
     declare_basis<BasisClassicalLight<double>>(m, "BasisClassicalLightDouble");
-    declare_basis<BasisClassicalLight<std::complex<float>>>(m, "BasisClassicalLightComplexFloat");
     declare_basis<BasisClassicalLight<std::complex<double>>>(m, "BasisClassicalLightComplexDouble");
-    declare_basis_classical_light<float>(m, "Float");
     declare_basis_classical_light<double>(m, "Double");
-    declare_basis_classical_light<std::complex<float>>(m, "ComplexFloat");
     declare_basis_classical_light<std::complex<double>>(m, "ComplexDouble");
-    declare_basis_classical_light_creator<float>(m, "Float");
     declare_basis_classical_light_creator<double>(m, "Double");
-    declare_basis_classical_light_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_classical_light_creator<std::complex<double>>(m, "ComplexDouble");
 
-    declare_basis<BasisPair<float>>(m, "BasisPairFloat");
     declare_basis<BasisPair<double>>(m, "BasisPairDouble");
-    declare_basis<BasisPair<std::complex<float>>>(m, "BasisPairComplexFloat");
     declare_basis<BasisPair<std::complex<double>>>(m, "BasisPairComplexDouble");
-    declare_basis_pair<float>(m, "Float");
     declare_basis_pair<double>(m, "Double");
-    declare_basis_pair<std::complex<float>>(m, "ComplexFloat");
     declare_basis_pair<std::complex<double>>(m, "ComplexDouble");
-    declare_basis_pair_creator<float>(m, "Float");
     declare_basis_pair_creator<double>(m, "Double");
-    declare_basis_pair_creator<std::complex<float>>(m, "ComplexFloat");
     declare_basis_pair_creator<std::complex<double>>(m, "ComplexDouble");
 }

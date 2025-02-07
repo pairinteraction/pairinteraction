@@ -324,12 +324,8 @@ bool System<Derived>::is_diagonal() const {
 }
 
 // Explicit instantiation
-template class System<SystemAtom<float>>;
 template class System<SystemAtom<double>>;
-template class System<SystemAtom<std::complex<float>>>;
 template class System<SystemAtom<std::complex<double>>>;
-template class System<SystemPair<float>>;
 template class System<SystemPair<double>>;
-template class System<SystemPair<std::complex<float>>>;
 template class System<SystemPair<std::complex<double>>>;
 } // namespace pairinteraction

@@ -6,8 +6,8 @@
 
 namespace pairinteraction {
 DOCTEST_TEST_CASE("create a classical light basis") {
-    float energy{0.03};
-    auto basis = BasisClassicalLightCreator<float>()
+    double energy{0.03};
+    auto basis = BasisClassicalLightCreator<double>()
                      .set_photon_energy(energy)
                      .restrict_quantum_number_q(-3, 3)
                      .create();

@@ -83,8 +83,6 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
 #endif // WITH_MKL || WITH_LAPACKE
 
 // Explicit instantiations
-template class DiagonalizerLapacke<float>;
 template class DiagonalizerLapacke<double>;
-template class DiagonalizerLapacke<std::complex<float>>;
 template class DiagonalizerLapacke<std::complex<double>>;
 } // namespace pairinteraction

@@ -31,8 +31,6 @@ public:
                                       int precision) const;
 };
 
-extern template class DiagonalizerInterface<float>;
 extern template class DiagonalizerInterface<double>;
-extern template class DiagonalizerInterface<std::complex<float>>;
 extern template class DiagonalizerInterface<std::complex<double>>;
 } // namespace pairinteraction

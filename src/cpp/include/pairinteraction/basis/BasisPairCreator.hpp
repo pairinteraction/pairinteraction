@@ -43,8 +43,6 @@ private:
     Parity product_of_parities; // NOLINT
 };
 
-extern template class BasisPairCreator<float>;
 extern template class BasisPairCreator<double>;
-extern template class BasisPairCreator<std::complex<float>>;
 extern template class BasisPairCreator<std::complex<double>>;
 } // namespace pairinteraction

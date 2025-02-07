@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
     bool success = true;
 
     // Create a dipole operator coupling two specific states
-    auto ket1 = pairinteraction::KetAtomCreator<float>()
+    auto ket1 = pairinteraction::KetAtomCreator<double>()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(0)
@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
                     .set_quantum_number_m(0.5)
                     .create(database);
 
-    auto ket2 = pairinteraction::KetAtomCreator<float>()
+    auto ket2 = pairinteraction::KetAtomCreator<double>()
                     .set_species("Rb")
                     .set_quantum_number_n(60)
                     .set_quantum_number_l(1)
@@ -42,15 +42,17 @@ int main(int argc, char **argv) {
                     .create(database);
 
     auto basis_ket1_ket2 =
-        pairinteraction::BasisAtomCreator<float>().append_ket(ket1).append_ket(ket2).create(
+        pairinteraction::BasisAtomCreator<double>().append_ket(ket1).append_ket(ket2).create(
             database);
 
-    pairinteraction::OperatorAtom<float> dipole_ket1_ket2(
+    pairinteraction::OperatorAtom<double> dipole_ket1_ket2(
         basis_ket1_ket2, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
-    float dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
+    double dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 1247.5955810546875) >
-        10 * std::numeric_limits<float>::epsilon()) {
+    double reference = 1247.5955234484584;
+
+    if (std::abs(dipole_ket1_ket2_value - reference) >
+        10 * std::numeric_limits<double>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct.");
         success = false;
     }
@@ -58,8 +60,8 @@ int main(int argc, char **argv) {
     dipole_ket1_ket2 = 2 * dipole_ket1_ket2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 2 * 1247.5955810546875) >
-        10 * std::numeric_limits<float>::epsilon()) {
+    if (std::abs(dipole_ket1_ket2_value - 2 * reference) >
+        10 * std::numeric_limits<double>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after multiplication by a scalar.");
         success = false;
     }
@@ -67,24 +69,24 @@ int main(int argc, char **argv) {
     dipole_ket1_ket2 = dipole_ket1_ket2 + dipole_ket1_ket2;
     dipole_ket1_ket2_value = dipole_ket1_ket2.get_matrix().coeff(0, 1);
 
-    if (std::abs(dipole_ket1_ket2_value - 4 * 1247.5955810546875) >
-        10 * std::numeric_limits<float>::epsilon()) {
+    if (std::abs(dipole_ket1_ket2_value - 4 * reference) >
+        10 * std::numeric_limits<double>::epsilon()) {
         SPDLOG_ERROR("The dipole operator value is not correct after summation.");
         success = false;
     }
 
     // Create dipole operators in a typical basis
-    auto basis = pairinteraction::BasisAtomCreator<std::complex<float>>()
+    auto basis = pairinteraction::BasisAtomCreator<std::complex<double>>()
                      .set_species("Sr88_singlet")
                      .restrict_quantum_number_n(60, 63)
                      .restrict_quantum_number_l(0, 3)
                      .create(database);
 
-    pairinteraction::OperatorAtom<std::complex<float>> dipole_0(
+    pairinteraction::OperatorAtom<std::complex<double>> dipole_0(
         basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 0);
-    pairinteraction::OperatorAtom<std::complex<float>> dipole_p(
+    pairinteraction::OperatorAtom<std::complex<double>> dipole_p(
         basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, 1);
-    pairinteraction::OperatorAtom<std::complex<float>> dipole_m(
+    pairinteraction::OperatorAtom<std::complex<double>> dipole_m(
         basis, pairinteraction::OperatorType::ELECTRIC_DIPOLE, -1);
 
     if (dipole_0.get_matrix().rows() != 64) {

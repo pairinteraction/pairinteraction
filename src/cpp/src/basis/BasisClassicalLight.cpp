@@ -20,8 +20,6 @@ BasisClassicalLight<Scalar>::get_matrix_elements(std::shared_ptr<const Type> /*o
 }
 
 // Explicit instantiations
-template class BasisClassicalLight<float>;
 template class BasisClassicalLight<double>;
-template class BasisClassicalLight<std::complex<float>>;
 template class BasisClassicalLight<std::complex<double>>;
 } // namespace pairinteraction

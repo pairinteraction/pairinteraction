@@ -100,21 +100,11 @@ calculate_tensor_product(const std::shared_ptr<const BasisPair<Scalar>> &basis_i
 }
 
 // Explicit instantiations
-template Eigen::SparseMatrix<float, Eigen::RowMajor>
-calculate_tensor_product(const std::shared_ptr<const BasisPair<float>> &,
-                         const std::shared_ptr<const BasisPair<float>> &,
-                         const Eigen::SparseMatrix<float, Eigen::RowMajor> &,
-                         const Eigen::SparseMatrix<float, Eigen::RowMajor> &);
 template Eigen::SparseMatrix<double, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<double>> &,
                          const std::shared_ptr<const BasisPair<double>> &,
                          const Eigen::SparseMatrix<double, Eigen::RowMajor> &,
                          const Eigen::SparseMatrix<double, Eigen::RowMajor> &);
-template Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor>
-calculate_tensor_product(const std::shared_ptr<const BasisPair<std::complex<float>>> &,
-                         const std::shared_ptr<const BasisPair<std::complex<float>>> &,
-                         const Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor> &,
-                         const Eigen::SparseMatrix<std::complex<float>, Eigen::RowMajor> &);
 template Eigen::SparseMatrix<std::complex<double>, Eigen::RowMajor>
 calculate_tensor_product(const std::shared_ptr<const BasisPair<std::complex<double>>> &,
                          const std::shared_ptr<const BasisPair<std::complex<double>>> &,

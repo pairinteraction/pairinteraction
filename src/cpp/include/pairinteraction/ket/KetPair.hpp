@@ -57,8 +57,6 @@ private:
                      const std::vector<std::shared_ptr<const BasisAtom<Scalar>>> &bases);
 };
 
-extern template class KetPair<float>;
 extern template class KetPair<double>;
-extern template class KetPair<std::complex<float>>;
 extern template class KetPair<std::complex<double>>;
 } // namespace pairinteraction

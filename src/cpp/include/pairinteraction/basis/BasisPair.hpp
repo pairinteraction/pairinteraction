@@ -103,8 +103,6 @@ private:
     std::shared_ptr<const BasisAtom<Scalar>> basis2;
 };
 
-extern template class BasisPair<float>;
 extern template class BasisPair<double>;
-extern template class BasisPair<std::complex<float>>;
 extern template class BasisPair<std::complex<double>>;
 } // namespace pairinteraction

@@ -778,16 +778,10 @@ bool Basis<Derived>::equal_to::operator()(const std::shared_ptr<const ket_t> &lh
 }
 
 // Explicit instantiations
-template class Basis<BasisAtom<float>>;
 template class Basis<BasisAtom<double>>;
-template class Basis<BasisAtom<std::complex<float>>>;
 template class Basis<BasisAtom<std::complex<double>>>;
-template class Basis<BasisClassicalLight<float>>;
 template class Basis<BasisClassicalLight<double>>;
-template class Basis<BasisClassicalLight<std::complex<float>>>;
 template class Basis<BasisClassicalLight<std::complex<double>>>;
-template class Basis<BasisPair<float>>;
 template class Basis<BasisPair<double>>;
-template class Basis<BasisPair<std::complex<float>>>;
 template class Basis<BasisPair<std::complex<double>>>;
 } // namespace pairinteraction

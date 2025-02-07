@@ -143,8 +143,6 @@ std::shared_ptr<const BasisPair<Scalar>> BasisPairCreator<Scalar>::create() cons
 }
 
 // Explicit instantiations
-template class BasisPairCreator<float>;
 template class BasisPairCreator<double>;
-template class BasisPairCreator<std::complex<float>>;
 template class BasisPairCreator<std::complex<double>>;
 } // namespace pairinteraction

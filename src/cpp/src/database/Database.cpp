@@ -1500,12 +1500,9 @@ const std::filesystem::path Database::default_database_dir = database_dir_noexce
         std::shared_ptr<const BasisAtom<SCALAR>> final_basis, OperatorType type, int q);
 // NOLINTEND(bugprone-macro-parentheses, cppcoreguidelines-macro-usage)
 
-INSTANTIATE_GETTERS_REAL(float)
 INSTANTIATE_GETTERS_REAL(double)
 
-INSTANTIATE_GETTERS(float, float)
 INSTANTIATE_GETTERS(double, double)
-INSTANTIATE_GETTERS(std::complex<float>, float)
 INSTANTIATE_GETTERS(std::complex<double>, double)
 
 #undef INSTANTIATE_GETTERS_REAL

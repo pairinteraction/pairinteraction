@@ -53,8 +53,6 @@ private:
     void construct_hamiltonian() const override;
 };
 
-extern template class SystemAtom<float>;
 extern template class SystemAtom<double>;
-extern template class SystemAtom<std::complex<float>>;
 extern template class SystemAtom<std::complex<double>>;
 } // namespace pairinteraction

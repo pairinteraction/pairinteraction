@@ -108,7 +108,7 @@ endif()
 set(MKL_INTERFACE
     "lp64"
     CACHE STRING "MKL interface")
-# find_package(MKL)  # TODO: Re-enable when MKL is available
+find_package(MKL) # TODO: Re-enable when MKL is available
 
 # Try to find lapacke if MKL is not available
 if(NOT MKL_FOUND)
