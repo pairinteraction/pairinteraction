@@ -1,5 +1,6 @@
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 
+#include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -34,22 +35,25 @@ lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, lapack_com
     return LAPACKE_zheevd(matrix_layout, jobz, uplo, n, a, lda, w);
 };
 
-template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke() = default;
-
-template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                  int precision) const {
+template <typename Scalar, typename ScalarRstr>
+EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                   int precision) {
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
+    using real_rstr_t = typename traits::NumTraits<ScalarRstr>::real_t;
     int dim = matrix.rows();
 
+    // Subtract the mean of the diagonal elements from the diagonal
+    const real_t shift = matrix.diagonal().real().mean();
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> identity(dim, dim);
+    identity.setIdentity();
+    Eigen::MatrixX<ScalarRstr> evecs = (matrix - shift * identity).template cast<ScalarRstr>();
+
+    // Diagonalize the shifted matrix
     lapack_int info{}; // will contain return codes
     char jobz = 'V';   // eigenvalues and eigenvectors are computed
     char uplo = 'U';   // full matrix is stored, upper is used
 
-    Eigen::VectorX<real_t> evals(dim);
-    Eigen::MatrixX<Scalar> evecs = matrix;
-
+    Eigen::VectorX<real_rstr_t> evals(dim);
     info = evd(LAPACK_COL_MAJOR, jobz, uplo, dim, evecs.data(), dim, evals.data());
 
     if (info != 0) {
@@ -62,13 +66,34 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
             "Diagonalization error: The LAPACK routine failed with error code {}.", info));
     }
 
-    return {evecs.sparseView(std::pow(10, -precision), 1), evals};
+    // Add the mean of the diagonal elements back to the eigenvalues
+    Eigen::VectorX<real_t> eigenvalues = evals.template cast<real_t>();
+    eigenvalues.array() += shift;
+
+    return {evecs.sparseView(std::pow(10, -precision), 1).template cast<Scalar>(), eigenvalues};
+}
+
+template <typename Scalar>
+DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FPP fpp) : DiagonalizerInterface<Scalar>(fpp) {}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                  int precision) const {
+    switch (this->fpp) {
+    case FPP::FLOAT32:
+        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, precision);
+    case FPP::FLOAT64:
+        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, precision);
+    default:
+        throw std::invalid_argument("Unsupported floating point precision.");
+    }
 }
 
 #else
 
 template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke() {
+DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FPP fpp) : DiagonalizerInterface<Scalar>(fpp) {
     throw std::runtime_error(
         "The LAPACKE routine is not available in this build. Please use a different diagonalizer.");
 }

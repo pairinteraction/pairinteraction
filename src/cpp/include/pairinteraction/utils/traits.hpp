@@ -1,5 +1,7 @@
 #pragma once
 
+#include "pairinteraction/enums/FPP.hpp"
+
 #include <complex>
 #include <functional>
 #include <type_traits>
@@ -59,5 +61,31 @@ struct OpTraits {
     static constexpr bool has_equal_v = std::is_invocable_r_v<bool, std::equal_to<>, T, T>;
     static constexpr bool has_less_v = std::is_invocable_r_v<bool, std::less<>, T, T>;
 };
+
+/**
+ * @struct FPTypeTraits
+ *
+ * @brief Helper struct to extract the type from a floating point precision enum.
+ *
+ * @tparam T The enum value for which the type is to be extracted.
+ */
+
+template <FPP T>
+struct FPTypeTraits;
+
+template <>
+struct FPTypeTraits<FPP::FLOAT32> {
+    using type = float;
+};
+
+template <>
+struct FPTypeTraits<FPP::FLOAT64> {
+    using type = double;
+};
+
+template <typename Scalar, FPP FP>
+using restricted_t = std::conditional_t<traits::NumTraits<Scalar>::is_complex_v,
+                                        std::complex<typename FPTypeTraits<FP>::type>,
+                                        typename FPTypeTraits<FP>::type>;
 
 } // namespace pairinteraction::traits

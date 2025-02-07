@@ -1,5 +1,6 @@
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 
+#include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -36,54 +37,48 @@ void feast(const char *uplo, const MKL_INT *n, const MKL_Complex16 *a, const MKL
     zfeast_heev(uplo, n, a, lda, fpm, epsout, loop, emin, emax, m0, e, x, m, res, info);
 }
 
-template <typename Scalar>
-DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0) : m0(m0) {
-    if (m0 <= 0) {
-        throw std::invalid_argument("The size of the initial subspace m0 (i.e., the number of "
-                                    "maximally obtainable eigenvalues) must be positive.");
-    }
-}
-
-template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                int /*precision*/) const {
-    throw std::invalid_argument("The FEAST routine requires a search interval.");
-}
-
-template <typename Scalar>
-EigenSystemH<Scalar>
-DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
-    if (precision < 0) {
-        throw std::invalid_argument("The precision must be non-negative for the FEAST routine.");
-    }
-
+template <typename Scalar, typename ScalarRstr>
+EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                   typename traits::NumTraits<Scalar>::real_t min_eigenvalue,
+                                   typename traits::NumTraits<Scalar>::real_t max_eigenvalue,
+                                   int m0, int precision) {
+    using real_t = typename traits::NumTraits<Scalar>::real_t;
+    using real_rstr_t = typename traits::NumTraits<ScalarRstr>::real_t;
     int dim = matrix.rows();
-    int m0 = std::min(dim, this->m0);
 
-    Eigen::MatrixX<Scalar> hamiltonian = matrix;
-    Eigen::VectorX<real_t> evals(dim);
-    Eigen::MatrixX<Scalar> evecs(dim, m0); // the first m columns will contain the eigenvectors
+    // Subtract the mean of the diagonal elements from the diagonal
+    const real_t shift = matrix.diagonal().real().mean();
+    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> identity(dim, dim);
+    identity.setIdentity();
+    Eigen::MatrixX<ScalarRstr> hamiltonian =
+        (matrix - shift * identity).template cast<ScalarRstr>();
+
+    // Diagonalize the shifted matrix
+    m0 = std::min(dim, m0);
+
+    Eigen::VectorX<real_rstr_t> evals(dim);
+    Eigen::MatrixX<ScalarRstr> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
     std::vector<MKL_INT> fpm(128);
     feastinit(fpm.data());
-    fpm[0] = 0;                  // disable terminal output
-    fpm[1] = 5;                  // number of contour points
-    fpm[4] = 0;                  // do not use initial subspace
-    fpm[26] = 0;                 // disables matrix checker
-    fpm[2] = precision;          // single precision stopping criteria
-    fpm[6] = precision;          // double precision stopping criteria
-    MKL_INT m{};                 // will contain the number of eigenvalues
-    std::vector<real_t> e(m0);   // will contain the first m eigenvalues
-    char uplo = 'F';             // full matrix is stored
-    MKL_INT info{};              // will contain return codes
-    real_t epsout{};             // will contain relative error
-    MKL_INT loop{};              // will contain number of used refinement
-    std::vector<real_t> res(m0); // will contain the residual errors
+    fpm[0] = 0;                       // disable terminal output
+    fpm[1] = 8;                       // number of contour points
+    fpm[4] = 0;                       // do not use initial subspace
+    fpm[26] = 0;                      // disables matrix checker
+    fpm[2] = precision;               // single precision stopping criteria
+    fpm[6] = precision;               // double precision stopping criteria
+    MKL_INT m{};                      // will contain the number of eigenvalues
+    std::vector<real_rstr_t> e(m0);   // will contain the first m eigenvalues
+    char uplo = 'F';                  // full matrix is stored
+    MKL_INT info{};                   // will contain return codes
+    real_rstr_t epsout{};             // will contain relative error
+    MKL_INT loop{};                   // will contain number of used refinement
+    std::vector<real_rstr_t> res(m0); // will contain the residual errors
+    real_rstr_t min_eigenvalue_rstr = min_eigenvalue - shift;
+    real_rstr_t max_eigenvalue_rstr = max_eigenvalue - shift;
 
-    feast(&uplo, &dim, hamiltonian.data(), &dim, fpm.data(), &epsout, &loop, &min_eigenvalue,
-          &max_eigenvalue, &m0, evals.data(), evecs.data(), &m, res.data(), &info);
+    feast(&uplo, &dim, hamiltonian.data(), &dim, fpm.data(), &epsout, &loop, &min_eigenvalue_rstr,
+          &max_eigenvalue_rstr, &m0, evals.data(), evecs.data(), &m, res.data(), &info);
 
     // https://www.intel.com/content/www/us/en/docs/onemkl/developer-reference-c/2023-1/extended-eigensolver-output-details.html
     if (info != 0) {
@@ -148,13 +143,50 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
     evecs.conservativeResize(dim, m);
     evals.conservativeResize(m);
 
-    return {evecs.sparseView(std::pow(10, -precision), 1), evals};
+    // Add the mean of the diagonal elements back to the eigenvalues
+    Eigen::VectorX<real_t> eigenvalues = evals.template cast<real_t>();
+    eigenvalues.array() += shift;
+
+    return {evecs.sparseView(std::pow(10, -precision), 1).template cast<Scalar>(), eigenvalues};
+}
+
+template <typename Scalar>
+DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FPP fpp)
+    : DiagonalizerInterface<Scalar>(fpp), m0(m0) {
+    if (m0 <= 0) {
+        throw std::invalid_argument("The size of the initial subspace m0 (i.e., the number of "
+                                    "maximally obtainable eigenvalues) must be positive.");
+    }
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
+                                int /*precision*/) const {
+    throw std::invalid_argument("The FEAST routine requires a search interval.");
+}
+
+template <typename Scalar>
+EigenSystemH<Scalar>
+DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
+    switch (this->fpp) {
+    case FPP::FLOAT32:
+        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT32>>(
+            matrix, min_eigenvalue, max_eigenvalue, m0, precision);
+    case FPP::FLOAT64:
+        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT64>>(
+            matrix, min_eigenvalue, max_eigenvalue, m0, precision);
+    default:
+        throw std::invalid_argument("Unsupported floating point precision.");
+    }
 }
 
 #else
 
 template <typename Scalar>
-DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0) : m0(m0) {
+DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FPP fpp)
+    : DiagonalizerInterface<Scalar>(fpp), m0(m0) {
     throw std::runtime_error(
         "The FEAST routine is not available in this build. Please use a different diagonalizer.");
 }

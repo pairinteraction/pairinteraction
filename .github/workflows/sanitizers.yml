@@ -71,6 +71,8 @@ jobs:
         alignment:_mm_load_sd
         # https://github.com/wjakob/nanobind/commit/c70a8d438e9285d946a1167e8e09f39cb1c4aab2
         null:nb_func_vectorcall_complex
+        # Suppress error from misaligned loads in Eigen
+        alignment:Eigen::internal::Packet2cf
         EOF
         export UBSAN_OPTIONS="symbolize=1:print_stacktrace=1:halt_on_error=1:suppressions=$PWD/known_issues.supp"
         cmake --build build/ --target test -- --keep-going

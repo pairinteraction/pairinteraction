@@ -1,5 +1,6 @@
 #pragma once
 
+#include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -23,12 +24,16 @@ public:
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
+    DiagonalizerInterface(FPP fpp);
     virtual ~DiagonalizerInterface() = default;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       int precision) const = 0;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       real_t min_eigenvalue, real_t max_eigenvalue,
                                       int precision) const;
+
+protected:
+    FPP fpp;
 };
 
 extern template class DiagonalizerInterface<double>;

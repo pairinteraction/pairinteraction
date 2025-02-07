@@ -18,6 +18,7 @@ add_library(
   ./include/pairinteraction/diagonalizer/DiagonalizerEigen.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerFeast.hpp
   ./include/pairinteraction/diagonalizer/DiagonalizerLapacke.hpp
+  ./include/pairinteraction/enums/FPP.hpp
   ./include/pairinteraction/enums/OperatorType.hpp
   ./include/pairinteraction/enums/Parity.hpp
   ./include/pairinteraction/enums/TransformationType.hpp

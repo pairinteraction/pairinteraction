@@ -88,15 +88,13 @@ static void declare_database(nb::module_ &m) {
              "wigner_in_memory"_a, "database_dir"_a)
         .def("get_availability_of_species", &Database::get_availability_of_species)
         .def("get_availability_of_wigner_table", &Database::get_availability_of_wigner_table)
-        .def(
-            "get_ket",
-            nb::overload_cast<std::string, const AtomDescriptionByParameters &>(&Database::get_ket))
+        .def("get_ket", &Database::get_ket)
         .def("get_basis",
-             nb::overload_cast<std::string, const AtomDescriptionByRanges &, std::vector<size_t>>(
-                 &Database::get_basis<double>))
+             nb::overload_cast<const std::string &, const AtomDescriptionByRanges &,
+                               std::vector<size_t>>(&Database::get_basis<double>))
         .def("get_basis",
-             nb::overload_cast<std::string, const AtomDescriptionByRanges &, std::vector<size_t>>(
-                 &Database::get_basis<std::complex<double>>))
+             nb::overload_cast<const std::string &, const AtomDescriptionByRanges &,
+                               std::vector<size_t>>(&Database::get_basis<std::complex<double>>))
         .def("get_matrix_elements",
              nb::overload_cast<std::shared_ptr<const BasisAtom<double>>,
                                std::shared_ptr<const BasisAtom<double>>, OperatorType, int>(

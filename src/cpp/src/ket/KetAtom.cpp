@@ -58,7 +58,7 @@ std::string KetAtom::get_label() const {
         label += this->is_j_total_momentum ? "J=" : "F=";
     } else {
         label += fmt::format("{:d},", quantum_number_n);
-        if (quantum_number_l_exp == std::rintf(quantum_number_l_exp) &&
+        if (quantum_number_l_exp == std::rint(quantum_number_l_exp) &&
             quantum_number_l_exp < quantum_number_l_labels.size()) {
             label += quantum_number_l_labels.at(static_cast<size_t>(quantum_number_l_exp));
         } else {
@@ -69,18 +69,18 @@ std::string KetAtom::get_label() const {
 
     double total_momentum =
         this->is_j_total_momentum ? this->quantum_number_j_exp : this->quantum_number_f;
-    if (total_momentum == std::rintf(total_momentum)) {
+    if (total_momentum == std::rint(total_momentum)) {
         label += fmt::format("{:.0f}", total_momentum);
-    } else if (2 * total_momentum == std::rintf(2 * total_momentum)) {
+    } else if (2 * total_momentum == std::rint(2 * total_momentum)) {
         label += fmt::format("{:.0f}/2", 2 * total_momentum);
     } else {
         std::abort(); // can't happen because the total momentum is validated to be an integer
                       // or half-integer
     }
 
-    if (this->quantum_number_m == std::rintf(this->quantum_number_m)) {
+    if (this->quantum_number_m == std::rint(this->quantum_number_m)) {
         label += fmt::format(",{:.0f}", this->quantum_number_m);
-    } else if (2 * this->quantum_number_m == std::rintf(2 * this->quantum_number_m)) {
+    } else if (2 * this->quantum_number_m == std::rint(2 * this->quantum_number_m)) {
         label += fmt::format(",{:.0f}/2", 2 * this->quantum_number_m);
     } else {
         std::abort(); // can't happen because the quantum number m is validated to be an integer
