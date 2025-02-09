@@ -5,6 +5,8 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 
 #include <Eigen/Dense>
+#include <cmath>
+#include <spdlog/spdlog.h>
 
 #ifdef WITH_MKL
 #include <fmt/core.h>
@@ -52,6 +54,19 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
     identity.setIdentity();
     Eigen::MatrixX<ScalarRstr> hamiltonian =
         (matrix - shift * identity).template cast<ScalarRstr>();
+
+    // Check if the precision is reachable
+    real_rstr_t entry = hamiltonian.array().abs().maxCoeff();
+    int precision_shift = std::floor(
+        -std::log10(shift - std::nextafter(shift, std::numeric_limits<real_t>::lowest())));
+    int precision_rstr = std::floor(
+        -std::log10(entry - std::nextafter(entry, std::numeric_limits<real_rstr_t>::lowest())));
+    if (precision > std::min(precision_shift, precision_rstr) +
+            1) { // +1 because FEAST needs a higher precision
+        SPDLOG_WARN("Because the floating point precision is too low, the energies cannot be "
+                    "calculated with a precision of 1e-{} Hartree.",
+                    precision);
+    }
 
     // Diagonalize the shifted matrix
     m0 = std::min(dim, m0);

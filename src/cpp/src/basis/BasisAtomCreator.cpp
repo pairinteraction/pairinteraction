@@ -100,7 +100,8 @@ BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::restrict_quantum_number_j_ry
 }
 
 template <typename Scalar>
-BasisAtomCreator<Scalar> &BasisAtomCreator<Scalar>::append_ket(std::shared_ptr<const ket_t> ket) {
+BasisAtomCreator<Scalar> &
+BasisAtomCreator<Scalar>::append_ket(const std::shared_ptr<const ket_t> &ket) {
     if (additional_ket_species.has_value() &&
         additional_ket_species.value() != ket->get_species()) {
         throw std::invalid_argument("Species mismatch.");

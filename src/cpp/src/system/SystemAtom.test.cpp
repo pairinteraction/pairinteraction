@@ -134,7 +134,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
     diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
 
-    for (int precision : {1, 6, 15}) {
+    for (int precision : {1, 11, 15}) {
         DOCTEST_MESSAGE("Precision: ", precision);
 
         for (const auto &diagonalizer : diagonalizers) {
@@ -174,7 +174,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
         std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
 #endif
 
-    for (int precision : {1, 6, 12}) {
+    for (int precision : {1, 11}) {
         DOCTEST_MESSAGE("Precision: ", precision);
 
         for (const auto &diagonalizer : diagonalizers) {
