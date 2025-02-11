@@ -27,11 +27,11 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
         (matrix - shift * identity).template cast<ScalarRstr>();
 
     // Check if the precision is reachable
-    real_rstr_t entry = shifted_matrix.array().abs().maxCoeff();
+    real_rstr_t max_entry = shifted_matrix.array().abs().maxCoeff();
     int precision_shift = std::floor(
         -std::log10(shift - std::nextafter(shift, std::numeric_limits<real_t>::lowest())));
-    int precision_rstr = std::floor(
-        -std::log10(entry - std::nextafter(entry, std::numeric_limits<real_rstr_t>::lowest())));
+    int precision_rstr = std::floor(-std::log10(
+        max_entry - std::nextafter(max_entry, std::numeric_limits<real_rstr_t>::lowest())));
     if (precision > std::min(precision_shift, precision_rstr)) {
         SPDLOG_WARN("Because the floating point precision is too low, the energies cannot be "
                     "calculated with a precision of 1e-{} Hartree.",
@@ -47,7 +47,7 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
     eigenvalues.array() += shift;
 
     return {
-        eigensolver.eigenvectors().sparseView(std::pow(10, -precision), 1).template cast<Scalar>(),
+        eigensolver.eigenvectors().sparseView(1, std::pow(10, -precision)).template cast<Scalar>(),
         eigenvalues};
 }
 
