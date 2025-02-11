@@ -87,10 +87,10 @@ GreenFunctions<Scalar> construct_green_functions(
         auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa1.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_functions.dipole_dipole =
-                tmp.sparseView(numerical_precision, 1) / std::pow(distance, 3);
+                tmp.sparseView(1, numerical_precision) / std::pow(distance, 3);
         } else {
             green_functions.dipole_dipole =
-                tmp.real().sparseView(numerical_precision, 1) / std::pow(distance, 3);
+                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 3);
             assert(tmp.imag().norm() < numerical_precision);
         }
     } else {
@@ -126,10 +126,10 @@ GreenFunctions<Scalar> construct_green_functions(
         auto tmp = to_spherical_kappa1 * green_function_cartesian * to_spherical_kappa2.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_functions.dipole_quadrupole =
-                tmp.sparseView(numerical_precision, 1) / std::pow(distance, 4);
+                tmp.sparseView(1, numerical_precision) / std::pow(distance, 4);
         } else {
             green_functions.dipole_quadrupole =
-                tmp.real().sparseView(numerical_precision, 1) / std::pow(distance, 4);
+                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 4);
             assert(tmp.imag().norm() < numerical_precision);
         }
     } else {
@@ -165,10 +165,10 @@ GreenFunctions<Scalar> construct_green_functions(
         auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa1.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_functions.quadrupole_dipole =
-                tmp.sparseView(numerical_precision, 1) / std::pow(distance, 4);
+                tmp.sparseView(1, numerical_precision) / std::pow(distance, 4);
         } else {
             green_functions.quadrupole_dipole =
-                tmp.real().sparseView(numerical_precision, 1) / std::pow(distance, 4);
+                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 4);
             assert(tmp.imag().norm() < numerical_precision);
         }
     } else {
@@ -230,10 +230,10 @@ GreenFunctions<Scalar> construct_green_functions(
         auto tmp = to_spherical_kappa2 * green_function_cartesian * to_spherical_kappa2.adjoint();
         if constexpr (traits::NumTraits<Scalar>::is_complex_v) {
             green_functions.quadrupole_quadrupole =
-                tmp.sparseView(numerical_precision, 1) / std::pow(distance, 5);
+                tmp.sparseView(1, numerical_precision) / std::pow(distance, 5);
         } else {
             green_functions.quadrupole_quadrupole =
-                tmp.real().sparseView(numerical_precision, 1) / std::pow(distance, 5);
+                tmp.real().sparseView(1, numerical_precision) / std::pow(distance, 5);
             assert(tmp.imag().norm() < numerical_precision);
         }
     } else {

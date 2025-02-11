@@ -56,11 +56,11 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
         (matrix - shift * identity).template cast<ScalarRstr>();
 
     // Check if the precision is reachable
-    real_rstr_t entry = hamiltonian.array().abs().maxCoeff();
+    real_rstr_t max_entry = hamiltonian.array().abs().maxCoeff();
     int precision_shift = std::floor(
         -std::log10(shift - std::nextafter(shift, std::numeric_limits<real_t>::lowest())));
-    int precision_rstr = std::floor(
-        -std::log10(entry - std::nextafter(entry, std::numeric_limits<real_rstr_t>::lowest())));
+    int precision_rstr = std::floor(-std::log10(
+        max_entry - std::nextafter(max_entry, std::numeric_limits<real_rstr_t>::lowest())));
     if (precision > std::min(precision_shift, precision_rstr) +
             1) { // +1 because FEAST needs a higher precision
         SPDLOG_WARN("Because the floating point precision is too low, the energies cannot be "
@@ -74,14 +74,17 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
     Eigen::VectorX<real_rstr_t> evals(dim);
     Eigen::MatrixX<ScalarRstr> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
+    int precision_feast =
+        std::max(static_cast<int>(std::ceil(precision + std::log10(max_entry))), 0);
+
     std::vector<MKL_INT> fpm(128);
     feastinit(fpm.data());
     fpm[0] = 0;                       // disable terminal output
     fpm[1] = 8;                       // number of contour points
     fpm[4] = 0;                       // do not use initial subspace
     fpm[26] = 0;                      // disables matrix checker
-    fpm[2] = precision;               // single precision stopping criteria
-    fpm[6] = precision;               // double precision stopping criteria
+    fpm[2] = precision_feast;         // single precision stopping criteria
+    fpm[6] = precision_feast;         // double precision stopping criteria
     MKL_INT m{};                      // will contain the number of eigenvalues
     std::vector<real_rstr_t> e(m0);   // will contain the first m eigenvalues
     char uplo = 'F';                  // full matrix is stored
@@ -162,7 +165,7 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
     Eigen::VectorX<real_t> eigenvalues = evals.template cast<real_t>();
     eigenvalues.array() += shift;
 
-    return {evecs.sparseView(std::pow(10, -precision), 1).template cast<Scalar>(), eigenvalues};
+    return {evecs.sparseView(1, std::pow(10, -precision)).template cast<Scalar>(), eigenvalues};
 }
 
 template <typename Scalar>
