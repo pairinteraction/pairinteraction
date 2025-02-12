@@ -5,24 +5,21 @@ from typing import Union
 # from pairinteraction import (
 #     BasisAtom,
 #     BasisAtomCreator,
-#     BasisClassicalLight,
 #     ProductBasis,
 #     System,
 #     SystemAtom,
-#     SystemClassicalLight,
 #     SystemPair,
 #     SystemWithInteractions,
 # )
 from pairinteraction.model.constituents.atom import BaseModelAtom
 from pairinteraction.model.constituents.base import BaseModelConstituent
-from pairinteraction.model.constituents.classical_light import ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.simulation import ModelSimulation
 
-BasisAtom = BasisAtomCreator = BasisClassicalLight = ProductBasis = System = SystemAtom = SystemClassicalLight = (
-    SystemPair
-) = SystemWithInteractions = object  # mock to create the documentation
+BasisAtom = BasisAtomCreator = ProductBasis = System = SystemAtom = SystemPair = SystemWithInteractions = (
+    object  # mock to create the documentation
+)
 
 
 class BaseSimulation:
@@ -85,12 +82,9 @@ class Simulation(BaseSimulation):
             System: The created system
 
         """
-        if key in ["atom1", "atom2"]:
-            basis = self.create_atom_basis(model)
-            system = self.create_atom(basis, model)
-        elif key in ["classical_light1", "classical_light2"]:
-            basis = self.create_classical_light_basis(model)
-            system = self.create_classical_light(basis, model)
+        assert key in ["atom1", "atom2"]
+        basis = self.create_atom_basis(model)
+        system = self.create_atom(basis, model)
         self.bases[key] = basis
         self.constituents[key] = system
         return system
@@ -130,12 +124,6 @@ class Simulation(BaseSimulation):
         # system_options = {...}
         # system = SystemAtom(basis, system_options)  # or analog **system_options or from_model/options
         return system
-
-    def create_classical_light_basis(self, model: ModelClassicalLight) -> BasisClassicalLight:
-        raise NotImplementedError
-
-    def create_classical_light(self, basis: BasisClassicalLight, model: ModelClassicalLight) -> SystemClassicalLight:
-        raise NotImplementedError
 
     def create_system_interactions(self, model: ModelInteractions) -> SystemWithInteractions:
         # Construct the basis

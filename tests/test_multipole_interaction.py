@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-import pairinteraction.backend.float as pi
+import pairinteraction.backend.real as pi
 
 
 @pytest.mark.parametrize("species", ["Yb171_mqdt", "Rb"])

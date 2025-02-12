@@ -1,5 +1,4 @@
 from abc import ABC
-from collections.abc import Iterable
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, ClassVar, Generic, TypeVar, Union
 
@@ -12,13 +11,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 KetType = TypeVar("KetType", bound=Ket)
-KetLike = Union[Ket, Iterable[Ket]]
-BasisLike = Union["Basis", Iterable["Basis"]]
 UnionCPPBasis = Any
-# UnionCPPBasis is supposed to be Basis(|Basis)(Atom|ClassicalLight|Pair)(Float|Double|ComplexFloat|ComplexDouble)
+# UnionCPPBasis is supposed to be Basis(|Basis)(Atom|Pair)(Real|Complex)
 UnionTypeCPPBasisCreator = Any
-# UnionTypeCPPBasisCreator is supposed to be
-# type[Basis(Atom|ClassicalLight|Pair)Creator(Float|Double|ComplexFloat|ComplexDouble)]
+# UnionTypeCPPBasisCreator is supposed to be type[Basis(Atom|Pair)Creator(Real|Complex)]
 
 
 class BasisBase(ABC, Generic[KetType]):

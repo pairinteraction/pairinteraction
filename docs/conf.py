@@ -90,19 +90,17 @@ autodoc_type_aliases = {}  # make type aliases nicer
 
 
 def setup(app: Sphinx) -> None:
-    # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.double
+    # trick sphinx autodoc to fully document the classes inside pairinteraction.backend.real
     # instead of just saying 'alias of ...'
     all_pi_types = [
-        pairinteraction.backend.float,
-        pairinteraction.backend.double,
-        pairinteraction.backend.complexfloat,
-        pairinteraction.backend.complexdouble,
+        pairinteraction.backend.real,
+        pairinteraction.backend.complex,
     ]
     for pi in all_pi_types:
         for obj_name in dir(pi):
             obj = getattr(pi, obj_name)
             name = getattr(obj, "__name__", "")
-            if any(name.endswith(suffix) for suffix in ["Float", "Double"]):
+            if any(name.endswith(suffix) for suffix in ["Real", "Complex"]):
                 obj.__name__ = obj_name
     # add list of all labels for debugging purposes
     app.connect("build-finished", write_labels)

@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overload
+from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, overload
 
 import numpy as np
 
@@ -6,7 +6,7 @@ from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.database.Database import Database
 from pairinteraction.backend._wrapped.get_functions import get_cpp_operator_type, get_cpp_parity
-from pairinteraction.backend._wrapped.ket.KetAtom import KetAtomBase, KetAtomDouble, KetAtomFloat
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.units import QuantityAbstract, QuantityArray, QuantityScalar, QuantitySparse
@@ -18,19 +18,11 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-KetAtomType = TypeVar("KetAtomType", bound=KetAtomBase)
-UnionCPPBasisAtom = Union[
-    _backend.BasisAtomFloat, _backend.BasisAtomComplexFloat, _backend.BasisAtomDouble, _backend.BasisAtomComplexDouble
-]
-UnionTypeCPPBasisAtomCreator = Union[
-    type[_backend.BasisAtomCreatorFloat],
-    type[_backend.BasisAtomCreatorComplexFloat],
-    type[_backend.BasisAtomCreatorDouble],
-    type[_backend.BasisAtomCreatorComplexDouble],
-]
+UnionCPPBasisAtom = Union[_backend.BasisAtomReal, _backend.BasisAtomComplex]
+UnionTypeCPPBasisAtomCreator = Union[type[_backend.BasisAtomCreatorReal], type[_backend.BasisAtomCreatorComplex]]
 
 
-class BasisAtomBase(BasisBase[KetAtomType]):
+class BasisAtomBase(BasisBase[KetAtom]):
     _cpp: UnionCPPBasisAtom
     _cpp_creator: ClassVar[UnionTypeCPPBasisAtomCreator]
 
@@ -48,7 +40,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         energy_unit: Optional[str] = None,
         parity: Optional[Parity] = None,
         database: Optional[Database] = None,
-        additional_kets: Optional[list[KetAtomType]] = None,
+        additional_kets: Optional[list[KetAtom]] = None,
     ) -> None:
         """Create a basis for a single atom.
 
@@ -58,12 +50,12 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         i.e. the number of kets is equal to the number of states.
 
         Examples:
-            >>> import pairinteraction.backend.double as pi
+            >>> import pairinteraction.backend.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> energy_min, energy_max = ket.get_energy(unit="GHz") - 100, ket.get_energy(unit="GHz") + 100
             >>> basis = pi.BasisAtom("Rb", n=(57, 63), l=(0, 3), energy=(energy_min, energy_max), energy_unit="GHz")
             >>> print(basis)
-            BasisAtomDouble object with 140 states and 140 kets
+            BasisAtomReal object with 140 states and 140 kets
 
         Args:
             species: The species of the atom.
@@ -114,30 +106,28 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         self._cpp = creator.create(database._cpp)  # type: ignore [reportPrivateUsage]
 
     @overload
-    def get_amplitudes(self, ket_or_basis: KetAtomBase) -> "np.ndarray[Any,Any]": ...
+    def get_amplitudes(self, ket_or_basis: KetAtom) -> "np.ndarray[Any,Any]": ...
 
     @overload
     def get_amplitudes(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
-    def get_amplitudes(self, ket_or_basis: Union[KetAtomBase, "Self"]):
+    def get_amplitudes(self, ket_or_basis: Union[KetAtom, "Self"]):
         return self._cpp.get_amplitudes(ket_or_basis._cpp)
 
     @overload
-    def get_overlaps(self, ket_or_basis: KetAtomBase) -> "np.ndarray[Any,Any]": ...
+    def get_overlaps(self, ket_or_basis: KetAtom) -> "np.ndarray[Any,Any]": ...
 
     @overload
     def get_overlaps(self, ket_or_basis: "Self") -> "csr_matrix": ...
 
-    def get_overlaps(self, ket_or_basis: Union[KetAtomBase, "Self"]):
+    def get_overlaps(self, ket_or_basis: Union[KetAtom, "Self"]):
         return self._cpp.get_overlaps(ket_or_basis._cpp)
 
     @overload
-    def get_matrix_elements(
-        self, ket_or_basis: KetAtomType, operator: OperatorType, q: int
-    ) -> "PlainQuantity[Array]": ...
+    def get_matrix_elements(self, ket_or_basis: KetAtom, operator: OperatorType, q: int) -> "PlainQuantity[Array]": ...
 
     @overload
-    def get_matrix_elements(self, ket_or_basis: KetAtomType, operator: OperatorType, q: int, unit: str) -> "Array": ...
+    def get_matrix_elements(self, ket_or_basis: KetAtom, operator: OperatorType, q: int, unit: str) -> "Array": ...
 
     @overload
     def get_matrix_elements(
@@ -148,7 +138,7 @@ class BasisAtomBase(BasisBase[KetAtomType]):
     def get_matrix_elements(self, ket_or_basis: "Self", operator: OperatorType, q: int, unit: str) -> "csr_matrix": ...
 
     def get_matrix_elements(
-        self, ket_or_basis: Union[KetAtomType, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
+        self, ket_or_basis: Union[KetAtom, "Self"], operator: OperatorType, q: int, unit: Optional[str] = None
     ):
         matrix_elements_au = self._cpp.get_matrix_elements(ket_or_basis._cpp, get_cpp_operator_type(operator), q)
         matrix_elements: QuantityAbstract
@@ -159,28 +149,16 @@ class BasisAtomBase(BasisBase[KetAtomType]):
         return matrix_elements.to_unit(unit)
 
 
-class BasisAtomFloat(BasisAtomBase[KetAtomFloat]):
-    _cpp: _backend.BasisAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisAtomCreatorFloat
-    _TypeKet = KetAtomFloat
+class BasisAtomReal(BasisAtomBase):
+    _cpp: _backend.BasisAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisAtomCreatorReal
+    _TypeKet = KetAtom
 
 
-class BasisAtomComplexFloat(BasisAtomBase[KetAtomFloat]):
-    _cpp: _backend.BasisAtomComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisAtomCreatorComplexFloat
-    _TypeKet = KetAtomFloat
+class BasisAtomComplex(BasisAtomBase):
+    _cpp: _backend.BasisAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisAtomCreatorComplex
+    _TypeKet = KetAtom
 
 
-class BasisAtomDouble(BasisAtomBase[KetAtomDouble]):
-    _cpp: _backend.BasisAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisAtomCreatorDouble
-    _TypeKet = KetAtomDouble
-
-
-class BasisAtomComplexDouble(BasisAtomBase[KetAtomDouble]):
-    _cpp: _backend.BasisAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisAtomCreatorComplexDouble
-    _TypeKet = KetAtomDouble
-
-
-BasisAtom = BasisAtomBase[Any]
+BasisAtom = BasisAtomBase

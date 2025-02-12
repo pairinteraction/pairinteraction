@@ -18,7 +18,6 @@ if TYPE_CHECKING:
 
 from pairinteraction.model.constituents.atom import ModelAtomMQDT, ModelAtomSQDT
 from pairinteraction.model.constituents.base import BaseModelConstituent
-from pairinteraction.model.constituents.classical_light import ModelClassicalLight
 from pairinteraction.model.interactions import ModelInteractions
 from pairinteraction.model.numerics import ModelNumerics
 from pairinteraction.model.overlaps import ModelOverlaps
@@ -37,8 +36,6 @@ class ModelSimulation(BaseModel):
     # The following fields correspond to the toplevel fields of the json file descirbing a simulation
     atom1: UnionModelAtom
     atom2: Optional[Union[UnionModelAtom, ConstituentString]] = None
-    classical_light1: Optional[ModelClassicalLight] = None
-    classical_light2: Optional[Union[ModelClassicalLight, ConstituentString]] = None
 
     interactions: Optional[ModelInteractions] = None
     numerics: ModelNumerics = Field(default_factory=ModelNumerics)
@@ -50,8 +47,6 @@ class ModelSimulation(BaseModel):
         constituents = {
             "atom1": self.atom1,
             "atom2": self.atom2,
-            "classical_light1": self.classical_light1,
-            "classical_light2": self.classical_light2,
         }
         return {k: v for k, v in constituents.items() if v is not None}
 
@@ -61,8 +56,6 @@ class ModelSimulation(BaseModel):
         constituents = {
             "atom1": self.atom1,
             "atom2": self.atom2,
-            "classical_light1": self.classical_light1,
-            "classical_light2": self.classical_light2,
         }
         return {k: v for k, v in constituents.items() if v is not None and k not in self._constituent_mapping}
 
@@ -70,7 +63,7 @@ class ModelSimulation(BaseModel):
     def dict_of_parameter_lists(self) -> dict[str, BaseParameterIterable]:
         """Return a collection of all parameter ranges."""
         parameters = {}
-        for submodel in [self.interactions, self.atom1, self.atom2, self.classical_light1, self.classical_light2]:
+        for submodel in [self.interactions, self.atom1, self.atom2]:
             if submodel is None:
                 continue
             for k, v in iter(submodel):
@@ -102,7 +95,7 @@ class ModelSimulation(BaseModel):
         """
         if not hasattr(self, "_constituent_mapping"):
             self._constituent_mapping = {}
-        for const_name in ["atom", "classical_light"]:
+        for const_name in ["atom"]:
             if isinstance(getattr(self, const_name + "2"), str):
                 self._constituent_mapping[const_name + "2"] = const_name + "1"
                 setattr(self, const_name + "2", getattr(self, const_name + "1"))
@@ -162,7 +155,7 @@ class ModelSimulation(BaseModel):
         self.parameter_size  # noqa: B018
         return self
 
-    @field_serializer("atom2", "classical_light2", mode="wrap")
+    @field_serializer("atom2", mode="wrap")
     def serialize_constituents(
         self,
         constituent: Optional[BaseModelConstituent],

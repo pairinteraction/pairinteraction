@@ -1,11 +1,8 @@
-from typing import TYPE_CHECKING, ClassVar, Optional, Union, overload
+from typing import TYPE_CHECKING, Optional, Union, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.database.Database import Database
-from pairinteraction.backend._wrapped.get_functions import (
-    get_basis_atom_class_from_ket,
-    get_cpp_parity,
-)
+from pairinteraction.backend._wrapped.get_functions import get_cpp_parity
 from pairinteraction.backend._wrapped.ket.Ket import KetBase
 from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -16,13 +13,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-UnionCPPKetAtom = Union[_backend.KetAtomFloat, _backend.KetAtomDouble]
-UnionTypeCPPKetAtomCreator = Union[type[_backend.KetAtomCreatorFloat], type[_backend.KetAtomCreatorDouble]]
-
-
-class KetAtomBase(KetBase):
-    _cpp: UnionCPPKetAtom  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator: ClassVar[UnionTypeCPPKetAtomCreator]
+class KetAtom(KetBase):
+    _cpp: _backend.KetAtom  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.KetAtomCreator
 
     def __init__(  # noqa: C901
         self,
@@ -71,7 +64,7 @@ class KetAtomBase(KetBase):
             whose expectation value is closest to the provided value.
 
         Examples:
-            >>> import pairinteraction.backend.double as pi
+            >>> import pairinteraction.backend.real as pi
             >>> ket_sqdt = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> (ket_sqdt.species, ket_sqdt.n, ket_sqdt.l, ket_sqdt.j, ket_sqdt.m, ket_sqdt.s)
             ('Rb', 60, 0.0, 0.5, 0.5, 0.5)
@@ -199,22 +192,10 @@ class KetAtomBase(KetBase):
         q: int,
         unit: Optional[str] = None,
     ):
-        BasisAtomClass = get_basis_atom_class_from_ket(self)
-        basis = BasisAtomClass(self.species, additional_kets=[self, ket], database=self.database)
+        from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomReal
+
+        basis = BasisAtomReal(self.species, additional_kets=[self, ket], database=self.database)
         state_1 = basis.get_corresponding_state(self)
 
         matrixelements = state_1.get_matrix_elements(ket, operator, q, unit=unit)
         return matrixelements[0]
-
-
-class KetAtomFloat(KetAtomBase):
-    _cpp: _backend.KetAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.KetAtomCreatorFloat
-
-
-class KetAtomDouble(KetAtomBase):
-    _cpp: _backend.KetAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.KetAtomCreatorDouble
-
-
-KetAtom = KetAtomBase

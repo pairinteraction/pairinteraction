@@ -75,16 +75,16 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
 }
 
 void bind_diagonalizer(nb::module_ &m) {
-    declare_diagonalizer_eigen<double>(m, "Double");
-    declare_diagonalizer_eigen<std::complex<double>>(m, "ComplexDouble");
-    declare_diagonalizer_feast<double>(m, "Double");
-    declare_diagonalizer_feast<std::complex<double>>(m, "ComplexDouble");
-    declare_diagonalizer_lapacke<double>(m, "Double");
-    declare_diagonalizer_lapacke<std::complex<double>>(m, "ComplexDouble");
+    declare_diagonalizer_eigen<double>(m, "Real");
+    declare_diagonalizer_eigen<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_feast<double>(m, "Real");
+    declare_diagonalizer_feast<std::complex<double>>(m, "Complex");
+    declare_diagonalizer_lapacke<double>(m, "Real");
+    declare_diagonalizer_lapacke<std::complex<double>>(m, "Complex");
 
-    declare_diagonalize<SystemAtom<double>>(m, "SystemAtomDouble");
-    declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplexDouble");
+    declare_diagonalize<SystemAtom<double>>(m, "SystemAtomReal");
+    declare_diagonalize<SystemAtom<std::complex<double>>>(m, "SystemAtomComplex");
 
-    declare_diagonalize<SystemPair<double>>(m, "SystemPairDouble");
-    declare_diagonalize<SystemPair<std::complex<double>>>(m, "SystemPairComplexDouble");
+    declare_diagonalize<SystemPair<double>>(m, "SystemPairReal");
+    declare_diagonalize<SystemPair<std::complex<double>>>(m, "SystemPairComplex");
 }

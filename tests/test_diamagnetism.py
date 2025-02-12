@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import pairinteraction.backend.double as pi
+import pairinteraction.backend.real as pi
 
 
 def test_diamagnetism() -> None:

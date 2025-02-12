@@ -33,8 +33,8 @@ static void declare_eigen_system_h(nb::module_ &m, std::string const &type_name)
 }
 
 void bind_diagonalizer_interface(nb::module_ &m) {
-    declare_diagonalizer_interface<double>(m, "Double");
-    declare_diagonalizer_interface<std::complex<double>>(m, "ComplexDouble");
-    declare_eigen_system_h<double>(m, "Double");
-    declare_eigen_system_h<std::complex<double>>(m, "ComplexDouble");
+    declare_diagonalizer_interface<double>(m, "Real");
+    declare_diagonalizer_interface<std::complex<double>>(m, "Complex");
+    declare_eigen_system_h<double>(m, "Real");
+    declare_eigen_system_h<std::complex<double>>(m, "Complex");
 }

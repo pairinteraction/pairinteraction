@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import TYPE_CHECKING, Any, ClassVar, Optional, Union, get_args, overload
+from typing import TYPE_CHECKING, ClassVar, Optional, Union, get_args, overload
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -9,8 +9,8 @@ if TYPE_CHECKING:
     from pint.facets.plain import PlainQuantity
     from typing_extensions import Self
 
-UnionCPPKet = Union[_backend.KetFloat, _backend.KetDouble]
-UnionTypeCPPKetCreator = Any  # is supposed to be type[Ket(Atom|ClassicalLight)Creator(Float|Double)]
+UnionCPPKet = Union[_backend.KetAtom, _backend.KetPairComplex, _backend.KetPairReal]
+UnionTypeCPPKetCreator = type[_backend.KetAtomCreator]  # since there currently is no KetPairCreator
 
 
 class KetBase(ABC):

@@ -5,7 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import pairinteraction.backend.double as pi
+import pairinteraction.backend.real as pi
 
 reference_kets_file = Path(__file__).parent.parent / "data/reference_pair_potential/kets.txt"
 reference_eigenvalues_file = Path(__file__).parent.parent / "data/reference_pair_potential/eigenvalues.txt"
