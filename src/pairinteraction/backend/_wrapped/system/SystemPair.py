@@ -2,12 +2,7 @@ from collections.abc import Collection
 from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.BasisPair import (
-    BasisPairComplexDouble,
-    BasisPairComplexFloat,
-    BasisPairDouble,
-    BasisPairFloat,
-)
+from pairinteraction.backend._wrapped.basis.BasisPair import BasisPairComplex, BasisPairReal
 from pairinteraction.backend._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
@@ -17,19 +12,9 @@ if TYPE_CHECKING:
 
     from pairinteraction.units import Array
 
-BasisType = TypeVar("BasisType", "BasisPairFloat", "BasisPairComplexFloat", "BasisPairDouble", "BasisPairComplexDouble")
-UnionCPPSystemPair = Union[
-    _backend.SystemPairFloat,
-    _backend.SystemPairComplexFloat,
-    _backend.SystemPairDouble,
-    _backend.SystemPairComplexDouble,
-]
-UnionTypeCPPSystemPair = Union[
-    type[_backend.SystemPairFloat],
-    type[_backend.SystemPairComplexFloat],
-    type[_backend.SystemPairDouble],
-    type[_backend.SystemPairComplexDouble],
-]
+BasisType = TypeVar("BasisType", "BasisPairReal", "BasisPairComplex")
+UnionCPPSystemPair = Union[_backend.SystemPairReal, _backend.SystemPairComplex]
+UnionTypeCPPSystemPair = Union[type[_backend.SystemPairReal], type[_backend.SystemPairComplex]]
 
 
 class SystemPairBase(SystemBase[BasisType]):
@@ -43,7 +28,7 @@ class SystemPairBase(SystemBase[BasisType]):
         You can set the distance (vector) between the atoms afterwards via the corresponding methods.
 
         Examples:
-            >>> import pairinteraction.backend.double as pi
+            >>> import pairinteraction.backend.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
@@ -55,14 +40,14 @@ class SystemPairBase(SystemBase[BasisType]):
             ... )
             >>> pair_system = pi.SystemPair(pair_basis).set_distance(5, unit="micrometer").set_order(3)
             >>> print(pair_system)
-            SystemPairDouble(BasisPairDouble object with 140 states and 140 kets, is_diagonal=False)
+            SystemPairReal(BasisPairReal object with 140 states and 140 kets, is_diagonal=False)
             >>> pair_system = pair_system.diagonalize()
             >>> eigenvalues = pair_system.get_eigenvalues(unit="GHz")
             >>> print(f"{eigenvalues[0] - pair_energy:.5f}")
             -2.19974
 
         Args:
-            basis: The :class:`pairinteraction.backend.double.BasisPair` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.backend.real.BasisPair` object that describes the basis of the system.
 
         """
         super().__init__(basis)
@@ -88,28 +73,16 @@ class SystemPairBase(SystemBase[BasisType]):
         return self
 
 
-class SystemPairFloat(SystemPairBase[BasisPairFloat]):
-    _cpp: _backend.SystemPairFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemPairFloat
-    _TypeBasis = BasisPairFloat
+class SystemPairReal(SystemPairBase[BasisPairReal]):
+    _cpp: _backend.SystemPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairReal
+    _TypeBasis = BasisPairReal
 
 
-class SystemPairComplexFloat(SystemPairBase[BasisPairComplexFloat]):
-    _cpp: _backend.SystemPairComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemPairComplexFloat
-    _TypeBasis = BasisPairComplexFloat
-
-
-class SystemPairDouble(SystemPairBase[BasisPairDouble]):
-    _cpp: _backend.SystemPairDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemPairDouble
-    _TypeBasis = BasisPairDouble
-
-
-class SystemPairComplexDouble(SystemPairBase[BasisPairComplexDouble]):
-    _cpp: _backend.SystemPairComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemPairComplexDouble
-    _TypeBasis = BasisPairComplexDouble
+class SystemPairComplex(SystemPairBase[BasisPairComplex]):
+    _cpp: _backend.SystemPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemPairComplex
+    _TypeBasis = BasisPairComplex
 
 
 SystemPair = SystemPairBase[Any]

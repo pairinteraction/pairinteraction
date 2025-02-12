@@ -3,10 +3,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Generic, Optional, TypeVar, Uni
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
-from pairinteraction.backend._wrapped.get_functions import (
-    get_cpp_diagonalizer,
-    get_cpp_range,
-)
+from pairinteraction.backend._wrapped.get_functions import get_cpp_diagonalizer
 from pairinteraction.units import QuantityArray, QuantityScalar, QuantitySparse
 
 if TYPE_CHECKING:
@@ -23,10 +20,8 @@ if TYPE_CHECKING:
 
 BasisType = TypeVar("BasisType", bound=Union["BasisAtom", "BasisPair"])
 UnionCPPSystem = Any
-# UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Float|Double|ComplexFloat|ComplexDouble)
+# UnionCPPSystem is supposed to be System(|System)(Atom|Pair)(Real|Complex)
 UnionTypeCPPSystem = Any
-# UnionTypeCPPSystem is supposed to be type[System(Atom|Pair)(Float|Double|ComplexFloat|ComplexDouble)]
-UnionCPPRange = Union[_backend.RangeFloat, _backend.RangeDouble]
 
 
 class SystemBase(ABC, Generic[BasisType]):
@@ -83,8 +78,7 @@ class SystemBase(ABC, Generic[BasisType]):
         else:
             min_energy_au = QuantityScalar(energy_range[0], energy_unit).to_base("ENERGY")
             max_energy_au = QuantityScalar(energy_range[1], energy_unit).to_base("ENERGY")
-            cpp_range_class = get_cpp_range(self._cpp)
-            cpp_range = cpp_range_class(min_energy_au, max_energy_au)
+            cpp_range = _backend.RangeDouble(min_energy_au, max_energy_au)
             self._cpp.diagonalize(cpp_diagonalizer, precision, cpp_range)
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])

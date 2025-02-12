@@ -8,10 +8,8 @@ from pairinteraction.backend._wrapped.basis.Basis import BasisBase
 from pairinteraction.backend._wrapped.get_functions import get_cpp_operator_type, get_cpp_parity
 from pairinteraction.backend._wrapped.ket.KetPair import (
     KetPair,
-    KetPairComplexDouble,
-    KetPairComplexFloat,
-    KetPairDouble,
-    KetPairFloat,
+    KetPairComplex,
+    KetPairReal,
 )
 from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
@@ -26,23 +24,11 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.system.SystemAtom import SystemAtom
     from pairinteraction.units import Array
 
-    KetAtomOrBasisAtom = TypeVar("KetAtomOrBasisAtom", KetAtom, BasisAtom, covariant=True)
-
 KetPairType = TypeVar("KetPairType", bound=KetPair)
 KetPairLike = Union[KetPair, Iterable["KetAtom"]]
 BasisPairLike = Union["BasisPair", Iterable["BasisAtom"]]
-UnionCPPBasisPair = Union[
-    _backend.BasisPairFloat,
-    _backend.BasisPairComplexFloat,
-    _backend.BasisPairDouble,
-    _backend.BasisPairComplexDouble,
-]
-UnionTypeCPPBasisPairCreator = Union[
-    type[_backend.BasisPairCreatorFloat],
-    type[_backend.BasisPairCreatorComplexFloat],
-    type[_backend.BasisPairCreatorDouble],
-    type[_backend.BasisPairCreatorComplexDouble],
-]
+UnionCPPBasisPair = Union[_backend.BasisPairReal, _backend.BasisPairComplex]
+UnionTypeCPPBasisPairCreator = Union[type[_backend.BasisPairCreatorReal], type[_backend.BasisPairCreatorComplex]]
 
 
 class BasisPairBase(BasisBase[KetPairType]):
@@ -69,7 +55,7 @@ class BasisPairBase(BasisBase[KetPairType]):
         and d is the number of basis states (after applying the restrictions).
 
         Examples:
-            >>> import pairinteraction.backend.double as pi
+            >>> import pairinteraction.backend.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis).set_electric_field([0.1, 0, 0.1], unit="V/cm").diagonalize()
@@ -80,7 +66,7 @@ class BasisPairBase(BasisBase[KetPairType]):
             ...     energy_unit="GHz",
             ... )
             >>> print(pair_basis)
-            BasisPairDouble object with 140 states and 140 kets
+            BasisPairReal object with 140 states and 140 kets
 
         Args:
             systems: tuple of two SystemAtom objects, which define the two atoms, from which the BasisPair is build.
@@ -181,28 +167,16 @@ class BasisPairBase(BasisBase[KetPairType]):
         return matrix_elements.to_unit(unit)
 
 
-class BasisPairFloat(BasisPairBase[KetPairFloat]):
-    _cpp: _backend.BasisPairFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisPairCreatorFloat
-    _TypeKet = KetPairFloat
+class BasisPairReal(BasisPairBase[KetPairReal]):
+    _cpp: _backend.BasisPairReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorReal
+    _TypeKet = KetPairReal
 
 
-class BasisPairComplexFloat(BasisPairBase[KetPairComplexFloat]):
-    _cpp: _backend.BasisPairComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisPairCreatorComplexFloat
-    _TypeKet = KetPairComplexFloat
-
-
-class BasisPairDouble(BasisPairBase[KetPairDouble]):
-    _cpp: _backend.BasisPairDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisPairCreatorDouble
-    _TypeKet = KetPairDouble
-
-
-class BasisPairComplexDouble(BasisPairBase[KetPairComplexDouble]):
-    _cpp: _backend.BasisPairComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_creator = _backend.BasisPairCreatorComplexDouble
-    _TypeKet = KetPairComplexDouble
+class BasisPairComplex(BasisPairBase[KetPairComplex]):
+    _cpp: _backend.BasisPairComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_creator = _backend.BasisPairCreatorComplex
+    _TypeKet = KetPairComplex
 
 
 BasisPair = BasisPairBase[Any]

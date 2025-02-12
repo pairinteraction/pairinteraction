@@ -100,6 +100,6 @@ void bind_ket(nb::module_ &m) {
     declare_ket_atom_creator(m);
     declare_ket_classical_light(m);
     declare_ket_classical_light_creator(m);
-    declare_ket_pair<double>(m, "Double");
-    declare_ket_pair<std::complex<double>>(m, "ComplexDouble");
+    declare_ket_pair<double>(m, "Real");
+    declare_ket_pair<std::complex<double>>(m, "Complex");
 }

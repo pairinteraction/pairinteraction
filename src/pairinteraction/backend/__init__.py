@@ -1,3 +1,3 @@
-from pairinteraction.backend import complexdouble, complexfloat, double, float
+from pairinteraction.backend import complex, real
 
-__all__ = ["complexdouble", "complexfloat", "double", "float"]
+__all__ = ["complex", "real"]

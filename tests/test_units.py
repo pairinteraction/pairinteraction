@@ -2,7 +2,7 @@
 
 import numpy as np
 
-import pairinteraction.backend.float as pi
+import pairinteraction.backend.real as pi
 from pairinteraction.units import BaseUnits, QuantityScalar, ureg
 
 

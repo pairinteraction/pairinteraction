@@ -18,10 +18,8 @@ import seaborn as sns
 from cpuinfo import get_cpu_info
 
 import pairinteraction
-import pairinteraction.backend.complexdouble as pi_complexdouble
-import pairinteraction.backend.complexfloat as pi_complexfloat
-import pairinteraction.backend.double as pi_double
-import pairinteraction.backend.float as pi_float
+import pairinteraction.backend.complex as pi_complex
+import pairinteraction.backend.real as pi_real
 
 logging.basicConfig(level=logging.INFO, format="[%(levelname)s] %(message)s", handlers=[logging.StreamHandler()])
 
@@ -172,10 +170,8 @@ def run() -> None:
 
     # Benchmark pairinteraction
     backends = {
-        "complexdouble": pi_complexdouble,
-        "complexfloat": pi_complexfloat,
-        "double": pi_double,
-        "float": pi_float,
+        "complex": pi_complex,
+        "real": pi_real,
     }
     for name, module in backends.items():
         logging.info(f"Benchmarking 'pairinteraction, {name}'")

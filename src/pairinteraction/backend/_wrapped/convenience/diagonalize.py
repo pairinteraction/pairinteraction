@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional, Union
 
 from pairinteraction.backend import _backend
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
-from pairinteraction.backend._wrapped.get_functions import get_cpp_diagonalize, get_cpp_diagonalizer, get_cpp_range
+from pairinteraction.backend._wrapped.get_functions import get_cpp_diagonalize, get_cpp_diagonalizer
 from pairinteraction.units import QuantityScalar
 
 if TYPE_CHECKING:
@@ -29,8 +29,7 @@ def diagonalize(
     else:
         min_energy_au = QuantityScalar(energy_range[0], energy_unit).to_base("ENERGY")
         max_energy_au = QuantityScalar(energy_range[1], energy_unit).to_base("ENERGY")
-        cpp_range_class = get_cpp_range(cpp_systems[0])
-        cpp_range = cpp_range_class(min_energy_au, max_energy_au)
+        cpp_range = _backend.RangeDouble(min_energy_au, max_energy_au)
         cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, precision, cpp_range)
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:

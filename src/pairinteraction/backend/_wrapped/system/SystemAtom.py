@@ -5,12 +5,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, Optional, TypeVar, Union, overl
 import numpy as np
 
 from pairinteraction.backend import _backend
-from pairinteraction.backend._wrapped.basis.BasisAtom import (
-    BasisAtomComplexDouble,
-    BasisAtomComplexFloat,
-    BasisAtomDouble,
-    BasisAtomFloat,
-)
+from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtomComplex, BasisAtomReal
 from pairinteraction.backend._wrapped.system.System import SystemBase
 from pairinteraction.units import QuantityScalar
 
@@ -21,19 +16,9 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
     from pairinteraction.units import Array
 
-BasisType = TypeVar("BasisType", "BasisAtomFloat", "BasisAtomComplexFloat", "BasisAtomDouble", "BasisAtomComplexDouble")
-UnionCPPSystemAtom = Union[
-    _backend.SystemAtomFloat,
-    _backend.SystemAtomComplexFloat,
-    _backend.SystemAtomDouble,
-    _backend.SystemAtomComplexDouble,
-]
-UnionTypeCPPSystemAtom = Union[
-    type[_backend.SystemAtomFloat],
-    type[_backend.SystemAtomComplexFloat],
-    type[_backend.SystemAtomDouble],
-    type[_backend.SystemAtomComplexDouble],
-]
+BasisType = TypeVar("BasisType", "BasisAtomReal", "BasisAtomComplex")
+UnionCPPSystemAtom = Union[_backend.SystemAtomReal, _backend.SystemAtomComplex]
+UnionTypeCPPSystemAtom = Union[type[_backend.SystemAtomReal], type[_backend.SystemAtomComplex]]
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +34,7 @@ class SystemAtomBase(SystemBase[BasisType]):
         You can set the electric and magnetic fields and enable diamagnetism afterwards via the corresponding methods.
 
         Examples:
-            >>> import pairinteraction.backend.double as pi
+            >>> import pairinteraction.backend.real as pi
             >>> ket = pi.KetAtom("Rb", n=60, l=0, m=0.5)
             >>> basis = pi.BasisAtom("Rb", n=(58, 63), l=(0, 3))
             >>> system = pi.SystemAtom(basis)
@@ -57,14 +42,14 @@ class SystemAtomBase(SystemBase[BasisType]):
             >>> system = system.set_electric_field([0.1, 0, 0.1], unit="V/cm")
             >>> system = system.enable_diamagnetism(True)
             >>> print(system)
-            SystemAtomDouble(BasisAtomDouble object with 192 states and 192 kets, is_diagonal=False)
+            SystemAtomReal(BasisAtomReal object with 192 states and 192 kets, is_diagonal=False)
             >>> system = system.diagonalize()
             >>> eigenvalues = system.get_eigenvalues(unit="GHz")
             >>> print(f"{eigenvalues[0] - ket.get_energy(unit='GHz'):.5f}")
             -75.51823
 
         Args:
-            basis: The :class:`pairinteraction.backend.double.BasisAtom` object that describes the basis of the system.
+            basis: The :class:`pairinteraction.backend.real.BasisAtom` object that describes the basis of the system.
 
         """
         super().__init__(basis)
@@ -107,28 +92,16 @@ class SystemAtomBase(SystemBase[BasisType]):
         return self.get_eigenvalues(unit)[idx]
 
 
-class SystemAtomFloat(SystemAtomBase[BasisAtomFloat]):
-    _cpp: _backend.SystemAtomFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemAtomFloat
-    _TypeBasis = BasisAtomFloat
+class SystemAtomReal(SystemAtomBase[BasisAtomReal]):
+    _cpp: _backend.SystemAtomReal  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemAtomReal
+    _TypeBasis = BasisAtomReal
 
 
-class SystemAtomComplexFloat(SystemAtomBase[BasisAtomComplexFloat]):
-    _cpp: _backend.SystemAtomComplexFloat  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemAtomComplexFloat
-    _TypeBasis = BasisAtomComplexFloat
-
-
-class SystemAtomDouble(SystemAtomBase[BasisAtomDouble]):
-    _cpp: _backend.SystemAtomDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemAtomDouble
-    _TypeBasis = BasisAtomDouble
-
-
-class SystemAtomComplexDouble(SystemAtomBase[BasisAtomComplexDouble]):
-    _cpp: _backend.SystemAtomComplexDouble  # type: ignore [reportIncompatibleVariableOverride]
-    _cpp_type = _backend.SystemAtomComplexDouble
-    _TypeBasis = BasisAtomComplexDouble
+class SystemAtomComplex(SystemAtomBase[BasisAtomComplex]):
+    _cpp: _backend.SystemAtomComplex  # type: ignore [reportIncompatibleVariableOverride]
+    _cpp_type = _backend.SystemAtomComplex
+    _TypeBasis = BasisAtomComplex
 
 
 SystemAtom = SystemAtomBase[Any]

@@ -8,7 +8,7 @@ from pydantic_core import core_schema
 T = TypeVar("T")
 
 
-ConstituentString = Literal["atom1", "atom2", "classical_light1", "classical_light2"]
+ConstituentString = Literal["atom1", "atom2"]
 
 SpeciesString = Annotated[str, Field(pattern=r"^[A-Z][a-z]?[0-9]{0,3}(_singlet|_triplet|_mqdt)?$")]
 SpeciesStringSQDT = Annotated[str, Field(pattern=r"^[A-Z][a-z]?[0-9]{0,3}(_singlet|_triplet)?$")]

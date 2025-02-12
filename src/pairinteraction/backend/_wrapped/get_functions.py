@@ -7,19 +7,7 @@ from pairinteraction.backend._wrapped.OperatorType import CPPOperatorType, Opera
 from pairinteraction.backend._wrapped.Parity import CPPParity, Parity
 
 if TYPE_CHECKING:
-    from pairinteraction.backend._wrapped.basis.BasisAtom import BasisAtom
-    from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
     from pairinteraction.backend._wrapped.system.System import System
-
-
-def get_basis_atom_class_from_ket(ket: "KetAtom") -> "type[BasisAtom]":
-    import pairinteraction.backend._wrapped.basis.BasisAtom as BasisAtomModule
-
-    type_ = type(ket._cpp).__name__.replace("KetAtom", "")
-    try:
-        return getattr(BasisAtomModule, f"BasisAtom{type_}")
-    except AttributeError as err:
-        raise ValueError(f"Unknown KetAtom {type(ket)}, cant find corresponding BasisAtom class") from err
 
 
 def get_cpp_diagonalize(system: "System") -> Callable:
@@ -39,33 +27,12 @@ def get_cpp_diagonalizer(diagonalizer: Diagonalizer, cpp_system: Any) -> UnionCP
         raise ValueError(f"Unknown diagonalizer 'Diagonalizer{diagonalizer.capitalize()}{type_}'") from err
 
 
-def get_type_of_system(cpp_system: Any) -> Literal["ComplexFloat", "Float", "ComplexDouble", "Double"]:
-    if type(cpp_system).__name__.endswith("ComplexFloat"):
-        return "ComplexFloat"
-    if type(cpp_system).__name__.endswith("Float"):
-        return "Float"
-    if type(cpp_system).__name__.endswith("ComplexDouble"):
-        return "ComplexDouble"
-    if type(cpp_system).__name__.endswith("Double"):
-        return "Double"
+def get_type_of_system(cpp_system: Any) -> Literal["Complex", "Real"]:
+    if type(cpp_system).__name__.endswith("Complex"):
+        return "Complex"
+    if type(cpp_system).__name__.endswith("Real"):
+        return "Real"
     raise ValueError("Unknown type of system")
-
-
-def get_real_type_of_system(cpp_system: Any) -> Literal["Float", "Double"]:
-    type_ = get_type_of_system(cpp_system)
-    if "Float" in type_:
-        return "Float"
-    if "Double" in type_:
-        return "Double"
-    raise ValueError("Unreachable code")
-
-
-def get_cpp_range(cpp_system: Any) -> type:
-    type_ = get_real_type_of_system(cpp_system)
-    try:
-        return getattr(_backend, f"Range{type_}")
-    except AttributeError as err:
-        raise ValueError(f"Unknown Range 'Range{type_}'") from err
 
 
 def get_cpp_operator_type(operator_type: OperatorType) -> CPPOperatorType:

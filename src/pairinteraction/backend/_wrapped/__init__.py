@@ -1,89 +1,55 @@
 from pairinteraction.backend._wrapped.basis.BasisAtom import (
     BasisAtomBase,
-    BasisAtomComplexDouble,
-    BasisAtomComplexFloat,
-    BasisAtomDouble,
-    BasisAtomFloat,
+    BasisAtomComplex,
+    BasisAtomReal,
 )
 from pairinteraction.backend._wrapped.basis.BasisPair import (
     BasisPairBase,
-    BasisPairComplexDouble,
-    BasisPairComplexFloat,
-    BasisPairDouble,
-    BasisPairFloat,
+    BasisPairComplex,
+    BasisPairReal,
 )
 from pairinteraction.backend._wrapped.convenience.diagonalize import diagonalize
 from pairinteraction.backend._wrapped.database.Database import Database
 from pairinteraction.backend._wrapped.Diagonalizer import Diagonalizer
-from pairinteraction.backend._wrapped.ket.KetAtom import (
-    KetAtomBase,
-    KetAtomDouble,
-    KetAtomFloat,
-)
-from pairinteraction.backend._wrapped.ket.KetClassicalLight import (
-    KetClassicalLightBase,
-    KetClassicalLightDouble,
-    KetClassicalLightFloat,
-)
+from pairinteraction.backend._wrapped.ket.KetAtom import KetAtom
 from pairinteraction.backend._wrapped.ket.KetPair import (
     KetPairBase,
-    KetPairComplexDouble,
-    KetPairComplexFloat,
-    KetPairDouble,
-    KetPairFloat,
+    KetPairComplex,
+    KetPairReal,
 )
 from pairinteraction.backend._wrapped.OperatorType import OperatorType
 from pairinteraction.backend._wrapped.Parity import Parity
 from pairinteraction.backend._wrapped.system.SystemAtom import (
     SystemAtomBase,
-    SystemAtomComplexDouble,
-    SystemAtomComplexFloat,
-    SystemAtomDouble,
-    SystemAtomFloat,
+    SystemAtomComplex,
+    SystemAtomReal,
 )
 from pairinteraction.backend._wrapped.system.SystemPair import (
     SystemPairBase,
-    SystemPairComplexDouble,
-    SystemPairComplexFloat,
-    SystemPairDouble,
-    SystemPairFloat,
+    SystemPairComplex,
+    SystemPairReal,
 )
 
 __all__ = [
     "BasisAtomBase",
-    "BasisAtomComplexDouble",
-    "BasisAtomComplexFloat",
-    "BasisAtomDouble",
-    "BasisAtomFloat",
+    "BasisAtomComplex",
+    "BasisAtomReal",
     "BasisPairBase",
-    "BasisPairComplexDouble",
-    "BasisPairComplexFloat",
-    "BasisPairDouble",
-    "BasisPairFloat",
+    "BasisPairComplex",
+    "BasisPairReal",
     "Database",
     "Diagonalizer",
-    "KetAtomBase",
-    "KetAtomDouble",
-    "KetAtomFloat",
-    "KetClassicalLightBase",
-    "KetClassicalLightDouble",
-    "KetClassicalLightFloat",
+    "KetAtom",
     "KetPairBase",
-    "KetPairComplexDouble",
-    "KetPairComplexFloat",
-    "KetPairDouble",
-    "KetPairFloat",
+    "KetPairComplex",
+    "KetPairReal",
     "OperatorType",
     "Parity",
     "SystemAtomBase",
-    "SystemAtomComplexDouble",
-    "SystemAtomComplexFloat",
-    "SystemAtomDouble",
-    "SystemAtomFloat",
+    "SystemAtomComplex",
+    "SystemAtomReal",
     "SystemPairBase",
-    "SystemPairComplexDouble",
-    "SystemPairComplexFloat",
-    "SystemPairDouble",
-    "SystemPairFloat",
+    "SystemPairComplex",
+    "SystemPairReal",
     "diagonalize",
 ]
