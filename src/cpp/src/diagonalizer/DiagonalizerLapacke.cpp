@@ -37,37 +37,24 @@ lapack_int evd(int matrix_layout, char jobz, char uplo, lapack_int n, lapack_com
     return LAPACKE_zheevd(matrix_layout, jobz, uplo, n, a, lda, w);
 };
 
-template <typename Scalar, typename ScalarRstr>
-EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                   int precision) {
-    using real_t = typename traits::NumTraits<Scalar>::real_t;
-    using real_rstr_t = typename traits::NumTraits<ScalarRstr>::real_t;
+template <typename Scalar>
+template <typename ScalarLim>
+EigenSystemH<Scalar> DiagonalizerLapacke<Scalar>::dispatch_eigh(
+    const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix, int precision) const {
+    using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
 
     // Subtract the mean of the diagonal elements from the diagonal
-    const real_t shift = matrix.diagonal().real().mean();
-    Eigen::SparseMatrix<Scalar, Eigen::RowMajor> identity(dim, dim);
-    identity.setIdentity();
-    Eigen::MatrixX<ScalarRstr> evecs = (matrix - shift * identity).template cast<ScalarRstr>();
-
-    // Check if the precision is reachable
-    real_rstr_t max_entry = evecs.array().abs().maxCoeff();
-    int precision_shift = std::floor(
-        -std::log10(shift - std::nextafter(shift, std::numeric_limits<real_t>::lowest())));
-    int precision_rstr = std::floor(-std::log10(
-        max_entry - std::nextafter(max_entry, std::numeric_limits<real_rstr_t>::lowest())));
-    if (precision > std::min(precision_shift, precision_rstr)) {
-        SPDLOG_WARN("Because the floating point precision is too low, the energies cannot be "
-                    "calculated with a precision of 1e-{} Hartree.",
-                    precision);
-    }
+    real_t shift{};
+    Eigen::MatrixX<ScalarLim> evecs =
+        this->template subtract_mean<ScalarLim>(matrix, shift, precision);
 
     // Diagonalize the shifted matrix
     lapack_int info{}; // will contain return codes
     char jobz = 'V';   // eigenvalues and eigenvectors are computed
     char uplo = 'U';   // full matrix is stored, upper is used
 
-    Eigen::VectorX<real_rstr_t> evals(dim);
+    Eigen::VectorX<real_lim_t> evals(dim);
     info = evd(LAPACK_COL_MAJOR, jobz, uplo, dim, evecs.data(), dim, evals.data());
 
     if (info != 0) {
@@ -80,11 +67,8 @@ EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowM
             "Diagonalization error: The LAPACK routine failed with error code {}.", info));
     }
 
-    // Add the mean of the diagonal elements back to the eigenvalues
-    Eigen::VectorX<real_t> eigenvalues = evals.template cast<real_t>();
-    eigenvalues.array() += shift;
-
-    return {evecs.sparseView(1, std::pow(10, -precision)).template cast<Scalar>(), eigenvalues};
+    return {evecs.sparseView(1, std::pow(10, -precision)).template cast<Scalar>(),
+            this->add_mean(evals, shift)};
 }
 
 template <typename Scalar>
@@ -96,9 +80,9 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
                                   int precision) const {
     switch (this->fpp) {
     case FPP::FLOAT32:
-        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, precision);
+        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, precision);
     case FPP::FLOAT64:
-        return dispatch_eigh<Scalar, traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, precision);
+        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, precision);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }
