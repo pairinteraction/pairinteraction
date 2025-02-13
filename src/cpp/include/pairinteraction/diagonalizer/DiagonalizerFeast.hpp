@@ -22,6 +22,10 @@ public:
 
 private:
     int m0;
+    template <typename ScalarLim>
+    EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
+                                       real_t min_eigenvalue, real_t max_eigenvalue,
+                                       int precision) const;
 };
 
 extern template class DiagonalizerFeast<double>;

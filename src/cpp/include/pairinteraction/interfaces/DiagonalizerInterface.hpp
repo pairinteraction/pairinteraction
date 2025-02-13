@@ -5,6 +5,7 @@
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
 
+#include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <complex>
 
@@ -34,8 +35,39 @@ public:
 
 protected:
     FPP fpp;
+    template <typename ScalarLim>
+    Eigen::MatrixX<ScalarLim> subtract_mean(const Eigen::MatrixX<Scalar> &matrix, real_t &shift,
+                                            int precision) const;
+    template <typename RealLim>
+    Eigen::VectorX<real_t> add_mean(const Eigen::VectorX<RealLim> &eigenvalues, real_t shift) const;
 };
 
 extern template class DiagonalizerInterface<double>;
 extern template class DiagonalizerInterface<std::complex<double>>;
+
+extern template Eigen::MatrixX<float>
+DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
+                                             int precision) const;
+extern template Eigen::MatrixX<std::complex<float>>
+DiagonalizerInterface<std::complex<double>>::subtract_mean(
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, int precision) const;
+
+extern template Eigen::VectorX<double>
+DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<float> &shifted_eigenvalues,
+                                        double shift) const;
+extern template Eigen::VectorX<double> DiagonalizerInterface<std::complex<double>>::add_mean(
+    const Eigen::VectorX<float> &shifted_eigenvalues, double shift) const;
+
+extern template Eigen::MatrixX<double>
+DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
+                                             int precision) const;
+extern template Eigen::MatrixX<std::complex<double>>
+DiagonalizerInterface<std::complex<double>>::subtract_mean(
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, int precision) const;
+
+extern template Eigen::VectorX<double>
+DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<double> &shifted_eigenvalues,
+                                        double shift) const;
+extern template Eigen::VectorX<double> DiagonalizerInterface<std::complex<double>>::add_mean(
+    const Eigen::VectorX<double> &shifted_eigenvalues, double shift) const;
 } // namespace pairinteraction
