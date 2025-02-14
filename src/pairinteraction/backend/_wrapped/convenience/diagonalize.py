@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 def diagonalize(
     systems: Sequence["System"],
     diagonalizer: Diagonalizer = "Eigen",
-    precision: int = 12,
+    atol: float = 1e-6,
     sort_by_energy: bool = True,
     energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
     energy_unit: Optional[str] = None,
@@ -31,7 +31,7 @@ def diagonalize(
         min_energy_au = QuantityScalar(min_energy_au, energy_unit).to_base("ENERGY")
     if max_energy_au is not None:
         max_energy_au = QuantityScalar(max_energy_au, energy_unit).to_base("ENERGY")
-    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, precision)
+    cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, atol)
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
