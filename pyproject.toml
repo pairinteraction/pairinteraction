@@ -139,6 +139,7 @@ test-command = [
   "pytest",
   "check-wheel-contents {wheel}",
 ]
+test-skip = "*-macosx_x86_64 *-macosx_arm64" # FIXME: test dependencies are currently broken on the macos-13 runner
 
 [[tool.cibuildwheel.overrides]]  # linux overrides
 select = "*-????linux_*"
@@ -174,7 +175,7 @@ toplevel = ["pairinteraction", "pairinteraction.libs"]
 [tool.pytest.ini_options]
 testpaths = [
   "tests",
-# "docs/tutorials/examples_python", # TODO reactivate once nbmake has no problem with overview.ipynb under python 3.13
+  "docs/tutorials/examples_python",
   "src/pairinteraction/",
 ]
 addopts = [
