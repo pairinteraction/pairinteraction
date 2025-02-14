@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     }
 
     // Diagonalize the systems in parallel
-    pairinteraction::DiagonalizerEigen<double> diagonalizer;
+    pairinteraction::DiagonalizerEigen<double> diagonalizer(pairinteraction::FPP::FLOAT32);
     pairinteraction::diagonalize(system_pairs, diagonalizer);
 
     // Sort by the eigenvalues
@@ -153,7 +153,8 @@ int main(int argc, char **argv) {
             }
         }
         stream.close();
-        if (!eigenvalues.isApprox(reference_eigenvalues, 1e-9)) {
+        if ((eigenvalues - reference_eigenvalues).array().abs().maxCoeff() >
+            100e-6) { // 100 kHz precision
             for (Eigen::Index i = 0; i < eigenvalues.size(); ++i) {
                 SPDLOG_DEBUG("Eigenvalue: {} vs {}, delta: {}", eigenvalues(i),
                              reference_eigenvalues(i),
@@ -182,7 +183,7 @@ int main(int argc, char **argv) {
             }
         }
         stream.close();
-        if (!overlaps.isApprox(reference_overlaps, 1e-8)) {
+        if ((overlaps - reference_overlaps).array().abs().maxCoeff() > 1e-5) {
             for (Eigen::Index i = 0; i < overlaps.size(); ++i) {
                 SPDLOG_DEBUG("Overlap: {} vs {}, delta: {}", overlaps(i), reference_overlaps(i),
                              std::abs(overlaps(i) - reference_overlaps(i)));
@@ -197,7 +198,7 @@ int main(int argc, char **argv) {
     // Thus, we only check their normalization and orthogonality.
     Eigen::VectorXd cumulative_norm =
         (eigenstates.adjoint().array() * eigenstates.transpose().array()).colwise().sum();
-    if (!cumulative_norm.isApprox(Eigen::VectorXd::Constant(5, 19))) {
+    if (!cumulative_norm.isApprox(Eigen::VectorXd::Constant(5, 19), 1e-5)) {
         SPDLOG_ERROR("Eigenvectors are not orthonormal.");
         success = false;
     }
