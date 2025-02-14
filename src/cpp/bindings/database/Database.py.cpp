@@ -7,7 +7,6 @@
 #include "pairinteraction/enums/OperatorType.hpp"
 #include "pairinteraction/ket/KetAtom.hpp"
 #include "pairinteraction/operator/OperatorAtom.hpp"
-#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
@@ -21,17 +20,6 @@
 namespace nb = nanobind;
 using namespace nb::literals;
 using namespace pairinteraction;
-
-template <typename T>
-static void declare_range(nb::module_ &m, std::string const &type_name) {
-    std::string pyclass_name = "Range" + type_name;
-    nb::class_<Range<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
-        .def(nb::init<T, T>())
-        .def("min", &Range<T>::min)
-        .def("max", &Range<T>::max)
-        .def("is_finite", &Range<T>::is_finite);
-}
 
 static void declare_atom_description_by_parameters(nb::module_ &m) {
     std::string pyclass_name = "AtomDescriptionByParameters";
@@ -106,8 +94,6 @@ static void declare_database(nb::module_ &m) {
 }
 
 void bind_database(nb::module_ &m) {
-    declare_range<int>(m, "Int");
-    declare_range<double>(m, "Double");
     declare_atom_description_by_parameters(m);
     declare_atom_description_by_ranges(m);
     declare_availability_species(m);

@@ -8,6 +8,7 @@
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
 #include <complex>
+#include <optional>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -30,8 +31,8 @@ public:
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       int precision) const = 0;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                      real_t min_eigenvalue, real_t max_eigenvalue,
-                                      int precision) const;
+                                      std::optional<real_t> min_eigenvalue,
+                                      std::optional<real_t> max_eigenvalue, int precision) const;
 
 protected:
     FPP fpp;

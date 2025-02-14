@@ -6,11 +6,11 @@
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
-#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/optional.h>
 
 namespace nb = nanobind;
 using namespace nb::literals;
@@ -35,10 +35,10 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, int>(
                  &DiagonalizerFeast<T>::eigh, nb::const_))
-        .def(
-            "eigh",
-            nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, real_t, real_t, int>(
-                &DiagonalizerFeast<T>::eigh, nb::const_));
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
+                               std::optional<real_t>, std::optional<real_t>, int>(
+                 &DiagonalizerFeast<T>::eigh, nb::const_));
 }
 
 template <typename T>
@@ -59,19 +59,21 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
     m.def(
         pyclass_name.c_str(),
         [](nb::list pylist, // NOLINT
-           const DiagonalizerInterface<scalar_t> &diagonalizer, int precision,
-           const Range<real_t> &eigenvalue_range) {
+           const DiagonalizerInterface<scalar_t> &diagonalizer,
+           std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue,
+           int precision) {
             std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
                 systems.push_back(nb::cast<T>(h));
             }
-            diagonalize(systems, diagonalizer, precision, eigenvalue_range);
+            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, precision);
             for (size_t i = 0; i < systems.size(); ++i) {
                 pylist[i] = nb::cast(systems[i]);
             }
         },
-        "systems"_a, "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>());
+        "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a = nb::none(),
+        "max_eigenvalue"_a = nb::none(), "precision"_a = 12);
 }
 
 void bind_diagonalizer(nb::module_ &m) {

@@ -9,7 +9,6 @@
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
 #include "pairinteraction/enums/FPP.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
-#include "pairinteraction/utils/Range.hpp"
 
 #include <Eigen/Eigenvalues>
 #include <doctest/doctest.h>
@@ -150,9 +149,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // We specify a search interval because this is required if the FEAST routine is used.
             // To avoid overflows, the interval ranges from half the smallest possible value to half
             // the largest possible value.
-            system.diagonalize(*diagonalizer, precision,
-                               {std::numeric_limits<double>::lowest() / 2,
-                                std::numeric_limits<double>::max() / 2});
+            system.diagonalize(*diagonalizer, std::numeric_limits<double>::lowest() / 2,
+                               std::numeric_limits<double>::max() / 2, precision);
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
@@ -190,9 +188,8 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // We specify a search interval because this is required if the FEAST routine is used.
             // To avoid overflows, the interval ranges from half the smallest possible value to half
             // the largest possible value.
-            system.diagonalize(
-                *diagonalizer, precision,
-                {std::numeric_limits<float>::lowest() / 2, std::numeric_limits<float>::max() / 2});
+            system.diagonalize(*diagonalizer, std::numeric_limits<float>::lowest() / 2,
+                               std::numeric_limits<float>::max() / 2, precision);
             auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
             for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
                 DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
@@ -237,7 +234,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
             }
         }
 
-        system.diagonalize(*diagonalizer, 12, Range(min_energy, max_energy));
+        system.diagonalize(*diagonalizer, min_energy, max_energy, 12);
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
 
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
@@ -274,7 +271,7 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
         auto system = SystemAtom<double>(basis);
         system.set_electric_field({0.0001, 0, 0.0001});
 
-        system.diagonalize(*diagonalizer, 12, Range(min_energy, max_energy));
+        system.diagonalize(*diagonalizer, min_energy, max_energy, 12);
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
 
         DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 0);

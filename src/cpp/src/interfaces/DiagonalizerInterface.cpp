@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SparseCore>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 namespace pairinteraction {
@@ -54,16 +55,18 @@ DiagonalizerInterface<Scalar>::add_mean(const Eigen::VectorX<RealLim> &shifted_e
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                    real_t min_eigenvalue, real_t max_eigenvalue,
-                                    int precision) const {
+                                    std::optional<real_t> min_eigenvalue,
+                                    std::optional<real_t> max_eigenvalue, int precision) const {
     int dim = matrix.rows();
 
     auto eigensys = eigh(matrix, precision);
 
-    auto *it_begin = std::lower_bound(eigensys.eigenvalues.data(),
-                                      eigensys.eigenvalues.data() + dim, min_eigenvalue);
-    auto *it_end = std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
-                                    max_eigenvalue);
+    auto *it_begin =
+        std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+                         min_eigenvalue.value_or(std::numeric_limits<real_t>::lowest() / 2));
+    auto *it_end =
+        std::upper_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
+                         max_eigenvalue.value_or(std::numeric_limits<real_t>::max() / 2));
     eigensys.eigenvectors = eigensys.eigenvectors
                                 .block(0, std::distance(eigensys.eigenvalues.data(), it_begin), dim,
                                        std::distance(it_begin, it_end))

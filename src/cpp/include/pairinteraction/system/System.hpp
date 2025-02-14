@@ -7,6 +7,7 @@
 
 #include <Eigen/SparseCore>
 #include <memory>
+#include <optional>
 #include <set>
 #include <vector>
 
@@ -15,9 +16,6 @@ enum class TransformationType : unsigned char;
 
 template <typename Scalar>
 class DiagonalizerInterface;
-
-template <typename Sortable>
-class Range;
 
 template <typename Derived>
 class System
@@ -55,7 +53,8 @@ public:
     System<Derived> &transform(const Sorting &transformation);
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                 int precision = 12, const Range<real_t> &eigenvalue_range = {});
+                                 std::optional<real_t> min_eigenvalue = {},
+                                 std::optional<real_t> max_eigenvalue = {}, int precision = 12);
     bool is_diagonal() const;
 
 protected:
