@@ -17,6 +17,8 @@ if TYPE_CHECKING:
     from pairinteraction.backend._wrapped.basis.BasisPair import BasisPair
     from pairinteraction.units import Array
 
+    Quantity = TypeVar("Quantity", float, PlainQuantity[float])
+
 
 BasisType = TypeVar("BasisType", bound=Union["BasisAtom", "BasisPair"])
 UnionCPPSystem = Any
@@ -69,17 +71,18 @@ class SystemBase(ABC, Generic[BasisType]):
         diagonalizer: Diagonalizer = "Eigen",
         precision: int = 12,
         sort_by_energy: bool = True,
-        energy_range: Union[tuple[float, float], tuple["PlainQuantity[float]", "PlainQuantity[float]"], None] = None,
+        energy_range: tuple[Union["Quantity", None], Union["Quantity", None]] = (None, None),
         energy_unit: Optional[str] = None,
     ) -> "Self":
         cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, self._cpp)
-        if energy_range is None:
-            self._cpp.diagonalize(cpp_diagonalizer, precision)
-        else:
-            min_energy_au = QuantityScalar(energy_range[0], energy_unit).to_base("ENERGY")
-            max_energy_au = QuantityScalar(energy_range[1], energy_unit).to_base("ENERGY")
-            cpp_range = _backend.RangeDouble(min_energy_au, max_energy_au)
-            self._cpp.diagonalize(cpp_diagonalizer, precision, cpp_range)
+
+        min_energy_au, max_energy_au = energy_range
+        if min_energy_au is not None:
+            min_energy_au = QuantityScalar(min_energy_au, energy_unit).to_base("ENERGY")
+        if max_energy_au is not None:
+            max_energy_au = QuantityScalar(max_energy_au, energy_unit).to_base("ENERGY")
+        self._cpp.diagonalize(cpp_diagonalizer, min_energy_au, max_energy_au, precision)
+
         if sort_by_energy:
             sorter = self._cpp.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])
             self._cpp.transform(sorter)
