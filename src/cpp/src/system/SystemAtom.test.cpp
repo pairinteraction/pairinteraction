@@ -123,57 +123,52 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
                      .restrict_quantum_number_l(0, 1)
                      .create(database);
 
-    // Double precision
+    // Diagonalize using the Eigen library
+    auto system = SystemAtom<std::complex<double>>(basis);
+    system.set_electric_field({1 * VOLT_PER_CM_IN_ATOMIC_UNITS, 2 * VOLT_PER_CM_IN_ATOMIC_UNITS,
+                               3 * VOLT_PER_CM_IN_ATOMIC_UNITS});
+
+    Eigen::MatrixXcd matrix = system.get_matrix();
+    Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
+    eigensolver.compute(matrix);
+    auto eigenvalues_eigen = eigensolver.eigenvalues();
+    auto eigenvalues_eigen_shifted = eigenvalues_eigen;
+    eigenvalues_eigen_shifted.array() -= matrix.diagonal().real().mean();
+
+    // Create diagonalizers
     std::vector<std::unique_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
-    diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
+    std::vector<int> precisions;
+    DOCTEST_SUBCASE("Double precision") {
+        diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
-    diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<std::complex<double>>>());
+        diagonalizers.push_back(std::make_unique<DiagonalizerLapacke<std::complex<double>>>());
 #endif
 #ifdef WITH_MKL
-    diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
+        diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
-
-    for (int precision : {1, 11, 15}) {
-        DOCTEST_MESSAGE("Precision: ", precision);
-
-        for (const auto &diagonalizer : diagonalizers) {
-            auto system = SystemAtom<std::complex<double>>(basis);
-            system.set_electric_field({1 * VOLT_PER_CM_IN_ATOMIC_UNITS,
-                                       2 * VOLT_PER_CM_IN_ATOMIC_UNITS,
-                                       3 * VOLT_PER_CM_IN_ATOMIC_UNITS});
-
-            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
-            eigensolver.compute(system.get_matrix());
-            auto eigenvalues_eigen = eigensolver.eigenvalues();
-
-            // We specify a search interval because this is required if the FEAST routine is used.
-            // To avoid overflows, the interval ranges from half the smallest possible value to half
-            // the largest possible value.
-            system.diagonalize(*diagonalizer, std::numeric_limits<double>::lowest() / 2,
-                               std::numeric_limits<double>::max() / 2, precision);
-            auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
-            for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
-                DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
-                              10 * std::pow(10, -precision));
-            }
-        }
+        precisions = {1, 6, 14};
     }
 
-    // Single precision
-    diagonalizers.clear();
-    diagonalizers.push_back(
-        std::make_unique<DiagonalizerEigen<std::complex<double>>>(FPP::FLOAT32));
+    DOCTEST_SUBCASE("Single precision") {
+        diagonalizers.push_back(
+            std::make_unique<DiagonalizerEigen<std::complex<double>>>(FPP::FLOAT32));
 #ifdef WITH_LAPACKE
-    diagonalizers.push_back(
-        std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FPP::FLOAT32));
+        diagonalizers.push_back(
+            std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FPP::FLOAT32));
 #endif
 #ifdef WITH_MKL
-    diagonalizers.push_back(
-        std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
+        diagonalizers.push_back(
+            std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
 #endif
+        precisions = {1, 6};
+    }
 
-    for (int precision : {1, 11}) {
-        DOCTEST_MESSAGE("Precision: ", precision);
+    // Diagonalize using pairinteraction
+    for (int precision : precisions) {
+        double precision_eigenvalues =
+            std::max(1e-16, 2 * std::pow(10, -precision) * eigenvalues_eigen_shifted.norm());
+        DOCTEST_MESSAGE("Precision: " << precision << " (eigenvectors), " << precision_eigenvalues
+                                      << " Hartree (eigenvalues)");
 
         for (const auto &diagonalizer : diagonalizers) {
             auto system = SystemAtom<std::complex<double>>(basis);
@@ -181,19 +176,20 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
                                        2 * VOLT_PER_CM_IN_ATOMIC_UNITS,
                                        3 * VOLT_PER_CM_IN_ATOMIC_UNITS});
 
-            Eigen::SelfAdjointEigenSolver<Eigen::MatrixXcd> eigensolver;
-            eigensolver.compute(system.get_matrix());
-            auto eigenvalues_eigen = eigensolver.eigenvalues();
-
-            // We specify a search interval because this is required if the FEAST routine is used.
-            // To avoid overflows, the interval ranges from half the smallest possible value to half
-            // the largest possible value.
+            // We specify a search interval because this is required if the FEAST routine is
+            // used. To avoid overflows, the interval ranges from half the smallest possible
+            // value to half the largest possible value.
             system.diagonalize(*diagonalizer, std::numeric_limits<float>::lowest() / 2,
                                std::numeric_limits<float>::max() / 2, precision);
-            auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
-            for (int i = 0; i < eigenvalues_eigen.size(); ++i) {
-                DOCTEST_CHECK(std::abs(eigenvalues_eigen(i) - eigenvalues_pairinteraction(i)) <
-                              10 * std::pow(10, -precision));
+            auto eigenvalues_pairinteraction = system.get_eigenvalues();
+            auto eigenvectors_pairinteraction = system.get_eigenbasis()->get_coefficients();
+
+            DOCTEST_CHECK((eigenvalues_eigen - eigenvalues_pairinteraction).array().abs().sum() <
+                          precision_eigenvalues * eigenvalues_eigen.size());
+
+            for (int i = 0; i < eigenvectors_pairinteraction.cols(); ++i) {
+                DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) <
+                              std::pow(10, -precision) * eigenvectors_pairinteraction.rows());
             }
         }
     }

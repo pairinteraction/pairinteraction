@@ -26,16 +26,43 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     Eigen::MatrixX<ScalarLim> shifted_matrix =
         (matrix - shift * Eigen::MatrixX<Scalar>::Identity(dim, dim)).template cast<ScalarLim>();
 
-    // Check if the precision is reachable
+    ///////////////////////////////////////
+    // Ensure accuracy of the eigenvectors
+    ///////////////////////////////////////
+
+    double floating_point_precision =
+        1 - std::nextafter(static_cast<real_lim_t>(1), std::numeric_limits<real_lim_t>::lowest());
+    double precision_from_tolerance = std::pow(10.0, -precision);
+
+    if (floating_point_precision * 1e1 > precision_from_tolerance) { // 1e1 is a safety factor
+        SPDLOG_WARN(
+            "Because the floating point precision is lacking, the "
+            "eigenvectors cannot be calculated accurately. The floating point precision ({}) "
+            "is similar or worse than the specified tolerance ({}).",
+            floating_point_precision, precision_from_tolerance);
+    }
+
+    ///////////////////////////////////////
+    // Accuracy of the eigenvalues
+    ///////////////////////////////////////
+
+    // Estimate the error of the eigenenergies due to limited floating point precision
     real_lim_t max_entry = shifted_matrix.array().abs().maxCoeff();
-    int precision_shift = std::floor(
-        -std::log10(shift - std::nextafter(shift, std::numeric_limits<real_t>::lowest())));
-    int precision_lim = std::floor(-std::log10(
-        max_entry - std::nextafter(max_entry, std::numeric_limits<real_lim_t>::lowest())));
-    if (precision > std::min(precision_shift, precision_lim)) {
-        SPDLOG_WARN("Because the floating point precision is too low, the energies cannot be "
-                    "calculated with a precision of 1e-{} Hartree.",
-                    precision);
+    floating_point_precision =
+        max_entry - std::nextafter(max_entry, std::numeric_limits<real_lim_t>::lowest());
+
+    // Estimate the error of the eigenenergies that would result from calculating the eigenenergies
+    // by transforming the Hamiltonian with the eigenvector matrix, assuming that all entries of the
+    // eigenvector matrix that are smaller than the tolerance are set to zero.
+    precision_from_tolerance = 2 * std::pow(10.0, -precision) *
+        shifted_matrix.norm(); // upper bound of |Tr(D_exact) - Tr(D)|/dim(D)
+
+    if (floating_point_precision * 1e1 > precision_from_tolerance) { // 1e1 is a safety factor
+        SPDLOG_WARN("Because the floating point precision is lacking, the "
+                    "eigenvalues cannot be calculated accurately. The floating point precision ({} "
+                    "Hartree) is similar or worse than the precision estimated from the specified "
+                    "tolerance ({} Hartree).",
+                    floating_point_precision, precision_from_tolerance);
     }
 
     return shifted_matrix;
