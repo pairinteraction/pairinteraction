@@ -52,7 +52,7 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     // Subtract the mean of the diagonal elements from the diagonal
     real_t shift{};
     Eigen::MatrixX<ScalarLim> hamiltonian =
-        this->template subtract_mean<ScalarLim>(matrix, shift, precision - 1);
+        this->template subtract_mean<ScalarLim>(matrix, shift, precision);
 
     // Diagonalize the shifted matrix
     int m0 = std::min(dim, this->m0);
@@ -60,9 +60,8 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     Eigen::VectorX<real_lim_t> evals(dim);
     Eigen::MatrixX<ScalarLim> evecs(dim, m0); // the first m columns will contain the eigenvectors
 
-    real_lim_t max_entry = hamiltonian.array().abs().maxCoeff();
-    int precision_feast =
-        std::max(static_cast<int>(std::ceil(precision + std::log10(max_entry))), 0);
+    double targeted_trace_relative_error = 2 * std::pow(10.0, -precision);
+    int precision_feast = std::ceil(-std::log10(targeted_trace_relative_error));
 
     std::vector<MKL_INT> fpm(128);
     feastinit(fpm.data());
@@ -79,8 +78,8 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     real_lim_t epsout{};             // will contain relative error
     MKL_INT loop{};                  // will contain number of used refinement
     std::vector<real_lim_t> res(m0); // will contain the residual errors
-    real_lim_t min_eigenvalue_lim = min_eigenvalue.value() - shift;
-    real_lim_t max_eigenvalue_lim = max_eigenvalue.value() - shift;
+    real_lim_t min_eigenvalue_lim = min_eigenvalue - shift;
+    real_lim_t max_eigenvalue_lim = max_eigenvalue - shift;
 
     feast(&uplo, &dim, hamiltonian.data(), &dim, fpm.data(), &epsout, &loop, &min_eigenvalue_lim,
           &max_eigenvalue_lim, &m0, evals.data(), evecs.data(), &m, res.data(), &info);
