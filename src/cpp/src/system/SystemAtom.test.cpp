@@ -231,7 +231,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian with energy restricti
             }
         }
 
-        system.diagonalize(*diagonalizer, min_energy, max_energy, 12);
+        system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
 
         Eigen::MatrixXd tmp = (1e5 * eigenvalues_pairinteraction).array().round() / 1e5;
@@ -268,7 +268,7 @@ DOCTEST_TEST_CASE("handle it gracefully if no eigenvalues are within energy rest
         auto system = SystemAtom<double>(basis);
         system.set_electric_field({0.0001, 0, 0.0001});
 
-        system.diagonalize(*diagonalizer, min_energy, max_energy, 12);
+        system.diagonalize(*diagonalizer, min_energy, max_energy, 1e-6);
         auto eigenvalues_pairinteraction = system.get_matrix().diagonal();
 
         DOCTEST_CHECK(eigenvalues_pairinteraction.size() == 0);
