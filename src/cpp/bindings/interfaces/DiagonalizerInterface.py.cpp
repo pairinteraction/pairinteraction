@@ -5,6 +5,7 @@
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/optional.h>
 
 namespace nb = nanobind;
 using namespace pairinteraction;
@@ -18,10 +19,10 @@ static void declare_diagonalizer_interface(nb::module_ &m, std::string const &ty
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, int>(
                  &DiagonalizerInterface<T>::eigh, nb::const_))
-        .def(
-            "eigh",
-            nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, real_t, real_t, int>(
-                &DiagonalizerInterface<T>::eigh, nb::const_));
+        .def("eigh",
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
+                               std::optional<real_t>, std::optional<real_t>, int>(
+                 &DiagonalizerInterface<T>::eigh, nb::const_));
 }
 
 template <typename T>

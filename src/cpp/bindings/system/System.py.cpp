@@ -7,13 +7,13 @@
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemClassicalLight.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
-#include "pairinteraction/utils/Range.hpp"
 
 #include <nanobind/eigen/dense.h>
 #include <nanobind/eigen/sparse.h>
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/array.h>
 #include <nanobind/stl/complex.h>
+#include <nanobind/stl/optional.h>
 #include <nanobind/stl/shared_ptr.h>
 #include <nanobind/stl/vector.h>
 
@@ -40,9 +40,10 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
              nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transform))
         .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transform))
         .def("diagonalize",
-             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, int, const Range<real_t> &>(
-                 &System<T>::diagonalize),
-             "diagonalizer"_a, "precision"_a = 12, "eigenvalue_range"_a = Range<real_t>())
+             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, std::optional<real_t>,
+                               std::optional<real_t>, int>(&System<T>::diagonalize),
+             "diagonalizer"_a, "min_eigenvalue"_a = nb::none(), "max_eigenvalue"_a = nb::none(),
+             "precision"_a = 12)
         .def("is_diagonal", &System<T>::is_diagonal);
 }
 

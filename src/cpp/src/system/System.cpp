@@ -8,7 +8,6 @@
 #include "pairinteraction/operator/OperatorPair.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
-#include "pairinteraction/utils/Range.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -18,6 +17,7 @@
 #include <memory>
 #include <numeric>
 #include <oneapi/tbb.h>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 namespace pairinteraction {
@@ -179,8 +179,8 @@ System<Derived> &System<Derived>::transform(const Sorting &transformation) {
 
 template <typename Derived>
 System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
-                                              int precision,
-                                              const Range<real_t> &eigenvalue_range) {
+                                              std::optional<real_t> min_eigenvalue,
+                                              std::optional<real_t> max_eigenvalue, int precision) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
@@ -213,11 +213,11 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
     oneapi::tbb::parallel_for(
         oneapi::tbb::blocked_range<size_t>(0, blocks.size()), [&](const auto &range) {
             for (size_t idx = range.begin(); idx != range.end(); ++idx) {
-                auto eigensys = eigenvalue_range.is_finite()
+                auto eigensys = min_eigenvalue.has_value() || max_eigenvalue.has_value()
                     ? diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
-                          eigenvalue_range.min(), eigenvalue_range.max(), precision)
+                          min_eigenvalue, max_eigenvalue, precision)
                     : diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),

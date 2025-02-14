@@ -6,6 +6,7 @@
 
 #include <Eigen/SparseCore>
 #include <complex>
+#include <optional>
 
 namespace pairinteraction {
 template <typename Scalar>
@@ -17,8 +18,8 @@ public:
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               int precision) const override;
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              real_t min_eigenvalue, real_t max_eigenvalue,
-                              int precision) const override;
+                              std::optional<real_t> min_eigenvalue,
+                              std::optional<real_t> max_eigenvalue, int precision) const override;
 
 private:
     int m0;

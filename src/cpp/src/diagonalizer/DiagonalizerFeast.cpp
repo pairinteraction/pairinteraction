@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <cmath>
+#include <optional>
 #include <spdlog/spdlog.h>
 
 #ifdef WITH_MKL
@@ -78,8 +79,8 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
     real_lim_t epsout{};             // will contain relative error
     MKL_INT loop{};                  // will contain number of used refinement
     std::vector<real_lim_t> res(m0); // will contain the residual errors
-    real_lim_t min_eigenvalue_lim = min_eigenvalue - shift;
-    real_lim_t max_eigenvalue_lim = max_eigenvalue - shift;
+    real_lim_t min_eigenvalue_lim = min_eigenvalue.value() - shift;
+    real_lim_t max_eigenvalue_lim = max_eigenvalue.value() - shift;
 
     feast(&uplo, &dim, hamiltonian.data(), &dim, fpm.data(), &epsout, &loop, &min_eigenvalue_lim,
           &max_eigenvalue_lim, &m0, evals.data(), evecs.data(), &m, res.data(), &info);
@@ -170,14 +171,18 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                real_t min_eigenvalue, real_t max_eigenvalue, int precision) const {
+                                std::optional<real_t> min_eigenvalue,
+                                std::optional<real_t> max_eigenvalue, int precision) const {
+    if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
+        throw std::invalid_argument("The FEAST routine requires a search interval.");
+    }
     switch (this->fpp) {
     case FPP::FLOAT32:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, min_eigenvalue,
-                                                                         max_eigenvalue, precision);
+        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(
+            matrix, min_eigenvalue.value(), max_eigenvalue.value(), precision);
     case FPP::FLOAT64:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, min_eigenvalue,
-                                                                         max_eigenvalue, precision);
+        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(
+            matrix, min_eigenvalue.value(), max_eigenvalue.value(), precision);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }
@@ -202,8 +207,8 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> & /*matrix*/,
-                                real_t /*min_eigenvalue*/, real_t /*max_eigenvalue*/,
-                                int /*precision*/) const {
+                                std::optional<real_t> /*min_eigenvalue*/,
+                                std::optional<real_t> /*max_eigenvalue*/, int /*precision*/) const {
     std::abort(); // can't happen because the constructor throws
 }
 
