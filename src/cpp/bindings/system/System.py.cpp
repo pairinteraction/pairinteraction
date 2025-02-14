@@ -39,11 +39,8 @@ static void declare_system(nb::module_ &m, std::string const &type_name) {
         .def("transform",
              nb::overload_cast<const Transformation<scalar_t> &>(&System<T>::transform))
         .def("transform", nb::overload_cast<const Sorting &>(&System<T>::transform))
-        .def("diagonalize",
-             nb::overload_cast<const DiagonalizerInterface<scalar_t> &, std::optional<real_t>,
-                               std::optional<real_t>, int>(&System<T>::diagonalize),
-             "diagonalizer"_a, "min_eigenvalue"_a = nb::none(), "max_eigenvalue"_a = nb::none(),
-             "precision"_a = 12)
+        .def("diagonalize", &System<T>::diagonalize, "diagonalizer"_a,
+             "min_eigenvalue"_a = nb::none(), "max_eigenvalue"_a = nb::none(), "atol"_a = 1e-6)
         .def("is_diagonal", &System<T>::is_diagonal);
 }
 

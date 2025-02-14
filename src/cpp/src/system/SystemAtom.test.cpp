@@ -137,7 +137,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 
     // Create diagonalizers
     std::vector<std::unique_ptr<DiagonalizerInterface<std::complex<double>>>> diagonalizers;
-    std::vector<int> precisions;
+    std::vector<double> atols;
     DOCTEST_SUBCASE("Double precision") {
         diagonalizers.push_back(std::make_unique<DiagonalizerEigen<std::complex<double>>>());
 #ifdef WITH_LAPACKE
@@ -146,7 +146,7 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 #ifdef WITH_MKL
         diagonalizers.push_back(std::make_unique<DiagonalizerFeast<std::complex<double>>>(300));
 #endif
-        precisions = {1, 6, 14};
+        atols = {1e-1, 1e-6, 1e-14};
     }
 
     DOCTEST_SUBCASE("Single precision") {
@@ -160,15 +160,15 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
         diagonalizers.push_back(
             std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
 #endif
-        precisions = {1, 6};
+        atols = {1e-1, 1e-6};
     }
 
     // Diagonalize using pairinteraction
-    for (int precision : precisions) {
-        double precision_eigenvalues =
-            std::max(1e-16, 2 * std::pow(10, -precision) * eigenvalues_eigen_shifted.norm());
-        DOCTEST_MESSAGE("Precision: " << precision << " (eigenvectors), " << precision_eigenvalues
-                                      << " Hartree (eigenvalues)");
+    for (double atol_eigenvectors : atols) {
+        double atol_eigenvalues =
+            std::max(1e-16, 2 * atol_eigenvectors * eigenvalues_eigen_shifted.norm());
+        DOCTEST_MESSAGE("Precision: " << atol_eigenvectors << " (eigenvectors), "
+                                      << atol_eigenvalues << " Hartree (eigenvalues)");
 
         for (const auto &diagonalizer : diagonalizers) {
             auto system = SystemAtom<std::complex<double>>(basis);
@@ -180,16 +180,17 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
             // used. To avoid overflows, the interval ranges from half the smallest possible
             // value to half the largest possible value.
             system.diagonalize(*diagonalizer, std::numeric_limits<float>::lowest() / 2,
-                               std::numeric_limits<float>::max() / 2, precision);
+                               std::numeric_limits<float>::max() / 2, atol_eigenvectors);
             auto eigenvalues_pairinteraction = system.get_eigenvalues();
             auto eigenvectors_pairinteraction = system.get_eigenbasis()->get_coefficients();
 
             DOCTEST_CHECK((eigenvalues_eigen - eigenvalues_pairinteraction).array().abs().sum() <
-                          precision_eigenvalues * eigenvalues_eigen.size());
+                          2 * atol_eigenvalues * eigenvalues_eigen.size()); // 2 is a safety factor
 
             for (int i = 0; i < eigenvectors_pairinteraction.cols(); ++i) {
-                DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) <
-                              std::pow(10, -precision) * eigenvectors_pairinteraction.rows());
+                DOCTEST_CHECK(abs(1 - eigenvectors_pairinteraction.col(i).norm()) < 2 *
+                                  atol_eigenvectors *
+                                  eigenvectors_pairinteraction.rows()); // 2 is a safety factor
             }
         }
     }

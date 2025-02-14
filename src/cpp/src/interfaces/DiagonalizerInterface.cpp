@@ -17,7 +17,7 @@ template <typename Scalar>
 template <typename ScalarLim>
 Eigen::MatrixX<ScalarLim>
 DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matrix, real_t &shift,
-                                             int precision) const {
+                                             double atol) const {
     using real_lim_t = typename traits::NumTraits<ScalarLim>::real_t;
     int dim = matrix.rows();
 
@@ -32,14 +32,13 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
 
     double floating_point_precision =
         1 - std::nextafter(static_cast<real_lim_t>(1), std::numeric_limits<real_lim_t>::lowest());
-    double precision_from_tolerance = std::pow(10.0, -precision);
 
-    if (floating_point_precision * 1e1 > precision_from_tolerance) { // 1e1 is a safety factor
+    if (floating_point_precision * 1e1 > atol) { // 1e1 is a safety factor
         SPDLOG_WARN(
             "Because the floating point precision is lacking, the "
             "eigenvectors cannot be calculated accurately. The floating point precision ({}) "
             "is similar or worse than the specified tolerance ({}).",
-            floating_point_precision, precision_from_tolerance);
+            floating_point_precision, atol);
     }
 
     ///////////////////////////////////////
@@ -54,8 +53,8 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     // Estimate the error of the eigenenergies that would result from calculating the eigenenergies
     // by transforming the Hamiltonian with the eigenvector matrix, assuming that all entries of the
     // eigenvector matrix that are smaller than the tolerance are set to zero.
-    precision_from_tolerance = 2 * std::pow(10.0, -precision) *
-        shifted_matrix.norm(); // upper bound of |Tr(D_exact) - Tr(D)|/dim(D)
+    double precision_from_tolerance =
+        2 * atol * shifted_matrix.norm(); // upper bound of |Tr(D_exact) - Tr(D)|/dim(D)
 
     if (floating_point_precision * 1e1 > precision_from_tolerance) { // 1e1 is a safety factor
         SPDLOG_WARN("Because the floating point precision is lacking, the "
@@ -83,10 +82,10 @@ template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerInterface<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                     std::optional<real_t> min_eigenvalue,
-                                    std::optional<real_t> max_eigenvalue, int precision) const {
+                                    std::optional<real_t> max_eigenvalue, double atol) const {
     int dim = matrix.rows();
 
-    auto eigensys = eigh(matrix, precision);
+    auto eigensys = eigh(matrix, atol);
 
     auto *it_begin =
         std::lower_bound(eigensys.eigenvalues.data(), eigensys.eigenvalues.data() + dim,
@@ -112,10 +111,10 @@ template class DiagonalizerInterface<std::complex<double>>;
 
 template Eigen::MatrixX<float>
 DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
-                                             int precision) const;
+                                             double atol) const;
 template Eigen::MatrixX<std::complex<float>>
 DiagonalizerInterface<std::complex<double>>::subtract_mean(
-    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, int precision) const;
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double atol) const;
 
 template Eigen::VectorX<double>
 DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<float> &shifted_eigenvalues,
@@ -125,10 +124,10 @@ template Eigen::VectorX<double> DiagonalizerInterface<std::complex<double>>::add
 
 template Eigen::MatrixX<double>
 DiagonalizerInterface<double>::subtract_mean(const Eigen::MatrixX<double> &matrix, double &shift,
-                                             int precision) const;
+                                             double atol) const;
 template Eigen::MatrixX<std::complex<double>>
 DiagonalizerInterface<std::complex<double>>::subtract_mean(
-    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, int precision) const;
+    const Eigen::MatrixX<std::complex<double>> &matrix, double &shift, double atol) const;
 
 template Eigen::VectorX<double>
 DiagonalizerInterface<double>::add_mean(const Eigen::VectorX<double> &shifted_eigenvalues,
