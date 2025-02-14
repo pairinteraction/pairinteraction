@@ -16,18 +16,18 @@ template <typename Derived>
 void diagonalize(std::initializer_list<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue = {},
-                 std::optional<typename Derived::real_t> max_eigenvalue = {}, int precision = 12);
+                 std::optional<typename Derived::real_t> max_eigenvalue = {}, double atol = 1e-6);
 
 template <typename Derived>
 void diagonalize(std::vector<Derived> &systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue = {},
-                 std::optional<typename Derived::real_t> max_eigenvalue = {}, int precision = 12);
+                 std::optional<typename Derived::real_t> max_eigenvalue = {}, double atol = 1e-6);
 
 template <typename Derived>
 void diagonalize(std::vector<std::reference_wrapper<Derived>> systems,
                  const DiagonalizerInterface<typename Derived::scalar_t> &diagonalizer,
                  std::optional<typename Derived::real_t> min_eigenvalue = {},
-                 std::optional<typename Derived::real_t> max_eigenvalue = {}, int precision = 12);
+                 std::optional<typename Derived::real_t> max_eigenvalue = {}, double atol = 1e-6);
 
 } // namespace pairinteraction

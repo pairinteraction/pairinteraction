@@ -15,12 +15,12 @@ public:
 
     DiagonalizerEigen(FPP fpp = FPP::FLOAT64);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                              int precision) const override;
+                              double atol) const override;
 
 private:
     template <typename ScalarLim>
     EigenSystemH<Scalar> dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
-                                       int precision) const;
+                                       double atol) const;
 };
 
 extern template class DiagonalizerEigen<double>;

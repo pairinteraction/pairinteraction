@@ -180,7 +180,7 @@ System<Derived> &System<Derived>::transform(const Sorting &transformation) {
 template <typename Derived>
 System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                               std::optional<real_t> min_eigenvalue,
-                                              std::optional<real_t> max_eigenvalue, int precision) {
+                                              std::optional<real_t> max_eigenvalue, double atol) {
     if (hamiltonian_requires_construction) {
         construct_hamiltonian();
         hamiltonian_requires_construction = false;
@@ -217,11 +217,11 @@ System<Derived> &System<Derived>::diagonalize(const DiagonalizerInterface<scalar
                     ? diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
-                          min_eigenvalue, max_eigenvalue, precision)
+                          min_eigenvalue, max_eigenvalue, atol)
                     : diagonalizer.eigh(
                           hamiltonian->get_matrix().block(blocks[idx].start, blocks[idx].start,
                                                           blocks[idx].size(), blocks[idx].size()),
-                          precision);
+                          atol);
                 eigenvectors_blocks[idx] = eigensys.eigenvectors;
                 eigenvalues_blocks[idx] = eigensys.eigenvalues;
             }

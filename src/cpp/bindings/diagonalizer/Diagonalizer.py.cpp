@@ -22,7 +22,7 @@ static void declare_diagonalizer_eigen(nb::module_ &m, std::string const &type_n
     nb::class_<DiagonalizerEigen<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, int>(
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerEigen<T>::eigh, nb::const_));
 }
 
@@ -33,11 +33,11 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
     nb::class_<DiagonalizerFeast<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<int>())
         .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, int>(
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerFeast<T>::eigh, nb::const_))
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &,
-                               std::optional<real_t>, std::optional<real_t>, int>(
+                               std::optional<real_t>, std::optional<real_t>, double>(
                  &DiagonalizerFeast<T>::eigh, nb::const_));
 }
 
@@ -47,7 +47,7 @@ static void declare_diagonalizer_lapacke(nb::module_ &m, std::string const &type
     nb::class_<DiagonalizerLapacke<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
     pyclass.def(nb::init<>())
         .def("eigh",
-             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, int>(
+             nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerLapacke<T>::eigh, nb::const_));
 }
 
@@ -61,19 +61,19 @@ static void declare_diagonalize(nb::module_ &m, std::string const &type_name) {
         [](nb::list pylist, // NOLINT
            const DiagonalizerInterface<scalar_t> &diagonalizer,
            std::optional<real_t> min_eigenvalue, std::optional<real_t> max_eigenvalue,
-           int precision) {
+           double atol) {
             std::vector<T> systems;
             systems.reserve(pylist.size());
             for (auto h : pylist) {
                 systems.push_back(nb::cast<T>(h));
             }
-            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, precision);
+            diagonalize(systems, diagonalizer, min_eigenvalue, max_eigenvalue, atol);
             for (size_t i = 0; i < systems.size(); ++i) {
                 pylist[i] = nb::cast(systems[i]);
             }
         },
         "systems"_a, "diagonalizer"_a, "min_eigenvalue"_a = nb::none(),
-        "max_eigenvalue"_a = nb::none(), "precision"_a = 12);
+        "max_eigenvalue"_a = nb::none(), "atol"_a = 1e-6);
 }
 
 void bind_diagonalizer(nb::module_ &m) {

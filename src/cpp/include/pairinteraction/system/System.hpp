@@ -54,7 +54,7 @@ public:
 
     System<Derived> &diagonalize(const DiagonalizerInterface<scalar_t> &diagonalizer,
                                  std::optional<real_t> min_eigenvalue = {},
-                                 std::optional<real_t> max_eigenvalue = {}, int precision = 12);
+                                 std::optional<real_t> max_eigenvalue = {}, double atol = 1e-6);
     bool is_diagonal() const;
 
 protected:
