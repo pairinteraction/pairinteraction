@@ -30,14 +30,15 @@ def diagonalize(
 ) -> None:
     cpp_systems = [s._cpp for s in systems]  # type: ignore [reportPrivateUsage]
     cpp_diagonalize_fct = get_cpp_diagonalize(systems[0])
-
     cpp_diagonalizer = get_cpp_diagonalizer(diagonalizer, cpp_systems[0], float_type, m0=m0)
+
     min_energy_au, max_energy_au = energy_range
     if min_energy_au is not None:
-        min_energy_au = QuantityScalar(min_energy_au, energy_unit).to_base("ENERGY")
+        min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
     if max_energy_au is not None:
-        max_energy_au = QuantityScalar(max_energy_au, energy_unit).to_base("ENERGY")
+        max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
     cpp_diagonalize_fct(cpp_systems, cpp_diagonalizer, min_energy_au, max_energy_au, atol)
+
     for system, cpp_system in zip(systems, cpp_systems):
         if sort_by_energy:
             sorter = cpp_system.get_sorter([_backend.TransformationType.SORT_BY_ENERGY])

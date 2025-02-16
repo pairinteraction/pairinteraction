@@ -59,7 +59,7 @@ class SystemPairBase(SystemBase[BasisType]):
     def set_distance(
         self: "Self", distance: Union[float, "PlainQuantity[float]"], unit: Optional[str] = None
     ) -> "Self":
-        distance_au = QuantityScalar(distance, unit).to_base("DISTANCE")
+        distance_au = QuantityScalar.from_pint_or_unit(distance, unit, "DISTANCE").to_base_unit()
         self._cpp.set_distance(distance_au)
         return self
 
@@ -68,7 +68,7 @@ class SystemPairBase(SystemBase[BasisType]):
         distance: Union["PlainQuantity[Array]", Collection[Union[float, "PlainQuantity[float]"]]],
         unit: Optional[str] = None,
     ) -> "Self":
-        distance_au = [QuantityScalar(v, unit).to_base("DISTANCE") for v in distance]
+        distance_au = [QuantityScalar.from_pint_or_unit(v, unit, "DISTANCE").to_base_unit() for v in distance]
         self._cpp.set_distance_vector(distance_au)
         return self
 

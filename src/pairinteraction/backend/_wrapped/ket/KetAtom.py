@@ -96,7 +96,7 @@ class KetAtom(KetBase):
         creator = self._cpp_creator()
         creator.set_species(species)
         if energy is not None:
-            energy_au = QuantityScalar(energy, energy_unit).to_base("ENERGY")
+            energy_au = QuantityScalar.from_pint_or_unit(energy, energy_unit, "ENERGY").to_base_unit()
             creator.set_energy(energy_au)
         if f is not None:
             creator.set_quantum_number_f(f)
