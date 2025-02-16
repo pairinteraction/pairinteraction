@@ -101,9 +101,9 @@ class SystemBase(ABC, Generic[BasisType]):
 
         min_energy_au, max_energy_au = energy_range
         if min_energy_au is not None:
-            min_energy_au = QuantityScalar(min_energy_au, energy_unit).to_base("ENERGY")
+            min_energy_au = QuantityScalar.from_pint_or_unit(min_energy_au, energy_unit, "ENERGY").to_base_unit()
         if max_energy_au is not None:
-            max_energy_au = QuantityScalar(max_energy_au, energy_unit).to_base("ENERGY")
+            max_energy_au = QuantityScalar.from_pint_or_unit(max_energy_au, energy_unit, "ENERGY").to_base_unit()
         self._cpp.diagonalize(cpp_diagonalizer, min_energy_au, max_energy_au, atol)
 
         if sort_by_energy:
@@ -137,8 +137,8 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_eigenvalues(self, unit: Optional[str] = None):
         eigenvalues_au = self._cpp.get_eigenvalues()
-        eigenvalues = QuantityArray.from_base(eigenvalues_au, "ENERGY")
-        return eigenvalues.to_unit(unit)
+        eigenvalues = QuantityArray.from_base_unit(eigenvalues_au, "ENERGY")
+        return eigenvalues.to_pint_or_unit(unit)
 
     @overload
     def get_hamiltonian(self) -> "PlainQuantity[csr_matrix]": ...  # type: ignore [reportInvalidTypeArguments]
@@ -148,8 +148,8 @@ class SystemBase(ABC, Generic[BasisType]):
 
     def get_hamiltonian(self, unit: Optional[str] = None):
         hamiltonian_au = self._cpp.get_matrix()
-        hamiltonian = QuantitySparse.from_base(hamiltonian_au, "ENERGY")
-        return hamiltonian.to_unit(unit)
+        hamiltonian = QuantitySparse.from_base_unit(hamiltonian_au, "ENERGY")
+        return hamiltonian.to_pint_or_unit(unit)
 
 
 System = SystemBase[Any]

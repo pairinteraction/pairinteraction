@@ -16,9 +16,9 @@ def test_magnetic() -> None:
     assert np.isclose(mu.magnitude, -1 / 2 * lande_factor)
 
     # check magnetic field conversion is correct
-    B_z = QuantityScalar(1, "gauss")
-    B_z_pint = B_z.quantity.to("T", "Gaussian")
-    assert np.isclose(B_z.to_base("MAGNETIC_FIELD"), B_z_pint.to_base_units().magnitude)
+    B_z = QuantityScalar.from_unit(1, "gauss", "MAGNETIC_FIELD")
+    B_z_pint = ureg.Quantity(1, "gauss").to("T", "Gaussian")
+    assert np.isclose(B_z.to_base_unit(), B_z_pint.to_base_units().magnitude)
 
     # such that mu * B_z is of dimension energy
     zeeman_energy = -mu * B_z_pint

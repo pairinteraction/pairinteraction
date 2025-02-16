@@ -86,8 +86,8 @@ class BasisPairBase(BasisBase[KetPairType]):
         if product_of_parities is not None:
             creator.restrict_product_of_parities(get_cpp_parity(product_of_parities))
         if energy is not None:
-            min_energy_au = QuantityScalar(energy[0], energy_unit).to_base("ENERGY")
-            max_energy_au = QuantityScalar(energy[1], energy_unit).to_base("ENERGY")
+            min_energy_au = QuantityScalar.from_pint_or_unit(energy[0], energy_unit, "ENERGY").to_base_unit()
+            max_energy_au = QuantityScalar.from_pint_or_unit(energy[1], energy_unit, "ENERGY").to_base_unit()
             creator.restrict_energy(min_energy_au, max_energy_au)
         self._cpp = creator.create()
 
@@ -159,10 +159,10 @@ class BasisPairBase(BasisBase[KetPairType]):
         matrix_elements_au = self._cpp.get_matrix_elements(*ket_or_basis_cpp, *operators_cpp, *qs)
         matrix_elements: QuantityAbstract
         if isinstance(matrix_elements_au, np.ndarray):
-            matrix_elements = QuantityArray.from_base(matrix_elements_au, operators)
+            matrix_elements = QuantityArray.from_base_unit(matrix_elements_au, operators)
         else:  # csr_matrix
-            matrix_elements = QuantitySparse.from_base(matrix_elements_au, operators)
-        return matrix_elements.to_unit(unit)
+            matrix_elements = QuantitySparse.from_base_unit(matrix_elements_au, operators)
+        return matrix_elements.to_pint_or_unit(unit)
 
 
 class BasisPairReal(BasisPairBase[KetPairReal]):
