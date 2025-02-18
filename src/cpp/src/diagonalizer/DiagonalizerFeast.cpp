@@ -1,6 +1,6 @@
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -151,8 +151,8 @@ DiagonalizerFeast<Scalar>::dispatch_eigh(const Eigen::SparseMatrix<Scalar, Eigen
 }
 
 template <typename Scalar>
-DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FPP fpp)
-    : DiagonalizerInterface<Scalar>(fpp), m0(m0) {
+DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
+    : DiagonalizerInterface<Scalar>(float_type), m0(m0) {
     if (m0 <= 0) {
         throw std::invalid_argument("The size of the initial subspace m0 (i.e., the number of "
                                     "maximally obtainable eigenvalues) must be positive.");
@@ -174,12 +174,12 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
     if (!min_eigenvalue.has_value() || !max_eigenvalue.has_value()) {
         throw std::invalid_argument("The FEAST routine requires a search interval.");
     }
-    switch (this->fpp) {
-    case FPP::FLOAT32:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(
+    switch (this->float_type) {
+    case FloatType::FLOAT32:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(
             matrix, min_eigenvalue.value(), max_eigenvalue.value(), atol);
-    case FPP::FLOAT64:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(
+    case FloatType::FLOAT64:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(
             matrix, min_eigenvalue.value(), max_eigenvalue.value(), atol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
@@ -189,8 +189,8 @@ DiagonalizerFeast<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajo
 #else
 
 template <typename Scalar>
-DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FPP fpp)
-    : DiagonalizerInterface<Scalar>(fpp), m0(m0) {
+DiagonalizerFeast<Scalar>::DiagonalizerFeast(int m0, FloatType float_type)
+    : DiagonalizerInterface<Scalar>(float_type), m0(m0) {
     throw std::runtime_error(
         "The FEAST routine is not available in this build. Please use a different diagonalizer.");
 }

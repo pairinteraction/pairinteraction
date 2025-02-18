@@ -1,6 +1,6 @@
 #include "pairinteraction/diagonalizer/DiagonalizerEigen.hpp"
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -12,7 +12,8 @@
 namespace pairinteraction {
 
 template <typename Scalar>
-DiagonalizerEigen<Scalar>::DiagonalizerEigen(FPP fpp) : DiagonalizerInterface<Scalar>(fpp) {}
+DiagonalizerEigen<Scalar>::DiagonalizerEigen(FloatType float_type)
+    : DiagonalizerInterface<Scalar>(float_type) {}
 
 template <typename Scalar>
 template <typename ScalarLim>
@@ -38,11 +39,11 @@ template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerEigen<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                 double atol) const {
-    switch (this->fpp) {
-    case FPP::FLOAT32:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, atol);
-    case FPP::FLOAT64:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, atol);
+    switch (this->float_type) {
+    case FloatType::FLOAT32:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, atol);
+    case FloatType::FLOAT64:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(matrix, atol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }

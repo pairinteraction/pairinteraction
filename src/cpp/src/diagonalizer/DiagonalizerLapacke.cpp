@@ -1,6 +1,6 @@
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -70,17 +70,18 @@ EigenSystemH<Scalar> DiagonalizerLapacke<Scalar>::dispatch_eigh(
 }
 
 template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FPP fpp) : DiagonalizerInterface<Scalar>(fpp) {}
+DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FloatType float_type)
+    : DiagonalizerInterface<Scalar>(float_type) {}
 
 template <typename Scalar>
 EigenSystemH<Scalar>
 DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                   double atol) const {
-    switch (this->fpp) {
-    case FPP::FLOAT32:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT32>>(matrix, atol);
-    case FPP::FLOAT64:
-        return dispatch_eigh<traits::restricted_t<Scalar, FPP::FLOAT64>>(matrix, atol);
+    switch (this->float_type) {
+    case FloatType::FLOAT32:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT32>>(matrix, atol);
+    case FloatType::FLOAT64:
+        return dispatch_eigh<traits::restricted_t<Scalar, FloatType::FLOAT64>>(matrix, atol);
     default:
         throw std::invalid_argument("Unsupported floating point precision.");
     }
@@ -89,7 +90,8 @@ DiagonalizerLapacke<Scalar>::eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMa
 #else
 
 template <typename Scalar>
-DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FPP fpp) : DiagonalizerInterface<Scalar>(fpp) {
+DiagonalizerLapacke<Scalar>::DiagonalizerLapacke(FloatType float_type)
+    : DiagonalizerInterface<Scalar>(float_type) {
     throw std::runtime_error(
         "The LAPACKE routine is not available in this build. Please use a different diagonalizer.");
 }
