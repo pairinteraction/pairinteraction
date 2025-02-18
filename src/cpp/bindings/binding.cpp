@@ -1,6 +1,7 @@
 #include "./basis/Basis.py.hpp"
 #include "./database/Database.py.hpp"
 #include "./diagonalizer/Diagonalizer.py.hpp"
+#include "./enums/FloatType.py.hpp"
 #include "./enums/OperatorType.py.hpp"
 #include "./enums/Parity.py.hpp"
 #include "./enums/TransformationType.py.hpp"
@@ -26,6 +27,7 @@ NB_MODULE(_backend, m) // NOLINT
     bind_operator_type(m);
     bind_parity(m);
     bind_transformation_type(m);
+    bind_float_type(m);
 
     // interfaces
     bind_diagonalizer_interface(m);

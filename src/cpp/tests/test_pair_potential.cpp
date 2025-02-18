@@ -68,7 +68,7 @@ int main(int argc, char **argv) {
     }
 
     // Diagonalize the systems in parallel
-    pairinteraction::DiagonalizerEigen<double> diagonalizer(pairinteraction::FPP::FLOAT32);
+    pairinteraction::DiagonalizerEigen<double> diagonalizer(pairinteraction::FloatType::FLOAT32);
     pairinteraction::diagonalize(system_pairs, diagonalizer);
 
     // Sort by the eigenvalues

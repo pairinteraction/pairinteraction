@@ -15,6 +15,8 @@ nanobind_add_module(
   database/Database.py.cpp
   diagonalizer/Diagonalizer.py.cpp
   diagonalizer/Diagonalizer.py.hpp
+  enums/FloatType.py.hpp
+  enums/FloatType.py.cpp
   enums/OperatorType.py.hpp
   enums/OperatorType.py.cpp
   enums/Parity.py.hpp

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 
 #include <complex>
 #include <functional>
@@ -70,20 +70,20 @@ struct OpTraits {
  * @tparam T The enum value for which the type is to be extracted.
  */
 
-template <FPP T>
+template <FloatType T>
 struct FPTypeTraits;
 
 template <>
-struct FPTypeTraits<FPP::FLOAT32> {
+struct FPTypeTraits<FloatType::FLOAT32> {
     using type = float;
 };
 
 template <>
-struct FPTypeTraits<FPP::FLOAT64> {
+struct FPTypeTraits<FloatType::FLOAT64> {
     using type = double;
 };
 
-template <typename Scalar, FPP FP>
+template <typename Scalar, FloatType FP>
 using restricted_t = std::conditional_t<traits::NumTraits<Scalar>::is_complex_v,
                                         std::complex<typename FPTypeTraits<FP>::type>,
                                         typename FPTypeTraits<FP>::type>;

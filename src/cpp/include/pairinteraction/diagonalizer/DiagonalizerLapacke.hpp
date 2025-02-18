@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 
@@ -13,7 +13,7 @@ class DiagonalizerLapacke : public DiagonalizerInterface<Scalar> {
 public:
     using typename DiagonalizerInterface<Scalar>::real_t;
 
-    DiagonalizerLapacke(FPP fpp = FPP::FLOAT64);
+    DiagonalizerLapacke(FloatType float_type = FloatType::FLOAT64);
     EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                               double atol) const override;
 

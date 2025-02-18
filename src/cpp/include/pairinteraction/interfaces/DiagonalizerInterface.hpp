@@ -1,6 +1,6 @@
 #pragma once
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 #include "pairinteraction/utils/traits.hpp"
@@ -26,7 +26,7 @@ public:
 
     using real_t = typename traits::NumTraits<Scalar>::real_t;
 
-    DiagonalizerInterface(FPP fpp);
+    DiagonalizerInterface(FloatType float_type);
     virtual ~DiagonalizerInterface() = default;
     virtual EigenSystemH<Scalar> eigh(const Eigen::SparseMatrix<Scalar, Eigen::RowMajor> &matrix,
                                       double atol) const = 0;
@@ -35,7 +35,7 @@ public:
                                       std::optional<real_t> max_eigenvalue, double atol) const;
 
 protected:
-    FPP fpp;
+    FloatType float_type;
     template <typename ScalarLim>
     Eigen::MatrixX<ScalarLim> subtract_mean(const Eigen::MatrixX<Scalar> &matrix, real_t &shift,
                                             double atol) const;

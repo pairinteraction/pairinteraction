@@ -7,7 +7,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/ket/KetAtomCreator.hpp"
 
 #include <Eigen/Eigenvalues>
@@ -151,14 +151,14 @@ DOCTEST_TEST_CASE("construct and diagonalize a Hamiltonian using different metho
 
     DOCTEST_SUBCASE("Single precision") {
         diagonalizers.push_back(
-            std::make_unique<DiagonalizerEigen<std::complex<double>>>(FPP::FLOAT32));
+            std::make_unique<DiagonalizerEigen<std::complex<double>>>(FloatType::FLOAT32));
 #ifdef WITH_LAPACKE
         diagonalizers.push_back(
-            std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FPP::FLOAT32));
+            std::make_unique<DiagonalizerLapacke<std::complex<double>>>(FloatType::FLOAT32));
 #endif
 #ifdef WITH_MKL
         diagonalizers.push_back(
-            std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FPP::FLOAT32));
+            std::make_unique<DiagonalizerFeast<std::complex<double>>>(300, FloatType::FLOAT32));
 #endif
         atols = {1e-1, 1e-6};
     }

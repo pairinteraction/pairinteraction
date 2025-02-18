@@ -1,6 +1,6 @@
 #include "pairinteraction/interfaces/DiagonalizerInterface.hpp"
 
-#include "pairinteraction/enums/FPP.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/utils/eigen_assertion.hpp"
 #include "pairinteraction/utils/eigen_compat.hpp"
 
@@ -11,7 +11,8 @@
 
 namespace pairinteraction {
 template <typename Scalar>
-DiagonalizerInterface<Scalar>::DiagonalizerInterface(FPP fpp) : fpp(fpp) {}
+DiagonalizerInterface<Scalar>::DiagonalizerInterface(FloatType float_type)
+    : float_type(float_type) {}
 
 template <typename Scalar>
 template <typename ScalarLim>
@@ -33,15 +34,14 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
     // Ensure accuracy of the eigenvectors
     ///////////////////////////////////////
 
-    double floating_point_precision =
+    double error_from_float_type =
         1 - std::nextafter(static_cast<real_lim_t>(1), std::numeric_limits<real_lim_t>::lowest());
 
-    if (floating_point_precision * 1e1 > atol) { // 1e1 is a safety factor
-        SPDLOG_WARN(
-            "Because the floating point precision is lacking, the "
-            "eigenvectors cannot be calculated accurately. The floating point precision ({}) "
-            "is similar or worse than the specified tolerance ({}).",
-            floating_point_precision, atol);
+    if (error_from_float_type * 1e1 > atol) { // 1e1 is a safety factor
+        SPDLOG_WARN("Because the floating point precision is too low, the "
+                    "eigenvectors cannot be calculated accurately. The floating point error ({}) "
+                    "is similar or larger than the specified tolerance ({}).",
+                    error_from_float_type, atol);
     }
 
     ///////////////////////////////////////
@@ -50,21 +50,21 @@ DiagonalizerInterface<Scalar>::subtract_mean(const Eigen::MatrixX<Scalar> &matri
 
     // Estimate the error of the eigenenergies due to limited floating point precision
     real_lim_t max_entry = shifted_matrix.array().abs().maxCoeff();
-    floating_point_precision =
+    error_from_float_type =
         max_entry - std::nextafter(max_entry, std::numeric_limits<real_lim_t>::lowest());
 
     // Estimate the error of the eigenenergies that would result from calculating the eigenenergies
     // by transforming the Hamiltonian with the eigenvector matrix, assuming that all entries of the
     // eigenvector matrix that are smaller than the tolerance are set to zero.
-    double precision_from_tolerance =
+    double error_from_eigenvectors =
         2 * atol * shifted_matrix.norm(); // upper bound of |Tr(D_exact) - Tr(D)|/dim(D)
 
-    if (floating_point_precision * 1e1 > precision_from_tolerance) { // 1e1 is a safety factor
-        SPDLOG_WARN("Because the floating point precision is lacking, the "
-                    "eigenvalues cannot be calculated accurately. The floating point precision ({} "
-                    "Hartree) is similar or worse than the precision estimated from the specified "
+    if (error_from_float_type * 1e1 > error_from_eigenvectors) { // 1e1 is a safety factor
+        SPDLOG_WARN("Because the floating point precision is too low, the "
+                    "eigenvalues cannot be calculated accurately. The floating point error ({} "
+                    "Hartree) is similar or larger than error estimated from the specified "
                     "tolerance ({} Hartree).",
-                    floating_point_precision, precision_from_tolerance);
+                    error_from_float_type, error_from_eigenvectors);
     }
 
     return shifted_matrix;

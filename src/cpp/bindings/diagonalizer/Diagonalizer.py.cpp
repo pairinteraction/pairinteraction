@@ -4,6 +4,7 @@
 #include "pairinteraction/diagonalizer/DiagonalizerFeast.hpp"
 #include "pairinteraction/diagonalizer/DiagonalizerLapacke.hpp"
 #include "pairinteraction/diagonalizer/diagonalize.hpp"
+#include "pairinteraction/enums/FloatType.hpp"
 #include "pairinteraction/system/SystemAtom.hpp"
 #include "pairinteraction/system/SystemPair.hpp"
 
@@ -20,7 +21,7 @@ template <typename T>
 static void declare_diagonalizer_eigen(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "DiagonalizerEigen" + type_name;
     nb::class_<DiagonalizerEigen<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
+    pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerEigen<T>::eigh, nb::const_));
@@ -31,7 +32,7 @@ static void declare_diagonalizer_feast(nb::module_ &m, std::string const &type_n
     std::string pyclass_name = "DiagonalizerFeast" + type_name;
     using real_t = typename DiagonalizerFeast<T>::real_t;
     nb::class_<DiagonalizerFeast<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<int>())
+    pyclass.def(nb::init<int, FloatType>(), "m0"_a, "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerFeast<T>::eigh, nb::const_))
@@ -45,7 +46,7 @@ template <typename T>
 static void declare_diagonalizer_lapacke(nb::module_ &m, std::string const &type_name) {
     std::string pyclass_name = "DiagonalizerLapacke" + type_name;
     nb::class_<DiagonalizerLapacke<T>, DiagonalizerInterface<T>> pyclass(m, pyclass_name.c_str());
-    pyclass.def(nb::init<>())
+    pyclass.def(nb::init<FloatType>(), "float_type"_a = FloatType::FLOAT64)
         .def("eigh",
              nb::overload_cast<const Eigen::SparseMatrix<T, Eigen::RowMajor> &, double>(
                  &DiagonalizerLapacke<T>::eigh, nb::const_));
